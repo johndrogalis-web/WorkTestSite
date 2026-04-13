@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Manual Control — Card States</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ── Trinity tokens ── */
+  :root {
+    --bg:           #f6f4f2;
+    --card:         #ffffff;
+    --border:       rgba(54,50,45,0.14);
+    --border-focus: rgba(54,50,45,0.32);
+    --text-strong:  #211f1c;
+    --text-muted:   #565147;
+    --text-soft:    rgba(54,50,45,0.62);
+    --text-ghost:   rgba(54,50,45,0.36);
+    --btn-bg:       #1594ef;
+    --btn-text:     #ffffff;
+    --btn-radius:   32px;
+    --radius-card:  24px;
+    --radius-input: 24px;
+    --success-bg:   #d5f1d2;
+    --success-text: #1e6252;
+    --success-border: rgba(30,98,82,0.25);
+    --warn-bg:      #fef3cd;
+    --warn-text:    #7a5200;
+    --error-bg:     #fde8e6;
+    --error-text:   #c13c2d;
+    --error-border: rgba(193,60,45,0.22);
+    --pending-bg:   #e3f0fc;
+    --pending-text: #1056a8;
+    --pending-border: rgba(21,148,239,0.3);
+    --partial-bg:   #fff7ec;
+    --partial-text: #7a4d00;
+    --partial-border: rgba(180,110,0,0.28);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text-strong);
+    min-height: 100vh;
+    padding: 32px 24px 64px;
+  }
+
+  /* ── Page header ── */
+  .page-header {
+    margin-bottom: 32px;
+  }
+  .page-header h1 {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    color: var(--text-strong);
+  }
+  .page-header p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    letter-spacing: -0.28px;
+  }
+
+  /* ── Card selector tabs ── */
+  .card-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+  .card-tab {
+    padding: 7px 16px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    letter-spacing: -0.28px;
+    transition: all 0.15s ease;
+  }
+  .card-tab:hover { border-color: var(--border-focus); color: var(--text-strong); }
+  .card-tab.active {
+    background: var(--text-strong);
+    color: #fff;
+    border-color: var(--text-strong);
+  }
+
+  /* ── State selector ── */
+  .state-nav {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .state-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-ghost);
+    margin-right: 6px;
+  }
+  .state-btn {
+    padding: 5px 14px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    letter-spacing: -0.24px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+  }
+  .state-btn:hover { border-color: var(--border-focus); color: var(--text-strong); }
+  .state-btn.active {
+    border-color: var(--btn-bg);
+    background: rgba(21,148,239,0.06);
+    color: var(--btn-bg);
+  }
+  .state-dot-sm {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── Main stage ── */
+  .stage {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* ── The MC card itself ── */
+  .mc-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 260px;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* State variants */
+  .mc-card.is-pending {
+    border-color: rgba(21,148,239,0.5);
+    box-shadow: 0 0 0 3px rgba(21,148,239,0.08);
+  }
+  .mc-card.is-success {
+    border-color: rgba(30,98,82,0.35);
+    box-shadow: 0 0 0 3px rgba(30,98,82,0.06);
+  }
+  .mc-card.is-error {
+    border-color: rgba(193,60,45,0.35);
+    box-shadow: 0 0 0 3px rgba(193,60,45,0.06);
+  }
+  .mc-card.is-warning {
+    border-color: rgba(180,110,0,0.35);
+    box-shadow: 0 0 0 3px rgba(180,110,0,0.06);
+  }
+  .mc-card.is-partial {
+    border-color: rgba(180,110,0,0.4);
+    box-shadow: 0 0 0 3px rgba(180,110,0,0.07);
+  }
+
+  /* Partial delivery breakdown block */
+  .partial-breakdown {
+    background: var(--partial-bg);
+    border: 1px solid var(--partial-border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 4px;
+  }
+  .partial-breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 12px;
+    letter-spacing: -0.24px;
+    padding: 2px 0;
+  }
+  .partial-breakdown-row .pb-label { color: var(--text-soft); }
+  .partial-breakdown-row .pb-val   { font-weight: 600; color: var(--text-strong); }
+  .partial-breakdown-row .pb-val.shortfall { color: var(--partial-text); }
+  .partial-divider {
+    height: 1px;
+    background: var(--partial-border);
+    margin: 5px 0;
+  }
+
+  /* card-history styles removed — history lives in sidebar panel, not on card */
+
+  /* Loading bar at top */
+  .card-progress {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: rgba(21,148,239,0.12);
+    overflow: hidden;
+  }
+  .card-progress-fill {
+    height: 100%;
+    background: var(--btn-bg);
+    animation: progress-sweep 1.6s ease-in-out infinite;
+    width: 45%;
+  }
+  @keyframes progress-sweep {
+    0%   { transform: translateX(-120%); }
+    100% { transform: translateX(320%); }
+  }
+
+  /* Card header */
+  .mc-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: background 0.25s ease;
+  }
+  .dot-idle     { background: rgba(54,50,45,0.22); }
+  .dot-pending  { background: var(--btn-bg); animation: dot-pulse 1.2s ease-in-out infinite; }
+  .dot-success  { background: var(--success-text); }
+  .dot-error    { background: var(--error-text); }
+  .dot-warning  { background: #b46e00; }
+  @keyframes dot-pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%     { opacity: 0.4; transform: scale(0.85); }
+  }
+  }
+  .card-title {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.32px;
+    color: var(--text-strong);
+  }
+
+  /* Input field */
+  .card-input-wrap { margin-bottom: 14px; }
+  .card-input {
+    width: 100%;
+    padding: 9px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-input);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-soft);
+    background: var(--card);
+    outline: none;
+    letter-spacing: -0.26px;
+    transition: border-color 0.15s, color 0.15s;
+    -moz-appearance: textfield;
+  }
+  .card-input::-webkit-inner-spin-button,
+  .card-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .card-input:focus { border-color: var(--btn-bg); color: var(--text-strong); }
+  .card-input:disabled { opacity: 0.5; cursor: not-allowed; background: rgba(54,50,45,0.03); }
+  .card-input.has-value { color: var(--text-strong); }
+
+  /* Metric display */
+  .card-metric {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    margin-bottom: 4px;
+  }
+  .metric-value {
+    font-size: 38px;
+    font-weight: 300;
+    letter-spacing: -0.8px;
+    color: var(--text-strong);
+    line-height: 1.1;
+    transition: color 0.25s;
+  }
+  .metric-value.text-muted { color: var(--text-soft); }
+  .metric-unit {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.32px;
+    color: var(--text-strong);
+  }
+  .metric-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    letter-spacing: -0.28px;
+    margin-bottom: 16px;
+  }
+
+  /* Extra line (System Status: 1, etc) */
+  .card-extra {
+    font-size: 13px;
+    color: var(--text-muted);
+    letter-spacing: -0.28px;
+    margin-bottom: 14px;
+  }
+
+  /* Feedback pill */
+  .feedback-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: -0.24px;
+    margin-bottom: 10px;
+  }
+  .pill-pending { background: var(--pending-bg); color: var(--pending-text); }
+  .pill-success { background: var(--success-bg); color: var(--success-text); }
+  .pill-error   { background: var(--error-bg);   color: var(--error-text); }
+  .pill-warning { background: var(--warn-bg);    color: var(--warn-text); }
+  .pill-partial { background: var(--partial-bg); color: var(--partial-text); }
+  .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* Primary action button */
+  .card-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 20px;
+    border-radius: var(--btn-radius);
+    border: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.28px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-primary {
+    background: var(--btn-bg);
+    color: var(--btn-text);
+  }
+  .btn-primary:hover:not(:disabled) { background: #1280d4; }
+  .btn-primary:active:not(:disabled) { transform: scale(0.98); }
+  .btn-primary:disabled {
+    background: rgba(21,148,239,0.35);
+    cursor: not-allowed;
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--border-focus); color: var(--text-strong); }
+  .btn-danger {
+    background: var(--error-text);
+    color: #fff;
+  }
+  .btn-danger:hover { background: #a32d20; }
+  .btn-partial {
+    background: var(--partial-bg);
+    color: var(--partial-text);
+    border: 1px solid var(--partial-border);
+  }
+  .btn-partial:hover { background: #fdefd6; border-color: #b46e00; }
+
+  /* Confirm split layout */
+  .confirm-row { display: flex; gap: 8px; margin-top: 4px; }
+  .confirm-row .card-btn { flex: 1; padding: 0 12px; font-size: 13px; }
+
+  /* Footer area */
+  .card-footer { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
+
+  /* ── Annotation panel ── */
+  .annotation-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+  }
+  .anno-state-name {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-ghost);
+    margin-bottom: 8px;
+  }
+  .anno-title {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.4px;
+    color: var(--text-strong);
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+  .anno-desc {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.65;
+    letter-spacing: -0.28px;
+    margin-bottom: 24px;
+  }
+
+  .anno-points-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-ghost);
+    margin-bottom: 10px;
+  }
+  .anno-point {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.55;
+    letter-spacing: -0.26px;
+  }
+  .anno-point:first-of-type { border-top: none; }
+  .point-num {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(54,50,45,0.07);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .anno-q {
+    margin-top: 20px;
+    padding: 14px 16px;
+    background: rgba(21,148,239,0.05);
+    border-left: 2px solid rgba(21,148,239,0.4);
+    border-radius: 0 10px 10px 0;
+    font-size: 13px;
+    color: var(--pending-text);
+    line-height: 1.55;
+    letter-spacing: -0.26px;
+  }
+  .anno-q strong { font-weight: 600; }
+
+  /* ── All-states overview row at bottom ── */
+  .overview-section {
+    margin-top: 40px;
+  }
+  .overview-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-ghost);
+    margin-bottom: 16px;
+  }
+  .overview-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .overview-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 18px 20px;
+    width: 200px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .overview-card:hover { border-color: var(--border-focus); }
+  .overview-card.ov-pending { border-color: rgba(21,148,239,0.4); }
+  .overview-card.ov-success { border-color: rgba(30,98,82,0.3); background: #fafffd; }
+  .overview-card.ov-error   { border-color: rgba(193,60,45,0.3); background: #fff9f8; }
+  .overview-card.ov-warning { border-color: rgba(180,110,0,0.35); background: #fffbf5; }
+  .ov-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    display: inline-block; margin-right: 6px;
+    vertical-align: middle;
+  }
+  .ov-title { font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: -0.24px; margin-bottom: 8px; }
+  .ov-value { font-size: 26px; font-weight: 300; letter-spacing: -0.6px; color: var(--text-strong); line-height: 1.1; }
+  .ov-value.small { font-size: 18px; font-weight: 500; margin-top: 4px; }
+  .ov-meta  { font-size: 12px; color: var(--text-soft); letter-spacing: -0.24px; margin-top: 2px; }
+  .ov-selected-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 18px;
+    border: 2px solid var(--btn-bg);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+  }
+  .overview-card.selected .ov-selected-ring { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Manual Control — Card States</h1>
+  <p>Exploration of interaction states for the four primary card types</p>
+</div>
+
+<!-- Card type tabs -->
+<div class="card-tabs">
+  <button class="card-tab active" onclick="selectCard('ping', this)">Ping Truck</button>
+  <button class="card-tab" onclick="selectCard('water', this)">Add Water</button>
+  <button class="card-tab" onclick="selectCard('shutdown', this)">Shut Down</button>
+  <button class="card-tab" onclick="selectCard('flowreset', this)">Reset Flow Error</button>
+</div>
+
+<!-- State nav -->
+<div class="state-nav" id="state-nav"></div>
+
+<!-- Main stage: card + annotations -->
+<div class="stage">
+  <div id="card-stage"></div>
+  <div class="annotation-panel" id="annotation-panel"></div>
+</div>
+
+<!-- Overview all states -->
+<div class="overview-section">
+  <div class="overview-label">All states at a glance — click to select</div>
+  <div class="overview-row" id="overview-row"></div>
+</div>
+
+<!-- Water partial comparison row — only shown when water tab active -->
+<div class="overview-section" id="comparison-section" style="display:none;">
+  <div class="overview-label">Side-by-side — partial delivery vs idle (same height check)</div>
+  <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-ghost);margin-bottom:8px;">Idle</div>
+      <div class="mc-card" style="width:220px;">
+        <div class="mc-card-header">
+          <div class="status-dot dot-idle"></div>
+          <span class="card-title">Turn on Water</span>
+        </div>
+        <div class="card-input-wrap">
+          <input class="card-input" type="number" placeholder="Add Water (liters)" />
+        </div>
+        <div class="card-metric">
+          <span class="metric-value">32</span>
+          <span class="metric-unit">L/min</span>
+        </div>
+        <div class="metric-sub">Current Flow</div>
+        <div class="card-footer">
+          <button class="card-btn btn-primary" disabled>Turn on Water</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-ghost);margin-bottom:8px;">Partial delivery</div>
+      <div class="mc-card is-partial" style="width:220px;">
+        <div class="mc-card-header">
+          <div class="status-dot dot-warning"></div>
+          <span class="card-title">Turn on Water</span>
+        </div>
+        <div class="card-metric">
+          <span class="metric-value">30</span>
+          <span class="metric-unit">L/min</span>
+        </div>
+        <div class="metric-sub">Delivered · 15L short of 45L</div>
+        <div class="card-extra">Flow issue active</div>
+        <div class="card-footer">
+          <span class="feedback-pill pill-partial"><span class="pill-dot"></span>15L short</span>
+          <button class="card-btn btn-partial">Add remaining 15L</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-ghost);margin-bottom:8px;">Full delivery</div>
+      <div class="mc-card is-success" style="width:220px;">
+        <div class="mc-card-header">
+          <div class="status-dot dot-success"></div>
+          <span class="card-title">Turn on Water</span>
+        </div>
+        <div class="card-input-wrap">
+          <input class="card-input" type="number" placeholder="Add Water (liters)" disabled style="opacity:0.4;" />
+        </div>
+        <div class="card-metric">
+          <span class="metric-value">45</span>
+          <span class="metric-unit">L/min</span>
+        </div>
+        <div class="metric-sub">Current Flow</div>
+        <div class="card-footer">
+          <span class="feedback-pill pill-success"><span class="pill-dot"></span>45L delivered</span>
+          <button class="card-btn btn-primary" disabled>Turn on Water</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-ghost);margin-bottom:8px;">Command failed</div>
+      <div class="mc-card is-error" style="width:220px;">
+        <div class="mc-card-header">
+          <div class="status-dot dot-error"></div>
+          <span class="card-title">Turn on Water</span>
+        </div>
+        <div class="card-input-wrap">
+          <input class="card-input has-value" type="number" value="45" />
+        </div>
+        <div class="card-metric">
+          <span class="metric-value">32</span>
+          <span class="metric-unit">L/min</span>
+        </div>
+        <div class="metric-sub">Current Flow</div>
+        <div class="card-footer">
+          <span class="feedback-pill pill-error"><span class="pill-dot"></span>Command rejected</span>
+          <button class="card-btn btn-primary">Retry</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p style="font-size:12px;color:var(--text-ghost);margin-top:12px;letter-spacing:-0.24px;">Note: partial delivery has no input field shown — the action is complete. This keeps it the same height as the other result states.</p>
+</div>
+
+<script>
+const CARDS = {
+  ping: {
+    title: 'Ping Truck',
+    states: [
+      {
+        id: 'idle',
+        label: 'Idle',
+        dotClass: 'dot-idle',
+        dotColor: 'rgba(54,50,45,0.22)',
+        cardClass: '',
+        showProgress: false,
+        value: '2', unit: 'min ago', metaSub: 'Last Ping',
+        extra: 'System Status: 1',
+        pill: null,
+        footer: { type: 'btn', label: 'Ping Truck', btnClass: 'btn-primary', disabled: false },
+        annoTitle: 'Ready to ping',
+        annoDesc: 'Default resting state. Shows time since last successful ping and the returned System Status code. The FST can trigger a new ping at any time.',
+        points: [
+          'Timestamp updates relative to last successful response, not last attempt.',
+          'System Status code gives the FST immediate health context before they take any action.',
+          'Button is always available — no blocking condition in idle state.',
+        ],
+        question: null
+      },
+      {
+        id: 'loading',
+        label: 'Pending',
+        dotClass: 'dot-pending',
+        dotColor: '#1594ef',
+        cardClass: 'is-pending',
+        showProgress: true,
+        value: '—', unit: '', metaSub: 'Pinging…',
+        extra: '',
+        pill: { label: 'Command sent', type: 'pill-pending' },
+        footer: { type: 'btn', label: 'Pinging…', btnClass: 'btn-primary', disabled: true },
+        annoTitle: 'Command in flight',
+        annoDesc: 'The ping command has been fired. Waiting for the truck to respond. The button is disabled to prevent duplicate commands from stacking.',
+        points: [
+          'Progress bar at card top edge communicates in-flight state without taking up card body space.',
+          'Status dot pulses blue — distinct from the idle grey, draws the eye to active cards.',
+          'Metric value goes to em dash rather than showing stale data as if it were current.',
+          'Button label echoes the current action ("Pinging…") so the FST knows their action registered.',
+        ],
+        question: 'Open question: what is the timeout threshold before moving to the "no response" error state?'
+      },
+      {
+        id: 'success',
+        label: 'Success',
+        dotClass: 'dot-success',
+        dotColor: '#1e6252',
+        cardClass: 'is-success',
+        showProgress: false,
+        value: 'just now', unit: '', metaSub: 'Last Ping',
+        extra: 'System Status: 1',
+        pill: { label: 'Responded', type: 'pill-success' },
+        footer: { type: 'btn', label: 'Ping Again', btnClass: 'btn-primary', disabled: false },
+        annoTitle: 'Truck responded',
+        annoDesc: 'The truck returned a successful response. Timestamp resets, System Status updates with the latest value. Green feedback confirms completion.',
+        points: [
+          'Card border goes green to signal success — the FST gets a clear read without reading any text.',
+          'Pill shows "Responded" as confirmation — transient, will fade back to idle after a few seconds.',
+          'Button changes to "Ping Again" rather than returning to "Ping Truck" to feel more conversational.',
+          'System Status updates immediately with the value returned in the response.',
+        ],
+        question: null
+      },
+      {
+        id: 'error',
+        label: 'No Response',
+        dotClass: 'dot-error',
+        dotColor: '#c13c2d',
+        cardClass: 'is-error',
+        showProgress: false,
+        value: '—', unit: '', metaSub: 'No response',
+        extra: 'System Status: —',
+        pill: { label: 'Timed out', type: 'pill-error' },
+        footer: { type: 'btn', label: 'Retry Ping', btnClass: 'btn-primary', disabled: false },
+        annoTitle: 'Truck did not respond',
+        annoDesc: 'The truck did not respond within the timeout window. Red state clearly signals the failure. The FST can retry immediately or escalate.',
+        points: [
+          'Red border and dot are deliberately alarming — this is a real connectivity issue.',
+          'System Status shows em dash since no valid value was returned.',
+          '"Retry Ping" rather than "Ping Truck" — maintains context that this is a follow-up attempt.',
+          'Consider: should this surface a shortcut to the Connectivity panel or create a ticket?',
+        ],
+        question: 'Design decision: should repeated no-response failures (e.g. 3 retries) escalate the card to a higher-severity state or auto-create a system alert?'
+      }
+    ]
+  },
+
+  water: {
+    title: 'Turn on Water',
+    states: [
+      {
+        id: 'idle-empty',
+        label: 'Empty input',
+        dotClass: 'dot-idle',
+        dotColor: 'rgba(54,50,45,0.22)',
+        cardClass: '',
+        showProgress: false,
+        showInput: true, inputVal: '', inputLocked: false, inputPlaceholder: 'Add Water (liters)',
+        value: '32', unit: 'L/min', metaSub: 'Current Flow',
+        extra: '',
+        pill: null,
+        footer: { type: 'btn', label: 'Turn on Water', btnClass: 'btn-primary', disabled: true },
+        annoTitle: 'Waiting for input',
+        annoDesc: 'Input field is empty. Button is intentionally disabled until a value is entered. This is the primary guard against sending an empty or accidental command.',
+        points: [
+          'Disabled button is a deliberate constraint — Add Water with no volume is a non-command.',
+          'Placeholder text "Add Water (liters)" keeps the unit front of mind so the FST doesn\'t have to guess.',
+          'Current Flow (32 L/min) gives the FST a baseline before they decide what to add.',
+        ],
+        question: 'Worth validating with FSTs: do they prefer liters or gallons? The field unit should match what they think in on the job site.'
+      },
+      {
+        id: 'idle-filled',
+        label: 'Value entered',
+        dotClass: 'dot-idle',
+        dotColor: 'rgba(54,50,45,0.22)',
+        cardClass: '',
+        showProgress: false,
+        showInput: true, inputVal: '45', inputLocked: false, inputPlaceholder: 'Add Water (liters)',
+        value: '32', unit: 'L/min', metaSub: 'Current Flow',
+        extra: '',
+        pill: null,
+        footer: { type: 'btn', label: 'Add 45L', btnClass: 'btn-primary', disabled: false },
+        annoTitle: 'Ready to submit',
+        annoDesc: 'A value has been entered. The button becomes active and updates its label to confirm the specific amount — "Add 45L" instead of the generic "Turn on Water".',
+        points: [
+          'Dynamic button label "Add 45L" reinforces what will happen and prompts the FST to double-check the value.',
+          'This is a micro-copy pattern that reduces accidental wrong-amount submissions.',
+          'No confirmation step needed here — this is a recoverable action (water can be stopped).',
+        ],
+        question: null
+      },
+      {
+        id: 'loading',
+        label: 'Pending',
+        dotClass: 'dot-pending',
+        dotColor: '#1594ef',
+        cardClass: 'is-pending',
+        showProgress: true,
+        showInput: true, inputVal: '45', inputLocked: true, inputPlaceholder: 'Add Water (liters)',
+        value: '32', unit: 'L/min', metaSub: 'Current Flow',
+        extra: '',
+        pill: { label: 'Sending 45L command…', type: 'pill-pending' },
+        footer: { type: 'btn', label: 'Sending…', btnClass: 'btn-primary', disabled: true },
+        annoTitle: 'Command in flight',
+        annoDesc: 'The add water command is being sent to the truck. Input is locked to prevent changes mid-flight. Current flow still shows the previous reading.',
+        points: [
+          'Input locked prevents the FST from accidentally changing the value while it\'s being processed.',
+          'The pill echoes the amount ("Sending 45L command…") so there\'s no ambiguity about what was sent.',
+          'Current flow stays at the old reading — don\'t update it with a predicted value.',
+        ],
+        question: null
+      },
+      {
+        id: 'success',
+        label: 'Full delivery',
+        dotClass: 'dot-success',
+        dotColor: '#1e6252',
+        cardClass: 'is-success',
+        showProgress: false,
+        showInput: true, inputVal: '', inputLocked: false, inputPlaceholder: 'Add Water (liters)',
+        value: '45', unit: 'L/min', metaSub: 'Current Flow',
+        extra: '',
+        pill: { label: '45L delivered', type: 'pill-success' },
+        footer: { type: 'btn', label: 'Turn on Water', btnClass: 'btn-primary', disabled: true },
+        annoTitle: 'Full amount delivered',
+        annoDesc: 'The truck acknowledged the command and the full 45L was delivered. Input clears, current flow updates to the confirmed new reading.',
+        points: [
+          'Input resets to empty — the confirmed amount is now reflected in Current Flow, not the field.',
+          'Current flow updates to the new reading (45 L/min) as the definitive source of truth.',
+          'Button briefly disabled after success to prevent double-firing before the next reading.',
+          'Green state is transient — after a few seconds this should return to idle.',
+        ],
+        question: null
+      },
+      {
+        id: 'partial',
+        label: 'Partial delivery',
+        dotClass: 'dot-warning',
+        dotColor: '#b46e00',
+        cardClass: 'is-partial',
+        showProgress: false,
+        showInput: false,
+        value: '30', unit: 'L/min', metaSub: 'Delivered · 15L short of 45L',
+        extra: 'Flow issue active',
+        pill: { label: '15L short', type: 'pill-partial' },
+        footer: { type: 'btn', label: 'Add remaining 15L', btnClass: 'btn-partial', disabled: false },
+        annoTitle: 'Partial delivery — fits the original card',
+        annoDesc: 'Only 30 of the requested 45L was delivered due to a flow restriction. The card stays the same height as every other card in the row — no grid-breaking expansion. All the signal that matters fits in the existing zones.',
+        points: [
+          'Input clears after any result state (same as Full delivery) — this frees up the space the input occupied.',
+          'Metric shows 30 L/min — what was actually delivered. The number itself is the primary signal.',
+          'Sub-label "Delivered · 15L short of 45L" puts the shortfall inline with the metric context, one line, no extra element.',
+          '"Flow issue active" in the extra line replaces what was "Current Flow:" in idle — it tells the FST why.',
+          'The amber pill "15L short" is a compact inline badge — same height as any other pill, no extra row.',
+          '"Add remaining 15L" sits in the exact same footer position as every other card button. Amber colour distinguishes it as a follow-up without changing the layout.',
+          'The command history table belongs in the sidebar panel, not on the card. The card\'s job is what happened and what to do next — not the full log.',
+        ],
+        question: 'The sidebar Truck Command History panel already logs "Water Add / 30L / 45L req." — the card just needs to point the FST at the right next action, which the button handles.'
+      },
+      {
+        id: 'error',
+        label: 'Command failed',
+        dotClass: 'dot-error',
+        dotColor: '#c13c2d',
+        cardClass: 'is-error',
+        showProgress: false,
+        showInput: true, inputVal: '45', inputLocked: false, inputPlaceholder: 'Add Water (liters)',
+        value: '32', unit: 'L/min', metaSub: 'Current Flow',
+        extra: '',
+        pill: { label: 'Command rejected', type: 'pill-error' },
+        footer: { type: 'btn', label: 'Retry', btnClass: 'btn-primary', disabled: false },
+        annoTitle: 'Command rejected',
+        annoDesc: 'The truck rejected the add water command outright — nothing was delivered. Distinct from partial delivery: the flow reading has not changed. Input value is preserved for retry.',
+        points: [
+          'Input value preserved at 45L so the FST doesn\'t need to re-type before retrying.',
+          'Current flow stays at the previous reading (32 L/min) since nothing executed.',
+          'Consider surfacing the rejection reason (e.g. "Flow error active") if the API returns one.',
+          'This is distinct from partial — no water moved, so no shortfall to communicate.',
+        ],
+        question: 'Design question: if the rejection is because a flow error is active, should this card show a direct link to the Reset Flow Error card?'
+      }
+    ]
+  },
+
+  shutdown: {
+    title: 'Shut Down',
+    states: [
+      {
+        id: 'idle',
+        label: 'Idle',
+        dotClass: 'dot-idle',
+        dotColor: 'rgba(54,50,45,0.22)',
+        cardClass: '',
+        showProgress: false,
+        value: '10:32', unit: 'AM', metaSub: 'Last Attempt',
+        extra: 'Acknowledged: Yes',
+        pill: null,
+        footer: { type: 'btn', label: 'Shut Down', btnClass: 'btn-primary', disabled: false },
+        annoTitle: 'Ready to shut down',
+        annoDesc: 'Shows the timestamp of the last shutdown attempt and whether it was acknowledged. Button is available.',
+        points: [
+          'Unlike Ping, this is a destructive action on a live truck — consider whether the idle button should look different.',
+          '"Acknowledged: Yes" tells the FST the last attempt actually landed, not just that it was sent.',
+        ],
+        question: null
+      },
+      {
+        id: 'confirm',
+        label: 'Confirm inline',
+        dotClass: 'dot-idle',
+        dotColor: 'rgba(54,50,45,0.22)',
+        cardClass: 'is-warning',
+        showProgress: false,
+        value: '10:32', unit: 'AM', metaSub: 'Last Attempt',
+        extra: 'Acknowledged: Yes',
+        pill: { label: 'Confirm before shutting down', type: 'pill-warning' },
+        footer: { type: 'confirm', cancelLabel: 'Cancel', confirmLabel: 'Yes, Shut Down' },
+        annoTitle: 'Inline confirm — first click',
+        annoDesc: 'Clicking Shut Down does not execute immediately. It transitions the card to this confirmation state first. The FST has to make a second deliberate choice before anything is sent to the truck.',
+        points: [
+          'Keeps the entire flow in the card — no modal, no context switch, no overlay.',
+          'Amber state signals caution without full red alarm — something requires attention, not a crisis.',
+          '"Yes, Shut Down" is explicit copy — avoids ambiguous "OK" or "Confirm".',
+          'Cancel returns immediately to idle with no side effects.',
+          'The two-button layout uses full card width — both targets are large enough for a stressed FST to hit accurately.',
+        ],
+        question: null
+      },
+      {
+        id: 'loading',
+        label: 'Pending',
+        dotClass: 'dot-pending',
+        dotColor: '#1594ef',
+        cardClass: 'is-pending',
+        showProgress: true,
+        value: '—', unit: '', metaSub: 'Shutting down…',
+        extra: '',
+        pill: { label: 'Command sent', type: 'pill-pending' },
+        footer: { type: 'btn', label: 'Shutting down…', btnClass: 'btn-primary', disabled: true },
+        annoTitle: 'Shutdown command sent',
+        annoDesc: 'The command is in flight. The Ignition status in the drawer header should also shift to a pending state to reflect the global impact of this action.',
+        points: [
+          'This is the highest-stakes pending state on the page — consider a more prominent indicator.',
+          'The Ignition On badge in the header should also change to "Shutting down…" during this window.',
+          'Button fully disabled — no undo available once the command lands.',
+        ],
+        question: 'Implementation note: does the backend return an immediate acknowledgement, or is the pending window potentially long? That affects how we handle timeout UX here.'
+      },
+      {
+        id: 'success',
+        label: 'Acknowledged',
+        dotClass: 'dot-success',
+        dotColor: '#1e6252',
+        cardClass: 'is-success',
+        showProgress: false,
+        value: 'just now', unit: '', metaSub: 'Last Attempt',
+        extra: 'Acknowledged: Yes',
+        pill: { label: 'Shutdown acknowledged', type: 'pill-success' },
+        footer: { type: 'btn', label: 'Shut Down', btnClass: 'btn-primary', disabled: false },
+        annoTitle: 'Shutdown acknowledged',
+        annoDesc: 'Truck confirmed receipt. Timestamp updates. The Ignition badge in the header should now update to "Ignition off".',
+        points: [
+          'Green here is brief — the whole drawer state will change once ignition-off is confirmed.',
+          'The FST should not need to stay on this card after acknowledgement — the drawer header tells the story.',
+        ],
+        question: null
+      }
+    ]
+  },
+
+  flowreset: {
+    title: 'Reset Flow Error',
+    states: [
+      {
+        id: 'idle-clean',
+        label: 'No errors',
+        dotClass: 'dot-idle',
+        dotColor: 'rgba(54,50,45,0.22)',
+        cardClass: '',
+        showProgress: false,
+        value: '0', unit: '', metaSub: 'Current Flow Error',
+        extra: 'Last Reset: 10:32 AM',
+        pill: null,
+        footer: { type: 'btn', label: 'Reset Flow Error', btnClass: 'btn-primary', disabled: false },
+        annoTitle: 'System clean',
+        annoDesc: 'Error count is zero. The card is in a healthy resting state. The button is present but could be visually softened since there\'s nothing urgent to act on.',
+        points: [
+          'Consider: should the button be a ghost/outline style when error count is 0, to signal "available but not needed"?',
+          'Last Reset timestamp gives the FST confidence that errors were previously cleared.',
+          'The 0 value is the key signal here — large display number does its job.',
+        ],
+        question: 'Design decision: should "Reset Flow Error" button be disabled or visually dimmed when Current Flow Error = 0? Prevents accidental resets but adds a rule to explain.'
+      },
+      {
+        id: 'idle-active',
+        label: 'Active errors',
+        dotClass: 'dot-error',
+        dotColor: '#c13c2d',
+        cardClass: 'is-error',
+        showProgress: false,
+        value: '3', unit: '', metaSub: 'Current Flow Error',
+        extra: 'Last Reset: 10:32 AM',
+        pill: { label: '3 active errors', type: 'pill-error' },
+        footer: { type: 'btn', label: 'Reset Flow Error', btnClass: 'btn-primary', disabled: false },
+        annoTitle: 'Errors require attention',
+        annoDesc: 'Non-zero error count. The card enters a red state to surface the issue — FSTs should be able to scan the screen and immediately see which cards need action.',
+        points: [
+          'Red card border with red dot is the highest-signal idle state in the whole tab.',
+          'The number "3" at 38px weight is the hero — don\'t clutter the card body with secondary info here.',
+          'Pill reinforces the count with explicit label ("3 active errors") in case the number is ambiguous.',
+          'Consider: should this card appear first in the section or reorder to the top when errors are active?',
+        ],
+        question: 'Should cards with active error states visually bubble up or reorder in the grid? Or is positional consistency more important for FST muscle memory?'
+      },
+      {
+        id: 'loading',
+        label: 'Pending',
+        dotClass: 'dot-pending',
+        dotColor: '#1594ef',
+        cardClass: 'is-pending',
+        showProgress: true,
+        value: '3', unit: '', metaSub: 'Resetting…',
+        extra: '',
+        pill: { label: 'Resetting…', type: 'pill-pending' },
+        footer: { type: 'btn', label: 'Resetting…', btnClass: 'btn-primary', disabled: true },
+        annoTitle: 'Reset in flight',
+        annoDesc: 'Reset command sent. Error count still shows the previous value (3) until the truck confirms the clear. Don\'t update the metric with a predicted 0.',
+        points: [
+          'Error count stays at 3 during pending — optimistic updates here would be misleading.',
+          'Blue pending state overrides the red error state — the FST can see the action is in progress.',
+          'Metasub changes to "Resetting…" to clarify the metric value is stale.',
+        ],
+        question: null
+      },
+      {
+        id: 'success',
+        label: 'Errors cleared',
+        dotClass: 'dot-success',
+        dotColor: '#1e6252',
+        cardClass: 'is-success',
+        showProgress: false,
+        value: '0', unit: '', metaSub: 'Current Flow Error',
+        extra: 'Last Reset: just now',
+        pill: { label: 'Errors cleared', type: 'pill-success' },
+        footer: { type: 'btn', label: 'Reset Flow Error', btnClass: 'btn-primary', disabled: false },
+        annoTitle: 'Errors cleared',
+        annoDesc: 'Reset confirmed. Error count returns to 0, Last Reset updates to now. The FST gets a clean card and can move on.',
+        points: [
+          'Going from red → green in a single action is a high-satisfaction moment — the green state earns its place.',
+          'Last Reset timestamp updates to "just now" to close the loop on when it happened.',
+          'Card will return to the neutral idle (no-errors) state after the success feedback window.',
+        ],
+        question: null
+      }
+    ]
+  }
+};
+
+let activeCard = 'ping';
+let activeStateIdx = 0;
+
+function selectCard(cardKey, el) {
+  document.querySelectorAll('.card-tab').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  activeCard = cardKey;
+  activeStateIdx = 0;
+  render();
+}
+
+function selectState(idx) {
+  activeStateIdx = idx;
+  render();
+}
+
+function buildCard(state) {
+  const def = CARDS[activeCard];
+  let progressHTML = state.showProgress
+    ? `<div class="card-progress"><div class="card-progress-fill"></div></div>` : '';
+
+  let inputHTML = '';
+  if (state.showInput) {
+    inputHTML = `<div class="card-input-wrap">
+      <input class="card-input ${state.inputVal ? 'has-value' : ''}"
+        type="number" placeholder="${state.inputPlaceholder}"
+        value="${state.inputVal}" ${state.inputLocked ? 'disabled' : ''}
+      />
+    </div>`;
+  }
+
+  let pillHTML = state.pill
+    ? `<span class="feedback-pill ${state.pill.type}"><span class="pill-dot"></span>${state.pill.label}</span>` : '';
+
+  let extraHTML = state.extra ? `<div class="card-extra">${state.extra}</div>` : '';
+
+  let footerHTML = '';
+  if (state.footer.type === 'btn') {
+    footerHTML = `<button class="card-btn ${state.footer.btnClass}" ${state.footer.disabled ? 'disabled' : ''}>${state.footer.label}</button>`;
+  } else if (state.footer.type === 'confirm') {
+    footerHTML = `<div class="confirm-row">
+      <button class="card-btn btn-ghost">${state.footer.cancelLabel}</button>
+      <button class="card-btn btn-danger">${state.footer.confirmLabel}</button>
+    </div>`;
+  }
+
+  return `
+    <div class="mc-card ${state.cardClass}">
+      ${progressHTML}
+      <div class="mc-card-header">
+        <div class="status-dot ${state.dotClass}"></div>
+        <span class="card-title">${def.title}</span>
+      </div>
+      ${inputHTML}
+      <div class="card-metric">
+        <span class="metric-value ${state.value === '—' ? 'text-muted' : ''}">${state.value}</span>
+        ${state.unit ? `<span class="metric-unit">${state.unit}</span>` : ''}
+      </div>
+      <div class="metric-sub">${state.metaSub}</div>
+      ${extraHTML}
+      <div class="card-footer">
+        ${pillHTML}
+        ${footerHTML}
+      </div>
+    </div>`;
+}
+
+function buildAnnotation(state) {
+  const pointsHTML = state.points.map((p, i) => `
+    <div class="anno-point">
+      <span class="point-num">${i+1}</span>
+      <span>${p}</span>
+    </div>`).join('');
+
+  const qHTML = state.question
+    ? `<div class="anno-q"><strong>Open question:</strong> ${state.question}</div>` : '';
+
+  return `
+    <div class="anno-state-name">${CARDS[activeCard].title}</div>
+    <div class="anno-title">${state.annoTitle}</div>
+    <p class="anno-desc">${state.annoDesc}</p>
+    <div class="anno-points-label">Design notes</div>
+    ${pointsHTML}
+    ${qHTML}`;
+}
+
+function buildOverview() {
+  const states = CARDS[activeCard].states;
+  return states.map((s, idx) => {
+    const dotStyle = `background:${s.dotColor}`;
+    const ovClass = s.cardClass === 'is-pending' ? 'ov-pending'
+                  : s.cardClass === 'is-success' ? 'ov-success'
+                  : s.cardClass === 'is-error'   ? 'ov-error'
+                  : (s.cardClass === 'is-warning' || s.cardClass === 'is-partial') ? 'ov-warning'
+                  : '';
+    const selectedClass = idx === activeStateIdx ? 'selected' : '';
+
+    return `<div class="overview-card ${ovClass} ${selectedClass}" onclick="selectState(${idx})">
+      <div class="ov-selected-ring"></div>
+      <div class="ov-title"><span class="ov-dot" style="${dotStyle}"></span>${s.label}</div>
+      <div class="ov-value ${s.value && s.value.length > 5 ? 'small' : ''}">${s.value || s.footer.label}</div>
+      <div class="ov-meta">${s.metaSub}</div>
+    </div>`;
+  }).join('');
+}
+
+function buildStateNav() {
+  const states = CARDS[activeCard].states;
+  return states.map((s, idx) => {
+    const activeClass = idx === activeStateIdx ? 'active' : '';
+    return `<button class="state-btn ${activeClass}" onclick="selectState(${idx})">
+      <span class="state-dot-sm" style="background:${s.dotColor}"></span>
+      ${s.label}
+    </button>`;
+  }).join('');
+}
+
+function render() {
+  const state = CARDS[activeCard].states[activeStateIdx];
+  document.getElementById('state-nav').innerHTML =
+    `<span class="state-label">State</span>` + buildStateNav();
+  document.getElementById('card-stage').innerHTML = buildCard(state);
+  document.getElementById('annotation-panel').innerHTML = buildAnnotation(state);
+  document.getElementById('overview-row').innerHTML = buildOverview();
+  const compSection = document.getElementById('comparison-section');
+  if (compSection) compSection.style.display = activeCard === 'water' ? 'block' : 'none';
+}
+
+render();
+</script>
+</body>
+</html>

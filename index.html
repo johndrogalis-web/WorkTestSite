@@ -113,8 +113,8 @@ body {
 
 /* ── Grid ── */
 .prototype-grid { display: grid; gap: 16px; }
-.vp-desktop .prototype-grid { grid-template-columns: repeat(4, 1fr); }
-.vp-tablet  .prototype-grid { grid-template-columns: repeat(2, 1fr); }
+.vp-desktop .prototype-grid { grid-template-columns: repeat(4, minmax(200px, 1fr)); }
+.vp-tablet  .prototype-grid { grid-template-columns: repeat(2, minmax(200px, 1fr)); }
 .vp-mobile  .prototype-grid { grid-template-columns: 1fr; }
 
 /* ── Card unit — fluid ── */
@@ -163,9 +163,9 @@ body {
   transition: border-color 0.4s ease, box-shadow 0.4s ease;
 }
 /* Card heights per breakpoint */
-.vp-desktop .mc-card { --card-h: 256px; }
-.vp-tablet  .mc-card { --card-h: 272px; }
-.vp-mobile  .mc-card { --card-h: 272px; }
+.vp-desktop .mc-card { --card-h: 280px; }
+.vp-tablet  .mc-card { --card-h: 296px; }
+.vp-mobile  .mc-card { --card-h: 296px; }
 .mc-card.state-pending    { border-color: rgba(21,148,239,0.45);  box-shadow: 0 0 0 3px rgba(21,148,239,0.07); }
 .mc-card.state-success    { border-color: rgba(30,98,82,0.4);     box-shadow: 0 0 0 3px rgba(30,98,82,0.06); }
 .mc-card.state-error      { border-color: rgba(193,60,45,0.4);    box-shadow: 0 0 0 3px rgba(193,60,45,0.06); }
@@ -216,7 +216,7 @@ body {
   padding: 3px 8px; border-radius: 20px; letter-spacing: -0.1px; white-space: nowrap;
   transition: opacity 0.2s, transform 0.2s;
 }
-.badge-hidden      { visibility: hidden; padding: 3px 8px; }
+.badge-hidden      { visibility: hidden; padding: 0; width: 0; overflow: hidden; }
 .badge-ok          { background: var(--green-bg);      color: var(--green); }
 .badge-error       { background: var(--red-bg);        color: var(--red); }
 .badge-error-heavy { background: var(--red-heavy-bg);  color: var(--red-heavy); }
@@ -248,6 +248,7 @@ body {
   display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px;
   border-radius: 9px; font-size: 12px; font-weight: 500; transform-origin: left center;
   animation: pill-in 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  white-space: normal; word-break: break-word;
 }
 @keyframes pill-in {
   0%   { opacity: 0; transform: scale(0.82) translateY(4px); }
@@ -1392,12 +1393,14 @@ class CardInstance {
 
     /* Insert pill into metric zone since no input zone on these cards */
     const mzone = card.querySelector('.card-metric-zone');
-    const existing = mzone.querySelector('.slot-pill');
+    const existing = mzone.querySelector('.pill-wrap');
     if (!existing) {
       const pillWrap = document.createElement('div');
-      pillWrap.style.marginBottom = '6px';
+      pillWrap.className = 'pill-wrap';
+      pillWrap.style.marginBottom = '8px';
       pillWrap.innerHTML = `<span class="slot-pill pill-warning"><span class="pdot"></span>${confirmLabel || 'Confirm before proceeding'}</span>`;
-      mzone.insertBefore(pillWrap, mzone.firstChild);
+      const metricRow = mzone.querySelector('.metric-row');
+      mzone.insertBefore(pillWrap, metricRow);
     }
 
     const btnZone = card.querySelector('.card-btn-zone');
@@ -1420,7 +1423,7 @@ class CardInstance {
     if (dot) dot.className = 'signal-dot dot-blue pulsing';
 
     const badge = card.querySelector('.header-badge');
-    if (badge) { badge.className = 'header-badge badge-pending'; badge.textContent = 'Sending…'; }
+    if (badge) { badge.className = 'header-badge badge-hidden'; badge.textContent = ''; }
 
     const btnZone = card.querySelector('.card-btn-zone');
     if (btnZone) btnZone.innerHTML = `<button class="mc-btn btn-primary" disabled>Sending…</button>`;
@@ -1429,8 +1432,8 @@ class CardInstance {
     if (input) input.disabled = true;
 
     /* Remove any confirm pill */
-    const confirmPill = card.querySelector('.card-metric-zone .slot-pill');
-    if (confirmPill && confirmPill.parentNode) confirmPill.parentNode.remove();
+    const confirmPillWrap = card.querySelector('.card-metric-zone .pill-wrap');
+    if (confirmPillWrap) confirmPillWrap.remove();
 
     const track = card.querySelector('.progress-track');
     const fill  = card.querySelector('.progress-fill');
@@ -1514,7 +1517,8 @@ class CardInstance {
     dot.classList.remove('pulsing');
 
     const badge = card.querySelector('.header-badge');
-    badge.className = `header-badge ${result.badge.cls}`;
+    /* Badge hidden on resolved — pill in card body carries the message */
+    badge.className = 'header-badge badge-hidden';
     badge.textContent = result.badge.label;
 
     /* Input / pill zone */
@@ -1526,29 +1530,34 @@ class CardInstance {
         inputZone.innerHTML = `<input class="slot-input has-val" type="number" value="${result.inputContent.val}" ${result.inputContent.locked ? 'disabled' : ''} />`;
       }
     } else if (result.inputContent.type === 'pill') {
-      /* No input zone on card — insert pill above metric */
+      /* No input zone — insert pill inside metric zone, above the metric row */
       const mzone = card.querySelector('.card-metric-zone');
-      /* Remove any leftover confirm pill */
-      const old = mzone.querySelector('.slot-pill');
-      if (old && old.parentNode) old.parentNode.remove();
+      /* Remove any leftover pill */
+      const oldPill = mzone.querySelector('.pill-wrap');
+      if (oldPill) oldPill.remove();
       const pillWrap = document.createElement('div');
-      pillWrap.style.marginBottom = '6px';
+      pillWrap.className = 'pill-wrap';
+      pillWrap.style.marginBottom = '8px';
       pillWrap.innerHTML = `<span class="slot-pill ${result.inputContent.cls}"><span class="pdot"></span>${result.inputContent.label}</span>`;
-      mzone.insertBefore(pillWrap, mzone.firstChild);
+      const metricRow = mzone.querySelector('.metric-row');
+      mzone.insertBefore(pillWrap, metricRow);
     }
 
     /* Metric value */
     const metricEl = card.querySelector('[class*="mv-"]');
+    const unitEl   = card.querySelector('.mv-lg-unit, .mv-sm-unit');
     if (metricEl) {
       metricEl.style.opacity = '0';
+      if (unitEl) { unitEl.style.opacity = '0'; unitEl.textContent = ''; }
       metricEl.style.transform = 'translateY(-8px)';
       metricEl.style.transition = 'opacity 0.15s, transform 0.15s';
       setTimeout(() => {
         const m = result.metric;
-        const isDash  = m === '—';
-        const isWord  = isNaN(m.replace('°','')) && m !== '—';
-        const isDeg   = m.includes('°') && m !== '—';
+        const isDash     = m === '—';
+        const isWord     = isNaN(m.replace('°','').replace('just now','x')) && m !== '—';
+        const isDeg      = m.includes('°') && m !== '—';
         const isTimedOut = m === 'Timed Out';
+        const isJustNow  = m === 'just now' || m === 'Just Now';
 
         if (isTimedOut) {
           metricEl.className = 'mv-timed-out';
@@ -1558,12 +1567,24 @@ class CardInstance {
           if (result.cardClass === 'state-major') metricEl.classList.add('mv-degree-major');
         } else if (isDash) {
           metricEl.className = def.hasInput ? 'mv-sm mv-muted' : 'mv-lg mv-muted';
-        } else if (isWord) {
+        } else if (isWord || isJustNow) {
           metricEl.className = def.hasInput ? 'mv-word-sm' : 'mv-word-lg';
         } else {
           metricEl.className = def.hasInput ? 'mv-sm' : 'mv-lg';
         }
         metricEl.textContent = m;
+
+        /* Update or hide the unit span */
+        if (unitEl) {
+          if (result.unit && !isJustNow && !isTimedOut && !isDash) {
+            unitEl.textContent = result.unit;
+            unitEl.style.transition = 'opacity 0.25s';
+            unitEl.style.opacity = '1';
+          } else {
+            unitEl.style.opacity = '0';
+          }
+        }
+
         metricEl.style.transition = 'opacity 0.25s, transform 0.25s';
         metricEl.style.opacity = '1';
         metricEl.style.transform = 'translateY(0)';

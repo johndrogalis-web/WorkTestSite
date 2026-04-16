@@ -228,70 +228,50 @@
   .drawer.open { transform: translateX(0); }
   .drawer-nav-bar { position: relative; z-index: 20; background: var(--layer-1); }
 
-  .drawer-chrome {
-    display: flex; align-items: center;
-    justify-content: space-between;
-    padding: 18px 12px 12px 16px;
-    flex-shrink: 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .truck-id { display: flex; align-items: center; gap: 10px; }
-  .truck-id-label {
-    font-size: 20px; font-weight: 500; color: var(--strong);
-    letter-spacing: -0.5px;
-  }
-  .ign-pill {
-    display: flex; align-items: center; gap: 5px;
-    background: rgba(22,163,74,0.1);
-    border-radius: 20px; padding: 4px 10px;
-    font-size: 12px; font-weight: 500; color: #166534;
-  }
-  .ign-dot { width: 7px; height: 7px; background: #16a34a; border-radius: 50%; }
-  .chrome-btns { display: flex; align-items: center; gap: 0; }
+  .drawer-chrome { display: none; }
+  .chrome-btns { display: flex; align-items: center; gap: 5px; }
   .chrome-btn {
-    width: 36px; height: 36px; border-radius: 50%;
+    width: 32px; height: 32px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    color: var(--strong); font-size: 14px;
-    -webkit-tap-highlight-color: transparent;
+    -webkit-tap-highlight-color: transparent; flex-shrink: 0;
   }
-  .chrome-btn:active { background: var(--border); }
+  .chrome-btn--border {
+    border: 1px solid var(--border); background: none;
+  }
+  .chrome-btn--border:active { background: var(--layer-2); }
+  .chrome-btn--dark {
+    background: var(--strong); border: none;
+  }
+  .chrome-btn--dark:active { opacity: 0.8; }
 
-  /* ─── MOBILE NAV PILL ────────────────────────────────────── */
-  .drawer-nav-bar {
-    padding: 10px 16px 8px; border-bottom: 1px solid var(--border);
-    flex-shrink: 0; position: relative; z-index: 10;
+  /* ─── DRAWER CHROME ROW ──────────────────────────────────── */
+  .d-chrome {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 14px 12px; flex-shrink: 0;
   }
-  .nav-pill {
+  .d-truck-id { display: flex; align-items: center; gap: 10px; }
+  .d-truck-label { font-size: 20px; font-weight: 500; color: var(--strong); letter-spacing: -0.5px; }
+  .d-ign-pill {
+    display: flex; align-items: center; gap: 5px;
+    background: #d5f1d2; border-radius: 20px; padding: 5px 10px;
+    font-size: 13px; font-weight: 500; color: #1e6252;
+  }
+  .d-ign-dot { width: 7px; height: 7px; background: #16a34a; border-radius: 50%; flex-shrink: 0; }
+  .d-chrome-btns { display: flex; align-items: center; gap: 5px; }
+
+  /* ─── DRAWER NAV ROW ─────────────────────────────────────── */
+  .d-nav-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 16px 12px; flex-shrink: 0;
+  }
+  .d-pill {
     display: inline-flex; align-items: center; gap: 6px;
     border: 1px solid var(--border-mid); border-radius: 32px;
-    padding: 8px 14px; font-size: 14px; font-weight: 500;
-    color: var(--strong); letter-spacing: -0.28px;
-    background: var(--layer-1);
+    padding: 9px 14px; font-size: 14px; font-weight: 500;
+    color: var(--strong); letter-spacing: -0.28px; background: none;
+    cursor: pointer;
   }
-  .nav-pill:active { background: var(--layer-2); }
-
-  /* Dropdown */
-  .nav-dropdown {
-    position: absolute; left: 16px; right: 16px;
-    top: 100%; z-index: 100;
-    background: var(--layer-1);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(54,50,45,0.12);
-    display: none; overflow: hidden;
-  }
-  .nav-dropdown.open { display: block; }
-  .nav-dropdown-inner { padding: 4px 0; }
-  .nav-option {
-    font-size: 14px; color: var(--defined);
-    padding: 12px 16px; cursor: pointer;
-    letter-spacing: -0.28px; line-height: 1.3;
-  }
-  .nav-option:active { background: var(--layer-2); }
-  .nav-option.active {
-    color: var(--strong); font-weight: 500;
-    background: rgba(48,105,227,0.06);
-  }
+  .d-pill:active { background: var(--layer-2); }
 
   /* ─── DRAWER CONTENT AREA ────────────────────────────────── */
   /* Single content pane — JS swaps between "logs-list" and "logs-detail" states */
@@ -315,7 +295,7 @@
     min-width: 0;
   }
   .log-tbl-head {
-    display: grid; grid-template-columns: 132px 1fr 1fr;
+    display: grid; grid-template-columns: 120px 1fr 1fr;
     padding: 0 16px; background: var(--layer-1);
     border-bottom: 1px solid var(--border); flex-shrink: 0;
   }
@@ -325,7 +305,7 @@
   }
   .log-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .log-row {
-    display: grid; grid-template-columns: 132px 1fr 1fr;
+    display: grid; grid-template-columns: 120px 1fr 1fr;
     padding: 0 16px; cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
@@ -343,45 +323,83 @@
 
   /* ── LOG DETAIL state — takes over the whole drawer body ── */
   .log-detail-bar {
-    display: flex; align-items: center; gap: 0;
-    padding: 10px 12px 10px 10px;
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
+    flex-shrink: 0; background: var(--layer-1);
   }
   .back-btn {
     display: flex; align-items: center; gap: 6px;
-    color: var(--blue-link); font-size: 14px;
-    letter-spacing: -0.28px;
-    padding: 4px 8px 4px 4px;
+    color: var(--strong); font-size: 14px; font-weight: 500;
+    letter-spacing: -0.28px; padding: 8px 14px;
+    border: 1px solid var(--border-mid); border-radius: 32px;
+    background: none; flex-shrink: 0;
   }
-  .back-btn svg { flex-shrink: 0; }
-  .detail-chrome { margin-left: auto; display: flex; gap: 0; }
+  .back-btn:active { background: var(--layer-2); }
+  .detail-chrome { display: none; }
 
-  .detail-event-hdr {
-    padding: 10px 16px 12px; border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
+  /* title+meta — centred, right of pill */
+  .det-event-header-inline {
+    flex: 1; min-width: 0; text-align: right;
   }
-  .detail-event-title {
-    font-size: 15px; font-weight: 500; color: var(--strong);
-    letter-spacing: -0.4px;
+  .det-event-title-inline {
+    font-size: 14px; font-weight: 500; color: var(--strong);
+    letter-spacing: -0.28px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .detail-event-meta {
-    font-size: 12px; color: var(--soft); margin-top: 3px;
-    letter-spacing: -0.2px;
+  .det-event-meta-inline {
+    font-size: 12px; color: var(--soft); letter-spacing: -0.2px; margin-top: 2px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
 
   .detail-tabs {
     display: flex; border-bottom: 1px solid var(--border);
-    padding: 0 16px; flex-shrink: 0;
+    padding: 0 16px; flex-shrink: 0; background: var(--layer-1);
   }
   .det-tab {
-    font-size: 13px; color: var(--soft);
-    padding: 10px 10px; border-bottom: 2px solid transparent;
-    letter-spacing: -0.2px;
+    font-size: 14px; color: var(--soft);
+    padding: 10px 8px; border-bottom: 2px solid transparent;
+    letter-spacing: -0.28px; cursor: pointer;
   }
   .det-tab.on { color: var(--strong); border-bottom-color: var(--strong); font-weight: 500; }
 
-  .detail-scroll { flex: 1; overflow-y: auto; padding: 16px; -webkit-overflow-scrolling: touch; }
+  .detail-scroll { flex: 1; overflow-y: auto; padding: 11px 22px; background: var(--layer-2); -webkit-overflow-scrolling: touch; }
+
+  /* inline event header in back bar */
+  .det-event-header-inline { flex: 1; padding: 0 8px; min-width: 0; }
+  .det-event-title-inline { font-size: 13px; font-weight: 500; color: var(--strong); letter-spacing: -0.28px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .det-event-meta-inline  { font-size: 11px; color: var(--subtle); letter-spacing: -0.2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* event summary card */
+  .det-event-card { background: var(--layer-1); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .det-event-card-left { display: flex; align-items: center; gap: 8px; }
+  .det-event-blue-dot { width: 8px; height: 8px; background: var(--blue); border-radius: 50%; flex-shrink: 0; }
+  .det-event-name { font-size: 15px; font-weight: 500; color: var(--strong); letter-spacing: -0.3px; }
+  .det-event-ts   { font-size: 14px; color: var(--subtle); letter-spacing: -0.28px; flex-shrink: 0; }
+
+  /* section label */
+  .det-section-label { font-size: 14px; color: var(--strong); letter-spacing: -0.28px; margin-bottom: 10px; }
+
+  /* component cards */
+  .comp-card { background: var(--layer-1); border: 1px solid var(--border); border-radius: 10px; padding: 14px 12px; margin-bottom: 10px; }
+  .comp-card-row { display: flex; align-items: center; justify-content: space-between; }
+  .comp-card-left { display: flex; align-items: center; gap: 12px; }
+  .comp-card-name { font-size: 16px; font-weight: 500; color: var(--strong); letter-spacing: -0.32px; }
+  .comp-card-right { display: flex; align-items: center; gap: 10px; }
+  .comp-card-val { font-size: 16px; font-weight: 500; color: var(--strong); letter-spacing: -0.32px; }
+  .comp-chevron { color: var(--soft); font-size: 13px; line-height: 1; }
+  .comp-card-details { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .comp-detail-row { display: flex; justify-content: space-between; }
+  .comp-detail-k { font-size: 14px; color: var(--soft); letter-spacing: -0.28px; }
+  .comp-detail-v { font-size: 14px; color: var(--strong); letter-spacing: -0.28px; }
+
+  /* no contact table */
+  .nc-table { background: var(--layer-1); border-radius: 8px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 14px; }
+  .nc-table-head { display: grid; grid-template-columns: 1fr 1fr; background: var(--layer-1); }
+  .nc-th { font-size: 13px; font-weight: 500; color: var(--defined); padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  .nc-tr { display: grid; grid-template-columns: 1fr 1fr; }
+  .nc-tr:nth-child(even) { background: var(--layer-2); }
+  .nc-td { font-size: 13px; color: var(--defined); padding: 8px 10px; border-bottom: 1px solid var(--border); }
 
   /* structured content */
   .sec-label {
@@ -530,56 +548,52 @@
 
 
   <!-- ══════════════════════════════════════════════════════════
-       DRAWER — slides in from right, contains both log states
+       DRAWER — slides in from right
   ═══════════════════════════════════════════════════════════ -->
   <div class="drawer" id="drawer">
 
-    <!-- Chrome: always visible, never moves -->
-    <div class="drawer-chrome">
-      <div class="truck-id">
-        <span class="truck-id-label" id="drawer-truck-num">Truck: 6456</span>
-        <div class="ign-pill"><div class="ign-dot"></div>Ignition on</div>
+    <!-- ROW 1: Truck identity + chrome buttons -->
+    <div class="d-chrome">
+      <div class="d-truck-id">
+        <span class="d-truck-label" id="drawer-truck-num">Truck: 45689</span>
+        <div class="d-ign-pill"><div class="d-ign-dot"></div>Ignition on</div>
       </div>
-      <div class="chrome-btns">
-        <button class="chrome-btn" title="Previous truck">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M10 4l-4 4 4 4" stroke="#36322d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <div class="d-chrome-btns">
+        <button class="chrome-btn chrome-btn--border">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M9 3l-5 4 5 4" stroke="#36322d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
-        <button class="chrome-btn" title="Next truck">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M6 4l4 4-4 4" stroke="#36322d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <button class="chrome-btn chrome-btn--border">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M5 3l5 4-5 4" stroke="#36322d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
-        <button class="chrome-btn" onclick="closeDrawer()" title="Close">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M4 4l8 8M12 4l-8 8" stroke="#36322d" stroke-width="1.5" stroke-linecap="round"/>
+        <button class="chrome-btn chrome-btn--dark" onclick="closeDrawer()">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2 2l8 8M10 2l-8 8" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
         </button>
       </div>
     </div>
 
-    <!-- Mobile nav pill: replaces tab bar, shows current section + chevron -->
-    <div class="drawer-nav-bar">
-      <button class="nav-pill" id="nav-pill-btn" onclick="toggleNavDropdown()">
-        <span id="nav-pill-label">Truck Logs</span>
-        <svg id="nav-pill-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" style="transition:transform 0.2s;">
-          <path d="M3 5l4 4 4-4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- ROW 2: Section nav pill + Filters pill -->
+    <div class="d-nav-row">
+      <button class="d-pill">
+        Truck Logs
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <path d="M3 5l3.5 3.5L10 5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
-    </div>
-
-    <!-- Dropdown menu -->
-    <div class="nav-dropdown" id="nav-dropdown">
-      <div class="nav-dropdown-inner">
-        <div class="nav-option" onclick="selectNav('Components overview')">Components overview</div>
-        <div class="nav-option" onclick="selectNav('Component timeline')">Component timeline</div>
-        <div class="nav-option active" onclick="selectNav('Truck Logs')">Truck Logs</div>
-        <div class="nav-option" onclick="selectNav('Truck history')">Truck history</div>
-        <div class="nav-option" onclick="selectNav('Manual Control')">Manual Control</div>
-        <div class="nav-option" onclick="selectNav('Sensor')">Sensor</div>
-        <div class="nav-option" onclick="selectNav('Configuration')">Configuration</div>
-      </div>
+      <button class="d-pill">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <path d="M1.5 3.5h10M3.5 6.5h6M5.5 9.5h2" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        Filters
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <path d="M3 5l3.5 3.5L10 5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
     </div>
 
     <!-- ── DRAWER BODY: single pane, two states ── -->
@@ -587,18 +601,6 @@
 
       <!-- STATE A: LOG LIST -->
       <div id="state-list" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
-        <div class="log-filters">
-          <button class="date-btn">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-              <rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#36322dc2" stroke-width="1.1"/>
-              <path d="M1 5h11" stroke="#36322dc2" stroke-width="1.1"/>
-              <path d="M4 1v2M9 1v2" stroke="#36322dc2" stroke-width="1.1" stroke-linecap="round"/>
-            </svg>
-            Last 7 days
-          </button>
-          <select class="log-sel"><option>All types</option><option>Event</option><option>BackendRequest</option><option>Ticket Sent</option></select>
-          <select class="log-sel"><option>All sub types</option><option>Drum Sensor</option><option>Fluid Error</option><option>Buildup Data</option></select>
-        </div>
         <div class="log-tbl-head">
           <div class="log-th">Message Time</div>
           <div class="log-th">Type</div>
@@ -607,45 +609,27 @@
         <div class="log-scroll" id="log-scroll"></div>
       </div>
 
-      <!-- STATE B: LOG DETAIL (hidden by default) -->
+      <!-- STATE B: LOG DETAIL -->
       <div id="state-detail" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
 
-        <!-- Back bar — replaces nothing, just lives here -->
+        <!-- Back bar: pill left | title+meta centre -->
         <div class="log-detail-bar">
           <button class="back-btn" onclick="showLogList()">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M10 4l-4 4 4 4" stroke="#295ccc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M9 3l-5 4 5 4" stroke="#36322d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             Logs
           </button>
-          <div class="detail-chrome">
-            <button class="chrome-btn" title="Previous event">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M10 4l-4 4 4 4" stroke="#36322d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
-            <button class="chrome-btn" title="Next event">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M6 4l4 4-4 4" stroke="#36322d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
-            <button class="chrome-btn" onclick="closeDrawer()">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M4 4l8 8M12 4l-8 8" stroke="#36322d" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
-            </button>
+          <div class="det-event-header-inline">
+            <div class="det-event-title-inline" id="det-title">Ticketed Received Event</div>
+            <div class="det-event-meta-inline" id="det-meta">02/17 03:49 pm · TRUCK · Ticket Sent.</div>
           </div>
-        </div>
-
-        <div class="detail-event-hdr">
-          <div class="detail-event-title" id="det-title">System Status Event</div>
-          <div class="detail-event-meta" id="det-meta">03/24 08:40:12 · TRUCK · Event</div>
         </div>
 
         <div class="detail-tabs">
           <div class="det-tab" onclick="switchTab('summary', this)">Summary</div>
           <div class="det-tab on" onclick="switchTab('structured', this)">Structured</div>
-          <div class="det-tab" onclick="switchTab('raw', this)">Raw JSON</div>
+          <div class="det-tab" onclick="switchTab('raw', this)">Raw Json</div>
         </div>
 
         <div class="detail-scroll" id="detail-scroll"></div>
@@ -689,18 +673,21 @@ const truckGroups = [
 const trucks = truckGroups.flatMap(g => g.trucks);
 
 const logs = [
-  { date:'02/17 03:49 PM', sent:'00:01', type:'Ticket Sent',      sub:'Ticketed Received' },
-  { date:'02/17 03:49 PM', sent:'00:01', type:'Event',            sub:'Drum Sensor'       },
-  { date:'02/17 04:14 PM', sent:'00:00', type:'BackendRequest',   sub:'Buildup Data'      },
-  { date:'02/17 03:49 PM', sent:'00:01', type:'Event',            sub:'Fluid Error'       },
-  { date:'02/17 04:14 PM', sent:'00:00', type:'BackendRequest',   sub:'Idenity'           },
-  { date:'02/17 03:49 PM', sent:'00:01', type:'Event',            sub:'Buildup Data'      },
-  { date:'02/17 04:14 PM', sent:'00:00', type:'BackendRequest',   sub:'Ticketed Received' },
-  { date:'02/17 03:49 PM', sent:'00:01', type:'Event',            sub:'Drum Sensor'       },
-  { date:'02/17 04:14 PM', sent:'00:00', type:'BackendRequest',   sub:'Buildup Data'      },
-  { date:'02/17 03:49 PM', sent:'00:01', type:'Event',            sub:'Fluid Error'       },
-  { date:'02/17 04:14 PM', sent:'00:00', type:'BackendRequest',   sub:'Idenity'           },
-  { date:'02/17 03:49 PM', sent:'00:01', type:'Event',            sub:'Drum Sensor'       },
+  { date:'02/17/2026', time:'04:14 PM', type:'Ticket Sent',       sub:'Ticketed Received'  },
+  { date:'02/17/2026', time:'04:14 PM', type:'Ticketed Received',  sub:'Buildup Data'       },
+  { date:'02/18/2026', time:'09:30 AM', type:'Backend Request',    sub:'Identity'           },
+  { date:'02/18/2026', time:'11:00 AM', type:'Event',              sub:'Drum Sensor'        },
+  { date:'02/19/2026', time:'02:15 PM', type:'Event',              sub:'Fluid Error'        },
+  { date:'02/19/2026', time:'03:00 PM', type:'Ticketed Received',  sub:'Feedback Session'   },
+  { date:'02/20/2026', time:'10:00 AM', type:'Event',              sub:'Build Up Data'      },
+  { date:'02/20/2026', time:'01:45 PM', type:'Event',              sub:'Fluid Error'        },
+  { date:'02/21/2026', time:'04:30 PM', type:'Event',              sub:'Fluid Error'        },
+  { date:'02/21/2026', time:'05:15 PM', type:'Event',              sub:'Fluid Error'        },
+  { date:'02/22/2026', time:'09:00 AM', type:'Ticketed Received',  sub:'Ticketed Received'  },
+  { date:'02/22/2026', time:'12:00 PM', type:'Backend Request',    sub:'Identity'           },
+  { date:'02/23/2026', time:'08:30 AM', type:'Backend Request',    sub:'Identity'           },
+  { date:'02/23/2026', time:'02:30 PM', type:'Backend Request',    sub:'Identity'           },
+  { date:'02/24/2026', time:'03:00 PM', type:'Backend Request',    sub:'Identity'           },
 ];
 
 /* ── STATE ──────────────────────────────────────── */
@@ -801,14 +788,16 @@ function openDrawer(i) {
 
 function closeDrawer() {
   document.getElementById('drawer').classList.remove('open');
+  document.querySelector('.d-chrome').style.display = 'flex';
+  document.querySelector('.d-nav-row').style.display = 'flex';
 }
 
 /* ── LOG LIST ────────────────────────────────────── */
 function renderLogRows() {
   document.getElementById('log-scroll').innerHTML = logs.map((l,i) => `
-    <div class="log-row ${i%2===0?'':'sel-able'}" id="lr-${i}" onclick="openDetail(${i})"
+    <div class="log-row" id="lr-${i}" onclick="openDetail(${i})"
          style="${i%2===0?'background:var(--layer-1)':'background:var(--layer-2)'}">
-      <div class="log-td time"><span class="t-main">${l.date}</span><span class="t-sub">Sent ${l.sent}</span></div>
+      <div class="log-td time"><span class="t-main">${l.date}</span><span class="t-sub">${l.time}</span></div>
       <div class="log-td">${l.type}</div>
       <div class="log-td">${l.sub}</div>
     </div>`).join('');
@@ -817,25 +806,28 @@ function renderLogRows() {
 function showLogList() {
   document.getElementById('state-list').style.display = 'flex';
   document.getElementById('state-detail').style.display = 'none';
+  document.querySelector('.d-chrome').style.display = 'flex';
+  document.querySelector('.d-nav-row').style.display = 'flex';
 }
 
 /* ── LOG DETAIL ─────────────────────────────────── */
 function openDetail(i) {
-  /* highlight selected row */
   document.querySelectorAll('.log-row').forEach(r => r.style.background = '');
   const row = document.getElementById('lr-'+i);
   if (row) row.style.background = 'rgba(48,105,227,0.07)';
 
   document.getElementById('det-title').textContent = logs[i].sub + ' Event';
-  document.getElementById('det-meta').textContent  = logs[i].date + ' · TRUCK · ' + logs[i].type;
+  const meta = logs[i].date + ' ' + logs[i].time + ' · TRUCK · ' + logs[i].type;
+  document.getElementById('det-meta').textContent = meta.length > 40 ? meta.substring(0, 38) + '...' : meta;
 
-  /* reset to Structured tab */
   activeTab = 'structured';
   document.querySelectorAll('.det-tab').forEach(t => t.classList.remove('on'));
   document.querySelectorAll('.det-tab')[1].classList.add('on');
   renderDetailContent('structured');
 
-  /* swap states — no slide, instant takeover */
+  /* hide chrome + nav, show detail */
+  document.querySelector('.d-chrome').style.display = 'none';
+  document.querySelector('.d-nav-row').style.display = 'none';
   document.getElementById('state-list').style.display = 'none';
   document.getElementById('state-detail').style.display = 'flex';
 }
@@ -854,34 +846,59 @@ function renderDetailContent(tab) {
 
   if (tab === 'structured') {
     area.innerHTML = `
-      <div class="sec-label" style="margin-top:0;">Online (7)</div>
-      ${[
-        ['Wireless Drum','g','3.54V','Last Seen: 13:49:59 · Start Up: 1 · Errors: 0'],
-        ['IOX','g','12.92 V',''],
-        ['In-Cab Display','g','Active',''],
-        ['External Display','g','Active',''],
-        ['Bus Power','g','12.76V',''],
-        ['Discharge Pressure','g','Connected',''],
-        ['CWR','g','45°C',''],
-      ].map(([n,c,v,s]) => `
-        <div class="comp-row">
-          <div class="comp-left">
-            <div class="s-dot ${c}"></div>
-            <div><div class="comp-name">${n}</div>${s?`<div class="comp-sub">${s}</div>`:''}</div>
+      <div class="det-section-label" style="margin-top:4px;">Online (7) - Expand All</div>
+
+      <div class="comp-card">
+        <div class="comp-card-row">
+          <div class="comp-card-left"><div class="s-dot g"></div><span class="comp-card-name">Wireless Drum</span></div>
+          <div class="comp-card-right">
+            <span class="comp-card-val">3.54V</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
-          <div class="comp-val">${v}</div>
+        </div>
+        <div class="comp-card-details">
+          <div class="comp-detail-row"><span class="comp-detail-k">Last Seen:</span><span class="comp-detail-v">13:49:59</span></div>
+          <div class="comp-detail-row"><span class="comp-detail-k">Start Up Count:</span><span class="comp-detail-v">1</span></div>
+          <div class="comp-detail-row"><span class="comp-detail-k">Error Count:</span><span class="comp-detail-v">0</span></div>
+        </div>
+      </div>
+
+      ${[
+        ['IOX',               'g', '12.92 V'],
+        ['In-Cab Dsplay',     'g', 'Active' ],
+        ['External Display',  'g', 'Active' ],
+        ['Bus Power',         'g', '12.76V' ],
+        ['Discharge Pressure','g', 'Connected'],
+        ['Charge Pressure',   'g', 'Connected'],
+        ['CWR',               'g', '45° C'  ],
+      ].map(([n,c,v]) => `
+        <div class="comp-card">
+          <div class="comp-card-row">
+            <div class="comp-card-left"><div class="s-dot ${c}"></div><span class="comp-card-name">${n}</span></div>
+            <div class="comp-card-right">
+              <span class="comp-card-val">${v}</span>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
         </div>`).join('')}
-      <div class="sec-label" style="margin-top:14px;">No Contact (4)</div>
-      ${['Wired Drum','Roboteq','Power Module','FDM Heater'].map(n => `
-        <div class="nc-row"><div class="nc-l">${n}</div><div class="nc-r">No Contact</div></div>`).join('')}
-      <div class="caveat">
+
+      <div class="nc-table">
+        <div class="nc-table-head">
+          <div class="nc-th">Components</div>
+          <div class="nc-th">Status</div>
+        </div>
+        ${['Wired Drum','Roboteq','Power Module','FDM Heater','Jacket Heater','Admix Board'].map(n=>`
+          <div class="nc-tr"><div class="nc-td">${n}</div><div class="nc-td">No Contact</div></div>`).join('')}
+      </div>
+
+      <div class="caveat" style="margin-top:14px;">
         <p>This snapshot reflects truck state at the moment this event was recorded — not current status. Review logs before and after this event to understand the full picture.</p>
       </div>`;
 
   } else if (tab === 'summary') {
     area.innerHTML = `
-      <div class="sum-desc">A system status event was recorded. At this moment the truck reported 7 components online and 4 with no contact.</div>
-      ${[['Source','TRUCK'],['Event type','System Status'],['Sent delay','00:00'],['Components online','7'],['No contact','4'],['Message time','02/17 03:49 PM']].map(([k,v]) => `
+      <div style="font-size:14px;color:var(--strong);line-height:1.6;margin-bottom:14px;letter-spacing:-0.28px;">A system status event was recorded. The truck reported 7 components online and 4 with no contact at this moment.</div>
+      ${[['Source','TRUCK'],['Event type','System Status'],['Components online','7'],['No contact','4'],['Message time','02/17/2026 04:14 PM']].map(([k,v])=>`
         <div class="sum-kv"><span class="sum-k">${k}</span><span class="sum-v">${v}</span></div>`).join('')}
       <div class="caveat" style="margin-top:14px;">
         <p>This is a point-in-time snapshot. It does not reflect current truck state.</p>
@@ -907,12 +924,7 @@ function renderDetailContent(tab) {
   "cwr": {
     "alive": false,
     "lastContactSeconds": 1775568442.36,
-    "startupMessageCount": 1,
-    "microS08": {
-      "registerContents": 40,
-      "versionMajor": 35,
-      "versionMinor": 0
-    }
+    "startupMessageCount": 1
   },
   "jacketHeater": { "alive": false },
   "fdmHeater":    { "alive": false },
@@ -924,34 +936,6 @@ function renderDetailContent(tab) {
 }</div>`;
   }
 }
-
-/* ── NAV PILL ────────────────────────────────────── */
-function toggleNavDropdown() {
-  const dd = document.getElementById('nav-dropdown');
-  const chevron = document.getElementById('nav-pill-chevron');
-  const isOpen = dd.classList.toggle('open');
-  chevron.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
-}
-
-function selectNav(label) {
-  document.getElementById('nav-pill-label').textContent = label;
-  document.querySelectorAll('.nav-option').forEach(o => {
-    o.classList.toggle('active', o.textContent === label);
-  });
-  document.getElementById('nav-dropdown').classList.remove('open');
-  document.getElementById('nav-pill-chevron').style.transform = 'rotate(0deg)';
-  /* In a real build, switching sections would swap content.
-     For this prototype only Truck Logs shows real content. */
-}
-
-document.addEventListener('click', function(e) {
-  const pill = document.getElementById('nav-pill-btn');
-  const dd   = document.getElementById('nav-dropdown');
-  if (dd && dd.classList.contains('open') && !pill.contains(e.target) && !dd.contains(e.target)) {
-    dd.classList.remove('open');
-    document.getElementById('nav-pill-chevron').style.transform = 'rotate(0deg)';
-  }
-});
 
 /* ── INIT ──────────────────────────────────────── */
 renderTrucks();

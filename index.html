@@ -1400,13 +1400,46 @@ class CardInstance {
         }
       });
       btn.addEventListener('click', () => {
-        if (!btn.disabled && this.inputVal !== '') this.startPending();
+        if (!btn.disabled && this.inputVal !== '') {
+          if (def.id === 'water' || def.id === 'admix') {
+            this.showInputConfirm();
+          } else {
+            this.startPending();
+          }
+        }
       });
     } else if (def.hasConfirm) {
       btn.addEventListener('click', () => this.showConfirm(confirmLabel, confirmBtnLabel));
     } else {
       btn.addEventListener('click', () => this.startPending());
     }
+  }
+
+  showInputConfirm() {
+    this.phase = 'confirm';
+    const card = this.container.querySelector('.mc-card');
+    const def  = this.def;
+    const unit = def.id === 'admix' ? 'oz' : 'L';
+    card.className = 'mc-card state-confirm';
+
+    /* Dot → amber */
+    const dot = card.querySelector('.signal-dot');
+    dot.className = 'signal-dot dot-amber';
+
+    /* Swap input zone to warning pill */
+    const inputZone = card.querySelector('.card-input-zone');
+    if (inputZone) {
+      inputZone.innerHTML = `<span class="slot-pill pill-warning"><span class="pdot"></span>Confirm before adding ${this.inputVal}${unit}</span>`;
+    }
+
+    /* Split button */
+    const btnZone = card.querySelector('.card-btn-zone');
+    btnZone.innerHTML = `
+      <button class="mc-btn btn-ghost confirm-split" id="cancel-confirm-${def.id}">Cancel</button>
+      <button class="mc-btn btn-danger confirm-split" id="yes-confirm-${def.id}">Yes, Add ${this.inputVal}${unit}</button>`;
+
+    btnZone.querySelector(`#cancel-confirm-${def.id}`).addEventListener('click', () => this.reset());
+    btnZone.querySelector(`#yes-confirm-${def.id}`).addEventListener('click', () => this.startPending());
   }
 
   showConfirm(confirmLabel, confirmBtnLabel) {

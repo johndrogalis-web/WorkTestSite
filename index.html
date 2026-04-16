@@ -23,7 +23,8 @@
   --blue-bg:     #e3f0fc;
   --blue-text:   #1056a8;
 
-  --green:       #1e6252;
+  --green:       #2ECF1D;
+  --green-text:  #1e6252;
   --green-bg:    #d5f1d2;
 
   --amber:       #b46e00;
@@ -109,13 +110,42 @@ body {
   text-transform: uppercase; color: var(--text-3);
   padding-bottom: 4px; border-bottom: 1px solid var(--border);
   margin-bottom: -8px;
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none;
+  transition: color 0.15s;
+}
+.section-label:hover { color: var(--text-2); }
+.section-chevron {
+  width: 16px; height: 16px; flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.22,1,0.36,1);
+  opacity: 0.5;
+}
+.section-label.collapsed .section-chevron { transform: rotate(-90deg); }
+.section-cards {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  gap: 16px;
+  transition: opacity 0.25s ease;
+}
+.section-cards.collapsed {
+  display: none;
 }
 
 /* ── Grid ── */
 .prototype-grid { display: grid; gap: 16px; }
 .vp-desktop .prototype-grid { grid-template-columns: repeat(4, minmax(200px, 1fr)); }
 .vp-tablet  .prototype-grid { grid-template-columns: repeat(2, minmax(200px, 1fr)); }
-.vp-mobile  .prototype-grid { grid-template-columns: 1fr; }
+.vp-mobile  .prototype-grid { grid-template-columns: repeat(2, 1fr); }
+.vp-mobile .card-unit.input-card { grid-column: 1 / -1; }
+.vp-mobile .card-unit:not(.input-card) .mc-card { --card-h: 230px; }
+.vp-mobile .card-unit:not(.input-card) .mv-lg { font-size: 40px; letter-spacing: -1.5px; }
+.vp-mobile .card-unit:not(.input-card) .mv-word-lg { font-size: 24px; }
+.vp-mobile .card-unit:not(.input-card) .card-metric-zone { padding-bottom: 2px; }
+.vp-mobile .card-unit:not(.input-card) .card-header { margin-bottom: 6px; }
+.vp-mobile .card-unit:not(.input-card) .card-status { margin-bottom: 6px; }
+
+
 
 /* ── Card unit — fluid ── */
 .card-unit { display: flex; flex-direction: column; align-items: stretch; min-width: 0; }
@@ -217,7 +247,7 @@ body {
   transition: opacity 0.2s, transform 0.2s;
 }
 .badge-hidden      { visibility: hidden; padding: 0; width: 0; overflow: hidden; }
-.badge-ok          { background: var(--green-bg);      color: var(--green); }
+.badge-ok          { background: var(--green-bg);      color: var(--green-text); }
 .badge-error       { background: var(--red-bg);        color: var(--red); }
 .badge-error-heavy { background: var(--red-heavy-bg);  color: var(--red-heavy); }
 .badge-pending     { background: var(--blue-bg);       color: var(--blue-text); }
@@ -255,7 +285,7 @@ body {
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 .pdot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
-.pill-success    { background: var(--green-bg);     color: var(--green); }
+.pill-success    { background: var(--green-bg);     color: var(--green-text); }
 .pill-error      { background: var(--red-bg);       color: var(--red); }
 .pill-error-heavy{ background: var(--red-heavy-bg); color: var(--red-heavy); }
 .pill-partial    { background: var(--partial-bg);   color: var(--partial); }
@@ -1320,7 +1350,7 @@ class CardInstance {
 
     return `
       <div class="card-header">
-        <div class="signal-dot anim-in"></div>
+        <div class="signal-dot dot-green anim-in"></div>
         <span class="card-title anim-in anim-in-delay-1">${def.title}</span>
         <span class="header-badge badge-hidden">–</span>
       </div>
@@ -1739,18 +1769,38 @@ document.querySelectorAll('.vp-btn').forEach(btn => {
 ════════════════════════════════════════ */
 const grid = document.getElementById('grid');
 
+let currentSectionCards = null;
+
 CARD_DEFS.forEach(def => {
   /* Section header */
   if (def._section) {
+    /* Create label */
     const label = document.createElement('div');
     label.className = 'section-label';
-    label.textContent = def._section;
+    label.innerHTML = `
+      <span>${def._section}</span>
+      <svg class="section-chevron" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`;
     grid.appendChild(label);
+
+    /* Create cards container */
+    const cardsWrap = document.createElement('div');
+    cardsWrap.className = 'section-cards';
+    cardsWrap.style.cssText = '';
+    grid.appendChild(cardsWrap);
+    currentSectionCards = cardsWrap;
+
+    /* Wire collapse toggle */
+    label.addEventListener('click', () => {
+      const collapsed = cardsWrap.classList.toggle('collapsed');
+      label.classList.toggle('collapsed', collapsed);
+    });
     return;
   }
 
   const unit = document.createElement('div');
-  unit.className = 'card-unit';
+  unit.className = def.hasInput ? 'card-unit input-card' : 'card-unit';
 
   /* Scenario selector */
   const selector = document.createElement('div');
@@ -1776,7 +1826,13 @@ CARD_DEFS.forEach(def => {
   unit.appendChild(cardEl);
   unit.appendChild(selector);
   unit.appendChild(resetBtn);
-  grid.appendChild(unit);
+
+  /* Append to current section wrapper or grid directly */
+  if (currentSectionCards) {
+    currentSectionCards.appendChild(unit);
+  } else {
+    grid.appendChild(unit);
+  }
 
   const inst = new CardInstance(def, unit);
   inst.def._logCommand = logCommand;

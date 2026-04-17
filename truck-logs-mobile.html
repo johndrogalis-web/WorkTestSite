@@ -505,7 +505,67 @@
     line-height: 1.75; overflow-x: auto; white-space: pre;
   }
 
-  /* summary */
+  /* ─── COMPONENTS OVERVIEW ───────────────────────────────── */
+  .co-scroll { flex:1; overflow-y:auto; background:var(--layer-2); padding:16px; -webkit-overflow-scrolling:touch; }
+  .co-section-hdr { display:flex; align-items:center; gap:8px; margin-bottom:12px; cursor:pointer; padding:4px 0; user-select:none; }
+  .co-section-hdr span { font-size:16px; font-weight:500; color:var(--strong); letter-spacing:-0.4px; flex:1; }
+  .ping-btn {
+    font-size:12px; font-weight:500; color:white; background:#1594ef;
+    border:none; border-radius:20px; padding:5px 12px;
+    font-family:var(--font); letter-spacing:-0.2px; cursor:pointer; flex-shrink:0;
+  }
+  .ping-btn:active { opacity:0.85; }
+  .co-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:8px; }
+  .co-card { background:var(--layer-1); border:1px solid var(--border); border-radius:16px; padding:16px; display:flex; flex-direction:column; gap:10px; }
+  .co-card--fault { background:#bc302f; border-color:#bc302f; }
+  .co-card-head { display:flex; align-items:center; gap:8px; }
+  .co-card-head span { font-size:14px; font-weight:500; color:var(--strong); letter-spacing:-0.28px; }
+  .co-card--fault .co-card-head span { color:white; }
+  .co-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .co-dot--green { background:#16a34a; }
+  .co-dot--grey  { background:#36322d4d; }
+  .co-dot--white { background:white; }
+  .co-value { font-size:36px; font-weight:500; color:var(--strong); line-height:1; letter-spacing:-1px; }
+  .co-card--fault .co-value { color:white; }
+  .co-unit { font-size:14px; font-weight:500; color:var(--strong); letter-spacing:-0.3px; }
+  .co-card--fault .co-unit { color:white; }
+  .co-fault-msg { font-size:13px; color:white; letter-spacing:-0.2px; line-height:1.3; }
+  .co-card--warn { background:#ffba0d; border-color:#887f13; }
+  .co-card--warn .co-card-head span { color:var(--strong); }
+  .co-card--warn .co-value { color:var(--strong); }
+  .co-card--warn .co-unit { color:var(--strong); }
+  .co-card--warn .co-desc { color:var(--strong); }
+  .co-card--warn .co-meta { color:var(--strong); }
+  .co-desc { font-size:12px; color:var(--soft); letter-spacing:-0.2px; margin-top:-4px; }
+  .co-meta { display:flex; flex-direction:column; gap:6px; }
+  .co-meta-row { display:flex; justify-content:space-between; font-size:12px; color:var(--defined); letter-spacing:-0.2px; }
+  /* map block */
+  .co-map-block { background:var(--layer-1); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:14px; }
+  .co-map-header { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-bottom:1px solid var(--border); }
+  .co-map-header span { font-size:14px; font-weight:500; color:var(--strong); letter-spacing:-0.28px; }
+  .co-map-goto { font-size:12px; color:var(--blue-link); font-weight:500; background:none; border:none; cursor:pointer; letter-spacing:-0.2px; font-family:var(--font); }
+  .co-map-frame { position:relative; height:180px; }
+  .co-map-pin {
+    position:absolute; bottom:28px; left:50%; transform:translateX(-50%);
+    background:#644325; color:white; font-size:12px; font-weight:500;
+    padding:4px 8px; border-radius:4px; font-family:var(--font);
+    letter-spacing:-0.2px; pointer-events:none;
+  }
+  .co-map-pin::after {
+    content:''; position:absolute; bottom:-5px; left:50%; transform:translateX(-50%);
+    border-left:5px solid transparent; border-right:5px solid transparent;
+    border-top:6px solid #644325;
+  }
+  .co-info-block { background:var(--layer-1); border-radius:12px; overflow:hidden; border:1px solid var(--border); margin-bottom:20px; }
+  .co-info-row2 { display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid var(--border); }
+  .co-info-item { padding:12px; }
+  .co-info-label { font-size:12px; color:var(--soft); letter-spacing:-0.2px; margin-bottom:4px; }
+  .co-info-val { font-size:13px; color:var(--strong); letter-spacing:-0.2px; font-weight:500; }
+  .co-info-val--link { color:var(--blue-link); }
+  .co-tbl-row { display:grid; grid-template-columns:1fr 1fr; padding:8px 12px; border-bottom:1px solid var(--border); }
+  .co-tbl-row--alt { background:var(--layer-2); }
+  .co-tbl-k { font-size:13px; color:var(--defined); letter-spacing:-0.2px; font-weight:500; }
+  .co-tbl-v { font-size:13px; color:var(--strong); letter-spacing:-0.2px; }
   .sum-kv {
     display: flex; justify-content: space-between;
     padding: 9px 0; border-bottom: 1px solid var(--border);
@@ -615,10 +675,10 @@
 
         <!-- PAGE: OVERVIEW -->
         <div id="page-overview" style="display:none;">
-          <div class="tbl-head" style="grid-template-columns: 74px 1fr 48px 82px;">
+          <div class="tbl-head" style="grid-template-columns: 74px 1fr 90px 82px;">
             <div class="th" style="border-right:1.5px solid var(--border);">Truck</div>
             <div class="th">Plant</div>
-            <div class="th">Ign.</div>
+            <div class="th">Ignition</div>
             <div class="th">Alerts</div>
           </div>
           <div id="truck-list-overview"></div>
@@ -672,28 +732,44 @@
 
     <!-- ROW 2: Section nav pill + Filters pill -->
     <div class="d-nav-row">
-      <button class="d-pill">
-        Truck Logs
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-          <path d="M3 5l3.5 3.5L10 5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <button class="d-pill">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-          <path d="M1.5 3.5h10M3.5 6.5h6M5.5 9.5h2" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/>
-        </svg>
-        Filters
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-          <path d="M3 5l3.5 3.5L10 5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
+      <div style="position:relative;">
+        <button class="d-pill" id="drawer-nav-btn" onclick="toggleDrawerNav()">
+          <span id="drawer-nav-label">Components Overview</span>
+          <svg id="drawer-nav-chevron" width="10" height="6" viewBox="0 0 10 6" fill="none" style="transition:transform 0.2s;flex-shrink:0;">
+            <path d="M8.75 4.75L4.75 0.75L0.75 4.75" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div id="drawer-nav-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:white;border:1px solid var(--border-mid);border-radius:8px;box-shadow:0 4px 16px rgba(54,50,45,0.12);padding:4px;min-width:210px;z-index:100;">
+          <div class="wts-option wts-active" onclick="selectDrawerNav('Components Overview', this)"><span class="wts-check">✓</span>Components Overview</div>
+          <div class="wts-option" onclick="selectDrawerNav('Component Timeline', this)"><span class="wts-check" style="visibility:hidden">✓</span>Component Timeline</div>
+          <div class="wts-option" onclick="selectDrawerNav('Truck Logs', this)"><span class="wts-check" style="visibility:hidden">✓</span>Truck Logs</div>
+          <div class="wts-option" onclick="selectDrawerNav('Manual Control', this)"><span class="wts-check" style="visibility:hidden">✓</span>Manual Control</div>
+          <div class="wts-option" onclick="selectDrawerNav('Sensor', this)"><span class="wts-check" style="visibility:hidden">✓</span>Sensor</div>
+          <div class="wts-option" onclick="selectDrawerNav('Configuration', this)"><span class="wts-check" style="visibility:hidden">✓</span>Configuration</div>
+        </div>
+      </div>
+      <!-- Right pill: Filters on Truck Logs, Ping Truck on Components Overview -->
+      <div id="nav-right-pill">
+        <button class="d-pill" id="filters-pill">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <path d="M1.5 3.5h10M3.5 6.5h6M5.5 9.5h2" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+          Filters
+          <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+            <path d="M8.75 4.75L4.75 0.75L0.75 4.75" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="d-pill" id="ping-pill" style="display:none;background:#1594ef;border-color:#1594ef;color:white;" onclick="pingTruck()">
+          Ping Truck
+        </button>
+      </div>
     </div>
 
     <!-- ── DRAWER BODY: single pane, two states ── -->
     <div class="drawer-body" id="drawer-body">
 
       <!-- STATE A: LOG LIST -->
-      <div id="state-list" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+      <div id="state-list" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
         <div class="log-tbl-head">
           <div class="log-th">Message Time</div>
           <div class="log-th">Type</div>
@@ -726,6 +802,189 @@
         </div>
 
         <div class="detail-scroll" id="detail-scroll"></div>
+      </div>
+
+      <!-- STATE C: COMPONENTS OVERVIEW -->
+      <div id="state-components" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+        <div class="co-scroll">
+
+          <!-- Section: Measurement Component Status -->
+          <div class="co-section-hdr" onclick="toggleCoSection('mcs', this)">
+            <svg class="co-acc-chev" width="10" height="6" viewBox="0 0 10 6" fill="none" style="transform:rotate(0deg);transition:transform 0.2s;flex-shrink:0;">
+              <path d="M8.75 4.75L4.75 0.75L0.75 4.75" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Measurement Component Status</span>
+          </div>
+          <div id="co-section-mcs">
+          <div class="co-grid">
+
+            <div class="co-card">
+              <div class="co-card-head"><div class="co-dot co-dot--green"></div><span>CPS</span></div>
+              <div class="co-value">204 <span class="co-unit">psi</span></div>
+              <div class="co-desc">Charge Pressure Sensor</div>
+              <div class="co-meta">
+                <div class="co-meta-row"><span>Startup Count:</span><span>2</span></div>
+                <div class="co-meta-row"><span>Error Count:</span><span>--</span></div>
+              </div>
+            </div>
+
+            <div class="co-card">
+              <div class="co-card-head"><div class="co-dot co-dot--green"></div><span>DPS pressure</span></div>
+              <div class="co-value">196 <span class="co-unit">psi</span></div>
+              <div class="co-desc">Drum Pressure Sensor</div>
+              <div class="co-meta">
+                <div class="co-meta-row"><span>Startup Count:</span><span>2</span></div>
+                <div class="co-meta-row"><span>Error Count:</span><span>--</span></div>
+              </div>
+            </div>
+
+            <div class="co-card">
+              <div class="co-card-head"><div class="co-dot co-dot--green"></div><span>DRS</span></div>
+              <div class="co-value">138 <span class="co-unit">rpm</span></div>
+              <div class="co-desc">Drum Rotation Speed</div>
+              <div class="co-meta">
+                <div class="co-meta-row"><span>Startup Count:</span><span>2</span></div>
+                <div class="co-meta-row"><span>Error Count:</span><span>--</span></div>
+              </div>
+            </div>
+
+            <div class="co-card">
+              <div class="co-card-head"><div class="co-dot co-dot--green"></div><span>CWR (35.0) temperature</span></div>
+              <div class="co-value">91 <span class="co-unit">°F</span></div>
+              <div class="co-desc">Charge Water Return Temp</div>
+              <div class="co-meta">
+                <div class="co-meta-row"><span>Tilt Degree:</span><span>1</span></div>
+                <div class="co-meta-row"><span>Startup Count:</span><span>2</span></div>
+                <div class="co-meta-row"><span>Error Count:</span><span>--</span></div>
+              </div>
+            </div>
+
+            <!-- WDS — red fault card -->
+            <div class="co-card co-card--fault">
+              <div class="co-card-head"><div class="co-dot co-dot--white"></div><span>WDS</span></div>
+              <div class="co-value">--</div>
+              <div class="co-fault-msg">Water Drum Sensor<br>No connection</div>
+              <div class="co-meta" style="color:rgba(255,255,255,0.8);">
+                <div class="co-meta-row"><span>Startup Count:</span><span>2</span></div>
+                <div class="co-meta-row"><span>Error Count:</span><span style="color:white;font-weight:500;">14</span></div>
+              </div>
+            </div>
+
+            <div class="co-card">
+              <div class="co-card-head"><div class="co-dot co-dot--grey"></div><span>ICD (1468)</span></div>
+              <div class="co-value">1468 <span class="co-unit">mA</span></div>
+              <div class="co-desc">Input Current Detector</div>
+              <div class="co-meta">
+                <div class="co-meta-row"><span>Startup Count:</span><span>2</span></div>
+                <div class="co-meta-row"><span>Error Count:</span><span>--</span></div>
+              </div>
+            </div>
+
+            <div class="co-card">
+              <div class="co-card-head"><div class="co-dot co-dot--green"></div><span>ED (8195)</span></div>
+              <div class="co-value">8195 <span class="co-unit">counts</span></div>
+              <div class="co-desc">Electrical Signal value</div>
+              <div class="co-meta">
+                <div class="co-meta-row"><span>Startup Count:</span><span>2</span></div>
+                <div class="co-meta-row"><span>Error Count:</span><span>--</span></div>
+              </div>
+            </div>
+
+          </div><!-- /co-grid -->
+          </div><!-- /co-section-mcs -->
+
+          <!-- Section: V3 FDM -->
+          <div class="co-section-hdr" style="margin-top:12px;" onclick="toggleCoSection('fdm', this)">
+            <svg class="co-acc-chev" width="10" height="6" viewBox="0 0 10 6" fill="none" style="transform:rotate(0deg);transition:transform 0.2s;flex-shrink:0;">
+              <path d="M8.75 4.75L4.75 0.75L0.75 4.75" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>V3 FDM</span>
+          </div>
+          <div id="co-section-fdm">
+          <div class="co-grid">
+
+            <div class="co-card">
+              <div class="co-card-head"><div class="co-dot co-dot--green"></div><span>IOX supply voltage</span></div>
+              <div class="co-value">12.9 <span class="co-unit">V</span></div>
+              <div class="co-desc">Onboard Power Supply</div>
+              <div class="co-meta">
+                <div class="co-meta-row"><span>Temperature:</span><span>113 °F</span></div>
+                <div class="co-meta-row"><span>Startup Count:</span><span>1</span></div>
+                <div class="co-meta-row"><span>Error Count:</span><span>--</span></div>
+              </div>
+            </div>
+
+            <!-- Water meter — amber warning card -->
+            <div class="co-card co-card--warn">
+              <div class="co-card-head"><div class="co-dot co-dot--green"></div><span>Water meter flow rate</span></div>
+              <div class="co-value">2.1 <span class="co-unit">gal/min</span></div>
+              <div class="co-desc">Active Water flow to drum</div>
+              <div class="co-meta">
+                <div class="co-meta-row"><span>Flow Error:</span><span>1</span></div>
+                <div class="co-meta-row"><span>No Stop:</span><span>0</span></div>
+                <div class="co-meta-row"><span>Flow Rate:</span><span>1 gal/min</span></div>
+              </div>
+            </div>
+
+            <div class="co-card">
+              <div class="co-card-head"><div class="co-dot co-dot--green"></div><span>Admix meter flow rate</span></div>
+              <div class="co-value">0.3 <span class="co-unit">gal/min</span></div>
+              <div class="co-desc">Admixture Dosing meter</div>
+              <div class="co-meta">
+                <div class="co-meta-row"><span>Flow Error:</span><span>0</span></div>
+                <div class="co-meta-row"><span>No Stop:</span><span>0</span></div>
+                <div class="co-meta-row"><span>Flow Rate:</span><span>1 gal/min</span></div>
+              </div>
+            </div>
+
+          </div><!-- /co-grid -->
+          </div><!-- /co-section-fdm -->
+
+          <!-- Fleet map -->
+          <div class="co-map-block">
+            <div class="co-map-header">
+              <span>Fleet map</span>
+              <button class="co-map-goto">Go to the map →</button>
+            </div>
+            <div class="co-map-frame">
+              <iframe
+                src="https://www.openstreetmap.org/export/embed.html?bbox=-122.4494%2C37.7749%2C-122.3894%2C37.8149&layer=mapnik&marker=37.7949%2C-122.4194"
+                style="width:100%;height:100%;border:none;"
+                loading="lazy">
+              </iframe>
+              <!-- Truck label pin -->
+              <div class="co-map-pin">6456</div>
+            </div>
+          </div>
+
+          <!-- Info table -->
+          <div class="co-info-block" style="margin-top:16px;">
+            <div class="co-info-row2">
+              <div class="co-info-item">
+                <div class="co-info-label">Connectivity</div>
+                <div class="co-info-val co-info-val--link">Connected</div>
+              </div>
+              <div class="co-info-item">
+                <div class="co-info-label">Truck Mode</div>
+                <div class="co-info-val">Live</div>
+              </div>
+            </div>
+            <div class="co-tbl-row"><div class="co-tbl-k">Code version</div><div class="co-tbl-v">3.04.029</div></div>
+            <div class="co-tbl-row co-tbl-row--alt"><div class="co-tbl-k">Commissioned</div><div class="co-tbl-v">--</div></div>
+            <div class="co-tbl-row"><div class="co-tbl-k">Last Connect</div><div class="co-tbl-v">Nov 26, 2025, 10:52 PM</div></div>
+            <div class="co-tbl-row co-tbl-row--alt"><div class="co-tbl-k">Last System Status</div><div class="co-tbl-v">Nov 26, 2025, 10:52 PM</div></div>
+            <div class="co-tbl-row"><div class="co-tbl-k">Last Reboot</div><div class="co-tbl-v">Nov 26, 2025, 1:16 PM</div></div>
+            <div class="co-tbl-row co-tbl-row--alt"><div class="co-tbl-k">Drum Manufacturer</div><div class="co-tbl-v">Schwing, 2022</div></div>
+            <div class="co-tbl-row"><div class="co-tbl-k">Drum Size</div><div class="co-tbl-v">--</div></div>
+            <div class="co-tbl-row co-tbl-row--alt"><div class="co-tbl-k">Number of Loads</div><div class="co-tbl-v">--</div></div>
+          </div>
+
+          <!-- Unlink Unit at bottom -->
+          <div style="margin-top:16px;margin-bottom:8px;">
+            <button style="width:100%;background:#1594ef;color:white;border:none;border-radius:32px;padding:10px 16px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">Unlink Unit</button>
+          </div>
+
+        </div>
       </div>
 
     </div><!-- /drawer-body -->
@@ -934,13 +1193,13 @@ function renderOverview() {
 
     html += `
       <div class="truck-wrap" style="background:${rowBg};">
-        <div class="truck-row ov-row" onclick="toggleOv(${i})" style="grid-template-columns:74px 1fr 48px 82px;background:${rowBg};">
+        <div class="truck-row ov-row" onclick="toggleOv(${i})" style="grid-template-columns:74px 1fr 90px 82px;background:${rowBg};">
           <div class="td truck-num">
             ${chevSvg(isOpen ? 180 : 90)}
             ${t.num}
           </div>
-          <div class="td" style="font-size:12px;line-height:1.25;">${t.plant.replace('Phoenix ','PHX ').replace('Mesa ','Mesa ')}</div>
-          <div class="td">${t.ign}</div>
+          <div class="td" style="font-size:12px;line-height:1.25;">${t.plant}</div>
+          <div class="td" style="font-size:13px;color:var(--strong);">${t.ign} · ${t.ignDetail}</div>
           <div class="td">${badges}</div>
         </div>
         ${expHtml}
@@ -973,8 +1232,25 @@ const chevSvg = (deg) => `<svg width="10" height="6" viewBox="0 0 10 6" fill="no
 function openDrawer(i) {
   document.getElementById('drawer-truck-num').textContent = 'Truck: ' + trucks[i].num;
   renderLogRows();
-  showLogList();
+  document.getElementById('state-list').style.display       = 'none';
+  document.getElementById('state-detail').style.display     = 'none';
+  document.getElementById('state-components').style.display = 'flex';
+  document.getElementById('drawer-nav-label').textContent   = 'Components Overview';
+  /* default right pill to Ping Truck */
+  document.getElementById('filters-pill').style.display = 'none';
+  document.getElementById('ping-pill').style.display    = 'flex';
   document.getElementById('drawer').classList.add('open');
+}
+
+function pingTruck() {
+  const btn = document.getElementById('ping-pill');
+  if (!btn) return;
+  btn.textContent = 'Pinging…';
+  btn.style.opacity = '0.7';
+  setTimeout(() => {
+    btn.textContent = 'Ping Truck';
+    btn.style.opacity = '1';
+  }, 1500);
 }
 
 function closeDrawer() {
@@ -1126,6 +1402,56 @@ function renderDetailContent(tab) {
   }
 }</div>`;
   }
+}
+
+function toggleDrawerNav() {
+  const dd = document.getElementById('drawer-nav-dropdown');
+  const chevron = document.getElementById('drawer-nav-chevron');
+  const isOpen = dd.style.display === 'none';
+  dd.style.display = isOpen ? 'block' : 'none';
+  chevron.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+function selectDrawerNav(label, el) {
+  document.getElementById('drawer-nav-label').textContent = label;
+  document.querySelectorAll('#drawer-nav-dropdown .wts-option').forEach(o => {
+    o.classList.remove('wts-active');
+    o.querySelector('.wts-check').style.visibility = 'hidden';
+  });
+  el.classList.add('wts-active');
+  el.querySelector('.wts-check').style.visibility = 'visible';
+  document.getElementById('drawer-nav-dropdown').style.display = 'none';
+  document.getElementById('drawer-nav-chevron').style.transform = 'rotate(0deg)';
+
+  /* switch drawer content state */
+  const showList       = label === 'Truck Logs';
+  const showComponents = label === 'Components Overview';
+  document.getElementById('state-list').style.display       = showList       ? 'flex' : 'none';
+  document.getElementById('state-detail').style.display     = 'none';
+  document.getElementById('state-components').style.display = showComponents ? 'flex' : 'none';
+
+  /* swap right pill: Filters for Truck Logs, Ping Truck for Components Overview, hidden for others */
+  document.getElementById('filters-pill').style.display = showList        ? 'flex' : 'none';
+  document.getElementById('ping-pill').style.display    = showComponents  ? 'flex' : 'none';
+}
+
+/* close drawer nav dropdown on outside click */
+document.addEventListener('click', function(e) {
+  const btn = document.getElementById('drawer-nav-btn');
+  const dd  = document.getElementById('drawer-nav-dropdown');
+  if (btn && dd && !btn.contains(e.target) && !dd.contains(e.target)) {
+    dd.style.display = 'none';
+    const ch = document.getElementById('drawer-nav-chevron');
+    if (ch) ch.style.transform = 'rotate(0deg)';
+  }
+});
+
+function toggleCoSection(id, hdr) {
+  const section = document.getElementById('co-section-' + id);
+  const chev = hdr.querySelector('.co-acc-chev');
+  const isOpen = section.style.display !== 'none';
+  section.style.display = isOpen ? 'none' : 'block';
+  chev.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
 }
 
 function toggleWtsDropdown() {

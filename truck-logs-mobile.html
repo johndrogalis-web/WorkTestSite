@@ -186,6 +186,10 @@
     line-height: 1.3;
   }
   .wts-option:active { background: var(--layer-2); }
+  .wts-check {
+    font-size: 13px; color: var(--strong); width: 18px;
+    display: inline-block; flex-shrink: 0;
+  }
   .wts-active { color: var(--strong); font-weight: 500; }
   .overview-pill {
     display: inline-flex; align-items: center; gap: 6px;
@@ -589,23 +593,48 @@
             </svg>
           </button>
           <div id="wts-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:white;border:1px solid var(--border-mid);border-radius:8px;box-shadow:0 4px 16px rgba(54,50,45,0.12);padding:4px;min-width:200px;z-index:50;">
-            <div class="wts-option wts-active" onclick="selectWts('Where to start', this)">Where To Start</div>
-            <div class="wts-option" onclick="selectWts('Overview', this)">Overview</div>
-            <div class="wts-option" onclick="selectWts('Components Condition', this)">Components Condition</div>
+            <div class="wts-option wts-active" onclick="selectWts('Where to start', this)"><span class="wts-check">✓</span>Where To Start</div>
+            <div class="wts-option" onclick="selectWts('Overview', this)"><span class="wts-check" style="visibility:hidden">✓</span>Overview</div>
+            <div class="wts-option" onclick="selectWts('Components Condition', this)"><span class="wts-check" style="visibility:hidden">✓</span>Components Condition</div>
           </div>
         </div>
 
-        <!-- TABLE HEADER -->
-        <div class="tbl-head">
-          <div class="th" style="border-right:1.5px solid var(--border);">Truck</div>
-          <div class="th">Source</div>
-          <div class="th">Ign.</div>
-          <div class="th">Age</div>
-          <div class="th">Alerts</div>
+        <!-- PAGE: WHERE TO START -->
+        <div id="page-where-to-start">
+          <!-- TABLE HEADER -->
+          <div class="tbl-head">
+            <div class="th" style="border-right:1.5px solid var(--border);">Truck</div>
+            <div class="th">Source</div>
+            <div class="th">Ign.</div>
+            <div class="th">Age</div>
+            <div class="th">Alerts</div>
+          </div>
+          <!-- TRUCK ROWS (JS renders) -->
+          <div id="truck-list"></div>
         </div>
 
-        <!-- TRUCK ROWS (JS renders) -->
-        <div id="truck-list"></div>
+        <!-- PAGE: OVERVIEW -->
+        <div id="page-overview" style="display:none;">
+          <div class="tbl-head" style="grid-template-columns: 74px 1fr 48px 82px;">
+            <div class="th" style="border-right:1.5px solid var(--border);">Truck</div>
+            <div class="th">Plant</div>
+            <div class="th">Ign.</div>
+            <div class="th">Alerts</div>
+          </div>
+          <div id="truck-list-overview"></div>
+        </div>
+
+        <!-- PAGE: COMPONENTS CONDITION -->
+        <div id="page-components-condition" style="display:none;">
+          <div class="tbl-head">
+            <div class="th" style="border-right:1.5px solid var(--border);">Truck</div>
+            <div class="th">Source</div>
+            <div class="th">Ign.</div>
+            <div class="th">Age</div>
+            <div class="th">Alerts</div>
+          </div>
+          <div id="truck-list-components"></div>
+        </div>
       </div>
     </div>
   </div><!-- /s-main -->
@@ -711,13 +740,15 @@ const truckGroups = [
   {
     label: 'Phoenix Central',
     uptime: '94.3%',
-    attention: 4, /* trucks needing attention at this plant */
+    attention: 4,
     open: true,
     trucks: [
-      { num:'45689', ver:'V3', ign:'On',  ignDetail:'6 hr',  source:'Customer Ticket', plant:'Phoenix Central', impact:'Not Managing',  issue:'Water System', account:'Cemex',        age:'3 min',  conn:'live',  err:1, wrn:10 },
-      { num:'12457', ver:'V4', ign:'On',  ignDetail:'5 hr',  source:'Customer Ticket', plant:'Phoenix Central', impact:'Not Measuring', issue:'Water System', account:'Cemex',        age:'15 min', conn:'none',  err:2, wrn:10 },
-      { num:'39821', ver:'V3', ign:'On',  ignDetail:'3 hr',  source:'Customer Ticket', plant:'Phoenix Central', impact:'Verify Down',   issue:'Drum RPM',     account:'Cemex',        age:'8 hrs',  conn:'live',  err:0, wrn:10 },
-      { num:'53127', ver:'V3', ign:'On',  ignDetail:'1 hr',  source:'Customer Ticket', plant:'Phoenix Central', impact:'Not Measuring', issue:'Water System', account:'Cemex',        age:'2 days', conn:'live',  err:1, wrn:0  },
+      { num:'45689', ver:'V3', ign:'On',  ignDetail:'6 hr',   source:'Customer Ticket', plant:'Phoenix Central', impact:'Not Managing',  issue:'Water System', account:'Cemex',        age:'3 min',  conn:'live',  err:1, wrn:10, unitId:'UID-45689', readyMaint:'No',  truckMode:'Active',   lastConn:'1:16 PM 07/23/25' },
+      { num:'12457', ver:'V4', ign:'On',  ignDetail:'5 hr',   source:'Customer Ticket', plant:'Phoenix Central', impact:'Not Measuring', issue:'Water System', account:'Cemex',        age:'15 min', conn:'none',  err:2, wrn:10, unitId:'UID-12457', readyMaint:'No',  truckMode:'Active',   lastConn:'12:44 PM 07/23/25' },
+      { num:'39821', ver:'V3', ign:'On',  ignDetail:'3 hr',   source:'Customer Ticket', plant:'Phoenix Central', impact:'Verify Down',   issue:'Drum RPM',     account:'Cemex',        age:'8 hrs',  conn:'live',  err:0, wrn:10, unitId:'UID-39821', readyMaint:'Yes', truckMode:'Active',   lastConn:'9:02 AM 07/23/25' },
+      { num:'53127', ver:'V3', ign:'On',  ignDetail:'1 hr',   source:'Customer Ticket', plant:'Phoenix Central', impact:'Not Measuring', issue:'Water System', account:'Cemex',        age:'2 days', conn:'live',  err:1, wrn:0,  unitId:'UID-53127', readyMaint:'No',  truckMode:'Standby',  lastConn:'8:30 AM 07/21/25' },
+      { num:'61042', ver:'V4', ign:'Off', ignDetail:'2 hr',   source:'Customer Ticket', plant:'Phoenix Central', impact:'None',         issue:'',             account:'Cemex',        age:'4 hrs',  conn:'live',  err:0, wrn:0,  unitId:'UID-61042', readyMaint:'Yes', truckMode:'Standby',  lastConn:'10:15 AM 07/23/25' },
+      { num:'77391', ver:'V3', ign:'Off', ignDetail:'8 hr',   source:'Customer Ticket', plant:'Phoenix Central', impact:'None',         issue:'',             account:'Cemex',        age:'1 day',  conn:'live',  err:0, wrn:0,  unitId:'UID-77391', readyMaint:'No',  truckMode:'Inactive', lastConn:'2:00 PM 07/22/25' },
     ]
   },
   {
@@ -726,10 +757,25 @@ const truckGroups = [
     attention: 4,
     open: true,
     trucks: [
-      { num:'67234', ver:'V4', ign:'Off', ignDetail:'3 hrs', source:'Customer Ticket', plant:'Mesa South', impact:'At Risk',       issue:'Water System', account:'AZ Materials', age:'15 min', conn:'live',  err:0, wrn:10 },
-      { num:'84760', ver:'V5', ign:'Off', ignDetail:'1 hr',  source:'System Alert',    plant:'Mesa South', impact:'Not Measuring', issue:'Hydraulic',    account:'AZ Materials', age:'4 hrs',  conn:'live',  err:2, wrn:10 },
-      { num:'98214', ver:'V5', ign:'Off', ignDetail:'30 min',source:'System Alert',    plant:'Mesa South', impact:'At Risk',       issue:'Hydraulic',    account:'AZ Materials', age:'1 day',  conn:'none',  err:1, wrn:0  },
-      { num:'21348', ver:'V3', ign:'On',  ignDetail:'1 hr',  source:'System Alert',    plant:'Mesa South', impact:'Not Measuring', issue:'Hydraulic',    account:'AZ Materials', age:'2 days', conn:'live',  err:2, wrn:10 },
+      { num:'67234', ver:'V4', ign:'Off', ignDetail:'3 hrs',  source:'Customer Ticket', plant:'Mesa South', impact:'At Risk',       issue:'Water System', account:'AZ Materials', age:'15 min', conn:'live',  err:0, wrn:10, unitId:'UID-67234', readyMaint:'No',  truckMode:'Standby',  lastConn:'1:00 PM 07/23/25' },
+      { num:'84760', ver:'V5', ign:'Off', ignDetail:'1 hr',   source:'System Alert',    plant:'Mesa South', impact:'Not Measuring', issue:'Hydraulic',    account:'AZ Materials', age:'4 hrs',  conn:'live',  err:2, wrn:10, unitId:'UID-84760', readyMaint:'No',  truckMode:'Active',   lastConn:'9:45 AM 07/23/25' },
+      { num:'98214', ver:'V5', ign:'Off', ignDetail:'30 min', source:'System Alert',    plant:'Mesa South', impact:'At Risk',       issue:'Hydraulic',    account:'AZ Materials', age:'1 day',  conn:'none',  err:1, wrn:0,  unitId:'UID-98214', readyMaint:'Yes', truckMode:'Standby',  lastConn:'1:30 PM 07/22/25' },
+      { num:'21348', ver:'V3', ign:'On',  ignDetail:'1 hr',   source:'System Alert',    plant:'Mesa South', impact:'Not Measuring', issue:'Hydraulic',    account:'AZ Materials', age:'2 days', conn:'live',  err:2, wrn:10, unitId:'UID-21348', readyMaint:'No',  truckMode:'Active',   lastConn:'8:00 AM 07/21/25' },
+      { num:'33501', ver:'V4', ign:'On',  ignDetail:'2 hr',   source:'Customer Ticket', plant:'Mesa South', impact:'None',         issue:'',             account:'AZ Materials', age:'5 min',  conn:'live',  err:0, wrn:0,  unitId:'UID-33501', readyMaint:'No',  truckMode:'Active',   lastConn:'1:10 PM 07/23/25' },
+      { num:'44892', ver:'V5', ign:'Off', ignDetail:'4 hr',   source:'Customer Ticket', plant:'Mesa South', impact:'None',         issue:'',             account:'AZ Materials', age:'6 hrs',  conn:'live',  err:0, wrn:0,  unitId:'UID-44892', readyMaint:'Yes', truckMode:'Inactive', lastConn:'7:45 AM 07/23/25' },
+    ]
+  },
+  {
+    label: 'Tempe East',
+    uptime: '91.7%',
+    attention: 3,
+    open: true,
+    trucks: [
+      { num:'55120', ver:'V3', ign:'On',  ignDetail:'1 hr',   source:'Customer Ticket', plant:'Tempe East', impact:'Not Managing',  issue:'Drum RPM',     account:'Vulcan',       age:'10 min', conn:'live',  err:3, wrn:5,  unitId:'UID-55120', readyMaint:'No',  truckMode:'Active',   lastConn:'1:05 PM 07/23/25' },
+      { num:'66783', ver:'V4', ign:'On',  ignDetail:'3 hr',   source:'System Alert',    plant:'Tempe East', impact:'At Risk',       issue:'Water System', account:'Vulcan',       age:'30 min', conn:'live',  err:1, wrn:8,  unitId:'UID-66783', readyMaint:'No',  truckMode:'Active',   lastConn:'12:45 PM 07/23/25' },
+      { num:'72914', ver:'V4', ign:'Off', ignDetail:'6 hr',   source:'Customer Ticket', plant:'Tempe East', impact:'None',         issue:'',             account:'Vulcan',       age:'2 hrs',  conn:'live',  err:0, wrn:0,  unitId:'UID-72914', readyMaint:'Yes', truckMode:'Standby',  lastConn:'11:00 AM 07/23/25' },
+      { num:'81056', ver:'V3', ign:'Off', ignDetail:'2 hr',   source:'Customer Ticket', plant:'Tempe East', impact:'None',         issue:'',             account:'Vulcan',       age:'3 hrs',  conn:'none',  err:0, wrn:0,  unitId:'UID-81056', readyMaint:'No',  truckMode:'Inactive', lastConn:'10:30 AM 07/23/25' },
+      { num:'90237', ver:'V5', ign:'On',  ignDetail:'30 min', source:'System Alert',    plant:'Tempe East', impact:'Verify Down',  issue:'Hydraulic',    account:'Vulcan',       age:'1 hr',   conn:'live',  err:2, wrn:3,  unitId:'UID-90237', readyMaint:'No',  truckMode:'Active',   lastConn:'12:15 PM 07/23/25' },
     ]
   },
 ];
@@ -781,6 +827,8 @@ function renderTrucks() {
 
     group.trucks.forEach(t => {
       const i = globalIdx++;
+      /* WHERE TO START: skip trucks with no alerts or warnings */
+      if (!t.err && !t.wrn) return;
       const isOpen = !!expanded[i];
       /* up = expanded (0deg), right = collapsed (90deg) */
       const chevDown  = `<path d="M3 5l5 5 5-5" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>`;
@@ -829,6 +877,7 @@ function renderTrucks() {
   });
 
   document.getElementById('truck-list').innerHTML = html;
+  document.getElementById('truck-list-components').innerHTML = html;
 }
 
 function toggleGroup(gi) {
@@ -856,7 +905,69 @@ function toggleTruck(i) {
   }
 }
 
-/* ── SHARED CHEVRON ──────────────────────────────── */
+/* ── OVERVIEW PAGE (flat list, different columns) ── */
+const expandedOv = {};
+
+function renderOverview() {
+  let html = '';
+
+  trucks.forEach((t, i) => {
+    const isOpen = !!expandedOv[i];
+    const rowBg = i % 2 === 0 ? '#ffffff' : '#f6f4f2';
+    const badges = (t.err ? `<span class="badge err"><span class="badge-icon">⊘</span>${t.err}</span>` : '') +
+                   (t.wrn ? `<span class="badge wrn"><span class="badge-icon">⚠</span>${t.wrn}</span>` : '');
+
+    const expHtml = isOpen ? `
+      <div class="exp-wrap open" data-ov-idx="${i}" style="padding-bottom:15px;background:${rowBg};">
+        <div class="exp-row"><div class="exp-label">Truck</div><div class="exp-val">${t.num}</div></div>
+        <div class="exp-row"><div class="exp-label">Active Alerts</div><div class="exp-val">${t.err || '0'}</div></div>
+        <div class="exp-row"><div class="exp-label">Unit ID</div><div class="exp-val">${t.unitId}</div></div>
+        <div class="exp-row"><div class="exp-label">System Version</div><div class="exp-val">${t.ver}</div></div>
+        <div class="exp-row"><div class="exp-label">Ignition Status</div><div class="exp-val">${t.ign} — ${t.ignDetail}</div></div>
+        <div class="exp-row"><div class="exp-label">Ready for Maint.</div><div class="exp-val">${t.readyMaint}</div></div>
+        <div class="exp-row"><div class="exp-label">Plant</div><div class="exp-val">${t.plant}</div></div>
+        <div class="exp-row"><div class="exp-label">Truck Mode</div><div class="exp-val">${t.truckMode}</div></div>
+        <div class="exp-row"><div class="exp-label">Connection</div><div class="exp-val">${t.conn === 'live' ? 'Live' : 'No connection'}</div></div>
+        <div class="exp-row"><div class="exp-label">Last Connection</div><div class="exp-val">${t.lastConn}</div></div>
+        <button class="view-truck-btn" onclick="openDrawer(${i})">View Truck</button>
+      </div>` : '';
+
+    html += `
+      <div class="truck-wrap" style="background:${rowBg};">
+        <div class="truck-row ov-row" onclick="toggleOv(${i})" style="grid-template-columns:74px 1fr 48px 82px;background:${rowBg};">
+          <div class="td truck-num">
+            ${chevSvg(isOpen ? 180 : 90)}
+            ${t.num}
+          </div>
+          <div class="td" style="font-size:12px;line-height:1.25;">${t.plant.replace('Phoenix ','PHX ').replace('Mesa ','Mesa ')}</div>
+          <div class="td">${t.ign}</div>
+          <div class="td">${badges}</div>
+        </div>
+        ${expHtml}
+      </div>`;
+  });
+
+  document.getElementById('truck-list-overview').innerHTML = html;
+}
+
+function toggleOv(i) {
+  expandedOv[i] = !expandedOv[i];
+  renderOverview();
+  if (expandedOv[i]) {
+    setTimeout(() => {
+      const row = document.querySelector(`[data-ov-idx="${i}"]`);
+      if (row) {
+        const scrollBody = document.querySelector('#s-main .scroll-body');
+        const rowBottom = row.getBoundingClientRect().bottom;
+        const containerBottom = scrollBody.getBoundingClientRect().bottom;
+        const gap = 10;
+        if (rowBottom > containerBottom - gap) {
+          scrollBody.scrollBy({ top: rowBottom - containerBottom + gap, behavior: 'smooth' });
+        }
+      }
+    }, 50);
+  }
+}
 /* rotate(0) = up (open group), rotate(180) = down (closed group), rotate(90) = right (collapsed truck row) */
 const chevSvg = (deg) => `<svg width="10" height="6" viewBox="0 0 10 6" fill="none" style="transform:rotate(${deg}deg);flex-shrink:0;"><path d="M8.75 4.75L4.75 0.75L0.75 4.75" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 function openDrawer(i) {
@@ -1027,10 +1138,18 @@ function toggleWtsDropdown() {
 
 function selectWts(label, el) {
   document.getElementById('wts-label').textContent = label;
-  document.querySelectorAll('.wts-option').forEach(o => o.classList.remove('wts-active'));
+  document.querySelectorAll('.wts-option').forEach(o => {
+    o.classList.remove('wts-active');
+    o.querySelector('.wts-check').style.visibility = 'hidden';
+  });
   el.classList.add('wts-active');
+  el.querySelector('.wts-check').style.visibility = 'visible';
   document.getElementById('wts-dropdown').style.display = 'none';
   document.getElementById('wts-chevron').style.transform = 'rotate(0deg)';
+
+  document.getElementById('page-where-to-start').style.display      = label === 'Where to start'       ? 'block' : 'none';
+  document.getElementById('page-overview').style.display             = label === 'Overview'              ? 'block' : 'none';
+  document.getElementById('page-components-condition').style.display = label === 'Components Condition'  ? 'block' : 'none';
 }
 
 document.addEventListener('click', function(e) {
@@ -1045,6 +1164,7 @@ document.addEventListener('click', function(e) {
 
 /* ── INIT ──────────────────────────────────────── */
 renderTrucks();
+renderOverview();
 </script>
 </body>
 </html>

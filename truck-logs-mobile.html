@@ -505,6 +505,57 @@
     line-height: 1.75; overflow-x: auto; white-space: pre;
   }
 
+  /* ─── MANUAL CONTROL CARDS ──────────────────────── */
+  .mc2-card { background:var(--layer-1); border:1px solid var(--border); border-radius:16px; padding:14px 12px; display:flex; flex-direction:column; gap:6px; transition:border-color 0.3s, box-shadow 0.3s; position:relative; overflow:hidden; }
+  /* progress bar track — sits at bottom of card */
+  .mc2-progress { position:absolute; bottom:0; left:0; right:0; height:3px; background:rgba(21,148,239,0.1); overflow:hidden; opacity:0; transition:opacity 0.2s; }
+  .mc2-progress.visible { opacity:1; }
+  .mc2-progress-fill { height:100%; width:0%; background:var(--blue); border-radius:0 2px 2px 0; transition:width 0.05s linear; }
+  .mc2-card.mc2-success .mc2-progress-fill { background:#16a34a; }
+  /* text sweep */
+  @keyframes mc2-sweep-in { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  .mc2-sweep { animation: mc2-sweep-in 0.2s cubic-bezier(0.22,1,0.36,1) both; }
+  .mc2-card-wide { border-radius:16px; }
+  .mc2-card.mc2-success { border-color:rgba(30,98,82,0.4); box-shadow:0 0 0 3px rgba(30,98,82,0.06); }
+  .mc2-card.mc2-pending { border-color:rgba(21,148,239,0.45); box-shadow:0 0 0 3px rgba(21,148,239,0.07); }
+  .mc2-card.mc2-error   { border-color:rgba(193,60,45,0.4);   box-shadow:0 0 0 3px rgba(193,60,45,0.06); }
+  .mc2-head { display:flex; align-items:center; gap:8px; }
+  .mc2-head span { font-size:13px; font-weight:500; color:var(--strong); letter-spacing:-0.26px; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .mc2-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; position:relative; }
+  .mc2-dot-grey  { background:rgba(54,50,45,0.22); }
+  .mc2-dot-green { background:#16a34a; }
+  .mc2-dot-blue  { background:var(--blue); }
+  .mc2-dot-red   { background:var(--red); }
+  .mc2-dot.pulsing::after {
+    content:''; position:absolute; inset:-3px; border-radius:50%;
+    border:1.5px solid var(--blue); animation:mc2-ring 1s ease-out infinite; opacity:0;
+  }
+  @keyframes mc2-ring {
+    0%   { transform:scale(0.8); opacity:0.7; }
+    100% { transform:scale(1.8); opacity:0; }
+  }
+  .mc2-metric { font-size:32px; font-weight:400; color:var(--strong); line-height:1; letter-spacing:-1px; margin-top:2px; }
+  .mc2-metric-word { font-size:24px; letter-spacing:-0.5px; }
+  .mc2-unit { font-size:13px; font-weight:500; letter-spacing:-0.2px; }
+  .mc2-sub { font-size:11px; color:var(--soft); letter-spacing:-0.2px; margin-top:-2px; }
+  .mc2-status { display:flex; align-items:center; gap:4px; font-size:11px; margin-top:2px; }
+  .mc2-sk { color:var(--soft); }
+  .mc2-sv { color:var(--strong); font-weight:500; }
+  .mc2-pill { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:500; padding:3px 8px; border-radius:20px; }
+  .mc2-pill-ok { background:#d5f1d2; color:#1e6252; }
+  .mc2-pill-err { background:#fde8e6; color:#c13c2d; }
+  .mc2-btn { width:100%; padding:9px 14px; border-radius:32px; border:none; font-size:13px; font-weight:500; font-family:var(--font); letter-spacing:-0.26px; cursor:pointer; margin-top:auto; transition:opacity 0.15s; }
+  .mc2-btn:active { opacity:0.8; }
+  .mc2-btn-primary { background:#1594ef; color:white; }
+  .mc2-btn-ghost   { background:none; color:var(--strong); border:1px solid var(--border-mid); }
+  .mc2-btn-danger  { background:var(--red); color:white; }
+  .mc2-input { width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:10px; font-family:var(--font); font-size:13px; color:var(--strong); background:none; outline:none; letter-spacing:-0.26px; }
+  .mc2-input:focus { border-color:var(--blue); }
+  /* confirm overlay */
+  .mc2-confirm { background:rgba(246,244,242,0.96); border-radius:16px; position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:14px; text-align:center; }
+  .mc2-confirm-msg { font-size:12px; color:var(--strong); letter-spacing:-0.2px; line-height:1.4; }
+  .mc2-confirm-btns { display:flex; gap:6px; width:100%; }
+
   /* ─── COMPONENTS OVERVIEW ───────────────────────────────── */
   .co-scroll { flex:1; overflow-y:auto; background:var(--layer-2); padding:16px; -webkit-overflow-scrolling:touch; }
   .co-section-hdr { display:flex; align-items:center; gap:8px; margin-bottom:12px; cursor:pointer; padding:4px 0; user-select:none; }
@@ -530,12 +581,21 @@
   .co-unit { font-size:14px; font-weight:500; color:var(--strong); letter-spacing:-0.3px; }
   .co-card--fault .co-unit { color:white; }
   .co-fault-msg { font-size:13px; color:white; letter-spacing:-0.2px; line-height:1.3; }
+  /* flip card */
+  .co-card-flip { perspective:600px; cursor:pointer; }
+  .co-card-flip-inner { position:relative; transform-style:preserve-3d; transition:transform 0.45s ease; }
+  .co-card-flip.flipped .co-card-flip-inner { transform:rotateY(180deg); }
+  .co-card-front, .co-card-back { backface-visibility:hidden; -webkit-backface-visibility:hidden; }
+  .co-card-back { position:absolute; top:0; left:0; right:0; bottom:0; transform:rotateY(180deg); border-radius:16px; overflow:hidden; }
+
   .co-card--warn { background:#ffba0d; border-color:#887f13; }
   .co-card--warn .co-card-head span { color:var(--strong); }
   .co-card--warn .co-value { color:var(--strong); }
   .co-card--warn .co-unit { color:var(--strong); }
   .co-card--warn .co-desc { color:var(--strong); }
   .co-card--warn .co-meta { color:var(--strong); }
+  .co-card--fault, .co-card--fault * { color: white !important; }
+  .co-card--fault .co-value { color: rgba(229,229,229,0.75) !important; }
   .co-desc { font-size:12px; color:var(--soft); letter-spacing:-0.2px; margin-top:-4px; }
   .co-meta { display:flex; flex-direction:column; gap:6px; }
   .co-meta-row { display:flex; justify-content:space-between; font-size:12px; color:var(--defined); letter-spacing:-0.2px; }
@@ -842,9 +902,9 @@
             </div>
 
             <div class="co-card">
-              <div class="co-card-head"><div class="co-dot co-dot--green"></div><span>CWR (35.0) temperature</span></div>
+              <div class="co-card-head"><div class="co-dot co-dot--green"></div><span>CWR (35.0) Temp</span></div>
               <div class="co-value">91 <span class="co-unit">°F</span></div>
-              <div class="co-desc">Charge Water Return Temp</div>
+              <div class="co-desc">CWR Temp</div>
               <div class="co-meta">
                 <div class="co-meta-row"><span>Tilt Degree:</span><span>1</span></div>
                 <div class="co-meta-row"><span>Startup Count:</span><span>2</span></div>
@@ -852,14 +912,43 @@
               </div>
             </div>
 
-            <!-- WDS — red fault card -->
-            <div class="co-card co-card--fault">
-              <div class="co-card-head"><div class="co-dot co-dot--white"></div><span>WDS</span></div>
-              <div class="co-value">--</div>
-              <div class="co-fault-msg">Water Drum Sensor<br>No connection</div>
-              <div class="co-meta" style="color:rgba(255,255,255,0.8);">
-                <div class="co-meta-row"><span>Startup Count:</span><span>2</span></div>
-                <div class="co-meta-row"><span>Error Count:</span><span style="color:white;font-weight:500;">14</span></div>
+            <!-- WDS — flipping fault card -->
+            <div class="co-card-flip" onclick="flipCard(this)">
+              <div class="co-card-flip-inner">
+
+                <!-- FRONT: fault state -->
+                <div class="co-card co-card--fault co-card-front">
+                  <div class="co-card-head"><div class="co-dot co-dot--white"></div><span style="color:white;">WDS</span></div>
+                  <div class="co-value" style="color:rgba(229,229,229,0.75);">--</div>
+                  <div class="co-fault-msg">Water Drum Sensor<br>No connection</div>
+                  <div class="co-meta" style="color:rgba(255,255,255,0.75);">
+                    <div class="co-meta-row"><span>Startup Count:</span><span style="color:white;">2</span></div>
+                    <div class="co-meta-row"><span>Error Count:</span><span style="color:white;font-weight:500;">14</span></div>
+                  </div>
+                </div>
+
+                <!-- BACK: last known data -->
+                <div class="co-card co-card-back" style="background:#ffd0d0;border-color:#9a1f1e;display:flex;flex-direction:column;gap:8px;">
+                  <!-- Header -->
+                  <div style="display:flex;align-items:center;gap:6px;border-bottom:1px solid rgba(154,31,30,0.3);padding-bottom:8px;">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="flex-shrink:0;"><rect x="1" y="1" width="10" height="10" rx="2" stroke="#9a1f1e" stroke-width="1.4"/><path d="M6 4v2.5M6 8h.01" stroke="#9a1f1e" stroke-width="1.4" stroke-linecap="round"/></svg>
+                    <span style="color:#9a1f1e;font-size:14px;font-weight:500;flex:1;">WDS</span>
+                    <span style="color:rgba(154,31,30,0.5);font-size:16px;letter-spacing:-0.4px;">--</span>
+                  </div>
+                  <!-- Last seen -->
+                  <div>
+                    <div style="font-size:10px;font-weight:500;color:rgba(54,50,45,0.5);letter-spacing:0.4px;text-transform:uppercase;margin-bottom:2px;">Last seen</div>
+                    <div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">Mar 23 · 08:24 AM</div>
+                  </div>
+                  <!-- Last battery voltage -->
+                  <div>
+                    <div style="font-size:10px;font-weight:500;color:rgba(54,50,45,0.5);letter-spacing:0.4px;text-transform:uppercase;margin-bottom:2px;">Last battery voltage</div>
+                    <div style="font-size:20px;font-weight:400;color:var(--strong);letter-spacing:-0.5px;line-height:1.2;">12.6 <span style="font-size:13px;font-weight:500;">V</span></div>
+                  </div>
+                  <!-- View Truck Logs button -->
+                  <button onclick="event.stopPropagation();openWdsLog();" style="width:100%;background:#1594ef;color:white;border:none;border-radius:32px;padding:8px 12px;font-size:13px;font-weight:500;font-family:var(--font);letter-spacing:-0.2px;cursor:pointer;margin-top:auto;">View Truck Logs</button>
+                </div>
+
               </div>
             </div>
 
@@ -941,14 +1030,10 @@
             </div>
             <div class="co-map-frame">
               <iframe
-                src="https://www.openstreetmap.org/export/embed.html?bbox=-122.4494%2C37.7749%2C-122.3894%2C37.8149&layer=mapnik&marker=37.7949%2C-122.4194"
+                src="https://www.openstreetmap.org/export/embed.html?bbox=-122.4494%2C37.7749%2C-122.3894%2C37.8149&layer=mapnik"
                 style="width:100%;height:100%;border:none;"
                 loading="lazy">
               </iframe>
-              <!-- Truck marker pin -->
-              <div class="co-map-pin">
-                <svg width="54" height="35" viewBox="0 0 54 35" fill="none" xmlns="http://www.w3.org/2000/svg"><g filter="url(#filter0_di_1844_5077)"><path d="M2 5C2 2.79086 3.79086 1 6 1H48C50.2091 1 52 2.79086 52 5V23C52 25.2091 50.2091 27 48 27H6C3.79086 27 2 25.2091 2 23V5Z" fill="#644325"/><path d="M14.27 19.21C12.016 19.21 10.672 17.656 10.672 15.794C10.672 14.086 11.876 12.63 13.01 11.272L14.844 9.13H16.846L13.556 12.84C13.878 12.7 14.256 12.644 14.69 12.644C16.426 12.644 17.938 13.876 17.938 15.78C17.938 17.698 16.552 19.21 14.27 19.21ZM12.338 15.836C12.338 16.998 13.136 17.81 14.27 17.81C15.418 17.81 16.23 16.998 16.23 15.836C16.23 14.688 15.418 13.89 14.27 13.89C13.136 13.89 12.338 14.688 12.338 15.836ZM18.7549 15.57L22.9129 9.13H25.2229V15.36H26.4689V16.69H25.2229V19H23.5849V16.69H18.7549V15.57ZM20.4769 15.36H23.5849V10.586L20.4769 15.36ZM31.1159 19.21C28.8199 19.21 27.5599 17.768 27.5599 16.004H29.1979C29.2399 17.138 29.9959 17.838 31.0599 17.838C32.2919 17.838 33.0619 17.04 33.0619 15.766C33.0619 14.534 32.2219 13.764 31.0879 13.764C30.3039 13.764 29.6179 14.17 29.3519 14.856H27.6439L28.1619 9.13H34.3919V10.53H29.5759L29.3099 13.316C29.6459 12.91 30.3039 12.476 31.4379 12.476C33.2299 12.476 34.7839 13.722 34.7839 15.78C34.7839 17.88 33.2579 19.21 31.1159 19.21ZM39.4612 19.21C37.2072 19.21 35.8632 17.656 35.8632 15.794C35.8632 14.086 37.0672 12.63 38.2012 11.272L40.0353 9.13H42.0373L38.7472 12.84C39.0692 12.7 39.4473 12.644 39.8812 12.644C41.6173 12.644 43.1293 13.876 43.1293 15.78C43.1293 17.698 41.7433 19.21 39.4612 19.21ZM37.5292 15.836C37.5292 16.998 38.3272 17.81 39.4612 17.81C40.6093 17.81 41.4213 16.998 41.4213 15.836C41.4213 14.688 40.6093 13.89 39.4612 13.89C38.3272 13.89 37.5292 14.688 37.5292 15.836Z" fill="white"/><path d="M26.7514 30.9516L23.6698 27.8699C23.1129 27.313 22.3575 27.0001 21.5698 27.0001H19.8C19.1372 27.0001 18.6 26.4628 18.6 25.8001C18.6 25.1374 19.1372 24.6001 19.8 24.6001H35.4C36.0627 24.6001 36.6 25.1374 36.6 25.8001C36.6 26.4628 36.0627 27.0001 35.4 27.0001H33.6301C32.8425 27.0001 32.0871 27.313 31.5301 27.8699L28.4485 30.9516C27.9799 31.4202 27.2201 31.4202 26.7514 30.9516Z" fill="#644325"/></g><defs><filter id="filter0_di_1844_5077" x="0" y="0" width="54" height="34.3032" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset dy="1"/><feGaussianBlur stdDeviation="1"/><feComposite in2="hardAlpha" operator="out"/><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.56 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1844_5077"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1844_5077" result="shape"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset dy="1"/><feGaussianBlur stdDeviation="0.5"/><feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/><feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.24 0"/><feBlend mode="normal" in2="shape" result="effect2_innerShadow_1844_5077"/></filter></defs></svg>
-              </div>
             </div>
           </div>
 
@@ -981,6 +1066,185 @@
 
         </div>
       </div>
+
+      <!-- STATE D: MANUAL CONTROL -->
+      <div id="state-manual" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+        <div class="co-scroll">
+
+          <!-- ── DIAGNOSTICS ── -->
+          <div class="co-section-hdr" onclick="toggleCoSection('diag', this)">
+            <svg class="co-acc-chev" width="10" height="6" viewBox="0 0 10 6" fill="none" style="transform:rotate(0deg);transition:transform 0.2s;flex-shrink:0;"><path d="M8.75 4.75L4.75 0.75L0.75 4.75" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Diagnostics</span>
+          </div>
+          <div id="co-section-diag">
+
+            <!-- Row 1: Ping Truck | Restart System -->
+            <div class="co-grid" style="margin-bottom:10px;">
+              <div class="mc2-card" id="mc-ping">
+                <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
+                <div class="mc2-head"><div class="mc2-dot mc2-dot-grey"></div><span>Ping Truck</span></div>
+                <div class="mc2-metric">2 <span class="mc2-unit">min ago</span></div>
+                <div class="mc2-sub">Last Ping</div>
+                <div class="mc2-status"><span class="mc2-sk">Status:</span><span class="mc2-sv">Online</span></div>
+                <button class="mc2-btn mc2-btn-primary" onclick="mcAction('ping','Ping Truck','2 min ago','Online',this)">Ping Truck</button>
+              </div>
+              <div class="mc2-card" id="mc-restart">
+                <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
+                <div class="mc2-head"><div class="mc2-dot mc2-dot-grey"></div><span>Restart System</span></div>
+                <div class="mc2-metric">2 <span class="mc2-unit">min ago</span></div>
+                <div class="mc2-sub">Last Attempt</div>
+                <div class="mc2-status"><span class="mc2-sk">Truck Status:</span><span class="mc2-sv">Online</span></div>
+                <button class="mc2-btn mc2-btn-primary" onclick="mcConfirm('restart','Restart System','Are you sure you want to restart the system?','Yes, Restart',this)">Restart System</button>
+              </div>
+            </div>
+
+            <!-- Row 2: Reset CAN Errors | Reset Sensors -->
+            <div class="co-grid" style="margin-bottom:10px;">
+              <div class="mc2-card" id="mc-can">
+                <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
+                <div class="mc2-head"><div class="mc2-dot mc2-dot-grey"></div><span>Reset CAN Errors</span></div>
+                <div class="mc2-metric">3</div>
+                <div class="mc2-sub">Current CAN Errors</div>
+                <div class="mc2-status"><span class="mc2-sk">Last Reset:</span><span class="mc2-sv">10:32 AM</span></div>
+                <button class="mc2-btn mc2-btn-primary" onclick="mcAction('can','Reset CAN Errors','3 errors','Cleared',this)">Reset</button>
+              </div>
+              <div class="mc2-card" id="mc-sensors">
+                <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
+                <div class="mc2-head"><div class="mc2-dot mc2-dot-grey"></div><span>Reset Sensors</span></div>
+                <div class="mc2-metric">2 <span class="mc2-unit">min ago</span></div>
+                <div class="mc2-sub">Last Attempt</div>
+                <div class="mc2-status"><span class="mc2-sk">Feed Status:</span><span class="mc2-sv">Active</span></div>
+                <button class="mc2-btn mc2-btn-primary" onclick="mcAction('sensors','Reset Sensors','2 min ago','Feed Active',this)">Reset</button>
+              </div>
+            </div>
+
+            <!-- Row 3: Tilt Calibration — full width -->
+            <div class="mc2-card" id="mc-tilt">
+              <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
+              <div class="mc2-head"><div class="mc2-dot mc2-dot-grey"></div><span>Tilt Calibration</span></div>
+              <input class="mc2-input" id="mc-tilt-input" type="number" placeholder="Measured angle (degrees)" max="45" step="0.1" style="margin:8px 0;">
+              <div class="mc2-status"><span class="mc2-sk">Baseline Tilt:</span><span class="mc2-sv">--</span></div>
+              <button class="mc2-btn mc2-btn-primary" style="margin-top:6px;" onclick="mcAction('tilt','Tilt Calibration',document.getElementById('mc-tilt-input').value+'°','Calibrated',this)">Calibrate</button>
+            </div>
+
+          </div><!-- /co-section-diag -->
+
+          <!-- ── WATER ── -->
+          <div class="co-section-hdr" style="margin-top:16px;" onclick="toggleCoSection('water', this)">
+            <svg class="co-acc-chev" width="10" height="6" viewBox="0 0 10 6" fill="none" style="transform:rotate(0deg);transition:transform 0.2s;flex-shrink:0;"><path d="M8.75 4.75L4.75 0.75L0.75 4.75" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Water</span>
+          </div>
+          <div id="co-section-water">
+
+            <!-- Row 1: Add Water — full width input -->
+            <div class="mc2-card" id="mc-wateradd" style="margin-bottom:10px;">
+              <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
+              <div class="mc2-head"><div class="mc2-dot mc2-dot-grey"></div><span>Add Water</span></div>
+              <input class="mc2-input" id="mc-water-add-input" type="number" placeholder="Add Water (liters)" max="999" style="margin:8px 0;">
+              <div class="mc2-status"><span class="mc2-sk">Last Delivery:</span><span class="mc2-sv">--</span></div>
+              <button class="mc2-btn mc2-btn-primary" style="margin-top:6px;" onclick="mcAction('wateradd','Add Water',document.getElementById('mc-water-add-input').value+'L','Delivered',this)">Add Water</button>
+            </div>
+
+            <!-- Row 2: Water State | Water Propulsion -->
+            <div class="co-grid" style="margin-bottom:10px;">
+              <div class="mc2-card" id="mc-waterstate">
+                <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
+                <div class="mc2-head"><div class="mc2-dot mc2-dot-green"></div><span>Water State</span></div>
+                <div class="mc2-metric mc2-metric-word">On</div>
+                <div class="mc2-sub">Water State</div>
+                <div class="mc2-status"><span class="mc2-sk">Last Changed:</span><span class="mc2-sv">10:32 AM</span></div>
+                <button class="mc2-btn mc2-btn-ghost" onclick="mcConfirm('waterstate','Water State','Confirm before turning off water','Yes, Turn Off',this)">Turn Off Water</button>
+              </div>
+              <div class="mc2-card" id="mc-waterprop">
+                <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
+                <div class="mc2-head"><div class="mc2-dot mc2-dot-green"></div><span>Water Propulsion</span></div>
+                <div class="mc2-metric mc2-metric-word">On</div>
+                <div class="mc2-sub">Propulsion State</div>
+                <div class="mc2-status"><span class="mc2-sk">Last Changed:</span><span class="mc2-sv">10:32 AM</span></div>
+                <button class="mc2-btn mc2-btn-ghost" onclick="mcConfirm('waterprop','Water Propulsion','Confirm before changing propulsion','Yes, Turn Off',this)">Turn Off</button>
+              </div>
+            </div>
+
+            <!-- Row 3: Reset Water Flow Error — half width -->
+            <div class="co-grid" style="margin-bottom:10px;">
+              <div class="mc2-card" id="mc-waterflow">
+                <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
+                <div class="mc2-head"><div class="mc2-dot mc2-dot-grey"></div><span>Reset Water Flow</span></div>
+                <div class="mc2-metric">3</div>
+                <div class="mc2-sub">Current Flow Errors</div>
+                <div class="mc2-status"><span class="mc2-sk">Last Reset:</span><span class="mc2-sv">10:32 AM</span></div>
+                <button class="mc2-btn mc2-btn-primary" onclick="mcAction('waterflow','Reset Water Flow Error','3 errors','Cleared',this)">Reset</button>
+              </div>
+              <div></div>
+            </div>
+
+            <!-- Row 4: Set Water Flow Rate — full width input -->
+            <div class="mc2-card" id="mc-waterrate" style="margin-bottom:8px;">
+              <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
+              <div class="mc2-head"><div class="mc2-dot mc2-dot-grey"></div><span>Set Water Flow Rate</span></div>
+              <input class="mc2-input" id="mc-water-input" type="number" placeholder="Flow rate (L/min)" step="0.1" style="margin:8px 0;">
+              <div class="mc2-status"><span class="mc2-sk">Flow Rate:</span><span class="mc2-sv">--</span></div>
+              <button class="mc2-btn mc2-btn-primary" style="margin-top:6px;" onclick="mcAction('waterrate','Set Water Flow Rate',document.getElementById('mc-water-input').value+'L/min','Set',this)">Set Flow Rate</button>
+            </div>
+
+          </div><!-- /co-section-water -->
+
+
+          <!-- ── ADMIX ── -->
+          <div class="co-section-hdr" style="margin-top:16px;" onclick="toggleCoSection('admix', this)">
+            <svg class="co-acc-chev" width="10" height="6" viewBox="0 0 10 6" fill="none" style="transform:rotate(0deg);transition:transform 0.2s;flex-shrink:0;"><path d="M8.75 4.75L4.75 0.75L0.75 4.75" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Admix</span>
+          </div>
+          <div id="co-section-admix">
+
+            <!-- Row 1: Add Admix — full width input -->
+            <div class="mc2-card" id="mc-admixadd" style="margin-bottom:10px;">
+              <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
+              <div class="mc2-head"><div class="mc2-dot mc2-dot-grey"></div><span>Add Admix</span></div>
+              <input class="mc2-input" id="mc-admix-add-input" type="number" placeholder="Add Admix (oz)" max="999" style="margin:8px 0;">
+              <div class="mc2-metric mv-muted">—</div>
+              <div class="mc2-sub">Flow Rate</div>
+              <div class="mc2-status"><span class="mc2-sk">Last Delivery:</span><span class="mc2-sv">--</span></div>
+              <button class="mc2-btn mc2-btn-primary" style="margin-top:6px;" onclick="mcAction('admixadd','Add Admix',document.getElementById('mc-admix-add-input').value+'oz','Delivered',this)">Add Admix</button>
+            </div>
+
+            <!-- Row 2: Admix State | Admix Propulsion -->
+            <div class="co-grid" style="margin-bottom:10px;">
+              <div class="mc2-card" id="mc-admixstate">
+                <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
+                <div class="mc2-head"><div class="mc2-dot mc2-dot-green"></div><span>Admix State</span></div>
+                <div class="mc2-metric mc2-metric-word">On</div>
+                <div class="mc2-sub">Admix State</div>
+                <div class="mc2-status"><span class="mc2-sk">Last Changed:</span><span class="mc2-sv">10:32 AM</span></div>
+                <button class="mc2-btn mc2-btn-ghost" onclick="mcConfirm('admixstate','Admix State','Confirm before turning off admix','Yes, Turn Off',this)">Turn Off Admix</button>
+              </div>
+              <div class="mc2-card" id="mc-admixprop">
+                <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
+                <div class="mc2-head"><div class="mc2-dot mc2-dot-green"></div><span>Admix Propulsion</span></div>
+                <div class="mc2-metric mc2-metric-word">On</div>
+                <div class="mc2-sub">Propulsion State</div>
+                <div class="mc2-status"><span class="mc2-sk">Last Changed:</span><span class="mc2-sv">10:32 AM</span></div>
+                <button class="mc2-btn mc2-btn-ghost" onclick="mcConfirm('admixprop','Admix Propulsion','Confirm before changing admix propulsion','Yes, Turn Off',this)">Turn Off</button>
+              </div>
+            </div>
+
+            <!-- Row 3: Reset Admix Flow Error — half width -->
+            <div class="co-grid" style="margin-bottom:8px;">
+              <div class="mc2-card" id="mc-admixflow">
+                <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
+                <div class="mc2-head"><div class="mc2-dot mc2-dot-grey"></div><span>Reset Admix Flow</span></div>
+                <div class="mc2-metric">3</div>
+                <div class="mc2-sub">Current Flow Errors</div>
+                <div class="mc2-status"><span class="mc2-sk">Last Reset:</span><span class="mc2-sv">10:32 AM</span></div>
+                <button class="mc2-btn mc2-btn-primary" onclick="mcAction('admixflow','Reset Admix Flow Error','3 errors','Cleared',this)">Reset</button>
+              </div>
+              <div></div>
+            </div>
+
+          </div><!-- /co-section-admix -->
+
+        </div>
+      </div><!-- /state-manual -->
 
     </div><!-- /drawer-body -->
   </div><!-- /drawer -->
@@ -1053,10 +1317,12 @@ const logs = [
   { date:'02/23/2026', time:'08:30 AM', type:'Backend Request',    sub:'Identity'           },
   { date:'02/23/2026', time:'02:30 PM', type:'Backend Request',    sub:'Identity'           },
   { date:'02/24/2026', time:'03:00 PM', type:'Backend Request',    sub:'Identity'           },
+  { date:'03/23/2026', time:'08:24 AM', type:'Event',              sub:'WDS No Connection', wds:true },
 ];
 
 /* ── STATE ──────────────────────────────────────── */
 let expanded = {};
+let activeLogIdx = 0;
 let activeTab = 'structured';
 
 /* ── TRUCK LIST ─────────────────────────────────── */
@@ -1282,6 +1548,7 @@ function openDetail(i) {
   const meta = logs[i].date + ' ' + logs[i].time + ' · TRUCK · ' + logs[i].type;
   document.getElementById('det-meta').textContent = meta.length > 40 ? meta.substring(0, 38) + '...' : meta;
 
+  activeLogIdx = i;
   activeTab = 'structured';
   document.querySelectorAll('.det-tab').forEach(t => t.classList.remove('on'));
   document.querySelectorAll('.det-tab')[1].classList.add('on');
@@ -1305,8 +1572,47 @@ function switchTab(tab, el) {
 function renderDetailContent(tab) {
   const area = document.getElementById('detail-scroll');
   area.scrollTop = 0;
+  const isWds = logs[activeLogIdx] && logs[activeLogIdx].wds;
 
   if (tab === 'structured') {
+    if (isWds) {
+      area.innerHTML = `
+        <div class="det-section-label" style="margin-top:4px;">Online (6)</div>
+
+        ${[
+          ['IOX',               'g', '12.92 V'],
+          ['In-Cab Dsplay',     'g', 'Active' ],
+          ['External Display',  'g', 'Active' ],
+          ['Bus Power',         'g', '12.76V' ],
+          ['Discharge Pressure','g', 'Connected'],
+          ['CWR',               'g', '45° C'  ],
+        ].map(([n,c,v]) => `
+          <div class="comp-card">
+            <div class="comp-card-row">
+              <div class="comp-card-left"><div class="s-dot ${c}"></div><span class="comp-card-name">${n}</span></div>
+              <div class="comp-card-right">
+                <span class="comp-card-val">${v}</span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+          </div>`).join('')}
+
+        <div class="det-section-label" style="margin-top:12px;">No Contact (5)</div>
+        <div class="nc-table">
+          <div class="nc-table-head">
+            <div class="nc-th">Components</div>
+            <div class="nc-th">Status</div>
+          </div>
+          <div class="nc-tr"><div class="nc-td" style="color:#d70100;font-weight:500;">WDS</div><div class="nc-td" style="color:#d70100;font-weight:500;">No Contact</div></div>
+          ${['Wired Drum','Roboteq','Power Module','FDM Heater'].map(n=>`
+            <div class="nc-tr"><div class="nc-td">${n}</div><div class="nc-td">No Contact</div></div>`).join('')}
+        </div>
+
+        <div class="caveat" style="margin-top:14px;">
+          <p>WDS lost contact on 03/23/2026 at 08:24 AM. Last battery voltage recorded was 12.6V. Check wiring and sensor connection before replacement.</p>
+        </div>`;
+      return;
+    }
     area.innerHTML = `
       <div class="det-section-label" style="margin-top:4px;">Online (7) - Expand All</div>
 
@@ -1421,13 +1727,15 @@ function selectDrawerNav(label, el) {
   /* switch drawer content state */
   const showList       = label === 'Truck Logs';
   const showComponents = label === 'Components Overview';
+  const showManual     = label === 'Manual Control';
   document.getElementById('state-list').style.display       = showList       ? 'flex' : 'none';
   document.getElementById('state-detail').style.display     = 'none';
   document.getElementById('state-components').style.display = showComponents ? 'flex' : 'none';
+  document.getElementById('state-manual').style.display     = showManual     ? 'flex' : 'none';
 
-  /* swap right pill: Filters for Truck Logs, Ping Truck for Components Overview, hidden for others */
-  document.getElementById('filters-pill').style.display = showList        ? 'flex' : 'none';
-  document.getElementById('ping-pill').style.display    = showComponents  ? 'flex' : 'none';
+  /* swap right pill */
+  document.getElementById('filters-pill').style.display = showList                    ? 'flex' : 'none';
+  document.getElementById('ping-pill').style.display    = (showComponents || showManual) ? 'flex' : 'none';
 }
 
 /* close drawer nav dropdown on outside click */
@@ -1441,12 +1749,126 @@ document.addEventListener('click', function(e) {
   }
 });
 
+function flipCard(el) {
+  el.classList.toggle('flipped');
+}
+
+function openWdsLog() {
+  /* switch nav to Truck Logs */
+  const logsOption = document.querySelector('#drawer-nav-dropdown .wts-option:nth-child(3)');
+  selectDrawerNav('Truck Logs', logsOption);
+  /* render rows then open the WDS log entry (last in array, index 15) */
+  renderLogRows();
+  setTimeout(() => openDetail(15), 50);
+}
+
 function toggleCoSection(id, hdr) {
   const section = document.getElementById('co-section-' + id);
   const chev = hdr.querySelector('.co-acc-chev');
   const isOpen = section.style.display !== 'none';
   section.style.display = isOpen ? 'none' : 'block';
   chev.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+function mcAction(id, title, value, result, btn) {
+  const card = btn.closest('.mc2-card');
+  const track = card.querySelector('.mc2-progress');
+  const fill  = card.querySelector('.mc2-progress-fill');
+  const dot   = card.querySelector('.mc2-dot');
+  const sub   = card.querySelector('.mc2-sub');
+  const sv    = card.querySelector('.mc2-sv');
+
+  if (!btn.dataset.orig) btn.dataset.orig = btn.textContent;
+
+  /* pending */
+  card.classList.add('mc2-pending');
+  btn.textContent = 'Sending…';
+  btn.disabled = true;
+  dot.style.background = 'var(--blue)';
+  dot.classList.add('pulsing');
+
+  /* progress bar — animate to 90% over 1s, rest fills on success */
+  track.classList.add('visible');
+  fill.style.transition = 'width 1s ease-out';
+  fill.style.width = '90%';
+
+  setTimeout(() => {
+    /* complete progress */
+    fill.style.transition = 'width 0.25s ease-out';
+    fill.style.width = '100%';
+
+    setTimeout(() => {
+      /* success state */
+      card.classList.remove('mc2-pending');
+      card.classList.add('mc2-success');
+      dot.classList.remove('pulsing');
+      dot.style.background = '#16a34a';
+
+      /* sweep in new sub text */
+      if (sub) {
+        sub.style.opacity = '0';
+        setTimeout(() => {
+          sub.textContent = result;
+          sub.classList.add('mc2-sweep');
+          sub.style.opacity = '1';
+          sub.addEventListener('animationend', () => sub.classList.remove('mc2-sweep'), {once:true});
+        }, 80);
+      }
+
+      /* sweep in new status value */
+      if (sv) {
+        sv.style.opacity = '0';
+        setTimeout(() => {
+          sv.textContent = 'just now';
+          sv.classList.add('mc2-sweep');
+          sv.style.opacity = '1';
+          sv.addEventListener('animationend', () => sv.classList.remove('mc2-sweep'), {once:true});
+        }, 140);
+      }
+
+      btn.textContent = 'Done ✓';
+      btn.disabled = false;
+
+      /* fade out progress bar */
+      setTimeout(() => {
+        track.style.opacity = '0';
+        setTimeout(() => {
+          track.classList.remove('visible');
+          fill.style.transition = 'none';
+          fill.style.width = '0%';
+          track.style.opacity = '';
+        }, 300);
+      }, 400);
+
+      /* reset after 2.5s */
+      setTimeout(() => {
+        card.classList.remove('mc2-success');
+        dot.style.background = 'rgba(54,50,45,0.22)';
+        btn.textContent = btn.dataset.orig;
+      }, 2500);
+
+    }, 250);
+  }, 1100);
+}
+
+function mcConfirm(id, title, msg, confirmLabel, btn) {
+  const card = btn.closest('.mc2-card');
+  /* show confirm overlay */
+  const overlay = document.createElement('div');
+  overlay.className = 'mc2-confirm';
+  overlay.style.position = 'absolute';
+  overlay.innerHTML = `
+    <div class="mc2-confirm-msg">${msg}</div>
+    <div class="mc2-confirm-btns">
+      <button class="mc2-btn mc2-btn-ghost" style="flex:1;font-size:12px;" onclick="this.closest('.mc2-confirm').remove()">Cancel</button>
+      <button class="mc2-btn mc2-btn-danger" style="flex:1;font-size:12px;">${confirmLabel}</button>
+    </div>`;
+  card.style.position = 'relative';
+  card.appendChild(overlay);
+  overlay.querySelector('.mc2-btn-danger').addEventListener('click', () => {
+    overlay.remove();
+    mcAction(id, title, title, 'Acknowledged', btn);
+  });
 }
 
 function toggleWtsDropdown() {

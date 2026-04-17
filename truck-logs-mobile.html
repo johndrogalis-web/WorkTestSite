@@ -26,29 +26,75 @@
     --font:          'ABC Repro', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   }
 
+  /* ─── HIDE SCROLLBARS ───────────────────────────────────── */
+  .phone * { scrollbar-width: none; -ms-overflow-style: none; }
+  .phone *::-webkit-scrollbar { display: none; }
+
   /* ─── RESET ──────────────────────────────────────────────── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   button { font-family: var(--font); cursor: pointer; background: none; border: none; }
   input, select { font-family: var(--font); }
   body {
-    background: #cbc9c6;
+    background: #d4d0cb;
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding: 32px 16px 64px;
+    padding: 40px 16px 80px;
     font-family: var(--font);
   }
 
   /* ─── PHONE SHELL ────────────────────────────────────────── */
+  .phone-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  /* Side buttons */
+  .phone-wrap::before {
+    content: '';
+    position: absolute;
+    left: -3px; top: 120px;
+    width: 3px; height: 36px;
+    background: #3a3a3a;
+    border-radius: 2px 0 0 2px;
+    box-shadow: 0 50px 0 #3a3a3a, 0 100px 0 #3a3a3a;
+  }
+  .phone-wrap::after {
+    content: '';
+    position: absolute;
+    right: -3px; top: 160px;
+    width: 3px; height: 64px;
+    background: #3a3a3a;
+    border-radius: 0 2px 2px 0;
+  }
+
   .phone {
     width: 390px;
     height: 844px;
     background: var(--base);
-    border-radius: 44px;
+    border-radius: 50px;
     overflow: hidden;
     position: relative;
-    box-shadow: 0 2px 0 1px #a09d99, 0 12px 60px rgba(0,0,0,0.28);
+    /* Outer bezel */
+    outline: 10px solid #2a2a2a;
+    outline-offset: 0;
+    box-shadow:
+      0 0 0 1px #111,
+      0 0 0 2px #444,
+      0 30px 80px rgba(0,0,0,0.7),
+      0 8px 20px rgba(0,0,0,0.5);
+  }
+
+  /* Dynamic island / notch */
+  .phone-notch {
+    position: absolute;
+    top: 12px; left: 50%;
+    transform: translateX(-50%);
+    width: 120px; height: 34px;
+    background: #111;
+    border-radius: 20px;
+    z-index: 999;
   }
 
   /* ─── SCREENS ────────────────────────────────────────────── */
@@ -66,26 +112,25 @@
     opacity: 1;
     pointer-events: all;
   }
+  /* push content below the dynamic island */
+  .screen > :first-child { margin-top: 54px; }
 
   /* ─── SHARED TOP NAV ─────────────────────────────────────── */
   .top-nav {
-    background: var(--layer-1);
+    background: var(--base);
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 18px 16px 14px;
-    border-bottom: 1px solid var(--border);
+    padding: 12px 12px;
+    position: relative;
     flex-shrink: 0;
   }
-  .hamburger { display: flex; flex-direction: column; gap: 4px; width: 20px; }
+  .hamburger { display: flex; flex-direction: column; gap: 4px; width: 18px; }
   .hamburger span { display: block; height: 1.5px; background: var(--strong); border-radius: 1px; }
-  .logo { font-size: 15px; font-weight: 600; color: var(--strong); letter-spacing: -0.4px; }
-  .bell-wrap { position: relative; }
   .bell-dot {
-    position: absolute; top: -2px; right: -2px;
+    position: absolute; top: 8px; right: 8px;
     width: 8px; height: 8px;
     background: var(--red); border-radius: 50%;
-    border: 1.5px solid var(--layer-1);
+    border: 1.5px solid var(--base);
   }
 
   /* ─── SCROLLABLE BODY ────────────────────────────────────── */
@@ -135,12 +180,19 @@
     font-size: 14px; color: var(--soft);
     background: none; letter-spacing: -0.28px;
   }
+  .wts-option {
+    font-size: 14px; color: var(--soft); padding: 8px 10px;
+    border-radius: 4px; cursor: pointer; letter-spacing: -0.28px;
+    line-height: 1.3;
+  }
+  .wts-option:active { background: var(--layer-2); }
+  .wts-active { color: var(--strong); font-weight: 500; }
   .overview-pill {
     display: inline-flex; align-items: center; gap: 6px;
     border: 1px solid var(--border-mid); border-radius: 32px;
     padding: 8px 14px; font-size: 14px; font-weight: 500;
     color: var(--strong); margin-bottom: 10px;
-    letter-spacing: -0.28px;
+    letter-spacing: -0.28px; background: none; cursor: pointer;
   }
 
   /* ─── TRUCK TABLE ────────────────────────────────────────── */
@@ -148,17 +200,24 @@
   .age-cell  { font-size: 12px; color: var(--soft) !important; }
 
   .group-header {
-    display: flex; align-items: center; gap: 8px;
-    padding: 6px 8px; background: var(--layer-2);
-    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 8px; background: var(--layer-1);
+    border-bottom: 1px solid var(--border-mid);
     cursor: pointer; -webkit-tap-highlight-color: transparent;
   }
-  .group-header:active { background: rgba(54,50,45,0.08); }
-  .group-label { font-size: 13px; color: var(--strong); font-weight: 500; letter-spacing: -0.2px; }
+  .group-header:active { background: var(--layer-2); }
+  .group-badge {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--red); border-radius: 4px;
+    min-width: 24px; height: 20px; padding: 0 4px;
+    font-size: 12px; font-weight: 400; color: white;
+    letter-spacing: -0.24px; flex-shrink: 0;
+  }
+  .group-label { font-size: 14px; color: var(--strong); letter-spacing: -0.28px; line-height: 1.3; }
 
   .tbl-head {
     display: grid;
-    grid-template-columns: 74px 1fr 46px 54px 82px;
+    grid-template-columns: 74px 80px 48px 68px 82px;
   }
   .th {
     font-size: 14px; font-weight: 500; color: var(--strong);
@@ -168,7 +227,7 @@
 
   .truck-row {
     display: grid;
-    grid-template-columns: 74px 1fr 46px 54px 82px;
+    grid-template-columns: 74px 80px 48px 68px 82px;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
@@ -182,7 +241,7 @@
   }
   .td.truck-num {
     border-right: 1.5px solid var(--border);
-    justify-content: flex-end; gap: 4px;
+    justify-content: flex-end; gap: 4px; overflow: visible;
   }
   .badge {
     display: inline-flex; align-items: center; gap: 3px;
@@ -194,7 +253,7 @@
 
   /* expanded content */
   .exp-wrap { display: none; background: var(--layer-2); }
-  .exp-wrap.open { display: block; }
+  .exp-wrap.open { display: block; padding-bottom: 15px; }
   .exp-row {
     display: grid; grid-template-columns: 1fr 1fr;
     border-bottom: 1px solid var(--border);
@@ -222,6 +281,7 @@
     background: var(--layer-1);
     border-radius: 44px; overflow: hidden;
     display: flex; flex-direction: column;
+    padding-top: 54px;
     transform: translateX(100%);
     transition: transform 0.30s cubic-bezier(0.4,0,0.2,1);
   }
@@ -457,22 +517,31 @@
 </head>
 <body>
 
+<div class="phone-wrap">
 <div class="phone">
+<div class="phone-notch"></div>
 
   <!-- ══════════════════════════════════════════════════════════
        SCREEN 1 — MAIN TRUCK LIST
   ═══════════════════════════════════════════════════════════ -->
   <div class="screen active" id="s-main">
     <div class="top-nav">
-      <div class="hamburger"><span></span><span></span><span></span></div>
-      <div class="logo">7K verifi</div>
-      <div class="bell-wrap">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <!-- Hamburger -->
+      <button style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;flex-shrink:0;">
+        <div class="hamburger"><span></span><span></span><span></span></div>
+      </button>
+      <!-- Logo centred absolutely -->
+      <div style="position:absolute;left:50%;transform:translateX(-50%);">
+        <svg width="28" height="16" viewBox="0 0 28 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.3958 0H0V3.1785H9.15381L0.367992 15.9386H8.00383L12.6497 3.22457C13.1097 1.98081 12.4197 0 10.3958 0ZM16.6517 0C14.6277 0 13.9377 1.98081 14.3977 3.22457L19.0436 15.9386H26.6794L17.8936 3.1785H27.0474V0H16.6517Z" fill="#36322D"/></svg>
+      </div>
+      <!-- Bell -->
+      <button style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;flex-shrink:0;position:relative;margin-left:auto;">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
           <path d="M10 2a6 6 0 00-6 6v3l-1.5 2.5h15L16 11V8a6 6 0 00-6-6z" stroke="#36322d" stroke-width="1.4" stroke-linejoin="round"/>
           <path d="M8.5 16.5a1.5 1.5 0 003 0" stroke="#36322d" stroke-width="1.4"/>
         </svg>
         <div class="bell-dot"></div>
-      </div>
+      </button>
     </div>
 
     <div class="scroll-body">
@@ -493,25 +562,13 @@
           </div>
           <div class="view-toggle">
             <div class="vt-btn on">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <rect x="2" y="2" width="5" height="5" rx="1" fill="white"/>
-                <rect x="9" y="2" width="5" height="5" rx="1" fill="white"/>
-                <rect x="2" y="9" width="5" height="5" rx="1" fill="white"/>
-                <rect x="9" y="9" width="5" height="5" rx="1" fill="white"/>
-              </svg>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M17.5 1.6665H2.49996C2.27895 1.6665 2.06698 1.7543 1.9107 1.91058C1.75442 2.06686 1.66663 2.27882 1.66663 2.49984V17.4998C1.66663 17.7208 1.75442 17.9328 1.9107 18.0891C2.06698 18.2454 2.27895 18.3332 2.49996 18.3332H17.5C17.721 18.3332 17.9329 18.2454 18.0892 18.0891C18.2455 17.9328 18.3333 17.7208 18.3333 17.4998V2.49984C18.3333 2.27882 18.2455 2.06686 18.0892 1.91058C17.9329 1.7543 17.721 1.6665 17.5 1.6665ZM6.66663 16.6665H3.33329V13.3332H6.66663V16.6665ZM6.66663 11.6665H3.33329V8.33317H6.66663V11.6665ZM6.66663 6.6665H3.33329V3.33317H6.66663V6.6665ZM11.6666 16.6665H8.33329V13.3332H11.6666V16.6665ZM11.6666 11.6665H8.33329V8.33317H11.6666V11.6665ZM11.6666 6.6665H8.33329V3.33317H11.6666V6.6665ZM16.6666 16.6665H13.3333V13.3332H16.6666V16.6665ZM16.6666 11.6665H13.3333V8.33317H16.6666V11.6665ZM16.6666 6.6665H13.3333V3.33317H16.6666V6.6665Z" fill="white"/></svg>
             </div>
             <div class="vt-btn">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <rect x="2" y="3.5" width="12" height="1.5" rx="0.75" fill="#36322d99"/>
-                <rect x="2" y="7.25" width="12" height="1.5" rx="0.75" fill="#36322d99"/>
-                <rect x="2" y="11" width="12" height="1.5" rx="0.75" fill="#36322d99"/>
-              </svg>
+              <svg width="17" height="15" viewBox="0 0 17 15" fill="none"><path d="M16.1 1.70858L11.1 0.0419157H11.0417C11.0029 0.0380171 10.9638 0.0380171 10.925 0.0419157H10.7333H10.625H10.5667L5.83334 1.66692L1.1 0.0419157C0.974682 0.000592014 0.841339 -0.0103798 0.710949 0.00990307C0.580559 0.030186 0.45685 0.0811438 0.350003 0.158582C0.242301 0.235263 0.15439 0.336468 0.0935318 0.453838C0.0326733 0.571208 0.000614128 0.701374 2.77795e-06 0.833582V12.5002C-0.00044819 12.675 0.0540186 12.8454 0.155704 12.9874C0.25739 13.1295 0.401152 13.236 0.56667 13.2919L5.56667 14.9586C5.73454 15.0133 5.91546 15.0133 6.08334 14.9586L10.8333 13.3752L15.5667 15.0002C15.6552 15.0123 15.7449 15.0123 15.8333 15.0002C16.0076 15.0027 16.1777 14.947 16.3167 14.8419C16.4244 14.7652 16.5123 14.664 16.5731 14.5467C16.634 14.4293 16.6661 14.2991 16.6667 14.1669V2.50025C16.6671 2.32555 16.6127 2.15512 16.511 2.01306C16.4093 1.871 16.2655 1.76449 16.1 1.70858ZM5 13.0086L1.66667 11.9002V1.99192L5 3.10025V13.0086ZM10 11.9002L6.66667 13.0086V3.10025L10 1.99192V11.9002ZM15 13.0086L11.6667 11.9002V1.99192L15 3.10025V13.0086Z" fill="#36322D" fill-opacity="0.62"/></svg>
             </div>
             <div class="vt-btn">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <circle cx="8" cy="8" r="5.5" stroke="#36322d99" stroke-width="1.3"/>
-                <path d="M2.5 8h11M8 2.5c-2 1.5-2.5 3-2.5 5.5s.5 4 2.5 5.5M8 2.5c2 1.5 2.5 3 2.5 5.5s-.5 4-2.5 5.5" stroke="#36322d99" stroke-width="1"/>
-              </svg>
+              <svg width="17" height="17" viewBox="0 0 17 17" fill="none"><path d="M10.2487 12.7306L9.1737 13.8139V9.15559C9.1737 8.93458 9.0859 8.72262 8.92962 8.56634C8.77334 8.41006 8.56138 8.32226 8.34036 8.32226C8.11935 8.32226 7.90739 8.41006 7.75111 8.56634C7.59483 8.72262 7.50703 8.93458 7.50703 9.15559V13.8139L6.43203 12.7306C6.35433 12.6529 6.26209 12.5913 6.16057 12.5492C6.05905 12.5072 5.95025 12.4855 5.84036 12.4855C5.73048 12.4855 5.62167 12.5072 5.52015 12.5492C5.41864 12.5913 5.32639 12.6529 5.2487 12.7306C5.171 12.8083 5.10936 12.9005 5.06731 13.0021C5.02526 13.1036 5.00362 13.2124 5.00362 13.3223C5.00362 13.4321 5.02526 13.5409 5.06731 13.6425C5.10936 13.744 5.171 13.8362 5.2487 13.9139L7.7487 16.4139C7.82795 16.4898 7.9214 16.5493 8.0237 16.5889C8.12345 16.633 8.2313 16.6558 8.34036 16.6558C8.44942 16.6558 8.55728 16.633 8.65703 16.5889C8.75932 16.5493 8.85278 16.4898 8.93203 16.4139L11.432 13.9139C11.5889 13.757 11.6771 13.5442 11.6771 13.3223C11.6771 13.1003 11.5889 12.8875 11.432 12.7306C11.2751 12.5737 11.0623 12.4855 10.8404 12.4855C10.6184 12.4855 10.4056 12.5737 10.2487 12.7306ZM13.6904 3.50559C13.1812 2.3356 12.3024 1.36482 11.1888 0.742032C10.0751 0.11924 8.78791 -0.121214 7.5245 0.0575173C6.26109 0.236248 5.09113 0.824304 4.19391 1.73157C3.29668 2.63884 2.72169 3.81527 2.55703 5.08059C1.76252 5.27086 1.06555 5.74629 0.598477 6.41658C0.131407 7.08688 -0.0732339 7.90537 0.0234157 8.71661C0.120065 9.52785 0.511275 10.2753 1.12275 10.8171C1.73423 11.3589 2.52339 11.6573 3.34036 11.6556C3.56138 11.6556 3.77334 11.5678 3.92962 11.4115C4.0859 11.2552 4.1737 11.0433 4.1737 10.8223C4.1737 10.6012 4.0859 10.3893 3.92962 10.233C3.77334 10.0767 3.56138 9.98893 3.34036 9.98893C2.89834 9.98893 2.47441 9.81333 2.16185 9.50077C1.84929 9.18821 1.6737 8.76429 1.6737 8.32226C1.6737 7.88023 1.84929 7.45631 2.16185 7.14375C2.47441 6.83119 2.89834 6.65559 3.34036 6.65559C3.56138 6.65559 3.77334 6.56779 3.92962 6.41151C4.0859 6.25523 4.1737 6.04327 4.1737 5.82226C4.17582 4.83666 4.52727 3.88372 5.16559 3.13275C5.80391 2.38177 6.68777 1.88139 7.66015 1.72049C8.63254 1.55959 9.63047 1.7486 10.4767 2.25393C11.3229 2.75927 11.9625 3.54821 12.282 4.48059C12.3297 4.62379 12.4153 4.75137 12.5298 4.8497C12.6442 4.94804 12.7833 5.01344 12.932 5.03893C13.4871 5.14382 13.9903 5.4336 14.3596 5.86104C14.7288 6.28848 14.9425 6.82839 14.9657 7.39279C14.9889 7.9572 14.8203 8.51282 14.4873 8.96912C14.1543 9.42542 13.6766 9.75551 13.132 9.90559C13.0259 9.93295 12.9262 9.98095 12.8386 10.0468C12.7509 10.1127 12.6772 10.1953 12.6215 10.2897C12.5658 10.3841 12.5292 10.4885 12.5138 10.5971C12.4985 10.7056 12.5047 10.8161 12.532 10.9223C12.5594 11.0284 12.6074 11.1281 12.6733 11.2157C12.7392 11.3033 12.8217 11.3771 12.9161 11.4328C13.0105 11.4885 13.115 11.5251 13.2235 11.5405C13.332 11.5558 13.4425 11.5496 13.5487 11.5223C14.4257 11.2905 15.2031 10.7789 15.7629 10.0651C16.3226 9.35138 16.6342 8.47443 16.6502 7.56748C16.6663 6.66053 16.3859 5.77313 15.8517 5.04003C15.3175 4.30692 14.5586 3.76817 13.6904 3.50559Z" fill="#36322D" fill-opacity="0.62"/></svg>
             </div>
           </div>
         </div>
@@ -524,12 +581,19 @@
           <input placeholder="Ticket, truck, order, mix, etc." readonly>
         </div>
 
-        <button class="overview-pill">
-          Where to start
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M5 3l4 4-4 4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
+        <div style="position:relative;margin-bottom:10px;">
+          <button class="overview-pill" id="wts-btn" onclick="toggleWtsDropdown()">
+            <span id="wts-label">Where to start</span>
+            <svg id="wts-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" style="transition:transform 0.2s;">
+              <path d="M3 5l4 4 4-4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div id="wts-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:white;border:1px solid var(--border-mid);border-radius:8px;box-shadow:0 4px 16px rgba(54,50,45,0.12);padding:4px;min-width:200px;z-index:50;">
+            <div class="wts-option wts-active" onclick="selectWts('Where to start', this)">Where To Start</div>
+            <div class="wts-option" onclick="selectWts('Overview', this)">Overview</div>
+            <div class="wts-option" onclick="selectWts('Components Condition', this)">Components Condition</div>
+          </div>
+        </div>
 
         <!-- TABLE HEADER -->
         <div class="tbl-head">
@@ -639,6 +703,7 @@
   </div><!-- /drawer -->
 
 </div><!-- /phone -->
+</div><!-- /phone-wrap -->
 
 <script>
 /* ── DATA ───────────────────────────────────────── */
@@ -701,15 +766,12 @@ function renderTrucks() {
 
   truckGroups.forEach((group, gi) => {
     const isGroupOpen = group.open !== false;
-    const groupChev = isGroupOpen
-      ? `<path d="M3 5l5 5 5-5" stroke="#36322d" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>`
-      : `<path d="M5 3l5 5-5 5" stroke="#36322d" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>`;
-
+    /* up = open (0deg), down = closed (180deg) */
     html += `
       <div class="group-header" onclick="toggleGroup(${gi})">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">${groupChev}</svg>
-        <span class="badge err" style="font-size:11px;padding:2px 6px;">${group.attention}</span>
-        <span class="group-label">${group.label} — Uptime ${group.uptime}</span>
+        ${chevSvg(isGroupOpen ? 0 : 180)}
+        <div class="group-badge">${group.attention}</div>
+        <span class="group-label">${group.label} - Uptime ${group.uptime}</span>
       </div>`;
 
     if (!isGroupOpen) {
@@ -720,6 +782,7 @@ function renderTrucks() {
     group.trucks.forEach(t => {
       const i = globalIdx++;
       const isOpen = !!expanded[i];
+      /* up = expanded (0deg), right = collapsed (90deg) */
       const chevDown  = `<path d="M3 5l5 5 5-5" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>`;
       const chevRight = `<path d="M5 3l5 5-5 5" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>`;
       const badges = [
@@ -734,7 +797,7 @@ function renderTrucks() {
         : `<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 2l11 11" stroke="#9ca3af" stroke-width="1.3" stroke-linecap="round"/><circle cx="7.5" cy="11.5" r="1" fill="#9ca3af"/><path d="M5 9A3.5 3.5 0 017.5 8 3.5 3.5 0 0110 9" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg> <span style="color:var(--soft)">No connection</span>`;
 
       const expHtml = isOpen ? `
-        <div class="exp-wrap open">
+        <div class="exp-wrap open" data-truck-idx="${i}">
           <div class="exp-row"><div class="exp-label">Source</div><div class="exp-val">${t.source}</div></div>
           <div class="exp-row"><div class="exp-label">Version</div><div class="exp-val">${t.ver}</div></div>
           <div class="exp-row"><div class="exp-label">Plant</div><div class="exp-val">${t.plant}</div></div>
@@ -752,7 +815,7 @@ function renderTrucks() {
         <div>
           <div class="truck-row" style="${rowBg}" onclick="toggleTruck(${i})">
             <div class="td truck-num">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">${isOpen ? chevDown : chevRight}</svg>
+              ${chevSvg(isOpen ? 180 : 90)}
               ${t.num}
             </div>
             <div class="td src-cell">${t.source === 'Customer Ticket' ? 'Customer' : 'System'}</div>
@@ -776,9 +839,26 @@ function toggleGroup(gi) {
 function toggleTruck(i) {
   expanded[i] = !expanded[i];
   renderTrucks();
+  /* if expanding, scroll so the full expanded row is visible */
+  if (expanded[i]) {
+    setTimeout(() => {
+      const row = document.querySelector(`[data-truck-idx="${i}"]`);
+      if (row) {
+        const scrollBody = document.querySelector('#s-main .scroll-body');
+        const rowBottom = row.getBoundingClientRect().bottom;
+        const containerBottom = scrollBody.getBoundingClientRect().bottom;
+        const gap = 10;
+        if (rowBottom > containerBottom - gap) {
+          scrollBody.scrollBy({ top: rowBottom - containerBottom + gap, behavior: 'smooth' });
+        }
+      }
+    }, 50);
+  }
 }
 
-/* ── DRAWER ─────────────────────────────────────── */
+/* ── SHARED CHEVRON ──────────────────────────────── */
+/* rotate(0) = up (open group), rotate(180) = down (closed group), rotate(90) = right (collapsed truck row) */
+const chevSvg = (deg) => `<svg width="10" height="6" viewBox="0 0 10 6" fill="none" style="transform:rotate(${deg}deg);flex-shrink:0;"><path d="M8.75 4.75L4.75 0.75L0.75 4.75" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 function openDrawer(i) {
   document.getElementById('drawer-truck-num').textContent = 'Truck: ' + trucks[i].num;
   renderLogRows();
@@ -936,6 +1016,32 @@ function renderDetailContent(tab) {
 }</div>`;
   }
 }
+
+function toggleWtsDropdown() {
+  const dd = document.getElementById('wts-dropdown');
+  const chevron = document.getElementById('wts-chevron');
+  const isOpen = dd.style.display === 'none';
+  dd.style.display = isOpen ? 'block' : 'none';
+  chevron.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+function selectWts(label, el) {
+  document.getElementById('wts-label').textContent = label;
+  document.querySelectorAll('.wts-option').forEach(o => o.classList.remove('wts-active'));
+  el.classList.add('wts-active');
+  document.getElementById('wts-dropdown').style.display = 'none';
+  document.getElementById('wts-chevron').style.transform = 'rotate(0deg)';
+}
+
+document.addEventListener('click', function(e) {
+  const btn = document.getElementById('wts-btn');
+  const dd  = document.getElementById('wts-dropdown');
+  if (btn && dd && !btn.contains(e.target) && !dd.contains(e.target)) {
+    dd.style.display = 'none';
+    const ch = document.getElementById('wts-chevron');
+    if (ch) ch.style.transform = 'rotate(0deg)';
+  }
+});
 
 /* ── INIT ──────────────────────────────────────── */
 renderTrucks();

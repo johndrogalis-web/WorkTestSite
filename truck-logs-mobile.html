@@ -168,17 +168,66 @@
   .view-toggle {
     display: flex; border: 1px solid var(--border); border-radius: 32px; overflow: hidden;
   }
-  .vt-btn { padding: 8px 11px; display: flex; align-items: center; justify-content: center; }
+  .vt-btn { padding: 10px 13px; display: flex; align-items: center; justify-content: center; }
   .vt-btn.on { background: var(--blue); }
-  .search-bar {
-    display: flex; align-items: center; gap: 10px;
-    border: 1px solid var(--border); border-radius: 24px;
-    padding: 10px 14px; margin-bottom: 10px;
+  /* ─── SEARCH ─────────────────────────────────────── */
+  .srch-wrap { position: relative; margin-bottom: 10px; }
+  .srch-field {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--base); border: 1px solid var(--border);
+    border-radius: 24px; padding: 10px 12px;
+    transition: border 0.15s;
   }
-  .search-bar input {
+  .srch-field.active {
+    border: 2px solid var(--strong);
+    padding: 9px 11px; /* compensate for extra border px */
+  }
+  .srch-field input {
     flex: 1; border: none; outline: none;
-    font-size: 14px; color: var(--soft);
+    font-size: 14px; color: var(--strong);
     background: none; letter-spacing: -0.28px;
+    font-family: var(--font);
+  }
+  .srch-field input::placeholder { color: var(--soft); }
+  .srch-drop {
+    position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+    background: white; border: 1px solid var(--border);
+    border-radius: 16px; padding: 12px;
+    box-shadow: 0 14px 24px rgba(0,0,0,0.14);
+    z-index: 200; max-height: 340px; overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .srch-section-hdr {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 8px; margin-bottom: 2px;
+  }
+  .srch-section-label {
+    font-size: 14px; font-weight: 500; color: var(--strong);
+    letter-spacing: -0.28px;
+  }
+  .srch-row {
+    display: flex; align-items: center;
+    height: 36px; padding: 4px 8px; border-radius: 8px;
+    cursor: pointer; gap: 8px;
+  }
+  .srch-row:active { background: rgba(194,215,250,0.25); }
+  .srch-match-text { font-size: 14px; letter-spacing: -0.28px; line-height: 1.3; }
+  .srch-chip {
+    display: inline-block; background: #C2D7FA;
+    border-radius: 2px; padding: 0 2px;
+    color: var(--strong); font-weight: 500;
+  }
+  .srch-soft { color: var(--soft); }
+  .srch-meta { font-size: 12px; color: var(--soft); letter-spacing: -0.2px; margin-left: auto; flex-shrink: 0; }
+  .srch-show-more {
+    font-size: 14px; color: var(--blue); letter-spacing: -0.28px;
+    padding: 4px 8px; cursor: pointer; display: block;
+    font-weight: 500;
+  }
+  .srch-divider { height: 1px; background: var(--border); margin: 8px 0; }
+  .srch-no-hits {
+    font-size: 14px; color: var(--soft); letter-spacing: -0.28px;
+    padding: 8px; text-align: center;
   }
   .wts-option {
     font-size: 14px; color: var(--soft); padding: 8px 10px;
@@ -239,7 +288,7 @@
   .truck-row:nth-child(even) { background: var(--layer-2); }
   .td {
     font-size: 14px; color: var(--defined);
-    padding: 8px; border-bottom: 1px solid var(--border);
+    padding: 11px 8px; border-bottom: 1px solid var(--border);
     display: flex; align-items: center; gap: 5px;
     letter-spacing: -0.28px; line-height: 1.3;
   }
@@ -264,11 +313,11 @@
   }
   .exp-label {
     font-size: 14px; font-weight: 500; color: var(--strong);
-    padding: 8px; letter-spacing: -0.28px;
+    padding: 11px 8px; letter-spacing: -0.28px;
   }
   .exp-val {
     font-size: 14px; color: var(--defined);
-    padding: 8px; letter-spacing: -0.28px;
+    padding: 11px 8px; letter-spacing: -0.28px;
     display: flex; align-items: center; gap: 6px;
   }
   .view-truck-btn {
@@ -294,7 +343,7 @@
 
   .chrome-btns { display: flex; align-items: center; gap: 5px; }
   .chrome-btn {
-    width: 32px; height: 32px; border-radius: 50%;
+    width: 40px; height: 40px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     -webkit-tap-highlight-color: transparent; flex-shrink: 0;
   }
@@ -364,20 +413,21 @@
   }
   .log-th {
     font-size: 12px; font-weight: 500; color: var(--strong);
-    padding: 8px 5px; letter-spacing: -0.2px;
+    padding: 10px 5px; letter-spacing: -0.2px;
   }
   .log-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .log-row {
     display: grid; grid-template-columns: 120px 1fr 1fr;
     padding: 0 16px; cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+    min-height: 44px;
   }
   .log-row:nth-child(odd)  { background: var(--layer-1); }
   .log-row:nth-child(even) { background: var(--layer-2); }
   .log-row.sel { background: rgba(48,105,227,0.07); }
   .log-td {
     font-size: 12px; color: var(--defined);
-    padding: 9px 5px; border-bottom: 1px solid var(--border);
+    padding: 12px 5px; border-bottom: 1px solid var(--border);
     line-height: 1.35; letter-spacing: -0.2px;
   }
   .log-td.time { display: flex; flex-direction: column; gap: 1px; }
@@ -408,7 +458,7 @@
   }
   .det-tab {
     font-size: 14px; color: var(--soft);
-    padding: 10px 8px; border-bottom: 2px solid transparent;
+    padding: 12px 12px; border-bottom: 2px solid transparent;
     letter-spacing: -0.28px; cursor: pointer;
   }
   .det-tab.on { color: var(--strong); border-bottom-color: var(--strong); font-weight: 500; }
@@ -543,7 +593,7 @@
 
   /* ─── COMPONENTS OVERVIEW ───────────────────────────────── */
   .co-scroll { flex:1; overflow-y:auto; background:var(--layer-2); padding:16px; -webkit-overflow-scrolling:touch; }
-  .co-section-hdr { display:flex; align-items:center; gap:8px; margin-bottom:12px; cursor:pointer; padding:4px 0; user-select:none; }
+  .co-section-hdr { display:flex; align-items:center; gap:8px; margin-bottom:4px; cursor:pointer; padding:10px 0; user-select:none; }
   .co-section-hdr span { font-size:16px; font-weight:500; color:var(--strong); letter-spacing:-0.4px; flex:1; }
   .ping-btn {
     font-size:12px; font-weight:500; color:white; background:#1594ef;
@@ -629,7 +679,7 @@
   }
   .ct-day {
     display:flex; flex-direction:column; align-items:center;
-    padding:8px 4px 8px; cursor:pointer;
+    padding:10px 4px; cursor:pointer;
     border-right:1px solid var(--border);
     transition:background 0.15s; position:relative;
   }
@@ -827,7 +877,7 @@
     padding:16px 16px 12px; flex-shrink:0;
   }
   .sn-close {
-    width:36px; height:36px; border-radius:50%;
+    width:44px; height:44px; border-radius:50%;
     border:2px solid var(--strong); background:none;
     display:flex; align-items:center; justify-content:center;
     cursor:pointer; flex-shrink:0;
@@ -955,6 +1005,31 @@
     font-size:13px; letter-spacing:-0.2px; flex-shrink:0;
   }
 
+  /* ─── FILTER SHEET ─────────────────────────────── */
+  .flt-section { margin-bottom: 20px; }
+  .flt-section-label {
+    font-size: 11px; font-weight: 600; color: var(--soft);
+    letter-spacing: 0.4px; text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .flt-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .flt-chip {
+    display: inline-flex; align-items: center;
+    padding: 8px 14px; border-radius: 32px;
+    border: 1px solid var(--border-mid);
+    font-size: 14px; font-weight: 500; color: var(--strong);
+    letter-spacing: -0.28px; background: none;
+    cursor: pointer; font-family: var(--font);
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .flt-chip.active {
+    background: var(--strong); color: white;
+    border-color: var(--strong);
+  }
+  .flt-chip:active { opacity: 0.75; }
+
+
 </style>
 </head>
 <body>
@@ -999,10 +1074,11 @@
 
         <div class="filter-row">
           <div class="left-filters">
-            <button class="btn-pill">
+            <button class="btn-pill" id="filter-btn" onclick="filterOpen()">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M2 4h12M4 8h8M6 12h4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round"/>
               </svg>
+              <span id="filter-count" style="display:none;background:var(--blue);color:white;border-radius:10px;font-size:11px;font-weight:600;padding:1px 6px;margin-left:2px;"></span>
             </button>
             <button class="btn-pill" style="margin-left:6px;">
               <span style="font-size:16px;letter-spacing:1px;color:var(--strong);">···</span>
@@ -1021,12 +1097,23 @@
           </div>
         </div>
 
-        <div class="search-bar">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <circle cx="8" cy="8" r="5" stroke="#36322d9e" stroke-width="1.4"/>
-            <path d="M12.5 12.5l3 3" stroke="#36322d9e" stroke-width="1.4" stroke-linecap="round"/>
-          </svg>
-          <input placeholder="Ticket, truck, order, mix, etc." readonly>
+        <div class="srch-wrap" id="srch-wrap">
+          <div class="srch-field" id="srch-field">
+            <svg width="16" height="16" viewBox="0 0 18 18" fill="none" style="flex-shrink:0;">
+              <circle cx="8" cy="8" r="5" stroke="#36322d9e" stroke-width="1.4"/>
+              <path d="M12.5 12.5l3 3" stroke="#36322d9e" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            <input id="srch-input" placeholder="Truck, plant, version…" autocomplete="off"
+              oninput="srchOnInput()" onfocus="srchOnFocus()" />
+            <button id="srch-clear" onclick="srchClear()" style="display:none;background:none;border:none;padding:2px;cursor:pointer;flex-shrink:0;line-height:0;">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M4 4l8 8M12 4l-8 8" stroke="#36322d" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+          <div class="srch-drop" id="srch-drop" style="display:none;">
+            <div id="srch-results"></div>
+          </div>
         </div>
 
         <div style="position:relative;margin-bottom:10px;">
@@ -1083,6 +1170,84 @@
   </div><!-- /s-main -->
 
   <!-- ══════════════════════════════════════════════════════════
+       FILTER SHEET — slides up from bottom
+  ═══════════════════════════════════════════════════════════ -->
+  <div id="filter-overlay" onclick="filterClose()" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.45);z-index:30;border-radius:50px;"></div>
+  <div id="filter-sheet" style="
+    position:absolute; left:0; right:0; bottom:0;
+    background:var(--layer-1);
+    border-radius:24px 24px 44px 44px;
+    z-index:31;
+    transform:translateY(110%);
+    transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    padding-bottom:32px;
+  ">
+    <!-- Handle -->
+    <div style="display:flex;justify-content:center;padding:12px 0 4px;">
+      <div style="width:36px;height:4px;border-radius:2px;background:var(--border-mid);"></div>
+    </div>
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px 12px;">
+      <div style="font-size:18px;font-weight:500;color:var(--strong);letter-spacing:-0.4px;">Filter</div>
+      <button onclick="filterReset()" id="filter-reset-btn" style="font-size:13px;color:var(--blue);font-weight:500;letter-spacing:-0.2px;background:none;border:none;cursor:pointer;padding:4px 0;font-family:var(--font);">Reset all</button>
+    </div>
+
+    <!-- Scrollable content -->
+    <div style="overflow-y:auto;max-height:420px;padding:0 16px;">
+
+      <!-- Section: Ignition -->
+      <div class="flt-section">
+        <div class="flt-section-label">Ignition</div>
+        <div class="flt-chips" id="flt-ignition">
+          <button class="flt-chip" data-group="ignition" data-value="On" onclick="filterToggle(this)">On</button>
+          <button class="flt-chip" data-group="ignition" data-value="Off" onclick="filterToggle(this)">Off</button>
+        </div>
+      </div>
+
+      <!-- Section: Alerts -->
+      <div class="flt-section">
+        <div class="flt-section-label">Alerts</div>
+        <div class="flt-chips" id="flt-alerts">
+          <button class="flt-chip" data-group="alerts" data-value="errors" onclick="filterToggle(this)">Has Errors</button>
+          <button class="flt-chip" data-group="alerts" data-value="warnings" onclick="filterToggle(this)">Has Warnings</button>
+          <button class="flt-chip" data-group="alerts" data-value="clean" onclick="filterToggle(this)">Clean</button>
+        </div>
+      </div>
+
+      <!-- Section: Plant -->
+      <div class="flt-section">
+        <div class="flt-section-label">Plant</div>
+        <div class="flt-chips" id="flt-plant">
+          <button class="flt-chip" data-group="plant" data-value="Phoenix Central" onclick="filterToggle(this)">Phoenix Central</button>
+          <button class="flt-chip" data-group="plant" data-value="Mesa South" onclick="filterToggle(this)">Mesa South</button>
+          <button class="flt-chip" data-group="plant" data-value="Tempe East" onclick="filterToggle(this)">Tempe East</button>
+        </div>
+      </div>
+
+      <!-- Section: Version -->
+      <div class="flt-section">
+        <div class="flt-section-label">Version</div>
+        <div class="flt-chips" id="flt-version">
+          <button class="flt-chip" data-group="version" data-value="V3" onclick="filterToggle(this)">V3</button>
+          <button class="flt-chip" data-group="version" data-value="V4" onclick="filterToggle(this)">V4</button>
+          <button class="flt-chip" data-group="version" data-value="V5" onclick="filterToggle(this)">V5</button>
+          <button class="flt-chip" data-group="version" data-value="Spark" onclick="filterToggle(this)">Spark</button>
+          <button class="flt-chip" data-group="version" data-value="Pulse" onclick="filterToggle(this)">Pulse</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Apply button -->
+    <div style="padding:16px 16px 0;">
+      <button onclick="filterApply()" style="width:100%;background:var(--strong);color:white;border:none;border-radius:32px;padding:14px;font-size:15px;font-weight:500;font-family:var(--font);letter-spacing:-0.3px;cursor:pointer;">
+        Apply Filters
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
        DRAWER — slides over the whole phone from the right
   ═══════════════════════════════════════════════════════════ -->
   <div class="drawer" id="drawer">
@@ -1094,12 +1259,12 @@
         <div class="d-ign-pill"><div class="d-ign-dot"></div>Ignition on</div>
       </div>
       <div class="d-chrome-btns">
-        <button class="chrome-btn chrome-btn--border">
+        <button class="chrome-btn chrome-btn--border" id="drawer-prev" onclick="navigateDrawer(-1)">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M9 3l-5 4 5 4" stroke="#36322d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
-        <button class="chrome-btn chrome-btn--border">
+        <button class="chrome-btn chrome-btn--border" id="drawer-next" onclick="navigateDrawer(1)">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M5 3l5 4-5 4" stroke="#36322d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
@@ -2015,6 +2180,26 @@ let expanded = {};
 let activeLogIdx = 0;
 let activeTab = 'structured';
 
+/* ── FILTER STATE (declared early — referenced by all render functions) ── */
+const filterState = { ignition: new Set(), alerts: new Set(), plant: new Set(), version: new Set() };
+
+function filterMatch(t) {
+  const { ignition, alerts, plant, version } = filterState;
+  if (ignition.size > 0 && !ignition.has(t.ign)) return false;
+  if (alerts.size > 0) {
+    const hasErr  = t.err > 0;
+    const hasWrn  = t.wrn > 0;
+    const isClean = !hasErr && !hasWrn;
+    const pass = (alerts.has('errors') && hasErr) ||
+                 (alerts.has('warnings') && hasWrn) ||
+                 (alerts.has('clean') && isClean);
+    if (!pass) return false;
+  }
+  if (plant.size > 0 && !plant.has(t.plant)) return false;
+  if (version.size > 0 && !version.has(t.ver)) return false;
+  return true;
+}
+
 /* ── TRUCK LIST ─────────────────────────────────── */
 function renderTrucks() {
   let html = '';
@@ -2039,6 +2224,8 @@ function renderTrucks() {
       const i = globalIdx++;
       /* WHERE TO START: skip trucks with no alerts or warnings */
       if (!t.err && !t.wrn) return;
+      /* Apply active filters */
+      if (!filterMatch(t)) return;
       const isOpen = !!expanded[i];
       /* up = expanded (0deg), right = collapsed (90deg) */
       const chevDown  = `<path d="M3 5l5 5 5-5" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>`;
@@ -2066,7 +2253,7 @@ function renderTrucks() {
           <div class="exp-row"><div class="exp-label">Age</div><div class="exp-val">${t.age}</div></div>
           <div class="exp-row"><div class="exp-label">Connection</div><div class="exp-val" style="gap:5px;display:flex;align-items:center;">${connIcon}</div></div>
           <div class="exp-row"><div class="exp-label">Last Seen</div><div class="exp-val">1:16 PM 07/23/25</div></div>
-          <button class="view-truck-btn" onclick="openDrawer(${i})">View Truck</button>
+          <button class="view-truck-btn" onclick="openDrawerFromList('wts', ${i})">View Truck</button>
         </div>` : `<div class="exp-wrap"></div>`;
 
       html += `
@@ -2121,6 +2308,7 @@ function renderOverview() {
   let html = '';
 
   trucks.forEach((t, i) => {
+    if (!filterMatch(t)) return;
     const isOpen = !!expandedOv[i];
     const rowBg = i % 2 === 0 ? '#ffffff' : '#f6f4f2';
     const badges = (t.err ? `<span class="badge err"><span class="badge-icon">⊘</span>${t.err}</span>` : '') +
@@ -2138,7 +2326,7 @@ function renderOverview() {
         <div class="exp-row"><div class="exp-label">Truck Mode</div><div class="exp-val">${t.truckMode}</div></div>
         <div class="exp-row"><div class="exp-label">Connection</div><div class="exp-val">${t.conn === 'live' ? 'Live' : 'No connection'}</div></div>
         <div class="exp-row"><div class="exp-label">Last Connection</div><div class="exp-val">${t.lastConn}</div></div>
-        <button class="view-truck-btn" onclick="openDrawer(${i})">View Truck</button>
+        <button class="view-truck-btn" onclick="openDrawerFromList('overview', ${i})">View Truck</button>
       </div>` : '';
 
     html += `
@@ -2179,7 +2367,19 @@ function toggleOv(i) {
 }
 /* rotate(0) = up (open group), rotate(180) = down (closed group), rotate(90) = right (collapsed truck row) */
 const chevSvg = (deg) => `<svg width="10" height="6" viewBox="0 0 10 6" fill="none" style="transform:rotate(${deg}deg);flex-shrink:0;"><path d="M8.75 4.75L4.75 0.75L0.75 4.75" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-function openDrawer(i) {
+/* Track which list opened the drawer and position within it */
+let drawerContext = { list: [], idx: 0 };
+
+function openDrawer(i, context) {
+  if (context) {
+    drawerContext = context;
+  } else if (drawerContext.list.length === 0) {
+    /* fallback: treat trucks[] as the list */
+    drawerContext = { list: trucks.map((_, n) => n), idx: i };
+  } else {
+    drawerContext.idx = drawerContext.list.indexOf(i);
+  }
+  updateArrows();
   const truckNum = trucks[i].num;
   document.getElementById('drawer-truck-num').textContent = 'Truck: ' + truckNum;
   renderLogRows();
@@ -2214,6 +2414,42 @@ function closeDrawer() {
   document.getElementById('drawer').classList.remove('open');
   document.querySelector('.d-chrome').style.display = 'flex';
   document.querySelector('.d-nav-row').style.display = 'flex';
+}
+
+function navigateDrawer(dir) {
+  const newIdx = drawerContext.idx + dir;
+  if (newIdx < 0 || newIdx >= drawerContext.list.length) return;
+  drawerContext.idx = newIdx;
+  const truckIdx = drawerContext.list[newIdx];
+  /* preserve current drawer section */
+  const currentLabel = document.getElementById('drawer-nav-label').textContent;
+  openDrawer(truckIdx);
+  selectDrawerNav(currentLabel);
+}
+
+function openDrawerFromList(source, truckIdx) {
+  let list;
+  if (source === 'wts') {
+    /* Where to Start: only trucks with alerts/warnings, in trucks[] order */
+    list = trucks.map((t, i) => t.err || t.wrn ? i : -1).filter(n => n >= 0);
+  } else {
+    /* Overview: all trucks in order */
+    list = trucks.map((_, i) => i);
+  }
+  const pos = list.indexOf(truckIdx);
+  openDrawer(truckIdx, { list, idx: pos >= 0 ? pos : 0 });
+}
+
+function updateArrows() {
+  const prev = document.getElementById('drawer-prev');
+  const next = document.getElementById('drawer-next');
+  if (!prev || !next) return;
+  const atStart = drawerContext.idx <= 0;
+  const atEnd   = drawerContext.idx >= drawerContext.list.length - 1;
+  prev.style.opacity = atStart ? '0.3' : '1';
+  prev.style.pointerEvents = atStart ? 'none' : 'auto';
+  next.style.opacity = atEnd ? '0.3' : '1';
+  next.style.pointerEvents = atEnd ? 'none' : 'auto';
 }
 
 /* ── LOG LIST ────────────────────────────────────── */
@@ -2415,8 +2651,13 @@ function selectDrawerNav(label, el) {
     o.classList.remove('wts-active');
     o.querySelector('.wts-check').style.visibility = 'hidden';
   });
-  el.classList.add('wts-active');
-  el.querySelector('.wts-check').style.visibility = 'visible';
+  /* el may be omitted when called programmatically — find matching option by text */
+  const target = el || Array.from(document.querySelectorAll('#drawer-nav-dropdown .wts-option'))
+    .find(o => o.textContent.trim().includes(label));
+  if (target) {
+    target.classList.add('wts-active');
+    target.querySelector('.wts-check').style.visibility = 'visible';
+  }
   document.getElementById('drawer-nav-dropdown').style.display = 'none';
   document.getElementById('drawer-nav-chevron').style.transform = 'rotate(0deg)';
 
@@ -3681,12 +3922,313 @@ const CC_TRUCKS = [
 
 const ccExpanded = {};
 
+/* ══════════════════════════════════════════════════
+   FILTER SHEET
+═══════════════════════════════════════════════════ */
+
+function filterOpen() {
+  document.getElementById('filter-overlay').style.display = 'block';
+  const sheet = document.getElementById('filter-sheet');
+  sheet.style.display = 'block';
+  requestAnimationFrame(() => sheet.style.transform = 'translateY(0)');
+}
+
+function filterClose() {
+  const sheet = document.getElementById('filter-sheet');
+  sheet.style.transform = 'translateY(110%)';
+  setTimeout(() => {
+    document.getElementById('filter-overlay').style.display = 'none';
+  }, 300);
+}
+
+function filterToggle(el) {
+  const group = el.dataset.group;
+  const val   = el.dataset.value;
+  const set   = filterState[group];
+  if (set.has(val)) { set.delete(val); el.classList.remove('active'); }
+  else              { set.add(val);    el.classList.add('active'); }
+}
+
+function filterReset() {
+  Object.values(filterState).forEach(s => s.clear());
+  document.querySelectorAll('.flt-chip').forEach(c => c.classList.remove('active'));
+  filterUpdateCount();
+}
+
+function filterApply() {
+  filterClose();
+  filterUpdateCount();
+  const page = typeof srchGetActivePage === 'function' ? srchGetActivePage() : 'wts';
+  if (page === 'overview') renderOverview();
+  else if (page === 'cc')  renderConditions();
+  else                     renderTrucks();
+}
+
+function filterUpdateCount() {
+  const total = Object.values(filterState).reduce((n, s) => n + s.size, 0);
+  const badge = document.getElementById('filter-count');
+  const btn   = document.getElementById('filter-btn');
+  if (total > 0) {
+    badge.textContent = total;
+    badge.style.display = 'inline-block';
+    btn.style.background = 'rgba(48,105,227,0.08)';
+    btn.style.borderColor = 'var(--blue)';
+    btn.style.color = 'var(--blue)';
+  } else {
+    badge.style.display = 'none';
+    btn.style.background = '';
+    btn.style.borderColor = '';
+    btn.style.color = '';
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   SEARCH
+   Searches trucks[] by: num, plant, ver, ign state
+   Scoped to whichever page is currently active
+═══════════════════════════════════════════════════ */
+
+let srchActiveQuery = '';
+
+function srchGetActivePage() {
+  const wts = document.getElementById('wts-label').textContent;
+  if (wts === 'Overview') return 'overview';
+  if (wts === 'Components Condition') return 'cc';
+  return 'wts'; /* Where to start */
+}
+
+function srchGetList() {
+  const page = srchGetActivePage();
+  if (page === 'wts') {
+    /* Where to Start: only trucks with alerts */
+    return trucks.filter(t => t.err || t.wrn);
+  }
+  if (page === 'cc') {
+    /* Components Condition: trucks in CC_TRUCKS */
+    return CC_TRUCKS.map(ct => trucks.find(t => t.num === ct.num)).filter(Boolean);
+  }
+  /* Overview: all trucks */
+  return trucks;
+}
+
+function srchHighlight(text, query) {
+  if (!query) return `<span class="srch-soft">${text}</span>`;
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return `<span class="srch-soft">${text}</span>`;
+  const before = text.slice(0, idx);
+  const match  = text.slice(idx, idx + query.length);
+  const after  = text.slice(idx + query.length);
+  return `${before ? `<span class="srch-soft">${before}</span>` : ''}<span class="srch-chip">${match}</span>${after ? `<span class="srch-soft">${after}</span>` : ''}`;
+}
+
+function srchOnInput() {
+  const input = document.getElementById('srch-input');
+  const q = input.value.trim();
+  srchActiveQuery = q;
+  const field = document.getElementById('srch-field');
+  const clear = document.getElementById('srch-clear');
+  const drop  = document.getElementById('srch-drop');
+
+  field.classList.toggle('active', q.length > 0);
+  clear.style.display = q.length > 0 ? 'block' : 'none';
+
+  if (!q) { drop.style.display = 'none'; return; }
+
+  const list = srchGetList();
+  const matches = list.filter(t =>
+    t.num.toLowerCase().includes(q.toLowerCase()) ||
+    t.plant.toLowerCase().includes(q.toLowerCase()) ||
+    t.ver.toLowerCase().includes(q.toLowerCase()) ||
+    t.ign.toLowerCase().includes(q.toLowerCase())
+  );
+
+  const MAX = 5;
+  const shown = matches.slice(0, MAX);
+  const extra = matches.length - MAX;
+
+  const resultsEl = document.getElementById('srch-results');
+
+  if (matches.length === 0) {
+    resultsEl.innerHTML = `<div class="srch-no-hits">No matches found</div>`;
+    drop.style.display = 'block';
+    return;
+  }
+
+  /* Truck icon SVG */
+  const truckIcon = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 13C1.94772 13 1.5 12.5523 1.5 12V9.80278C1.5 9.60535 1.55844 9.41234 1.66795 9.24808L3.20313 6.9453C3.3886 6.6671 3.70083 6.5 4.03518 6.5H6V12C6 12.5523 6.44772 13 7 13H11" stroke="#36322d9e" stroke-width="1.2" stroke-linejoin="round"/><circle cx="4" cy="13" r="1.4" stroke="#36322d9e" stroke-width="1.2"/><circle cx="12" cy="13" r="1.4" stroke="#36322d9e" stroke-width="1.2"/><path d="M12.2242 5.15477L8.65195 6.06584C6.54213 6.60392 5.61922 9.08368 6.86385 10.8702L11.9902 10.8575L14.0825 7.82226C14.204 7.64525 14.204 7.41112 14.0811 7.23472L12.7748 5.35971C12.6519 5.18331 12.4325 5.10164 12.2242 5.15477Z" stroke="#36322d9e" stroke-width="1.2"/></svg>`;
+
+  let html = `
+    <div class="srch-section-hdr">
+      ${truckIcon}
+      <span class="srch-section-label">Trucks</span>
+    </div>`;
+
+  shown.forEach(t => {
+    /* Primary: truck number. Secondary: plant · ver */
+    const primary   = srchHighlight(t.num, q);
+    const secondary = `${t.plant} · ${t.ver} · Ign ${t.ign}`;
+    const truckIdx  = trucks.indexOf(t);
+    html += `
+      <div class="srch-row" onclick="srchSelect(${truckIdx})">
+        <span class="srch-match-text">${primary}</span>
+        <span class="srch-meta">${secondary}</span>
+      </div>`;
+  });
+
+  if (extra > 0) {
+    html += `<div class="srch-show-more" onclick="srchShowMore()">Show ${extra} more truck${extra > 1 ? 's' : ''}</div>`;
+  }
+
+  resultsEl.innerHTML = html;
+  drop.style.display = 'block';
+}
+
+function srchOnFocus() {
+  /* If there's already a query, re-show results */
+  if (srchActiveQuery) srchOnInput();
+}
+
+function srchClear() {
+  const input = document.getElementById('srch-input');
+  input.value = '';
+  srchActiveQuery = '';
+  document.getElementById('srch-field').classList.remove('active');
+  document.getElementById('srch-clear').style.display = 'none';
+  document.getElementById('srch-drop').style.display = 'none';
+  /* Restore full list */
+  srchRestoreAll();
+  input.focus();
+}
+
+function srchRestoreAll() {
+  /* Re-render whichever page is active without any filter */
+  const page = srchGetActivePage();
+  if (page === 'wts')      renderTrucks();
+  else if (page === 'overview') renderOverview();
+  else                     renderConditions();
+}
+
+function srchSelect(truckIdx) {
+  /* Close dropdown */
+  document.getElementById('srch-drop').style.display = 'none';
+  const t = trucks[truckIdx];
+  const page = srchGetActivePage();
+
+  /* Update input to show selected truck */
+  const input = document.getElementById('srch-input');
+  input.value = t.num;
+
+  if (page === 'wts') {
+    /* Render only the matching truck in WTS */
+    srchFilterWts(truckIdx);
+  } else if (page === 'overview') {
+    srchFilterOverview(truckIdx);
+  } else {
+    srchFilterCC(t.num);
+  }
+}
+
+function srchShowMore() {
+  /* Expand results to show all matches */
+  const q = srchActiveQuery;
+  if (!q) return;
+  const list = srchGetList();
+  const matches = list.filter(t =>
+    t.num.toLowerCase().includes(q.toLowerCase()) ||
+    t.plant.toLowerCase().includes(q.toLowerCase()) ||
+    t.ver.toLowerCase().includes(q.toLowerCase()) ||
+    t.ign.toLowerCase().includes(q.toLowerCase())
+  );
+  const truckIcon = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 13C1.94772 13 1.5 12.5523 1.5 12V9.80278C1.5 9.60535 1.55844 9.41234 1.66795 9.24808L3.20313 6.9453C3.3886 6.6671 3.70083 6.5 4.03518 6.5H6V12C6 12.5523 6.44772 13 7 13H11" stroke="#36322d9e" stroke-width="1.2" stroke-linejoin="round"/><circle cx="4" cy="13" r="1.4" stroke="#36322d9e" stroke-width="1.2"/><circle cx="12" cy="13" r="1.4" stroke="#36322d9e" stroke-width="1.2"/><path d="M12.2242 5.15477L8.65195 6.06584C6.54213 6.60392 5.61922 9.08368 6.86385 10.8702L11.9902 10.8575L14.0825 7.82226C14.204 7.64525 14.204 7.41112 14.0811 7.23472L12.7748 5.35971C12.6519 5.18331 12.4325 5.10164 12.2242 5.15477Z" stroke="#36322d9e" stroke-width="1.2"/></svg>`;
+  let html = `<div class="srch-section-hdr">${truckIcon}<span class="srch-section-label">Trucks</span></div>`;
+  matches.forEach(t => {
+    const primary = srchHighlight(t.num, q);
+    const secondary = `${t.plant} · ${t.ver} · Ign ${t.ign}`;
+    const truckIdx = trucks.indexOf(t);
+    html += `<div class="srch-row" onclick="srchSelect(${truckIdx})"><span class="srch-match-text">${primary}</span><span class="srch-meta">${secondary}</span></div>`;
+  });
+  document.getElementById('srch-results').innerHTML = html;
+}
+
+function srchFilterWts(truckIdx) {
+  const t = trucks[truckIdx];
+  /* Temporarily override renderTrucks to show only this truck */
+  const el = document.getElementById('truck-list');
+  if (!el) return;
+  const i = truckIdx;
+  const isOpen = !!expanded[i];
+  const badges = [
+    t.err > 0 ? `<span class="badge err"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="white" stroke-width="1"/><path d="M5 3v2.2M5 6.8h.01" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg>${t.err}</span>` : '',
+    t.wrn > 0 ? `<span class="badge wrn"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1.5L9.5 8.5H.5L5 1.5z" stroke="#36322d" stroke-width="1" stroke-linejoin="round"/><path d="M5 4.5v1.5M5 7.5h.01" stroke="#36322d" stroke-width="1" stroke-linecap="round"/></svg>${t.wrn}</span>` : '',
+  ].join('');
+  el.innerHTML = `<div>
+    <div class="truck-row" style="background:var(--layer-1)" onclick="toggleTruck(${i})">
+      <div class="td truck-num">${chevSvg(isOpen ? 180 : 90)}${t.num}</div>
+      <div class="td src-cell">${t.source === 'Customer Ticket' ? 'Customer' : 'System'}</div>
+      <div class="td">${t.ign}</div>
+      <div class="td age-cell">${t.age}</div>
+      <div class="td">${badges}</div>
+    </div>
+    <div class="exp-wrap"></div>
+  </div>`;
+}
+
+function srchFilterOverview(truckIdx) {
+  const t = trucks[truckIdx];
+  const i = truckIdx;
+  const isOpen = !!expandedOv[i];
+  const badges = (t.err ? `<span class="badge err"><span class="badge-icon">⊘</span>${t.err}</span>` : '') +
+                 (t.wrn ? `<span class="badge wrn"><span class="badge-icon">⚠</span>${t.wrn}</span>` : '');
+  document.getElementById('truck-list-overview').innerHTML = `
+    <div class="truck-wrap" style="background:var(--layer-1);">
+      <div class="truck-row ov-row" onclick="toggleOv(${i})" style="grid-template-columns:74px 1fr 90px 82px;background:var(--layer-1);">
+        <div class="td truck-num">${chevSvg(isOpen ? 180 : 90)}${t.num}</div>
+        <div class="td" style="font-size:12px;line-height:1.25;">${t.plant}</div>
+        <div class="td" style="font-size:13px;color:var(--strong);">${t.ign} · ${t.ignDetail}</div>
+        <div class="td">${badges || '<span style="font-size:12px;color:var(--soft);">—</span>'}</div>
+      </div>
+    </div>`;
+}
+
+function srchFilterCC(truckNum) {
+  const el = document.getElementById('cc-rows');
+  if (!el) return;
+  const ccIdx = CC_TRUCKS.findIndex(t => t.num === truckNum);
+  if (ccIdx === -1) return;
+  /* Temporarily render just this one row */
+  const t = CC_TRUCKS[ccIdx];
+  const i = ccIdx;
+  const rowBg = '#ffffff';
+  const badges = (t.err ? `<span class="badge err"><span class="badge-icon">⊘</span>${t.err}</span>` : '') +
+                 (t.wrn ? `<span class="badge wrn"><span class="badge-icon">⚠</span>${t.wrn}</span>` : '');
+  el.innerHTML = `
+    <div class="truck-wrap" style="background:${rowBg};">
+      <div class="truck-row ov-row" onclick="ccToggle(${i})" style="grid-template-columns:74px 1fr 1.4fr 90px;background:${rowBg};">
+        <div class="td truck-num">${chevSvg(90)}${t.num}</div>
+        <div class="td" style="font-size:13px;">${t.ver}</div>
+        <div class="td" style="font-size:13px;color:var(--strong);">${t.ign} · ${t.ignDetail || '—'}</div>
+        <div class="td">${badges || '<span style="font-size:12px;color:var(--soft);">—</span>'}</div>
+      </div>
+    </div>`;
+}
+
+/* Close dropdown on outside click */
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('srch-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('srch-drop').style.display = 'none';
+  }
+});
+
 function renderConditions() {
   const el = document.getElementById('cc-rows');
   if (!el) return;
   let html = '';
 
   CC_TRUCKS.forEach((t, i) => {
+    /* find matching truck for filter check */
+    const truckData = trucks.find(tr => tr.num === t.num);
+    if (truckData && !filterMatch(truckData)) return;
     const isOpen = !!ccExpanded[i];
     const rowBg  = i % 2 === 0 ? '#ffffff' : '#f6f4f2';
     const badges = (t.err ? `<span class="badge err"><span class="badge-icon">⊘</span>${t.err}</span>` : '') +
@@ -3754,9 +4296,16 @@ function ccToggle(i) {
   }
 }
 
-function openDrawerFromCC(e, i) {
+function openDrawerFromCC(e, ccIdx) {
   e.stopPropagation();
-  openDrawer(i < trucks.length ? i : 0);
+  /* Map CC_TRUCKS index to trucks[] index by truck number */
+  const truckNum = CC_TRUCKS[ccIdx].num;
+  const truckIdx = trucks.findIndex(t => t.num === truckNum);
+  const idx = truckIdx >= 0 ? truckIdx : 0;
+  /* Build CC list: all CC_TRUCKS mapped to their trucks[] indices */
+  const ccList = CC_TRUCKS.map(ct => trucks.findIndex(t => t.num === ct.num)).filter(n => n >= 0);
+  const posInList = ccList.indexOf(idx);
+  openDrawer(idx, { list: ccList, idx: posInList >= 0 ? posInList : 0 });
 }
 
 

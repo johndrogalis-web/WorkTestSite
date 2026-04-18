@@ -288,11 +288,10 @@
     padding-top: 54px;
     transform: translateX(100%);
     transition: transform 0.30s cubic-bezier(0.4,0,0.2,1);
+    z-index: 10;
   }
   .drawer.open { transform: translateX(0); }
-  .drawer-nav-bar { position: relative; z-index: 20; background: var(--layer-1); }
 
-  .drawer-chrome { display: none; }
   .chrome-btns { display: flex; align-items: center; gap: 5px; }
   .chrome-btn {
     width: 32px; height: 32px; border-radius: 50%;
@@ -400,21 +399,8 @@
     background: none; flex-shrink: 0;
   }
   .back-btn:active { background: var(--layer-2); }
-  .detail-chrome { display: none; }
 
   /* title+meta — centred, right of pill */
-  .det-event-header-inline {
-    flex: 1; min-width: 0; text-align: right;
-  }
-  .det-event-title-inline {
-    font-size: 14px; font-weight: 500; color: var(--strong);
-    letter-spacing: -0.28px;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  .det-event-meta-inline {
-    font-size: 12px; color: var(--soft); letter-spacing: -0.2px; margin-top: 2px;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
 
   .detail-tabs {
     display: flex; border-bottom: 1px solid var(--border);
@@ -515,7 +501,6 @@
   /* text sweep */
   @keyframes mc2-sweep-in { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
   .mc2-sweep { animation: mc2-sweep-in 0.2s cubic-bezier(0.22,1,0.36,1) both; }
-  .mc2-card-wide { border-radius:16px; }
   .mc2-card.mc2-success { border-color:rgba(30,98,82,0.4); box-shadow:0 0 0 3px rgba(30,98,82,0.06); }
   .mc2-card.mc2-pending { border-color:rgba(21,148,239,0.45); box-shadow:0 0 0 3px rgba(21,148,239,0.07); }
   .mc2-card.mc2-error   { border-color:rgba(193,60,45,0.4);   box-shadow:0 0 0 3px rgba(193,60,45,0.06); }
@@ -816,6 +801,160 @@
   .sen-empty-icon { font-size:32px; }
   .sen-empty-txt  { font-size:13px; color:var(--soft); text-align:center; letter-spacing:-0.2px; }
 
+
+  /* ─── SIDE NAV ─────────────────────────────────── */
+  .sidenav-overlay {
+    position:absolute; inset:0; background:rgba(0,0,0,0.45);
+    z-index:1000; opacity:0; pointer-events:none;
+    transition:opacity 0.25s; border-radius:50px;
+  }
+  .sidenav-overlay.open { opacity:1; pointer-events:all; }
+
+  .sidenav {
+    position:absolute; top:0; left:0; bottom:0; width:85%;
+    max-width:310px; background:#f6f4f2;
+    border-radius:50px 0 0 50px;
+    z-index:1001; transform:translateX(-110%);
+    transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    display:flex; flex-direction:column; overflow:hidden;
+    box-shadow:4px 0 24px rgba(0,0,0,0.15);
+  }
+  .sidenav.open { transform:translateX(0); }
+
+  /* Header row */
+  .sn-header {
+    display:flex; align-items:center; gap:12px;
+    padding:16px 16px 12px; flex-shrink:0;
+  }
+  .sn-close {
+    width:36px; height:36px; border-radius:50%;
+    border:2px solid var(--strong); background:none;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; flex-shrink:0;
+  }
+  .sn-logo {
+    font-size:20px; font-weight:700; color:var(--strong);
+    letter-spacing:-0.5px; display:flex; align-items:center; gap:4px;
+  }
+  .sn-logo-mark { font-size:16px; opacity:0.7; }
+
+  /* Account selector */
+  .sn-account {
+    margin:0 12px 8px; padding:8px 12px;
+    border:1px solid var(--border); border-radius:32px;
+    display:flex; align-items:center; justify-content:space-between;
+    cursor:pointer;
+  }
+  .sn-account-label { font-size:10px; color:var(--defined); letter-spacing:-0.1px; }
+  .sn-account-val   { font-size:13px; color:var(--strong); letter-spacing:-0.26px; font-weight:500; }
+  .sn-account-chev  { flex-shrink:0; }
+
+  /* Scroll area */
+  .sn-scroll { flex:1; overflow-y:auto; padding:0 12px 8px; -webkit-overflow-scrolling:touch; }
+
+  /* Nav items */
+  .sn-item {
+    display:flex; align-items:center; gap:12px;
+    padding:11px 12px; border-radius:32px; cursor:pointer;
+    color:var(--strong); transition:background 0.15s;
+  }
+  .sn-item:hover { background:rgba(54,50,45,0.06); }
+  .sn-item-icon { width:16px; height:16px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  .sn-item-label { flex:1; font-size:14px; letter-spacing:-0.28px; line-height:1.3; }
+  .sn-item-chev { flex-shrink:0; transition:transform 0.2s; color:var(--soft); }
+  .sn-item.expanded .sn-item-chev { transform:rotate(180deg); }
+  .sn-badge {
+    font-size:11px; font-weight:500; color:#3069e3;
+    background:#f0f9fe; border:1.5px solid #3069e3;
+    border-radius:12px; padding:1px 7px;
+  }
+
+  /* Sub items */
+  .sn-sub { display:none; flex-direction:column; padding-bottom:4px; }
+  .sn-sub.open { display:flex; }
+  .sn-sub-item {
+    display:flex; align-items:center; padding:10px 12px 10px 44px;
+    border-radius:32px; cursor:pointer; font-size:14px;
+    color:var(--soft); letter-spacing:-0.28px; line-height:1.3;
+    transition:background 0.15s;
+  }
+  .sn-sub-item:hover { background:rgba(54,50,45,0.05); }
+  .sn-sub-item.active {
+    background:#c2d7fa; color:#000;
+  }
+
+  /* Footer */
+  .sn-footer { padding:8px 12px 24px; border-top:1px solid var(--border); flex-shrink:0; }
+  .sn-footer-item {
+    display:flex; align-items:center; gap:12px;
+    padding:10px 12px; border-radius:32px; cursor:pointer;
+    color:var(--strong); font-size:14px; letter-spacing:-0.28px;
+  }
+  .sn-footer-item:hover { background:rgba(54,50,45,0.06); }
+
+
+  /* ─── COMPONENT CONDITIONS ───────────────────────── */
+  #s-conditions { display:none; flex-direction:column; position:absolute; top:0; left:0; right:0; bottom:0; background:var(--base); z-index:50; overflow:hidden; }
+  .cc-hdr { background:var(--layer-1); border-bottom:1px solid var(--border); flex-shrink:0; padding:16px 16px 12px; }
+  .cc-title { font-size:22px; font-weight:700; color:var(--strong); letter-spacing:-0.6px; }
+  .cc-sub   { font-size:12px; color:var(--soft); margin-top:2px; letter-spacing:-0.2px; }
+  .cc-scroll { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+
+  /* Column header */
+  .cc-col-hdr {
+    display:grid; grid-template-columns:74px 1fr 1.4fr 90px;
+    border-bottom:1px solid var(--border);
+    background:var(--layer-1); position:sticky; top:0; z-index:2;
+  }
+  .cc-col-hdr .th { padding:8px; }
+  .cc-col-hdr .th:first-child { border-right:1.5px solid var(--border); }
+  .cc-col-hdr .th:last-child { text-align:left; }
+
+  /* Truck row */
+  .cc-row {
+    display:grid; grid-template-columns:74px 1fr 1.4fr 90px;
+    align-items:center; padding:11px 16px;
+    border-bottom:1px solid var(--border);
+    background:var(--layer-1); cursor:pointer;
+  }
+  .cc-row:active { background:rgba(54,50,45,0.04); }
+  .cc-row-num {
+    display:flex; align-items:center; gap:5px;
+    font-size:13px; font-weight:500; color:var(--blue); letter-spacing:-0.26px;
+  }
+  .cc-row-chev { transition:transform 0.2s; flex-shrink:0; }
+  .cc-row-chev.open { transform:rotate(90deg); }
+  .cc-row-ver { font-size:12px; color:var(--defined); letter-spacing:-0.2px; }
+  .cc-row-ign { font-size:12px; letter-spacing:-0.2px; }
+  .cc-row-ign.on  { color:#1a8c10; }
+  .cc-row-ign.off { color:var(--soft); }
+  .cc-row-alerts { display:flex; gap:4px; align-items:center; justify-content:flex-end; }
+
+
+  /* ─── CC EXPANDED COMPONENT LIST ───────────────────── */
+  .cc-comp-section-hdr {
+    font-size:11px; font-weight:600; color:var(--soft);
+    letter-spacing:0.4px; text-transform:uppercase;
+    padding:12px 16px 6px;
+  }
+  .cc-comp-list { padding:0 16px; }
+  .cc-comp-row {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .cc-comp-row:last-child { border-bottom:none; }
+  .cc-comp-row-left {
+    display:flex; align-items:center; gap:10px;
+  }
+  .cc-comp-row-name {
+    font-size:14px; font-weight:500; color:var(--strong);
+    letter-spacing:-0.28px;
+  }
+  .cc-comp-row-evt {
+    font-size:13px; letter-spacing:-0.2px; flex-shrink:0;
+  }
+
 </style>
 </head>
 <body>
@@ -829,9 +968,15 @@
   ═══════════════════════════════════════════════════════════ -->
   <div class="screen active" id="s-main">
     <div class="top-nav">
+
+
       <!-- Hamburger -->
-      <button style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;flex-shrink:0;">
-        <div class="hamburger"><span></span><span></span><span></span></div>
+      <button onclick="openNav()" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;flex-shrink:0;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 12H14" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 8H14" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 4H14" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </button>
       <!-- Logo centred absolutely -->
       <div style="position:absolute;left:50%;transform:translateX(-50%);">
@@ -925,29 +1070,27 @@
 
         <!-- PAGE: COMPONENTS CONDITION -->
         <div id="page-components-condition" style="display:none;">
-          <div class="tbl-head">
-            <div class="th" style="border-right:1.5px solid var(--border);">Truck</div>
-            <div class="th">Source</div>
-            <div class="th">Ign.</div>
-            <div class="th">Age</div>
-            <div class="th">Alerts</div>
+          <!-- Column headers -->
+          <div class="cc-col-hdr">
+            <div class="th">Truck</div><div class="th">Version</div><div class="th">Ignition</div><div class="th">Alerts</div>
           </div>
-          <div id="truck-list-components"></div>
-        </div>
-      </div>
-    </div>
+          <!-- Rows rendered by JS -->
+          <div id="cc-rows"></div>
+
+        </div><!-- /page-components-condition -->
+      </div><!-- /page-pad -->
+    </div><!-- /scroll-body -->
   </div><!-- /s-main -->
 
-
   <!-- ══════════════════════════════════════════════════════════
-       DRAWER — slides in from right
+       DRAWER — slides over the whole phone from the right
   ═══════════════════════════════════════════════════════════ -->
   <div class="drawer" id="drawer">
 
-    <!-- ROW 1: Truck identity + chrome buttons -->
+    <!-- ROW 1: Truck ID + ignition pill + chrome buttons -->
     <div class="d-chrome">
       <div class="d-truck-id">
-        <span class="d-truck-label" id="drawer-truck-num">Truck: 45689</span>
+        <div class="d-truck-label" id="drawer-truck-num">Truck: 90237</div>
         <div class="d-ign-pill"><div class="d-ign-dot"></div>Ignition on</div>
       </div>
       <div class="d-chrome-btns">
@@ -1047,7 +1190,7 @@
       </div>
 
       <!-- STATE C: COMPONENTS OVERVIEW -->
-      <div id="state-components" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+      <div id="state-components" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
         <div class="co-scroll">
 
           <!-- Section: Measurement Component Status -->
@@ -1707,9 +1850,95 @@
 
         </div><!-- /cfg-scroll -->
       </div><!-- /state-config -->
+
     </div><!-- /drawer-body -->
   </div><!-- /drawer -->
 
+
+    <!-- SCREEN: COMPONENT CONDITIONS — overlays s-main -->
+    <div id="s-conditions">
+      <div class="cc-hdr">
+        <div class="cc-title">Component Conditions</div>
+        <div class="cc-sub">Live component health across all trucks</div>
+      </div>
+      <div class="cc-col-hdr">
+        <span>Truck</span><span>Version</span><span>Ign.</span><span style="text-align:right">Alerts</span>
+      </div>
+      <div id="cc-scroll" style="position:absolute;left:0;right:0;overflow-y:auto;-webkit-overflow-scrolling:touch;"></div>
+    </div><!-- /s-conditions -->
+
+        <!-- Side nav overlay -->
+        <div id="sidenav-overlay" class="sidenav-overlay" onclick="closeNav()"></div>
+
+        <!-- Side nav panel -->
+        <div id="sidenav" class="sidenav">
+          <div class="sn-header">
+            <button class="sn-close" onclick="closeNav()">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="#36322d" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+            <svg width="96" height="26" viewBox="0 0 96 26" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.85434 7.64156H0V10.6545H8.67705L0.348826 22.75H7.58697L11.9909 10.6982C12.4269 9.5192 11.7729 7.64156 9.85434 7.64156ZM15.7844 7.64156C13.8658 7.64156 13.2118 9.5192 13.6478 10.6982L18.0518 22.75H25.2899L16.9617 10.6545H25.6387V7.64156H15.7844ZM71.5094 3.71161C71.5094 2.40163 72.4686 1.44098 73.7767 1.44098C75.0848 1.44098 76.0441 2.40163 76.0441 3.71161C76.0441 5.02159 75.0848 5.98225 73.7767 5.98225C72.4686 5.98225 71.5094 5.02159 71.5094 3.71161ZM47.0043 14.9775C47.0043 19.3441 50.231 22.75 54.4169 22.75C57.5563 22.75 60.3905 21.2217 61.4806 17.9031H57.9923C57.1203 19.3441 55.725 19.737 54.4169 19.737C52.4111 19.737 50.7542 18.2087 50.4054 16.2438H61.7858V15.2831C61.7858 10.6982 58.69 7.2049 54.4169 7.2049C50.1438 7.2049 47.0043 10.6982 47.0043 14.9775ZM58.5156 13.5365H50.4054C50.7542 11.6588 52.3675 10.2179 54.4169 10.2179C56.4662 10.2179 58.1668 11.6588 58.5156 13.5365ZM37.804 20.6104L32.8769 7.64156H36.4959L39.5918 16.2438L40.2022 18.6017H40.2894L40.8999 16.2438L43.9957 7.64156H47.6148L42.6876 20.6104C42.2516 21.7457 41.5975 22.75 40.2458 22.75C38.8941 22.75 38.2401 21.7457 37.804 20.6104ZM72.1198 22.6627V7.64156H75.39V22.6627H72.1198ZM78.7039 22.6627V10.6545H76.8726V7.64156H78.7039V5.98225C78.7039 2.4453 81.4509 0 84.852 0C88.253 0 91 2.4453 91 5.98225H87.6862C87.6862 4.32294 86.5089 3.10029 84.8956 3.10029C83.2822 3.10029 82.0177 4.32294 82.0177 5.98225V7.64156H91V22.6627H87.6862V10.6545H82.0177V22.6627H78.7039ZM63.1811 22.6627V9.91219C63.1811 8.60221 64.1404 7.64156 65.4485 7.64156H70.6373V10.6545H66.495V22.6627H63.1811Z" fill="black"/></svg>
+          </div>
+          <div class="sn-account">
+            <div>
+              <div class="sn-account-label">Account</div>
+              <div class="sn-account-val">Readymix ABC</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </div>
+          <div class="sn-scroll">
+            <div class="sn-item">
+              <div class="sn-item-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.66699 9.16699H6.66699C6.71108 9.16708 6.753 9.18464 6.78418 9.21582C6.81536 9.247 6.83292 9.28892 6.83301 9.33301V13.333C6.83301 13.3772 6.81544 13.4199 6.78418 13.4512C6.75302 13.4822 6.711 13.4999 6.66699 13.5H2.66699C2.62279 13.5 2.58008 13.4824 2.54883 13.4512C2.51757 13.4199 2.5 13.3772 2.5 13.333V9.33301C2.50009 9.289 2.51775 9.24698 2.54883 9.21582C2.58008 9.18456 2.62279 9.16699 2.66699 9.16699ZM11.333 9.16699C11.3772 9.16699 11.4199 9.18456 11.4512 9.21582C11.4822 9.24698 11.4999 9.289 11.5 9.33301V11.167H13.333C13.3772 11.167 13.4199 11.1846 13.4512 11.2158C13.4822 11.247 13.4999 11.289 13.5 11.333C13.5 11.3772 13.4824 11.4199 13.4512 11.4512C13.4199 11.4824 13.3772 11.5 13.333 11.5H11.5V13.333C11.5 13.3772 11.4824 13.4199 11.4512 13.4512C11.4199 13.4824 11.3772 13.5 11.333 13.5C11.289 13.4999 11.247 13.4822 11.2158 13.4512C11.1846 13.4199 11.167 13.3772 11.167 13.333V11.5H9.33301C9.289 11.4999 9.24698 11.4822 9.21582 11.4512C9.18456 11.4199 9.16699 11.3772 9.16699 11.333C9.16708 11.2889 9.18464 11.247 9.21582 11.2158C9.247 11.1846 9.28892 11.1671 9.33301 11.167H11.167V9.33301C11.1671 9.28892 11.1846 9.247 11.2158 9.21582C11.247 9.18464 11.2889 9.16708 11.333 9.16699ZM2.83301 13.167H6.5V9.5H2.83301V13.167ZM2.66699 2.5H6.66699C6.711 2.50009 6.75302 2.51775 6.78418 2.54883C6.81544 2.58008 6.83301 2.62279 6.83301 2.66699V6.66699C6.83292 6.71108 6.81536 6.753 6.78418 6.78418C6.753 6.81536 6.71108 6.83292 6.66699 6.83301H2.66699C2.62279 6.83301 2.58008 6.81544 2.54883 6.78418C2.51775 6.75302 2.50009 6.711 2.5 6.66699V2.66699C2.5 2.62279 2.51757 2.58008 2.54883 2.54883C2.58008 2.51757 2.62279 2.5 2.66699 2.5ZM9.33301 2.5H13.333C13.3772 2.5 13.4199 2.51757 13.4512 2.54883C13.4824 2.58008 13.5 2.62279 13.5 2.66699V6.66699C13.4999 6.711 13.4822 6.75302 13.4512 6.78418C13.4199 6.81544 13.3772 6.83301 13.333 6.83301H9.33301C9.28892 6.83292 9.247 6.81536 9.21582 6.78418C9.18464 6.753 9.16708 6.71108 9.16699 6.66699V2.66699C9.16699 2.62279 9.18456 2.58008 9.21582 2.54883C9.24698 2.51775 9.289 2.50009 9.33301 2.5ZM2.83301 6.5H6.5V2.83301H2.83301V6.5ZM9.5 6.5H13.167V2.83301H9.5V6.5Z" fill="#36322D" stroke="#111111"/></svg></div>
+              <div class="sn-item-label">Home</div>
+            </div>
+            <div class="sn-item">
+              <div class="sn-item-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.00066 7.99988H4.66732C4.49051 7.99988 4.32094 8.07012 4.19592 8.19515C4.07089 8.32017 4.00066 8.48974 4.00066 8.66655C4.00066 8.84336 4.07089 9.01293 4.19592 9.13795C4.32094 9.26298 4.49051 9.33322 4.66732 9.33322H6.00066C6.17747 9.33322 6.34704 9.26298 6.47206 9.13795C6.59708 9.01293 6.66732 8.84336 6.66732 8.66655C6.66732 8.48974 6.59708 8.32017 6.47206 8.19515C6.34704 8.07012 6.17747 7.99988 6.00066 7.99988ZM5.33399 6.66655H8.00066C8.17747 6.66655 8.34704 6.59631 8.47206 6.47129C8.59708 6.34626 8.66732 6.17669 8.66732 5.99988C8.66732 5.82307 8.59708 5.6535 8.47206 5.52848C8.34704 5.40345 8.17747 5.33322 8.00066 5.33322H5.33399C5.15718 5.33322 4.98761 5.40345 4.86259 5.52848C4.73756 5.6535 4.66732 5.82307 4.66732 5.99988C4.66732 6.17669 4.73756 6.34626 4.86259 6.47129C4.98761 6.59631 5.15718 6.66655 5.33399 6.66655ZM6.00066 10.6665H4.66732C4.49051 10.6665 4.32094 10.7368 4.19592 10.8618C4.07089 10.9868 4.00066 11.1564 4.00066 11.3332C4.00066 11.51 4.07089 11.6796 4.19592 11.8046C4.32094 11.9296 4.49051 11.9999 4.66732 11.9999H6.00066C6.17747 11.9999 6.34704 11.9296 6.47206 11.8046C6.59708 11.6796 6.66732 11.51 6.66732 11.3332C6.66732 11.1564 6.59708 10.9868 6.47206 10.8618C6.34704 10.7368 6.17747 10.6665 6.00066 10.6665ZM14.0007 7.99988H12.0007V1.99988C12.0011 1.88241 11.9705 1.7669 11.912 1.66505C11.8535 1.56319 11.7691 1.47862 11.6673 1.41988C11.566 1.36137 11.451 1.33057 11.334 1.33057C11.217 1.33057 11.102 1.36137 11.0007 1.41988L9.00066 2.56655L7.00066 1.41988C6.89931 1.36137 6.78435 1.33057 6.66732 1.33057C6.5503 1.33057 6.43534 1.36137 6.33399 1.41988L4.33399 2.56655L2.33399 1.41988C2.23264 1.36137 2.11768 1.33057 2.00066 1.33057C1.88363 1.33057 1.76867 1.36137 1.66732 1.41988C1.56559 1.47862 1.48118 1.56319 1.42264 1.66505C1.36411 1.7669 1.33352 1.88241 1.33399 1.99988V12.6665C1.33399 13.197 1.5447 13.7057 1.91978 14.0808C2.29485 14.4558 2.80356 14.6665 3.33399 14.6665H12.6673C13.1978 14.6665 13.7065 14.4558 14.0815 14.0808C14.4566 13.7057 14.6673 13.197 14.6673 12.6665V8.66655C14.6673 8.48974 14.5971 8.32017 14.4721 8.19515C14.347 8.07012 14.1775 7.99988 14.0007 7.99988ZM3.33399 13.3332C3.15718 13.3332 2.98761 13.263 2.86259 13.138C2.73756 13.0129 2.66732 12.8434 2.66732 12.6665V3.15322L4.00066 3.91322C4.10355 3.96696 4.21791 3.99502 4.33399 3.99502C4.45007 3.99502 4.56443 3.96696 4.66732 3.91322L6.66732 2.76655L8.66732 3.91322C8.77021 3.96696 8.88457 3.99502 9.00066 3.99502C9.11674 3.99502 9.2311 3.96696 9.33399 3.91322L10.6673 3.15322V12.6665C10.6691 12.894 10.7097 13.1194 10.7873 13.3332H3.33399ZM13.334 12.6665C13.334 12.8434 13.2638 13.0129 13.1387 13.138C13.0137 13.263 12.8441 13.3332 12.6673 13.3332C12.4905 13.3332 12.3209 13.263 12.1959 13.138C12.0709 13.0129 12.0007 12.8434 12.0007 12.6665V9.33322H13.334V12.6665ZM9.04066 10.7799C9.00349 10.7547 8.96314 10.7345 8.92066 10.7199C8.88096 10.6996 8.83815 10.6861 8.79399 10.6799C8.68689 10.6584 8.57615 10.6636 8.47153 10.695C8.36691 10.7264 8.2716 10.783 8.19399 10.8599C8.07217 10.9876 8.00311 11.1567 8.00066 11.3332C7.99959 11.4199 8.01545 11.5059 8.04732 11.5865C8.08356 11.6676 8.13314 11.7419 8.19399 11.8065C8.25879 11.8654 8.3332 11.9128 8.41399 11.9466C8.49379 11.9818 8.58008 12 8.66732 12C8.75457 12 8.84086 11.9818 8.92066 11.9466C9.00145 11.9128 9.07586 11.8654 9.14066 11.8065C9.20244 11.7443 9.25133 11.6704 9.2845 11.5892C9.31768 11.5079 9.3345 11.421 9.33399 11.3332C9.33153 11.1567 9.26248 10.9876 9.14066 10.8599C9.10898 10.8312 9.07558 10.8045 9.04066 10.7799ZM9.13399 8.19322C9.05614 8.11741 8.96095 8.06178 8.85669 8.03116C8.75243 8.00055 8.64228 7.99589 8.5358 8.01758C8.42933 8.03926 8.32977 8.08665 8.2458 8.1556C8.16182 8.22456 8.09598 8.313 8.05399 8.41322C8.0125 8.51422 7.99644 8.62386 8.00725 8.73251C8.01805 8.84117 8.05538 8.94551 8.11594 9.03636C8.17651 9.12721 8.25847 9.20179 8.35461 9.25356C8.45075 9.30532 8.55813 9.33267 8.66732 9.33322C8.84413 9.33322 9.0137 9.26298 9.13873 9.13795C9.26375 9.01293 9.33399 8.84336 9.33399 8.66655C9.33294 8.57943 9.31482 8.49336 9.28066 8.41322C9.24854 8.32999 9.19846 8.25487 9.13399 8.19322Z" fill="#36322D"/></svg></div>
+              <div class="sn-item-label">Tickets</div>
+              <svg class="sn-item-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1.5l5 5 5-5" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
+            </div>
+            <!-- Diagnostic Center — expanded + active -->
+            <div class="sn-item expanded" id="sn-diag" onclick="toggleNavItem('sn-diag','sn-diag-sub')">
+              <div class="sn-item-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="2.5" stroke="#36322d" stroke-width="1.3"/><path d="M5 8h2l1.5-3 2 6L12 8h-1" stroke="#36322d" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <div class="sn-item-label">Diagnostic Center</div>
+              <svg class="sn-item-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1.5l5 5 5-5" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
+            </div>
+            <div class="sn-sub open" id="sn-diag-sub">
+              <div class="sn-sub-item active" onclick="closeNav()">All trucks</div>
+              <div class="sn-sub-item">Map</div>
+              <div class="sn-sub-item">Units</div>
+              <div class="sn-sub-item">Software Updates</div>
+            </div>
+            <div class="sn-item">
+              <div class="sn-item-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.3327 10.6666C12.9189 10.6688 12.5159 10.7992 12.1793 11.04L10.546 10.0733C10.6231 9.83411 10.6635 9.58462 10.666 9.33331C10.6641 8.74361 10.4668 8.17117 10.1049 7.70555C9.74301 7.23994 9.237 6.90741 8.66602 6.75998V5.21332C9.11082 5.05605 9.48572 4.7466 9.72444 4.33966C9.96315 3.93272 10.0503 3.45449 9.97055 2.98949C9.89077 2.5245 9.64917 2.10267 9.28846 1.79858C8.92774 1.49448 8.47114 1.3277 7.99935 1.3277C7.52756 1.3277 7.07096 1.49448 6.71024 1.79858C6.34953 2.10267 6.10793 2.5245 6.02815 2.98949C5.94837 3.45449 6.03554 3.93272 6.27426 4.33966C6.51298 4.7466 6.88787 5.05605 7.33268 5.21332V6.75998C6.7617 6.90741 6.25569 7.23994 5.89381 7.70555C5.53193 8.17117 5.3346 8.74361 5.33268 9.33331C5.33516 9.58462 5.37562 9.83411 5.45268 10.0733L3.81935 11.04C3.48279 10.7992 3.07983 10.6688 2.66602 10.6666C2.27045 10.6666 1.88377 10.7839 1.55488 11.0037C1.22598 11.2235 0.969633 11.5358 0.818257 11.9013C0.666882 12.2667 0.627276 12.6689 0.704446 13.0568C0.781616 13.4448 0.972098 13.8012 1.2518 14.0809C1.53151 14.3606 1.88787 14.551 2.27584 14.6282C2.6638 14.7054 3.06593 14.6658 3.43138 14.5144C3.79684 14.363 4.10919 14.1067 4.32896 13.7778C4.54872 13.4489 4.66602 13.0622 4.66602 12.6666C4.66355 12.4861 4.63664 12.3067 4.58602 12.1333L6.11935 11.22C6.61898 11.7167 7.29485 11.9954 7.99935 11.9954C8.70384 11.9954 9.37972 11.7167 9.87935 11.22L11.4127 12.1333C11.301 12.5371 11.3189 12.9657 11.4638 13.3587C11.6088 13.7517 11.8735 14.0893 12.2206 14.3238C12.5677 14.5584 12.9797 14.678 13.3984 14.6658C13.8171 14.6536 14.2215 14.5103 14.5543 14.256C14.8872 14.0017 15.1319 13.6493 15.2538 13.2485C15.3756 12.8477 15.3686 12.4188 15.2336 12.0222C15.0986 11.6257 14.8425 11.2815 14.5015 11.0383C14.1604 10.795 13.7516 10.6651 13.3327 10.6666ZM2.66602 13.3333C2.53416 13.3333 2.40527 13.2942 2.29564 13.221C2.186 13.1477 2.10056 13.0436 2.0501 12.9218C1.99964 12.8 1.98644 12.6659 2.01216 12.5366C2.03788 12.4073 2.10138 12.2885 2.19461 12.1952C2.28785 12.102 2.40664 12.0385 2.53596 12.0128C2.66528 11.9871 2.79932 12.0003 2.92114 12.0507C3.04296 12.1012 3.14708 12.1866 3.22033 12.2963C3.29358 12.4059 3.33268 12.5348 3.33268 12.6666C3.33268 12.8435 3.26244 13.013 3.13742 13.1381C3.0124 13.2631 2.84283 13.3333 2.66602 13.3333ZM7.99935 2.66665C8.1312 2.66665 8.2601 2.70575 8.36973 2.779C8.47936 2.85226 8.56481 2.95638 8.61527 3.07819C8.66573 3.20001 8.67893 3.33406 8.65321 3.46338C8.62748 3.5927 8.56399 3.71149 8.47075 3.80472C8.37752 3.89796 8.25873 3.96145 8.12941 3.98717C8.00009 4.0129 7.86604 3.99969 7.74423 3.94924C7.62241 3.89878 7.51829 3.81333 7.44504 3.7037C7.37178 3.59406 7.33268 3.46517 7.33268 3.33332C7.33268 3.1565 7.40292 2.98694 7.52794 2.86191C7.65297 2.73689 7.82254 2.66665 7.99935 2.66665ZM7.99935 10.6666C7.73564 10.6666 7.47785 10.5884 7.25859 10.4419C7.03932 10.2954 6.86843 10.0872 6.76751 9.84356C6.66659 9.59993 6.64019 9.33184 6.69164 9.07319C6.74308 8.81455 6.87007 8.57698 7.05654 8.39051C7.24301 8.20404 7.48059 8.07705 7.73923 8.0256C7.99787 7.97415 8.26596 8.00056 8.50959 8.10148C8.75323 8.20239 8.96147 8.37329 9.10798 8.59256C9.25448 8.81182 9.33268 9.06961 9.33268 9.33331C9.33268 9.68694 9.19221 10.0261 8.94216 10.2761C8.69211 10.5262 8.35297 10.6666 7.99935 10.6666ZM13.3327 13.3333C13.2008 13.3333 13.0719 13.2942 12.9623 13.221C12.8527 13.1477 12.7672 13.0436 12.7168 12.9218C12.6663 12.8 12.6531 12.6659 12.6788 12.5366C12.7045 12.4073 12.768 12.2885 12.8613 12.1952C12.9545 12.102 13.0733 12.0385 13.2026 12.0128C13.3319 11.9871 13.466 12.0003 13.5878 12.0507C13.7096 12.1012 13.8137 12.1866 13.887 12.2963C13.9603 12.4059 13.9993 12.5348 13.9993 12.6666C13.9993 12.8435 13.9291 13.013 13.8041 13.1381C13.6791 13.2631 13.5095 13.3333 13.3327 13.3333Z" fill="#211F1C"/></svg></div>
+              <div class="sn-item-label">Mix Design</div>
+              <svg class="sn-item-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1.5l5 5 5-5" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
+            </div>
+            <div class="sn-item">
+              <div class="sn-item-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.99904 1.33336C6.97763 1.33151 5.96946 1.56439 5.05233 2.01401C4.13521 2.46363 3.33366 3.11797 2.70956 3.92653C2.08545 4.7351 1.65548 5.67625 1.45284 6.67736C1.25019 7.67846 1.28029 8.71274 1.5408 9.70037C1.80131 10.688 2.28528 11.6026 2.95534 12.3735C3.62541 13.1444 4.46364 13.751 5.40536 14.1465C6.34708 14.5421 7.36709 14.7159 8.38666 14.6547C9.40623 14.5935 10.3981 14.2988 11.2857 13.7934H11.3324H11.3657C12.6492 13.0627 13.6538 11.9265 14.2217 10.5632C14.7896 9.19983 14.8887 7.68649 14.5035 6.26072C14.1182 4.83494 13.2704 3.57745 12.0932 2.68564C10.9159 1.79382 9.47587 1.31818 7.99904 1.33336ZM8.66571 2.71336C9.83906 2.86216 10.9297 3.39676 11.766 4.23308C12.6023 5.06941 13.1369 6.16001 13.2857 7.33336H8.66571V2.71336ZM7.99904 13.3334C6.64871 13.3241 5.35215 12.8031 4.371 11.8753C3.38985 10.9474 2.79718 9.682 2.71257 8.33429C2.62797 6.98658 3.05774 5.65696 3.91516 4.61373C4.77258 3.57051 5.9938 2.89137 7.33237 2.71336V8.00003C7.335 8.07984 7.35077 8.15868 7.37904 8.23336V8.28669V8.33336L10.0457 12.9134C9.39887 13.1902 8.70263 13.3331 7.99904 13.3334ZM11.219 12.24L9.15237 8.66669H13.2857C13.1959 9.36975 12.967 10.0479 12.6121 10.6614C12.2573 11.275 11.7837 11.8116 11.219 12.24Z" fill="black"/></svg></div>
+              <div class="sn-item-label">Insights</div>
+              <svg class="sn-item-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1.5l5 5 5-5" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
+            </div>
+            <div class="sn-item">
+              <div class="sn-item-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 6.5V12C6 12.5523 6.44772 13 7 13H10.5" stroke="#211F1C" stroke-width="1.2"/><path d="M2.5 13C1.94772 13 1.5 12.5523 1.5 12V9.80278C1.5 9.60535 1.55844 9.41234 1.66795 9.24808L3.20313 6.9453C3.3886 6.6671 3.70083 6.5 4.03518 6.5H6V12C6 12.5523 6.44772 13 7 13H11" stroke="#211F1C" stroke-width="1.2" stroke-linejoin="round"/><circle cx="4" cy="13" r="1.4" stroke="#211F1C" stroke-width="1.2"/><circle cx="12" cy="13" r="1.4" stroke="#211F1C" stroke-width="1.2"/><path d="M12.2242 5.15477L8.65195 6.06584C6.54213 6.60392 5.61922 9.08368 6.86385 10.8702L11.9902 10.8575L14.0825 7.82226C14.2046 7.64525 14.204 7.41112 14.0811 7.23472L12.7748 5.35971C12.6519 5.18331 12.4325 5.10164 12.2242 5.15477Z" stroke="#211F1C" stroke-width="1.2"/><path d="M9.33001 2.66939H6.27001L6.80334 2.14273C6.92888 2.01719 6.9994 1.84693 6.9994 1.66939C6.9994 1.49186 6.92888 1.3216 6.80334 1.19606C6.67781 1.07053 6.50754 1 6.33001 1C6.15247 1 5.98221 1.07053 5.85668 1.19606L4.19001 2.86273C4.12932 2.92613 4.08174 3.00089 4.05001 3.08273C3.98333 3.24504 3.98333 3.42709 4.05001 3.58939C4.08174 3.67123 4.12932 3.74599 4.19001 3.80939L5.85668 5.47606C5.91865 5.53855 5.99239 5.58814 6.07362 5.62199C6.15486 5.65583 6.242 5.67326 6.33001 5.67326C6.41802 5.67326 6.50515 5.65583 6.58639 5.62199C6.66763 5.58814 6.74137 5.53855 6.80334 5.47606C6.86583 5.41409 6.91542 5.34035 6.94927 5.25911C6.98312 5.17787 7.00054 5.09074 7.00054 5.00273C7.00054 4.91472 6.98312 4.82758 6.94927 4.74634C6.91542 4.6651 6.86583 4.59137 6.80334 4.52939L6.27001 4.00273H9.33001C9.50682 4.00273 9.67639 3.93249 9.80141 3.80747C9.92644 3.68244 9.99668 3.51287 9.99668 3.33606C9.99668 3.15925 9.92644 2.98968 9.80141 2.86466C9.67639 2.73963 9.50682 2.66939 9.33001 2.66939Z" fill="#211F1C"/></svg></div>
+              <div class="sn-item-label">Returned Concrete</div>
+              <div class="sn-badge">New</div>
+            </div>
+          </div>
+          <div class="sn-footer">
+            <div class="sn-footer-item">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="#36322d" stroke-width="1.3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg>
+              Profile
+            </div>
+            <div class="sn-footer-item">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="#36322d" stroke-width="1.3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.1 3.1l1.4 1.4M11.5 11.5l1.4 1.4M3.1 12.9l1.4-1.4M11.5 4.5l1.4-1.4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg>
+              Settings
+              <svg style="margin-left:auto" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
+            </div>
+            <div class="sn-footer-item">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#36322d" stroke-width="1.3"/><path d="M8 7v5M8 5v1" stroke="#36322d" stroke-width="1.5" stroke-linecap="round"/></svg>
+              Support
+            </div>
+          </div>
+        </div><!-- /sidenav -->
 </div><!-- /phone -->
 </div><!-- /phone-wrap -->
 
@@ -1858,7 +2087,6 @@ function renderTrucks() {
   });
 
   document.getElementById('truck-list').innerHTML = html;
-  document.getElementById('truck-list-components').innerHTML = html;
 }
 
 function toggleGroup(gi) {
@@ -3031,6 +3259,9 @@ function selectWts(label, el) {
   document.getElementById('page-where-to-start').style.display      = label === 'Where to start'       ? 'block' : 'none';
   document.getElementById('page-overview').style.display             = label === 'Overview'              ? 'block' : 'none';
   document.getElementById('page-components-condition').style.display = label === 'Components Condition'  ? 'block' : 'none';
+
+  /* Render conditions rows when that page is selected */
+  if (label === 'Components Condition') setTimeout(renderConditions, 0);
 }
 
 document.addEventListener('click', function(e) {
@@ -3303,6 +3534,229 @@ function senStart() {
 function senStop() {
   clearTimeout(senAnimId);
   senAnimId = null;
+}
+
+
+
+function openNav() {
+  document.getElementById('sidenav').classList.add('open');
+  document.getElementById('sidenav-overlay').classList.add('open');
+}
+function closeNav() {
+  document.getElementById('sidenav').classList.remove('open');
+  document.getElementById('sidenav-overlay').classList.remove('open');
+}
+function toggleNavItem(itemId, subId) {
+  const item = document.getElementById(itemId);
+  const sub  = document.getElementById(subId);
+  const isOpen = sub.classList.contains('open');
+  item.classList.toggle('expanded', !isOpen);
+  sub.classList.toggle('open', !isOpen);
+}
+
+
+/* ─── COMPONENT CONDITIONS DATA ─────────────────── */
+const CC_TRUCKS = [
+  { num:'45689', ver:'V3', ign:'On',  ignOff:false, err:1,  wrn:10, ignDetail:'3 min',  plant:'Phoenix Central', lastConn:'1:16 PM 07/23/25',
+    components:[
+      { name:'Iox/Robotex', dot:'#ffba0d', state:'warn',  evt:'2 Warnings' },
+      { name:'Charge',      dot:'#d70100', state:'alarm', evt:'Alarm · ongoing' },
+      { name:'Discharge',   dot:'#d70100', state:'alarm', evt:'Alarm · ongoing' },
+      { name:'Drum',        dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Int. Display',dot:'#d70100', state:'alarm', evt:'3 Alarms' },
+      { name:'Ext. Display',dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Bus Power',   dot:'#d70100', state:'alarm', evt:'Alarm · ongoing' },
+      { name:'CWR',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'WDS',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
+    ]},
+  { num:'12457', ver:'V4', ign:'On',  ignOff:false, err:2,  wrn:10, ignDetail:'15 min', plant:'Phoenix Central', lastConn:'12:44 PM 07/23/25',
+    components:[
+      { name:'Iox/Robotex', dot:'#ffba0d', state:'warn',  evt:'2 Warnings' },
+      { name:'Charge',      dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
+      { name:'Discharge',   dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
+      { name:'Drum',        dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Int. Display',dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Ext. Display',dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Bus Power',   dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'CWR',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'WDS',         dot:'#d70100', state:'alarm', evt:'Alarm · no signal' },
+    ]},
+  { num:'39821', ver:'V3', ign:'On',  ignOff:false, err:0,  wrn:10, ignDetail:'8 hrs',  plant:'Phoenix Central', lastConn:'9:02 AM 07/23/25',
+    components:[
+      { name:'Iox/Robotex', dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Charge',      dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Discharge',   dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Drum',        dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Int. Display',dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Ext. Display',dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Bus Power',   dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'CWR',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'WDS',         dot:'#d70100', state:'alarm', evt:'Alarm · ongoing' },
+    ]},
+  { num:'53127', ver:'Spark', ign:'On',  ignOff:false, err:1, wrn:0,  ignDetail:'2 days', plant:'Phoenix Central', lastConn:'2 days ago',
+    components:[
+      { name:'Iox/Robotex', dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Charge',      dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Discharge',   dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Drum',        dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
+      { name:'Int. Display',dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Ext. Display',dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Bus Power',   dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'CWR',         dot:'#d70100', state:'alarm', evt:'1 Alarm' },
+      { name:'WDS',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
+    ]},
+  { num:'67234', ver:'V5',    ign:'Off', ignOff:true,  err:0, wrn:10,  ignDetail:'15 min', plant:'Mesa South',      lastConn:'2:05 PM 07/23/25',
+    components:[
+      { name:'Iox/Robotex', dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
+      { name:'Charge',      dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Discharge',   dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Drum',        dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Int. Display',dot:'#ffba0d', state:'warn',  evt:'2 Warnings' },
+      { name:'Ext. Display',dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Bus Power',   dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
+      { name:'CWR',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'WDS',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
+    ]},
+  { num:'84760', ver:'Pulse', ign:'Off', ignOff:true,  err:2, wrn:10,  ignDetail:'4 hrs',  plant:'Mesa South',      lastConn:'11:30 AM 07/23/25',
+    components:[
+      { name:'Iox/Robotex', dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
+      { name:'Charge',      dot:'#d70100', state:'alarm', evt:'2 Alarms' },
+      { name:'Discharge',   dot:'#d70100', state:'alarm', evt:'1 Alarm' },
+      { name:'Drum',        dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Int. Display',dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
+      { name:'Ext. Display',dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Bus Power',   dot:'#d70100', state:'alarm', evt:'Alarm · ongoing' },
+      { name:'CWR',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'WDS',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
+    ]},
+  { num:'98214', ver:'V3',    ign:'Off', ignOff:true,  err:1, wrn:0,   ignDetail:'1 day',  plant:'Mesa South',      lastConn:'07/22/25',
+    components:[
+      { name:'Iox/Robotex', dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Charge',      dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Discharge',   dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Drum',        dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Int. Display',dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Ext. Display',dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Bus Power',   dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'CWR',         dot:'#d70100', state:'alarm', evt:'1 Alarm' },
+      { name:'WDS',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
+    ]},
+  { num:'21348', ver:'V5',    ign:'On',  ignOff:false, err:2, wrn:10,  ignDetail:'2 days', plant:'Mesa South',      lastConn:'07/21/25',
+    components:[
+      { name:'Iox/Robotex', dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
+      { name:'Charge',      dot:'#ffba0d', state:'warn',  evt:'2 Warnings' },
+      { name:'Discharge',   dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Drum',        dot:'#d70100', state:'alarm', evt:'1 Alarm' },
+      { name:'Int. Display',dot:'#d70100', state:'alarm', evt:'2 Alarms' },
+      { name:'Ext. Display',dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Bus Power',   dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'CWR',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'WDS',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
+    ]},
+  { num:'55120', ver:'Spark', ign:'On',  ignOff:false, err:3, wrn:5,   ignDetail:'10 min', plant:'Tempe East',      lastConn:'2:10 PM 07/23/25',
+    components:[
+      { name:'Iox/Robotex', dot:'#d70100', state:'alarm', evt:'1 Alarm' },
+      { name:'Charge',      dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
+      { name:'Discharge',   dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Drum',        dot:'#ffba0d', state:'warn',  evt:'2 Warnings' },
+      { name:'Int. Display',dot:'#d70100', state:'alarm', evt:'1 Alarm' },
+      { name:'Ext. Display',dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Bus Power',   dot:'#d70100', state:'alarm', evt:'1 Alarm' },
+      { name:'CWR',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'WDS',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
+    ]},
+  { num:'6456',  ver:'V3',    ign:'On',  ignOff:false, err:1, wrn:10,  ignDetail:'6 hr',   plant:'Phoenix Central', lastConn:'1:16 PM 07/23/25',
+    components:[
+      { name:'Iox/Robotex', dot:'#ffba0d', state:'warn',  evt:'2 Warnings' },
+      { name:'Charge',      dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
+      { name:'Discharge',   dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
+      { name:'Drum',        dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Int. Display',dot:'#d70100', state:'alarm', evt:'3 Alarms' },
+      { name:'Ext. Display',dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Bus Power',   dot:'#d70100', state:'alarm', evt:'3 Alarms' },
+      { name:'CWR',         dot:'#d70100', state:'alarm', evt:'7 Alarms' },
+      { name:'WDS',         dot:'#d70100', state:'alarm', evt:'Alarm · ongoing' },
+    ]},
+];
+
+const ccExpanded = {};
+
+function renderConditions() {
+  const el = document.getElementById('cc-rows');
+  if (!el) return;
+  let html = '';
+
+  CC_TRUCKS.forEach((t, i) => {
+    const isOpen = !!ccExpanded[i];
+    const rowBg  = i % 2 === 0 ? '#ffffff' : '#f6f4f2';
+    const badges = (t.err ? `<span class="badge err"><span class="badge-icon">⊘</span>${t.err}</span>` : '') +
+                   (t.wrn ? `<span class="badge wrn"><span class="badge-icon">⚠</span>${t.wrn}</span>` : '');
+
+    // Build component status rows for the expanded section
+    const compRows = t.components.map(c => {
+      const evtColor = c.state === 'alarm' ? '#d70100' :
+                       c.state === 'warn'  ? '#b07800' : 'var(--soft)';
+      const evtWeight = c.state !== 'clean' ? '500' : '400';
+      return `<div class="cc-comp-row">
+        <div class="cc-comp-row-left">
+          <div style="width:8px;height:8px;border-radius:50%;background:${c.dot};flex-shrink:0;margin-top:1px;"></div>
+          <span class="cc-comp-row-name">${c.name}</span>
+        </div>
+        <span class="cc-comp-row-evt" style="color:${evtColor};font-weight:${evtWeight};">${c.evt}</span>
+      </div>`;
+    }).join('');
+
+    const expHtml = isOpen ? `
+      <div class="exp-wrap open" data-cc-idx="${i}" style="padding-bottom:15px;background:${rowBg};">
+        <div class="exp-row"><div class="exp-label">Plant</div><div class="exp-val">${t.plant || 'Phoenix Central'}</div></div>
+        <div class="exp-row"><div class="exp-label">Last Connection</div><div class="exp-val">${t.lastConn || '1:16 PM 07/23/25'}</div></div>
+        <div class="cc-comp-section-hdr">Components</div>
+        <div class="cc-comp-list">${compRows}</div>
+        <button class="view-truck-btn" onclick="openDrawerFromCC(event,${i})">View Truck</button>
+      </div>` : '';
+
+    html += `
+      <div class="truck-wrap" style="background:${rowBg};">
+        <div class="truck-row ov-row" onclick="ccToggle(${i})" style="grid-template-columns:74px 1fr 1.4fr 90px;background:${rowBg};">
+          <div class="td truck-num">
+            ${chevSvg(isOpen ? 180 : 90)}
+            ${t.num}
+          </div>
+          <div class="td" style="font-size:13px;">${t.ver}</div>
+          <div class="td" style="font-size:13px;color:var(--strong);">${t.ign} · ${t.ignDetail || '—'}</div>
+          <div class="td">${badges || '<span style="font-size:12px;color:var(--soft);">—</span>'}</div>
+        </div>
+        ${expHtml}
+      </div>`;
+  });
+
+  el.innerHTML = html;
+}
+
+
+function ccToggle(i) {
+  ccExpanded[i] = !ccExpanded[i];
+  renderConditions();
+  if (ccExpanded[i]) {
+    setTimeout(() => {
+      const row = document.querySelector(`[data-cc-idx="${i}"]`);
+      if (row) {
+        const scrollBody = document.querySelector('#s-main .scroll-body');
+        if (scrollBody) {
+          const rowBottom = row.getBoundingClientRect().bottom;
+          const containerBottom = scrollBody.getBoundingClientRect().bottom;
+          if (rowBottom > containerBottom - 10) {
+            scrollBody.scrollBy({ top: rowBottom - containerBottom + 10, behavior: 'smooth' });
+          }
+        }
+      }
+    }, 50);
+  }
+}
+
+function openDrawerFromCC(e, i) {
+  e.stopPropagation();
+  openDrawer(i < trucks.length ? i : 0);
 }
 
 

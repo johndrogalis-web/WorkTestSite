@@ -630,6 +630,192 @@
     line-height: 1.6; margin-bottom: 14px;
     letter-spacing: -0.28px;
   }
+
+  /* ─── COMPONENT TIMELINE ─────────────────────────── */
+  /* Day strip — matches Figma exactly */
+  .ct-strip-wrap {
+    flex-shrink:0; padding:0 14px;
+  }
+  .ct-strip {
+    display:grid; grid-template-columns:repeat(7,1fr);
+    background:var(--layer-2); border-radius:8px;
+    overflow:hidden; border:1px solid var(--border);
+    margin-bottom:0;
+  }
+  .ct-day {
+    display:flex; flex-direction:column; align-items:center;
+    padding:8px 4px 8px; cursor:pointer;
+    border-right:1px solid var(--border);
+    transition:background 0.15s; position:relative;
+  }
+  .ct-day:last-child { border-right:none; }
+  .ct-day-inner { display:flex; flex-direction:column; align-items:center; width:100%; }
+  .ct-day-active .ct-day-inner {
+    background:var(--layer-1); border-radius:4px;
+    padding:3px 2px;
+  }
+  .ct-day-lbl { font-size:10px; font-weight:500; color:var(--strong); letter-spacing:-0.1px; line-height:1.3; text-align:center; width:100%; }
+  .ct-day-num { font-size:13px; color:var(--strong); letter-spacing:-0.26px; line-height:1.2; text-align:center; width:100%; }
+  .ct-bar-wrap { padding-top:5px; display:flex; justify-content:center; width:100%; }
+  .ct-bar { height:6px; width:20px; max-width:20px; border-radius:3px; }
+  .ct-day-active .ct-bar { width:100%; max-width:none; }
+  .ct-date-hdr {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 14px 10px; flex-shrink:0; border-bottom:1px solid var(--border);
+    margin-top:8px;
+  }
+  .ct-date-title { font-size:16px; font-weight:500; color:var(--strong); letter-spacing:-0.32px; }
+  .ct-list { display:flex; flex-direction:column; gap:8px; padding-bottom:16px; }
+  .ct-row {
+    background:var(--layer-1); border-radius:12px; overflow:hidden;
+    border:1px solid var(--border); box-shadow:0 1px 0 rgba(0,0,0,0.06);
+  }
+  .ct-row-hdr {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 12px; cursor:pointer; user-select:none;
+  }
+  .ct-row-left { display:flex; align-items:center; gap:10px; flex-shrink:0; min-width:0; }
+  .ct-row-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .ct-row-name { font-size:14px; font-weight:500; color:var(--strong); letter-spacing:-0.28px; }
+  .ct-row-right { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+  .ct-row-summary { font-size:12px; font-weight:500; color:var(--strong); letter-spacing:-0.2px; white-space:nowrap; }
+  .ct-chev { transition:transform 0.2s; flex-shrink:0; }
+  .ct-chev.open { transform:rotate(180deg); }
+  .ct-events { display:none; border-top:1px solid var(--border); }
+  .ct-events.open { display:block; }
+  .ct-event {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 10px; border-bottom:1px solid var(--border); cursor:pointer;
+    transition:background 0.1s;
+  }
+  .ct-event:last-child { border-bottom:none; }
+  .ct-event:active { background:rgba(54,50,45,0.04); }
+  .ct-event-left { display:flex; align-items:flex-start; gap:8px; }
+  .ct-event-icon {
+    width:20px; height:20px; border-radius:3px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; margin-top:1px;
+  }
+  .ct-icon-warn  { background:#ffba0d; }
+  .ct-icon-alarm { background:#d70100; }
+  .ct-event-time { font-size:14px; font-weight:500; color:var(--strong); letter-spacing:-0.28px; line-height:1.3; }
+  .ct-event-sub  { font-size:12px; color:var(--soft); letter-spacing:-0.2px; margin-top:2px; }
+  .ct-event-arrow { color:rgba(54,50,45,0.38); flex-shrink:0; }
+  .ct-no-events { padding:12px 10px; font-size:13px; color:var(--soft); letter-spacing:-0.2px; }
+
+
+  /* ─── CONFIGURATION ──────────────────────────────── */
+  .cfg-toolbar { display:flex; align-items:center; gap:10px; padding:10px 12px; border-bottom:1px solid var(--border); flex-shrink:0; background:var(--layer-1); }
+  .cfg-scroll { flex:1; overflow-y:auto; background:var(--layer-2); -webkit-overflow-scrolling:touch; padding-bottom:16px; }
+  .cfg-search { display:flex; align-items:center; gap:8px; background:var(--layer-2); border:1px solid var(--border); border-radius:24px; padding:6px 12px; flex:1; }
+  .cfg-search-input { border:none; background:none; outline:none; font-family:var(--font); font-size:13px; color:var(--strong); letter-spacing:-0.26px; width:100%; }
+  .cfg-search-input::placeholder { color:var(--soft); }
+  .cfg-update-btn { background:#1594ef; color:white; border:none; border-radius:32px; padding:7px 16px; font-size:13px; font-weight:500; font-family:var(--font); letter-spacing:-0.26px; cursor:pointer; flex-shrink:0; }
+
+
+  /* accordion */
+  /* Config accordions — floating pill cards, same as timeline ct-row */
+  .cfg-list { display:flex; flex-direction:column; gap:8px; padding:10px 6px 8px; }
+  .cfg-acc {
+    background:var(--layer-1); border:1px solid var(--border);
+    border-radius:12px; overflow:hidden;
+    box-shadow:0 1px 0 rgba(0,0,0,0.06);
+  }
+  .cfg-acc-hdr { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:14px 12px; cursor:pointer; user-select:none; }
+  .cfg-acc-text { flex:1; min-width:0; }
+  .cfg-acc-title { font-size:14px; font-weight:500; color:var(--strong); letter-spacing:-0.28px; line-height:1.3; }
+  .cfg-acc-sub { font-size:12px; color:var(--soft); letter-spacing:-0.2px; margin-top:2px; line-height:1.4; }
+  .cfg-chev { flex-shrink:0; margin-top:2px; transition:transform 0.2s; }
+  .cfg-acc.open .cfg-chev { transform:rotate(180deg); }
+  .cfg-acc.open .cfg-acc-hdr { border-bottom:1px solid var(--border); }
+
+  /* accordion body */
+  .cfg-acc-body { padding:0 12px 14px; }
+  .cfg-fields { display:flex; flex-direction:column; gap:12px; }
+  .cfg-field { display:flex; flex-direction:column; gap:5px; }
+  .cfg-field label { font-size:12px; font-weight:500; color:var(--defined); letter-spacing:-0.2px; }
+  .cfg-field input[type="text"],
+  .cfg-field input[type="number"] {
+    width:100%; padding:9px 14px; border:1px solid rgba(54,50,45,0.5);
+    border-radius:32px; font-family:var(--font); font-size:13px;
+    color:var(--strong); background:none; outline:none; letter-spacing:-0.26px;
+    -moz-appearance:textfield;
+  }
+  .cfg-field input:focus { border-color:var(--blue); }
+  .cfg-field input::-webkit-inner-spin-button { -webkit-appearance:none; }
+
+  .cfg-select {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:9px 14px; border:1px solid rgba(54,50,45,0.5); border-radius:4px;
+    font-size:13px; color:var(--strong); letter-spacing:-0.26px; cursor:pointer;
+  }
+
+  .cfg-section-label { font-size:12px; font-weight:600; color:var(--strong); letter-spacing:0.2px; margin-top:4px; margin-bottom:-4px; }
+
+  /* toggle */
+  .cfg-field-toggle { flex-direction:row; align-items:center; justify-content:space-between; }
+  .cfg-field-toggle label { font-size:13px; color:var(--strong); font-weight:400; }
+  .cfg-toggle {
+    width:40px; height:24px; background:rgba(54,50,45,0.22); border-radius:12px;
+    position:relative; cursor:pointer; flex-shrink:0; transition:background 0.2s;
+  }
+  .cfg-toggle.on { background:#1594ef; }
+  .cfg-toggle-knob {
+    width:18px; height:18px; background:white; border-radius:50%;
+    position:absolute; top:3px; left:3px; transition:left 0.2s;
+    box-shadow:0 1px 3px rgba(0,0,0,0.2);
+  }
+  .cfg-info-block { background:var(--layer-1); border-radius:12px; overflow:hidden; border:1px solid var(--border); margin:8px 6px 0; }
+  .cfg-toggle.on .cfg-toggle-knob { left:19px; }
+
+
+  /* ─── SENSOR ─────────────────────────────────────── */
+  .sen-scroll { flex:1; overflow-y:auto; background:var(--layer-2); -webkit-overflow-scrolling:touch; padding:10px 6px 24px; }
+
+  /* Chip grid */
+  .sen-chips { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; padding-bottom:4px; }
+  .sen-chip {
+    display:flex; flex-direction:column; gap:3px; padding:9px 10px;
+    border-radius:10px; cursor:pointer;
+    border:1.5px solid var(--border); background:var(--layer-1);
+    transition:border-color 0.15s, background 0.15s;
+    box-shadow:0 1px 0 rgba(0,0,0,0.05);
+  }
+  .sen-chip.active  { border-color:#1594ef; background:rgba(21,148,239,0.07); }
+  .sen-chip-label   { font-size:10px; color:var(--soft); letter-spacing:-0.1px; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sen-chip-val     { font-size:17px; font-weight:500; color:var(--strong); letter-spacing:-0.5px; line-height:1.2; }
+  .sen-chip-unit    { font-size:10px; color:var(--soft); letter-spacing:-0.1px; }
+  .sen-chip.active .sen-chip-label { color:#1594ef; opacity:0.85; }
+  .sen-chip.active .sen-chip-val   { color:#1594ef; }
+
+  /* Chart cards */
+  .sen-charts { display:flex; flex-direction:column; gap:8px; margin-top:10px; }
+  .sen-card   { background:var(--layer-1); border:1px solid var(--border); border-radius:12px; overflow:hidden; box-shadow:0 1px 0 rgba(0,0,0,0.06); }
+  .sen-card-hdr { display:flex; align-items:flex-start; justify-content:space-between; padding:12px 14px 4px; }
+  .sen-card-left { display:flex; flex-direction:column; gap:2px; }
+  .sen-card-title { font-size:12px; font-weight:500; color:var(--soft); letter-spacing:-0.2px; }
+  .sen-card-bigval { font-size:28px; font-weight:500; color:var(--strong); letter-spacing:-0.8px; line-height:1.1; }
+  .sen-card-unit  { font-size:12px; color:var(--soft); margin-left:2px; }
+  .sen-live-badge { display:flex; align-items:center; gap:5px; padding:3px 8px; border-radius:20px; background:rgba(46,207,29,0.1); }
+  .sen-live-dot   { width:6px; height:6px; border-radius:50%; background:#2ecf1d; flex-shrink:0; animation:sen-pulse 1.5s infinite; }
+  @keyframes sen-pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .sen-live-txt   { font-size:10px; color:#1a8c10; font-weight:500; letter-spacing:-0.1px; }
+  .sen-canvas-wrap { padding:4px 14px 14px; }
+  canvas.sen-canvas { width:100%; height:80px; display:block; }
+
+  /* Status card (Cell Coverage + Satellite) */
+  .sen-status-body { display:flex; align-items:center; gap:16px; padding:10px 14px 16px; }
+  .sen-status-icon-wrap { width:48px; height:48px; border-radius:24px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .sen-status-icon-wrap.green { background:rgba(46,207,29,0.12); }
+  .sen-status-icon-wrap.blue  { background:rgba(21,148,239,0.12); }
+  .sen-status-details { display:flex; flex-direction:column; gap:3px; }
+  .sen-status-state   { font-size:20px; font-weight:500; color:var(--strong); letter-spacing:-0.5px; }
+  .sen-status-sub     { font-size:12px; color:var(--soft); letter-spacing:-0.2px; }
+
+  /* Empty state */
+  .sen-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 20px; gap:8px; opacity:0.45; }
+  .sen-empty-icon { font-size:32px; }
+  .sen-empty-txt  { font-size:13px; color:var(--soft); text-align:center; letter-spacing:-0.2px; }
+
 </style>
 </head>
 <body>
@@ -814,6 +1000,9 @@
         </button>
         <button class="d-pill" id="ping-pill" style="display:none;background:#1594ef;border-color:#1594ef;color:white;" onclick="pingTruck()">
           Ping Truck
+        </button>
+        <button class="d-pill" id="update-pill" style="display:none;background:#1594ef;border-color:#1594ef;color:white;">
+          Update
         </button>
       </div>
     </div>
@@ -1246,6 +1435,278 @@
         </div>
       </div><!-- /state-manual -->
 
+
+      <!-- STATE E: COMPONENT TIMELINE -->
+      <div id="state-timeline" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+
+        <!-- Day strip -->
+        <div class="ct-strip-wrap">
+          <div class="ct-strip" id="ct-strip"></div>
+        </div>
+
+        <!-- Date nav header -->
+        <div class="ct-date-hdr">
+          <span class="ct-date-title" id="ct-date-label">Today 3/24/2026</span>
+          <div style="display:flex;gap:6px;">
+            <button class="chrome-btn chrome-btn--border" onclick="ctNavDay(-1)">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 3l-5 4 5 4" stroke="#36322d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="chrome-btn chrome-btn--border" onclick="ctNavDay(1)">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l5 4-5 4" stroke="#36322d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Component accordion list -->
+        <div class="co-scroll" style="padding-top:8px;">
+          <div class="ct-list" id="ct-list"></div>
+        </div>
+
+      </div><!-- /state-timeline -->
+
+
+      <!-- STATE G: SENSOR -->
+      <div id="state-sensor" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+        <div class="sen-scroll" id="sen-scroll">
+
+          <!-- 6 sensor chips -->
+          <div class="sen-chips" id="sen-chips">
+            <div class="sen-chip active" data-sensor="slump"    onclick="senToggle(this)">
+              <div class="sen-chip-label">Slump</div>
+              <div class="sen-chip-val" id="sv-slump">5.25<span class="sen-chip-unit"> in</span></div>
+            </div>
+            <div class="sen-chip active" data-sensor="water"    onclick="senToggle(this)">
+              <div class="sen-chip-label">Water Add.</div>
+              <div class="sen-chip-val" id="sv-water">0.5<span class="sen-chip-unit"> gal</span></div>
+            </div>
+            <div class="sen-chip"        data-sensor="pressure" onclick="senToggle(this)">
+              <div class="sen-chip-label">Pressure</div>
+              <div class="sen-chip-val" id="sv-pressure">32<span class="sen-chip-unit"> PSI</span></div>
+            </div>
+            <div class="sen-chip"        data-sensor="drum"     onclick="senToggle(this)">
+              <div class="sen-chip-label">Drum Speed</div>
+              <div class="sen-chip-val" id="sv-drum">268<span class="sen-chip-unit"> RPM</span></div>
+            </div>
+            <div class="sen-chip"        data-sensor="cell"     onclick="senToggle(this)">
+              <div class="sen-chip-label">Cell Coverage</div>
+              <div class="sen-chip-val" id="sv-cell">Active</div>
+            </div>
+            <div class="sen-chip"        data-sensor="sat"      onclick="senToggle(this)">
+              <div class="sen-chip-label">Satellite</div>
+              <div class="sen-chip-val" id="sv-sat">8<span class="sen-chip-unit"> sats</span></div>
+            </div>
+          </div>
+
+          <!-- Chart cards rendered by JS -->
+          <div class="sen-charts" id="sen-charts"></div>
+
+        </div>
+      </div><!-- /state-sensor -->
+
+      <!-- STATE F: CONFIGURATION -->
+      <div id="state-config" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+
+        <!-- Toolbar — search full width -->
+        <div class="cfg-toolbar">
+          <div class="cfg-search">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4" stroke="#36322d9e" stroke-width="1.3"/><path d="M10.5 10.5l3 3" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <input type="text" placeholder="Search" class="cfg-search-input">
+          </div>
+        </div>
+
+        <!-- Scrollable content -->
+        <div class="cfg-scroll">
+          <div class="cfg-list">
+
+            <!-- 1: Information (open by default) -->
+            <div class="cfg-acc open" id="cfg-acc-0">
+              <div class="cfg-acc-hdr" onclick="toggleCfgAcc(0)">
+                <div class="cfg-acc-text">
+                  <div class="cfg-acc-title">Information</div>
+                  <div class="cfg-acc-sub">Defines how this truck is registered and configured within the system for tracking and reporting.</div>
+                </div>
+                <svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="cfg-acc-body">
+                <div class="cfg-fields">
+                  <div class="cfg-field"><label>Name</label><input type="text" value="1402 (MM North)"></div>
+                  <div class="cfg-field"><label>Batch System Code</label><input type="text" value="234-2981-8373"></div>
+                  <div class="cfg-field"><label>Contract</label><div class="cfg-select">Cemex Houston <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
+                  <div class="cfg-field"><label>Mixer Type</label><div class="cfg-select">McNeilus <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
+                  <div class="cfg-field"><label>WDS</label><div class="cfg-select">- <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
+                  <div class="cfg-field"><label>Vin</label><input type="text" value="1HGCM82633A123456"></div>
+                  <div class="cfg-field"><label>Mode</label><div class="cfg-select">Live <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
+                  <div class="cfg-field"><label>OOS Reason</label><div class="cfg-select">In Service <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2: Equipment Settings -->
+            <div class="cfg-acc" id="cfg-acc-1">
+              <div class="cfg-acc-hdr" onclick="toggleCfgAcc(1)">
+                <div class="cfg-acc-text">
+                  <div class="cfg-acc-title">Equipment Settings</div>
+                  <div class="cfg-acc-sub">Manage system-level settings that control how this equipment behaves and reports data.</div>
+                </div>
+                <svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="cfg-acc-body" style="display:none;">
+                <div class="cfg-fields">
+                  <div class="cfg-field"><label>Number of Drum Magnets</label><input type="number" value="3"></div>
+                  <div class="cfg-field"><label>Drum Size</label><input type="number" value="3"></div>
+                  <div class="cfg-field cfg-field-toggle"><label>Front Discharge</label><div class="cfg-toggle on" onclick="toggleCfgSwitch(this)"><div class="cfg-toggle-knob"></div></div></div>
+                  <div class="cfg-field cfg-field-toggle"><label>CWR Watchdog Enabled</label><div class="cfg-toggle" onclick="toggleCfgSwitch(this)"><div class="cfg-toggle-knob"></div></div></div>
+                  <div class="cfg-field cfg-field-toggle"><label>Using Blue Water Meter</label><div class="cfg-toggle on" onclick="toggleCfgSwitch(this)"><div class="cfg-toggle-knob"></div></div></div>
+                  <div class="cfg-field cfg-field-toggle"><label>Using Blue Admix Meter</label><div class="cfg-toggle on" onclick="toggleCfgSwitch(this)"><div class="cfg-toggle-knob"></div></div></div>
+                  <div class="cfg-field cfg-field-toggle"><label>Display Metrics Units</label><div class="cfg-toggle on" onclick="toggleCfgSwitch(this)"><div class="cfg-toggle-knob"></div></div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3: Mixing Settings -->
+            <div class="cfg-acc" id="cfg-acc-2">
+              <div class="cfg-acc-hdr" onclick="toggleCfgAcc(2)">
+                <div class="cfg-acc-text">
+                  <div class="cfg-acc-title">Mixing Settings</div>
+                  <div class="cfg-acc-sub">Control how the drum mixes, agitates, and rotates during transit and discharge.</div>
+                </div>
+                <svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="cfg-acc-body" style="display:none;">
+                <div class="cfg-fields">
+                  <div class="cfg-field"><label>Min Batch Revolutions</label><input type="number" value="1402"></div>
+                  <div class="cfg-field"><label>Min Agitation Speed</label><input type="number" value="234"></div>
+                  <div class="cfg-field"><label>Min Mixing Speed</label><input type="number" value="234"></div>
+                  <div class="cfg-field"><label>Max Mixing Speed</label><input type="number" value="234"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4: Workability Calculator Settings -->
+            <div class="cfg-acc" id="cfg-acc-3">
+              <div class="cfg-acc-hdr" onclick="toggleCfgAcc(3)">
+                <div class="cfg-acc-text">
+                  <div class="cfg-acc-title">Workability Calculator Settings</div>
+                  <div class="cfg-acc-sub">Configure the time, rev, and drum speed limits that determine slump validity.</div>
+                </div>
+                <svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="cfg-acc-body" style="display:none;">
+                <div class="cfg-fields">
+                  <div class="cfg-field"><label>Slump Expiration In Seconds</label><input type="number" value="0"></div>
+                  <div class="cfg-field"><label>Slump Expiration In Revs</label><input type="number" value="0"></div>
+                  <div class="cfg-field"><label>Slump Min Mixing Speed</label><input type="number" value="0"></div>
+                  <div class="cfg-field"><label>Slump Max Mixing Speed</label><input type="number" value="0"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5: In-Cab Display Settings -->
+            <div class="cfg-acc" id="cfg-acc-4">
+              <div class="cfg-acc-hdr" onclick="toggleCfgAcc(4)">
+                <div class="cfg-acc-text">
+                  <div class="cfg-acc-title">In-Cab Display Settings</div>
+                  <div class="cfg-acc-sub">Configure what drivers see in the cab, including slump step increments, limits, and display alerts.</div>
+                </div>
+                <svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="cfg-acc-body" style="display:none;">
+                <div class="cfg-fields">
+                  <div class="cfg-section-label">Slump Adjustment</div>
+                  <div class="cfg-field"><label>Target Slump Step</label><input type="text" value="1 inch"></div>
+                  <div class="cfg-field"><label>Max Slump for Display</label><input type="text" value="8 inch"></div>
+                  <div class="cfg-section-label">Timing &amp; Operational Thresholds</div>
+                  <div class="cfg-field"><label>Minutes to Leave Plant</label><input type="text" value="5 min"></div>
+                  <div class="cfg-field"><label>Min Liters for Back Flush</label><input type="text" value="5 Liters"></div>
+                  <div class="cfg-section-label">Display Preferences</div>
+                  <div class="cfg-field cfg-field-toggle"><label>Display Units (Imperial)</label><div class="cfg-toggle on" onclick="toggleCfgSwitch(this)"><div class="cfg-toggle-knob"></div></div></div>
+                  <div class="cfg-field cfg-field-toggle"><label>Display No-Flow Errors</label><div class="cfg-toggle on" onclick="toggleCfgSwitch(this)"><div class="cfg-toggle-knob"></div></div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 6: Fluid Hose Length Settings -->
+            <div class="cfg-acc" id="cfg-acc-5">
+              <div class="cfg-acc-hdr" onclick="toggleCfgAcc(5)">
+                <div class="cfg-acc-text">
+                  <div class="cfg-acc-title">Fluid Hose Length Settings</div>
+                  <div class="cfg-acc-sub">Define hose lengths used for water and admixture delivery calculations.</div>
+                </div>
+                <svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="cfg-acc-body" style="display:none;">
+                <div class="cfg-fields">
+                  <div class="cfg-field"><label>Water Length Quick Connect to Nozzle</label><input type="text" value="234-2981-8373"></div>
+                  <div class="cfg-field"><label>Water Length FDM to Quick Connect</label><input type="text" value="234-2981-8373"></div>
+                  <div class="cfg-field"><label>Admix Hose Length</label><input type="text" value="1402 (MM North)"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 7: Adjustment Manager Settings -->
+            <div class="cfg-acc" id="cfg-acc-6">
+              <div class="cfg-acc-hdr" onclick="toggleCfgAcc(6)">
+                <div class="cfg-acc-text">
+                  <div class="cfg-acc-title">Adjustment Manager Settings</div>
+                  <div class="cfg-acc-sub">Control how the system adjusts water and admixtures within defined limits.</div>
+                </div>
+                <svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="cfg-acc-body" style="display:none;">
+                <div class="cfg-fields">
+                  <div class="cfg-field"><label>Slump Tolerance (in)</label><input type="text" value="1402 (MM North)"></div>
+                  <div class="cfg-field"><label>Initial Water Ratio</label><input type="text" value="1402 (MM North)"></div>
+                  <div class="cfg-field"><label>Initial Admix Ratio</label><input type="text" value="1402 (MM North)"></div>
+                  <div class="cfg-field"><label>Min Water Ratio</label><input type="text" value="1402 (MM North)"></div>
+                  <div class="cfg-field"><label>Max Water Ratio</label><input type="text" value="1402 (MM North)"></div>
+                  <div class="cfg-field"><label>Min Admix Ratio</label><input type="text" value="1402 (MM North)"></div>
+                  <div class="cfg-field"><label>Max Admix Ratio</label><input type="text" value="1402 (MM North)"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 8: Location Monitor Settings -->
+            <div class="cfg-acc" id="cfg-acc-7">
+              <div class="cfg-acc-hdr" onclick="toggleCfgAcc(7)">
+                <div class="cfg-acc-text">
+                  <div class="cfg-acc-title">Location Monitor Settings</div>
+                  <div class="cfg-acc-sub">Define how far a truck must move before the system marks it as away.</div>
+                </div>
+                <svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="cfg-acc-body" style="display:none;">
+                <div class="cfg-fields">
+                  <div class="cfg-field"><label>Away Distance Signal Meters</label><input type="number" value="0"></div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /cfg-list -->
+
+          <!-- Info table — same as Components Overview -->
+          <div class="cfg-info-block">
+            <div class="co-info-row2">
+              <div class="co-info-item">
+                <div class="co-info-label">Connectivity</div>
+                <div class="co-info-val co-info-val--link">Connected</div>
+              </div>
+              <div class="co-info-item">
+                <div class="co-info-label">Truck Mode</div>
+                <div class="co-info-val">Live</div>
+              </div>
+            </div>
+            <div class="co-tbl-row"><div class="co-tbl-k">Code version</div><div class="co-tbl-v">3.04.029</div></div>
+            <div class="co-tbl-row co-tbl-row--alt"><div class="co-tbl-k">Commissioned</div><div class="co-tbl-v">--</div></div>
+            <div class="co-tbl-row"><div class="co-tbl-k">Last Connect</div><div class="co-tbl-v">Nov 26, 2025, 10:52 PM</div></div>
+            <div class="co-tbl-row co-tbl-row--alt"><div class="co-tbl-k">Last System Status</div><div class="co-tbl-v">Nov 26, 2025, 10:52 PM</div></div>
+            <div class="co-tbl-row"><div class="co-tbl-k">Last Reboot</div><div class="co-tbl-v">Nov 26, 2025, 1:16 PM</div></div>
+            <div class="co-tbl-row co-tbl-row--alt"><div class="co-tbl-k">Drum Manufacturer</div><div class="co-tbl-v">Schwing, 2022</div></div>
+            <div class="co-tbl-row"><div class="co-tbl-k">Drum Size</div><div class="co-tbl-v">--</div></div>
+            <div class="co-tbl-row co-tbl-row--alt"><div class="co-tbl-k">Number of Loads</div><div class="co-tbl-v">--</div></div>
+          </div>
+
+        </div><!-- /cfg-scroll -->
+      </div><!-- /state-config -->
     </div><!-- /drawer-body -->
   </div><!-- /drawer -->
 
@@ -1491,15 +1952,22 @@ function toggleOv(i) {
 /* rotate(0) = up (open group), rotate(180) = down (closed group), rotate(90) = right (collapsed truck row) */
 const chevSvg = (deg) => `<svg width="10" height="6" viewBox="0 0 10 6" fill="none" style="transform:rotate(${deg}deg);flex-shrink:0;"><path d="M8.75 4.75L4.75 0.75L0.75 4.75" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 function openDrawer(i) {
-  document.getElementById('drawer-truck-num').textContent = 'Truck: ' + trucks[i].num;
+  const truckNum = trucks[i].num;
+  document.getElementById('drawer-truck-num').textContent = 'Truck: ' + truckNum;
   renderLogRows();
   document.getElementById('state-list').style.display       = 'none';
   document.getElementById('state-detail').style.display     = 'none';
   document.getElementById('state-components').style.display = 'flex';
+  document.getElementById('state-manual').style.display     = 'none';
+  document.getElementById('state-timeline').style.display   = 'none';
+  document.getElementById('state-config').style.display     = 'none';
+  document.getElementById('state-sensor').style.display     = 'none';
   document.getElementById('drawer-nav-label').textContent   = 'Components Overview';
-  /* default right pill to Ping Truck */
   document.getElementById('filters-pill').style.display = 'none';
   document.getElementById('ping-pill').style.display    = 'flex';
+  document.getElementById('update-pill').style.display  = 'none';
+  /* pre-render timeline data for this truck */
+  renderTimeline(truckNum);
   document.getElementById('drawer').classList.add('open');
 }
 
@@ -1728,14 +2196,22 @@ function selectDrawerNav(label, el) {
   const showList       = label === 'Truck Logs';
   const showComponents = label === 'Components Overview';
   const showManual     = label === 'Manual Control';
+  const showTimeline   = label === 'Component Timeline';
+  const showConfig     = label === 'Configuration';
+  const showSensor     = label === 'Sensor';
   document.getElementById('state-list').style.display       = showList       ? 'flex' : 'none';
   document.getElementById('state-detail').style.display     = 'none';
   document.getElementById('state-components').style.display = showComponents ? 'flex' : 'none';
   document.getElementById('state-manual').style.display     = showManual     ? 'flex' : 'none';
+  document.getElementById('state-timeline').style.display   = showTimeline   ? 'flex' : 'none';
+  document.getElementById('state-config').style.display     = showConfig     ? 'flex' : 'none';
+  document.getElementById('state-sensor').style.display     = showSensor     ? 'flex' : 'none';
+  if (showSensor) { senStart(); } else { senStop(); }
 
   /* swap right pill */
-  document.getElementById('filters-pill').style.display = showList                    ? 'flex' : 'none';
-  document.getElementById('ping-pill').style.display    = (showComponents || showManual) ? 'flex' : 'none';
+  document.getElementById('filters-pill').style.display = showList                                       ? 'flex' : 'none';
+  document.getElementById('ping-pill').style.display    = (showComponents || showManual || showTimeline) ? 'flex' : 'none';
+  document.getElementById('update-pill').style.display  = showConfig                                     ? 'flex' : 'none';
 }
 
 /* close drawer nav dropdown on outside click */
@@ -1751,6 +2227,668 @@ document.addEventListener('click', function(e) {
 
 function flipCard(el) {
   el.classList.toggle('flipped');
+}
+
+
+/* ── COMPONENT TIMELINE DATA ────────────────────── */
+const TIMELINE_DATA = {
+  /* Truck 6456 — full 7-day history */
+  '6456': {
+    days: [
+      { lbl:'Mon', num:'13', bar:'#ffba0d' },
+      { lbl:'Tue', num:'14', bar:'#ffba0d' },
+      { lbl:'Wed', num:'14', bar:'#d70100' },
+      { lbl:'Thu', num:'15', bar:'#d70100' },
+      { lbl:'Fri', num:'16', bar:'#d70100' },
+      { lbl:'Sat', num:'17', bar:'#d70100' },
+      { lbl:'Today', num:'18', bar:'#d70100' },
+    ],
+    activeDay: 6,
+    dates: ['Mon 3/13/2026','Tue 3/14/2026','Wed 3/14/2026','Thu 3/15/2026','Fri 3/16/2026','Sat 3/17/2026','Today 3/24/2026'],
+    /* Per-day component data — index matches days array */
+    byDay: [
+      /* 0: Mon 13 — mostly clean, one Iox warning resolved */
+      [
+        { name:'Iox/Robotex', dot:'#ffba0d', events:[
+          { type:'warn', time:'11:20 - 11:45', sub:'Warning · 25 min (resolved)' },
+        ]},
+        { name:'Charge',      dot:'#2ecf1d', events:[] },
+        { name:'Discharge',   dot:'#2ecf1d', events:[] },
+        { name:'Drum',        dot:'#2ecf1d', events:[] },
+        { name:'Int. Display',dot:'#2ecf1d', events:[] },
+        { name:'Ext. Display',dot:'#2ecf1d', events:[] },
+        { name:'Bus Power',   dot:'#2ecf1d', events:[] },
+        { name:'CWR',         dot:'#2ecf1d', events:[] },
+        { name:'WDS',         dot:'#2ecf1d', events:[] },
+      ],
+      /* 1: Tue 14 — warnings on Charge + Discharge, both resolved */
+      [
+        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'Charge',      dot:'#ffba0d', events:[
+          { type:'warn', time:'08:30 - 09:15', sub:'Warning · 45 min (resolved)' },
+          { type:'warn', time:'13:00 - 13:30', sub:'Warning · 30 min (resolved)' },
+        ]},
+        { name:'Discharge',   dot:'#ffba0d', events:[
+          { type:'warn', time:'10:00 - 10:20', sub:'Warning · 20 min (resolved)' },
+        ]},
+        { name:'Drum',        dot:'#2ecf1d', events:[] },
+        { name:'Int. Display',dot:'#2ecf1d', events:[] },
+        { name:'Ext. Display',dot:'#2ecf1d', events:[] },
+        { name:'Bus Power',   dot:'#2ecf1d', events:[] },
+        { name:'CWR',         dot:'#2ecf1d', events:[] },
+        { name:'WDS',         dot:'#2ecf1d', events:[] },
+      ],
+      /* 2: Wed 14 — CWR first alarm + Iox warning */
+      [
+        { name:'Iox/Robotex', dot:'#ffba0d', events:[
+          { type:'warn', time:'07:50 - 08:30', sub:'Warning · 40 min (resolved)' },
+        ]},
+        { name:'Charge',      dot:'#2ecf1d', events:[] },
+        { name:'Discharge',   dot:'#2ecf1d', events:[] },
+        { name:'Drum',        dot:'#2ecf1d', events:[] },
+        { name:'Int. Display',dot:'#2ecf1d', events:[] },
+        { name:'Ext. Display',dot:'#2ecf1d', events:[] },
+        { name:'Bus Power',   dot:'#2ecf1d', events:[] },
+        { name:'CWR',         dot:'#d70100', events:[
+          { type:'alarm', time:'14:10 - 16:55', sub:'Alarm · 2h 45m (resolved)' },
+        ]},
+        { name:'WDS',         dot:'#2ecf1d', events:[] },
+      ],
+      /* 3: Thu 15 — CWR alarm resumes + WDS alarm first appears + Bus Power warnings */
+      [
+        { name:'Iox/Robotex', dot:'#ffba0d', events:[
+          { type:'warn', time:'09:00 - 09:25', sub:'Warning · 25 min (resolved)' },
+        ]},
+        { name:'Charge',      dot:'#ffba0d', events:[
+          { type:'warn', time:'07:30 - 08:15', sub:'Warning · 45 min (resolved)' },
+        ]},
+        { name:'Discharge',   dot:'#2ecf1d', events:[] },
+        { name:'Drum',        dot:'#2ecf1d', events:[] },
+        { name:'Int. Display',dot:'#2ecf1d', events:[] },
+        { name:'Ext. Display',dot:'#2ecf1d', events:[] },
+        { name:'Bus Power',   dot:'#ffba0d', events:[
+          { type:'warn', time:'11:00 - 11:40', sub:'Warning · 40 min (resolved)' },
+          { type:'warn', time:'14:30 - 15:05', sub:'Warning · 35 min (resolved)' },
+        ]},
+        { name:'CWR',         dot:'#d70100', events:[
+          { type:'alarm', time:'05:30 - 09:45', sub:'Alarm · 4h 15m (resolved)' },
+          { type:'alarm', time:'12:00 - 13:20', sub:'Alarm · 1h 20m (resolved)' },
+        ]},
+        { name:'WDS',         dot:'#d70100', events:[
+          { type:'alarm', time:'08:24 - 16:00', sub:'Alarm · 7h 36m (resolved)' },
+        ]},
+      ],
+      /* 4: Fri 16 — escalating: Int. Display + Bus Power alarms, CWR all day, WDS persists */
+      [
+        { name:'Iox/Robotex', dot:'#ffba0d', events:[
+          { type:'warn', time:'08:10 - 08:30', sub:'Warning · 20 min' },
+          { type:'warn', time:'13:45 - 14:05', sub:'Warning · 20 min' },
+        ]},
+        { name:'Charge',      dot:'#ffba0d', events:[
+          { type:'warn', time:'06:00 - 07:30', sub:'Warning · 1h 30m' },
+        ]},
+        { name:'Discharge',   dot:'#ffba0d', events:[
+          { type:'warn', time:'09:15 - 10:00', sub:'Warning · 45 min' },
+        ]},
+        { name:'Drum',        dot:'#2ecf1d', events:[] },
+        { name:'Int. Display',dot:'#d70100', events:[
+          { type:'alarm', time:'09:00 - 11:30', sub:'Alarm · 2h 30m' },
+          { type:'alarm', time:'13:00 - 16:45', sub:'Alarm · 3h 45m' },
+        ]},
+        { name:'Ext. Display',dot:'#2ecf1d', events:[] },
+        { name:'Bus Power',   dot:'#d70100', events:[
+          { type:'alarm', time:'07:15 - 17:00', sub:'Alarm · 9h 45m (all day)' },
+        ]},
+        { name:'CWR',         dot:'#d70100', events:[
+          { type:'alarm', time:'05:00 - 17:00', sub:'Alarm · 12h (all day)' },
+        ]},
+        { name:'WDS',         dot:'#d70100', events:[
+          { type:'alarm', time:'08:24 - 17:00', sub:'Alarm · 8h 36m' },
+        ]},
+      ],
+      /* 5: Sat 17 — sustained alarms, all major components affected */
+      [
+        { name:'Iox/Robotex', dot:'#ffba0d', events:[
+          { type:'warn', time:'08:10 - 08:30', sub:'Warning · 20 min' },
+          { type:'warn', time:'13:45 - 14:05', sub:'Warning · 20 min' },
+        ]},
+        { name:'Charge',      dot:'#ffba0d', events:[
+          { type:'warn', time:'06:00 - 07:30', sub:'Warning · 1h 30m' },
+        ]},
+        { name:'Discharge',   dot:'#ffba0d', events:[
+          { type:'warn', time:'09:15 - 10:00', sub:'Warning · 45 min' },
+        ]},
+        { name:'Drum',        dot:'#2ecf1d', events:[] },
+        { name:'Int. Display',dot:'#d70100', events:[
+          { type:'alarm', time:'07:00 - 09:45', sub:'Alarm · 2h 45m' },
+          { type:'alarm', time:'11:00 - 12:30', sub:'Alarm · 1h 30m' },
+          { type:'alarm', time:'14:00 - 17:00', sub:'Alarm · 3h' },
+        ]},
+        { name:'Ext. Display',dot:'#2ecf1d', events:[] },
+        { name:'Bus Power',   dot:'#d70100', events:[
+          { type:'alarm', time:'06:30 - 09:00', sub:'Alarm · 2h 30m' },
+          { type:'alarm', time:'10:00 - 12:00', sub:'Alarm · 2h' },
+          { type:'alarm', time:'13:00 - 17:00', sub:'Alarm · 4h' },
+        ]},
+        { name:'CWR',         dot:'#d70100', events:[
+          { type:'alarm', time:'05:00 - 17:00', sub:'Alarm · 12h (all day)' },
+        ]},
+        { name:'WDS',         dot:'#d70100', events:[
+          { type:'alarm', time:'08:24 - 17:00', sub:'Alarm · 8h 36m' },
+        ]},
+      ],
+      /* 6: Today 18 — full active state, WDS unresolved + ongoing */
+      [
+        { name:'Iox/Robotex', dot:'#ffba0d', events:[
+          { type:'warn', time:'08:10 - 08:30', sub:'Warning · 20 min' },
+          { type:'warn', time:'13:45 - 14:05', sub:'Warning · 20 min' },
+        ]},
+        { name:'Charge',      dot:'#ffba0d', events:[
+          { type:'warn', time:'06:00 - 07:30', sub:'Warning · 1h 30m' },
+        ]},
+        { name:'Discharge',   dot:'#ffba0d', events:[
+          { type:'warn', time:'09:15 - 10:00', sub:'Warning · 45 min' },
+        ]},
+        { name:'Drum',        dot:'#2ecf1d', events:[] },
+        { name:'Int. Display',dot:'#d70100', events:[
+          { type:'alarm', time:'07:00 - 09:45', sub:'Alarm · 2h 45m' },
+          { type:'alarm', time:'11:00 - 12:30', sub:'Alarm · 1h 30m' },
+          { type:'alarm', time:'14:00 - 15:00', sub:'Alarm · 1h' },
+        ]},
+        { name:'Ext. Display',dot:'#2ecf1d', events:[] },
+        { name:'Bus Power',   dot:'#d70100', events:[
+          { type:'alarm', time:'06:30 - 09:00', sub:'Alarm · 2h 30m' },
+          { type:'alarm', time:'10:00 - 12:00', sub:'Alarm · 2h' },
+          { type:'alarm', time:'13:00 - 14:44', sub:'Alarm · 1h 44m' },
+        ]},
+        { name:'CWR',         dot:'#d70100', events:[
+          { type:'alarm', time:'05:00 - 06:10', sub:'Alarm · 1h 10m' },
+          { type:'alarm', time:'07:00 - 08:30', sub:'Alarm · 1h 30m' },
+          { type:'alarm', time:'09:00 - 10:06', sub:'Alarm · 1h 6m' },
+          { type:'alarm', time:'11:00 - 12:00', sub:'Alarm · 1h' },
+          { type:'alarm', time:'13:00 - 13:45', sub:'Alarm · 45m' },
+          { type:'alarm', time:'14:30 - 15:25', sub:'Alarm · 55m' },
+          { type:'alarm', time:'16:00 - 16:30', sub:'Alarm · 30m' },
+        ]},
+        { name:'WDS',         dot:'#d70100', events:[
+          { type:'alarm', time:'08:24 - ongoing', sub:'Alarm · ongoing — no signal' },
+        ]},
+      ],
+    ]  // end byDay
+  },
+  /* Default for any other truck — clean today, some warnings earlier in week */
+  /* ── Truck 39821 — WDS ongoing, CWR intermittent, mostly stable */
+  '39821': {
+    days: [
+      { lbl:'Mon', num:'13', bar:'#2ecf1d' },
+      { lbl:'Tue', num:'14', bar:'#2ecf1d' },
+      { lbl:'Wed', num:'14', bar:'#2ecf1d' },
+      { lbl:'Thu', num:'15', bar:'#ffba0d' },
+      { lbl:'Fri', num:'16', bar:'#ffba0d' },
+      { lbl:'Sat', num:'17', bar:'#2ecf1d' },
+      { lbl:'Today', num:'18', bar:'#d70100' },
+    ],
+    activeDay: 6,
+    dates: ['Mon 3/13/2026','Tue 3/14/2026','Wed 3/14/2026','Thu 3/15/2026','Fri 3/16/2026','Sat 3/17/2026','Today 3/24/2026'],
+    byDay: [
+      /* 0: Mon — clean */
+      [
+        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'Charge',      dot:'#2ecf1d', events:[] },
+        { name:'Discharge',   dot:'#2ecf1d', events:[] },
+        { name:'Drum',        dot:'#2ecf1d', events:[] },
+        { name:'Int. Display',dot:'#2ecf1d', events:[] },
+        { name:'Ext. Display',dot:'#2ecf1d', events:[] },
+        { name:'Bus Power',   dot:'#2ecf1d', events:[] },
+        { name:'CWR',         dot:'#2ecf1d', events:[] },
+        { name:'WDS',         dot:'#2ecf1d', events:[] },
+      ],
+      /* 1: Tue — clean */
+      [
+        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'Charge',      dot:'#2ecf1d', events:[] },
+        { name:'Discharge',   dot:'#2ecf1d', events:[] },
+        { name:'Drum',        dot:'#2ecf1d', events:[] },
+        { name:'Int. Display',dot:'#2ecf1d', events:[] },
+        { name:'Ext. Display',dot:'#2ecf1d', events:[] },
+        { name:'Bus Power',   dot:'#2ecf1d', events:[] },
+        { name:'CWR',         dot:'#2ecf1d', events:[] },
+        { name:'WDS',         dot:'#2ecf1d', events:[] },
+      ],
+      /* 2: Wed — clean */
+      [
+        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'Charge',      dot:'#2ecf1d', events:[] },
+        { name:'Discharge',   dot:'#2ecf1d', events:[] },
+        { name:'Drum',        dot:'#2ecf1d', events:[] },
+        { name:'Int. Display',dot:'#2ecf1d', events:[] },
+        { name:'Ext. Display',dot:'#2ecf1d', events:[] },
+        { name:'Bus Power',   dot:'#2ecf1d', events:[] },
+        { name:'CWR',         dot:'#2ecf1d', events:[] },
+        { name:'WDS',         dot:'#2ecf1d', events:[] },
+      ],
+      /* 3: Thu — Drum RPM warnings */
+      [
+        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'Charge',      dot:'#2ecf1d', events:[] },
+        { name:'Discharge',   dot:'#2ecf1d', events:[] },
+        { name:'Drum',        dot:'#ffba0d', events:[
+          { type:'warn', time:'07:15 - 08:00', sub:'Warning · 45 min (resolved)' },
+          { type:'warn', time:'11:30 - 12:10', sub:'Warning · 40 min (resolved)' },
+        ]},
+        { name:'Int. Display',dot:'#2ecf1d', events:[] },
+        { name:'Ext. Display',dot:'#2ecf1d', events:[] },
+        { name:'Bus Power',   dot:'#2ecf1d', events:[] },
+        { name:'CWR',         dot:'#2ecf1d', events:[] },
+        { name:'WDS',         dot:'#2ecf1d', events:[] },
+      ],
+      /* 4: Fri — Drum warning continues, CWR brief warning */
+      [
+        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'Charge',      dot:'#2ecf1d', events:[] },
+        { name:'Discharge',   dot:'#2ecf1d', events:[] },
+        { name:'Drum',        dot:'#ffba0d', events:[
+          { type:'warn', time:'09:00 - 09:45', sub:'Warning · 45 min (resolved)' },
+        ]},
+        { name:'Int. Display',dot:'#2ecf1d', events:[] },
+        { name:'Ext. Display',dot:'#2ecf1d', events:[] },
+        { name:'Bus Power',   dot:'#2ecf1d', events:[] },
+        { name:'CWR',         dot:'#ffba0d', events:[
+          { type:'warn', time:'13:20 - 13:55', sub:'Warning · 35 min (resolved)' },
+        ]},
+        { name:'WDS',         dot:'#2ecf1d', events:[] },
+      ],
+      /* 5: Sat — clean */
+      [
+        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'Charge',      dot:'#2ecf1d', events:[] },
+        { name:'Discharge',   dot:'#2ecf1d', events:[] },
+        { name:'Drum',        dot:'#2ecf1d', events:[] },
+        { name:'Int. Display',dot:'#2ecf1d', events:[] },
+        { name:'Ext. Display',dot:'#2ecf1d', events:[] },
+        { name:'Bus Power',   dot:'#2ecf1d', events:[] },
+        { name:'CWR',         dot:'#2ecf1d', events:[] },
+        { name:'WDS',         dot:'#2ecf1d', events:[] },
+      ],
+      /* 6: Today — WDS alarm active, no other issues */
+      [
+        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'Charge',      dot:'#2ecf1d', events:[] },
+        { name:'Discharge',   dot:'#2ecf1d', events:[] },
+        { name:'Drum',        dot:'#2ecf1d', events:[] },
+        { name:'Int. Display',dot:'#2ecf1d', events:[] },
+        { name:'Ext. Display',dot:'#2ecf1d', events:[] },
+        { name:'Bus Power',   dot:'#2ecf1d', events:[] },
+        { name:'CWR',         dot:'#2ecf1d', events:[] },
+        { name:'WDS',         dot:'#d70100', events:[
+          { type:'alarm', time:'08:24 - ongoing', sub:'Alarm · ongoing — no signal' },
+        ]},
+      ],
+    ]
+  },
+
+  /* ── Truck 45689 — major water system issues all week */
+  '45689': {
+    days: [
+      { lbl:'Mon', num:'13', bar:'#ffba0d' },
+      { lbl:'Tue', num:'14', bar:'#d70100' },
+      { lbl:'Wed', num:'14', bar:'#d70100' },
+      { lbl:'Thu', num:'15', bar:'#d70100' },
+      { lbl:'Fri', num:'16', bar:'#d70100' },
+      { lbl:'Sat', num:'17', bar:'#d70100' },
+      { lbl:'Today', num:'18', bar:'#d70100' },
+    ],
+    activeDay: 6,
+    dates: ['Mon 3/13/2026','Tue 3/14/2026','Wed 3/14/2026','Thu 3/15/2026','Fri 3/16/2026','Sat 3/17/2026','Today 3/24/2026'],
+    byDay: [
+      /* 0: Mon — Charge warnings, early signs */
+      [
+        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'Charge',      dot:'#ffba0d', events:[
+          { type:'warn', time:'09:00 - 09:40', sub:'Warning · 40 min (resolved)' },
+          { type:'warn', time:'14:15 - 15:00', sub:'Warning · 45 min (resolved)' },
+        ]},
+        { name:'Discharge',   dot:'#2ecf1d', events:[] },
+        { name:'Drum',        dot:'#2ecf1d', events:[] },
+        { name:'Int. Display',dot:'#2ecf1d', events:[] },
+        { name:'Ext. Display',dot:'#2ecf1d', events:[] },
+        { name:'Bus Power',   dot:'#2ecf1d', events:[] },
+        { name:'CWR',         dot:'#2ecf1d', events:[] },
+        { name:'WDS',         dot:'#2ecf1d', events:[] },
+      ],
+      /* 1: Tue — Charge alarm starts, Discharge warning */
+      [
+        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'Charge',      dot:'#d70100', events:[
+          { type:'alarm', time:'06:00 - 17:00', sub:'Alarm · 11h (all day)' },
+        ]},
+        { name:'Discharge',   dot:'#ffba0d', events:[
+          { type:'warn', time:'10:30 - 11:15', sub:'Warning · 45 min (resolved)' },
+        ]},
+        { name:'Drum',        dot:'#2ecf1d', events:[] },
+        { name:'Int. Display',dot:'#2ecf1d', events:[] },
+        { name:'Ext. Display',dot:'#2ecf1d', events:[] },
+        { name:'Bus Power',   dot:'#2ecf1d', events:[] },
+        { name:'CWR',         dot:'#2ecf1d', events:[] },
+        { name:'WDS',         dot:'#2ecf1d', events:[] },
+      ],
+      /* 2: Wed — Charge + Discharge both alarming */
+      [
+        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'Charge',      dot:'#d70100', events:[
+          { type:'alarm', time:'05:30 - 17:00', sub:'Alarm · 11h 30m (all day)' },
+        ]},
+        { name:'Discharge',   dot:'#d70100', events:[
+          { type:'alarm', time:'08:00 - 14:30', sub:'Alarm · 6h 30m' },
+        ]},
+        { name:'Drum',        dot:'#2ecf1d', events:[] },
+        { name:'Int. Display',dot:'#2ecf1d', events:[] },
+        { name:'Ext. Display',dot:'#2ecf1d', events:[] },
+        { name:'Bus Power',   dot:'#ffba0d', events:[
+          { type:'warn', time:'11:00 - 11:30', sub:'Warning · 30 min (resolved)' },
+        ]},
+        { name:'CWR',         dot:'#2ecf1d', events:[] },
+        { name:'WDS',         dot:'#2ecf1d', events:[] },
+      ],
+      /* 3: Thu — escalating */
+      [
+        { name:'Iox/Robotex', dot:'#ffba0d', events:[
+          { type:'warn', time:'07:00 - 07:40', sub:'Warning · 40 min' },
+        ]},
+        { name:'Charge',      dot:'#d70100', events:[
+          { type:'alarm', time:'05:30 - 17:00', sub:'Alarm · 11h 30m (all day)' },
+        ]},
+        { name:'Discharge',   dot:'#d70100', events:[
+          { type:'alarm', time:'06:00 - 17:00', sub:'Alarm · 11h (all day)' },
+        ]},
+        { name:'Drum',        dot:'#2ecf1d', events:[] },
+        { name:'Int. Display',dot:'#d70100', events:[
+          { type:'alarm', time:'09:30 - 12:00', sub:'Alarm · 2h 30m' },
+        ]},
+        { name:'Ext. Display',dot:'#2ecf1d', events:[] },
+        { name:'Bus Power',   dot:'#ffba0d', events:[
+          { type:'warn', time:'10:00 - 10:45', sub:'Warning · 45 min' },
+          { type:'warn', time:'14:00 - 14:30', sub:'Warning · 30 min' },
+        ]},
+        { name:'CWR',         dot:'#2ecf1d', events:[] },
+        { name:'WDS',         dot:'#2ecf1d', events:[] },
+      ],
+      /* 4: Fri */
+      [
+        { name:'Iox/Robotex', dot:'#ffba0d', events:[
+          { type:'warn', time:'08:10 - 08:50', sub:'Warning · 40 min' },
+        ]},
+        { name:'Charge',      dot:'#d70100', events:[
+          { type:'alarm', time:'05:30 - 17:00', sub:'Alarm · 11h 30m (all day)' },
+        ]},
+        { name:'Discharge',   dot:'#d70100', events:[
+          { type:'alarm', time:'06:00 - 17:00', sub:'Alarm · 11h (all day)' },
+        ]},
+        { name:'Drum',        dot:'#2ecf1d', events:[] },
+        { name:'Int. Display',dot:'#d70100', events:[
+          { type:'alarm', time:'07:00 - 09:30', sub:'Alarm · 2h 30m' },
+          { type:'alarm', time:'11:00 - 13:00', sub:'Alarm · 2h' },
+        ]},
+        { name:'Ext. Display',dot:'#2ecf1d', events:[] },
+        { name:'Bus Power',   dot:'#d70100', events:[
+          { type:'alarm', time:'09:00 - 17:00', sub:'Alarm · 8h (all day)' },
+        ]},
+        { name:'CWR',         dot:'#2ecf1d', events:[] },
+        { name:'WDS',         dot:'#2ecf1d', events:[] },
+      ],
+      /* 5: Sat */
+      [
+        { name:'Iox/Robotex', dot:'#ffba0d', events:[
+          { type:'warn', time:'08:10 - 08:50', sub:'Warning · 40 min' },
+        ]},
+        { name:'Charge',      dot:'#d70100', events:[
+          { type:'alarm', time:'05:30 - 17:00', sub:'Alarm · 11h 30m (all day)' },
+        ]},
+        { name:'Discharge',   dot:'#d70100', events:[
+          { type:'alarm', time:'06:00 - 17:00', sub:'Alarm · 11h (all day)' },
+        ]},
+        { name:'Drum',        dot:'#2ecf1d', events:[] },
+        { name:'Int. Display',dot:'#d70100', events:[
+          { type:'alarm', time:'07:00 - 09:30', sub:'Alarm · 2h 30m' },
+          { type:'alarm', time:'11:00 - 13:00', sub:'Alarm · 2h' },
+          { type:'alarm', time:'15:00 - 17:00', sub:'Alarm · 2h' },
+        ]},
+        { name:'Ext. Display',dot:'#2ecf1d', events:[] },
+        { name:'Bus Power',   dot:'#d70100', events:[
+          { type:'alarm', time:'06:30 - 17:00', sub:'Alarm · 10h 30m (all day)' },
+        ]},
+        { name:'CWR',         dot:'#2ecf1d', events:[] },
+        { name:'WDS',         dot:'#2ecf1d', events:[] },
+      ],
+      /* 6: Today */
+      [
+        { name:'Iox/Robotex', dot:'#ffba0d', events:[
+          { type:'warn', time:'07:30 - 08:10', sub:'Warning · 40 min' },
+          { type:'warn', time:'12:00 - 12:25', sub:'Warning · 25 min' },
+        ]},
+        { name:'Charge',      dot:'#d70100', events:[
+          { type:'alarm', time:'05:30 - ongoing', sub:'Alarm · ongoing (all day)' },
+        ]},
+        { name:'Discharge',   dot:'#d70100', events:[
+          { type:'alarm', time:'06:00 - ongoing', sub:'Alarm · ongoing (all day)' },
+        ]},
+        { name:'Drum',        dot:'#2ecf1d', events:[] },
+        { name:'Int. Display',dot:'#d70100', events:[
+          { type:'alarm', time:'07:00 - 09:30', sub:'Alarm · 2h 30m' },
+          { type:'alarm', time:'11:00 - 12:30', sub:'Alarm · 1h 30m' },
+          { type:'alarm', time:'14:00 - ongoing', sub:'Alarm · ongoing' },
+        ]},
+        { name:'Ext. Display',dot:'#2ecf1d', events:[] },
+        { name:'Bus Power',   dot:'#d70100', events:[
+          { type:'alarm', time:'06:30 - ongoing', sub:'Alarm · ongoing (all day)' },
+        ]},
+        { name:'CWR',         dot:'#2ecf1d', events:[] },
+        { name:'WDS',         dot:'#2ecf1d', events:[] },
+      ],
+    ]
+  },
+
+  /* ── Default for any other truck — minor issues mid-week, clean today */
+  'default': {
+    days: [
+      { lbl:'Mon', num:'13', bar:'#2ecf1d' },
+      { lbl:'Tue', num:'14', bar:'#2ecf1d' },
+      { lbl:'Wed', num:'14', bar:'#ffba0d' },
+      { lbl:'Thu', num:'15', bar:'#ffba0d' },
+      { lbl:'Fri', num:'16', bar:'#2ecf1d' },
+      { lbl:'Sat', num:'17', bar:'#2ecf1d' },
+      { lbl:'Today', num:'18', bar:'#2ecf1d' },
+    ],
+    activeDay: 6,
+    dates: ['Mon 3/13/2026','Tue 3/14/2026','Wed 3/14/2026','Thu 3/15/2026','Fri 3/16/2026','Sat 3/17/2026','Today 3/24/2026'],
+    byDay: [
+      /* 0 */ [
+        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },{ name:'Charge', dot:'#2ecf1d', events:[] },
+        { name:'Discharge', dot:'#2ecf1d', events:[] },{ name:'Drum', dot:'#2ecf1d', events:[] },
+        { name:'Int. Display', dot:'#2ecf1d', events:[] },{ name:'Ext. Display', dot:'#2ecf1d', events:[] },
+        { name:'Bus Power', dot:'#2ecf1d', events:[] },{ name:'CWR', dot:'#2ecf1d', events:[] },{ name:'WDS', dot:'#2ecf1d', events:[] },
+      ],
+      /* 1 */ [
+        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },{ name:'Charge', dot:'#2ecf1d', events:[] },
+        { name:'Discharge', dot:'#2ecf1d', events:[] },{ name:'Drum', dot:'#2ecf1d', events:[] },
+        { name:'Int. Display', dot:'#2ecf1d', events:[] },{ name:'Ext. Display', dot:'#2ecf1d', events:[] },
+        { name:'Bus Power', dot:'#2ecf1d', events:[] },{ name:'CWR', dot:'#2ecf1d', events:[] },{ name:'WDS', dot:'#2ecf1d', events:[] },
+      ],
+      /* 2 */ [
+        { name:'Iox/Robotex', dot:'#ffba0d', events:[{ type:'warn', time:'10:00 - 10:35', sub:'Warning · 35 min (resolved)' }]},
+        { name:'Charge', dot:'#2ecf1d', events:[] },{ name:'Discharge', dot:'#2ecf1d', events:[] },
+        { name:'Drum', dot:'#2ecf1d', events:[] },{ name:'Int. Display', dot:'#2ecf1d', events:[] },
+        { name:'Ext. Display', dot:'#2ecf1d', events:[] },{ name:'Bus Power', dot:'#2ecf1d', events:[] },
+        { name:'CWR', dot:'#2ecf1d', events:[] },{ name:'WDS', dot:'#2ecf1d', events:[] },
+      ],
+      /* 3 */ [
+        { name:'Iox/Robotex', dot:'#ffba0d', events:[{ type:'warn', time:'09:00 - 09:30', sub:'Warning · 30 min (resolved)' }]},
+        { name:'Charge', dot:'#ffba0d', events:[{ type:'warn', time:'11:00 - 11:45', sub:'Warning · 45 min (resolved)' }]},
+        { name:'Discharge', dot:'#2ecf1d', events:[] },{ name:'Drum', dot:'#2ecf1d', events:[] },
+        { name:'Int. Display', dot:'#2ecf1d', events:[] },{ name:'Ext. Display', dot:'#2ecf1d', events:[] },
+        { name:'Bus Power', dot:'#2ecf1d', events:[] },{ name:'CWR', dot:'#2ecf1d', events:[] },{ name:'WDS', dot:'#2ecf1d', events:[] },
+      ],
+      /* 4 */ [
+        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },{ name:'Charge', dot:'#2ecf1d', events:[] },
+        { name:'Discharge', dot:'#2ecf1d', events:[] },{ name:'Drum', dot:'#2ecf1d', events:[] },
+        { name:'Int. Display', dot:'#2ecf1d', events:[] },{ name:'Ext. Display', dot:'#2ecf1d', events:[] },
+        { name:'Bus Power', dot:'#2ecf1d', events:[] },{ name:'CWR', dot:'#2ecf1d', events:[] },{ name:'WDS', dot:'#2ecf1d', events:[] },
+      ],
+      /* 5 */ [
+        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },{ name:'Charge', dot:'#2ecf1d', events:[] },
+        { name:'Discharge', dot:'#2ecf1d', events:[] },{ name:'Drum', dot:'#2ecf1d', events:[] },
+        { name:'Int. Display', dot:'#2ecf1d', events:[] },{ name:'Ext. Display', dot:'#2ecf1d', events:[] },
+        { name:'Bus Power', dot:'#2ecf1d', events:[] },{ name:'CWR', dot:'#2ecf1d', events:[] },{ name:'WDS', dot:'#2ecf1d', events:[] },
+      ],
+      /* 6: Today — clean */ [
+        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },{ name:'Charge', dot:'#2ecf1d', events:[] },
+        { name:'Discharge', dot:'#2ecf1d', events:[] },{ name:'Drum', dot:'#2ecf1d', events:[] },
+        { name:'Int. Display', dot:'#2ecf1d', events:[] },{ name:'Ext. Display', dot:'#2ecf1d', events:[] },
+        { name:'Bus Power', dot:'#2ecf1d', events:[] },{ name:'CWR', dot:'#2ecf1d', events:[] },{ name:'WDS', dot:'#2ecf1d', events:[] },
+      ],
+    ]
+  }
+};
+
+let ctActiveDayIdx = 6;
+let ctCurrentTruck = '6456';
+
+function renderTimeline(truckNum) {
+  ctCurrentTruck = truckNum;
+  const data = TIMELINE_DATA[truckNum] || TIMELINE_DATA['default'];
+  ctActiveDayIdx = data.activeDay;
+
+  /* Day strip */
+  const strip = document.getElementById('ct-strip');
+  strip.innerHTML = data.days.map((d, i) => `
+    <div class="ct-day ${i === ctActiveDayIdx ? 'ct-day-active' : ''}" onclick="ctSelectDay(${i})">
+      <div class="ct-day-inner">
+        <div class="ct-day-lbl">${d.lbl}</div>
+        <div class="ct-day-num">${d.num}</div>
+        <div class="ct-bar-wrap"><div class="ct-bar" style="background:${d.bar};"></div></div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('ct-date-label').textContent = data.dates[ctActiveDayIdx];
+  /* Use byDay if available, else fall back to components */
+  const components = data.byDay ? data.byDay[ctActiveDayIdx] : data.components;
+  renderCtList(components);
+}
+
+function ctSelectDay(idx) {
+  const data = TIMELINE_DATA[ctCurrentTruck] || TIMELINE_DATA['default'];
+  ctActiveDayIdx = idx;
+  document.querySelectorAll('#ct-strip .ct-day').forEach((el, i) => {
+    el.classList.toggle('ct-day-active', i === idx);
+    /* resize bar on active: full width vs fixed 20px handled by CSS */
+  });
+  document.getElementById('ct-date-label').textContent = data.dates[idx];
+  /* Use per-day data if available */
+  const components = data.byDay ? data.byDay[idx] : data.components;
+  renderCtList(components);
+}
+
+function ctNavDay(dir) {
+  const data = TIMELINE_DATA[ctCurrentTruck] || TIMELINE_DATA['default'];
+  const next = Math.max(0, Math.min(data.days.length - 1, ctActiveDayIdx + dir));
+  ctSelectDay(next);
+}
+
+function renderCtList(components) {
+  const list = document.getElementById('ct-list');
+  list.innerHTML = components.map((comp, ci) => {
+    const count = comp.events.length;
+    const isAlarm = comp.events.some(e => e.type === 'alarm');
+    const summary = count === 0 ? 'No Events' : ctSummary(comp.events);
+    const eventsHtml = count === 0
+      ? `<div class="ct-no-events">No events recorded for this component today.</div>`
+      : comp.events.map((e, ei) => `
+        <div class="ct-event" onclick="ctOpenEvent(${ci},${ei})">
+          <div class="ct-event-left">
+            <div class="ct-event-icon ${e.type === 'warn' ? 'ct-icon-warn' : 'ct-icon-alarm'}">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                ${e.type === 'warn'
+                  ? '<path d="M5 1.5L9 8.5H1L5 1.5z" fill="none" stroke="#894f18" stroke-width="1" stroke-linejoin="round"/><path d="M5 4.5v1.5M5 7.2h.01" stroke="#894f18" stroke-width="1" stroke-linecap="round"/>'
+                  : '<rect x="1" y="1" width="8" height="8" rx="1.5" stroke="#efadac" stroke-width="1"/><path d="M5 3.5v2M5 7h.01" stroke="#efadac" stroke-width="1" stroke-linecap="round"/>'}
+              </svg>
+            </div>
+            <div>
+              <div class="ct-event-time">${e.time}</div>
+              <div class="ct-event-sub">${e.sub}</div>
+            </div>
+          </div>
+          <svg class="ct-event-arrow" width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M1 1l6 6-6 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>`).join('');
+
+    return `
+      <div class="ct-row" id="ct-row-${ci}">
+        <div class="ct-row-hdr" onclick="ctToggleRow(${ci})">
+          <div class="ct-row-left">
+            <div class="ct-row-dot" style="background:${comp.dot};"></div>
+            <div class="ct-row-name">${comp.name}</div>
+          </div>
+          <div class="ct-row-right">
+            <div class="ct-row-summary">${summary}</div>
+            <svg class="ct-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div class="ct-events" id="ct-events-${ci}">${eventsHtml}</div>
+      </div>`;
+  }).join('');
+
+  /* Auto-expand first row that has events */
+  const firstWithEvents = components.findIndex(c => c.events.length > 0);
+  if (firstWithEvents >= 0) ctToggleRow(firstWithEvents, true);
+}
+
+function ctSummary(events) {
+  const alarms  = events.filter(e => e.type === 'alarm').length;
+  const warns   = events.filter(e => e.type === 'warn').length;
+  /* parse total duration from sub strings */
+  let totalMins = 0;
+  events.forEach(e => {
+    const m = e.sub.match(/(\d+)h\s*(\d+)?m?|(\d+)m/);
+    if (m) {
+      if (m[1]) totalMins += parseInt(m[1]) * 60 + parseInt(m[2] || 0);
+      else if (m[3]) totalMins += parseInt(m[3]);
+    }
+  });
+  const hrs = Math.floor(totalMins / 60);
+  const mins = totalMins % 60;
+  const dur = hrs > 0 ? (mins > 0 ? `${hrs}h ${mins}m` : `${hrs}h`) : `${mins}m`;
+  if (alarms > 0 && warns > 0) return `${alarms+warns} Events · ${dur} total`;
+  if (alarms > 0) return `${alarms} ${alarms === 1 ? 'Alarm' : 'Alarms'} · ${dur} total`;
+  return `${warns} ${warns === 1 ? 'Warning' : 'Warnings'} · ${dur} total`;
+}
+
+function ctToggleRow(ci, forceOpen) {
+  const events = document.getElementById('ct-events-' + ci);
+  const chev   = document.querySelector('#ct-row-' + ci + ' .ct-chev');
+  if (!events) return;
+  const open = forceOpen !== undefined ? forceOpen : !events.classList.contains('open');
+  events.classList.toggle('open', open);
+  chev.classList.toggle('open', open);
+}
+
+function ctOpenEvent(ci, ei) {
+  /* Jump to Truck Logs showing the WDS log detail as a proxy */
+  const logsOption = document.querySelector('#drawer-nav-dropdown .wts-option:nth-child(3)');
+  selectDrawerNav('Truck Logs', logsOption);
+  renderLogRows();
+  setTimeout(() => openDetail(15), 50);
+}
+
+
+function toggleCfgAcc(idx) {
+  const acc = document.getElementById('cfg-acc-' + idx);
+  const body = acc.querySelector('.cfg-acc-body');
+  const isOpen = acc.classList.contains('open');
+  acc.classList.toggle('open', !isOpen);
+  body.style.display = isOpen ? 'none' : 'block';
+}
+
+function toggleCfgSwitch(el) {
+  el.classList.toggle('on');
 }
 
 function openWdsLog() {
@@ -1908,6 +3046,266 @@ document.addEventListener('click', function(e) {
 /* ── INIT ──────────────────────────────────────── */
 renderTrucks();
 renderOverview();
+
+/* ─── SENSOR PAGE ───────────────────────────────────── */
+const SEN_CONFIGS = {
+  slump: {
+    title:'Slump', unit:'in', color:'#1594ef',
+    type:'line', min:0, max:12,
+    seed:[5.25,5.30,5.22,5.35,5.28,5.40,5.25,5.18,5.30,5.45,5.38,5.25,5.20,5.32,5.28],
+    liveKey:'sv-slump', liveUnit:' in', liveDecimals:2,
+    liveBase:5.25, liveRange:0.3
+  },
+  water: {
+    title:'Water Addition', unit:'gal/yd³', color:'#3069e3',
+    type:'line', min:0, max:2,
+    seed:[0.50,0.52,0.48,0.55,0.50,0.53,0.49,0.51,0.54,0.50,0.47,0.52,0.55,0.50,0.51],
+    liveKey:'sv-water', liveUnit:' gal', liveDecimals:2,
+    liveBase:0.5, liveRange:0.1
+  },
+  pressure: {
+    title:'Pressure', unit:'PSI', color:'#ffba0d',
+    type:'line', min:0, max:60,
+    seed:[32,33,31,34,32,35,31,33,36,32,30,34,33,32,31],
+    liveKey:'sv-pressure', liveUnit:' PSI', liveDecimals:0,
+    liveBase:32, liveRange:4
+  },
+  drum: {
+    title:'Drum Speed', unit:'RPM', color:'#9b59b6',
+    type:'line', min:0, max:400,
+    seed:[268,272,265,280,268,275,260,270,285,268,255,272,278,268,262],
+    liveKey:'sv-drum', liveUnit:' RPM', liveDecimals:0,
+    liveBase:268, liveRange:20
+  },
+  cell: {
+    title:'Cell Coverage', unit:'', color:'#2ecf1d',
+    type:'status',
+    liveKey:'sv-cell', liveUnit:'', liveDecimals:0,
+    liveBase:1, liveRange:0,
+    statusLabel:'Active', statusSub:'Signal strength: Strong', statusColor:'green',
+    statusIcon:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M1 6C5 2 19 2 23 6" stroke="#2ecf1d" stroke-width="2" stroke-linecap="round"/><path d="M4 9.5C7 7 17 7 20 9.5" stroke="#2ecf1d" stroke-width="2" stroke-linecap="round"/><path d="M7 13C9 11.5 15 11.5 17 13" stroke="#2ecf1d" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="2" fill="#2ecf1d"/></svg>'
+  },
+  sat: {
+    title:'Satellite Count', unit:'', color:'#1594ef',
+    type:'status',
+    liveKey:'sv-sat', liveUnit:' sats', liveDecimals:0,
+    liveBase:8, liveRange:1,
+    statusLabel:'8 Satellites', statusSub:'GPS fix: Strong', statusColor:'blue',
+    statusIcon:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" fill="#1594ef"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="#1594ef" stroke-width="2" stroke-linecap="round"/><path d="M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" stroke="#1594ef" stroke-width="1.5" stroke-linecap="round"/></svg>'
+  }
+};
+
+/* Which sensors are selected */
+const senSelected = new Set(['slump','water']);
+
+/* Ring buffer per sensor — pre-filled with seed data */
+const senData = {};
+const SEN_POINTS = 40;
+Object.entries(SEN_CONFIGS).forEach(([k, cfg]) => {
+  if (cfg.type !== 'line') return;
+  const buf = [];
+  for (let i = 0; i < SEN_POINTS; i++) {
+    buf.push(cfg.seed[i % cfg.seed.length] + (Math.random()-0.5)*cfg.liveRange*0.4);
+  }
+  senData[k] = buf;
+});
+
+/* Canvas refs */
+let senCanvases = {};
+let senAnimId = null;
+
+function senToggle(el) {
+  const key = el.dataset.sensor;
+  if (senSelected.has(key)) {
+    if (senSelected.size <= 1) return; // keep at least 1
+    senSelected.delete(key);
+    el.classList.remove('active');
+  } else {
+    senSelected.add(key);
+    el.classList.add('active');
+  }
+  senRenderCards();
+}
+
+function senRenderCards() {
+  const container = document.getElementById('sen-charts');
+  container.innerHTML = '';
+  senCanvases = {};
+
+  senSelected.forEach(key => {
+    const cfg = SEN_CONFIGS[key];
+    const card = document.createElement('div');
+    card.className = 'sen-card';
+    card.id = 'sen-card-' + key;
+
+    if (cfg.type === 'status') {
+      card.innerHTML = `
+        <div class="sen-card-hdr">
+          <div class="sen-card-left">
+            <div class="sen-card-title">${cfg.title}</div>
+          </div>
+          <div class="sen-live-badge"><div class="sen-live-dot"></div><div class="sen-live-txt">Live</div></div>
+        </div>
+        <div class="sen-status-body">
+          <div class="sen-status-icon-wrap ${cfg.statusColor}">${cfg.statusIcon}</div>
+          <div class="sen-status-details">
+            <div class="sen-status-state">${cfg.statusLabel}</div>
+            <div class="sen-status-sub">${cfg.statusSub}</div>
+          </div>
+        </div>`;
+    } else {
+      card.innerHTML = `
+        <div class="sen-card-hdr">
+          <div class="sen-card-left">
+            <div class="sen-card-title">${cfg.title}</div>
+            <div>
+              <span class="sen-card-bigval" id="sc-val-${key}">${cfg.liveBase.toFixed(cfg.liveDecimals)}</span>
+              <span class="sen-card-unit">${cfg.unit}</span>
+            </div>
+          </div>
+          <div class="sen-live-badge"><div class="sen-live-dot"></div><div class="sen-live-txt">Live</div></div>
+        </div>
+        <div class="sen-canvas-wrap">
+          <canvas class="sen-canvas" id="sc-${key}" height="80"></canvas>
+        </div>`;
+    }
+    container.appendChild(card);
+  });
+
+  /* Init canvases after DOM is ready */
+  requestAnimationFrame(() => {
+    senSelected.forEach(key => {
+      const cfg = SEN_CONFIGS[key];
+      if (cfg.type !== 'line') return;
+      const canvas = document.getElementById('sc-' + key);
+      if (canvas) senCanvases[key] = canvas;
+    });
+  });
+}
+
+function senDrawChart(key) {
+  const canvas = senCanvases[key];
+  if (!canvas) return;
+  const cfg = SEN_CONFIGS[key];
+  const buf = senData[key];
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.offsetWidth;
+  const h = canvas.offsetHeight || 80;
+  if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
+    canvas.width  = w * dpr;
+    canvas.height = h * dpr;
+  }
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+
+  /* Grid lines */
+  ctx.strokeStyle = 'rgba(54,50,45,0.07)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 3; i++) {
+    const y = Math.round(h * i / 3) + 0.5;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  }
+
+  /* Gradient fill */
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, cfg.color + '30');
+  grad.addColorStop(1, cfg.color + '00');
+
+  const range = cfg.max - cfg.min;
+  const xStep = w / (SEN_POINTS - 1);
+
+  const toY = v => h - ((v - cfg.min) / range) * h * 0.85 - h * 0.05;
+
+  /* Fill */
+  ctx.beginPath();
+  ctx.moveTo(0, h);
+  buf.forEach((v, i) => {
+    const x = i * xStep;
+    const y = toY(v);
+    i === 0 ? ctx.lineTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.lineTo((SEN_POINTS - 1) * xStep, h);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  /* Line — smooth with bezier */
+  ctx.beginPath();
+  buf.forEach((v, i) => {
+    const x = i * xStep;
+    const y = toY(v);
+    if (i === 0) { ctx.moveTo(x, y); return; }
+    const px = (i - 1) * xStep;
+    const py = toY(buf[i - 1]);
+    const cpx = (px + x) / 2;
+    ctx.bezierCurveTo(cpx, py, cpx, y, x, y);
+  });
+  ctx.strokeStyle = cfg.color;
+  ctx.lineWidth = 2;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+
+  /* Live dot at end */
+  const lastX = (SEN_POINTS - 1) * xStep;
+  const lastY = toY(buf[SEN_POINTS - 1]);
+  ctx.beginPath();
+  ctx.arc(lastX, lastY, 4, 0, Math.PI * 2);
+  ctx.fillStyle = cfg.color;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(lastX, lastY, 7, 0, Math.PI * 2);
+  ctx.fillStyle = cfg.color + '30';
+  ctx.fill();
+}
+
+function senTick() {
+  Object.entries(SEN_CONFIGS).forEach(([key, cfg]) => {
+    if (cfg.type !== 'line') return;
+    const buf = senData[key];
+    const last = buf[buf.length - 1];
+    const next = last + (Math.random() - 0.48) * cfg.liveRange * 0.25;
+    const clamped = Math.max(cfg.min + (cfg.max-cfg.min)*0.05, Math.min(cfg.max * 0.95, next));
+    buf.shift();
+    buf.push(clamped);
+
+    /* Update chip value */
+    const chipVal = document.getElementById(cfg.liveKey);
+    if (chipVal) {
+      chipVal.innerHTML = clamped.toFixed(cfg.liveDecimals) + '<span class="sen-chip-unit">' + cfg.liveUnit + '</span>';
+    }
+    /* Update card big value */
+    const cardVal = document.getElementById('sc-val-' + key);
+    if (cardVal) cardVal.textContent = clamped.toFixed(cfg.liveDecimals);
+
+    if (senSelected.has(key)) senDrawChart(key);
+  });
+
+  /* satellite count drift */
+  const satChip = document.getElementById('sv-sat');
+  if (satChip) {
+    const cur = parseInt(satChip.textContent) || 8;
+    const next = Math.max(5, Math.min(12, cur + (Math.random() > 0.85 ? (Math.random()>0.5?1:-1) : 0)));
+    satChip.innerHTML = next + '<span class="sen-chip-unit"> sats</span>';
+    const statusState = document.querySelector('#sen-card-sat .sen-status-state');
+    if (statusState) statusState.textContent = next + ' Satellites';
+  }
+
+  senAnimId = setTimeout(senTick, 1200);
+}
+
+function senStart() {
+  if (senAnimId) return;
+  senRenderCards();
+  setTimeout(() => { senTick(); }, 300);
+}
+
+function senStop() {
+  clearTimeout(senAnimId);
+  senAnimId = null;
+}
+
+
 </script>
 </body>
 </html>

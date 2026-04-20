@@ -1030,6 +1030,173 @@
   .flt-chip:active { opacity: 0.75; }
 
 
+  /* ─── UNITS SCREEN ────────────────────────────── */
+  .units-tbl-head {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 36px;
+    background: var(--layer-1);
+    border-bottom: 1.5px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  .units-th {
+    font-size: 14px; font-weight: 500; color: var(--strong);
+    padding: 10px 8px; letter-spacing: -0.28px;
+  }
+  .units-th-id { border-right: 1.5px solid var(--border); padding-left: 16px; }
+  .units-th-trucks { }
+  .units-th-chev { }
+  .units-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 36px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    border-bottom: 1px solid var(--border);
+    min-height: 44px;
+  }
+  .units-row:nth-child(odd)  { background: var(--layer-1); }
+  .units-row:nth-child(even) { background: var(--layer-2); }
+  .units-row:active { background: rgba(48,105,227,0.06); }
+  .units-td {
+    font-size: 14px; color: var(--defined);
+    padding: 12px 8px; display: flex; align-items: center;
+    letter-spacing: -0.28px; line-height: 1.3;
+  }
+  .units-td-id {
+    border-right: 1.5px solid var(--border);
+    padding-left: 16px; font-weight: 500; color: var(--strong);
+  }
+  .units-td-chev {
+    display: flex; align-items: center; justify-content: center;
+    color: var(--soft);
+  }
+  /* Status pill in the table */
+  .ustatus {
+    display: inline-flex; align-items: center; gap: 5px;
+    border-radius: 20px; padding: 3px 9px;
+    font-size: 12px; font-weight: 500; white-space: nowrap;
+  }
+  .ustatus-linked     { background: #d5f1d2; color: #1e6252; }
+  .ustatus-unlinked   { background: rgba(54,50,45,0.08); color: var(--soft); }
+  .ustatus-maint      { background: #fff3cd; color: #7a5800; }
+  .ustatus-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .ustatus-linked   .ustatus-dot { background: #16a34a; }
+  .ustatus-unlinked .ustatus-dot { background: var(--soft); }
+  .ustatus-maint    .ustatus-dot { background: #f59e0b; }
+
+  /* Detail body key-value rows */
+  .ud-section-label {
+    font-size: 11px; font-weight: 600; color: var(--soft);
+    letter-spacing: 0.4px; text-transform: uppercase;
+    padding: 4px 0 8px;
+  }
+  .ud-card {
+    background: var(--layer-1); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden; margin-bottom: 14px;
+  }
+  .ud-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 11px 14px; border-bottom: 1px solid var(--border);
+  }
+  .ud-row:last-child { border-bottom: none; }
+  .ud-key { font-size: 14px; color: var(--soft); letter-spacing: -0.28px; }
+  .ud-val { font-size: 14px; color: var(--strong); font-weight: 500; letter-spacing: -0.28px; text-align: right; }
+
+
+  /* ─── UNIT LIFE SPAN ──────────────────────────── */
+  .ud-tabs {
+    display: flex; border-bottom: 1px solid var(--border);
+    flex-shrink: 0; background: var(--layer-1);
+    padding: 0 16px;
+  }
+  .ud-tab {
+    font-size: 14px; color: var(--soft);
+    padding: 12px 8px; border-bottom: 2px solid transparent;
+    letter-spacing: -0.28px; cursor: pointer;
+    margin-right: 8px; font-family: var(--font);
+    background: none; border-top: none; border-left: none; border-right: none;
+  }
+  .ud-tab.on { color: var(--strong); border-bottom-color: var(--strong); font-weight: 500; }
+
+  /* Component accordion cards */
+  .ls-card {
+    background: var(--layer-1); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden; margin-bottom: 10px;
+  }
+  .ls-card-hdr {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px; cursor: pointer; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .ls-card-hdr:active { background: rgba(54,50,45,0.03); }
+  .ls-card-left { display: flex; align-items: center; gap: 10px; }
+  .ls-comp-name { font-size: 14px; font-weight: 500; color: var(--strong); letter-spacing: -0.28px; }
+  .ls-current-mac {
+    font-size: 12px; color: var(--soft); letter-spacing: -0.2px;
+    background: var(--base); border-radius: 4px; padding: 2px 7px;
+    font-family: monospace;
+  }
+  .ls-chev { transition: transform 0.2s; flex-shrink: 0; }
+  .ls-chev.open { transform: rotate(180deg); }
+
+  /* History timeline inside accordion */
+  .ls-history { display: none; border-top: 1px solid var(--border); padding: 0 14px 10px; }
+  .ls-history.open { display: block; }
+  .ls-event {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .ls-event:last-child { border-bottom: none; }
+  .ls-event-line {
+    display: flex; flex-direction: column; align-items: center;
+    flex-shrink: 0; width: 20px; padding-top: 2px;
+  }
+  .ls-event-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    border: 2px solid var(--layer-1);
+  }
+  .ls-dot-install  { background: #16a34a; box-shadow: 0 0 0 1px #16a34a; }
+  .ls-dot-replace  { background: var(--blue); box-shadow: 0 0 0 1px var(--blue); }
+  .ls-dot-remove   { background: var(--red); box-shadow: 0 0 0 1px var(--red); }
+  .ls-dot-current  { background: #16a34a; box-shadow: 0 0 0 2px rgba(22,163,74,0.25); }
+  .ls-event-connector {
+    width: 1px; background: var(--border); flex: 1; min-height: 16px; margin-top: 4px;
+  }
+  .ls-event-content { flex: 1; min-width: 0; }
+  .ls-event-top { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+  .ls-event-type {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.2px;
+    text-transform: uppercase; flex-shrink: 0;
+  }
+  .ls-type-install  { color: #16a34a; }
+  .ls-type-replace  { color: var(--blue); }
+  .ls-type-remove   { color: var(--red); }
+  .ls-type-current  { color: #16a34a; }
+  .ls-event-date { font-size: 12px; color: var(--soft); letter-spacing: -0.2px; }
+  .ls-mac {
+    font-size: 13px; font-weight: 500; color: var(--strong);
+    letter-spacing: -0.2px; font-family: monospace;
+  }
+  .ls-mac-label { font-size: 12px; color: var(--soft); letter-spacing: -0.2px; margin-top: 2px; }
+
+  /* Info card inside lifespan tab */
+  .ls-info-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1px; background: var(--border);
+    border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--border); margin-bottom: 14px;
+  }
+  .ls-info-cell {
+    background: var(--layer-1); padding: 12px 14px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .ls-info-label { font-size: 11px; color: var(--soft); letter-spacing: -0.1px; }
+  .ls-info-val { font-size: 14px; font-weight: 500; color: var(--strong); letter-spacing: -0.28px; }
+  .ls-info-val--link { color: var(--blue-link); }
+
+
 </style>
 </head>
 <body>
@@ -1070,7 +1237,7 @@
     <div class="scroll-body">
       <div class="page-pad">
         <div class="page-title">Diagnostic Center</div>
-        <div class="page-sub">Last updated: 20 seconds ago</div>
+        <div class="page-sub" id="main-count-label">All Trucks</div>
 
         <div class="filter-row">
           <div class="left-filters">
@@ -2032,6 +2199,180 @@
       <div id="cc-scroll" style="position:absolute;left:0;right:0;overflow-y:auto;-webkit-overflow-scrolling:touch;"></div>
     </div><!-- /s-conditions -->
 
+    <!-- ══════════════════════════════════════════════════════════
+         UNITS SCREEN — same shell as s-main
+    ═══════════════════════════════════════════════════════════ -->
+    <div class="screen" id="s-units">
+
+      <!-- Identical top-nav to s-main -->
+      <div class="top-nav">
+        <button onclick="openNav()" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;flex-shrink:0;">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M2 12H14" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 8H14" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 4H14" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div style="position:absolute;left:50%;transform:translateX(-50%);">
+          <svg width="28" height="16" viewBox="0 0 28 16" fill="none"><path d="M10.3958 0H0V3.1785H9.15381L0.367992 15.9386H8.00383L12.6497 3.22457C13.1097 1.98081 12.4197 0 10.3958 0ZM16.6517 0C14.6277 0 13.9377 1.98081 14.3977 3.22457L19.0436 15.9386H26.6794L17.8936 3.1785H27.0474V0H16.6517Z" fill="#36322D"/></svg>
+        </div>
+        <button style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;flex-shrink:0;position:relative;margin-left:auto;">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+            <path d="M10 2a6 6 0 00-6 6v3l-1.5 2.5h15L16 11V8a6 6 0 00-6-6z" stroke="#36322d" stroke-width="1.4" stroke-linejoin="round"/>
+            <path d="M8.5 16.5a1.5 1.5 0 003 0" stroke="#36322d" stroke-width="1.4"/>
+          </svg>
+          <div class="bell-dot"></div>
+        </button>
+      </div>
+
+      <!-- Scroll body — same structure as s-main -->
+      <div class="scroll-body">
+        <div class="page-pad">
+          <div class="page-title">Diagnostic Center</div>
+          <div class="page-sub" id="units-count-label">Units · — units</div>
+
+          <div class="filter-row">
+            <div class="left-filters">
+              <button class="btn-pill" id="units-filter-btn" onclick="unitsFilterOpen()">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M2 4h12M4 8h8M6 12h4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round"/>
+                </svg>
+                <span id="units-filter-count" style="display:none;background:var(--blue);color:white;border-radius:10px;font-size:11px;font-weight:600;padding:1px 6px;margin-left:2px;"></span>
+              </button>
+            </div>
+            <button onclick="openAddUnit()" style="display:flex;align-items:center;gap:6px;background:var(--blue);color:white;border:none;border-radius:32px;padding:8px 16px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M6 1v10M1 6h10" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              Add Unit
+            </button>
+          </div>
+
+          <div class="srch-wrap">
+            <div class="srch-field" id="units-srch-field">
+              <svg width="16" height="16" viewBox="0 0 18 18" fill="none" style="flex-shrink:0;">
+                <circle cx="8" cy="8" r="5" stroke="#36322d9e" stroke-width="1.4"/>
+                <path d="M12.5 12.5l3 3" stroke="#36322d9e" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              <input id="units-search" placeholder="Unit ID, status, truck…" autocomplete="off"
+                style="flex:1;border:none;outline:none;font-size:14px;color:var(--strong);background:none;letter-spacing:-0.28px;font-family:var(--font);"
+                oninput="unitsSearch()" />
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Table header -->
+        <div class="units-tbl-head">
+        <div class="units-th units-th-id">Unit ID</div>
+        <div class="units-th">Unit Status</div>
+        <div class="units-th units-th-trucks">Assigned Trucks</div>
+        <div class="units-th units-th-chev"></div>
+      </div>
+
+        <!-- Rows -->
+        <div id="units-list"></div>
+
+      </div><!-- /scroll-body -->
+
+      <!-- Unit detail drawer — chrome matches truck drawer exactly -->
+      <div id="units-drawer" style="
+        position:absolute;inset:0;background:var(--layer-1);
+        transform:translateX(100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);
+        display:flex;flex-direction:column;z-index:10;padding-top:54px;
+      ">
+        <!-- ROW 1: Unit label + status pill + nav arrows + close — mirrors truck drawer d-chrome -->
+        <div class="d-chrome">
+          <div class="d-truck-id">
+            <div class="d-truck-label" id="ud-unit-id">Unit: —</div>
+            <div id="ud-status-pill"></div>
+          </div>
+          <div class="d-chrome-btns">
+            <button class="chrome-btn chrome-btn--border" id="ud-prev" onclick="udNavUnit(-1)">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M9 3l-5 4 5 4" stroke="#36322d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button class="chrome-btn chrome-btn--border" id="ud-next" onclick="udNavUnit(1)">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M5 3l5 4-5 4" stroke="#36322d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button class="chrome-btn chrome-btn--dark" onclick="closeUnitDetail()">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M2 2l8 8M10 2l-8 8" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- ROW 2: Section dropdown pill — mirrors truck drawer d-nav-row -->
+        <div class="d-nav-row">
+          <div style="position:relative;">
+            <button class="d-pill" id="ud-nav-btn" onclick="udToggleNav()">
+              <span id="ud-nav-label">Unit Life Span</span>
+              <svg id="ud-nav-chev" width="10" height="6" viewBox="0 0 10 6" fill="none" style="transition:transform 0.2s;flex-shrink:0;">
+                <path d="M8.75 4.75L4.75 0.75L0.75 4.75" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div id="ud-nav-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:white;border:1px solid var(--border-mid);border-radius:8px;box-shadow:0 4px 16px rgba(54,50,45,0.12);padding:4px;min-width:200px;z-index:100;">
+              <div class="wts-option wts-active" onclick="udSelectNav('Unit Life Span', this)"><span class="wts-check">✓</span>Unit Life Span</div>
+              <div class="wts-option" onclick="udSelectNav('Attach to Truck', this)"><span class="wts-check" style="visibility:hidden">✓</span>Attach to Truck</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail scroll body -->
+        <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--layer-2);padding:16px;">
+          <div id="ud-body"></div>
+        </div>
+      </div>
+
+      <!-- Units filter sheet -->
+      <div id="units-filter-overlay" onclick="unitsFilterClose()" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.45);z-index:20;border-radius:50px;"></div>
+      <div id="units-filter-sheet" style="position:absolute;left:0;right:0;bottom:0;background:var(--layer-1);border-radius:24px 24px 44px 44px;z-index:21;transform:translateY(110%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);padding-bottom:32px;">
+        <div style="display:flex;justify-content:center;padding:12px 0 4px;">
+          <div style="width:36px;height:4px;border-radius:2px;background:var(--border-mid);"></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px 12px;">
+          <div style="font-size:18px;font-weight:500;color:var(--strong);letter-spacing:-0.4px;">Filter</div>
+          <button onclick="unitsFilterReset()" style="font-size:13px;color:var(--blue);font-weight:500;background:none;border:none;cursor:pointer;font-family:var(--font);">Reset all</button>
+        </div>
+        <div style="overflow-y:auto;max-height:360px;padding:0 16px;">
+          <div class="flt-section">
+            <div class="flt-section-label">Unit Status</div>
+            <div class="flt-chips">
+              <button class="flt-chip" data-ufgroup="status" data-ufval="Linked Unit" onclick="unitsFilterToggle(this)">Linked</button>
+              <button class="flt-chip" data-ufgroup="status" data-ufval="Unlinked Unit" onclick="unitsFilterToggle(this)">Unlinked</button>
+              <button class="flt-chip" data-ufgroup="status" data-ufval="Maintenance" onclick="unitsFilterToggle(this)">Maintenance</button>
+            </div>
+          </div>
+          <div class="flt-section">
+            <div class="flt-section-label">System Type</div>
+            <div class="flt-chips">
+              <button class="flt-chip" data-ufgroup="sysType" data-ufval="V3" onclick="unitsFilterToggle(this)">V3</button>
+              <button class="flt-chip" data-ufgroup="sysType" data-ufval="V4" onclick="unitsFilterToggle(this)">V4</button>
+              <button class="flt-chip" data-ufgroup="sysType" data-ufval="V5" onclick="unitsFilterToggle(this)">V5</button>
+              <button class="flt-chip" data-ufgroup="sysType" data-ufval="Spark" onclick="unitsFilterToggle(this)">Spark</button>
+              <button class="flt-chip" data-ufgroup="sysType" data-ufval="Pulse" onclick="unitsFilterToggle(this)">Pulse</button>
+            </div>
+          </div>
+          <div class="flt-section">
+            <div class="flt-section-label">Assigned</div>
+            <div class="flt-chips">
+              <button class="flt-chip" data-ufgroup="assigned" data-ufval="yes" onclick="unitsFilterToggle(this)">Has truck</button>
+              <button class="flt-chip" data-ufgroup="assigned" data-ufval="no" onclick="unitsFilterToggle(this)">Unassigned</button>
+            </div>
+          </div>
+        </div>
+        <div style="padding:16px 16px 0;">
+          <button onclick="unitsFilterApply()" style="width:100%;background:var(--strong);color:white;border:none;border-radius:32px;padding:14px;font-size:15px;font-weight:500;font-family:var(--font);letter-spacing:-0.3px;cursor:pointer;">Apply Filters</button>
+        </div>
+      </div>
+
+    </div><!-- /s-units -->
+
+
         <!-- Side nav overlay -->
         <div id="sidenav-overlay" class="sidenav-overlay" onclick="closeNav()"></div>
 
@@ -2067,9 +2408,9 @@
               <svg class="sn-item-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1.5l5 5 5-5" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
             </div>
             <div class="sn-sub open" id="sn-diag-sub">
-              <div class="sn-sub-item active" onclick="closeNav()">All trucks</div>
+              <div class="sn-sub-item active" onclick="goToAllTrucks()">All trucks</div>
               <div class="sn-sub-item">Map</div>
-              <div class="sn-sub-item">Units</div>
+              <div class="sn-sub-item" onclick="openUnits()">Units</div>
               <div class="sn-sub-item">Software Updates</div>
             </div>
             <div class="sn-item">
@@ -2274,6 +2615,10 @@ function renderTrucks() {
   });
 
   document.getElementById('truck-list').innerHTML = html;
+  /* Update page sub with live count */
+  const visibleCount = trucks.filter(t => (t.err || t.wrn) && filterMatch(t)).length;
+  const subEl = document.getElementById('main-count-label');
+  if (subEl) subEl.textContent = `All Trucks · ${visibleCount} truck${visibleCount !== 1 ? 's' : ''}`;
 }
 
 function toggleGroup(gi) {
@@ -2345,6 +2690,9 @@ function renderOverview() {
   });
 
   document.getElementById('truck-list-overview').innerHTML = html;
+  const ovCount = trucks.filter(t => filterMatch(t)).length;
+  const subElOv = document.getElementById('main-count-label');
+  if (subElOv) subElOv.textContent = `All Trucks · ${ovCount} truck${ovCount !== 1 ? 's' : ''}`;
 }
 
 function toggleOv(i) {
@@ -4307,6 +4655,528 @@ function openDrawerFromCC(e, ccIdx) {
   const posInList = ccList.indexOf(idx);
   openDrawer(idx, { list: ccList, idx: posInList >= 0 ? posInList : 0 });
 }
+
+
+
+/* ══════════════════════════════════════════════════
+   UNITS SCREEN
+═══════════════════════════════════════════════════ */
+
+const UNITS_DATA = [
+  { id:'47382910', status:'Linked Unit',       truck:'749590',  tgw:'210000095269', contract:'SRM Tennessee', sysType:'V5',    config:'Measured Only',    commissioned:'1:16 PM 07/23/2025' },
+  { id:'83651024', status:'Unlinked Unit',      truck:'--',      tgw:'210000222277', contract:'SRM Texas',     sysType:'V5',    config:'Temp+ Admix',      commissioned:'--' },
+  { id:'12039487', status:'Maintenance',   truck:'749253',  tgw:'203719811007', contract:'SRM Tennessee', sysType:'Spark', config:'Winter Water',     commissioned:'1:16 PM 07/23/2025' },
+  { id:'55512378', status:'Linked Unit',        truck:'762723',  tgw:'210000194770', contract:'SRM Tennessee', sysType:'Pulse', config:'Color Blend Ratio', commissioned:'1:16 PM 07/23/2025' },
+  { id:'29104856', status:'Linked Unit',        truck:'45689',   tgw:'210000381924', contract:'Cemex Houston', sysType:'V3',   config:'Measured Only',    commissioned:'3:44 PM 06/12/2025' },
+  { id:'60483751', status:'Unlinked Unit',      truck:'--',      tgw:'210000401138', contract:'Cemex Houston', sysType:'V4',   config:'Temp+ Admix',      commissioned:'--' },
+  { id:'73920614', status:'Linked Unit',        truck:'12457',   tgw:'210000502847', contract:'Cemex Houston', sysType:'V4',   config:'Winter Water',     commissioned:'9:02 AM 05/01/2025' },
+  { id:'18475930', status:'Maintenance',   truck:'--',      tgw:'210000608331', contract:'AZ Materials',  sysType:'V3',   config:'Measured Only',    commissioned:'11:15 AM 04/17/2025' },
+  { id:'96013482', status:'Linked Unit',        truck:'84760',   tgw:'210000714560', contract:'AZ Materials',  sysType:'V5',   config:'Color Blend Ratio', commissioned:'8:30 AM 03/09/2025' },
+  { id:'34861097', status:'Unlinked Unit',      truck:'--',      tgw:'210000819204', contract:'Vulcan',        sysType:'Spark', config:'Temp+ Admix',     commissioned:'--' },
+];
+
+const unitsFilterState = { status: new Set(), sysType: new Set(), assigned: new Set() };
+let unitsSearchQuery = '';
+
+function statusClass(s) {
+  if (s === 'Linked Unit')      return 'ustatus-linked';
+  if (s === 'Unlinked Unit')    return 'ustatus-unlinked';
+  if (s === 'Maintenance') return 'ustatus-maint';
+  return 'ustatus-unlinked';
+}
+
+function statusPill(s) {
+  const cls = statusClass(s);
+  return `<span class="ustatus ${cls}"><span class="ustatus-dot"></span>${s}</span>`;
+}
+
+function unitsFilterMatch(u) {
+  const { status, sysType, assigned } = unitsFilterState;
+  if (status.size   > 0 && !status.has(u.status))   return false;
+  if (sysType.size  > 0 && !sysType.has(u.sysType)) return false;
+  if (assigned.size > 0) {
+    const hasT = u.truck !== '--';
+    if (assigned.has('yes') && !hasT) return false;
+    if (assigned.has('no')  &&  hasT) return false;
+    if (assigned.has('yes') && assigned.has('no')) { /* both = show all */ }
+  }
+  return true;
+}
+
+function renderUnits() {
+  const q = unitsSearchQuery.toLowerCase();
+  const filtered = UNITS_DATA.filter(u => {
+    if (!unitsFilterMatch(u)) return false;
+    if (q) return u.id.toLowerCase().includes(q) ||
+                  u.status.toLowerCase().includes(q) ||
+                  u.truck.toLowerCase().includes(q);
+    return true;
+  });
+
+  document.getElementById('units-count-label').textContent = `Units · ${filtered.length} unit${filtered.length !== 1 ? 's' : ''}`;
+
+  const chevSvgR = `<svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M1 1l6 6-6 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+  if (filtered.length === 0) {
+    document.getElementById('units-list').innerHTML =
+      `<div style="padding:40px 24px;text-align:center;font-size:14px;color:var(--soft);">No units match your filters.</div>`;
+    return;
+  }
+
+  document.getElementById('units-list').innerHTML = filtered.map((u, i) => `
+    <div class="units-row" onclick="openUnitDetail('${u.id}')">
+      <div class="units-td units-td-id">${u.id}</div>
+      <div class="units-td">${statusPill(u.status)}</div>
+      <div class="units-td">${u.truck}</div>
+      <div class="units-td units-td-chev">${chevSvgR}</div>
+    </div>`).join('');
+}
+
+function goToAllTrucks() {
+  /* Switch to s-main and close the nav */
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-main').classList.add('active');
+  /* Mark All trucks as active in sidenav */
+  document.querySelectorAll('.sn-sub-item').forEach(i => i.classList.remove('active'));
+  document.querySelector('.sn-sub-item').classList.add('active');
+  closeNav();
+}
+
+function openUnits() {
+  closeNav();
+  /* Switch active screen */
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-units').classList.add('active');
+  /* Update sidenav active state */
+  document.querySelectorAll('.sn-sub-item').forEach(i => i.classList.remove('active'));
+  const items = document.querySelectorAll('.sn-sub-item');
+  items.forEach(i => { if (i.textContent.trim() === 'Units') i.classList.add('active'); });
+  renderUnits();
+}
+
+function closeUnits() {
+  /* Return to s-main */
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-main').classList.add('active');
+  /* Reset sidenav */
+  document.querySelectorAll('.sn-sub-item').forEach(i => i.classList.remove('active'));
+  document.querySelector('.sn-sub-item').classList.add('active');
+}
+
+function openAddUnit() {
+  /* Placeholder — sheet would open here */
+  alert('Add Unit flow coming soon.');
+}
+
+/* ── Unit detail ── */
+/* ══════════════════════════════════════════════════
+   UNIT COMPOSITION HISTORY
+   Each component entry is one slot in the unit.
+   history[] = dated MAC ID snapshots, newest first.
+   A component that was ADDED later simply has a later
+   first date. One that was REMOVED has a null mac after
+   its last known date.
+═══════════════════════════════════════════════════ */
+const UNIT_HISTORY = {
+  '47382910': [
+    { name: 'Bluetooth Radio', history: [
+      { date: 'Current',    mac: 'JJJ-210095269' },
+      { date: '5/23/2023',  mac: 'JJJ-210082341' },
+      { date: '3/6/2021',   mac: 'RRR-109034821' },
+    ]},
+    { name: 'Sensor', history: [
+      { date: 'Current',    mac: 'BBB-203719811' },
+      { date: '5/23/2023',  mac: 'BBB-203701042' },
+      { date: '3/6/2021',   mac: 'RRR-109020034' },
+    ]},
+    { name: 'Temperate Water', history: [
+      { date: 'Current',    mac: 'RRR-109041822' },
+      { date: '3/6/2021',   mac: 'RRR-109000192' },
+    ]},
+    { name: 'Winter Water', history: [
+      { date: 'Current',    mac: 'EEE-301820042' },
+      { date: '5/23/2023',  mac: 'EEE-301801193' },
+    ]},
+    { name: 'Admix', history: [
+      { date: 'Current',    mac: 'RRR-109044018' },
+      { date: '1/3/2022',   mac: 'RRR-109028811' },
+      { date: '3/6/2021',   mac: 'JJJ-210011029' },
+    ]},
+    { name: 'Drum Sensor', history: [
+      { date: 'Current',    mac: 'BBB-203728814' },
+      { date: '1/3/2022',   mac: 'BBB-203701009' },
+      { date: '3/6/2021',   mac: 'RRR-109031002' },
+    ]},
+    { name: 'External Displays', history: [
+      { date: 'Current',    mac: 'NNN-401820091' },
+      { date: '3/6/2021',   mac: 'UUU-501820013' },
+    ]},
+    { name: 'WDS', history: [
+      { date: 'Current',    mac: 'WWW-601920044' },
+      { date: '3/6/2021',   mac: 'WWW-601900012' },
+    ]},
+  ],
+  /* Other units get a simpler default — just current state */
+  '_default': [
+    { name: 'Bluetooth Radio', history: [{ date: 'Current', mac: 'JJJ-210095001' }] },
+    { name: 'Sensor',          history: [{ date: 'Current', mac: 'BBB-203700001' }] },
+    { name: 'Drum Sensor',     history: [{ date: 'Current', mac: 'BBB-203700002' }] },
+    { name: 'WDS',             history: [{ date: 'Current', mac: 'WWW-601900001' }] },
+  ],
+};
+
+let udCurrentUnit = null;
+let udCurrentTab  = 'lifespan';
+
+function openUnitDetail(unitId) {
+  udCurrentUnit = UNITS_DATA.find(u => u.id === unitId);
+  if (!udCurrentUnit) return;
+  udCurrentTab = 'lifespan';
+
+  /* Status pill — styled like d-ign-pill from truck drawer */
+  const pill = document.getElementById('ud-status-pill');
+  const cls  = statusClass(udCurrentUnit.status);
+  let bg, color, dotColor;
+  if (cls === 'ustatus-linked')     { bg = '#d5f1d2'; color = '#1e6252'; dotColor = '#16a34a'; }
+  else if (cls === 'ustatus-maint') { bg = '#fff3cd'; color = '#7a5800'; dotColor = '#f59e0b'; }
+  else                              { bg = 'rgba(54,50,45,0.08)'; color = 'var(--soft)'; dotColor = 'var(--soft)'; }
+  pill.className = 'd-ign-pill';
+  pill.style.cssText = `background:${bg};color:${color};`;
+  pill.innerHTML = `<span style="width:7px;height:7px;border-radius:50%;background:${dotColor};flex-shrink:0;display:inline-block;"></span>${udCurrentUnit.status}`;
+
+  document.getElementById('ud-unit-id').textContent = unitId;
+
+  /* Reset nav dropdown to Unit Life Span */
+  document.getElementById('ud-nav-label').textContent = 'Unit Life Span';
+  document.getElementById('ud-nav-chev').style.transform = '';
+  document.querySelectorAll('#ud-nav-dropdown .wts-option').forEach((o,i) => {
+    o.classList.toggle('wts-active', i === 0);
+    o.querySelector('.wts-check').style.visibility = i === 0 ? 'visible' : 'hidden';
+  });
+
+  /* Arrow state */
+  udUpdateArrows();
+
+  udRenderLifespan();
+
+  const drawer = document.getElementById('units-drawer');
+  drawer.style.display = 'flex';
+  requestAnimationFrame(() => drawer.style.transform = 'translateX(0)');
+}
+
+function udSwitchTab(tab) {
+  udCurrentTab = tab;
+  if (tab === 'lifespan') udRenderLifespan();
+  else                    udRenderAttach();
+}
+
+function udToggleNav() {
+  const dd   = document.getElementById('ud-nav-dropdown');
+  const chev = document.getElementById('ud-nav-chev');
+  const open = dd.style.display === 'block';
+  dd.style.display   = open ? 'none' : 'block';
+  chev.style.transform = open ? '' : 'rotate(180deg)';
+}
+
+function udSelectNav(label, el) {
+  document.getElementById('ud-nav-label').textContent = label;
+  document.getElementById('ud-nav-chev').style.transform = '';
+  document.getElementById('ud-nav-dropdown').style.display = 'none';
+  document.querySelectorAll('#ud-nav-dropdown .wts-option').forEach(o => {
+    o.classList.remove('wts-active');
+    o.querySelector('.wts-check').style.visibility = 'hidden';
+  });
+  el.classList.add('wts-active');
+  el.querySelector('.wts-check').style.visibility = 'visible';
+  udSwitchTab(label === 'Unit Life Span' ? 'lifespan' : 'attach');
+}
+
+function udNavUnit(dir) {
+  /* Step through filtered units list */
+  const list = Object.keys(UNIT_HISTORY).filter(id => id !== '_default');
+  const allIds = UNITS_DATA.map(u => u.id);
+  const idx = allIds.indexOf(udCurrentUnit.id);
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= allIds.length) return;
+  openUnitDetail(allIds[newIdx]);
+}
+
+function udUpdateArrows() {
+  const allIds = UNITS_DATA.map(u => u.id);
+  const idx = udCurrentUnit ? allIds.indexOf(udCurrentUnit.id) : 0;
+  const prev = document.getElementById('ud-prev');
+  const next = document.getElementById('ud-next');
+  if (prev) { prev.style.opacity = idx <= 0 ? '0.3' : '1'; prev.style.pointerEvents = idx <= 0 ? 'none' : 'auto'; }
+  if (next) { next.style.opacity = idx >= allIds.length-1 ? '0.3' : '1'; next.style.pointerEvents = idx >= allIds.length-1 ? 'none' : 'auto'; }
+}
+
+function udRenderLifespan() {
+  const u   = udCurrentUnit;
+  const comps = UNIT_HISTORY[u.id] || UNIT_HISTORY['_default'];
+
+  /* Component accordion cards */
+  const cards = comps.map((comp, ci) => {
+    const current = comp.history[0];
+    const hasHistory = comp.history.length > 1;
+
+    const entries = comp.history.map((h, hi) => {
+      const isFirst = hi === comp.history.length - 1;
+      const connector = hi < comp.history.length - 1
+        ? `<div style="width:1px;background:var(--border);flex-grow:1;margin:4px 0;min-height:12px;"></div>` : '';
+      const dotStyle = hi === 0
+        ? 'background:#16a34a;border:2px solid white;box-shadow:0 0 0 1px #16a34a;'
+        : isFirst
+          ? 'background:var(--blue);border:2px solid white;box-shadow:0 0 0 1px var(--blue);'
+          : 'background:var(--border-mid);border:2px solid white;';
+      return `
+        <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);${hi===comp.history.length-1?'border-bottom:none;':''}">
+          <div style="display:flex;flex-direction:column;align-items:center;width:16px;flex-shrink:0;padding-top:2px;">
+            <div style="width:10px;height:10px;border-radius:50%;flex-shrink:0;${dotStyle}"></div>
+            ${connector}
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11px;color:var(--soft);letter-spacing:-0.1px;margin-bottom:3px;">${h.date}</div>
+            <div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.2px;font-family:monospace;">${h.mac}</div>
+            ${hi===0 ? '<div style="font-size:11px;color:#16a34a;font-weight:500;margin-top:2px;">Current</div>' : isFirst ? '<div style="font-size:11px;color:var(--blue);font-weight:500;margin-top:2px;">Originally installed</div>' : ''}
+          </div>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="ls-card">
+        <div class="ls-card-hdr" onclick="lsToggle(${ci})">
+          <div class="ls-card-left">
+            <div>
+              <div class="ls-comp-name">${comp.name}</div>
+              <div style="font-size:12px;color:var(--soft);letter-spacing:-0.2px;margin-top:2px;font-family:monospace;">${current.mac}</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            ${hasHistory ? `<span style="font-size:11px;color:var(--soft);letter-spacing:-0.1px;">${comp.history.length - 1} change${comp.history.length > 2 ? 's' : ''}</span>` : ''}
+            <svg id="ls-chev-${ci}" width="10" height="6" viewBox="0 0 10 6" fill="none" style="transition:transform 0.2s;flex-shrink:0;"><path d="M8.75 4.75L4.75 0.75L0.75 4.75" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div id="ls-hist-${ci}" style="display:none;padding:0 14px;border-top:1px solid var(--border);">
+          ${entries}
+        </div>
+      </div>`;
+  }).join('');
+
+  /* Info card */
+  const info = `
+    <div class="ud-section-label" style="margin-top:6px;">Unit Details</div>
+    <div class="ls-info-grid">
+      <div class="ls-info-cell"><div class="ls-info-label">System Type</div><div class="ls-info-val">${u.sysType}</div></div>
+      <div class="ls-info-cell"><div class="ls-info-label">Configuration</div><div class="ls-info-val">${u.config}</div></div>
+      <div class="ls-info-cell"><div class="ls-info-label">TGW 4 Number</div><div class="ls-info-val" style="font-family:monospace;font-size:12px;">${u.tgw}</div></div>
+      <div class="ls-info-cell"><div class="ls-info-label">Commissioned</div><div class="ls-info-val">${u.commissioned}</div></div>
+    </div>
+    <div class="ud-card">
+      <div class="ud-row"><span class="ud-key">Contract</span><span class="ud-val">${u.contract}</span></div>
+      <div class="ud-row"><span class="ud-key">Assigned Truck</span><span class="ud-val">${u.truck}</span></div>
+    </div>`;
+
+  document.getElementById('ud-body').innerHTML = `
+    <div style="margin-bottom:6px;">
+      <div style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.4px;text-transform:uppercase;margin-bottom:10px;">Components · ${comps.length}</div>
+      ${cards}
+    </div>
+    ${info}
+  `;
+}
+
+function lsToggle(ci) {
+  const hist = document.getElementById('ls-hist-' + ci);
+  const chev = document.getElementById('ls-chev-' + ci);
+  if (!hist) return;
+  const open = hist.style.display === 'block';
+  hist.style.display = open ? 'none' : 'block';
+  chev.style.transform = open ? '' : 'rotate(180deg)';
+}
+
+function udRenderAttach() {
+  document.getElementById('ud-body').innerHTML = `
+    <div style="padding:24px 0;text-align:center;">
+      <div style="font-size:32px;margin-bottom:12px;">🔗</div>
+      <div style="font-size:16px;font-weight:500;color:var(--strong);letter-spacing:-0.4px;margin-bottom:8px;">Attach to Truck</div>
+      <div style="font-size:14px;color:var(--soft);letter-spacing:-0.28px;line-height:1.5;margin-bottom:24px;">Link this unit to a truck in your fleet to begin tracking diagnostic data.</div>
+      <button style="background:var(--blue);color:white;border:none;border-radius:32px;padding:13px 32px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">Select a Truck</button>
+    </div>`;
+}
+
+function closeUnitDetail() {
+  document.getElementById('ud-nav-dropdown').style.display = 'none';
+  const drawer = document.getElementById('units-drawer');
+  drawer.style.transform = 'translateX(100%)';
+  setTimeout(() => drawer.style.display = 'none', 280);
+}
+
+function unlinkUnit(id) {
+  alert('Link/Unlink flow for unit ' + id + ' coming soon.');
+}
+
+/* ── Units search ── */
+function unitsSearch() {
+  unitsSearchQuery = document.getElementById('units-search').value.trim();
+  renderUnits();
+}
+
+/* ── Units filter sheet ── */
+function unitsFilterOpen() {
+  document.getElementById('units-filter-overlay').style.display = 'block';
+  const sheet = document.getElementById('units-filter-sheet');
+  sheet.style.display = 'block';
+  requestAnimationFrame(() => sheet.style.transform = 'translateY(0)');
+}
+
+function unitsFilterClose() {
+  const sheet = document.getElementById('units-filter-sheet');
+  sheet.style.transform = 'translateY(110%)';
+  setTimeout(() => {
+    document.getElementById('units-filter-overlay').style.display = 'none';
+  }, 300);
+}
+
+function unitsFilterToggle(el) {
+  const group = el.dataset.ufgroup;
+  const val   = el.dataset.ufval;
+  const set   = unitsFilterState[group];
+  if (set.has(val)) { set.delete(val); el.classList.remove('active'); }
+  else              { set.add(val);    el.classList.add('active'); }
+}
+
+function unitsFilterReset() {
+  Object.values(unitsFilterState).forEach(s => s.clear());
+  document.querySelectorAll('#units-filter-sheet .flt-chip').forEach(c => c.classList.remove('active'));
+  unitsFilterUpdateCount();
+}
+
+function unitsFilterApply() {
+  unitsFilterClose();
+  unitsFilterUpdateCount();
+  renderUnits();
+}
+
+function unitsFilterUpdateCount() {
+  const total = Object.values(unitsFilterState).reduce((n, s) => n + s.size, 0);
+  const badge = document.getElementById('units-filter-count');
+  const btn   = document.getElementById('units-filter-btn');
+  if (total > 0) {
+    badge.textContent = total;
+    badge.style.display = 'inline-block';
+    btn.style.borderColor = 'var(--blue)';
+    btn.style.color = 'var(--blue)';
+    btn.style.background = 'rgba(48,105,227,0.08)';
+  } else {
+    badge.style.display = 'none';
+    btn.style.borderColor = '';
+    btn.style.color = '';
+    btn.style.background = '';
+  }
+}
+
+
+
+/* ══════════════════════════════════════════════════
+   DEEP LINK — hash-based URL state
+   Format: #screen/view/detail
+   Examples:
+     #trucks                        → All Trucks, Where to start
+     #trucks/overview               → All Trucks, Overview
+     #trucks/cc                     → All Trucks, Components Condition
+     #units                         → Units list
+     #units/47382910                → Units list, unit 47382910 open, Life Span
+     #units/47382910/attach         → Units list, unit 47382910 open, Attach tab
+═══════════════════════════════════════════════════ */
+
+function setHash(parts) {
+  const hash = parts.filter(Boolean).join('/');
+  try { history.replaceState(null, '', '#' + hash); }
+  catch(e) { location.hash = hash; }
+}
+
+function readHash() {
+  const raw   = location.hash.replace('#', '');
+  const parts = raw ? raw.split('/') : [];
+  return {
+    screen: parts[0] || 'trucks',
+    view:   parts[1] || '',
+    detail: parts[2] || '',
+  };
+}
+
+/* Patch navigation functions to write the hash */
+const _origSelectWts = selectWts;
+selectWts = function(label, el) {
+  _origSelectWts(label, el);
+  const map = { 'Where to start': '', 'Overview': 'overview', 'Components Condition': 'cc' };
+  setHash(['trucks', map[label]]);
+};
+
+const _origOpenUnits = openUnits;
+openUnits = function() {
+  _origOpenUnits();
+  setHash(['units']);
+};
+
+const _origGoToAllTrucks = goToAllTrucks;
+goToAllTrucks = function() {
+  _origGoToAllTrucks();
+  setHash(['trucks']);
+};
+
+const _origOpenUnitDetail = openUnitDetail;
+openUnitDetail = function(unitId) {
+  _origOpenUnitDetail(unitId);
+  /* preserve any open tab in hash */
+  const tab = typeof udCurrentTab !== 'undefined' ? udCurrentTab : 'lifespan';
+  setHash(['units', unitId, tab === 'attach' ? 'attach' : '']);
+};
+
+const _origUdSelectNav = typeof udSelectNav !== 'undefined' ? udSelectNav : null;
+if (_origUdSelectNav) {
+  udSelectNav = function(label, el) {
+    _origUdSelectNav(label, el);
+    const unitId = udCurrentUnit ? udCurrentUnit.id : '';
+    setHash(['units', unitId, label === 'Attach to Truck' ? 'attach' : '']);
+  };
+}
+
+const _origCloseUnitDetail = closeUnitDetail;
+closeUnitDetail = function() {
+  _origCloseUnitDetail();
+  setHash(['units']);
+};
+
+/* On load — restore state from hash */
+(function restoreFromHash() {
+  const { screen, view, detail } = readHash();
+
+  if (screen === 'units') {
+    openUnits();
+    if (view && view.length > 4) {
+      /* view is a unit ID */
+      const unitId = view;
+      setTimeout(() => {
+        openUnitDetail(unitId);
+        if (detail === 'attach') {
+          setTimeout(() => udSelectNav('Attach to Truck',
+            document.querySelector('#ud-nav-dropdown .wts-option:nth-child(2)')), 50);
+        }
+      }, 50);
+    }
+  } else {
+    /* trucks screen — restore view */
+    if (view === 'overview') {
+      const el = document.querySelector('#wts-dropdown .wts-option:nth-child(2)');
+      if (el) selectWts('Overview', el);
+    } else if (view === 'cc') {
+      const el = document.querySelector('#wts-dropdown .wts-option:nth-child(3)');
+      if (el) selectWts('Components Condition', el);
+    }
+    /* default wts is already rendered */
+  }
+})();
 
 
 </script>

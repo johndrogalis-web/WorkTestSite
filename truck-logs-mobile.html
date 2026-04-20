@@ -4663,16 +4663,16 @@ function openDrawerFromCC(e, ccIdx) {
 ═══════════════════════════════════════════════════ */
 
 const UNITS_DATA = [
-  { id:'47382910', status:'Linked Unit',       truck:'749590',  tgw:'210000095269', contract:'SRM Tennessee', sysType:'V5',    config:'Measured Only',    commissioned:'1:16 PM 07/23/2025' },
-  { id:'83651024', status:'Unlinked Unit',      truck:'--',      tgw:'210000222277', contract:'SRM Texas',     sysType:'V5',    config:'Temp+ Admix',      commissioned:'--' },
-  { id:'12039487', status:'Maintenance',   truck:'749253',  tgw:'203719811007', contract:'SRM Tennessee', sysType:'Spark', config:'Winter Water',     commissioned:'1:16 PM 07/23/2025' },
-  { id:'55512378', status:'Linked Unit',        truck:'762723',  tgw:'210000194770', contract:'SRM Tennessee', sysType:'Pulse', config:'Color Blend Ratio', commissioned:'1:16 PM 07/23/2025' },
-  { id:'29104856', status:'Linked Unit',        truck:'45689',   tgw:'210000381924', contract:'Cemex Houston', sysType:'V3',   config:'Measured Only',    commissioned:'3:44 PM 06/12/2025' },
-  { id:'60483751', status:'Unlinked Unit',      truck:'--',      tgw:'210000401138', contract:'Cemex Houston', sysType:'V4',   config:'Temp+ Admix',      commissioned:'--' },
-  { id:'73920614', status:'Linked Unit',        truck:'12457',   tgw:'210000502847', contract:'Cemex Houston', sysType:'V4',   config:'Winter Water',     commissioned:'9:02 AM 05/01/2025' },
-  { id:'18475930', status:'Maintenance',   truck:'--',      tgw:'210000608331', contract:'AZ Materials',  sysType:'V3',   config:'Measured Only',    commissioned:'11:15 AM 04/17/2025' },
-  { id:'96013482', status:'Linked Unit',        truck:'84760',   tgw:'210000714560', contract:'AZ Materials',  sysType:'V5',   config:'Color Blend Ratio', commissioned:'8:30 AM 03/09/2025' },
-  { id:'34861097', status:'Unlinked Unit',      truck:'--',      tgw:'210000819204', contract:'Vulcan',        sysType:'Spark', config:'Temp+ Admix',     commissioned:'--' },
+  { id:'47382910', status:'Linked Unit',   truck:'749590', tgw:'210000095269', contract:'SRM Tennessee', sysType:'V5',    config:'Measured Only',     firstCommissioned:'03/06/2021', assignedToTruck:'07/23/2025', decommissioned:null },
+  { id:'83651024', status:'Unlinked Unit', truck:'--',     tgw:'210000222277', contract:'SRM Texas',     sysType:'V5',    config:'Temp+ Admix',       firstCommissioned:'04/11/2022', assignedToTruck:null,         decommissioned:null },
+  { id:'12039487', status:'Maintenance',   truck:'749253', tgw:'203719811007', contract:'SRM Tennessee', sysType:'Spark', config:'Winter Water',      firstCommissioned:'05/01/2021', assignedToTruck:'06/02/2025', decommissioned:null },
+  { id:'55512378', status:'Linked Unit',   truck:'762723', tgw:'210000194770', contract:'SRM Tennessee', sysType:'Pulse', config:'Color Blend Ratio', firstCommissioned:'07/20/2022', assignedToTruck:'07/23/2025', decommissioned:null },
+  { id:'29104856', status:'Linked Unit',   truck:'45689',  tgw:'210000381924', contract:'Cemex Houston', sysType:'V3',   config:'Measured Only',     firstCommissioned:'01/14/2020', assignedToTruck:'06/12/2025', decommissioned:null },
+  { id:'60483751', status:'Unlinked Unit', truck:'--',     tgw:'210000401138', contract:'Cemex Houston', sysType:'V4',   config:'Temp+ Admix',       firstCommissioned:'08/30/2021', assignedToTruck:null,         decommissioned:null },
+  { id:'73920614', status:'Linked Unit',   truck:'12457',  tgw:'210000502847', contract:'Cemex Houston', sysType:'V4',   config:'Winter Water',      firstCommissioned:'11/03/2019', assignedToTruck:'05/01/2025', decommissioned:null },
+  { id:'18475930', status:'Maintenance',   truck:'--',     tgw:'210000608331', contract:'AZ Materials',  sysType:'V3',   config:'Measured Only',     firstCommissioned:'02/28/2021', assignedToTruck:'04/17/2025', decommissioned:null },
+  { id:'96013482', status:'Linked Unit',   truck:'84760',  tgw:'210000714560', contract:'AZ Materials',  sysType:'V5',   config:'Color Blend Ratio', firstCommissioned:'03/09/2020', assignedToTruck:'03/09/2025', decommissioned:null },
+  { id:'34861097', status:'Unlinked Unit', truck:'--',     tgw:'210000819204', contract:'Vulcan',        sysType:'Spark',config:'Temp+ Admix',       firstCommissioned:'06/15/2022', assignedToTruck:null,         decommissioned:'01/10/2025' },
 ];
 
 const unitsFilterState = { status: new Set(), sysType: new Set(), assigned: new Set() };
@@ -5080,16 +5080,49 @@ function udRenderLifespan() {
     ] : [])
   ].join('');
 
+  /* Duration helper — how long since a MM/DD/YYYY date */
+  function sinceDate(dateStr) {
+    if (!dateStr) return null;
+    const [m, d, y] = dateStr.split('/').map(Number);
+    const then = new Date(y, m - 1, d);
+    const now  = new Date('2025-04-20'); /* prototype reference date */
+    const months = (now.getFullYear() - then.getFullYear()) * 12 + (now.getMonth() - then.getMonth());
+    if (months < 1)  return 'Less than a month';
+    if (months < 12) return `${months} month${months > 1 ? 's' : ''}`;
+    const yrs = Math.floor(months / 12);
+    const rem = months % 12;
+    return rem > 0 ? `${yrs} yr${yrs > 1 ? 's' : ''}, ${rem} mo` : `${yrs} year${yrs > 1 ? 's' : ''}`;
+  }
+
+  const assignedDuration = u.assignedToTruck ? sinceDate(u.assignedToTruck) : null;
+  const firstDuration    = u.firstCommissioned ? sinceDate(u.firstCommissioned) : null;
+
   /* Info card */
   const info = `
     <div class="ud-section-label" style="margin-top:6px;">Unit Details</div>
     <div class="ls-info-grid">
       <div class="ls-info-cell"><div class="ls-info-label">System Type</div><div class="ls-info-val">${u.sysType}</div></div>
       <div class="ls-info-cell"><div class="ls-info-label">Configuration</div><div class="ls-info-val">${u.config}</div></div>
-      <div class="ls-info-cell"><div class="ls-info-label">TGW 4 Number</div><div class="ls-info-val" style="font-family:monospace;font-size:12px;">${u.tgw}</div></div>
-      <div class="ls-info-cell"><div class="ls-info-label">Commissioned</div><div class="ls-info-val">${u.commissioned}</div></div>
     </div>
     <div class="ud-card">
+      <div class="ud-row">
+        <span class="ud-key">First Commissioned</span>
+        <span class="ud-val" style="text-align:right;">
+          ${u.firstCommissioned || '--'}
+          ${firstDuration ? `<div style="font-size:11px;color:var(--soft);font-weight:400;margin-top:2px;">${firstDuration} ago</div>` : ''}
+        </span>
+      </div>
+      <div class="ud-row">
+        <span class="ud-key">Assigned to Truck</span>
+        <span class="ud-val" style="text-align:right;">
+          ${u.assignedToTruck || '--'}
+          ${assignedDuration ? `<div style="font-size:11px;color:var(--soft);font-weight:400;margin-top:2px;">${assignedDuration} on this truck</div>` : ''}
+        </span>
+      </div>
+      <div class="ud-row"><span class="ud-key">Decommissioned</span><span class="ud-val">${u.decommissioned || '--'}</span></div>
+    </div>
+    <div class="ud-card">
+      <div class="ud-row"><span class="ud-key">TGW 4 Number</span><span class="ud-val" style="font-family:monospace;font-size:13px;">${u.tgw}</span></div>
       <div class="ud-row"><span class="ud-key">Contract</span><span class="ud-val">${u.contract}</span></div>
       <div class="ud-row"><span class="ud-key">Assigned Truck</span><span class="ud-val">${u.truck}</span></div>
     </div>`;

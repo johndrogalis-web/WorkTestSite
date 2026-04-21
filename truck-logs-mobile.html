@@ -1197,6 +1197,99 @@
   .ls-info-val--link { color: var(--blue-link); }
 
 
+  /* ─── CONFIRMATION MODAL ─────────────────────── */
+  .confirm-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.5);
+    z-index: 30; display: flex; align-items: flex-end;
+  }
+  .confirm-sheet {
+    background: var(--layer-1); border-radius: 24px 24px 0 0;
+    width: 100%; padding: 24px 20px 40px;
+  }
+  .confirm-title {
+    font-size: 17px; font-weight: 500; color: var(--strong);
+    letter-spacing: -0.4px; margin-bottom: 10px;
+  }
+  .confirm-body {
+    font-size: 14px; color: var(--soft); letter-spacing: -0.28px;
+    line-height: 1.5; margin-bottom: 24px;
+  }
+  .confirm-btns { display: flex; flex-direction: column; gap: 10px; }
+  .confirm-btn-primary {
+    background: var(--blue); color: white; border: none;
+    border-radius: 32px; padding: 14px; font-size: 15px;
+    font-weight: 500; font-family: var(--font); letter-spacing: -0.3px;
+    cursor: pointer; width: 100%;
+  }
+  .confirm-btn-cancel {
+    background: none; color: var(--strong);
+    border: 1px solid var(--border-mid); border-radius: 32px;
+    padding: 14px; font-size: 15px; font-weight: 500;
+    font-family: var(--font); letter-spacing: -0.3px;
+    cursor: pointer; width: 100%;
+  }
+
+  /* ─── ALSO VIEWING TOGGLE ────────────────────── */
+  .also-viewing {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 14px; border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
+  .also-viewing-label {
+    font-size: 12px; color: var(--soft); letter-spacing: -0.2px;
+  }
+  .also-viewing-link {
+    font-size: 13px; color: var(--blue); font-weight: 500;
+    letter-spacing: -0.2px; cursor: pointer;
+    display: flex; align-items: center; gap: 4px;
+    background: none; border: none; font-family: var(--font);
+    padding: 0;
+  }
+
+
+  /* ─── ADD UNIT — TRINITY DROPDOWN STYLE ─────── */
+  .au-dd-wrap { position: relative; }
+  .au-dd-btn {
+    width: 100%; height: 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: white; border: 1px solid var(--strong);
+    border-radius: 32px; padding: 0 12px;
+    font-size: 14px; font-family: var(--font);
+    letter-spacing: -0.28px; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s;
+  }
+  .au-dd-btn:active, .au-dd-btn.au-dd-open { background: rgba(54,50,45,0.08); }
+  .au-dd-disabled { border-color: var(--border); cursor: default; opacity: 0.5; }
+  .au-dd-chev { flex-shrink: 0; transition: transform 0.2s; }
+  .au-dd-chev.open { transform: rotate(180deg); }
+  .au-dd-menu {
+    position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+    background: white; border: 1px solid rgba(54,50,45,0.5);
+    border-radius: 8px; padding: 4px; z-index: 50;
+    box-shadow: 0 4px 16px rgba(54,50,45,0.12);
+    max-height: 220px; overflow-y: auto;
+  }
+  .au-dd-item {
+    padding: 10px; font-size: 14px; color: var(--soft);
+    letter-spacing: -0.28px; font-family: var(--font);
+    border-radius: 4px; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .au-dd-item:hover, .au-dd-item:active { background: rgba(54,50,45,0.06); }
+  .au-dd-item.selected { color: var(--strong); font-weight: 500; }
+  .au-input {
+    width: 100%; height: 40px;
+    border: 1px solid var(--strong); border-radius: 32px;
+    padding: 0 16px; font-size: 14px; color: var(--strong);
+    font-family: var(--font); background: white;
+    letter-spacing: -0.28px; box-sizing: border-box;
+    outline: none;
+  }
+  .au-input::placeholder { color: var(--soft); }
+  .au-input:focus { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(48,105,227,0.15); }
+
+
 </style>
 </head>
 <body>
@@ -1723,9 +1816,20 @@
             <div class="co-tbl-row co-tbl-row--alt"><div class="co-tbl-k">Number of Loads</div><div class="co-tbl-v">--</div></div>
           </div>
 
+          <!-- Also viewing toggle — unit lens -->
+          <div class="also-viewing">
+            <span class="also-viewing-label">Also viewing</span>
+            <button class="also-viewing-link" onclick="truckDrawerGoToLifespan()">
+              Unit Life Span
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M2.5 6h7M6.5 2.5l3.5 3.5-3.5 3.5" stroke="var(--blue)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+
           <!-- Unlink Unit at bottom -->
           <div style="margin-top:16px;margin-bottom:8px;">
-            <button style="width:100%;background:#1594ef;color:white;border:none;border-radius:32px;padding:10px 16px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">Unlink Unit</button>
+            <button onclick="truckDrawerUnlinkUnit()" style="width:100%;background:none;border:1.5px solid var(--red);color:var(--red);border-radius:32px;padding:10px 16px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">Unlink Unit</button>
           </div>
 
         </div>
@@ -2315,9 +2419,8 @@
                 <path d="M8.75 4.75L4.75 0.75L0.75 4.75" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </button>
-            <div id="ud-nav-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:white;border:1px solid var(--border-mid);border-radius:8px;box-shadow:0 4px 16px rgba(54,50,45,0.12);padding:4px;min-width:200px;z-index:100;">
-              <div class="wts-option wts-active" onclick="udSelectNav('Unit Life Span', this)"><span class="wts-check">✓</span>Unit Life Span</div>
-              <div class="wts-option" onclick="udSelectNav('Attach to Truck', this)"><span class="wts-check" style="visibility:hidden">✓</span>Attach to Truck</div>
+            <div id="ud-nav-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:white;border:1px solid var(--border-mid);border-radius:8px;box-shadow:0 4px 16px rgba(54,50,45,0.12);padding:4px;min-width:220px;z-index:100;">
+              <!-- Populated dynamically by udBuildNavDropdown() -->
             </div>
           </div>
         </div>
@@ -2369,6 +2472,113 @@
           <button onclick="unitsFilterApply()" style="width:100%;background:var(--strong);color:white;border:none;border-radius:32px;padding:14px;font-size:15px;font-weight:500;font-family:var(--font);letter-spacing:-0.3px;cursor:pointer;">Apply Filters</button>
         </div>
       </div>
+
+      <!-- Add Unit sheet -->
+      <div id="add-unit-overlay" onclick="closeAddUnit()" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.45);z-index:22;"></div>
+      <div id="add-unit-sheet" style="position:absolute;left:0;right:0;bottom:0;top:0;background:var(--layer-1);z-index:23;transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;padding-top:54px;">
+
+        <!-- Sheet header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 20px 16px;flex-shrink:0;border-bottom:1px solid var(--border);">
+          <div style="font-size:22px;font-weight:500;color:var(--strong);letter-spacing:-0.6px;">Add Unit</div>
+          <button onclick="closeAddUnit()" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:none;border:1px solid var(--border);border-radius:50%;cursor:pointer;">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="#36322d" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <!-- Form body -->
+        <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 20px 20px;">
+
+          <div style="font-size:16px;font-weight:500;color:var(--strong);letter-spacing:-0.4px;margin-bottom:20px;">Unit details</div>
+
+          <!-- Account -->
+          <div style="margin-bottom:16px;">
+            <div style="font-size:12px;color:var(--soft);letter-spacing:-0.24px;margin-bottom:6px;">Account</div>
+            <div class="au-dd-wrap" id="au-account-wrap">
+              <button class="au-dd-btn" onclick="auToggleDd('account')" id="au-account-btn">
+                <span id="au-account-val" style="color:var(--soft);">Select a company</span>
+                <svg class="au-dd-chev" id="au-account-chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="au-dd-menu" id="au-account-menu" style="display:none;">
+                <div class="au-dd-item" onclick="auSelectDd('account','Readymix ABC')">Readymix ABC</div>
+                <div class="au-dd-item" onclick="auSelectDd('account','SRM Tennessee')">SRM Tennessee</div>
+                <div class="au-dd-item" onclick="auSelectDd('account','SRM Texas')">SRM Texas</div>
+                <div class="au-dd-item" onclick="auSelectDd('account','Cemex Houston')">Cemex Houston</div>
+                <div class="au-dd-item" onclick="auSelectDd('account','AZ Materials')">AZ Materials</div>
+                <div class="au-dd-item" onclick="auSelectDd('account','Vulcan')">Vulcan</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contract -->
+          <div style="margin-bottom:16px;">
+            <div style="font-size:12px;color:var(--soft);letter-spacing:-0.24px;margin-bottom:6px;">Contract</div>
+            <div class="au-dd-wrap" id="au-contract-wrap">
+              <button class="au-dd-btn au-dd-disabled" onclick="auToggleDd('contract')" id="au-contract-btn" disabled>
+                <span id="au-contract-val" style="color:var(--soft);">Select a contract type</span>
+                <svg class="au-dd-chev" id="au-contract-chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="#36322d9e" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="au-dd-menu" id="au-contract-menu" style="display:none;"></div>
+            </div>
+          </div>
+
+          <!-- Unit ID -->
+          <div style="margin-bottom:16px;">
+            <div style="font-size:12px;color:var(--soft);letter-spacing:-0.24px;margin-bottom:6px;">Unit ID</div>
+            <input id="au-unit-id" type="text" placeholder="Enter unit ID" autocomplete="off"
+              class="au-input" oninput="auValidate()" />
+          </div>
+
+          <!-- System Type -->
+          <div style="margin-bottom:16px;">
+            <div style="font-size:12px;color:var(--soft);letter-spacing:-0.24px;margin-bottom:6px;">System Type</div>
+            <div class="au-dd-wrap" id="au-sys-type-wrap">
+              <button class="au-dd-btn" onclick="auToggleDd('sys-type')" id="au-sys-type-btn">
+                <span id="au-sys-type-val" style="color:var(--soft);">Select type</span>
+                <svg class="au-dd-chev" id="au-sys-type-chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="au-dd-menu" id="au-sys-type-menu" style="display:none;">
+                <div class="au-dd-item" onclick="auSelectDd('sys-type','V3')">V3</div>
+                <div class="au-dd-item" onclick="auSelectDd('sys-type','V4')">V4</div>
+                <div class="au-dd-item" onclick="auSelectDd('sys-type','V5')">V5</div>
+                <div class="au-dd-item" onclick="auSelectDd('sys-type','Spark')">Spark</div>
+                <div class="au-dd-item" onclick="auSelectDd('sys-type','Pulse')">Pulse</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Configuration -->
+          <div style="margin-bottom:16px;">
+            <div style="font-size:12px;color:var(--soft);letter-spacing:-0.24px;margin-bottom:6px;">Configuration</div>
+            <div class="au-dd-wrap" id="au-config-wrap">
+              <button class="au-dd-btn" onclick="auToggleDd('config')" id="au-config-btn">
+                <span id="au-config-val" style="color:var(--soft);">Select config</span>
+                <svg class="au-dd-chev" id="au-config-chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="au-dd-menu" id="au-config-menu" style="display:none;">
+                <div class="au-dd-item" onclick="auSelectDd('config','Measured Only')">Measured Only</div>
+                <div class="au-dd-item" onclick="auSelectDd('config','Temp+ Admix')">Temp+ Admix</div>
+                <div class="au-dd-item" onclick="auSelectDd('config','Winter Water')">Winter Water</div>
+                <div class="au-dd-item" onclick="auSelectDd('config','Color Blend Ratio')">Color Blend Ratio</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TGW 4 Number -->
+          <div style="margin-bottom:32px;">
+            <div style="font-size:12px;color:var(--soft);letter-spacing:-0.24px;margin-bottom:6px;">TGW 4 Number</div>
+            <input id="au-tgw" type="text" placeholder="e.g. 210000095269" autocomplete="off"
+              class="au-input" style="font-family:monospace;" oninput="auValidate()" />
+          </div>
+
+        </div>
+
+        <!-- Footer buttons — always visible -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px 20px 36px;border-top:1px solid var(--border);flex-shrink:0;background:var(--layer-1);">
+          <button onclick="closeAddUnit()" style="height:48px;background:none;border:1px solid var(--border-mid);border-radius:32px;font-size:15px;font-weight:500;font-family:var(--font);color:var(--strong);letter-spacing:-0.3px;cursor:pointer;">Cancel</button>
+          <button id="au-submit-btn" onclick="submitAddUnit()" disabled style="height:48px;background:rgba(54,50,45,0.15);color:var(--soft);border:none;border-radius:32px;font-size:15px;font-weight:500;font-family:var(--font);letter-spacing:-0.3px;cursor:default;transition:background 0.15s,color 0.15s;">Add Unit</button>
+        </div>
+
+      </div><!-- /add-unit-sheet -->
 
     </div><!-- /s-units -->
 
@@ -4763,9 +4973,185 @@ function closeUnits() {
   document.querySelector('.sn-sub-item').classList.add('active');
 }
 
+/* Contract options per account */
+const AU_CONTRACTS = {
+  'Readymix ABC':  ['Standard Service', 'Premium Service', 'Full Fleet'],
+  'SRM Tennessee': ['SRM Standard', 'SRM Extended'],
+  'SRM Texas':     ['SRM Standard', 'SRM Extended'],
+  'Cemex Houston': ['Cemex Basic', 'Cemex Pro'],
+  'AZ Materials':  ['AZ Standard'],
+  'Vulcan':        ['Vulcan Core', 'Vulcan Plus'],
+};
+
+/* Track custom dropdown values */
+const auValues = { account: '', contract: '', 'sys-type': '', config: '' };
+
+/* Dropdown open/close/select */
+function auToggleDd(key) {
+  const btn  = document.getElementById('au-' + key + '-btn');
+  const menu = document.getElementById('au-' + key + '-menu');
+  const chev = document.getElementById('au-' + key + '-chev');
+  if (!menu || btn.disabled) return;
+  const open = menu.style.display === 'block';
+  /* Close all other dropdowns first */
+  ['account','contract','sys-type','config'].forEach(k => {
+    const m = document.getElementById('au-' + k + '-menu');
+    const c = document.getElementById('au-' + k + '-chev');
+    const b = document.getElementById('au-' + k + '-btn');
+    if (m) m.style.display = 'none';
+    if (c) c.classList.remove('open');
+    if (b) b.classList.remove('au-dd-open');
+  });
+  if (!open) {
+    menu.style.display = 'block';
+    chev.classList.add('open');
+    btn.classList.add('au-dd-open');
+  }
+}
+
+function auSelectDd(key, value) {
+  auValues[key] = value;
+  const val  = document.getElementById('au-' + key + '-val');
+  const menu = document.getElementById('au-' + key + '-menu');
+  const chev = document.getElementById('au-' + key + '-chev');
+  const btn  = document.getElementById('au-' + key + '-btn');
+  if (val) { val.textContent = value; val.style.color = 'var(--strong)'; }
+  if (menu) {
+    /* Mark selected */
+    menu.querySelectorAll('.au-dd-item').forEach(el => {
+      el.classList.toggle('selected', el.textContent.trim() === value);
+    });
+    menu.style.display = 'none';
+  }
+  if (chev) chev.classList.remove('open');
+  if (btn)  btn.classList.remove('au-dd-open');
+  if (key === 'account') auAccountChanged(value);
+  auValidate();
+}
+
+function auAccountChanged(account) {
+  const contractMenu = document.getElementById('au-contract-menu');
+  const contractBtn  = document.getElementById('au-contract-btn');
+  const contractVal  = document.getElementById('au-contract-val');
+  /* Reset contract */
+  auValues.contract = '';
+  if (contractVal) { contractVal.textContent = 'Select a contract type'; contractVal.style.color = 'var(--soft)'; }
+  if (contractMenu) {
+    const contracts = AU_CONTRACTS[account] || [];
+    contractMenu.innerHTML = contracts.map(c =>
+      `<div class="au-dd-item" onclick="auSelectDd('contract','${c}')">${c}</div>`
+    ).join('');
+  }
+  if (contractBtn) {
+    contractBtn.disabled = !account;
+    contractBtn.classList.toggle('au-dd-disabled', !account);
+  }
+}
+
 function openAddUnit() {
-  /* Placeholder — sheet would open here */
-  alert('Add Unit flow coming soon.');
+  /* Reset all custom dropdowns */
+  ['account','contract','sys-type','config'].forEach(key => {
+    auValues[key] = '';
+    const val  = document.getElementById('au-' + key + '-val');
+    const menu = document.getElementById('au-' + key + '-menu');
+    const chev = document.getElementById('au-' + key + '-chev');
+    const btn  = document.getElementById('au-' + key + '-btn');
+    if (val) { val.style.color = 'var(--soft)'; }
+    if (menu) { menu.style.display = 'none'; menu.querySelectorAll('.au-dd-item').forEach(el => el.classList.remove('selected')); }
+    if (chev) chev.classList.remove('open');
+    if (btn)  btn.classList.remove('au-dd-open');
+  });
+  /* Reset contract label and disable */
+  const contractVal = document.getElementById('au-contract-val');
+  if (contractVal) contractVal.textContent = 'Select a contract type';
+  const contractBtn = document.getElementById('au-contract-btn');
+  if (contractBtn) { contractBtn.disabled = true; contractBtn.classList.add('au-dd-disabled'); }
+  /* Reset text inputs */
+  ['au-unit-id','au-tgw'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ''; el.style.borderColor = ''; el.style.color = ''; }
+  });
+  /* Reset account val label */
+  const accountVal = document.getElementById('au-account-val');
+  if (accountVal) { accountVal.textContent = 'Select a company'; accountVal.style.color = 'var(--soft)'; }
+  auValidate();
+
+  /* Open sheet */
+  document.getElementById('add-unit-overlay').style.display = 'block';
+  const sheet = document.getElementById('add-unit-sheet');
+  requestAnimationFrame(() => sheet.style.transform = 'translateX(0)');
+}
+
+function closeAddUnit() {
+  const sheet = document.getElementById('add-unit-sheet');
+  sheet.style.transform = 'translateX(100%)';
+  setTimeout(() => {
+    document.getElementById('add-unit-overlay').style.display = 'none';
+  }, 300);
+}
+
+
+
+function auValidate() {
+  const unitId = (document.getElementById('au-unit-id').value || '').trim();
+  const tgw    = (document.getElementById('au-tgw').value || '').trim();
+  const btn    = document.getElementById('au-submit-btn');
+  const valid  = auValues.account && auValues.contract && unitId &&
+                 auValues['sys-type'] && auValues.config && tgw;
+  btn.disabled = !valid;
+  btn.style.background = valid ? 'var(--blue)' : 'rgba(54,50,45,0.15)';
+  btn.style.color      = valid ? 'white' : 'var(--soft)';
+  btn.style.cursor     = valid ? 'pointer' : 'default';
+}
+
+function submitAddUnit() {
+  const account  = auValues.account;
+  const contract = auValues.contract;
+  const unitId   = (document.getElementById('au-unit-id').value || '').trim();
+  const sysType  = auValues['sys-type'];
+  const config   = auValues.config;
+  const tgw      = (document.getElementById('au-tgw').value || '').trim();
+
+  if (!account || !contract || !unitId || !sysType || !config || !tgw) return;
+
+  /* Check for duplicate unit ID */
+  if (UNITS_DATA.find(u => u.id === unitId)) {
+    const idInput = document.getElementById('au-unit-id');
+    idInput.style.borderColor = 'var(--red)';
+    idInput.style.color = 'var(--red)';
+    idInput.placeholder = 'Unit ID already exists';
+    idInput.value = '';
+    setTimeout(() => {
+      idInput.style.borderColor = '';
+      idInput.style.color = '';
+      idInput.placeholder = 'Enter unit ID';
+    }, 2500);
+    return;
+  }
+
+  /* Add to UNITS_DATA as Unlinked */
+  UNITS_DATA.push({
+    id: unitId,
+    status: 'Unlinked Unit',
+    truck: '--',
+    tgw: tgw,
+    contract: contract,
+    sysType: sysType,
+    config: config,
+    firstCommissioned: new Date().toLocaleDateString('en-US', {month:'2-digit',day:'2-digit',year:'numeric'}),
+    assignedToTruck: null,
+    decommissioned: null,
+  });
+
+  closeAddUnit();
+  renderUnits();
+
+  /* Brief success toast */
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:#1e6252;color:white;padding:12px 20px;border-radius:32px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;z-index:100;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.2);';
+  toast.textContent = `Unit ${unitId} added`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
 }
 
 /* ── Unit detail ── */
@@ -4931,13 +5317,11 @@ function openUnitDetail(unitId) {
 
   document.getElementById('ud-unit-id').textContent = unitId;
 
-  /* Reset nav dropdown to Unit Life Span */
+  /* Build nav dropdown based on unit status, land on Unit Life Span */
+  udCurrentTab = 'lifespan';
   document.getElementById('ud-nav-label').textContent = 'Unit Life Span';
   document.getElementById('ud-nav-chev').style.transform = '';
-  document.querySelectorAll('#ud-nav-dropdown .wts-option').forEach((o,i) => {
-    o.classList.toggle('wts-active', i === 0);
-    o.querySelector('.wts-check').style.visibility = i === 0 ? 'visible' : 'hidden';
-  });
+  udBuildNavDropdown('lifespan');
 
   /* Arrow state */
   udUpdateArrows();
@@ -4949,10 +5333,149 @@ function openUnitDetail(unitId) {
   requestAnimationFrame(() => drawer.style.transform = 'translateX(0)');
 }
 
+/* Nav options for each unit state */
+const UD_NAV_UNLINKED = [
+  { label: 'Unit Life Span',  tab: 'lifespan' },
+  { label: 'Attach to Truck', tab: 'attach'   },
+];
+const UD_NAV_LINKED = [
+  { label: 'Unit Life Span',       tab: 'lifespan'  },
+  { label: 'Component Timeline',   tab: 'timeline'  },
+  { label: 'Truck Logs',           tab: 'logs'      },
+  { label: 'Manual Control',       tab: 'manual'    },
+  { label: 'Sensor',               tab: 'sensor'    },
+  { label: 'Configuration',        tab: 'config'    },
+];
+
+function udBuildNavDropdown(activeTab) {
+  const u    = udCurrentUnit;
+  const isLinked = u && u.status === 'Linked Unit';
+  const items = isLinked ? UD_NAV_LINKED : UD_NAV_UNLINKED;
+  const dd   = document.getElementById('ud-nav-dropdown');
+  if (!dd) return;
+  dd.innerHTML = items.map(item => {
+    const active = item.tab === activeTab;
+    return `<div class="wts-option${active ? ' wts-active' : ''}" onclick="udSelectNavTab('${item.tab}', this)">
+      <span class="wts-check" style="${active ? '' : 'visibility:hidden'}">✓</span>${item.label}
+    </div>`;
+  }).join('');
+}
+
 function udSwitchTab(tab) {
   udCurrentTab = tab;
-  if (tab === 'lifespan') udRenderLifespan();
-  else                    udRenderAttach();
+  /* Update pill label */
+  const u    = udCurrentUnit;
+  const isLinked = u && u.status === 'Linked Unit';
+  const items = isLinked ? UD_NAV_LINKED : UD_NAV_UNLINKED;
+  const item  = items.find(i => i.tab === tab);
+  if (item) document.getElementById('ud-nav-label').textContent = item.label;
+  udBuildNavDropdown(tab);
+  /* Render content */
+  if      (tab === 'lifespan')  udRenderLifespan();
+  else if (tab === 'attach')    udRenderAttach();
+  else if (tab === 'timeline')  udRenderStub('Component Timeline', 'Timeline data will appear here once the unit is actively monitoring the truck.');
+  else if (tab === 'logs')      udRenderStub('Truck Logs', 'Live truck log entries will stream here during an active diagnostic session.');
+  else if (tab === 'manual')    udRenderStub('Manual Control', 'Manual control options are available during an active diagnostic session.');
+  else if (tab === 'sensor')    udRenderStub('Sensor', 'Sensor readings will appear here once the unit is calibrated and active.');
+  else if (tab === 'config')    udRenderConfig();
+}
+
+function udSelectNavTab(tab, el) {
+  document.getElementById('ud-nav-dropdown').style.display = 'none';
+  document.getElementById('ud-nav-chev').style.transform = '';
+  udSwitchTab(tab);
+}
+
+function udRenderStub(title, msg) {
+  document.getElementById('ud-body').innerHTML = `
+    <div style="padding:32px 16px;text-align:center;">
+      <div style="font-size:14px;font-weight:500;color:var(--strong);letter-spacing:-0.3px;margin-bottom:8px;">${title}</div>
+      <div style="font-size:13px;color:var(--soft);letter-spacing:-0.2px;line-height:1.6;">${msg}</div>
+    </div>`;
+}
+
+function udCfgDd(id, current, opts) {
+  /* Render a Trinity-style dropdown inline within udRenderConfig */
+  const items = opts.map(o =>
+    `<div class="au-dd-item${o===current?' selected':''}" onclick="auToggleDd('${id}');udCfgSelect('${id}',this,'${o}')">${o}</div>`
+  ).join('');
+  return `
+    <div class="au-dd-wrap" id="ucfg-${id}-wrap">
+      <button class="au-dd-btn" onclick="auToggleDd('${id}')" id="au-${id}-btn">
+        <span id="au-${id}-val" style="color:var(--strong);">${current}</span>
+        <svg class="au-dd-chev" id="au-${id}-chev" width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 6l5 5 5-5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="au-dd-menu" id="au-${id}-menu" style="display:none;">${items}</div>
+    </div>`;
+}
+
+function udCfgSelect(id, el, val) {
+  const span = document.getElementById('au-' + id + '-val');
+  if (span) { span.textContent = val; span.style.color = 'var(--strong)'; }
+  const menu = document.getElementById('au-' + id + '-menu');
+  if (menu) menu.querySelectorAll('.au-dd-item').forEach(i => i.classList.toggle('selected', i.textContent.trim() === val));
+}
+
+function udRenderConfig() {
+  const u = udCurrentUnit;
+  const sysTypeDd = udCfgDd('sys-type', u.sysType, ['V3','V4','V5','Spark','Pulse']);
+  const configDd  = udCfgDd('cfg-type', u.config,  ['Measured Only','Temp+ Admix','Winter Water','Color Blend Ratio']);
+  const drumDd    = udCfgDd('drum-size', '',        ['8 yd','9 yd','10 yd','11 yd']);
+
+  document.getElementById('ud-body').innerHTML = `
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.4px;text-transform:uppercase;margin-bottom:12px;">Configuration</div>
+
+      <div class="ud-card" style="margin-bottom:14px;">
+        <div style="padding:12px 14px;border-bottom:1px solid var(--border);">
+          <div style="font-size:11px;color:var(--soft);letter-spacing:-0.1px;margin-bottom:8px;">System Type</div>
+          ${sysTypeDd}
+        </div>
+        <div style="padding:12px 14px;border-bottom:1px solid var(--border);">
+          <div style="font-size:11px;color:var(--soft);letter-spacing:-0.1px;margin-bottom:8px;">Configuration</div>
+          ${configDd}
+        </div>
+        <div style="padding:12px 14px;">
+          <div style="font-size:11px;color:var(--soft);letter-spacing:-0.1px;margin-bottom:8px;">TGW 4 Number</div>
+          <input type="text" value="${u.tgw}" class="au-input" style="font-family:monospace;"/>
+        </div>
+      </div>
+
+      <div style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.4px;text-transform:uppercase;margin-bottom:12px;">Truck Assignment</div>
+      <div class="ud-card" style="margin-bottom:14px;">
+        <div class="ud-row"><span class="ud-key">Assigned Truck</span><span class="ud-val">${u.truck}</span></div>
+        <div class="ud-row"><span class="ud-key">Assigned Date</span><span class="ud-val">${u.assignedToTruck || '--'}</span></div>
+        <div class="ud-row"><span class="ud-key">Contract</span><span class="ud-val">${u.contract}</span></div>
+      </div>
+
+      <div style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.4px;text-transform:uppercase;margin-bottom:12px;">Drum Details</div>
+      <div class="ud-card" style="margin-bottom:20px;">
+        <div style="padding:12px 14px;border-bottom:1px solid var(--border);">
+          <div style="font-size:11px;color:var(--soft);letter-spacing:-0.1px;margin-bottom:8px;">Drum Manufacturer</div>
+          <input type="text" placeholder="e.g. Schwing, 2022" class="au-input"/>
+        </div>
+        <div style="padding:12px 14px;">
+          <div style="font-size:11px;color:var(--soft);letter-spacing:-0.1px;margin-bottom:8px;">Drum Size</div>
+          ${drumDd}
+        </div>
+      </div>
+
+      <button onclick="udSaveConfig()" style="width:100%;background:var(--blue);color:white;border:none;border-radius:32px;padding:14px;font-size:15px;font-weight:500;font-family:var(--font);letter-spacing:-0.3px;cursor:pointer;margin-bottom:10px;">Save Configuration</button>
+      <button onclick="udSwitchTab('lifespan')" style="width:100%;background:none;border:1px solid var(--border-mid);border-radius:32px;padding:14px;font-size:15px;font-weight:500;font-family:var(--font);letter-spacing:-0.3px;cursor:pointer;color:var(--strong);">View Unit Life Span</button>
+    </div>
+  `;
+}
+
+function udSaveConfig() {
+  /* Prototype: just show a toast-style confirmation */
+  const body = document.getElementById('ud-body');
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:#1e6252;color:white;padding:12px 20px;border-radius:32px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;z-index:100;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.2);';
+  toast.textContent = 'Configuration saved';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
 }
 
 function udToggleNav() {
@@ -4964,16 +5487,16 @@ function udToggleNav() {
 }
 
 function udSelectNav(label, el) {
-  document.getElementById('ud-nav-label').textContent = label;
-  document.getElementById('ud-nav-chev').style.transform = '';
+  /* Map label to tab key */
+  const map = {
+    'Unit Life Span': 'lifespan', 'Attach to Truck': 'attach',
+    'Component Timeline': 'timeline', 'Truck Logs': 'logs',
+    'Manual Control': 'manual', 'Sensor': 'sensor', 'Configuration': 'config',
+  };
+  const tab = map[label] || 'lifespan';
   document.getElementById('ud-nav-dropdown').style.display = 'none';
-  document.querySelectorAll('#ud-nav-dropdown .wts-option').forEach(o => {
-    o.classList.remove('wts-active');
-    o.querySelector('.wts-check').style.visibility = 'hidden';
-  });
-  el.classList.add('wts-active');
-  el.querySelector('.wts-check').style.visibility = 'visible';
-  udSwitchTab(label === 'Unit Life Span' ? 'lifespan' : 'attach');
+  document.getElementById('ud-nav-chev').style.transform = '';
+  udSwitchTab(tab);
 }
 
 function udNavUnit(dir) {
@@ -5125,7 +5648,17 @@ function udRenderLifespan() {
       <div class="ud-row"><span class="ud-key">TGW 4 Number</span><span class="ud-val" style="font-family:monospace;font-size:13px;">${u.tgw}</span></div>
       <div class="ud-row"><span class="ud-key">Contract</span><span class="ud-val">${u.contract}</span></div>
       <div class="ud-row"><span class="ud-key">Assigned Truck</span><span class="ud-val">${u.truck}</span></div>
-    </div>`;
+      ${u.truck !== '--' ? `<div class="also-viewing">
+        <span class="also-viewing-label">Also viewing</span>
+        <button class="also-viewing-link" onclick="unitDrawerGoToComponentsOverview('${u.truck}')">
+          Components Overview
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6h7M6.5 2.5l3.5 3.5-3.5 3.5" stroke="var(--blue)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>` : ''}
+    </div>
+    ${u.truck !== '--' ? `
+    <button onclick="unitDrawerShowUnlink()" style="width:100%;margin-top:6px;background:none;border:1.5px solid var(--red);color:var(--red);border-radius:32px;padding:13px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">Unlink Unit</button>
+    ` : ''}`;
 
   document.getElementById('ud-body').innerHTML = `
     <div style="margin-bottom:6px;">
@@ -5145,25 +5678,363 @@ function lsToggle(ci) {
   chev.style.transform = open ? '' : 'rotate(180deg)';
 }
 
+/* ── Unlinked trucks available to attach ── */
+const UNLINKED_TRUCKS = [
+  { number:'AV17 ZXW (3427)', type:'Front',  drum:'8 yd',  water:'Pump',        mixer:'McNeilus' },
+  { number:'BK19 YTR (2891)', type:'Rear',   drum:'9 yd',  water:'Pressure',    mixer:'Schwing'  },
+  { number:'CL21 MNP (5503)', type:'Front',  drum:'10 yd', water:'Flow',        mixer:'McNeilus' },
+  { number:'DX22 QRS (6614)', type:'Rear',   drum:'11 yd', water:'Temperature', mixer:'Schwing'  },
+  { number:'EF18 ABC (1120)', type:'Front',  drum:'8 yd',  water:'Pump',        mixer:'London'   },
+  { number:'GH20 DEF (3345)', type:'Rear',   drum:'9 yd',  water:'Pressure',    mixer:'McNeilus' },
+  { number:'HJ23 GHI (7782)', type:'Front',  drum:'10 yd', water:'Flow',        mixer:'Schwing'  },
+  { number:'KL24 JKL (8891)', type:'Rear',   drum:'11 yd', water:'Temperature', mixer:'London'   },
+];
+
+let attachSelectedTruck = null;
+let attachSearchQuery   = '';
+
 function udRenderAttach() {
+  attachSelectedTruck = null;
+  attachSearchQuery   = '';
+  renderAttachBody();
+}
+
+function renderAttachBody() {
+  const q = attachSearchQuery.toLowerCase();
+  const filtered = UNLINKED_TRUCKS.filter(t =>
+    !q || t.number.toLowerCase().includes(q) || t.type.toLowerCase().includes(q) ||
+    t.drum.toLowerCase().includes(q) || t.mixer.toLowerCase().includes(q)
+  );
+
+  const chevSvg = `<svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M8.75 4.75L4.75 0.75L0.75 4.75" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+  const rows = filtered.map((t, i) => {
+    const sel = attachSelectedTruck === t.number;
+    return `
+      <div onclick="attachSelectTruck('${t.number}')" style="
+        display:grid;grid-template-columns:1fr 60px 55px 80px 80px;
+        min-height:50px;align-items:center;cursor:pointer;
+        background:${sel ? 'rgba(48,105,227,0.06)' : i%2===0 ? 'var(--layer-1)' : 'var(--base)'};
+        border-bottom:1px solid var(--border);
+        border-left:${sel ? '3px solid var(--blue)' : '3px solid transparent'};
+        -webkit-tap-highlight-color:transparent;
+      ">
+        <div style="padding:10px 8px 10px 11px;font-size:13px;color:var(--defined);letter-spacing:-0.2px;font-weight:${sel?'500':'400'};">${t.number}</div>
+        <div style="padding:10px 6px;font-size:13px;color:var(--defined);letter-spacing:-0.2px;">${t.type}</div>
+        <div style="padding:10px 6px;font-size:13px;color:var(--defined);letter-spacing:-0.2px;">${t.drum}</div>
+        <div style="padding:10px 6px;font-size:13px;color:var(--defined);letter-spacing:-0.2px;">${t.water}</div>
+        <div style="padding:10px 8px;font-size:13px;color:var(--defined);letter-spacing:-0.2px;">${t.mixer}</div>
+      </div>`;
+  }).join('');
+
+  const noResults = filtered.length === 0
+    ? `<div style="padding:32px 16px;text-align:center;font-size:14px;color:var(--soft);">No unlinked trucks match your search.</div>` : '';
+
+  const btnEnabled = !!attachSelectedTruck;
+
   document.getElementById('ud-body').innerHTML = `
-    <div style="padding:24px 0;text-align:center;">
-      <div style="font-size:32px;margin-bottom:12px;">🔗</div>
-      <div style="font-size:16px;font-weight:500;color:var(--strong);letter-spacing:-0.4px;margin-bottom:8px;">Attach to Truck</div>
-      <div style="font-size:14px;color:var(--soft);letter-spacing:-0.28px;line-height:1.5;margin-bottom:24px;">Link this unit to a truck in your fleet to begin tracking diagnostic data.</div>
-      <button style="background:var(--blue);color:white;border:none;border-radius:32px;padding:13px 32px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">Select a Truck</button>
-    </div>`;
+    <div style="margin-bottom:12px;">
+      <div style="font-size:18px;font-weight:500;color:var(--strong);letter-spacing:-0.5px;margin-bottom:12px;">${UNLINKED_TRUCKS.length} Trucks Unlinked</div>
+
+      <!-- Search + Attach Unit button row -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <div style="flex:1;display:flex;align-items:center;gap:8px;background:var(--base);border:1px solid var(--border);border-radius:24px;padding:9px 12px;">
+          <svg width="14" height="14" viewBox="0 0 18 18" fill="none" style="flex-shrink:0;">
+            <circle cx="8" cy="8" r="5" stroke="#36322d9e" stroke-width="1.4"/>
+            <path d="M12.5 12.5l3 3" stroke="#36322d9e" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+          <input id="attach-search" placeholder="Search trucks…" autocomplete="off"
+            style="flex:1;border:none;outline:none;font-size:14px;color:var(--strong);background:none;letter-spacing:-0.28px;font-family:var(--font);"
+            value="${attachSearchQuery}"
+            oninput="attachSearch()" />
+        </div>
+        <button id="attach-unit-btn" onclick="confirmAttach()" style="
+          background:${btnEnabled ? 'var(--blue)' : 'rgba(54,50,45,0.15)'};
+          color:${btnEnabled ? 'white' : 'var(--soft)'};
+          border:none;border-radius:32px;padding:10px 16px;
+          font-size:14px;font-weight:500;font-family:var(--font);
+          letter-spacing:-0.28px;cursor:${btnEnabled ? 'pointer' : 'default'};
+          flex-shrink:0;white-space:nowrap;
+          pointer-events:${btnEnabled ? 'auto' : 'none'};
+        ">Attach Unit</button>
+      </div>
+
+      <!-- Table header -->
+      <div style="display:grid;grid-template-columns:1fr 60px 55px 80px 80px;border-bottom:1.5px solid var(--border);background:var(--layer-1);position:sticky;top:0;z-index:2;">
+        <div style="padding:9px 8px 9px 14px;font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.2px;">Truck No.</div>
+        <div style="padding:9px 6px;font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.2px;">Type</div>
+        <div style="padding:9px 6px;font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.2px;">Drum</div>
+        <div style="padding:9px 6px;font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.2px;">Water</div>
+        <div style="padding:9px 8px;font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.2px;">Mixer</div>
+      </div>
+
+      <!-- Rows -->
+      <div id="attach-rows" style="border-radius:0 0 8px 8px;overflow:hidden;border:1px solid var(--border);border-top:none;">
+        ${rows}${noResults}
+      </div>
+
+      ${attachSelectedTruck ? `
+        <div style="margin-top:12px;background:rgba(48,105,227,0.06);border:1px solid rgba(48,105,227,0.2);border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:11px;color:var(--blue);font-weight:600;letter-spacing:0.2px;text-transform:uppercase;margin-bottom:3px;">Selected</div>
+            <div style="font-size:14px;font-weight:500;color:var(--strong);letter-spacing:-0.28px;">${attachSelectedTruck}</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5a3.5 3.5 0 005 0l2-2a3.5 3.5 0 00-5-5L7.5 3.5" stroke="var(--blue)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 6.5a3.5 3.5 0 00-5 0l-2 2a3.5 3.5 0 005 5l1-1" stroke="var(--blue)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>` : ''}
+    </div>
+  `;
+
+  /* Re-bind search input value after re-render */
+  const inp = document.getElementById('attach-search');
+  if (inp) { inp.value = attachSearchQuery; inp.focus(); }
+}
+
+function attachSelectTruck(number) {
+  attachSelectedTruck = attachSelectedTruck === number ? null : number;
+  renderAttachBody();
+}
+
+function attachSearch() {
+  attachSearchQuery = document.getElementById('attach-search').value;
+  renderAttachBody();
+}
+
+function confirmAttach() {
+  if (!attachSelectedTruck || !udCurrentUnit) return;
+
+  /* Show confirmation modal */
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.id = 'attach-confirm-overlay';
+  overlay.innerHTML = `
+    <div class="confirm-sheet">
+      <div class="confirm-title">Attach Unit to Truck</div>
+      <div class="confirm-body">
+        Unit <strong>${udCurrentUnit.id}</strong> will be attached to
+        <strong>${attachSelectedTruck}</strong>. This will make the unit
+        active and ready for deployment.
+      </div>
+      <div class="confirm-btns">
+        <button class="confirm-btn-primary" onclick="doAttach()">Confirm Attachment</button>
+        <button class="confirm-btn-cancel" onclick="cancelAttach()">Cancel</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('units-drawer').appendChild(overlay);
+}
+
+function cancelAttach() {
+  const el = document.getElementById('attach-confirm-overlay');
+  if (el) el.remove();
+}
+
+function doAttach() {
+  cancelAttach();
+  if (!attachSelectedTruck || !udCurrentUnit) return;
+
+  /* Commit the attachment */
+  const u = UNITS_DATA.find(u => u.id === udCurrentUnit.id);
+  if (u) {
+    u.status          = 'Linked Unit';
+    u.truck           = attachSelectedTruck;
+    u.assignedToTruck = new Date().toLocaleDateString('en-US', {month:'2-digit',day:'2-digit',year:'numeric'});
+  }
+  const idx = UNLINKED_TRUCKS.findIndex(t => t.number === attachSelectedTruck);
+  if (idx > -1) UNLINKED_TRUCKS.splice(idx, 1);
+
+  udCurrentUnit = u;
+
+  /* Update status pill */
+  const pill = document.getElementById('ud-status-pill');
+  if (pill) {
+    pill.className = 'd-ign-pill';
+    pill.style.cssText = 'background:#d5f1d2;color:#1e6252;';
+    pill.innerHTML = `<span style="width:7px;height:7px;border-radius:50%;background:#16a34a;flex-shrink:0;display:inline-block;"></span>Linked Unit`;
+  }
+
+  /* Rebuild nav for now-linked state */
+  udBuildNavDropdown('lifespan');
+
+  /* Success state — CTA goes to Configuration to complete setup */
+  document.getElementById('ud-body').innerHTML = `
+    <div style="padding:32px 16px;text-align:center;">
+      <div style="width:52px;height:52px;border-radius:50%;background:#d5f1d2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 12l6 6 10-10" stroke="#16a34a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div style="font-size:18px;font-weight:500;color:var(--strong);letter-spacing:-0.4px;margin-bottom:8px;">Unit Attached</div>
+      <div style="font-size:14px;color:var(--soft);letter-spacing:-0.28px;line-height:1.6;margin-bottom:4px;">
+        Unit <strong style="color:var(--strong);">${u.id}</strong> is now linked to
+      </div>
+      <div style="font-size:15px;font-weight:500;color:var(--strong);letter-spacing:-0.3px;margin-bottom:6px;">${attachSelectedTruck}</div>
+      <div style="font-size:13px;color:var(--soft);letter-spacing:-0.2px;line-height:1.5;margin-bottom:28px;">Complete the setup by filling out the configuration details.</div>
+      <button onclick="udSwitchTab('config')" style="background:var(--blue);color:white;border:none;border-radius:32px;padding:14px 32px;font-size:15px;font-weight:500;font-family:var(--font);letter-spacing:-0.3px;cursor:pointer;width:100%;margin-bottom:10px;">Complete Setup</button>
+      <button onclick="udSwitchTab('lifespan')" style="background:none;border:1px solid var(--border-mid);border-radius:32px;padding:14px 32px;font-size:15px;font-weight:500;font-family:var(--font);letter-spacing:-0.3px;cursor:pointer;width:100%;color:var(--strong);">View Unit Life Span</button>
+    </div>
+  `;
+
+  renderUnits();
 }
 
 function closeUnitDetail() {
   document.getElementById('ud-nav-dropdown').style.display = 'none';
+  const overlay = document.getElementById('attach-confirm-overlay');
+  if (overlay) overlay.remove();
   const drawer = document.getElementById('units-drawer');
   drawer.style.transform = 'translateX(100%)';
   setTimeout(() => drawer.style.display = 'none', 280);
 }
 
-function unlinkUnit(id) {
-  alert('Link/Unlink flow for unit ' + id + ' coming soon.');
+/* Cross-navigation helpers */
+function unitDrawerGoToComponentsOverview(truckNumber) {
+  /* Close the unit drawer, go to All Trucks, open that truck's drawer */
+  closeUnitDetail();
+  setTimeout(() => {
+    goToAllTrucks();
+    /* Find the truck in the data and open its drawer */
+    const TRUCKS = typeof TRUCK_DATA !== 'undefined' ? TRUCK_DATA : null;
+    /* Fall back: find truck by number across wts/overview lists */
+    const allTrucks = document.querySelectorAll('.truck-row');
+    /* Use the truck number to open the drawer if possible */
+    if (typeof openDrawerByTruckId === 'function') {
+      openDrawerByTruckId(truckNumber);
+    }
+  }, 320);
+}
+
+function truckDrawerGoToLifespan() {
+  const truckLabel = document.getElementById('drawer-truck-num');
+  if (!truckLabel) return;
+  const truckId = truckLabel.textContent.replace('Truck: ', '').trim();
+  const unit = UNITS_DATA.find(u => u.truck === truckId);
+  if (!unit) {
+    /* No unit linked to this truck yet */
+    openUnits();
+    closeDrawer();
+    return;
+  }
+  closeDrawer();
+  setTimeout(() => {
+    openUnits();
+    setTimeout(() => openUnitDetail(unit.id), 150);
+  }, 250);
+}
+
+/* ── UNLINK WORKFLOW ─────────────────────────────────────
+   Works from both the unit drawer and the truck drawer.
+   Both call showUnlinkConfirm(unitId, truckId, source)
+   source = 'unit' | 'truck'
+═════════════════════════════════════════════════════── */
+
+function unitDrawerShowUnlink() {
+  if (!udCurrentUnit) return;
+  showUnlinkConfirm(udCurrentUnit.id, udCurrentUnit.truck, 'unit');
+}
+
+function truckDrawerUnlinkUnit() {
+  const truckLabel = document.getElementById('drawer-truck-num');
+  if (!truckLabel) return;
+  const truckId = truckLabel.textContent.replace('Truck: ', '').trim();
+  const unit = UNITS_DATA.find(u => u.truck === truckId);
+  if (!unit) return;
+  showUnlinkConfirm(unit.id, truckId, 'truck');
+}
+
+function showUnlinkConfirm(unitId, truckId, source) {
+  /* Pick which drawer to attach the overlay to */
+  const drawerEl = source === 'unit'
+    ? document.getElementById('units-drawer')
+    : document.getElementById('drawer');
+
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.id = 'unlink-confirm-overlay';
+  overlay.innerHTML = `
+    <div class="confirm-sheet">
+      <div style="width:44px;height:44px;border-radius:50%;background:rgba(216,59,58,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M8 12a4.5 4.5 0 006 0l2.5-2.5a4.5 4.5 0 00-6-6L9 5" stroke="#d83b3a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 8a4.5 4.5 0 00-6 0L3.5 10.5a4.5 4.5 0 006 6L11 15" stroke="#d83b3a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3 3l14 14" stroke="#d83b3a" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="confirm-title">Unlink Unit from Truck</div>
+      <div class="confirm-body">
+        Unit <strong>${unitId}</strong> will be removed from Truck <strong>${truckId}</strong>.
+        The unit will become inactive and unlinked, and will need to be reattached before it can collect data again.
+      </div>
+      <div class="confirm-btns">
+        <button class="confirm-btn-primary" style="background:var(--red);" onclick="doUnlink('${unitId}', '${truckId}', '${source}')">Confirm Unlink</button>
+        <button class="confirm-btn-cancel" onclick="cancelUnlink()">Cancel</button>
+      </div>
+    </div>
+  `;
+  drawerEl.appendChild(overlay);
+}
+
+function cancelUnlink() {
+  const el = document.getElementById('unlink-confirm-overlay');
+  if (el) el.remove();
+}
+
+function doUnlink(unitId, truckId, source) {
+  cancelUnlink();
+
+  /* Revert the unit */
+  const u = UNITS_DATA.find(u => u.id === unitId);
+  if (u) {
+    u.status          = 'Unlinked Unit';
+    u.truck           = '--';
+    u.assignedToTruck = null;
+  }
+
+  /* Add truck back to available pool */
+  const alreadyThere = UNLINKED_TRUCKS.find(t => t.number === truckId);
+  if (!alreadyThere) {
+    UNLINKED_TRUCKS.push({ number: truckId, type: 'Front', drum: '--', water: '--', mixer: '--' });
+  }
+
+  renderUnits();
+
+  if (source === 'unit') {
+    /* Update unit drawer — collapse nav back to unlinked set, show success */
+    udCurrentUnit = u;
+
+    /* Update status pill */
+    const pill = document.getElementById('ud-status-pill');
+    if (pill) {
+      pill.className = 'd-ign-pill';
+      pill.style.cssText = 'background:rgba(54,50,45,0.08);color:var(--soft);';
+      pill.innerHTML = `<span style="width:7px;height:7px;border-radius:50%;background:var(--soft);flex-shrink:0;display:inline-block;"></span>Unlinked Unit`;
+    }
+
+    /* Rebuild nav for unlinked state */
+    udCurrentTab = 'lifespan';
+    document.getElementById('ud-nav-label').textContent = 'Unit Life Span';
+    document.getElementById('ud-nav-chev').style.transform = '';
+    udBuildNavDropdown('lifespan');
+
+    /* Show unlink success state */
+    document.getElementById('ud-body').innerHTML = `
+      <div style="padding:32px 16px;text-align:center;">
+        <div style="width:52px;height:52px;border-radius:50%;background:rgba(216,59,58,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M7 13a4.5 4.5 0 006 0l2.5-2.5a4.5 4.5 0 00-6-6L8 6" stroke="#d83b3a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M15 9a4.5 4.5 0 00-6 0L6.5 11.5a4.5 4.5 0 006 6L14 16" stroke="#d83b3a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 4l14 14" stroke="#d83b3a" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div style="font-size:18px;font-weight:500;color:var(--strong);letter-spacing:-0.4px;margin-bottom:8px;">Unit Unlinked</div>
+        <div style="font-size:14px;color:var(--soft);letter-spacing:-0.28px;line-height:1.6;margin-bottom:28px;">
+          Unit <strong style="color:var(--strong);">${unitId}</strong> has been removed from Truck ${truckId} and is now unlinked.
+        </div>
+        <button onclick="udSwitchTab('lifespan')" style="background:var(--blue);color:white;border:none;border-radius:32px;padding:14px 32px;font-size:15px;font-weight:500;font-family:var(--font);letter-spacing:-0.3px;cursor:pointer;width:100%;margin-bottom:10px;">View Unit Life Span</button>
+        <button onclick="udSwitchTab('attach')" style="background:none;border:1px solid var(--border-mid);border-radius:32px;padding:14px 32px;font-size:15px;font-weight:500;font-family:var(--font);letter-spacing:-0.3px;cursor:pointer;width:100%;color:var(--strong);">Attach to a New Truck</button>
+      </div>
+    `;
+  } else {
+    /* Close truck drawer, go back to trucks list */
+    closeDrawer();
+  }
 }
 
 /* ── Units search ── */

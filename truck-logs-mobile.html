@@ -2426,7 +2426,7 @@
         </div>
 
         <!-- Detail scroll body -->
-        <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--layer-2);padding:16px;">
+        <div id="ud-body-wrap" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--layer-2);padding:16px;">
           <div id="ud-body"></div>
         </div>
       </div>
@@ -5371,6 +5371,12 @@ function udSwitchTab(tab) {
   if (item) document.getElementById('ud-nav-label').textContent = item.label;
   udBuildNavDropdown(tab);
   /* Render content */
+  /* Config gets zero padding — accordion handles its own spacing */
+  const wrap = document.getElementById('ud-body-wrap');
+  if (wrap) {
+    wrap.style.padding  = tab === 'config' ? '0' : '16px';
+    wrap.style.background = 'var(--layer-2)';
+  }
   if      (tab === 'lifespan')  udRenderLifespan();
   else if (tab === 'attach')    udRenderAttach();
   else if (tab === 'timeline')  udRenderStub('Component Timeline', 'Timeline data will appear here once the unit is actively monitoring the truck.');
@@ -5394,78 +5400,220 @@ function udRenderStub(title, msg) {
     </div>`;
 }
 
-function udCfgDd(id, current, opts) {
-  /* Render a Trinity-style dropdown inline within udRenderConfig */
-  const items = opts.map(o =>
-    `<div class="au-dd-item${o===current?' selected':''}" onclick="auToggleDd('${id}');udCfgSelect('${id}',this,'${o}')">${o}</div>`
-  ).join('');
-  return `
-    <div class="au-dd-wrap" id="ucfg-${id}-wrap">
-      <button class="au-dd-btn" onclick="auToggleDd('${id}')" id="au-${id}-btn">
-        <span id="au-${id}-val" style="color:var(--strong);">${current}</span>
-        <svg class="au-dd-chev" id="au-${id}-chev" width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M3 6l5 5 5-5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <div class="au-dd-menu" id="au-${id}-menu" style="display:none;">${items}</div>
-    </div>`;
-}
-
-function udCfgSelect(id, el, val) {
-  const span = document.getElementById('au-' + id + '-val');
-  if (span) { span.textContent = val; span.style.color = 'var(--strong)'; }
-  const menu = document.getElementById('au-' + id + '-menu');
-  if (menu) menu.querySelectorAll('.au-dd-item').forEach(i => i.classList.toggle('selected', i.textContent.trim() === val));
-}
-
 function udRenderConfig() {
+  /* Render the same full Configuration accordion view as the truck drawer.
+     Uses ud-cfg-N IDs to avoid conflicts with the truck drawer cfg-acc-N IDs. */
   const u = udCurrentUnit;
-  const sysTypeDd = udCfgDd('sys-type', u.sysType, ['V3','V4','V5','Spark','Pulse']);
-  const configDd  = udCfgDd('cfg-type', u.config,  ['Measured Only','Temp+ Admix','Winter Water','Color Blend Ratio']);
-  const drumDd    = udCfgDd('drum-size', '',        ['8 yd','9 yd','10 yd','11 yd']);
+
+  document.getElementById('ud-body').style.padding = '0';
+  document.getElementById('ud-body').style.background = 'var(--layer-2)';
 
   document.getElementById('ud-body').innerHTML = `
-    <div style="margin-bottom:14px;">
-      <div style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.4px;text-transform:uppercase;margin-bottom:12px;">Configuration</div>
+    <!-- Toolbar -->
+    <div class="cfg-toolbar" style="position:sticky;top:0;z-index:2;">
+      <div class="cfg-search">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4" stroke="#36322d9e" stroke-width="1.3"/><path d="M10.5 10.5l3 3" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <input type="text" placeholder="Search" class="cfg-search-input">
+      </div>
+    </div>
 
-      <div class="ud-card" style="margin-bottom:14px;">
-        <div style="padding:12px 14px;border-bottom:1px solid var(--border);">
-          <div style="font-size:11px;color:var(--soft);letter-spacing:-0.1px;margin-bottom:8px;">System Type</div>
-          ${sysTypeDd}
+    <div class="cfg-scroll" style="flex:none;overflow:visible;">
+      <div class="cfg-list">
+
+        <div class="cfg-acc open" id="ud-cfg-acc-0">
+          <div class="cfg-acc-hdr" onclick="udToggleCfgAcc(0)">
+            <div class="cfg-acc-text">
+              <div class="cfg-acc-title">Information</div>
+              <div class="cfg-acc-sub">Defines how this truck is registered and configured within the system for tracking and reporting.</div>
+            </div>
+            <svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="cfg-acc-body">
+            <div class="cfg-fields">
+              <div class="cfg-field"><label>Name</label><input type="text" value="${u.truck !== '--' ? u.truck : ''}"></div>
+              <div class="cfg-field"><label>Batch System Code</label><input type="text" value=""></div>
+              <div class="cfg-field"><label>Contract</label><div class="cfg-select">${u.contract} <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
+              <div class="cfg-field"><label>System Type</label><div class="cfg-select">${u.sysType} <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
+              <div class="cfg-field"><label>Configuration</label><div class="cfg-select">${u.config} <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
+              <div class="cfg-field"><label>TGW 4 Number</label><input type="text" value="${u.tgw}" style="font-family:monospace;"></div>
+              <div class="cfg-field"><label>Mode</label><div class="cfg-select">Live <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
+            </div>
+          </div>
         </div>
-        <div style="padding:12px 14px;border-bottom:1px solid var(--border);">
-          <div style="font-size:11px;color:var(--soft);letter-spacing:-0.1px;margin-bottom:8px;">Configuration</div>
-          ${configDd}
+
+        <div class="cfg-acc" id="ud-cfg-acc-1">
+          <div class="cfg-acc-hdr" onclick="udToggleCfgAcc(1)">
+            <div class="cfg-acc-text">
+              <div class="cfg-acc-title">Equipment Settings</div>
+              <div class="cfg-acc-sub">Manage system-level settings that control how this equipment behaves and reports data.</div>
+            </div>
+            <svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="cfg-acc-body" style="display:none;">
+            <div class="cfg-fields">
+              <div class="cfg-field"><label>Number of Drum Magnets</label><input type="number" value="3"></div>
+              <div class="cfg-field"><label>Drum Size</label><input type="number" value=""></div>
+              <div class="cfg-field cfg-field-toggle"><label>Front Discharge</label><div class="cfg-toggle on" onclick="toggleCfgSwitch(this)"><div class="cfg-toggle-knob"></div></div></div>
+              <div class="cfg-field cfg-field-toggle"><label>CWR Watchdog Enabled</label><div class="cfg-toggle" onclick="toggleCfgSwitch(this)"><div class="cfg-toggle-knob"></div></div></div>
+              <div class="cfg-field cfg-field-toggle"><label>Using Blue Water Meter</label><div class="cfg-toggle on" onclick="toggleCfgSwitch(this)"><div class="cfg-toggle-knob"></div></div></div>
+              <div class="cfg-field cfg-field-toggle"><label>Using Blue Admix Meter</label><div class="cfg-toggle on" onclick="toggleCfgSwitch(this)"><div class="cfg-toggle-knob"></div></div></div>
+              <div class="cfg-field cfg-field-toggle"><label>Display Metrics Units</label><div class="cfg-toggle on" onclick="toggleCfgSwitch(this)"><div class="cfg-toggle-knob"></div></div></div>
+            </div>
+          </div>
         </div>
-        <div style="padding:12px 14px;">
-          <div style="font-size:11px;color:var(--soft);letter-spacing:-0.1px;margin-bottom:8px;">TGW 4 Number</div>
-          <input type="text" value="${u.tgw}" class="au-input" style="font-family:monospace;"/>
+
+        <div class="cfg-acc" id="ud-cfg-acc-2">
+          <div class="cfg-acc-hdr" onclick="udToggleCfgAcc(2)">
+            <div class="cfg-acc-text">
+              <div class="cfg-acc-title">Mixing Settings</div>
+              <div class="cfg-acc-sub">Control how the drum mixes, agitates, and rotates during transit and discharge.</div>
+            </div>
+            <svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="cfg-acc-body" style="display:none;">
+            <div class="cfg-fields">
+              <div class="cfg-field"><label>Min Batch Revolutions</label><input type="number" value=""></div>
+              <div class="cfg-field"><label>Min Agitation Speed</label><input type="number" value=""></div>
+              <div class="cfg-field"><label>Min Mixing Speed</label><input type="number" value=""></div>
+              <div class="cfg-field"><label>Max Mixing Speed</label><input type="number" value=""></div>
+            </div>
+          </div>
         </div>
+
+        <div class="cfg-acc" id="ud-cfg-acc-3">
+          <div class="cfg-acc-hdr" onclick="udToggleCfgAcc(3)">
+            <div class="cfg-acc-text">
+              <div class="cfg-acc-title">Workability Calculator Settings</div>
+              <div class="cfg-acc-sub">Configure the time, rev, and drum speed limits that determine slump validity.</div>
+            </div>
+            <svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="cfg-acc-body" style="display:none;">
+            <div class="cfg-fields">
+              <div class="cfg-field"><label>Slump Expiration In Seconds</label><input type="number" value="0"></div>
+              <div class="cfg-field"><label>Slump Expiration In Revs</label><input type="number" value="0"></div>
+              <div class="cfg-field"><label>Slump Min Mixing Speed</label><input type="number" value="0"></div>
+              <div class="cfg-field"><label>Slump Max Mixing Speed</label><input type="number" value="0"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cfg-acc" id="ud-cfg-acc-4">
+          <div class="cfg-acc-hdr" onclick="udToggleCfgAcc(4)">
+            <div class="cfg-acc-text">
+              <div class="cfg-acc-title">In-Cab Display Settings</div>
+              <div class="cfg-acc-sub">Configure what drivers see in the cab, including slump step increments, limits, and display alerts.</div>
+            </div>
+            <svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="cfg-acc-body" style="display:none;">
+            <div class="cfg-fields">
+              <div class="cfg-section-label">Slump Adjustment</div>
+              <div class="cfg-field"><label>Target Slump Step</label><input type="text" value="1 inch"></div>
+              <div class="cfg-field"><label>Max Slump for Display</label><input type="text" value="8 inch"></div>
+              <div class="cfg-section-label">Timing &amp; Operational Thresholds</div>
+              <div class="cfg-field"><label>Minutes to Leave Plant</label><input type="text" value="5 min"></div>
+              <div class="cfg-field"><label>Min Liters for Back Flush</label><input type="text" value="5 Liters"></div>
+              <div class="cfg-section-label">Display Preferences</div>
+              <div class="cfg-field cfg-field-toggle"><label>Display Units (Imperial)</label><div class="cfg-toggle on" onclick="toggleCfgSwitch(this)"><div class="cfg-toggle-knob"></div></div></div>
+              <div class="cfg-field cfg-field-toggle"><label>Display No-Flow Errors</label><div class="cfg-toggle on" onclick="toggleCfgSwitch(this)"><div class="cfg-toggle-knob"></div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cfg-acc" id="ud-cfg-acc-5">
+          <div class="cfg-acc-hdr" onclick="udToggleCfgAcc(5)">
+            <div class="cfg-acc-text">
+              <div class="cfg-acc-title">Fluid Hose Length Settings</div>
+              <div class="cfg-acc-sub">Define hose lengths used for water and admixture delivery calculations.</div>
+            </div>
+            <svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="cfg-acc-body" style="display:none;">
+            <div class="cfg-fields">
+              <div class="cfg-field"><label>Water Length Quick Connect to Nozzle</label><input type="text" value=""></div>
+              <div class="cfg-field"><label>Water Length FDM to Quick Connect</label><input type="text" value=""></div>
+              <div class="cfg-field"><label>Admix Hose Length</label><input type="text" value=""></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cfg-acc" id="ud-cfg-acc-6">
+          <div class="cfg-acc-hdr" onclick="udToggleCfgAcc(6)">
+            <div class="cfg-acc-text">
+              <div class="cfg-acc-title">Adjustment Manager Settings</div>
+              <div class="cfg-acc-sub">Control how the system adjusts water and admixtures within defined limits.</div>
+            </div>
+            <svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="cfg-acc-body" style="display:none;">
+            <div class="cfg-fields">
+              <div class="cfg-field"><label>Slump Tolerance (in)</label><input type="text" value=""></div>
+              <div class="cfg-field"><label>Initial Water Ratio</label><input type="text" value=""></div>
+              <div class="cfg-field"><label>Initial Admix Ratio</label><input type="text" value=""></div>
+              <div class="cfg-field"><label>Min Water Ratio</label><input type="text" value=""></div>
+              <div class="cfg-field"><label>Max Water Ratio</label><input type="text" value=""></div>
+              <div class="cfg-field"><label>Min Admix Ratio</label><input type="text" value=""></div>
+              <div class="cfg-field"><label>Max Admix Ratio</label><input type="text" value=""></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cfg-acc" id="ud-cfg-acc-7">
+          <div class="cfg-acc-hdr" onclick="udToggleCfgAcc(7)">
+            <div class="cfg-acc-text">
+              <div class="cfg-acc-title">Location Monitor Settings</div>
+              <div class="cfg-acc-sub">Define how far a truck must move before the system marks it as away.</div>
+            </div>
+            <svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="cfg-acc-body" style="display:none;">
+            <div class="cfg-fields">
+              <div class="cfg-field"><label>Away Distance Signal Meters</label><input type="number" value="0"></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /cfg-list -->
+
+      <!-- Info block matching truck drawer -->
+      <div class="cfg-info-block">
+        <div class="co-info-row2">
+          <div class="co-info-item"><div class="co-info-label">Connectivity</div><div class="co-info-val co-info-val--link">Connected</div></div>
+          <div class="co-info-item"><div class="co-info-label">Truck Mode</div><div class="co-info-val">Live</div></div>
+        </div>
+        <div class="co-tbl-row"><div class="co-tbl-k">First Commissioned</div><div class="co-tbl-v">${u.firstCommissioned || '--'}</div></div>
+        <div class="co-tbl-row co-tbl-row--alt"><div class="co-tbl-k">Assigned to Truck</div><div class="co-tbl-v">${u.assignedToTruck || '--'}</div></div>
+        <div class="co-tbl-row"><div class="co-tbl-k">TGW 4 Number</div><div class="co-tbl-v" style="font-family:monospace;">${u.tgw}</div></div>
+        <div class="co-tbl-row co-tbl-row--alt"><div class="co-tbl-k">Contract</div><div class="co-tbl-v">${u.contract}</div></div>
+
+        <!-- Also viewing toggle -->
+        ${u.truck !== '--' ? `
+        <div class="also-viewing">
+          <span class="also-viewing-label">Also viewing</span>
+          <button class="also-viewing-link" onclick="unitDrawerGoToComponentsOverview('${u.truck}')">
+            Components Overview
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6h7M6.5 2.5l3.5 3.5-3.5 3.5" stroke="var(--blue)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>` : ''}
       </div>
 
-      <div style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.4px;text-transform:uppercase;margin-bottom:12px;">Truck Assignment</div>
-      <div class="ud-card" style="margin-bottom:14px;">
-        <div class="ud-row"><span class="ud-key">Assigned Truck</span><span class="ud-val">${u.truck}</span></div>
-        <div class="ud-row"><span class="ud-key">Assigned Date</span><span class="ud-val">${u.assignedToTruck || '--'}</span></div>
-        <div class="ud-row"><span class="ud-key">Contract</span><span class="ud-val">${u.contract}</span></div>
+      <!-- Save button -->
+      <div style="padding:16px 12px 24px;">
+        <button onclick="udSaveConfig()" style="width:100%;background:var(--blue);color:white;border:none;border-radius:32px;padding:14px;font-size:15px;font-weight:500;font-family:var(--font);letter-spacing:-0.3px;cursor:pointer;">Save Configuration</button>
       </div>
 
-      <div style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.4px;text-transform:uppercase;margin-bottom:12px;">Drum Details</div>
-      <div class="ud-card" style="margin-bottom:20px;">
-        <div style="padding:12px 14px;border-bottom:1px solid var(--border);">
-          <div style="font-size:11px;color:var(--soft);letter-spacing:-0.1px;margin-bottom:8px;">Drum Manufacturer</div>
-          <input type="text" placeholder="e.g. Schwing, 2022" class="au-input"/>
-        </div>
-        <div style="padding:12px 14px;">
-          <div style="font-size:11px;color:var(--soft);letter-spacing:-0.1px;margin-bottom:8px;">Drum Size</div>
-          ${drumDd}
-        </div>
-      </div>
-
-      <button onclick="udSaveConfig()" style="width:100%;background:var(--blue);color:white;border:none;border-radius:32px;padding:14px;font-size:15px;font-weight:500;font-family:var(--font);letter-spacing:-0.3px;cursor:pointer;margin-bottom:10px;">Save Configuration</button>
-      <button onclick="udSwitchTab('lifespan')" style="width:100%;background:none;border:1px solid var(--border-mid);border-radius:32px;padding:14px;font-size:15px;font-weight:500;font-family:var(--font);letter-spacing:-0.3px;cursor:pointer;color:var(--strong);">View Unit Life Span</button>
     </div>
   `;
+}
+
+function udToggleCfgAcc(n) {
+  const acc = document.getElementById('ud-cfg-acc-' + n);
+  if (!acc) return;
+  const isOpen = acc.classList.contains('open');
+  acc.classList.toggle('open', !isOpen);
+  const body = acc.querySelector('.cfg-acc-body');
+  if (body) body.style.display = isOpen ? 'none' : 'block';
 }
 
 function udSaveConfig() {

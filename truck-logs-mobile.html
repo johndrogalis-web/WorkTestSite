@@ -306,8 +306,24 @@
   .badge.wrn { background: var(--amber); color: var(--strong); }
 
   /* expanded content */
-  .exp-wrap { display: none; background: var(--layer-2); }
-  .exp-wrap.open { display: block; padding-bottom: 15px; }
+  .exp-wrap { display: block; background: var(--layer-2); max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.38s cubic-bezier(0.22,1,0.36,1), opacity 0.25s ease; }
+  .exp-wrap.open { max-height: 600px; opacity: 1; padding-bottom: 15px; }
+  .exp-wrap.open .exp-row { animation: exp-row-in 0.28s cubic-bezier(0.22,1,0.36,1) both; }
+  .exp-wrap.open .exp-row:nth-child(1)  { animation-delay: 0.03s; }
+  .exp-wrap.open .exp-row:nth-child(2)  { animation-delay: 0.06s; }
+  .exp-wrap.open .exp-row:nth-child(3)  { animation-delay: 0.09s; }
+  .exp-wrap.open .exp-row:nth-child(4)  { animation-delay: 0.12s; }
+  .exp-wrap.open .exp-row:nth-child(5)  { animation-delay: 0.15s; }
+  .exp-wrap.open .exp-row:nth-child(6)  { animation-delay: 0.18s; }
+  .exp-wrap.open .exp-row:nth-child(7)  { animation-delay: 0.21s; }
+  .exp-wrap.open .exp-row:nth-child(8)  { animation-delay: 0.24s; }
+  .exp-wrap.open .exp-row:nth-child(9)  { animation-delay: 0.27s; }
+  .exp-wrap.open .exp-row:nth-child(10) { animation-delay: 0.30s; }
+  .exp-wrap.open .view-truck-btn        { animation: exp-row-in 0.28s cubic-bezier(0.22,1,0.36,1) 0.33s both; }
+  @keyframes exp-row-in {
+    0%   { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
   .exp-row {
     display: grid; grid-template-columns: 1fr 1fr;
     border-bottom: 1px solid var(--border);
@@ -337,10 +353,11 @@
     display: flex; flex-direction: column;
     padding-top: 54px;
     transform: translateX(100%);
-    transition: transform 0.30s cubic-bezier(0.4,0,0.2,1);
+    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
     z-index: 10;
   }
-  .drawer.open { transform: translateX(0); }
+  .drawer.open { transform: translateX(0); transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1); }
+  .drawer.closing { transition: transform 0.28s cubic-bezier(0.4, 0, 1, 1); }
 
   .chrome-btns { display: flex; align-items: center; gap: 5px; }
   .chrome-btn {
@@ -544,6 +561,140 @@
 
   /* ─── MANUAL CONTROL CARDS ──────────────────────── */
   .mc2-card { background:var(--layer-1); border:1px solid var(--border); border-radius:16px; padding:14px 12px; display:flex; flex-direction:column; gap:6px; transition:border-color 0.3s, box-shadow 0.3s; position:relative; overflow:hidden; }
+  .mc2-card.mc2-has-input { min-height:220px; }
+  .mc2-card:not(.mc2-has-input) { height:230px; }
+
+  /* ── Manual Control card system — scoped to #state-manual ── */
+  #state-manual { --mc-card: #ffffff; --mc-text-1: #1a1814; --mc-text-2: #4a4540; --mc-text-3: rgba(40,36,30,0.5); --mc-border: rgba(54,50,45,0.13); --mc-border-med: rgba(54,50,45,0.24); --mc-blue: #1594ef; --mc-blue-bg: #e3f0fc; --mc-blue-text: #1056a8; --mc-green: #2ECF1D; --mc-green-text: #1e6252; --mc-green-bg: #d5f1d2; --mc-amber: #b46e00; --mc-amber-bg: #fff0d4; --mc-red: #c13c2d; --mc-red-bg: #fde8e6; --mc-red-heavy: #8b1a0f; --mc-red-heavy-bg: #fbd0cc; --mc-partial: #7a4d00; --mc-partial-bg: #fff7ec; --mc-partial-border: rgba(180,110,0,0.25); --mc-disabled-bg: rgba(54,50,45,0.06); --mc-disabled-text: rgba(54,50,45,0.3); }
+
+  /* Grid */
+  .mc-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+  .mc-grid > div { min-width:0; width:100%; }
+  .mc-grid-full { margin-bottom:12px; width:100%; }
+
+  /* Card — fixed height, never expands */
+  #state-manual .mc-card { background:var(--mc-card); border:1px solid var(--mc-border); border-radius:20px; padding:20px; width:100%; height:260px; min-height:260px; max-height:260px; display:flex; flex-direction:column; position:relative; overflow:hidden; transition:border-color 0.4s ease, box-shadow 0.4s ease; font-family:'Inter', sans-serif; box-sizing:border-box; }
+  #state-manual .mc-card.mc-input-card { height:auto; min-height:240px; max-height:none; }
+  #state-manual .mc-card.state-pending    { border-color:rgba(21,148,239,0.45);  box-shadow:0 0 0 3px rgba(21,148,239,0.07); }
+  #state-manual .mc-card.state-success    { border-color:rgba(30,98,82,0.4);     box-shadow:0 0 0 3px rgba(30,98,82,0.06); }
+  #state-manual .mc-card.state-error      { border-color:rgba(193,60,45,0.4);    box-shadow:0 0 0 3px rgba(193,60,45,0.06); }
+  #state-manual .mc-card.state-error-heavy{ border-color:rgba(139,26,15,0.55);   box-shadow:0 0 0 4px rgba(139,26,15,0.1); }
+  #state-manual .mc-card.state-partial    { border-color:rgba(180,110,0,0.45);   box-shadow:0 0 0 3px rgba(180,110,0,0.07); }
+  #state-manual .mc-card.state-confirm    { border-color:rgba(180,110,0,0.45);   box-shadow:0 0 0 3px rgba(180,110,0,0.07); }
+  #state-manual .mc-card.state-disabled   { border-color:var(--mc-border);       background:rgba(240,237,233,0.6); }
+  #state-manual .mc-card.state-warn       { border-color:rgba(180,110,0,0.45);   box-shadow:0 0 0 3px rgba(180,110,0,0.07); }
+  #state-manual .mc-card.state-major      { border-color:rgba(139,26,15,0.55);   box-shadow:0 0 0 4px rgba(139,26,15,0.1); }
+
+  /* Progress bar */
+  #state-manual .progress-track { position:absolute; bottom:0; left:0; right:0; height:3px; background:rgba(21,148,239,0.1); overflow:hidden; opacity:0; transition:opacity 0.2s; }
+  #state-manual .progress-track.visible { opacity:1; }
+  #state-manual .progress-fill { height:100%; width:0%; border-radius:0 2px 2px 0; transition:width 0s, background-color 0.3s; }
+
+  /* Signal dot */
+  #state-manual .signal-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; background:rgba(54,50,45,0.22); transition:background 0.35s ease; position:relative; }
+  #state-manual .signal-dot.pulsing::after { content:''; position:absolute; inset:-3px; border-radius:50%; border:1.5px solid var(--mc-blue); animation:ring-pulse 1s ease-out infinite; opacity:0; }
+  #state-manual .dot-blue      { background:var(--mc-blue) !important; }
+  #state-manual .dot-green     { background:var(--mc-green) !important; }
+  #state-manual .dot-amber     { background:var(--mc-amber) !important; }
+  #state-manual .dot-red       { background:var(--mc-red) !important; }
+  #state-manual .dot-red-heavy { background:var(--mc-red-heavy) !important; }
+  #state-manual .dot-muted     { background:rgba(54,50,45,0.22) !important; }
+
+  /* Card header */
+  #state-manual .card-header { height:36px; flex-shrink:0; display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  #state-manual .card-title  { flex:1; font-size:14px; font-weight:600; letter-spacing:-0.28px; color:var(--mc-text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  /* Header badge */
+  #state-manual .header-badge { flex-shrink:0; font-size:11px; font-weight:500; padding:3px 8px; border-radius:20px; letter-spacing:-0.1px; white-space:nowrap; transition:opacity 0.2s, transform 0.2s; }
+  #state-manual .badge-hidden      { visibility:hidden; padding:0; width:0; overflow:hidden; }
+  #state-manual .badge-ok          { background:var(--mc-green-bg);      color:var(--mc-green-text); }
+  #state-manual .badge-error       { background:var(--mc-red-bg);        color:var(--mc-red); }
+  #state-manual .badge-error-heavy { background:var(--mc-red-heavy-bg);  color:var(--mc-red-heavy); }
+  #state-manual .badge-pending     { background:var(--mc-blue-bg);       color:var(--mc-blue-text); }
+  #state-manual .badge-warn        { background:var(--mc-amber-bg);      color:var(--mc-amber); }
+  #state-manual .badge-partial     { background:var(--mc-partial-bg);    color:var(--mc-partial); }
+  #state-manual .badge-disabled    { background:var(--mc-disabled-bg);   color:var(--mc-disabled-text); }
+  #state-manual .badge-major       { background:var(--mc-red-heavy-bg);  color:var(--mc-red-heavy); }
+
+  /* Input zone */
+  #state-manual .card-input-zone { height:42px; flex-shrink:0; display:flex; align-items:center; margin-bottom:16px; position:relative; }
+  #state-manual .slot-input { width:100%; height:38px; padding:0 14px; border:1px solid var(--mc-border); border-radius:10px; font-family:'Inter', sans-serif; font-size:13px; color:var(--mc-text-3); background:transparent; outline:none; letter-spacing:-0.26px; transition:border-color 0.15s, color 0.15s; -moz-appearance:textfield; -webkit-appearance:none; appearance:none; }
+  #state-manual .slot-input::-webkit-inner-spin-button,
+  #state-manual .slot-input::-webkit-outer-spin-button { -webkit-appearance:none; }
+  #state-manual .slot-input:focus   { border-color:var(--mc-blue); color:var(--mc-text-1); }
+  #state-manual .slot-input:disabled { opacity:0.45; cursor:not-allowed; }
+  #state-manual .slot-input.has-val  { color:var(--mc-text-1); }
+
+  /* Pill */
+  #state-manual .slot-pill { display:inline-flex; align-items:center; gap:6px; padding:7px 12px; border-radius:9px; font-size:12px; font-weight:500; transform-origin:left center; animation:pill-in 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards; white-space:normal; word-break:break-word; }
+  #state-manual .pdot { width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
+  #state-manual .pill-success     { background:var(--mc-green-bg);     color:var(--mc-green-text); }
+  #state-manual .pill-error       { background:var(--mc-red-bg);       color:var(--mc-red); }
+  #state-manual .pill-error-heavy { background:var(--mc-red-heavy-bg); color:var(--mc-red-heavy); }
+  #state-manual .pill-partial     { background:var(--mc-partial-bg);   color:var(--mc-partial); }
+  #state-manual .pill-pending     { background:var(--mc-blue-bg);      color:var(--mc-blue-text); }
+  #state-manual .pill-warning     { background:var(--mc-amber-bg);     color:var(--mc-amber); }
+  #state-manual .pill-disabled    { background:var(--mc-disabled-bg);  color:var(--mc-disabled-text); }
+  #state-manual .pill-major       { background:var(--mc-red-heavy-bg); color:var(--mc-red-heavy); }
+  #state-manual .pill-wrap        { margin-bottom:8px; flex-shrink:0; }
+
+  /* Metric zone */
+  #state-manual .card-metric-zone { flex:1; min-height:0; display:flex; flex-direction:column; justify-content:flex-end; padding-bottom:4px; }
+  #state-manual .metric-row       { display:flex; align-items:baseline; gap:5px; line-height:1; }
+  #state-manual .mv-sm            { font-family:'DM Mono', monospace; font-size:28px; font-weight:400; letter-spacing:-0.5px; color:var(--mc-text-1); line-height:1; transition:color 0.3s; }
+  #state-manual .mv-sm-unit       { font-size:13px; font-weight:600; color:var(--mc-text-1); }
+  #state-manual .mv-lg            { font-family:'DM Mono', monospace; font-size:40px; font-weight:400; letter-spacing:-1.5px; color:var(--mc-text-1); line-height:1; transition:color 0.3s; }
+  #state-manual .mv-lg-unit       { font-size:20px; font-weight:600; color:var(--mc-text-1); }
+  #state-manual .mv-word-sm       { font-family:'Inter', sans-serif; font-size:28px; font-weight:300; letter-spacing:-0.5px; color:var(--mc-text-1); line-height:1; }
+  #state-manual .mv-word-lg       { font-family:'Inter', sans-serif; font-size:28px; font-weight:300; letter-spacing:-0.5px; color:var(--mc-text-1); line-height:1.15; }
+  #state-manual .mv-muted         { color:var(--mc-text-3) !important; }
+  #state-manual .mv-timed-out     { font-family:'Inter', sans-serif; font-size:22px; font-weight:500; letter-spacing:-0.4px; color:var(--mc-red); line-height:1; }
+  #state-manual .mv-degree        { font-family:'DM Mono', monospace; font-size:40px; font-weight:400; letter-spacing:-1px; color:var(--mc-text-1); line-height:1; transition:color 0.3s; }
+  #state-manual .mv-degree-warn   { color:var(--mc-amber) !important; }
+  #state-manual .mv-degree-major  { color:var(--mc-red-heavy) !important; }
+  #state-manual .metric-sub       { font-size:12px; color:var(--mc-text-3); letter-spacing:-0.2px; margin-top:4px; transition:color 0.3s; }
+
+  /* Status line */
+  #state-manual .card-status { height:auto; min-height:18px; flex-shrink:0; display:flex; align-items:center; gap:5px; font-size:12px; letter-spacing:-0.2px; overflow:hidden; margin-bottom:10px; transition:opacity 0.2s; white-space:nowrap; }
+  #state-manual .sk { color:var(--mc-text-3); white-space:nowrap; flex-shrink:0; }
+  #state-manual .sv { color:var(--mc-text-2); font-weight:500; transition:color 0.3s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  /* Button zone */
+  #state-manual .card-btn-zone { height:44px; flex-shrink:0; display:flex; gap:8px; position:relative; }
+  #state-manual .mc-btn { flex:1; height:100%; border-radius:32px; border:none; font-family:'Inter', sans-serif; font-size:13px; font-weight:600; letter-spacing:-0.26px; cursor:pointer; transition:background 0.2s ease, opacity 0.15s, transform 0.1s, color 0.2s; position:relative; overflow:hidden; }
+  #state-manual .mc-btn::after { content:''; position:absolute; inset:0; background:rgba(255,255,255,0.2); transform:scale(0); border-radius:inherit; transition:transform 0.3s ease, opacity 0.3s; opacity:0; }
+  #state-manual .mc-btn:active::after           { transform:scale(1); opacity:1; }
+  #state-manual .mc-btn:active:not(:disabled)   { transform:scale(0.98); }
+  #state-manual .mc-btn:disabled                { opacity:0.38; cursor:not-allowed; transform:none !important; }
+  #state-manual .btn-primary { background:var(--mc-blue); color:#fff; }
+  #state-manual .btn-primary:hover:not(:disabled) { opacity:0.88; }
+  #state-manual .btn-ghost   { background:transparent; color:var(--mc-text-2); border:1px solid var(--mc-border-med); }
+  #state-manual .btn-ghost:hover:not(:disabled)   { border-color:var(--mc-text-2); }
+  #state-manual .btn-danger  { background:var(--mc-red); color:#fff; }
+  #state-manual .btn-danger:hover:not(:disabled)  { opacity:0.88; }
+  #state-manual .btn-partial { background:var(--mc-partial-bg); color:var(--mc-partial); border:1px solid var(--mc-partial-border); }
+  #state-manual .btn-partial:hover:not(:disabled) { background:#fde9c0; }
+
+  /* Animations */
+  #state-manual .anim-in { animation:anim-in-mc 0.3s cubic-bezier(0.22,1,0.36,1) both; }
+  #state-manual .anim-in-delay-1 { animation-delay:0.04s; }
+  #state-manual .anim-in-delay-2 { animation-delay:0.09s; }
+  #state-manual .anim-in-delay-3 { animation-delay:0.14s; }
+  #state-manual .anim-in-delay-4 { animation-delay:0.20s; }
+  #state-manual .confirm-split   { animation:confirm-split-in 0.22s cubic-bezier(0.22,1,0.36,1) both; }
+  #state-manual .confirm-split:nth-child(2) { animation-delay:0.05s; }
+  @keyframes mc-row-in { 0% { opacity:0; transform:translateY(-4px); background:rgba(21,148,239,0.05); } 100% { opacity:1; transform:translateY(0); background:transparent; } }
+
+  /* Territory selector dropdown animation */
+  .ts-dropdown {
+    position:absolute; min-width:220px; background:white;
+    border:1px solid var(--border-mid); border-radius:12px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.12); padding:8px; z-index:100;
+    opacity:0; transform:scaleY(0.92) translateY(-6px); transform-origin:top center;
+    pointer-events:none;
+    transition:opacity 0.18s cubic-bezier(0.22,1,0.36,1), transform 0.18s cubic-bezier(0.22,1,0.36,1);
+  }
+  .ts-dropdown.open { opacity:1; transform:scaleY(1) translateY(0); pointer-events:all; }
   /* progress bar track — sits at bottom of card */
   .mc2-progress { position:absolute; bottom:0; left:0; right:0; height:3px; background:rgba(21,148,239,0.1); overflow:hidden; opacity:0; transition:opacity 0.2s; }
   .mc2-progress.visible { opacity:1; }
@@ -682,13 +833,21 @@
     display:flex; flex-direction:column; align-items:center;
     padding:10px 4px; cursor:pointer;
     border-right:1px solid var(--border);
-    transition:background 0.15s; position:relative;
+    transition:background 0.2s ease; position:relative;
   }
   .ct-day:last-child { border-right:none; }
-  .ct-day-inner { display:flex; flex-direction:column; align-items:center; width:100%; }
+  .ct-day-inner {
+    display:flex; flex-direction:column; align-items:center; width:100%;
+    transition:transform 0.2s cubic-bezier(0.22,1,0.36,1), background 0.2s ease;
+  }
   .ct-day-active .ct-day-inner {
-    background:var(--layer-1); border-radius:4px;
-    padding:3px 2px;
+    background:var(--layer-1); border-radius:4px; padding:3px 2px;
+    animation:ct-day-pop 0.25s cubic-bezier(0.22,1,0.36,1);
+  }
+  @keyframes ct-day-pop {
+    0%   { transform: scale(0.88); }
+    60%  { transform: scale(1.06); }
+    100% { transform: scale(1); }
   }
   .ct-day-lbl { font-size:10px; font-weight:500; color:var(--strong); letter-spacing:-0.1px; line-height:1.3; text-align:center; width:100%; }
   .ct-day-num { font-size:13px; color:var(--strong); letter-spacing:-0.26px; line-height:1.2; text-align:center; width:100%; }
@@ -857,7 +1016,7 @@
   .sidenav-overlay {
     position:absolute; inset:0; background:rgba(0,0,0,0.45);
     z-index:1000; opacity:0; pointer-events:none;
-    transition:opacity 0.25s; border-radius:50px;
+    transition:opacity 0.32s cubic-bezier(0.22,1,0.36,1); border-radius:50px;
   }
   .sidenav-overlay.open { opacity:1; pointer-events:all; }
 
@@ -866,11 +1025,12 @@
     max-width:310px; background:#f6f4f2;
     border-radius:50px 0 0 50px;
     z-index:1001; transform:translateX(-110%);
-    transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    transition:transform 0.38s cubic-bezier(0.22,1,0.36,1);
     display:flex; flex-direction:column; overflow:hidden;
     box-shadow:4px 0 24px rgba(0,0,0,0.15);
   }
   .sidenav.open { transform:translateX(0); }
+  .sidenav.closing { transition:transform 0.26s cubic-bezier(0.4,0,1,1); }
 
   /* Header row */
   .sn-header {
@@ -1400,7 +1560,7 @@
                   </div>
                 </button>
                 <!-- Account dropdown -->
-                <div id="ts-account-dd" style="display:none;position:absolute;top:calc(100% + 6px);left:0;min-width:220px;background:white;border:1px solid var(--border-mid);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:8px;z-index:100;">
+                <div id="ts-account-dd" class="ts-dropdown" style="top:calc(100% + 6px);left:0;">
                   <div style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.4px;text-transform:uppercase;padding:4px 8px 8px;">Accounts</div>
                   <div id="ts-account-options"></div>
                 </div>
@@ -1415,7 +1575,7 @@
                   </div>
                 </button>
                 <!-- Location dropdown -->
-                <div id="ts-location-dd" style="display:none;position:absolute;top:calc(100% + 6px);right:0;min-width:220px;background:white;border:1px solid var(--border-mid);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:8px;z-index:100;">
+                <div id="ts-location-dd" class="ts-dropdown" style="top:calc(100% + 6px);right:0;">
                   <div style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.4px;text-transform:uppercase;padding:4px 8px 8px;">Locations</div>
                   <div id="ts-location-options"></div>
                 </div>
@@ -1878,179 +2038,78 @@
       <div id="state-manual" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
         <div class="co-scroll">
 
-          <!-- ── DIAGNOSTICS ── -->
+          <!-- DIAGNOSTICS -->
           <div class="co-section-hdr" onclick="toggleCoSection('diag', this)">
             <svg class="co-acc-chev" width="10" height="6" viewBox="0 0 10 6" fill="none" style="transform:rotate(0deg);transition:transform 0.2s;flex-shrink:0;"><path d="M8.75 4.75L4.75 0.75L0.75 4.75" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span>Diagnostics</span>
           </div>
           <div id="co-section-diag">
-
-            <!-- Row 1: Ping Truck | Restart System -->
-            <div class="co-grid" style="margin-bottom:10px;">
-              <div class="mc2-card" id="mc-ping">
-                <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
-                <div class="mc2-head"><div class="mc2-dot mc2-dot-grey"></div><span>Ping Truck</span></div>
-                <div class="mc2-metric">2 <span class="mc2-unit">min ago</span></div>
-                <div class="mc2-sub">Last Ping</div>
-                <div class="mc2-status"><span class="mc2-sk">Status:</span><span class="mc2-sv">Online</span></div>
-                <button class="mc2-btn mc2-btn-primary" onclick="mcAction('ping','Ping Truck','2 min ago','Online',this)">Ping Truck</button>
-              </div>
-              <div class="mc2-card" id="mc-restart">
-                <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
-                <div class="mc2-head"><div class="mc2-dot mc2-dot-grey"></div><span>Restart System</span></div>
-                <div class="mc2-metric">2 <span class="mc2-unit">min ago</span></div>
-                <div class="mc2-sub">Last Attempt</div>
-                <div class="mc2-status"><span class="mc2-sk">Truck Status:</span><span class="mc2-sv">Online</span></div>
-                <button class="mc2-btn mc2-btn-primary" onclick="mcConfirm('restart','Restart System','Are you sure you want to restart the system?','Yes, Restart',this)">Restart System</button>
-              </div>
+            <div class="mc-grid">
+              <div id="mc-unit-ping"></div>
+              <div id="mc-unit-restart"></div>
             </div>
-
-            <!-- Row 2: Reset CAN Errors | Reset Sensors -->
-            <div class="co-grid" style="margin-bottom:10px;">
-              <div class="mc2-card" id="mc-can">
-                <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
-                <div class="mc2-head"><div class="mc2-dot mc2-dot-grey"></div><span>Reset CAN Errors</span></div>
-                <div class="mc2-metric">3</div>
-                <div class="mc2-sub">Current CAN Errors</div>
-                <div class="mc2-status"><span class="mc2-sk">Last Reset:</span><span class="mc2-sv">10:32 AM</span></div>
-                <button class="mc2-btn mc2-btn-primary" onclick="mcAction('can','Reset CAN Errors','3 errors','Cleared',this)">Reset</button>
-              </div>
-              <div class="mc2-card" id="mc-sensors">
-                <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
-                <div class="mc2-head"><div class="mc2-dot mc2-dot-grey"></div><span>Reset Sensors</span></div>
-                <div class="mc2-metric">2 <span class="mc2-unit">min ago</span></div>
-                <div class="mc2-sub">Last Attempt</div>
-                <div class="mc2-status"><span class="mc2-sk">Feed Status:</span><span class="mc2-sv">Active</span></div>
-                <button class="mc2-btn mc2-btn-primary" onclick="mcAction('sensors','Reset Sensors','2 min ago','Feed Active',this)">Reset</button>
-              </div>
+            <div class="mc-grid">
+              <div id="mc-unit-canerrors"></div>
+              <div id="mc-unit-sensors"></div>
             </div>
+            <div class="mc-grid-full" id="mc-unit-tilt"></div>
+          </div>
 
-            <!-- Row 3: Tilt Calibration — full width -->
-            <div class="mc2-card" id="mc-tilt">
-              <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
-              <div class="mc2-head"><div class="mc2-dot mc2-dot-grey"></div><span>Tilt Calibration</span></div>
-              <input class="mc2-input" id="mc-tilt-input" type="number" placeholder="Measured angle (degrees)" max="45" step="0.1" style="margin:8px 0;">
-              <div class="mc2-status"><span class="mc2-sk">Baseline Tilt:</span><span class="mc2-sv">--</span></div>
-              <button class="mc2-btn mc2-btn-primary" style="margin-top:6px;" onclick="mcAction('tilt','Tilt Calibration',document.getElementById('mc-tilt-input').value+'°','Calibrated',this)">Calibrate</button>
-            </div>
-
-          </div><!-- /co-section-diag -->
-
-          <!-- ── WATER ── -->
-          <div class="co-section-hdr" style="margin-top:16px;" onclick="toggleCoSection('water', this)">
+          <!-- WATER -->
+          <div class="co-section-hdr" style="margin-top:8px;" onclick="toggleCoSection('water', this)">
             <svg class="co-acc-chev" width="10" height="6" viewBox="0 0 10 6" fill="none" style="transform:rotate(0deg);transition:transform 0.2s;flex-shrink:0;"><path d="M8.75 4.75L4.75 0.75L0.75 4.75" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span>Water</span>
           </div>
           <div id="co-section-water">
-
-            <!-- Row 1: Add Water — full width input -->
-            <div class="mc2-card" id="mc-wateradd" style="margin-bottom:10px;">
-              <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
-              <div class="mc2-head"><div class="mc2-dot mc2-dot-grey"></div><span>Add Water</span></div>
-              <input class="mc2-input" id="mc-water-add-input" type="number" placeholder="Add Water (liters)" max="999" style="margin:8px 0;">
-              <div class="mc2-status"><span class="mc2-sk">Last Delivery:</span><span class="mc2-sv">--</span></div>
-              <button class="mc2-btn mc2-btn-primary" style="margin-top:6px;" onclick="mcAction('wateradd','Add Water',document.getElementById('mc-water-add-input').value+'L','Delivered',this)">Add Water</button>
+            <div class="mc-grid-full" id="mc-unit-water"></div>
+            <div class="mc-grid">
+              <div id="mc-unit-waterstate"></div>
+              <div id="mc-unit-waterprop"></div>
             </div>
-
-            <!-- Row 2: Water State | Water Propulsion -->
-            <div class="co-grid" style="margin-bottom:10px;">
-              <div class="mc2-card" id="mc-waterstate">
-                <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
-                <div class="mc2-head"><div class="mc2-dot mc2-dot-green"></div><span>Water State</span></div>
-                <div class="mc2-metric mc2-metric-word">On</div>
-                <div class="mc2-sub">Water State</div>
-                <div class="mc2-status"><span class="mc2-sk">Last Changed:</span><span class="mc2-sv">10:32 AM</span></div>
-                <button class="mc2-btn mc2-btn-ghost" onclick="mcConfirm('waterstate','Water State','Confirm before turning off water','Yes, Turn Off',this)">Turn Off Water</button>
-              </div>
-              <div class="mc2-card" id="mc-waterprop">
-                <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
-                <div class="mc2-head"><div class="mc2-dot mc2-dot-green"></div><span>Water Propulsion</span></div>
-                <div class="mc2-metric mc2-metric-word">On</div>
-                <div class="mc2-sub">Propulsion State</div>
-                <div class="mc2-status"><span class="mc2-sk">Last Changed:</span><span class="mc2-sv">10:32 AM</span></div>
-                <button class="mc2-btn mc2-btn-ghost" onclick="mcConfirm('waterprop','Water Propulsion','Confirm before changing propulsion','Yes, Turn Off',this)">Turn Off</button>
-              </div>
-            </div>
-
-            <!-- Row 3: Reset Water Flow Error — half width -->
-            <div class="co-grid" style="margin-bottom:10px;">
-              <div class="mc2-card" id="mc-waterflow">
-                <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
-                <div class="mc2-head"><div class="mc2-dot mc2-dot-grey"></div><span>Reset Water Flow</span></div>
-                <div class="mc2-metric">3</div>
-                <div class="mc2-sub">Current Flow Errors</div>
-                <div class="mc2-status"><span class="mc2-sk">Last Reset:</span><span class="mc2-sv">10:32 AM</span></div>
-                <button class="mc2-btn mc2-btn-primary" onclick="mcAction('waterflow','Reset Water Flow Error','3 errors','Cleared',this)">Reset</button>
-              </div>
+            <div class="mc-grid">
+              <div id="mc-unit-waterflow"></div>
               <div></div>
             </div>
+          </div>
 
-            <!-- Row 4: Set Water Flow Rate — full width input -->
-            <div class="mc2-card" id="mc-waterrate" style="margin-bottom:8px;">
-              <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
-              <div class="mc2-head"><div class="mc2-dot mc2-dot-grey"></div><span>Set Water Flow Rate</span></div>
-              <input class="mc2-input" id="mc-water-input" type="number" placeholder="Flow rate (L/min)" step="0.1" style="margin:8px 0;">
-              <div class="mc2-status"><span class="mc2-sk">Flow Rate:</span><span class="mc2-sv">--</span></div>
-              <button class="mc2-btn mc2-btn-primary" style="margin-top:6px;" onclick="mcAction('waterrate','Set Water Flow Rate',document.getElementById('mc-water-input').value+'L/min','Set',this)">Set Flow Rate</button>
-            </div>
-
-          </div><!-- /co-section-water -->
-
-
-          <!-- ── ADMIX ── -->
-          <div class="co-section-hdr" style="margin-top:16px;" onclick="toggleCoSection('admix', this)">
+          <!-- ADMIX -->
+          <div class="co-section-hdr" style="margin-top:8px;" onclick="toggleCoSection('admix', this)">
             <svg class="co-acc-chev" width="10" height="6" viewBox="0 0 10 6" fill="none" style="transform:rotate(0deg);transition:transform 0.2s;flex-shrink:0;"><path d="M8.75 4.75L4.75 0.75L0.75 4.75" stroke="#36322D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span>Admix</span>
           </div>
           <div id="co-section-admix">
-
-            <!-- Row 1: Add Admix — full width input -->
-            <div class="mc2-card" id="mc-admixadd" style="margin-bottom:10px;">
-              <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
-              <div class="mc2-head"><div class="mc2-dot mc2-dot-grey"></div><span>Add Admix</span></div>
-              <input class="mc2-input" id="mc-admix-add-input" type="number" placeholder="Add Admix (oz)" max="999" style="margin:8px 0;">
-              <div class="mc2-metric mv-muted">—</div>
-              <div class="mc2-sub">Flow Rate</div>
-              <div class="mc2-status"><span class="mc2-sk">Last Delivery:</span><span class="mc2-sv">--</span></div>
-              <button class="mc2-btn mc2-btn-primary" style="margin-top:6px;" onclick="mcAction('admixadd','Add Admix',document.getElementById('mc-admix-add-input').value+'oz','Delivered',this)">Add Admix</button>
+            <div class="mc-grid-full" id="mc-unit-admix"></div>
+            <div class="mc-grid">
+              <div id="mc-unit-admixstate"></div>
+              <div id="mc-unit-admixprop"></div>
             </div>
-
-            <!-- Row 2: Admix State | Admix Propulsion -->
-            <div class="co-grid" style="margin-bottom:10px;">
-              <div class="mc2-card" id="mc-admixstate">
-                <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
-                <div class="mc2-head"><div class="mc2-dot mc2-dot-green"></div><span>Admix State</span></div>
-                <div class="mc2-metric mc2-metric-word">On</div>
-                <div class="mc2-sub">Admix State</div>
-                <div class="mc2-status"><span class="mc2-sk">Last Changed:</span><span class="mc2-sv">10:32 AM</span></div>
-                <button class="mc2-btn mc2-btn-ghost" onclick="mcConfirm('admixstate','Admix State','Confirm before turning off admix','Yes, Turn Off',this)">Turn Off Admix</button>
-              </div>
-              <div class="mc2-card" id="mc-admixprop">
-                <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
-                <div class="mc2-head"><div class="mc2-dot mc2-dot-green"></div><span>Admix Propulsion</span></div>
-                <div class="mc2-metric mc2-metric-word">On</div>
-                <div class="mc2-sub">Propulsion State</div>
-                <div class="mc2-status"><span class="mc2-sk">Last Changed:</span><span class="mc2-sv">10:32 AM</span></div>
-                <button class="mc2-btn mc2-btn-ghost" onclick="mcConfirm('admixprop','Admix Propulsion','Confirm before changing admix propulsion','Yes, Turn Off',this)">Turn Off</button>
-              </div>
-            </div>
-
-            <!-- Row 3: Reset Admix Flow Error — half width -->
-            <div class="co-grid" style="margin-bottom:8px;">
-              <div class="mc2-card" id="mc-admixflow">
-                <div class="mc2-progress"><div class="mc2-progress-fill"></div></div>
-                <div class="mc2-head"><div class="mc2-dot mc2-dot-grey"></div><span>Reset Admix Flow</span></div>
-                <div class="mc2-metric">3</div>
-                <div class="mc2-sub">Current Flow Errors</div>
-                <div class="mc2-status"><span class="mc2-sk">Last Reset:</span><span class="mc2-sv">10:32 AM</span></div>
-                <button class="mc2-btn mc2-btn-primary" onclick="mcAction('admixflow','Reset Admix Flow Error','3 errors','Cleared',this)">Reset</button>
-              </div>
+            <div class="mc-grid">
+              <div id="mc-unit-admixflow"></div>
               <div></div>
             </div>
+          </div>
 
-          </div><!-- /co-section-admix -->
+          <!-- Command History Table — flows naturally below cards -->
+          <div style="margin-top:8px;border:1px solid rgba(54,50,45,0.13);border-radius:20px;overflow:hidden;background:#ffffff;margin-bottom:4px;">
+            <div style="padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <div style="font-size:13px;font-weight:600;letter-spacing:-0.26px;color:#1a1814;">Truck Command History</div>
+                <div style="font-size:11px;color:rgba(40,36,30,0.5);margin-top:2px;letter-spacing:-0.1px;" id="mc-table-updated">No commands yet</div>
+              </div>
+              <button onclick="mcClearTable()" style="font-size:11px;color:rgba(40,36,30,0.5);background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;padding:3px 8px;border-radius:6px;letter-spacing:-0.1px;">Clear</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:7px 16px;border-top:1px solid rgba(54,50,45,0.08);border-bottom:1px solid rgba(54,50,45,0.08);">
+              <span style="font-size:10px;font-weight:600;letter-spacing:0.4px;text-transform:uppercase;color:rgba(40,36,30,0.5);">Command</span>
+              <span style="font-size:10px;font-weight:600;letter-spacing:0.4px;text-transform:uppercase;color:rgba(40,36,30,0.5);">Value</span>
+              <span style="font-size:10px;font-weight:600;letter-spacing:0.4px;text-transform:uppercase;color:rgba(40,36,30,0.5);">Result</span>
+            </div>
+            <div id="mc-table-body">
+              <div id="mc-table-empty" style="padding:24px 16px;text-align:center;font-size:12px;color:rgba(40,36,30,0.5);letter-spacing:-0.1px;">Interact with a card to log a command</div>
+            </div>
+            <div id="mc-table-count" style="display:none;padding:8px 16px;font-size:11px;color:rgba(40,36,30,0.5);letter-spacing:-0.1px;border-top:1px solid rgba(54,50,45,0.08);"></div>
+          </div>
 
-        </div>
+        </div><!-- /co-scroll -->
       </div><!-- /state-manual -->
 
 
@@ -3154,7 +3213,10 @@ function pingTruck() {
 }
 
 function closeDrawer() {
-  document.getElementById('drawer').classList.remove('open');
+  const drawerEl = document.getElementById('drawer');
+  drawerEl.classList.add('closing');
+  drawerEl.classList.remove('open');
+  setTimeout(() => drawerEl.classList.remove('closing'), 280);
   document.querySelector('.d-chrome').style.display = 'flex';
   document.querySelector('.d-nav-row').style.display = 'flex';
   /* Clean up unlink success state if present */
@@ -3605,6 +3667,7 @@ function selectDrawerNav(label, el) {
   document.getElementById('state-detail').style.display     = 'none';
   document.getElementById('state-components').style.display = showComponents ? 'flex' : 'none';
   document.getElementById('state-manual').style.display     = showManual     ? 'flex' : 'none';
+  if (showManual) initMcCards();
   document.getElementById('state-timeline').style.display   = showTimeline   ? 'flex' : 'none';
   document.getElementById('state-config').style.display     = showConfig     ? 'flex' : 'none';
   document.getElementById('state-sensor').style.display     = showSensor     ? 'flex' : 'none';
@@ -4319,104 +4382,205 @@ function toggleCoSection(id, hdr) {
   chev.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
 }
 
-function mcAction(id, title, value, result, btn) {
-  const card = btn.closest('.mc2-card');
-  const track = card.querySelector('.mc2-progress');
-  const fill  = card.querySelector('.mc2-progress-fill');
-  const dot   = card.querySelector('.mc2-dot');
-  const sub   = card.querySelector('.mc2-sub');
-  const sv    = card.querySelector('.mc2-sv');
+/* ════════════════════════════════════════
+   MANUAL CONTROL — CARD SYSTEM
+════════════════════════════════════════ */
+const MC_CARD_DEFS = [
+  { id:'ping', title:'Ping Truck', hasInput:false, idleMetric:'2', idleUnit:'min ago', idleMetricSub:'Last Ping', idleStatusKey:'Status:', idleStatusVal:'Online', idleBtnLabel:'Ping Truck', mountId:'mc-unit-ping',
+    scenarios:[
+      { id:'success', label:'Responded', progressTo:100, progressDuration:1200, resolve:()=>({ dotClass:'dot-green', cardClass:'state-success', badge:{label:'Responded',cls:'badge-ok'}, inputContent:{type:'pill',label:'Responded',cls:'pill-success'}, metric:'just now', unit:'', metricSub:'Last Ping', statusKey:'Status:', statusVal:'Online', btn:{label:'Ping Again',cls:'btn-primary',disabled:false} }) },
+      { id:'error', label:'No Response', progressTo:80, progressDuration:1400, stutter:true, resolve:()=>({ dotClass:'dot-red', cardClass:'state-error', badge:{label:'No Response',cls:'badge-error'}, inputContent:{type:'pill',label:'Timed Out',cls:'pill-error'}, metric:'Timed Out', unit:'', metricSub:'Last known: 2 min ago', statusKey:'Status:', statusVal:'Unreachable', btn:{label:'Retry Ping',cls:'btn-primary',disabled:false} }) }
+    ]
+  },
+  { id:'restart', title:'Restart System', hasInput:false, idleMetric:'2', idleUnit:'min ago', idleMetricSub:'Last Attempt', idleStatusKey:'Truck Status:', idleStatusVal:'Online', idleBtnLabel:'Restart System', hasConfirm:true, confirmLabel:'Confirm before restarting the system', confirmBtnLabel:'Yes', mountId:'mc-unit-restart',
+    scenarios:[
+      { id:'success', label:'Acknowledged', progressTo:100, progressDuration:1500, resolve:()=>({ dotClass:'dot-green', cardClass:'state-success', badge:{label:'Acknowledged',cls:'badge-ok'}, inputContent:{type:'pill',label:'Shutdown event logged',cls:'pill-success'}, metric:'just now', unit:'', metricSub:'Last Attempt', statusKey:'Truck Status:', statusVal:'Restarting', btn:{label:'Restart System',cls:'btn-primary',disabled:false} }) },
+      { id:'error', label:'Command Failed', progressTo:45, progressDuration:800, retract:true, resolve:()=>({ dotClass:'dot-red', cardClass:'state-error', badge:{label:'Failed',cls:'badge-error'}, inputContent:{type:'pill',label:'Command failed',cls:'pill-error'}, metric:'2', unit:'min ago', metricSub:'Last Attempt', statusKey:'Truck Status:', statusVal:'Online', btn:{label:'Retry',cls:'btn-primary',disabled:false} }) },
+      { id:'disabled', label:'Truck Off', isDisabled:true, resolve:()=>({ dotClass:'dot-muted', cardClass:'state-disabled', badge:{label:'Truck Off',cls:'badge-disabled'}, inputContent:{type:'pill',label:'Truck is offline',cls:'pill-disabled'}, metric:'—', unit:'', metricSub:'Last Attempt', statusKey:'Truck Status:', statusVal:'Offline', btn:{label:'Restart System',cls:'btn-primary',disabled:true} }) }
+    ]
+  },
+  { id:'canerrors', title:'CAN Errors', hasInput:false, idleMetric:'3', idleUnit:'', idleMetricSub:'Current CAN Errors', idleStatusKey:'Last Reset:', idleStatusVal:'10:32 AM', idleBtnLabel:'Reset', mountId:'mc-unit-canerrors',
+    scenarios:[
+      { id:'success', label:'All Cleared', progressTo:100, progressDuration:1400, resolve:()=>({ dotClass:'dot-green', cardClass:'state-success', badge:{label:'Cleared',cls:'badge-ok'}, inputContent:{type:'pill',label:'All errors cleared',cls:'pill-success'}, metric:'0', unit:'', metricSub:'Current CAN Errors', statusKey:'Last Reset:', statusVal:'just now', btn:{label:'Reset',cls:'btn-primary',disabled:false} }) },
+      { id:'partial', label:'Partial Clear', progressTo:65, progressDuration:1100, progressStall:400, resolve:()=>({ dotClass:'dot-amber', cardClass:'state-partial', badge:{label:'1 remaining',cls:'badge-warn'}, inputContent:{type:'pill',label:'Partial clear',cls:'pill-partial'}, metric:'1', unit:'', metricSub:'Current CAN Errors', statusKey:'Last Reset:', statusVal:'just now', btn:{label:'Reset Again',cls:'btn-partial',disabled:false} }) },
+      { id:'error', label:'All Persist', progressTo:100, progressDuration:1300, resolve:()=>({ dotClass:'dot-red', cardClass:'state-error', badge:{label:'Not cleared',cls:'badge-error'}, inputContent:{type:'pill',label:'Errors persist',cls:'pill-error'}, metric:'3', unit:'', metricSub:'Current CAN Errors', statusKey:'Last Reset:', statusVal:'just now', btn:{label:'Retry Reset',cls:'btn-primary',disabled:false} }) },
+      { id:'timeout', label:'Timeout', progressTo:80, progressDuration:1400, stutter:true, resolve:()=>({ dotClass:'dot-red-heavy', cardClass:'state-error-heavy', badge:{label:'Timed Out',cls:'badge-error-heavy'}, inputContent:{type:'pill',label:'No response from truck',cls:'pill-error-heavy'}, metric:'3', unit:'', metricSub:'Current CAN Errors', statusKey:'Last Reset:', statusVal:'Failed', btn:{label:'Retry',cls:'btn-primary',disabled:false} }) }
+    ]
+  },
+  { id:'sensors', title:'Reset Sensors', hasInput:false, idleMetric:'2', idleUnit:'min ago', idleMetricSub:'Last Attempt', idleStatusKey:'Feed Status:', idleStatusVal:'Active', idleBtnLabel:'Reset', mountId:'mc-unit-sensors',
+    scenarios:[
+      { id:'success', label:'Feed Active', progressTo:100, progressDuration:1300, resolve:()=>({ dotClass:'dot-green', cardClass:'state-success', badge:{label:'Feed Active',cls:'badge-ok'}, inputContent:{type:'pill',label:'Sensors responding',cls:'pill-success'}, metric:'just now', unit:'', metricSub:'Last Attempt', statusKey:'Feed Status:', statusVal:'Active', btn:{label:'Reset',cls:'btn-primary',disabled:false} }) },
+      { id:'error', label:'No Feed', progressTo:100, progressDuration:1200, resolve:()=>({ dotClass:'dot-red', cardClass:'state-error', badge:{label:'No Feed',cls:'badge-error'}, inputContent:{type:'pill',label:'Sensors not reporting',cls:'pill-error'}, metric:'just now', unit:'', metricSub:'Last Attempt', statusKey:'Feed Status:', statusVal:'No Feed', btn:{label:'Retry',cls:'btn-primary',disabled:false} }) },
+      { id:'timeout', label:'Timeout', progressTo:80, progressDuration:1400, stutter:true, resolve:()=>({ dotClass:'dot-red-heavy', cardClass:'state-error-heavy', badge:{label:'Timed Out',cls:'badge-error-heavy'}, inputContent:{type:'pill',label:'No response from truck',cls:'pill-error-heavy'}, metric:'2', unit:'min ago', metricSub:'Last Attempt', statusKey:'Feed Status:', statusVal:'Unknown', btn:{label:'Retry',cls:'btn-primary',disabled:false} }) }
+    ]
+  },
+  { id:'tilt', title:'Tilt Calibration', hasInput:true, inputPlaceholder:'Measured angle (degrees)', inputMax:45, inputAllowDecimal:true, idleMetric:'—', idleUnit:'', idleMetricSub:'Current Tilt', idleStatusKey:'Baseline Tilt:', idleStatusVal:'--', idleBtnLabel:'Calibrate', mountId:'mc-unit-tilt',
+    scenarios:[
+      { id:'success', label:'At Zero', progressTo:100, progressDuration:1400, resolve:()=>({ dotClass:'dot-green', cardClass:'state-success', badge:{label:'Level',cls:'badge-ok'}, inputContent:{type:'pill',label:'Perfectly level',cls:'pill-success'}, metric:'0°', unit:'', metricSub:'Current Tilt', statusKey:'Baseline Tilt:', statusVal:'0°', btn:{label:'Calibrate',cls:'btn-primary',disabled:false} }) },
+      { id:'partial', label:'Needs Adjust', progressTo:100, progressDuration:1400, resolve:()=>{ let raw; do { raw=(Math.floor(Math.random()*40)-20)/10; } while(raw===0); const c=(raw>0?'+':'')+raw.toFixed(1)+'°'; return { dotClass:'dot-amber', cardClass:'state-warn', badge:{label:'Needs Adjustment',cls:'badge-warn'}, inputContent:{type:'pill',label:'Correction: '+c,cls:'pill-warning'}, metric:c, unit:'', metricSub:'Current Tilt', statusKey:'Baseline Tilt:', statusVal:c, btn:{label:'Calibrate Again',cls:'btn-primary',disabled:false} }; } },
+      { id:'error', label:'Major Issue', progressTo:100, progressDuration:1400, resolve:()=>{ const sign=Math.random()<0.5?1:-1; const raw=sign*(Math.floor(Math.random()*80)+21)/10; const c=(raw>0?'+':'')+raw.toFixed(1)+'°'; return { dotClass:'dot-red-heavy', cardClass:'state-major', badge:{label:'Major Issue',cls:'badge-major'}, inputContent:{type:'pill',label:c+' — significant work needed',cls:'pill-major'}, metric:c, unit:'', metricSub:'Current Tilt', statusKey:'Baseline Tilt:', statusVal:c, btn:{label:'Calibrate Again',cls:'btn-primary',disabled:false} }; } },
+      { id:'timeout', label:'Timeout', progressTo:80, progressDuration:1400, stutter:true, resolve:()=>({ dotClass:'dot-red-heavy', cardClass:'state-error-heavy', badge:{label:'Timed Out',cls:'badge-error-heavy'}, inputContent:{type:'pill',label:'No response from truck',cls:'pill-error-heavy'}, metric:'—', unit:'', metricSub:'Current Tilt', statusKey:'Baseline Tilt:', statusVal:'--', btn:{label:'Retry',cls:'btn-primary',disabled:false} }) }
+    ]
+  },
+  { id:'water', title:'Add Water', hasInput:true, inputPlaceholder:'Add Water (liters)', inputMax:999, idleMetric:'—', idleUnit:'', idleMetricSub:'Flow Rate', idleStatusKey:'Last Delivery:', idleStatusVal:'--', idleBtnLabel:'Add Water', mountId:'mc-unit-water',
+    scenarios:[
+      { id:'success', label:'Full Delivery', progressTo:100, progressDuration:1800, resolve:(val)=>({ dotClass:'dot-green', cardClass:'state-success', badge:{label:'Delivered',cls:'badge-ok'}, inputContent:{type:'pill',label:`${val}L delivered`,cls:'pill-success'}, metric:String(val), unit:'L', metricSub:'Flow Rate  15.0 gal/min', statusKey:'Last Delivery:', statusVal:'just now', btn:{label:'Add More Water',cls:'btn-primary',disabled:false} }) },
+      { id:'partial', label:'Partial Delivery', progressTo:65, progressDuration:1100, progressStall:600, resolve:(val)=>{ const r=parseInt(val)||45; const d=Math.max(1,Math.floor(r*0.67)); const s=r-d; return { dotClass:'dot-amber', cardClass:'state-partial', badge:{label:`${s}L short`,cls:'badge-partial'}, inputContent:{type:'pill',label:'Flow issue active',cls:'pill-partial'}, metric:String(d), unit:'L', metricSub:'Flow Rate  4.0 gal/min', statusKey:'Short by:', statusVal:`${s}L`, btn:{label:`Add remaining ${s}L`,cls:'btn-partial',disabled:false} }; } },
+      { id:'error', label:'Command Failed', progressTo:40, progressDuration:700, retract:true, resolve:(val)=>({ dotClass:'dot-red', cardClass:'state-error', badge:{label:'Failed',cls:'badge-error'}, inputContent:{type:'input',val:val,locked:false}, metric:'—', unit:'', metricSub:'Flow Rate', statusKey:'Requested:', statusVal:`${val}L`, btn:{label:'Retry',cls:'btn-primary',disabled:false} }) }
+    ]
+  },
+  { id:'waterstate', title:'Water State', hasInput:false, idleMetric:'On', idleUnit:'', idleMetricSub:'Water State', idleStatusKey:'Last Changed:', idleStatusVal:'10:32 AM', idleBtnLabel:'Turn Off Water', hasConfirm:true, confirmLabel:'Confirm before turning off water', confirmBtnLabel:'Yes', mountId:'mc-unit-waterstate',
+    scenarios:[
+      { id:'success', label:'On → Off', progressTo:100, progressDuration:1400, resolve:()=>({ dotClass:'dot-green', cardClass:'state-success', badge:{label:'Acknowledged',cls:'badge-ok'}, inputContent:{type:'pill',label:'Water turned off',cls:'pill-success'}, metric:'Off', unit:'', metricSub:'Water State', statusKey:'Last Changed:', statusVal:'just now', btn:{label:'Turn On Water',cls:'btn-primary',disabled:false} }) },
+      { id:'error', label:'On → Timeout', progressTo:80, progressDuration:1400, stutter:true, resolve:()=>({ dotClass:'dot-red', cardClass:'state-error', badge:{label:'Timed Out',cls:'badge-error'}, inputContent:{type:'pill',label:'No response',cls:'pill-error'}, metric:'On', unit:'', metricSub:'Water State', statusKey:'Last Changed:', statusVal:'Failed', btn:{label:'Retry',cls:'btn-primary',disabled:false} }) },
+      { id:'success2', label:'Off → On', progressTo:100, progressDuration:1400, isOffStart:true, resolve:()=>({ dotClass:'dot-green', cardClass:'state-success', badge:{label:'Acknowledged',cls:'badge-ok'}, inputContent:{type:'pill',label:'Water turned on',cls:'pill-success'}, metric:'On', unit:'', metricSub:'Water State', statusKey:'Last Changed:', statusVal:'just now', btn:{label:'Turn Off Water',cls:'btn-primary',disabled:false} }) },
+      { id:'error2', label:'Off → Timeout', progressTo:80, progressDuration:1400, stutter:true, isOffStart:true, resolve:()=>({ dotClass:'dot-red', cardClass:'state-error', badge:{label:'Timed Out',cls:'badge-error'}, inputContent:{type:'pill',label:'No response',cls:'pill-error'}, metric:'Off', unit:'', metricSub:'Water State', statusKey:'Last Changed:', statusVal:'Failed', btn:{label:'Retry',cls:'btn-primary',disabled:false} }) }
+    ]
+  },
+  { id:'waterprop', title:'Water Prop.', hasInput:false, idleMetric:'On', idleUnit:'', idleMetricSub:'Propulsion State', idleStatusKey:'Last Changed:', idleStatusVal:'10:32 AM', idleBtnLabel:'Turn Off Propulsion', hasConfirm:true, confirmLabel:'Confirm before changing water propulsion', confirmBtnLabel:'Yes', mountId:'mc-unit-waterprop',
+    scenarios:[
+      { id:'success', label:'On → Off', progressTo:100, progressDuration:1400, resolve:()=>({ dotClass:'dot-green', cardClass:'state-success', badge:{label:'Acknowledged',cls:'badge-ok'}, inputContent:{type:'pill',label:'Propulsion off',cls:'pill-success'}, metric:'Off', unit:'', metricSub:'Propulsion State', statusKey:'Last Changed:', statusVal:'just now', btn:{label:'Turn On Propulsion',cls:'btn-primary',disabled:false} }) },
+      { id:'error', label:'On → Timeout', progressTo:80, progressDuration:1400, stutter:true, resolve:()=>({ dotClass:'dot-red', cardClass:'state-error', badge:{label:'Timed Out',cls:'badge-error'}, inputContent:{type:'pill',label:'No response',cls:'pill-error'}, metric:'On', unit:'', metricSub:'Propulsion State', statusKey:'Last Changed:', statusVal:'Failed', btn:{label:'Retry',cls:'btn-primary',disabled:false} }) },
+      { id:'success2', label:'Off → On', progressTo:100, progressDuration:1400, isOffStart:true, resolve:()=>({ dotClass:'dot-green', cardClass:'state-success', badge:{label:'Acknowledged',cls:'badge-ok'}, inputContent:{type:'pill',label:'Propulsion on',cls:'pill-success'}, metric:'On', unit:'', metricSub:'Propulsion State', statusKey:'Last Changed:', statusVal:'just now', btn:{label:'Turn Off Propulsion',cls:'btn-primary',disabled:false} }) },
+      { id:'error2', label:'Off → Timeout', progressTo:80, progressDuration:1400, stutter:true, isOffStart:true, resolve:()=>({ dotClass:'dot-red', cardClass:'state-error', badge:{label:'Timed Out',cls:'badge-error'}, inputContent:{type:'pill',label:'No response',cls:'pill-error'}, metric:'Off', unit:'', metricSub:'Propulsion State', statusKey:'Last Changed:', statusVal:'Failed', btn:{label:'Retry',cls:'btn-primary',disabled:false} }) }
+    ]
+  },
+  { id:'waterflow', title:'Water Flow', hasInput:false, idleMetric:'3', idleUnit:'', idleMetricSub:'Flow Errors', idleStatusKey:'Last Reset:', idleStatusVal:'10:32 AM', idleBtnLabel:'Reset', mountId:'mc-unit-waterflow',
+    scenarios:[
+      { id:'success', label:'All Cleared', progressTo:100, progressDuration:1400, resolve:()=>({ dotClass:'dot-green', cardClass:'state-success', badge:{label:'Cleared',cls:'badge-ok'}, inputContent:{type:'pill',label:'All errors cleared',cls:'pill-success'}, metric:'0', unit:'', metricSub:'Current Flow Errors', statusKey:'Last Reset:', statusVal:'just now', btn:{label:'Reset',cls:'btn-primary',disabled:false} }) },
+      { id:'partial', label:'Partial Clear', progressTo:65, progressDuration:1100, progressStall:400, resolve:()=>({ dotClass:'dot-amber', cardClass:'state-partial', badge:{label:'1 remaining',cls:'badge-warn'}, inputContent:{type:'pill',label:'Partial clear',cls:'pill-partial'}, metric:'1', unit:'', metricSub:'Current Flow Errors', statusKey:'Last Reset:', statusVal:'just now', btn:{label:'Reset Again',cls:'btn-partial',disabled:false} }) },
+      { id:'error', label:'All Persist', progressTo:100, progressDuration:1300, resolve:()=>({ dotClass:'dot-red', cardClass:'state-error', badge:{label:'Not cleared',cls:'badge-error'}, inputContent:{type:'pill',label:'Errors persist',cls:'pill-error'}, metric:'3', unit:'', metricSub:'Current Flow Errors', statusKey:'Last Reset:', statusVal:'just now', btn:{label:'Retry Reset',cls:'btn-primary',disabled:false} }) },
+      { id:'timeout', label:'Timeout', progressTo:80, progressDuration:1400, stutter:true, resolve:()=>({ dotClass:'dot-red-heavy', cardClass:'state-error-heavy', badge:{label:'Timed Out',cls:'badge-error-heavy'}, inputContent:{type:'pill',label:'No response from truck',cls:'pill-error-heavy'}, metric:'3', unit:'', metricSub:'Current Flow Errors', statusKey:'Last Reset:', statusVal:'Failed', btn:{label:'Retry',cls:'btn-primary',disabled:false} }) }
+    ]
+  },
+  { id:'admix', title:'Add Admix', hasInput:true, inputPlaceholder:'Add Admix (oz)', inputMax:999, idleMetric:'—', idleUnit:'', idleMetricSub:'Flow Rate', idleStatusKey:'Last Delivery:', idleStatusVal:'--', idleBtnLabel:'Add Admix', mountId:'mc-unit-admix',
+    scenarios:[
+      { id:'success', label:'Full Delivery', progressTo:100, progressDuration:1800, resolve:(val)=>({ dotClass:'dot-green', cardClass:'state-success', badge:{label:'Delivered',cls:'badge-ok'}, inputContent:{type:'pill',label:`${val}oz delivered`,cls:'pill-success'}, metric:String(val), unit:'oz', metricSub:'Flow Rate  15.0 gal/min', statusKey:'Last Delivery:', statusVal:'just now', btn:{label:'Add More Admix',cls:'btn-primary',disabled:false} }) },
+      { id:'partial', label:'Partial Delivery', progressTo:65, progressDuration:1100, progressStall:600, resolve:(val)=>{ const r=parseInt(val)||45; const d=Math.max(1,Math.floor(r*0.67)); const s=r-d; return { dotClass:'dot-amber', cardClass:'state-partial', badge:{label:`${s}oz short`,cls:'badge-partial'}, inputContent:{type:'pill',label:'Flow issue active',cls:'pill-partial'}, metric:String(d), unit:'oz', metricSub:'Flow Rate  4.0 gal/min', statusKey:'Short by:', statusVal:`${s}oz`, btn:{label:`Add remaining ${s}oz`,cls:'btn-partial',disabled:false} }; } },
+      { id:'error', label:'Command Failed', progressTo:40, progressDuration:700, retract:true, resolve:(val)=>({ dotClass:'dot-red', cardClass:'state-error', badge:{label:'Failed',cls:'badge-error'}, inputContent:{type:'input',val:val,locked:false}, metric:'—', unit:'', metricSub:'Flow Rate', statusKey:'Requested:', statusVal:`${val}oz`, btn:{label:'Retry',cls:'btn-primary',disabled:false} }) }
+    ]
+  },
+  { id:'admixstate', title:'Admix State', hasInput:false, idleMetric:'On', idleUnit:'', idleMetricSub:'Admix State', idleStatusKey:'Last Changed:', idleStatusVal:'10:32 AM', idleBtnLabel:'Turn Off Admix', hasConfirm:true, confirmLabel:'Confirm before turning off admix', confirmBtnLabel:'Yes', mountId:'mc-unit-admixstate',
+    scenarios:[
+      { id:'success', label:'On → Off', progressTo:100, progressDuration:1400, resolve:()=>({ dotClass:'dot-green', cardClass:'state-success', badge:{label:'Acknowledged',cls:'badge-ok'}, inputContent:{type:'pill',label:'Admix turned off',cls:'pill-success'}, metric:'Off', unit:'', metricSub:'Admix State', statusKey:'Last Changed:', statusVal:'just now', btn:{label:'Turn On Admix',cls:'btn-primary',disabled:false} }) },
+      { id:'error', label:'On → Timeout', progressTo:80, progressDuration:1400, stutter:true, resolve:()=>({ dotClass:'dot-red', cardClass:'state-error', badge:{label:'Timed Out',cls:'badge-error'}, inputContent:{type:'pill',label:'No response',cls:'pill-error'}, metric:'On', unit:'', metricSub:'Admix State', statusKey:'Last Changed:', statusVal:'Failed', btn:{label:'Retry',cls:'btn-primary',disabled:false} }) },
+      { id:'success2', label:'Off → On', progressTo:100, progressDuration:1400, isOffStart:true, resolve:()=>({ dotClass:'dot-green', cardClass:'state-success', badge:{label:'Acknowledged',cls:'badge-ok'}, inputContent:{type:'pill',label:'Admix turned on',cls:'pill-success'}, metric:'On', unit:'', metricSub:'Admix State', statusKey:'Last Changed:', statusVal:'just now', btn:{label:'Turn Off Admix',cls:'btn-primary',disabled:false} }) },
+      { id:'error2', label:'Off → Timeout', progressTo:80, progressDuration:1400, stutter:true, isOffStart:true, resolve:()=>({ dotClass:'dot-red', cardClass:'state-error', badge:{label:'Timed Out',cls:'badge-error'}, inputContent:{type:'pill',label:'No response',cls:'pill-error'}, metric:'Off', unit:'', metricSub:'Admix State', statusKey:'Last Changed:', statusVal:'Failed', btn:{label:'Retry',cls:'btn-primary',disabled:false} }) }
+    ]
+  },
+  { id:'admixprop', title:'Admix Prop.', hasInput:false, idleMetric:'On', idleUnit:'', idleMetricSub:'Propulsion State', idleStatusKey:'Last Changed:', idleStatusVal:'10:32 AM', idleBtnLabel:'Turn Off Propulsion', hasConfirm:true, confirmLabel:'Confirm before changing admix propulsion', confirmBtnLabel:'Yes', mountId:'mc-unit-admixprop',
+    scenarios:[
+      { id:'success', label:'On → Off', progressTo:100, progressDuration:1400, resolve:()=>({ dotClass:'dot-green', cardClass:'state-success', badge:{label:'Acknowledged',cls:'badge-ok'}, inputContent:{type:'pill',label:'Admix propulsion off',cls:'pill-success'}, metric:'Off', unit:'', metricSub:'Propulsion State', statusKey:'Last Changed:', statusVal:'just now', btn:{label:'Turn On Propulsion',cls:'btn-primary',disabled:false} }) },
+      { id:'error', label:'On → Timeout', progressTo:80, progressDuration:1400, stutter:true, resolve:()=>({ dotClass:'dot-red', cardClass:'state-error', badge:{label:'Timed Out',cls:'badge-error'}, inputContent:{type:'pill',label:'No response',cls:'pill-error'}, metric:'On', unit:'', metricSub:'Propulsion State', statusKey:'Last Changed:', statusVal:'Failed', btn:{label:'Retry',cls:'btn-primary',disabled:false} }) },
+      { id:'success2', label:'Off → On', progressTo:100, progressDuration:1400, isOffStart:true, resolve:()=>({ dotClass:'dot-green', cardClass:'state-success', badge:{label:'Acknowledged',cls:'badge-ok'}, inputContent:{type:'pill',label:'Admix propulsion on',cls:'pill-success'}, metric:'On', unit:'', metricSub:'Propulsion State', statusKey:'Last Changed:', statusVal:'just now', btn:{label:'Turn Off Propulsion',cls:'btn-primary',disabled:false} }) },
+      { id:'error2', label:'Off → Timeout', progressTo:80, progressDuration:1400, stutter:true, isOffStart:true, resolve:()=>({ dotClass:'dot-red', cardClass:'state-error', badge:{label:'Timed Out',cls:'badge-error'}, inputContent:{type:'pill',label:'No response',cls:'pill-error'}, metric:'Off', unit:'', metricSub:'Propulsion State', statusKey:'Last Changed:', statusVal:'Failed', btn:{label:'Retry',cls:'btn-primary',disabled:false} }) }
+    ]
+  },
+  { id:'admixflow', title:'Admix Flow', hasInput:false, idleMetric:'3', idleUnit:'', idleMetricSub:'Flow Errors', idleStatusKey:'Last Reset:', idleStatusVal:'10:32 AM', idleBtnLabel:'Reset', mountId:'mc-unit-admixflow',
+    scenarios:[
+      { id:'success', label:'All Cleared', progressTo:100, progressDuration:1400, resolve:()=>({ dotClass:'dot-green', cardClass:'state-success', badge:{label:'Cleared',cls:'badge-ok'}, inputContent:{type:'pill',label:'All errors cleared',cls:'pill-success'}, metric:'0', unit:'', metricSub:'Current Flow Errors', statusKey:'Last Reset:', statusVal:'just now', btn:{label:'Reset',cls:'btn-primary',disabled:false} }) },
+      { id:'partial', label:'Partial Clear', progressTo:65, progressDuration:1100, progressStall:400, resolve:()=>({ dotClass:'dot-amber', cardClass:'state-partial', badge:{label:'1 remaining',cls:'badge-warn'}, inputContent:{type:'pill',label:'Partial clear',cls:'pill-partial'}, metric:'1', unit:'', metricSub:'Current Flow Errors', statusKey:'Last Reset:', statusVal:'just now', btn:{label:'Reset Again',cls:'btn-partial',disabled:false} }) },
+      { id:'error', label:'All Persist', progressTo:100, progressDuration:1300, resolve:()=>({ dotClass:'dot-red', cardClass:'state-error', badge:{label:'Not cleared',cls:'badge-error'}, inputContent:{type:'pill',label:'Errors persist',cls:'pill-error'}, metric:'3', unit:'', metricSub:'Current Flow Errors', statusKey:'Last Reset:', statusVal:'just now', btn:{label:'Retry Reset',cls:'btn-primary',disabled:false} }) },
+      { id:'timeout', label:'Timeout', progressTo:80, progressDuration:1400, stutter:true, resolve:()=>({ dotClass:'dot-red-heavy', cardClass:'state-error-heavy', badge:{label:'Timed Out',cls:'badge-error-heavy'}, inputContent:{type:'pill',label:'No response from truck',cls:'pill-error-heavy'}, metric:'3', unit:'', metricSub:'Current Flow Errors', statusKey:'Last Reset:', statusVal:'Failed', btn:{label:'Retry',cls:'btn-primary',disabled:false} }) }
+    ]
+  }
+];
 
-  if (!btn.dataset.orig) btn.dataset.orig = btn.textContent;
-
-  /* pending */
-  card.classList.add('mc2-pending');
-  btn.textContent = 'Sending…';
-  btn.disabled = true;
-  dot.style.background = 'var(--blue)';
-  dot.classList.add('pulsing');
-
-  /* progress bar — animate to 90% over 1s, rest fills on success */
-  track.classList.add('visible');
-  fill.style.transition = 'width 1s ease-out';
-  fill.style.width = '90%';
-
-  setTimeout(() => {
-    /* complete progress */
-    fill.style.transition = 'width 0.25s ease-out';
-    fill.style.width = '100%';
-
-    setTimeout(() => {
-      /* success state */
-      card.classList.remove('mc2-pending');
-      card.classList.add('mc2-success');
-      dot.classList.remove('pulsing');
-      dot.style.background = '#16a34a';
-
-      /* sweep in new sub text */
-      if (sub) {
-        sub.style.opacity = '0';
-        setTimeout(() => {
-          sub.textContent = result;
-          sub.classList.add('mc2-sweep');
-          sub.style.opacity = '1';
-          sub.addEventListener('animationend', () => sub.classList.remove('mc2-sweep'), {once:true});
-        }, 80);
-      }
-
-      /* sweep in new status value */
-      if (sv) {
-        sv.style.opacity = '0';
-        setTimeout(() => {
-          sv.textContent = 'just now';
-          sv.classList.add('mc2-sweep');
-          sv.style.opacity = '1';
-          sv.addEventListener('animationend', () => sv.classList.remove('mc2-sweep'), {once:true});
-        }, 140);
-      }
-
-      btn.textContent = 'Done ✓';
-      btn.disabled = false;
-
-      /* fade out progress bar */
-      setTimeout(() => {
-        track.style.opacity = '0';
-        setTimeout(() => {
-          track.classList.remove('visible');
-          fill.style.transition = 'none';
-          fill.style.width = '0%';
-          track.style.opacity = '';
-        }, 300);
-      }, 400);
-
-      /* reset after 2.5s */
-      setTimeout(() => {
-        card.classList.remove('mc2-success');
-        dot.style.background = 'rgba(54,50,45,0.22)';
-        btn.textContent = btn.dataset.orig;
-      }, 2500);
-
-    }, 250);
-  }, 1100);
+/* ── CardInstance class ── */
+class CardInstance {
+  constructor(def, container) { this.def=def; this.container=container; this.activeScenarioIdx=0; this.phase='idle'; this.inputVal=''; this.render(); }
+  get scenario() { return this.def.scenarios[this.activeScenarioIdx]; }
+  selectScenario(idx) { this.activeScenarioIdx=idx; this.reset(); }
+  reset() { this.phase='idle'; this.inputVal=''; this.render(); }
+  render() {
+    const card=this.container.querySelector('.mc-card'); const sc=this.scenario;
+    card.style.transition='border-color 0.4s ease, box-shadow 0.4s ease';
+    let content=card.querySelector('.card-content');
+    if(!content){content=document.createElement('div');content.className='card-content';content.style.cssText='display:contents;';card.appendChild(content);}
+    if(sc.isDisabled){card.className='mc-card state-disabled';content.innerHTML=this.buildDisabledHTML(sc.resolve());return;}
+    const isOffStart=sc.isOffStart;
+    const idleMetric=isOffStart?'Off':this.def.idleMetric;
+    const idleBtnLabel=isOffStart?(this.def.title.includes('Propulsion')?'Turn On Propulsion':`Turn On ${this.def.title.replace('Reset ','').replace(' State','').replace(' Propulsion','')}`) :this.def.idleBtnLabel;
+    const confirmBtnLabel=isOffStart?'Yes':this.def.confirmBtnLabel;
+    const confirmLabel=isOffStart?this.def.confirmLabel.replace('turning off','turning on').replace('off','on'):this.def.confirmLabel;
+    card.className='mc-card';content.innerHTML=this.buildIdleHTML(idleMetric,idleBtnLabel);this.wireIdle(idleBtnLabel,confirmLabel,confirmBtnLabel);
+  }
+  buildDisabledHTML(result){const def=this.def;return`<div class="card-header"><div class="signal-dot ${result.dotClass} anim-in"></div><span class="card-title anim-in anim-in-delay-1">${def.title}</span><span class="header-badge ${result.badge.cls} anim-in anim-in-delay-1">${result.badge.label}</span></div><div class="card-input-zone anim-in anim-in-delay-2"><span class="slot-pill ${result.inputContent.cls}"><span class="pdot"></span>${result.inputContent.label}</span></div><div class="card-metric-zone anim-in anim-in-delay-2"><div class="metric-row"><span class="mv-lg mv-muted">${result.metric}</span></div><div class="metric-sub">${result.metricSub}</div></div><div class="card-status anim-in anim-in-delay-3"><span class="sk">${result.statusKey}</span><span class="sv">${result.statusVal}</span></div><div class="card-btn-zone anim-in anim-in-delay-4"><button class="mc-btn btn-primary" disabled>${result.btn.label}</button></div>`;}
+  buildIdleHTML(idleMetric,idleBtnLabel){const def=this.def;const metric=idleMetric!==undefined?idleMetric:def.idleMetric;const btnLabel=idleBtnLabel||def.idleBtnLabel;const inputZoneHTML=def.hasInput?`<div class="card-input-zone anim-in anim-in-delay-2"><input class="slot-input" type="number" step="${def.inputAllowDecimal?'0.1':'1'}" min="${def.inputAllowDecimal?'-45':'1'}" max="${def.inputMax}" placeholder="${def.inputPlaceholder}" id="input-${def.id}" /></div>`:'';const isDash=metric==='—';const isWord=isNaN(metric)&&metric!=='—';const metricClass=isDash?(def.hasInput?'mv-sm mv-muted':'mv-lg mv-muted'):isWord?(def.hasInput?'mv-word-sm':'mv-word-lg'):(def.hasInput?'mv-sm':'mv-lg');const unitClass=def.hasInput?'mv-sm-unit':'mv-lg-unit';return`<div class="card-header"><div class="signal-dot dot-green anim-in"></div><span class="card-title anim-in anim-in-delay-1">${def.title}</span><span class="header-badge badge-hidden">–</span></div>${inputZoneHTML}<div class="card-metric-zone anim-in anim-in-delay-2"><div class="metric-row"><span class="${metricClass}" id="metric-val-${def.id}">${metric}</span>${def.idleUnit?`<span class="${unitClass}">${def.idleUnit}</span>`:''}</div><div class="metric-sub" id="metric-sub-${def.id}">${def.idleMetricSub}</div></div><div class="card-status anim-in anim-in-delay-3"><span class="sk">${def.idleStatusKey}</span><span class="sv" id="status-val-${def.id}">${def.idleStatusVal}</span></div><div class="card-btn-zone anim-in anim-in-delay-4" id="btnzone-${def.id}"><button class="mc-btn btn-primary" id="main-btn-${def.id}" ${def.hasInput?'disabled':''}>${btnLabel}</button></div>`;}
+  wireIdle(idleBtnLabel,confirmLabel,confirmBtnLabel){const def=this.def;const btn=this.container.querySelector(`#main-btn-${def.id}`);if(!btn)return;if(def.hasInput){const input=this.container.querySelector(`#input-${def.id}`);input.addEventListener('input',()=>{const raw=def.inputAllowDecimal?parseFloat(input.value):parseInt(input.value);if(input.value===''||isNaN(raw)){input.classList.remove('has-val');btn.disabled=true;btn.textContent=idleBtnLabel||def.idleBtnLabel;this.inputVal='';}else{input.classList.add('has-val');btn.disabled=false;if(def.inputAllowDecimal){btn.textContent=`Calibrate ${raw>0?'+':''}${raw}°`;}else{const unit=def.id==='admix'?'oz':'L';btn.textContent=`Add ${raw}${unit}`;}this.inputVal=raw;}});btn.addEventListener('click',()=>{if(!btn.disabled&&this.inputVal!==''){if(def.id==='water'||def.id==='admix'){this.showInputConfirm();}else{this.startPending();}}});}else if(def.hasConfirm){btn.addEventListener('click',()=>this.showConfirm(confirmLabel,confirmBtnLabel));}else{btn.addEventListener('click',()=>this.startPending());}}
+  showInputConfirm(){this.phase='confirm';const card=this.container.querySelector('.mc-card');const def=this.def;const unit=def.id==='admix'?'oz':'L';card.className='mc-card state-confirm';const dot=card.querySelector('.signal-dot');dot.className='signal-dot dot-amber';const inputZone=card.querySelector('.card-input-zone');if(inputZone){inputZone.innerHTML=`<span class="slot-pill pill-warning"><span class="pdot"></span>Confirm before adding ${this.inputVal}${unit}</span>`;}const btnZone=card.querySelector('.card-btn-zone');btnZone.innerHTML=`<button class="mc-btn btn-ghost confirm-split" id="cancel-confirm-${def.id}">Cancel</button><button class="mc-btn btn-danger confirm-split" id="yes-confirm-${def.id}">Yes, Add ${this.inputVal}${unit}</button>`;btnZone.querySelector(`#cancel-confirm-${def.id}`).addEventListener('click',()=>this.reset());btnZone.querySelector(`#yes-confirm-${def.id}`).addEventListener('click',()=>this.startPending());}
+  showConfirm(confirmLabel,confirmBtnLabel){this.phase='confirm';const card=this.container.querySelector('.mc-card');card.className='mc-card state-confirm';const badge=card.querySelector('.header-badge');badge.className='header-badge badge-warn';badge.textContent='Confirm?';const dot=card.querySelector('.signal-dot');dot.className='signal-dot dot-amber';const mzone=card.querySelector('.card-metric-zone');/* Hide the metric row and sub to make room for the confirm pill */const metricRow=mzone.querySelector('.metric-row');const metricSub=mzone.querySelector('.metric-sub');if(metricRow)metricRow.style.display='none';if(metricSub)metricSub.style.display='none';const existing=mzone.querySelector('.pill-wrap');if(!existing){const pillWrap=document.createElement('div');pillWrap.className='pill-wrap';pillWrap.style.marginBottom='8px';pillWrap.innerHTML=`<span class="slot-pill pill-warning"><span class="pdot"></span>${confirmLabel||'Confirm before proceeding'}</span>`;mzone.insertBefore(pillWrap,metricRow);}const btnZone=card.querySelector('.card-btn-zone');btnZone.innerHTML=`<button class="mc-btn btn-ghost confirm-split" id="cancel-btn-${this.def.id}">Cancel</button><button class="mc-btn btn-danger confirm-split" id="confirm-btn-${this.def.id}">${confirmBtnLabel||'Confirm'}</button>`;btnZone.querySelector(`#cancel-btn-${this.def.id}`).addEventListener('click',()=>this.reset());btnZone.querySelector(`#confirm-btn-${this.def.id}`).addEventListener('click',()=>this.startPending());}
+  startPending(){this.phase='pending';const card=this.container.querySelector('.mc-card');const sc=this.scenario;card.className='mc-card state-pending';const dot=card.querySelector('.signal-dot');if(dot)dot.className='signal-dot dot-blue pulsing';const badge=card.querySelector('.header-badge');if(badge){badge.className='header-badge badge-hidden';badge.textContent='';}const btnZone=card.querySelector('.card-btn-zone');if(btnZone)btnZone.innerHTML=`<button class="mc-btn btn-primary" disabled>Sending…</button>`;const input=card.querySelector('.slot-input');if(input)input.disabled=true;const confirmPillWrap=card.querySelector('.card-metric-zone .pill-wrap');if(confirmPillWrap)confirmPillWrap.remove();const track=card.querySelector('.progress-track');const fill=card.querySelector('.progress-fill');if(!track||!fill){this.resolveCard();return;}track.classList.add('visible');fill.style.background='#1594ef';fill.style.transition='none';fill.style.width='0%';if(sc.retract){setTimeout(()=>{fill.style.transition=`width ${sc.progressDuration}ms cubic-bezier(0.4,0,0.6,1)`;fill.style.width=sc.progressTo+'%';setTimeout(()=>{fill.style.transition='width 0.5s cubic-bezier(0.4,0,1,1)';fill.style.background='#c13c2d';fill.style.width='0%';setTimeout(()=>{track.classList.remove('visible');this.resolveCard();},520);},sc.progressDuration+100);},20);}else if(sc.stutter){setTimeout(()=>{fill.style.transition=`width ${sc.progressDuration}ms cubic-bezier(0.4,0,0.2,1)`;fill.style.width=sc.progressTo+'%';setTimeout(()=>{fill.style.transition='width 0.1s ease';fill.style.width=(sc.progressTo-3)+'%';setTimeout(()=>{fill.style.width=(sc.progressTo+1)+'%';setTimeout(()=>{fill.style.width=(sc.progressTo-1)+'%';setTimeout(()=>{setTimeout(()=>{track.classList.remove('visible');this.resolveCard();},sc.progressStall||600);},100);},100);},100);},sc.progressDuration);},20);}else{setTimeout(()=>{fill.style.transition=`width ${sc.progressDuration}ms cubic-bezier(0.4,0,0.2,1)`;fill.style.width=sc.progressTo+'%';setTimeout(()=>{setTimeout(()=>{track.classList.remove('visible');this.resolveCard();},200);},sc.progressDuration);},20);}}
+  resolveCard(){this.phase='resolved';const card=this.container.querySelector('.mc-card');const result=this.scenario.resolve(this.inputVal);this.applyResult(result,card);/* Log to command history */if(typeof logCommand==='function'){const def=this.def;let value='—';if(def.hasInput&&this.inputVal!==''){const unit=def.id==='admix'?'oz':def.id==='tilt'?'°':'L';value=`${this.inputVal}${unit}`;}else if(result.metric&&result.metric!=='—'){value=result.metric+(result.unit?' '+result.unit:'');}logCommand(def.title,value,result.badge.label);}}
+  applyResult(result,card){const def=this.def;card.className=`mc-card ${result.cardClass}`;const dot=card.querySelector('.signal-dot');dot.className=`signal-dot ${result.dotClass}`;dot.classList.remove('pulsing');const badge=card.querySelector('.header-badge');badge.className='header-badge badge-hidden';badge.textContent=result.badge.label;const inputZone=card.querySelector('.card-input-zone');if(inputZone){if(result.inputContent.type==='pill'){inputZone.innerHTML=`<span class="slot-pill ${result.inputContent.cls}"><span class="pdot"></span>${result.inputContent.label}</span>`;}else if(result.inputContent.type==='input'){inputZone.innerHTML=`<input class="slot-input has-val" type="number" value="${result.inputContent.val}" ${result.inputContent.locked?'disabled':''} />`;}}else if(result.inputContent.type==='pill'){const mzone=card.querySelector('.card-metric-zone');const oldPill=mzone.querySelector('.pill-wrap');if(oldPill)oldPill.remove();const pillWrap=document.createElement('div');pillWrap.className='pill-wrap';pillWrap.style.marginBottom='8px';pillWrap.innerHTML=`<span class="slot-pill ${result.inputContent.cls}"><span class="pdot"></span>${result.inputContent.label}</span>`;const metricRow=mzone.querySelector('.metric-row');/* Restore metric visibility in case it was hidden during confirm */if(metricRow)metricRow.style.display='';const metricSub=mzone.querySelector('.metric-sub');if(metricSub)metricSub.style.display='';mzone.insertBefore(pillWrap,metricRow);}const metricEl=card.querySelector('[class*="mv-"]');const unitEl=card.querySelector('.mv-lg-unit, .mv-sm-unit');if(metricEl){metricEl.style.opacity='0';if(unitEl){unitEl.style.opacity='0';unitEl.textContent='';}metricEl.style.transform='translateY(-8px)';metricEl.style.transition='opacity 0.15s, transform 0.15s';setTimeout(()=>{const m=result.metric;const isDash=m==='—';const isWord=isNaN(m.replace('°','').replace('just now','x'))&&m!=='—';const isDeg=m.includes('°')&&m!=='—';const isTimedOut=m==='Timed Out';const isJustNow=m==='just now'||m==='Just Now';if(isTimedOut){metricEl.className='mv-timed-out';}else if(isDeg){metricEl.className='mv-degree';if(result.cardClass==='state-warn')metricEl.classList.add('mv-degree-warn');if(result.cardClass==='state-major')metricEl.classList.add('mv-degree-major');}else if(isDash){metricEl.className=def.hasInput?'mv-sm mv-muted':'mv-lg mv-muted';}else if(isWord||isJustNow){metricEl.className=def.hasInput?'mv-word-sm':'mv-word-lg';}else{metricEl.className=def.hasInput?'mv-sm':'mv-lg';}metricEl.textContent=m;if(unitEl){if(result.unit&&!isJustNow&&!isTimedOut&&!isDash){unitEl.textContent=result.unit;unitEl.style.transition='opacity 0.25s';unitEl.style.opacity='1';}else{unitEl.style.opacity='0';}}metricEl.style.transition='opacity 0.25s, transform 0.25s';metricEl.style.opacity='1';metricEl.style.transform='translateY(0)';},160);}const metricSub=card.querySelector('.metric-sub');if(metricSub){setTimeout(()=>{metricSub.style.opacity='0';setTimeout(()=>{metricSub.textContent=result.metricSub;metricSub.style.transition='opacity 0.2s';metricSub.style.opacity='1';},120);},200);}const sv=card.querySelector('.sv');if(sv){const sk=card.querySelector('.sk');if(sk)sk.textContent=result.statusKey;setTimeout(()=>{sv.style.opacity='0';setTimeout(()=>{sv.textContent=result.statusVal;sv.style.transition='opacity 0.2s';sv.style.opacity='1';},100);},300);}const btnZone=card.querySelector('.card-btn-zone');setTimeout(()=>{btnZone.style.opacity='0';btnZone.style.transform='translateY(4px)';btnZone.style.transition='opacity 0.15s, transform 0.15s';setTimeout(()=>{btnZone.innerHTML=`<button class="mc-btn ${result.btn.cls}" ${result.btn.disabled?'disabled':''}>${result.btn.label}</button>`;const newBtn=btnZone.querySelector('.mc-btn');if(newBtn&&!result.btn.disabled){if((def.id==='water'&&result.btn.label==='Add More Water')||(def.id==='admix'&&result.btn.label==='Add More Admix')){newBtn.addEventListener('click',()=>this.reset());}else if(def.hasConfirm){const sc=this.scenario;newBtn.addEventListener('click',()=>{this.reset();setTimeout(()=>{const confirmLabel=sc.isOffStart?this.def.confirmLabel.replace('turning off','turning on'):this.def.confirmLabel;const confirmBtnLabel=sc.isOffStart?'Yes, Turn On':this.def.confirmBtnLabel;this.showConfirm(confirmLabel,confirmBtnLabel);},50);});}else{newBtn.addEventListener('click',()=>{if(this.phase==='resolved')this.startPending();});}}btnZone.style.transition='opacity 0.25s, transform 0.25s';btnZone.style.opacity='1';btnZone.style.transform='translateY(0)';},160);},180);}
 }
 
-function mcConfirm(id, title, msg, confirmLabel, btn) {
-  const card = btn.closest('.mc2-card');
-  /* show confirm overlay */
-  const overlay = document.createElement('div');
-  overlay.className = 'mc2-confirm';
-  overlay.style.position = 'absolute';
-  overlay.innerHTML = `
-    <div class="mc2-confirm-msg">${msg}</div>
-    <div class="mc2-confirm-btns">
-      <button class="mc2-btn mc2-btn-ghost" style="flex:1;font-size:12px;" onclick="this.closest('.mc2-confirm').remove()">Cancel</button>
-      <button class="mc2-btn mc2-btn-danger" style="flex:1;font-size:12px;">${confirmLabel}</button>
-    </div>`;
-  card.style.position = 'relative';
-  card.appendChild(overlay);
-  overlay.querySelector('.mc2-btn-danger').addEventListener('click', () => {
-    overlay.remove();
-    mcAction(id, title, title, 'Acknowledged', btn);
+/* ── Command history table for Manual Control ── */
+const mcCommandLog = [];
+
+function formatMcTime() {
+  const now = new Date();
+  return now.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit', hour12:true});
+}
+
+function logCommand(title, value, result) {
+  mcCommandLog.unshift({ title, value, result, time: formatMcTime() });
+  mcRenderTable();
+}
+
+function mcRenderTable() {
+  const body    = document.getElementById('mc-table-body');
+  const empty   = document.getElementById('mc-table-empty');
+  const updated = document.getElementById('mc-table-updated');
+  if (!body) return;
+
+  if (mcCommandLog.length === 0) {
+    if (empty) empty.style.display = '';
+    if (updated) updated.textContent = 'No commands yet';
+    const count = document.getElementById('mc-table-count');
+    if (count) count.style.display = 'none';
+    return;
+  }
+
+  if (empty) empty.style.display = 'none';
+  if (updated) updated.textContent = `Last updated ${mcCommandLog[0].time}`;
+  const count = document.getElementById('mc-table-count');
+  if (count) { count.style.display = ''; count.textContent = `${mcCommandLog.length} record${mcCommandLog.length !== 1 ? 's' : ''}`; }
+
+  /* Remove old rows (keep empty placeholder) */
+  Array.from(body.children).forEach(c => { if (c.id !== 'mc-table-empty') c.remove(); });
+
+  mcCommandLog.forEach(entry => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr;padding:8px 16px;border-bottom:1px solid rgba(54,50,45,0.08);animation:mc-row-in 0.25s cubic-bezier(0.22,1,0.36,1) both;align-items:center;';
+    row.innerHTML = `
+      <span style="font-size:12px;font-weight:500;color:#1a1814;letter-spacing:-0.2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:6px;">${entry.title}</span>
+      <span style="font-size:12px;color:rgba(40,36,30,0.5);letter-spacing:-0.2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:6px;">${entry.value}</span>
+      <span style="font-size:11px;color:rgba(40,36,30,0.5);letter-spacing:-0.1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${entry.result}</span>`;
+    body.appendChild(row);
+  });
+}
+
+function mcClearTable() {
+  mcCommandLog.length = 0;
+  const body = document.getElementById('mc-table-body');
+  if (body) Array.from(body.children).forEach(c => { if (c.id !== 'mc-table-empty') c.remove(); });
+  mcRenderTable();
+}
+
+/* ── Initialize all manual control cards ── */
+let mcCardsInitialized = false;
+function initMcCards() {
+  if (mcCardsInitialized) return;
+  mcCardsInitialized = true;
+  MC_CARD_DEFS.forEach(def => {
+    const mountEl = document.getElementById(`mc-unit-${def.id}`);
+    if (!mountEl) return;
+    const isInput = def.hasInput;
+    const cardWrap = document.createElement('div');
+    cardWrap.innerHTML = `<div class="mc-card ${isInput ? 'mc-input-card' : ''}"><div class="progress-track"><div class="progress-fill"></div></div></div>`;
+    mountEl.appendChild(cardWrap);
+    new CardInstance(def, cardWrap);
   });
 }
 
@@ -4530,21 +4694,21 @@ function tsRenderLocationOptions() {
 }
 
 function tsToggle(which) {
-  const accDD  = document.getElementById('ts-account-dd');
-  const locDD  = document.getElementById('ts-location-dd');
+  const accDD   = document.getElementById('ts-account-dd');
+  const locDD   = document.getElementById('ts-location-dd');
   const accChev = document.getElementById('ts-account-chev');
   const locChev = document.getElementById('ts-location-chev');
   if (which === 'account') {
-    const opening = accDD.style.display === 'none';
-    accDD.style.display  = opening ? 'block' : 'none';
-    locDD.style.display  = 'none';
+    const opening = !accDD.classList.contains('open');
+    accDD.classList.toggle('open', opening);
+    locDD.classList.remove('open');
     accChev.style.transform = opening ? 'rotate(180deg)' : '';
     locChev.style.transform = '';
     if (opening) tsRenderAccountOptions();
   } else {
-    const opening = locDD.style.display === 'none';
-    locDD.style.display  = opening ? 'block' : 'none';
-    accDD.style.display  = 'none';
+    const opening = !locDD.classList.contains('open');
+    locDD.classList.toggle('open', opening);
+    accDD.classList.remove('open');
     locChev.style.transform = opening ? 'rotate(180deg)' : '';
     accChev.style.transform = '';
     if (opening) tsRenderLocationOptions();
@@ -4587,12 +4751,12 @@ document.addEventListener('click', function(e) {
   const accDD  = document.getElementById('ts-account-dd');
   const locDD  = document.getElementById('ts-location-dd');
   if (accBtn && accDD && !accBtn.contains(e.target) && !accDD.contains(e.target)) {
-    accDD.style.display = 'none';
+    accDD.classList.remove('open');
     const ch = document.getElementById('ts-account-chev');
     if (ch) ch.style.transform = '';
   }
   if (locBtn && locDD && !locBtn.contains(e.target) && !locDD.contains(e.target)) {
-    locDD.style.display = 'none';
+    locDD.classList.remove('open');
     const ch = document.getElementById('ts-location-chev');
     if (ch) ch.style.transform = '';
   }
@@ -4913,7 +5077,10 @@ function openNav() {
   document.getElementById('sidenav-overlay').classList.add('open');
 }
 function closeNav() {
-  document.getElementById('sidenav').classList.remove('open');
+  const nav = document.getElementById('sidenav');
+  nav.classList.add('closing');
+  nav.classList.remove('open');
+  setTimeout(() => nav.classList.remove('closing'), 260);
   document.getElementById('sidenav-overlay').classList.remove('open');
 }
 function toggleNavItem(itemId, subId) {

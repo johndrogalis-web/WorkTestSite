@@ -306,22 +306,25 @@
   .badge.wrn { background: var(--amber); color: var(--strong); }
 
   /* expanded content */
-  .exp-wrap { display: block; background: var(--layer-2); max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.38s cubic-bezier(0.22,1,0.36,1), opacity 0.25s ease; }
-  .exp-wrap.open { max-height: 600px; opacity: 1; padding-bottom: 15px; }
-  .exp-wrap.open .exp-row { animation: exp-row-in 0.28s cubic-bezier(0.22,1,0.36,1) both; }
-  .exp-wrap.open .exp-row:nth-child(1)  { animation-delay: 0.03s; }
-  .exp-wrap.open .exp-row:nth-child(2)  { animation-delay: 0.06s; }
-  .exp-wrap.open .exp-row:nth-child(3)  { animation-delay: 0.09s; }
-  .exp-wrap.open .exp-row:nth-child(4)  { animation-delay: 0.12s; }
-  .exp-wrap.open .exp-row:nth-child(5)  { animation-delay: 0.15s; }
-  .exp-wrap.open .exp-row:nth-child(6)  { animation-delay: 0.18s; }
-  .exp-wrap.open .exp-row:nth-child(7)  { animation-delay: 0.21s; }
-  .exp-wrap.open .exp-row:nth-child(8)  { animation-delay: 0.24s; }
-  .exp-wrap.open .exp-row:nth-child(9)  { animation-delay: 0.27s; }
-  .exp-wrap.open .exp-row:nth-child(10) { animation-delay: 0.30s; }
-  .exp-wrap.open .view-truck-btn        { animation: exp-row-in 0.28s cubic-bezier(0.22,1,0.36,1) 0.33s both; }
+  .exp-wrap { display: none; background: var(--layer-2); }
+  .exp-wrap.open { display: block; padding-bottom: 10px; border-radius: 0 0 8px 8px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 5px; }
+  .exp-wrap.open .exp-row {
+    opacity: 0;
+    animation: exp-row-in 0.26s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  .exp-wrap.open .exp-row:nth-child(1)  { animation-delay: 0.02s; }
+  .exp-wrap.open .exp-row:nth-child(2)  { animation-delay: 0.05s; }
+  .exp-wrap.open .exp-row:nth-child(3)  { animation-delay: 0.08s; }
+  .exp-wrap.open .exp-row:nth-child(4)  { animation-delay: 0.11s; }
+  .exp-wrap.open .exp-row:nth-child(5)  { animation-delay: 0.14s; }
+  .exp-wrap.open .exp-row:nth-child(6)  { animation-delay: 0.17s; }
+  .exp-wrap.open .exp-row:nth-child(7)  { animation-delay: 0.20s; }
+  .exp-wrap.open .exp-row:nth-child(8)  { animation-delay: 0.23s; }
+  .exp-wrap.open .exp-row:nth-child(9)  { animation-delay: 0.26s; }
+  .exp-wrap.open .exp-row:nth-child(10) { animation-delay: 0.29s; }
+  .exp-wrap.open .view-truck-btn { opacity:0; animation: exp-row-in 0.26s cubic-bezier(0.22, 1, 0.36, 1) 0.32s forwards; }
   @keyframes exp-row-in {
-    0%   { opacity: 0; transform: translateY(8px); }
+    0%   { opacity: 0; transform: translateY(6px); }
     100% { opacity: 1; transform: translateY(0); }
   }
   .exp-row {
@@ -352,12 +355,27 @@
     border-radius: 44px; overflow: hidden;
     display: flex; flex-direction: column;
     padding-top: 54px;
-    transform: translateX(100%);
-    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+    transform: translateX(100%) scale(0.96);
+    transform-origin: right center;
+    transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity: 0;
     z-index: 10;
   }
-  .drawer.open { transform: translateX(0); transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1); }
-  .drawer.closing { transition: transform 0.28s cubic-bezier(0.4, 0, 1, 1); }
+  .drawer.open {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+  .drawer.closing {
+    transform: translateX(100%) scale(0.96);
+    opacity: 0;
+    transition: transform 0.28s cubic-bezier(0.4, 0, 1, 1),
+                opacity 0.22s cubic-bezier(0.4, 0, 1, 1);
+  }
+
+  /* Background scales back subtly when drawer is open */
+  .scroll-body { transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1); }
+  .drawer-open-bg .scroll-body { transform: scale(0.97); }
 
   .chrome-btns { display: flex; align-items: center; gap: 5px; }
   .chrome-btn {

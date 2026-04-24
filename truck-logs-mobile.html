@@ -1394,7 +1394,6 @@
               <!-- Account field -->
               <div style="flex:1;position:relative;">
                 <button onclick="tsToggle('account')" id="ts-account-btn" style="width:100%;text-align:left;background:none;border:none;border-right:1px solid var(--border);border-radius:32px 0 0 32px;padding:10px 12px 10px 14px;cursor:pointer;font-family:var(--font);">
-                  <div style="font-size:10px;color:var(--soft);letter-spacing:-0.1px;margin-bottom:2px;">Account</div>
                   <div style="display:flex;align-items:center;justify-content:space-between;gap:4px;">
                     <span id="ts-account-label" style="font-size:13px;color:var(--strong);letter-spacing:-0.26px;font-weight:500;">Cemex AZ, +1</span>
                     <svg id="ts-account-chev" width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;transition:transform 0.2s;"><path d="M3 5l4 4 4-4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1410,7 +1409,6 @@
               <!-- Location field -->
               <div style="flex:1;position:relative;">
                 <button onclick="tsToggle('location')" id="ts-location-btn" style="width:100%;text-align:left;background:none;border:none;border-radius:0 32px 32px 0;padding:10px 12px 10px 14px;cursor:pointer;font-family:var(--font);">
-                  <div style="font-size:10px;color:var(--soft);letter-spacing:-0.1px;margin-bottom:2px;">Location</div>
                   <div style="display:flex;align-items:center;justify-content:space-between;gap:4px;">
                     <span id="ts-location-label" style="font-size:13px;color:var(--strong);letter-spacing:-0.26px;font-weight:500;">All locations</span>
                     <svg id="ts-location-chev" width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;transition:transform 0.2s;"><path d="M3 5l4 4 4-4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1821,10 +1819,17 @@
             </div>
             <div class="co-map-frame">
               <iframe
-                src="https://www.openstreetmap.org/export/embed.html?bbox=-122.4494%2C37.7749%2C-122.3894%2C37.8149&layer=mapnik"
+                src="https://www.openstreetmap.org/export/embed.html?bbox=-112.1040%2C33.4184%2C-112.0440%2C33.4784&layer=mapnik"
                 style="width:100%;height:100%;border:none;"
                 loading="lazy">
               </iframe>
+              <!-- Truck location pin -->
+              <div class="co-map-pin">
+                <svg width="28" height="36" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M14 0C6.268 0 0 6.268 0 14C0 24.5 14 36 14 36C14 36 28 24.5 28 14C28 6.268 21.732 0 14 0Z" fill="#1594ef"/>
+                  <circle cx="14" cy="14" r="6" fill="white"/>
+                </svg>
+              </div>
             </div>
           </div>
 
@@ -2442,9 +2447,17 @@
                 <path d="M12.5 12.5l3 3" stroke="#36322d9e" stroke-width="1.4" stroke-linecap="round"/>
               </svg>
               <input id="units-search" placeholder="Unit ID, status, truck…" autocomplete="off"
-                style="flex:1;border:none;outline:none;font-size:14px;color:var(--strong);background:none;letter-spacing:-0.28px;font-family:var(--font);"
-                oninput="unitsSearch()" />
+                style="flex:1;border:none;outline:none;font-size:14px;color:var(--strong);background:none;letter-spacing:-0.28px;font-family:var(--font);min-width:0;width:0;"
+                oninput="unitsSearch()" onfocus="unitsSearch()" onblur="setTimeout(()=>unitsCloseDrop(),200)" />
+              <button id="units-srch-clear" onclick="unitsSearchClear()" style="display:none;background:none;border:none;padding:2px;cursor:pointer;flex-shrink:0;line-height:0;">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="#36322d" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </button>
             </div>
+          </div>
+
+          <!-- Units search drop — full width at page-pad level, positioned by JS -->
+          <div class="srch-drop" id="units-srch-drop" style="display:none;position:absolute;left:0;right:0;z-index:200;">
+            <div id="units-srch-results"></div>
           </div>
 
         </div>
@@ -6817,8 +6830,88 @@ function truckDrawerGoToUnit(unitId) {
 }
 
 /* ── Units search ── */
+const unitIcon = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><mask id="path-1-inside-1_1844_4774" fill="white"><path d="M4.66667 9.99749C4.53481 9.99749 4.40592 10.0366 4.29629 10.1098C4.18665 10.1831 4.10121 10.2872 4.05075 10.409C4.00029 10.5308 3.98709 10.6649 4.01281 10.7942C4.03853 10.9235 4.10203 11.0423 4.19526 11.1356C4.2885 11.2288 4.40729 11.2923 4.53661 11.318C4.66593 11.3437 4.79997 11.3305 4.92179 11.2801C5.04361 11.2296 5.14773 11.1442 5.22098 11.0345C5.29423 10.9249 5.33333 10.796 5.33333 10.6642C5.33333 10.4873 5.2631 10.3178 5.13807 10.1927C5.01305 10.0677 4.84348 9.99749 4.66667 9.99749ZM2.66667 9.99749C2.53481 9.99749 2.40592 10.0366 2.29629 10.1098C2.18665 10.1831 2.10121 10.2872 2.05075 10.409C2.00029 10.5308 1.98709 10.6649 2.01281 10.7942C2.03853 10.9235 2.10203 11.0423 2.19526 11.1356C2.2885 11.2288 2.40729 11.2923 2.53661 11.318C2.66593 11.3437 2.79997 11.3305 2.92179 11.2801C3.04361 11.2296 3.14773 11.1442 3.22098 11.0345C3.29423 10.9249 3.33333 10.796 3.33333 10.6642C3.33333 10.4873 3.2631 10.3178 3.13807 10.1927C3.01305 10.0677 2.84348 9.99749 2.66667 9.99749ZM6.66667 9.99749C6.53481 9.99749 6.40592 10.0366 6.29629 10.1098C6.18665 10.1831 6.10121 10.2872 6.05075 10.409C6.00029 10.5308 5.98709 10.6649 6.01281 10.7942C6.03853 10.9235 6.10203 11.0423 6.19526 11.1356C6.2885 11.2288 6.40729 11.2923 6.53661 11.318C6.66593 11.3437 6.79997 11.3305 6.92179 11.2801C7.04361 11.2296 7.14773 11.1442 7.22098 11.0345C7.29423 10.9249 7.33333 10.796 7.33333 10.6642C7.33333 10.4873 7.2631 10.3178 7.13807 10.1927C7.01305 10.0677 6.84348 9.99749 6.66667 9.99749ZM8.73333 4.33082C8.79194 4.22979 8.87605 4.14594 8.97726 4.08764C9.07846 4.02935 9.19321 3.99867 9.31 3.99867C9.42679 3.99867 9.54154 4.02935 9.64274 4.08764C9.74395 4.14594 9.82806 4.22979 9.88667 4.33082C9.97461 4.48331 10.1193 4.59482 10.2892 4.64103C10.459 4.68725 10.6403 4.6644 10.7933 4.57749C10.872 4.53621 10.9416 4.47964 10.998 4.4111C11.0545 4.34255 11.0967 4.26341 11.1222 4.17833C11.1476 4.09325 11.1558 4.00394 11.1463 3.91564C11.1368 3.82734 11.1097 3.74184 11.0667 3.66415C10.8913 3.35951 10.6387 3.10647 10.3344 2.93052C10.0301 2.75457 9.68484 2.66193 9.33333 2.66193C8.98182 2.66193 8.63652 2.75457 8.33222 2.93052C8.02792 3.10647 7.77536 3.35951 7.6 3.66415C7.54371 3.81141 7.54143 3.97384 7.59355 4.12262C7.64567 4.2714 7.74883 4.39689 7.88471 4.47682C8.02059 4.55675 8.18039 4.58594 8.33575 4.55921C8.49112 4.53248 8.63198 4.45156 8.73333 4.33082ZM13.4 2.33082C12.9902 1.62208 12.4012 1.03361 11.6921 0.624489C10.983 0.21537 10.1787 0 9.36 0C8.54132 0 7.73705 0.21537 7.02792 0.624489C6.3188 1.03361 5.72978 1.62208 5.32 2.33082C5.27592 2.40691 5.24733 2.49097 5.23587 2.57815C5.22442 2.66534 5.23033 2.75393 5.25325 2.83882C5.27618 2.92372 5.31568 3.00324 5.36947 3.0728C5.42326 3.14236 5.49028 3.2006 5.56667 3.24415C5.6584 3.29639 5.76122 3.32609 5.86667 3.33082C5.98414 3.33129 6.09965 3.3007 6.2015 3.24217C6.30336 3.18363 6.38793 3.09922 6.44667 2.99749C6.73924 2.4908 7.16003 2.07004 7.66674 1.77751C8.17345 1.48497 8.74824 1.33097 9.33333 1.33097C9.91843 1.33097 10.4932 1.48497 10.9999 1.77751C11.5066 2.07004 11.9274 2.4908 12.22 2.99749C12.2636 3.07388 12.3218 3.1409 12.3914 3.19469C12.4609 3.24848 12.5404 3.28797 12.6253 3.3109C12.7102 3.33383 12.7988 3.33974 12.886 3.32828C12.9732 3.31682 13.0572 3.28823 13.1333 3.24415C13.2114 3.2023 13.2804 3.14531 13.3362 3.07651C13.3919 3.0077 13.4335 2.92847 13.4583 2.84344C13.4831 2.7584 13.4908 2.66928 13.4807 2.58126C13.4707 2.49325 13.4433 2.40811 13.4 2.33082ZM10.6667 7.99749H10V5.99749C10 5.82068 9.92976 5.65111 9.80474 5.52608C9.67971 5.40106 9.51014 5.33082 9.33333 5.33082C9.15652 5.33082 8.98695 5.40106 8.86193 5.52608C8.7369 5.65111 8.66667 5.82068 8.66667 5.99749V7.99749H2C1.46957 7.99749 0.960859 8.2082 0.585786 8.58327C0.210714 8.95835 0 9.46705 0 9.99749V11.3308C0 11.8613 0.210714 12.37 0.585786 12.745C0.960859 13.1201 1.46957 13.3308 2 13.3308H10.6667C11.1971 13.3308 11.7058 13.1201 12.0809 12.745C12.456 12.37 12.6667 11.8613 12.6667 11.3308V9.99749C12.6667 9.46705 12.456 8.95835 12.0809 8.58327C11.7058 8.2082 11.1971 7.99749 10.6667 7.99749ZM11.3333 11.3308C11.3333 11.5076 11.2631 11.6772 11.1381 11.8022C11.013 11.9273 10.8435 11.9975 10.6667 11.9975H2C1.82319 11.9975 1.65362 11.9273 1.5286 11.8022C1.40357 11.6772 1.33333 11.5076 1.33333 11.3308V9.99749C1.33333 9.82068 1.40357 9.65111 1.5286 9.52608C1.65362 9.40106 1.82319 9.33082 2 9.33082H10.6667C10.8435 9.33082 11.013 9.40106 11.1381 9.52608C11.2631 9.65111 11.3333 9.82068 11.3333 9.99749V11.3308Z"/></mask><path d="M4.66667 9.99749C4.53481 9.99749 4.40592 10.0366 4.29629 10.1098C4.18665 10.1831 4.10121 10.2872 4.05075 10.409C4.00029 10.5308 3.98709 10.6649 4.01281 10.7942C4.03853 10.9235 4.10203 11.0423 4.19526 11.1356C4.2885 11.2288 4.40729 11.2923 4.53661 11.318C4.66593 11.3437 4.79997 11.3305 4.92179 11.2801C5.04361 11.2296 5.14773 11.1442 5.22098 11.0345C5.29423 10.9249 5.33333 10.796 5.33333 10.6642C5.33333 10.4873 5.2631 10.3178 5.13807 10.1927C5.01305 10.0677 4.84348 9.99749 4.66667 9.99749ZM2.66667 9.99749C2.53481 9.99749 2.40592 10.0366 2.29629 10.1098C2.18665 10.1831 2.10121 10.2872 2.05075 10.409C2.00029 10.5308 1.98709 10.6649 2.01281 10.7942C2.03853 10.9235 2.10203 11.0423 2.19526 11.1356C2.2885 11.2288 2.40729 11.2923 2.53661 11.318C2.66593 11.3437 2.79997 11.3305 2.92179 11.2801C3.04361 11.2296 3.14773 11.1442 3.22098 11.0345C3.29423 10.9249 3.33333 10.796 3.33333 10.6642C3.33333 10.4873 3.2631 10.3178 3.13807 10.1927C3.01305 10.0677 2.84348 9.99749 2.66667 9.99749ZM6.66667 9.99749C6.53481 9.99749 6.40592 10.0366 6.29629 10.1098C6.18665 10.1831 6.10121 10.2872 6.05075 10.409C6.00029 10.5308 5.98709 10.6649 6.01281 10.7942C6.03853 10.9235 6.10203 11.0423 6.19526 11.1356C6.2885 11.2288 6.40729 11.2923 6.53661 11.318C6.66593 11.3437 6.79997 11.3305 6.92179 11.2801C7.04361 11.2296 7.14773 11.1442 7.22098 11.0345C7.29423 10.9249 7.33333 10.796 7.33333 10.6642C7.33333 10.4873 7.2631 10.3178 7.13807 10.1927C7.01305 10.0677 6.84348 9.99749 6.66667 9.99749ZM8.73333 4.33082C8.79194 4.22979 8.87605 4.14594 8.97726 4.08764C9.07846 4.02935 9.19321 3.99867 9.31 3.99867C9.42679 3.99867 9.54154 4.02935 9.64274 4.08764C9.74395 4.14594 9.82806 4.22979 9.88667 4.33082C9.97461 4.48331 10.1193 4.59482 10.2892 4.64103C10.459 4.68725 10.6403 4.6644 10.7933 4.57749C10.872 4.53621 10.9416 4.47964 10.998 4.4111C11.0545 4.34255 11.0967 4.26341 11.1222 4.17833C11.1476 4.09325 11.1558 4.00394 11.1463 3.91564C11.1368 3.82734 11.1097 3.74184 11.0667 3.66415C10.8913 3.35951 10.6387 3.10647 10.3344 2.93052C10.0301 2.75457 9.68484 2.66193 9.33333 2.66193C8.98182 2.66193 8.63652 2.75457 8.33222 2.93052C8.02792 3.10647 7.77536 3.35951 7.6 3.66415C7.54371 3.81141 7.54143 3.97384 7.59355 4.12262C7.64567 4.2714 7.74883 4.39689 7.88471 4.47682C8.02059 4.55675 8.18039 4.58594 8.33575 4.55921C8.49112 4.53248 8.63198 4.45156 8.73333 4.33082ZM13.4 2.33082C12.9902 1.62208 12.4012 1.03361 11.6921 0.624489C10.983 0.21537 10.1787 0 9.36 0C8.54132 0 7.73705 0.21537 7.02792 0.624489C6.3188 1.03361 5.72978 1.62208 5.32 2.33082C5.27592 2.40691 5.24733 2.49097 5.23587 2.57815C5.22442 2.66534 5.23033 2.75393 5.25325 2.83882C5.27618 2.92372 5.31568 3.00324 5.36947 3.0728C5.42326 3.14236 5.49028 3.2006 5.56667 3.24415C5.6584 3.29639 5.76122 3.32609 5.86667 3.33082C5.98414 3.33129 6.09965 3.3007 6.2015 3.24217C6.30336 3.18363 6.38793 3.09922 6.44667 2.99749C6.73924 2.4908 7.16003 2.07004 7.66674 1.77751C8.17345 1.48497 8.74824 1.33097 9.33333 1.33097C9.91843 1.33097 10.4932 1.48497 10.9999 1.77751C11.5066 2.07004 11.9274 2.4908 12.22 2.99749C12.2636 3.07388 12.3218 3.1409 12.3914 3.19469C12.4609 3.24848 12.5404 3.28797 12.6253 3.3109C12.7102 3.33383 12.7988 3.33974 12.886 3.32828C12.9732 3.31682 13.0572 3.28823 13.1333 3.24415C13.2114 3.2023 13.2804 3.14531 13.3362 3.07651C13.3919 3.0077 13.4335 2.92847 13.4583 2.84344C13.4831 2.7584 13.4908 2.66928 13.4807 2.58126C13.4707 2.49325 13.4433 2.40811 13.4 2.33082ZM10.6667 7.99749H10V5.99749C10 5.82068 9.92976 5.65111 9.80474 5.52608C9.67971 5.40106 9.51014 5.33082 9.33333 5.33082C9.15652 5.33082 8.98695 5.40106 8.86193 5.52608C8.7369 5.65111 8.66667 5.82068 8.66667 5.99749V7.99749H2C1.46957 7.99749 0.960859 8.2082 0.585786 8.58327C0.210714 8.95835 0 9.46705 0 9.99749V11.3308C0 11.8613 0.210714 12.37 0.585786 12.745C0.960859 13.1201 1.46957 13.3308 2 13.3308H10.6667C11.1971 13.3308 11.7058 13.1201 12.0809 12.745C12.456 12.37 12.6667 11.8613 12.6667 11.3308V9.99749C12.6667 9.46705 12.456 8.95835 12.0809 8.58327C11.7058 8.2082 11.1971 7.99749 10.6667 7.99749ZM11.3333 11.3308C11.3333 11.5076 11.2631 11.6772 11.1381 11.8022C11.013 11.9273 10.8435 11.9975 10.6667 11.9975H2C1.82319 11.9975 1.65362 11.9273 1.5286 11.8022C1.40357 11.6772 1.33333 11.5076 1.33333 11.3308V9.99749C1.33333 9.82068 1.40357 9.65111 1.5286 9.52608C1.65362 9.40106 1.82319 9.33082 2 9.33082H10.6667C10.8435 9.33082 11.013 9.40106 11.1381 9.52608C11.2631 9.65111 11.3333 9.82068 11.3333 9.99749V11.3308Z" stroke="#36322D" stroke-width="2" mask="url(#path-1-inside-1_1844_4774)"/></svg>`;
+
 function unitsSearch() {
-  unitsSearchQuery = document.getElementById('units-search').value.trim();
+  const q = document.getElementById('units-search').value.trim();
+  unitsSearchQuery = q;
+
+  const clearBtn = document.getElementById('units-srch-clear');
+  if (clearBtn) clearBtn.style.display = q ? 'block' : 'none';
+
+  const drop      = document.getElementById('units-srch-drop');
+  const resultsEl = document.getElementById('units-srch-results');
+
+  if (!q) {
+    if (drop) drop.style.display = 'none';
+    renderUnits();
+    return;
+  }
+
+  const matches = UNITS_DATA.filter(u =>
+    u.id.toLowerCase().includes(q.toLowerCase()) ||
+    u.status.toLowerCase().includes(q.toLowerCase()) ||
+    (u.truck && String(u.truck).toLowerCase().includes(q.toLowerCase())) ||
+    u.sysType.toLowerCase().includes(q.toLowerCase())
+  );
+
+  if (matches.length === 0) {
+    resultsEl.innerHTML = `<div class="srch-no-hits">No units found</div>`;
+  } else {
+    const MAX   = 5;
+    const shown = matches.slice(0, MAX);
+    const extra = matches.length - MAX;
+
+    let html = `<div class="srch-section-hdr">${unitIcon}<span class="srch-section-label">Units</span></div>`;
+
+    shown.forEach(u => {
+      const primary   = srchHighlight(u.id, q);
+      const secondary = `${u.status} · ${u.sysType}${u.truck ? ' · Truck ' + u.truck : ''}`;
+      html += `
+        <div class="srch-row" onclick="unitsSrchSelect('${u.id}')">
+          <span class="srch-match-text">${primary}</span>
+          <span class="srch-meta">${secondary}</span>
+        </div>`;
+    });
+
+    if (extra > 0) {
+      html += `<div class="srch-show-more">+${extra} more unit${extra > 1 ? 's' : ''}</div>`;
+    }
+    resultsEl.innerHTML = html;
+  }
+
+  /* Position and show */
+  const field   = document.getElementById('units-srch-field');
+  const pagePad = document.querySelector('#s-units .page-pad') || drop.parentElement;
+  if (field && drop && pagePad) {
+    const fieldRect = field.getBoundingClientRect();
+    const padRect   = pagePad.getBoundingClientRect();
+    drop.style.top  = (fieldRect.bottom - padRect.top + 6) + 'px';
+    drop.style.left = '0';
+    drop.style.right = '0';
+    drop.style.position = 'absolute';
+  }
+  drop.style.display = 'block';
+  renderUnits();
+}
+
+function unitsSrchSelect(unitId) {
+  unitsCloseDrop();
+  openUnitDetail(unitId);
+}
+
+function unitsCloseDrop() {
+  const drop = document.getElementById('units-srch-drop');
+  if (drop) drop.style.display = 'none';
+}
+
+function unitsSearchClear() {
+  const input = document.getElementById('units-search');
+  if (input) input.value = '';
+  const clearBtn = document.getElementById('units-srch-clear');
+  if (clearBtn) clearBtn.style.display = 'none';
+  unitsSearchQuery = '';
+  unitsCloseDrop();
   renderUnits();
 }
 

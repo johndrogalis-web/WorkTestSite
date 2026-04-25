@@ -2672,6 +2672,22 @@
             </div>
           </div>
 
+          <!-- Contract Type -->
+          <div style="margin-bottom:16px;">
+            <div style="font-size:12px;color:var(--soft);letter-spacing:-0.24px;margin-bottom:6px;">Contract</div>
+            <div class="au-dd-wrap" id="au-contract-wrap">
+              <button class="au-dd-btn" onclick="auToggleDd('contract')" id="au-contract-btn">
+                <span id="au-contract-val" style="color:var(--soft);">Select a contract type</span>
+                <svg class="au-dd-chev" id="au-contract-chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="au-dd-menu" id="au-contract-menu" style="display:none;">
+                <div class="au-dd-item" onclick="auSelectDd('contract','Standard Service')">Standard Service</div>
+                <div class="au-dd-item" onclick="auSelectDd('contract','Premium Service')">Premium Service</div>
+                <div class="au-dd-item" onclick="auSelectDd('contract','Full Fleet')">Full Fleet</div>
+              </div>
+            </div>
+          </div>
+
           <!-- Unit ID -->
           <div style="margin-bottom:16px;">
             <div style="font-size:12px;color:var(--soft);letter-spacing:-0.24px;margin-bottom:6px;">Unit ID</div>
@@ -5823,7 +5839,7 @@ function auAccountChanged(account) {
 
 function openAddUnit() {
   /* Reset all custom dropdowns */
-  ['sys-type','config'].forEach(key => {
+  ['contract','sys-type','config'].forEach(key => {
     auValues[key] = '';
     const val  = document.getElementById('au-' + key + '-val');
     const menu = document.getElementById('au-' + key + '-menu');
@@ -5834,11 +5850,11 @@ function openAddUnit() {
     if (chev) chev.classList.remove('open');
     if (btn)  btn.classList.remove('au-dd-open');
   });
-  /* Reset contract label and disable */
+  /* Reset contract label */
   const contractVal = document.getElementById('au-contract-val');
   if (contractVal) contractVal.textContent = 'Select a contract type';
   const contractBtn = document.getElementById('au-contract-btn');
-  if (contractBtn) { contractBtn.disabled = true; contractBtn.classList.add('au-dd-disabled'); }
+  if (contractBtn) { contractBtn.disabled = false; contractBtn.classList.remove('au-dd-disabled'); }
   /* Reset text inputs */
   ['au-unit-id','au-tgw'].forEach(id => {
     const el = document.getElementById(id);
@@ -5867,9 +5883,8 @@ function closeAddUnit() {
 
 function auValidate() {
   const unitId = (document.getElementById('au-unit-id').value || '').trim();
-  const tgw    = (document.getElementById('au-tgw').value || '').trim();
   const btn    = document.getElementById('au-submit-btn');
-  const valid  = unitId && auValues['sys-type'] && auValues.config && tgw;
+  const valid  = unitId && auValues.contract && auValues['sys-type'] && auValues.config;
   btn.disabled = !valid;
   btn.style.background = valid ? 'var(--blue)' : 'rgba(54,50,45,0.15)';
   btn.style.color      = valid ? 'white' : 'var(--soft)';
@@ -5884,7 +5899,7 @@ function submitAddUnit() {
   const config   = auValues.config;
   const tgw      = (document.getElementById('au-tgw').value || '').trim();
 
-  if (!account || !contract || !unitId || !sysType || !config || !tgw) return;
+  if (!account || !contract || !unitId || !sysType || !config) return;
 
   /* Check for duplicate unit ID */
   if (UNITS_DATA.find(u => u.id === unitId)) {

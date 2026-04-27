@@ -7228,7 +7228,6 @@ goToAllTrucks = function() {
 const _origOpenUnitDetail = openUnitDetail;
 openUnitDetail = function(unitId) {
   _origOpenUnitDetail(unitId);
-  /* preserve any open tab in hash */
   const tab = typeof udCurrentTab !== 'undefined' ? udCurrentTab : 'lifespan';
   setHash(['units', unitId, tab === 'attach' ? 'attach' : '']);
 };
@@ -7248,14 +7247,66 @@ closeUnitDetail = function() {
   setHash(['units']);
 };
 
+/* ── Drawer hash routing ── */
+const DRAWER_TAB_HASH = {
+  'Components Overview': 'overview',
+  'Component Timeline':  'timeline',
+  'Manual Control':      'manual',
+  'Sensor':              'sensor',
+  'Configuration':       'config',
+  'Truck Logs':          'logs',
+};
+const DRAWER_HASH_TAB = Object.fromEntries(
+  Object.entries(DRAWER_TAB_HASH).map(([k,v]) => [v, k])
+);
+
+function drawerSetHash() {
+  /* Read current truck num and active nav label */
+  const truckNumEl = document.getElementById('drawer-truck-num');
+  const truckNum   = truckNumEl ? truckNumEl.textContent.replace('Truck: ','').trim() : '';
+  const navLabel   = document.getElementById('drawer-nav-label')
+                       ? document.getElementById('drawer-nav-label').textContent.trim()
+                       : 'Components Overview';
+  const tab = DRAWER_TAB_HASH[navLabel] || 'overview';
+  const wtsLabel = document.getElementById('wts-label') ? document.getElementById('wts-label').textContent : 'Where to start';
+  const screenMap = { 'Where to start': '', 'Overview': 'overview', 'Components Condition': 'cc' };
+  const screen = screenMap[wtsLabel] || '';
+  if (truckNum) {
+    setHash(['trucks', screen, truckNum, tab].filter(Boolean));
+  } else {
+    setHash(['trucks', screen].filter(Boolean));
+  }
+}
+
+const _origOpenDrawer = openDrawer;
+openDrawer = function(i, context) {
+  _origOpenDrawer(i, context);
+  drawerSetHash();
+};
+
+const _origCloseDrawer = closeDrawer;
+closeDrawer = function() {
+  _origCloseDrawer();
+  /* Restore hash to the current trucks page (wts/overview/cc) */
+  const wtsLabel = document.getElementById('wts-label') ? document.getElementById('wts-label').textContent : 'Where to start';
+  const map = { 'Where to start': '', 'Overview': 'overview', 'Components Condition': 'cc' };
+  setHash(['trucks', map[wtsLabel]]);
+};
+
+const _origSelectDrawerNav = selectDrawerNav;
+selectDrawerNav = function(label, el) {
+  _origSelectDrawerNav(label, el);
+  drawerSetHash();
+};
+
 /* On load — restore state from hash */
 (function restoreFromHash() {
   const { section, view, detail } = readHash();
+  const parts = location.hash.replace('#','').split('/').filter(Boolean);
 
   if (section === 'units') {
     openUnits();
     if (view && view.length > 4) {
-      /* view is a unit ID */
       const unitId = view;
       setTimeout(() => {
         openUnitDetail(unitId);
@@ -7266,15 +7317,65 @@ closeUnitDetail = function() {
       }, 50);
     }
   } else {
-    /* trucks screen — restore view */
-    if (view === 'overview') {
-      const el = document.querySelector('#wts-dropdown .wts-option:nth-child(2)');
-      if (el) selectWts('Overview', el);
-    } else if (view === 'cc') {
-      const el = document.querySelector('#wts-dropdown .wts-option:nth-child(3)');
-      if (el) selectWts('Components Condition', el);
+    /* trucks screen */
+    /* Check if a truck drawer URL: #trucks/[screen]/[truckNum]/[tab] or #trucks/[truckNum]/[tab] */
+    let truckNum = null;
+    let tabHash  = null;
+    let screenPart = '';
+
+    if (parts.length >= 3 && parts[0] === 'trucks') {
+      /* Could be #trucks/overview/45689/timeline or #trucks/45689/timeline */
+      const screenMap = { 'overview': 'Overview', 'cc': 'Components Condition' };
+      if (screenMap[parts[1]]) {
+        /* #trucks/overview/truckNum/tab */
+        screenPart = parts[1];
+        truckNum   = parts[2];
+        tabHash    = parts[3] || 'overview';
+      } else {
+        /* #trucks/truckNum/tab */
+        truckNum = parts[1];
+        tabHash  = parts[2] || 'overview';
+      }
+    } else if (parts.length === 2 && parts[0] === 'trucks') {
+      /* Could be #trucks/overview or #trucks/45689 */
+      const screenMap = { 'overview': 'Overview', 'cc': 'Components Condition' };
+      if (screenMap[parts[1]]) {
+        screenPart = parts[1];
+      } else {
+        truckNum = parts[1];
+        tabHash  = 'overview';
+      }
     }
-    /* default wts is already rendered */
+
+    /* Restore WTS page state */
+    if (screenPart) {
+      const screenMap = { 'overview': 'Overview', 'cc': 'Components Condition' };
+      const label = screenMap[screenPart];
+      if (label) {
+        const el = document.querySelector(`#wts-dropdown .wts-option:nth-child(${label === 'Overview' ? 2 : 3})`);
+        if (el) _origSelectWts(label, el);
+      }
+    }
+
+    /* Restore truck drawer */
+    if (truckNum) {
+      const truckIdx = trucks.findIndex(t => t.num === truckNum);
+      if (truckIdx > -1) {
+        setTimeout(() => {
+          _origOpenDrawer(truckIdx);
+          /* Restore drawer tab */
+          if (tabHash && DRAWER_HASH_TAB[tabHash]) {
+            setTimeout(() => {
+              const navLabel = DRAWER_HASH_TAB[tabHash];
+              const navOpts  = document.querySelectorAll('#drawer-nav-dropdown .wts-option');
+              navOpts.forEach(o => {
+                if (o.textContent.trim() === navLabel) _origSelectDrawerNav(navLabel, o);
+              });
+            }, 100);
+          }
+        }, 50);
+      }
+    }
   }
 })();
 

@@ -202,6 +202,7 @@
   }
   .dt-drawer.open {
     width:calc(100% - 40px);
+    max-width:1400px;
     pointer-events:all;
   }
   .dt-drawer-main {
@@ -952,6 +953,7 @@
     padding:0 24px; margin-bottom:0;
     flex-shrink:0; height:44px;
   }
+  .dt-filter-wrap { flex-shrink:0; }
   .dt-filter-btn {
     display:flex; align-items:center; gap:8px;
     height:44px; padding:0 16px;
@@ -959,10 +961,134 @@
     font-size:14px; font-weight:500; color:var(--strong);
     letter-spacing:-0.28px; cursor:pointer;
     background:none; font-family:var(--font);
-    transition:border-color 0.15s, background 0.15s;
+    transition:border-color 0.15s, background 0.15s, color 0.15s;
     flex-shrink:0;
   }
   .dt-filter-btn:hover { border-color:var(--border-mid); background:var(--layer-2); }
+  .dt-filter-btn.has-filters {
+    border-color:var(--blue); background:rgba(48,105,227,0.06);
+    color:var(--blue-link);
+  }
+  .dt-filter-count {
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:18px; height:18px; padding:0 5px;
+    border-radius:10px; background:var(--blue); color:white;
+    font-size:11px; font-weight:600; letter-spacing:0;
+    font-family:'DM Mono', monospace;
+  }
+
+  /* Filter popover */
+  .dt-filter-pop {
+    position:absolute; top:calc(100% + 8px); left:0;
+    width:380px; max-height:520px;
+    background:white; border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:0 14px 32px rgba(0,0,0,0.14);
+    z-index:200;
+    display:none; flex-direction:column;
+    overflow:hidden;
+    transform:translateY(-4px);
+    opacity:0;
+    transition:opacity 0.15s, transform 0.15s;
+  }
+  .dt-filter-pop.open {
+    display:flex;
+    transform:translateY(0);
+    opacity:1;
+  }
+  .dt-filter-pop-head {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 18px;
+    border-bottom:1px solid var(--border);
+    flex-shrink:0;
+  }
+  .dt-filter-pop-title {
+    font-size:14px; font-weight:500; color:var(--strong);
+    letter-spacing:-0.28px;
+  }
+  .dt-filter-pop-reset {
+    background:none; border:none; cursor:pointer;
+    font-size:13px; color:var(--blue-link); font-weight:500;
+    letter-spacing:-0.26px; font-family:var(--font); padding:2px 4px;
+  }
+  .dt-filter-pop-reset:hover { text-decoration:underline; }
+  .dt-filter-pop-reset:disabled {
+    color:var(--soft); cursor:default; text-decoration:none;
+  }
+  .dt-filter-pop-body {
+    flex:1; overflow-y:auto; padding:8px 18px;
+    scrollbar-width:thin;
+  }
+  .dt-flt-section { padding:10px 0; }
+  .dt-flt-section + .dt-flt-section { border-top:1px solid var(--border); }
+  .dt-flt-label {
+    font-size:11px; font-weight:600; letter-spacing:0.4px;
+    text-transform:uppercase; color:var(--soft);
+    margin-bottom:8px;
+  }
+  .dt-flt-chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .dt-flt-chip {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 12px; border-radius:8px;
+    background:var(--layer-2); border:1px solid var(--border);
+    font-size:13px; font-weight:500; color:var(--strong);
+    letter-spacing:-0.26px; font-family:var(--font);
+    cursor:pointer; transition:background 0.12s, border-color 0.12s, color 0.12s;
+    line-height:1.2;
+  }
+  .dt-flt-chip:hover { border-color:var(--border-mid); }
+  .dt-flt-chip.active {
+    background:var(--strong); border-color:var(--strong); color:white;
+  }
+  .dt-filter-pop-foot {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 18px;
+    border-top:1px solid var(--border);
+    flex-shrink:0;
+  }
+  .dt-filter-pop-foot-count {
+    font-size:12px; color:var(--soft); letter-spacing:-0.2px;
+  }
+  .dt-filter-pop-done {
+    background:var(--strong); color:white; border:none;
+    border-radius:32px; padding:8px 18px;
+    font-size:13px; font-weight:500; letter-spacing:-0.26px;
+    font-family:var(--font); cursor:pointer;
+    transition:opacity 0.12s;
+  }
+  .dt-filter-pop-done:hover { opacity:0.88; }
+
+  /* Active filter chip strip — sits above the table */
+  .dt-active-filters {
+    display:flex; flex-wrap:wrap; align-items:center; gap:6px;
+    padding:8px 0 12px;
+  }
+  .dt-active-filter-pill {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:4px 4px 4px 10px;
+    background:var(--layer-2); border:1px solid var(--border);
+    border-radius:16px;
+    font-size:12px; color:var(--strong); letter-spacing:-0.24px;
+  }
+  .dt-active-filter-pill-grp { color:var(--soft); margin-right:2px; }
+  .dt-active-filter-pill-x {
+    width:18px; height:18px; padding:0; margin-left:2px;
+    background:none; border:none; cursor:pointer;
+    border-radius:50%;
+    display:inline-flex; align-items:center; justify-content:center;
+    color:var(--defined);
+    transition:background 0.12s;
+  }
+  .dt-active-filter-pill-x:hover {
+    background:rgba(54,50,45,0.08); color:var(--strong);
+  }
+  .dt-active-filter-clear {
+    font-size:12px; color:var(--blue-link); font-weight:500;
+    letter-spacing:-0.24px; background:none; border:none;
+    cursor:pointer; padding:4px 8px; font-family:var(--font);
+    margin-left:2px;
+  }
+  .dt-active-filter-clear:hover { text-decoration:underline; }
   .dt-search-wrap {
     position:relative; flex:0 0 295px;
   }
@@ -979,6 +1105,60 @@
     font-family:var(--font); min-width:0;
   }
   .dt-search-field:focus-within { border-color:var(--strong); }
+  .dt-search-field.active { border-color:var(--strong); }
+
+  /* Desktop typeahead dropdown — mirrors mobile srch-drop */
+  .dt-srch-drop {
+    position:absolute; top:calc(100% + 6px); left:0; right:0;
+    background:white; border:1px solid var(--border);
+    border-radius:16px; padding:12px;
+    box-shadow:0 14px 24px rgba(0,0,0,0.14);
+    z-index:200; max-height:380px; overflow-y:auto;
+    scrollbar-width:thin;
+  }
+  .dt-srch-section-hdr {
+    display:flex; align-items:center; gap:8px;
+    padding:6px 8px; margin-bottom:2px;
+  }
+  .dt-srch-section-label {
+    font-size:14px; font-weight:500; color:var(--strong);
+    letter-spacing:-0.28px;
+  }
+  .dt-srch-row {
+    display:flex; align-items:center;
+    height:36px; padding:4px 8px; border-radius:8px;
+    cursor:pointer; gap:8px;
+    transition:background-color 0.12s;
+  }
+  .dt-srch-row:hover { background:rgba(54,50,45,0.04); }
+  .dt-srch-row.active { background:rgba(194,215,250,0.35); }
+  .dt-srch-match-text { font-size:14px; letter-spacing:-0.28px; line-height:1.3; }
+  .dt-srch-chip {
+    display:inline-block; background:#C2D7FA;
+    border-radius:2px; padding:0 2px;
+    color:var(--strong); font-weight:500;
+  }
+  .dt-srch-soft { color:var(--soft); }
+  .dt-srch-meta {
+    font-size:12px; color:var(--soft); letter-spacing:-0.2px;
+    margin-left:auto; flex-shrink:0;
+  }
+  .dt-srch-show-more {
+    font-size:14px; color:var(--blue); letter-spacing:-0.28px;
+    padding:4px 8px; cursor:pointer; display:block;
+    font-weight:500;
+  }
+  .dt-srch-show-more:hover { text-decoration:underline; }
+  .dt-srch-no-hits {
+    font-size:14px; color:var(--soft); letter-spacing:-0.28px;
+    padding:8px; text-align:center;
+  }
+  /* Flash highlight when a row is selected from the dropdown */
+  @keyframes dt-srch-flash {
+    0%   { background:rgba(194,215,250,0.55); }
+    100% { background:transparent; }
+  }
+  tr.dt-srch-flash { animation:dt-srch-flash 1.4s ease-out; }
   .dt-divider {
     width:1px; height:34px; background:var(--border); flex-shrink:0;
   }
@@ -1163,20 +1343,33 @@
   .dt-th--dot { text-align:center; }
   .dt-td--dot { text-align:center; padding-left:0; padding-right:0; }
   .dt-td--dot > div { display:flex; justify-content:center; align-items:center; width:100%; }
+  /* Group header row — a section divider, not a data row.
+     - Darker bg than alternating data rows so hierarchy reads
+     - Bolder type
+     - Top accent border to signal "new section"
+     - Sticky during scroll so the FST always knows which plant they're viewing */
   .dt-group-row {
-    background:var(--layer-2);
+    background:#ebe7e0;
+  }
+  .dt-group-row + .dt-group-row { /* unlikely, but defensive */
+    border-top:none;
   }
   .dt-group-cell {
-    padding:8px 12px 8px 10px; font-size:13px; font-weight:500;
-    color:var(--strong); letter-spacing:-0.26px;
-    display:flex; align-items:center; gap:8px;
-    border-bottom:1px solid var(--border);
+    padding:10px 14px 10px 12px;
+    font-size:13px; font-weight:600;
+    color:var(--strong); letter-spacing:-0.1px;
+    display:flex; align-items:center; gap:10px;
+    border-top:1px solid rgba(54,50,45,0.18);
+    border-bottom:1px solid rgba(54,50,45,0.12);
   }
+  /* First group row in the table doesn't need the top divider — it's right under thead */
+  tbody .dt-group-row:first-child .dt-group-cell { border-top:none; }
   .dt-group-badge {
     display:inline-flex; align-items:center; justify-content:center;
-    width:20px; height:20px; border-radius:4px;
+    min-width:22px; height:22px; padding:0 6px; border-radius:6px;
     background:var(--red); color:white;
     font-size:11px; font-weight:600; flex-shrink:0;
+    letter-spacing:-0.1px;
   }
   .dt-tr {
     border-bottom:1px solid var(--border);
@@ -1510,19 +1703,21 @@
 
   .group-header {
     display: flex; align-items: center; gap: 10px;
-    padding: 8px 8px; background: var(--layer-1);
-    border-bottom: 1px solid var(--border-mid);
+    padding: 10px 10px;
+    background: #ebe7e0;
+    border-top: 1px solid rgba(54,50,45,0.18);
+    border-bottom: 1px solid rgba(54,50,45,0.12);
     cursor: pointer; -webkit-tap-highlight-color: transparent;
   }
-  .group-header:active { background: var(--layer-2); }
+  .group-header:active { background: #e2ddd5; }
   .group-badge {
     display: flex; align-items: center; justify-content: center;
-    background: var(--red); border-radius: 4px;
-    min-width: 24px; height: 20px; padding: 0 4px;
-    font-size: 12px; font-weight: 400; color: white;
-    letter-spacing: -0.24px; flex-shrink: 0;
+    background: var(--red); border-radius: 6px;
+    min-width: 22px; height: 22px; padding: 0 6px;
+    font-size: 11px; font-weight: 600; color: white;
+    letter-spacing: -0.1px; flex-shrink: 0;
   }
-  .group-label { font-size: 14px; color: var(--strong); letter-spacing: -0.28px; line-height: 1.3; }
+  .group-label { font-size: 14px; font-weight: 600; color: var(--strong); letter-spacing: -0.1px; line-height: 1.3; }
 
   .tbl-head {
     display: grid;
@@ -4095,8 +4290,8 @@
             <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style="transform:rotate(180deg);flex-shrink:0;"><path d="M1 1.5l5 5 5-5" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
           </div>
           <div style="display:flex;flex-direction:column;gap:2px;margin-top:2px;">
-            <div style="background:#1594ef;border-radius:32px;padding:10px 12px 10px 44px;cursor:pointer;">
-              <span style="font-size:14px;color:white;letter-spacing:-0.28px;font-family:var(--font);">All trucks</span>
+            <div style="background:#c2d7fa;border-radius:32px;padding:10px 12px 10px 44px;cursor:pointer;">
+              <span style="font-size:14px;color:#000;letter-spacing:-0.28px;font-family:var(--font);font-weight:500;">All trucks</span>
             </div>
             <div style="padding:10px 12px 10px 44px;border-radius:32px;cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.04)'" onmouseleave="this.style.background=''">
               <span style="font-size:14px;color:rgba(54,50,45,0.5);letter-spacing:-0.28px;font-family:var(--font);">Map</span>
@@ -4409,14 +4604,80 @@
 
         <!-- Toolbar -->
         <div class="dt-toolbar">
-          <button class="dt-filter-btn">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 3h12M3 7h8M5 11h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-            Filters
-          </button>
-          <div class="dt-search-wrap">
-            <div class="dt-search-field">
+          <div class="dt-filter-wrap" id="dt-filter-wrap" style="position:relative;">
+            <button class="dt-filter-btn" id="dt-filter-btn" onclick="dtFilterToggle(event)" aria-haspopup="dialog" aria-expanded="false">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 3h12M3 7h8M5 11h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              Filters
+              <span class="dt-filter-count" id="dt-filter-count" style="display:none;">0</span>
+            </button>
+
+            <!-- Filter popover -->
+            <div class="dt-filter-pop" id="dt-filter-pop" role="dialog" aria-label="Filter trucks">
+              <div class="dt-filter-pop-head">
+                <span class="dt-filter-pop-title">Filter trucks</span>
+                <button class="dt-filter-pop-reset" id="dt-filter-pop-reset" onclick="dtFilterReset()">Reset all</button>
+              </div>
+              <div class="dt-filter-pop-body">
+
+                <div class="dt-flt-section">
+                  <div class="dt-flt-label">Ignition</div>
+                  <div class="dt-flt-chips" id="dt-flt-ignition">
+                    <button class="dt-flt-chip" data-group="ignition" data-value="On"  onclick="dtFilterToggleChip(this)">On</button>
+                    <button class="dt-flt-chip" data-group="ignition" data-value="Off" onclick="dtFilterToggleChip(this)">Off</button>
+                  </div>
+                </div>
+
+                <div class="dt-flt-section">
+                  <div class="dt-flt-label">Alerts</div>
+                  <div class="dt-flt-chips" id="dt-flt-alerts">
+                    <button class="dt-flt-chip" data-group="alerts" data-value="errors"   onclick="dtFilterToggleChip(this)">Has Errors</button>
+                    <button class="dt-flt-chip" data-group="alerts" data-value="warnings" onclick="dtFilterToggleChip(this)">Has Warnings</button>
+                    <button class="dt-flt-chip" data-group="alerts" data-value="clean"    onclick="dtFilterToggleChip(this)">Clean</button>
+                  </div>
+                </div>
+
+                <div class="dt-flt-section">
+                  <div class="dt-flt-label">Plant</div>
+                  <div class="dt-flt-chips" id="dt-flt-plant">
+                    <button class="dt-flt-chip" data-group="plant" data-value="Phoenix Central" onclick="dtFilterToggleChip(this)">Phoenix Central</button>
+                    <button class="dt-flt-chip" data-group="plant" data-value="Mesa South"      onclick="dtFilterToggleChip(this)">Mesa South</button>
+                    <button class="dt-flt-chip" data-group="plant" data-value="Tempe East"      onclick="dtFilterToggleChip(this)">Tempe East</button>
+                  </div>
+                </div>
+
+                <div class="dt-flt-section">
+                  <div class="dt-flt-label">Version</div>
+                  <div class="dt-flt-chips" id="dt-flt-version">
+                    <button class="dt-flt-chip" data-group="version" data-value="V3"    onclick="dtFilterToggleChip(this)">V3</button>
+                    <button class="dt-flt-chip" data-group="version" data-value="V4"    onclick="dtFilterToggleChip(this)">V4</button>
+                    <button class="dt-flt-chip" data-group="version" data-value="V5"    onclick="dtFilterToggleChip(this)">V5</button>
+                    <button class="dt-flt-chip" data-group="version" data-value="Spark" onclick="dtFilterToggleChip(this)">Spark</button>
+                    <button class="dt-flt-chip" data-group="version" data-value="Pulse" onclick="dtFilterToggleChip(this)">Pulse</button>
+                  </div>
+                </div>
+
+              </div>
+              <div class="dt-filter-pop-foot">
+                <span class="dt-filter-pop-foot-count" id="dt-filter-pop-foot-count">All trucks shown</span>
+                <button class="dt-filter-pop-done" onclick="dtFilterClose()">Done</button>
+              </div>
+            </div>
+          </div>
+          <div class="dt-search-wrap" id="dt-srch-wrap" style="position:relative;">
+            <div class="dt-search-field" id="dt-srch-field">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="#36322d9e" stroke-width="1.4"/><path d="M11 11l2.5 2.5" stroke="#36322d9e" stroke-width="1.4" stroke-linecap="round"/></svg>
-              <input placeholder="Truck Number" oninput="dtSearch(this.value)" id="dt-search-input" />
+              <input placeholder="Truck, plant, version…" autocomplete="off"
+                     id="dt-search-input"
+                     oninput="dtSrchOnInput()"
+                     onfocus="dtSrchOnFocus()"
+                     onkeydown="dtSrchKey(event)" />
+              <button id="dt-srch-clear" onclick="dtSrchClear()" style="display:none;background:none;border:none;padding:2px;cursor:pointer;flex-shrink:0;line-height:0;">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="#36322d" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+            <!-- Typeahead dropdown — mirrors mobile's srch-drop -->
+            <div class="dt-srch-drop" id="dt-srch-drop" style="display:none;">
+              <div id="dt-srch-results"></div>
             </div>
           </div>
           <div class="dt-divider"></div>
@@ -4473,6 +4734,9 @@
           <button class="dt-tab" onclick="dtSelectTab('cc', this)">Components Condition</button>
         </div>
       </div>
+
+      <!-- Active filter chips — appears when filters are applied -->
+      <div class="dt-active-filters" id="dt-active-filters" style="display:none;"></div>
 
       <!-- Table -->
       <div class="dt-table-wrap">
@@ -9124,7 +9388,7 @@ function dtRenderTable() {
   truckGroups.forEach((group, gi) => {
     if (!selectedAccounts.has(group.account)) return;
     if (!selectedLocations.has(group.label)) return;
-    const problemTrucks = group.trucks.filter(t => !t.unlinked && (t.err || t.wrn) && dtTruckMatchesSearch(t));
+    const problemTrucks = group.trucks.filter(t => !t.unlinked && (t.err || t.wrn) && dtTruckMatchesSearch(t) && filterMatch(t));
     if (problemTrucks.length === 0) return;
     const isOpen = group.open !== false;
     rows += `
@@ -9148,7 +9412,7 @@ function dtRenderTable() {
       const connDot = t.conn === 'live'
         ? `<span class="dt-conn-dot live"></span>Live`
         : `<span class="dt-conn-dot none"></span><span style="color:var(--soft)">No connection</span>`;
-      rows += `<tr class="dt-tr${alt ? ' alt' : ''}" onclick="dtOpenTruck('${t.num}')">
+      rows += `<tr class="dt-tr${alt ? ' alt' : ''}" data-truck="${t.num}" onclick="dtOpenTruck('${t.num}')">
         ${cols.map(col => wtsCell(col, t, badges, connDot)).join('')}
       </tr>`;
     });
@@ -9178,9 +9442,399 @@ function dtTruckMatchesSearch(t) {
          t.ver.toLowerCase().includes(q);
 }
 
+/* ── DESKTOP TRUCK SEARCH TYPEAHEAD ──────────────────────
+   Mirrors mobile's srch-* flow: type → grouped dropdown of trucks with
+   highlighted matches and meta. Click a row to fill the input, scroll
+   the table to that truck, and flash-highlight the row.
+   Search still also filters the table inline (preserves pre-existing
+   behavior). */
+let dtSrchActiveQuery = '';
+let dtSrchActiveIdx   = -1;   /* keyboard nav index into shown results */
+let dtSrchShownTrucks = [];   /* current shown rows for ↑/↓/Enter */
+
+function dtSrchHighlight(text, query) {
+  if (!query) return `<span class="dt-srch-soft">${text}</span>`;
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return `<span class="dt-srch-soft">${text}</span>`;
+  const before = text.slice(0, idx);
+  const match  = text.slice(idx, idx + query.length);
+  const after  = text.slice(idx + query.length);
+  return `${before ? `<span class="dt-srch-soft">${before}</span>` : ''}<span class="dt-srch-chip">${match}</span>${after ? `<span class="dt-srch-soft">${after}</span>` : ''}`;
+}
+
+function dtSrchOnInput() {
+  const input = document.getElementById('dt-search-input');
+  const q = input.value.trim();
+  dtSrchActiveQuery = q;
+  dtSrchActiveIdx = -1;
+
+  document.getElementById('dt-srch-field').classList.toggle('active', q.length > 0);
+  document.getElementById('dt-srch-clear').style.display = q.length > 0 ? 'block' : 'none';
+
+  // Keep the existing inline table filter behavior
+  dtSearchQuery = q;
+  dtRenderTable();
+
+  const drop = document.getElementById('dt-srch-drop');
+  if (!q) { drop.style.display = 'none'; return; }
+
+  // Search across all visible trucks (respects current territory selection)
+  const all = [];
+  truckGroups.forEach(g => g.trucks.forEach(t => { if (!t.unlinked) all.push(t); }));
+  const ql = q.toLowerCase();
+  const matches = all.filter(t =>
+    String(t.num).toLowerCase().includes(ql) ||
+    (t.plant || '').toLowerCase().includes(ql) ||
+    (t.ver || '').toLowerCase().includes(ql) ||
+    (t.ign || '').toLowerCase().includes(ql)
+  );
+
+  const MAX = 6;
+  const shown = matches.slice(0, MAX);
+  const extra = matches.length - MAX;
+  dtSrchShownTrucks = shown;
+
+  const resultsEl = document.getElementById('dt-srch-results');
+  if (matches.length === 0) {
+    resultsEl.innerHTML = `<div class="dt-srch-no-hits">No matches found</div>`;
+    drop.style.display = 'block';
+    return;
+  }
+
+  const truckIcon = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 13C1.94772 13 1.5 12.5523 1.5 12V9.80278C1.5 9.60535 1.55844 9.41234 1.66795 9.24808L3.20313 6.9453C3.3886 6.6671 3.70083 6.5 4.03518 6.5H6V12C6 12.5523 6.44772 13 7 13H11" stroke="#36322d9e" stroke-width="1.2" stroke-linejoin="round"/><circle cx="4" cy="13" r="1.4" stroke="#36322d9e" stroke-width="1.2"/><circle cx="12" cy="13" r="1.4" stroke="#36322d9e" stroke-width="1.2"/><path d="M12.2242 5.15477L8.65195 6.06584C6.54213 6.60392 5.61922 9.08368 6.86385 10.8702L11.9902 10.8575L14.0825 7.82226C14.204 7.64525 14.204 7.41112 14.0811 7.23472L12.7748 5.35971C12.6519 5.18331 12.4325 5.10164 12.2242 5.15477Z" stroke="#36322d9e" stroke-width="1.2"/></svg>`;
+
+  let html = `
+    <div class="dt-srch-section-hdr">
+      ${truckIcon}
+      <span class="dt-srch-section-label">Trucks</span>
+    </div>`;
+
+  shown.forEach((t, i) => {
+    const primary   = dtSrchHighlight(String(t.num), q);
+    const secondary = `${t.plant || '—'} · ${t.ver || '—'} · Ign ${t.ign || '—'}`;
+    html += `
+      <div class="dt-srch-row" data-idx="${i}" onclick="dtSrchSelect(${i})">
+        <span class="dt-srch-match-text">${primary}</span>
+        <span class="dt-srch-meta">${secondary}</span>
+      </div>`;
+  });
+
+  if (extra > 0) {
+    html += `<div class="dt-srch-show-more" onclick="dtSrchShowMore()">Show ${extra} more truck${extra > 1 ? 's' : ''}</div>`;
+  }
+
+  resultsEl.innerHTML = html;
+  drop.style.display = 'block';
+}
+
+function dtSrchOnFocus() {
+  if (dtSrchActiveQuery) dtSrchOnInput();
+}
+
+function dtSrchClear() {
+  const input = document.getElementById('dt-search-input');
+  input.value = '';
+  dtSrchActiveQuery = '';
+  dtSrchActiveIdx = -1;
+  document.getElementById('dt-srch-field').classList.remove('active');
+  document.getElementById('dt-srch-clear').style.display = 'none';
+  document.getElementById('dt-srch-drop').style.display = 'none';
+  dtSearchQuery = '';
+  dtRenderTable();
+  input.focus();
+}
+
+function dtSrchSelect(idx) {
+  const t = dtSrchShownTrucks[idx];
+  if (!t) return;
+  document.getElementById('dt-srch-drop').style.display = 'none';
+  document.getElementById('dt-search-input').value = t.num;
+  dtSrchActiveQuery = String(t.num);
+  // Filter the table to this truck so it's the obvious focus
+  dtSearchQuery = String(t.num);
+  dtRenderTable();
+  // Scroll & flash-highlight the row
+  requestAnimationFrame(() => {
+    const tr = document.querySelector(`#dt-tbody tr[data-truck="${t.num}"]`);
+    if (tr) {
+      tr.scrollIntoView({ block:'center', behavior:'smooth' });
+      tr.classList.remove('dt-srch-flash');
+      // Force reflow so animation re-fires
+      void tr.offsetWidth;
+      tr.classList.add('dt-srch-flash');
+    }
+  });
+}
+
+function dtSrchShowMore() {
+  // Re-render with no MAX cap
+  const q = dtSrchActiveQuery;
+  if (!q) return;
+  const all = [];
+  truckGroups.forEach(g => g.trucks.forEach(t => { if (!t.unlinked) all.push(t); }));
+  const ql = q.toLowerCase();
+  const matches = all.filter(t =>
+    String(t.num).toLowerCase().includes(ql) ||
+    (t.plant || '').toLowerCase().includes(ql) ||
+    (t.ver || '').toLowerCase().includes(ql) ||
+    (t.ign || '').toLowerCase().includes(ql)
+  );
+  dtSrchShownTrucks = matches;
+  const truckIcon = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 13C1.94772 13 1.5 12.5523 1.5 12V9.80278C1.5 9.60535 1.55844 9.41234 1.66795 9.24808L3.20313 6.9453C3.3886 6.6671 3.70083 6.5 4.03518 6.5H6V12C6 12.5523 6.44772 13 7 13H11" stroke="#36322d9e" stroke-width="1.2" stroke-linejoin="round"/><circle cx="4" cy="13" r="1.4" stroke="#36322d9e" stroke-width="1.2"/><circle cx="12" cy="13" r="1.4" stroke="#36322d9e" stroke-width="1.2"/><path d="M12.2242 5.15477L8.65195 6.06584C6.54213 6.60392 5.61922 9.08368 6.86385 10.8702L11.9902 10.8575L14.0825 7.82226C14.204 7.64525 14.204 7.41112 14.0811 7.23472L12.7748 5.35971C12.6519 5.18331 12.4325 5.10164 12.2242 5.15477Z" stroke="#36322d9e" stroke-width="1.2"/></svg>`;
+  let html = `<div class="dt-srch-section-hdr">${truckIcon}<span class="dt-srch-section-label">Trucks</span></div>`;
+  matches.forEach((t, i) => {
+    const primary   = dtSrchHighlight(String(t.num), q);
+    const secondary = `${t.plant || '—'} · ${t.ver || '—'} · Ign ${t.ign || '—'}`;
+    html += `<div class="dt-srch-row" data-idx="${i}" onclick="dtSrchSelect(${i})"><span class="dt-srch-match-text">${primary}</span><span class="dt-srch-meta">${secondary}</span></div>`;
+  });
+  document.getElementById('dt-srch-results').innerHTML = html;
+}
+
+function dtSrchKey(e) {
+  const drop = document.getElementById('dt-srch-drop');
+  const open = drop && drop.style.display === 'block';
+  if (!open) return;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    dtSrchActiveIdx = Math.min(dtSrchActiveIdx + 1, dtSrchShownTrucks.length - 1);
+    dtSrchUpdateActive();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    dtSrchActiveIdx = Math.max(dtSrchActiveIdx - 1, 0);
+    dtSrchUpdateActive();
+  } else if (e.key === 'Enter') {
+    if (dtSrchActiveIdx >= 0) {
+      e.preventDefault();
+      dtSrchSelect(dtSrchActiveIdx);
+    }
+  } else if (e.key === 'Escape') {
+    drop.style.display = 'none';
+  }
+}
+
+function dtSrchUpdateActive() {
+  document.querySelectorAll('.dt-srch-row').forEach((el, i) => {
+    el.classList.toggle('active', i === dtSrchActiveIdx);
+  });
+  const activeEl = document.querySelector(`.dt-srch-row[data-idx="${dtSrchActiveIdx}"]`);
+  if (activeEl) activeEl.scrollIntoView({ block:'nearest' });
+}
+
+// Click-outside closes the dropdown
+document.addEventListener('click', (e) => {
+  const wrap = document.getElementById('dt-srch-wrap');
+  const drop = document.getElementById('dt-srch-drop');
+  if (!wrap || !drop) return;
+  if (drop.style.display === 'block' && !wrap.contains(e.target)) {
+    drop.style.display = 'none';
+  }
+});
+
+/* Legacy entrypoint kept for backwards compat — table inline filter only */
 function dtSearch(q) {
   dtSearchQuery = q.trim();
   dtRenderTable();
+}
+
+/* ── DESKTOP FILTER POPOVER ──────────────────────────────
+   Shares the existing filterState model with mobile so that any change
+   on either side affects the same set. Differences from mobile:
+   - Renders as an anchored popover (not a bottom sheet)
+   - Live updates the table as you toggle (no Apply step)
+   - Shows active filters as removable chips above the table
+   - Esc to close, click-outside to dismiss
+   - Result count in the popover footer reassures user the filter is working
+   2026 conventions: popover + live filtering + inline removable chips.
+*/
+function dtFilterToggle(e) {
+  if (e) e.stopPropagation();
+  const pop = document.getElementById('dt-filter-pop');
+  const open = pop.classList.contains('open');
+  if (open) dtFilterClose();
+  else dtFilterOpen();
+}
+
+function dtFilterOpen() {
+  const pop = document.getElementById('dt-filter-pop');
+  const btn = document.getElementById('dt-filter-btn');
+  if (!pop) return;
+  pop.classList.add('open');
+  btn.setAttribute('aria-expanded', 'true');
+  // Sync chip active states to current filterState
+  document.querySelectorAll('.dt-flt-chip').forEach(chip => {
+    const grp = chip.dataset.group;
+    const val = chip.dataset.value;
+    chip.classList.toggle('active', filterState[grp] && filterState[grp].has(val));
+  });
+  dtFilterUpdateFootCount();
+  dtFilterUpdateResetState();
+}
+
+function dtFilterClose() {
+  const pop = document.getElementById('dt-filter-pop');
+  const btn = document.getElementById('dt-filter-btn');
+  if (!pop) return;
+  pop.classList.remove('open');
+  btn.setAttribute('aria-expanded', 'false');
+}
+
+function dtFilterToggleChip(el) {
+  const grp = el.dataset.group;
+  const val = el.dataset.value;
+  const set = filterState[grp];
+  if (!set) return;
+  if (set.has(val)) { set.delete(val); el.classList.remove('active'); }
+  else              { set.add(val);    el.classList.add('active'); }
+  // Live update: re-render the active page and the strip + count + foot
+  dtFilterReapply();
+}
+
+function dtFilterReset() {
+  Object.values(filterState).forEach(s => s.clear());
+  document.querySelectorAll('.dt-flt-chip').forEach(c => c.classList.remove('active'));
+  // Mobile chips share the same state — clear their active class too
+  document.querySelectorAll('.flt-chip').forEach(c => c.classList.remove('active'));
+  dtFilterReapply();
+}
+
+function dtFilterReapply() {
+  // Re-render whichever page is active
+  const tab = (typeof dtActiveTab !== 'undefined') ? dtActiveTab : 'wts';
+  if (tab === 'overview')      dtRenderOverview();
+  else if (tab === 'cc')       dtRenderCC();
+  else                         dtRenderTable();
+  // Mobile renderers also pick up the change next time they run; no need to call them here
+  dtFilterUpdateBadge();
+  dtFilterUpdateStrip();
+  dtFilterUpdateFootCount();
+  dtFilterUpdateResetState();
+  // Mobile button count badge if present
+  if (typeof filterUpdateCount === 'function') filterUpdateCount();
+}
+
+function dtFilterTotalCount() {
+  return Object.values(filterState).reduce((n, s) => n + s.size, 0);
+}
+
+function dtFilterUpdateBadge() {
+  const total = dtFilterTotalCount();
+  const btn   = document.getElementById('dt-filter-btn');
+  const badge = document.getElementById('dt-filter-count');
+  if (!btn || !badge) return;
+  if (total > 0) {
+    btn.classList.add('has-filters');
+    badge.style.display = 'inline-flex';
+    badge.textContent = total;
+  } else {
+    btn.classList.remove('has-filters');
+    badge.style.display = 'none';
+  }
+}
+
+function dtFilterUpdateResetState() {
+  const btn = document.getElementById('dt-filter-pop-reset');
+  if (!btn) return;
+  btn.disabled = dtFilterTotalCount() === 0;
+}
+
+const DT_FILTER_GROUP_LABELS = {
+  ignition: 'Ignition',
+  alerts:   'Alerts',
+  plant:    'Plant',
+  version:  'Version',
+};
+const DT_FILTER_VALUE_LABELS = {
+  errors:   'Has Errors',
+  warnings: 'Has Warnings',
+  clean:    'Clean',
+};
+
+function dtFilterUpdateStrip() {
+  const strip = document.getElementById('dt-active-filters');
+  if (!strip) return;
+  const total = dtFilterTotalCount();
+  if (total === 0) { strip.style.display = 'none'; strip.innerHTML = ''; return; }
+
+  let html = '';
+  Object.keys(filterState).forEach(grp => {
+    const set = filterState[grp];
+    if (!set || set.size === 0) return;
+    const grpLabel = DT_FILTER_GROUP_LABELS[grp] || grp;
+    set.forEach(val => {
+      const valLabel = DT_FILTER_VALUE_LABELS[val] || val;
+      const safeGrp = grp.replace(/'/g, "\\'");
+      const safeVal = String(val).replace(/'/g, "\\'");
+      html += `
+        <span class="dt-active-filter-pill">
+          <span class="dt-active-filter-pill-grp">${grpLabel}:</span>
+          ${valLabel}
+          <button class="dt-active-filter-pill-x"
+                  aria-label="Remove ${grpLabel} ${valLabel} filter"
+                  onclick="dtFilterRemove('${safeGrp}','${safeVal}')">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M2.5 2.5l5 5M7.5 2.5l-5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </span>`;
+    });
+  });
+  if (total > 1) {
+    html += `<button class="dt-active-filter-clear" onclick="dtFilterReset()">Clear all</button>`;
+  }
+  strip.innerHTML = html;
+  strip.style.display = 'flex';
+}
+
+function dtFilterRemove(grp, val) {
+  if (!filterState[grp]) return;
+  filterState[grp].delete(val);
+  // Sync the chip in the popover too
+  const chip = document.querySelector(`.dt-flt-chip[data-group="${grp}"][data-value="${val}"]`);
+  if (chip) chip.classList.remove('active');
+  dtFilterReapply();
+}
+
+function dtFilterUpdateFootCount() {
+  const el = document.getElementById('dt-filter-pop-foot-count');
+  if (!el) return;
+  const total = dtFilterTotalCount();
+  if (total === 0) { el.textContent = 'All trucks shown'; return; }
+  // Count visible trucks under current filter + territory selection
+  let count = 0;
+  truckGroups.forEach(g => {
+    if (typeof selectedAccounts !== 'undefined' && !selectedAccounts.has(g.account)) return;
+    if (typeof selectedLocations !== 'undefined' && !selectedLocations.has(g.label)) return;
+    g.trucks.forEach(t => {
+      if (!t.unlinked && filterMatch(t)) count++;
+    });
+  });
+  el.textContent = `${count} truck${count === 1 ? '' : 's'} match`;
+}
+
+// Click outside closes the popover
+document.addEventListener('click', (e) => {
+  const pop = document.getElementById('dt-filter-pop');
+  const wrap = document.getElementById('dt-filter-wrap');
+  if (!pop || !wrap) return;
+  if (pop.classList.contains('open') && !wrap.contains(e.target)) {
+    dtFilterClose();
+  }
+});
+
+// Esc to close
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const pop = document.getElementById('dt-filter-pop');
+    if (pop && pop.classList.contains('open')) dtFilterClose();
+  }
+});
+
+// Initialize badge + strip on first run (filterState may already have values from mobile)
+if (typeof window !== 'undefined') {
+  requestAnimationFrame(() => {
+    dtFilterUpdateBadge();
+    dtFilterUpdateStrip();
+  });
 }
 
 function dtSelectTab(tab, el) {
@@ -9516,7 +10170,7 @@ function dtRenderCC() {
     if (!selectedAccounts.has(group.account)) return;
     if (!selectedLocations.has(group.label)) return;
     group.trucks.forEach(t => {
-      if (!t.unlinked && dtTruckMatchesSearch(t)) {
+      if (!t.unlinked && dtTruckMatchesSearch(t) && filterMatch(t)) {
         const cc = CC_TRUCKS.find(c => c.num === t.num);
         allTrucks.push({ t, cc });
       }
@@ -9531,7 +10185,7 @@ function dtRenderCC() {
   let rows = '';
   allTrucks.forEach(({ t, cc }, idx) => {
     const alt = idx % 2 === 1;
-    rows += `<tr class="dt-tr${alt ? ' alt' : ''}" onclick="dtOpenTruck('${t.num}')">
+    rows += `<tr class="dt-tr${alt ? ' alt' : ''}" data-truck="${t.num}" onclick="dtOpenTruck('${t.num}')">
       ${cols.map(col => ccCell(col, t, cc)).join('')}
     </tr>`;
   });
@@ -9585,7 +10239,7 @@ function dtRenderOverview() {
   truckGroups.forEach(group => {
     if (!selectedAccounts.has(group.account)) return;
     if (!selectedLocations.has(group.label)) return;
-    group.trucks.forEach(t => { if (!t.unlinked && dtTruckMatchesSearch(t)) allTrucks.push(t); });
+    group.trucks.forEach(t => { if (!t.unlinked && dtTruckMatchesSearch(t) && filterMatch(t)) allTrucks.push(t); });
   });
 
   if (allTrucks.length === 0) {
@@ -9603,7 +10257,7 @@ function dtRenderOverview() {
     const connDot = t.conn === 'live'
       ? `<span class="dt-conn-dot live"></span>Live`
       : `<span class="dt-conn-dot none"></span><span style="color:var(--soft)">No connection</span>`;
-    rows += `<tr class="dt-tr${alt ? ' alt' : ''}" onclick="dtOpenTruck('${t.num}')">
+    rows += `<tr class="dt-tr${alt ? ' alt' : ''}" data-truck="${t.num}" onclick="dtOpenTruck('${t.num}')">
       ${cols.map(col => ovCell(col, t, badges, connDot)).join('')}
     </tr>`;
   });

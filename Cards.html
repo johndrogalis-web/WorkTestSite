@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Manual Control — Interaction Prototype</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+
+/* ════════════════════════════════════════
+   TOKENS
+════════════════════════════════════════ */
+:root {
+  --bg:          #f0ede9;
+  --card:        #ffffff;
+  --border:      rgba(54,50,45,0.13);
+  --border-med:  rgba(54,50,45,0.24);
+  --text-1:      #1a1814;
+  --text-2:      #4a4540;
+  --text-3:      rgba(40,36,30,0.5);
+
+  --blue:        #1594ef;
+  --blue-bg:     #e3f0fc;
+  --blue-text:   #1056a8;
+
+  --green:       #2ECF1D;
+  --green-text:  #1e6252;
+  --green-bg:    #d5f1d2;
+
+  --amber:       #b46e00;
+  --amber-bg:    #fff0d4;
+
+  --red:         #c13c2d;
+  --red-bg:      #fde8e6;
+  --red-heavy:   #8b1a0f;
+  --red-heavy-bg:#fbd0cc;
+
+  --partial:     #7a4d00;
+  --partial-bg:  #fff7ec;
+  --partial-border: rgba(180,110,0,0.25);
+
+  --disabled-bg:   rgba(54,50,45,0.06);
+  --disabled-text: rgba(54,50,45,0.3);
+
+  --card-radius: 20px;
+  --btn-radius:  32px;
+  --input-radius: 10px;
+  --card-w:      280px;
+  --card-h:      260px;
+  --card-pad:    20px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text-1);
+  min-height: 100vh;
+  padding: 40px 24px 80px;
+}
+
+/* ── Chrome ── */
+.proto-chrome { max-width: 1400px; margin: 0 auto; padding: 0 24px 80px; }
+
+/* ── Top bar ── */
+.top-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 24px 0 28px; border-bottom: 1px solid var(--border);
+  margin-bottom: 28px; gap: 16px; flex-wrap: wrap;
+}
+.top-bar-title h1 { font-size: 16px; font-weight: 600; letter-spacing: -0.3px; }
+.top-bar-title p  { font-size: 12px; color: var(--text-3); margin-top: 3px; letter-spacing: -0.1px; }
+
+/* ── Viewport toggle ── */
+.vp-toggle {
+  display: flex; gap: 4px; padding: 4px;
+  background: rgba(54,50,45,0.07); border-radius: 12px; flex-shrink: 0;
+}
+.vp-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 8px; border: none;
+  background: transparent; font-family: 'Inter', sans-serif;
+  font-size: 12px; font-weight: 500; color: var(--text-3);
+  cursor: pointer; letter-spacing: -0.1px;
+  transition: background 0.15s, color 0.15s;
+}
+.vp-btn:hover { color: var(--text-1); }
+.vp-btn.active { background: var(--card); color: var(--text-1); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+/* ── Main layout ── */
+.main-layout {
+  display: grid; gap: 28px; align-items: start;
+  transition: grid-template-columns 0.4s cubic-bezier(0.22,1,0.36,1);
+}
+.main-layout.vp-desktop { grid-template-columns: 1fr 300px; }
+.main-layout.vp-tablet,
+.main-layout.vp-mobile  { grid-template-columns: 1fr; }
+
+/* ── Viewport simulator ── */
+.vp-simulator { transition: max-width 0.4s cubic-bezier(0.22,1,0.36,1); }
+.main-layout.vp-desktop .vp-simulator { max-width: 100%; }
+.main-layout.vp-tablet  .vp-simulator { max-width: 768px; margin: 0 auto; }
+.main-layout.vp-mobile  .vp-simulator { max-width: 390px; margin: 0 auto; }
+
+/* ── Section label ── */
+.section-label {
+  grid-column: 1 / -1;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.6px;
+  text-transform: uppercase; color: var(--text-3);
+  padding-bottom: 4px; border-bottom: 1px solid var(--border);
+  margin-bottom: -8px;
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none;
+  transition: color 0.15s;
+}
+.section-label:hover { color: var(--text-2); }
+.section-chevron {
+  width: 16px; height: 16px; flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.22,1,0.36,1);
+  opacity: 0.5;
+}
+.section-label.collapsed .section-chevron { transform: rotate(-90deg); }
+.section-cards {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  gap: 16px;
+  transition: opacity 0.25s ease;
+}
+.section-cards.collapsed {
+  display: none;
+}
+
+/* ── Grid ── */
+.prototype-grid { display: grid; gap: 16px; }
+.vp-desktop .prototype-grid { grid-template-columns: repeat(4, minmax(200px, 1fr)); }
+.vp-tablet  .prototype-grid { grid-template-columns: repeat(2, minmax(200px, 1fr)); }
+.vp-mobile  .prototype-grid { grid-template-columns: repeat(2, 1fr); }
+.vp-mobile .card-unit.input-card { grid-column: 1 / -1; }
+.vp-mobile .card-unit:not(.input-card) .mc-card { --card-h: 230px; }
+.vp-mobile .card-unit:not(.input-card) .mv-lg { font-size: 40px; letter-spacing: -1.5px; }
+.vp-mobile .card-unit:not(.input-card) .mv-word-lg { font-size: 24px; }
+.vp-mobile .card-unit:not(.input-card) .card-metric-zone { padding-bottom: 2px; }
+.vp-mobile .card-unit:not(.input-card) .card-header { margin-bottom: 6px; }
+.vp-mobile .card-unit:not(.input-card) .card-status { margin-bottom: 6px; }
+
+
+
+/* ── Card unit — fluid ── */
+.card-unit { display: flex; flex-direction: column; align-items: stretch; min-width: 0; }
+.card-unit .mc-card-wrap { order: 1; }
+.card-unit .scenario-selector { order: 2; margin-bottom: 0; margin-top: 10px; }
+.card-unit .reset-link { order: 3; }
+
+/* ── Scenario selector ── */
+.scenario-selector {
+  display: flex; gap: 4px; margin-bottom: 10px; padding: 4px;
+  background: rgba(54,50,45,0.07); border-radius: 12px; width: 100%;
+  flex-wrap: wrap;
+}
+.scenario-btn {
+  flex: 1; padding: 5px 6px; border-radius: 8px; border: none;
+  background: transparent; font-family: 'Inter', sans-serif;
+  font-size: 10px; font-weight: 500; color: var(--text-3);
+  cursor: pointer; letter-spacing: -0.1px;
+  transition: background 0.15s, color 0.15s; line-height: 1.3; text-align: center;
+  white-space: nowrap;
+}
+.scenario-btn:hover { color: var(--text-1); }
+.scenario-btn.active-success  { background: var(--green-bg);    color: var(--green); }
+.scenario-btn.active-partial  { background: var(--amber-bg);    color: var(--amber); }
+.scenario-btn.active-error    { background: var(--red-bg);      color: var(--red); }
+.scenario-btn.active-disabled { background: var(--disabled-bg); color: var(--disabled-text); }
+
+/* ── Reset link ── */
+.reset-link {
+  margin-top: 10px; font-size: 11px; color: var(--text-3);
+  cursor: pointer; letter-spacing: -0.1px; background: none; border: none;
+  font-family: 'Inter', sans-serif; padding: 4px 8px; border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+}
+.reset-link:hover { color: var(--text-1); background: rgba(54,50,45,0.06); }
+
+/* ════════════════════════════════════════
+   THE CARD
+════════════════════════════════════════ */
+.mc-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--card-radius); padding: var(--card-pad);
+  width: 100%; height: var(--card-h);
+  display: flex; flex-direction: column; position: relative; overflow: hidden;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+/* Card heights per breakpoint */
+.vp-desktop .mc-card { --card-h: 280px; }
+.vp-tablet  .mc-card { --card-h: 296px; }
+.vp-mobile  .mc-card { --card-h: 296px; }
+.mc-card.state-pending    { border-color: rgba(21,148,239,0.45);  box-shadow: 0 0 0 3px rgba(21,148,239,0.07); }
+.mc-card.state-success    { border-color: rgba(30,98,82,0.4);     box-shadow: 0 0 0 3px rgba(30,98,82,0.06); }
+.mc-card.state-error      { border-color: rgba(193,60,45,0.4);    box-shadow: 0 0 0 3px rgba(193,60,45,0.06); }
+.mc-card.state-error-heavy{ border-color: rgba(139,26,15,0.55);   box-shadow: 0 0 0 4px rgba(139,26,15,0.1); }
+.mc-card.state-partial    { border-color: rgba(180,110,0,0.45);   box-shadow: 0 0 0 3px rgba(180,110,0,0.07); }
+.mc-card.state-confirm    { border-color: rgba(180,110,0,0.45);   box-shadow: 0 0 0 3px rgba(180,110,0,0.07); }
+.mc-card.state-disabled   { border-color: var(--border);          background: rgba(240,237,233,0.6); }
+.mc-card.state-warn       { border-color: rgba(180,110,0,0.45);   box-shadow: 0 0 0 3px rgba(180,110,0,0.07); }
+.mc-card.state-major      { border-color: rgba(139,26,15,0.55);   box-shadow: 0 0 0 4px rgba(139,26,15,0.1); }
+
+/* ── Progress bar ── */
+.progress-track {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+  background: rgba(21,148,239,0.1); overflow: hidden; opacity: 0; transition: opacity 0.2s;
+}
+.progress-track.visible { opacity: 1; }
+.progress-fill { height: 100%; width: 0%; border-radius: 0 2px 2px 0; transition: width 0s, background-color 0.3s; }
+
+/* ── Header ── */
+.card-header { height: 36px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.signal-dot {
+  width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+  background: rgba(54,50,45,0.22); transition: background 0.35s ease; position: relative;
+}
+.signal-dot.pulsing::after {
+  content: ''; position: absolute; inset: -3px; border-radius: 50%;
+  border: 1.5px solid var(--blue); animation: ring-pulse 1s ease-out infinite; opacity: 0;
+}
+@keyframes ring-pulse {
+  0%   { transform: scale(0.8); opacity: 0.7; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+.dot-blue      { background: var(--blue) !important; }
+.dot-green     { background: var(--green) !important; }
+.dot-amber     { background: var(--amber) !important; }
+.dot-red       { background: var(--red) !important; }
+.dot-red-heavy { background: var(--red-heavy) !important; }
+.dot-muted     { background: rgba(54,50,45,0.22) !important; }
+
+.card-title {
+  flex: 1; font-size: 14px; font-weight: 600; letter-spacing: -0.28px; color: var(--text-1);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Badge */
+.header-badge {
+  flex-shrink: 0; font-size: 11px; font-weight: 500;
+  padding: 3px 8px; border-radius: 20px; letter-spacing: -0.1px; white-space: nowrap;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.badge-hidden      { visibility: hidden; padding: 0; width: 0; overflow: hidden; }
+.badge-ok          { background: var(--green-bg);      color: var(--green-text); }
+.badge-error       { background: var(--red-bg);        color: var(--red); }
+.badge-error-heavy { background: var(--red-heavy-bg);  color: var(--red-heavy); }
+.badge-pending     { background: var(--blue-bg);       color: var(--blue-text); }
+.badge-warn        { background: var(--amber-bg);      color: var(--amber); }
+.badge-partial     { background: var(--partial-bg);    color: var(--partial); }
+.badge-disabled    { background: var(--disabled-bg);   color: var(--disabled-text); }
+.badge-major       { background: var(--red-heavy-bg);  color: var(--red-heavy); }
+
+/* ── Input zone ── */
+.card-input-zone {
+  height: 42px; flex-shrink: 0; display: flex; align-items: center;
+  margin-bottom: 16px; position: relative;
+}
+.slot-input {
+  width: 100%; height: 38px; padding: 0 14px; border: 1px solid var(--border);
+  border-radius: var(--input-radius); font-family: 'Inter', sans-serif;
+  font-size: 13px; color: var(--text-3); background: transparent; outline: none;
+  letter-spacing: -0.26px; transition: border-color 0.15s, color 0.15s; -moz-appearance: textfield;
+}
+.slot-input::-webkit-inner-spin-button,
+.slot-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.slot-input:focus    { border-color: var(--blue); color: var(--text-1); }
+.slot-input:disabled { opacity: 0.45; cursor: not-allowed; }
+.slot-input.has-val  { color: var(--text-1); }
+
+/* Pill */
+.slot-pill {
+  display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px;
+  border-radius: 9px; font-size: 12px; font-weight: 500; transform-origin: left center;
+  animation: pill-in 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  white-space: normal; word-break: break-word;
+}
+@keyframes pill-in {
+  0%   { opacity: 0; transform: scale(0.82) translateY(4px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.pdot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.pill-success    { background: var(--green-bg);     color: var(--green-text); }
+.pill-error      { background: var(--red-bg);       color: var(--red); }
+.pill-error-heavy{ background: var(--red-heavy-bg); color: var(--red-heavy); }
+.pill-partial    { background: var(--partial-bg);   color: var(--partial); }
+.pill-pending    { background: var(--blue-bg);      color: var(--blue-text); }
+.pill-warning    { background: var(--amber-bg);     color: var(--amber); }
+.pill-disabled   { background: var(--disabled-bg);  color: var(--disabled-text); }
+.pill-major      { background: var(--red-heavy-bg); color: var(--red-heavy); }
+
+/* ── Metric zone ── */
+.card-metric-zone {
+  flex: 1; min-height: 0; display: flex; flex-direction: column;
+  justify-content: flex-end; padding-bottom: 4px;
+}
+.metric-row { display: flex; align-items: baseline; gap: 5px; line-height: 1; }
+
+.mv-sm      { font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 400; letter-spacing: -0.5px; color: var(--text-1); line-height: 1; transition: color 0.3s; }
+.mv-sm-unit { font-size: 13px; font-weight: 600; color: var(--text-1); }
+.mv-lg      { font-family: 'DM Mono', monospace; font-size: 52px; font-weight: 400; letter-spacing: -2px;  color: var(--text-1); line-height: 1; transition: color 0.3s; }
+.mv-lg-unit { font-size: 20px; font-weight: 600; color: var(--text-1); }
+.mv-word-sm { font-family: 'Inter', sans-serif; font-size: 28px; font-weight: 300; letter-spacing: -0.5px; color: var(--text-1); line-height: 1; }
+.mv-word-lg { font-family: 'Inter', sans-serif; font-size: 28px; font-weight: 300; letter-spacing: -0.5px; color: var(--text-1); line-height: 1.15; }
+.mv-muted   { color: var(--text-3) !important; }
+.mv-timed-out { font-family: 'Inter', sans-serif; font-size: 22px; font-weight: 500; letter-spacing: -0.4px; color: var(--red); line-height: 1; }
+.mv-degree  { font-family: 'DM Mono', monospace; font-size: 40px; font-weight: 400; letter-spacing: -1px; color: var(--text-1); line-height: 1; transition: color 0.3s; }
+.mv-degree-warn  { color: var(--amber) !important; }
+.mv-degree-major { color: var(--red-heavy) !important; }
+
+.metric-sub { font-size: 12px; color: var(--text-3); letter-spacing: -0.2px; margin-top: 4px; transition: color 0.3s; }
+
+/* ── Status line ── */
+.card-status {
+  height: 18px; flex-shrink: 0; display: flex; align-items: center; gap: 5px;
+  font-size: 12px; letter-spacing: -0.2px; overflow: hidden; margin-bottom: 10px; transition: opacity 0.2s;
+}
+.sk { color: var(--text-3); }
+.sv { color: var(--text-2); font-weight: 500; transition: color 0.3s; }
+
+/* ── Button zone ── */
+.card-btn-zone { height: 44px; flex-shrink: 0; display: flex; gap: 8px; position: relative; }
+.mc-btn {
+  flex: 1; height: 100%; border-radius: var(--btn-radius); border: none;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+  letter-spacing: -0.26px; cursor: pointer;
+  transition: background 0.2s ease, opacity 0.15s, transform 0.1s, color 0.2s;
+  position: relative; overflow: hidden;
+}
+.mc-btn::after {
+  content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.2);
+  transform: scale(0); border-radius: inherit; transition: transform 0.3s ease, opacity 0.3s; opacity: 0;
+}
+.mc-btn:active::after           { transform: scale(1); opacity: 1; }
+.mc-btn:active:not(:disabled)   { transform: scale(0.98); }
+.mc-btn:disabled                { opacity: 0.38; cursor: not-allowed; transform: none !important; }
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-primary:hover:not(:disabled) { opacity: 0.88; }
+.btn-ghost   { background: transparent; color: var(--text-2); border: 1px solid var(--border-med); }
+.btn-ghost:hover:not(:disabled)   { border-color: var(--text-2); }
+.btn-danger  { background: var(--red); color: #fff; }
+.btn-danger:hover:not(:disabled)  { opacity: 0.88; }
+.btn-partial { background: var(--partial-bg); color: var(--partial); border: 1px solid var(--partial-border); }
+.btn-partial:hover:not(:disabled) { background: #fde9c0; }
+
+/* ── Animations ── */
+.anim-in { animation: anim-in 0.3s cubic-bezier(0.22,1,0.36,1) both; }
+@keyframes anim-in {
+  0%   { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.anim-in-delay-1 { animation-delay: 0.04s; }
+.anim-in-delay-2 { animation-delay: 0.09s; }
+.anim-in-delay-3 { animation-delay: 0.14s; }
+.anim-in-delay-4 { animation-delay: 0.20s; }
+
+.confirm-split { animation: confirm-split-in 0.22s cubic-bezier(0.22,1,0.36,1) both; }
+.confirm-split:nth-child(2) { animation-delay: 0.05s; }
+@keyframes confirm-split-in {
+  0%   { opacity: 0; transform: translateY(6px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.counting { animation: count-tick 0.18s ease-out; }
+@keyframes count-tick {
+  0%   { transform: translateY(-6px); opacity: 0.4; }
+  100% { transform: translateY(0);    opacity: 1; }
+}
+
+/* ════════════════════════════════════════
+   COMMAND HISTORY TABLE
+════════════════════════════════════════ */
+.table-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.22,1,0.36,1);
+}
+
+/* Desktop: sticky sidebar */
+.vp-desktop .table-panel {
+  position: sticky;
+  top: 24px;
+  max-height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tablet/Mobile: full width below grid */
+.vp-tablet .table-panel,
+.vp-mobile .table-panel {
+  max-width: 768px;
+  margin: 0 auto;
+  width: 100%;
+}
+.vp-mobile .table-panel { max-width: 390px; }
+
+.table-header {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.table-header-row {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.table-header h3 { font-size: 13px; font-weight: 600; letter-spacing: -0.26px; }
+.table-updated {
+  font-size: 11px; color: var(--text-3); margin-top: 3px; letter-spacing: -0.1px;
+}
+.table-clear-btn {
+  font-size: 11px; color: var(--text-3); background: none; border: none;
+  cursor: pointer; font-family: 'Inter', sans-serif; padding: 3px 8px;
+  border-radius: 6px; transition: color 0.15s, background 0.15s;
+  letter-spacing: -0.1px;
+}
+.table-clear-btn:hover { color: var(--text-1); background: rgba(54,50,45,0.06); }
+
+.table-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 8px 16px 6px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.table-col-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.4px;
+  text-transform: uppercase; color: var(--text-3);
+}
+
+.table-body {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+/* Desktop: scroll within panel */
+.vp-desktop .table-body { max-height: 400px; }
+/* Tablet/Mobile: show all rows */
+.vp-tablet .table-body,
+.vp-mobile .table-body { max-height: none; overflow-y: visible; }
+
+.table-empty {
+  padding: 32px 16px; text-align: center;
+  font-size: 12px; color: var(--text-3); letter-spacing: -0.1px;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--border);
+  animation: row-in 0.25s cubic-bezier(0.22,1,0.36,1) both;
+  align-items: center;
+}
+.table-row:last-child { border-bottom: none; }
+@keyframes row-in {
+  0%   { opacity: 0; transform: translateY(-6px); background: rgba(21,148,239,0.06); }
+  100% { opacity: 1; transform: translateY(0);    background: transparent; }
+}
+.table-cell {
+  font-size: 12px; color: var(--text-2); letter-spacing: -0.2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  padding-right: 8px;
+}
+.table-cell.cmd  { font-weight: 500; color: var(--text-1); }
+.table-cell.val  { color: var(--text-3); }
+.table-cell.time { color: var(--text-3); font-size: 11px; }
+
+.table-record-count {
+  padding: 8px 16px;
+  font-size: 11px; color: var(--text-3); letter-spacing: -0.1px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+</style>
+</head>
+<body>
+<div class="proto-chrome">
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <div class="top-bar-title">
+      <h1>Manual Control — Interaction Prototype</h1>
+      <p>Select a scenario, interact with the card. Command history updates live.</p>
+    </div>
+    <div class="vp-toggle">
+      <button class="vp-btn active" data-vp="desktop">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 12h4M7 10v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Desktop
+      </button>
+      <button class="vp-btn" data-vp="tablet">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="1" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.3"/><circle cx="7" cy="11" r="0.7" fill="currentColor"/></svg>
+        Tablet
+      </button>
+      <button class="vp-btn" data-vp="mobile">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="3.5" y="1" width="7" height="12" rx="1.5" stroke="currentColor" stroke-width="1.3"/><circle cx="7" cy="11" r="0.7" fill="currentColor"/></svg>
+        Mobile
+      </button>
+    </div>
+  </div>
+
+  <!-- Main layout: grid + table -->
+  <div class="main-layout vp-desktop" id="main-layout">
+
+    <!-- Card grid -->
+    <div class="vp-simulator">
+      <div class="prototype-grid" id="grid"></div>
+    </div>
+
+    <!-- Command history table -->
+    <div class="table-panel" id="table-panel">
+      <div class="table-header">
+        <div class="table-header-row">
+          <h3>Truck Command History</h3>
+          <button class="table-clear-btn" id="table-clear-btn">Clear</button>
+        </div>
+        <div class="table-updated" id="table-updated">No commands yet</div>
+      </div>
+      <div class="table-cols">
+        <span class="table-col-label">Command</span>
+        <span class="table-col-label">Value</span>
+        <span class="table-col-label">Result</span>
+      </div>
+      <div class="table-body" id="table-body">
+        <div class="table-empty" id="table-empty">Interact with a card to log a command</div>
+      </div>
+      <div class="table-record-count" id="table-record-count" style="display:none"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+/* ════════════════════════════════════════
+   CARD DEFINITIONS
+════════════════════════════════════════ */
+const CARD_DEFS = [
+
+  /* ── SECTION: DIAGNOSTICS ── */
+  { _section: 'Diagnostics' },
+
+  /* 1. PING TRUCK */
+  {
+    id: 'ping', title: 'Ping Truck', hasInput: false,
+    idleMetric: '2', idleUnit: 'min ago', idleMetricSub: 'Last Ping',
+    idleStatusKey: 'Status:', idleStatusVal: 'Online',
+    idleBtnLabel: 'Ping Truck',
+    scenarios: [
+      { id:'success', label:'Responded',
+        progressTo:100, progressDuration:1200,
+        resolve: () => ({
+          dotClass:'dot-green', cardClass:'state-success',
+          badge:{label:'Responded', cls:'badge-ok'},
+          inputContent:{type:'pill', label:'Responded', cls:'pill-success'},
+          metric:'just now', unit:'', metricSub:'Last Ping',
+          statusKey:'Status:', statusVal:'Online',
+          btn:{label:'Ping Again', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'error', label:'No Response',
+        progressTo:80, progressDuration:1400, stutter:true,
+        resolve: () => ({
+          dotClass:'dot-red', cardClass:'state-error',
+          badge:{label:'No Response', cls:'badge-error'},
+          inputContent:{type:'pill', label:'Timed Out', cls:'pill-error'},
+          metric:'Timed Out', unit:'', metricSub:'Last known: 2 min ago',
+          statusKey:'Status:', statusVal:'Unreachable',
+          btn:{label:'Retry Ping', cls:'btn-primary', disabled:false}
+        })
+      }
+    ]
+  },
+
+  /* 2. RESTART SYSTEM */
+  {
+    id: 'restart', title: 'Restart System', hasInput: false,
+    idleMetric: '2', idleUnit: 'min ago', idleMetricSub: 'Last Attempt',
+    idleStatusKey: 'Truck Status:', idleStatusVal: 'Online',
+    idleBtnLabel: 'Restart System',
+    scenarios: [
+      { id:'success', label:'Acknowledged',
+        progressTo:100, progressDuration:1500,
+        resolve: () => ({
+          dotClass:'dot-green', cardClass:'state-success',
+          badge:{label:'Acknowledged', cls:'badge-ok'},
+          inputContent:{type:'pill', label:'Shutdown event logged', cls:'pill-success'},
+          metric:'just now', unit:'', metricSub:'Last Attempt',
+          statusKey:'Truck Status:', statusVal:'Restarting',
+          btn:{label:'Restart System', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'error', label:'Command Failed',
+        progressTo:45, progressDuration:800, retract:true,
+        resolve: () => ({
+          dotClass:'dot-red', cardClass:'state-error',
+          badge:{label:'Failed', cls:'badge-error'},
+          inputContent:{type:'pill', label:'Command failed', cls:'pill-error'},
+          metric:'2', unit:'min ago', metricSub:'Last Attempt',
+          statusKey:'Truck Status:', statusVal:'Online',
+          btn:{label:'Retry', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'disabled', label:'Truck Off', isDisabled:true,
+        resolve: () => ({
+          dotClass:'dot-muted', cardClass:'state-disabled',
+          badge:{label:'Truck Off', cls:'badge-disabled'},
+          inputContent:{type:'pill', label:'Truck is offline', cls:'pill-disabled'},
+          metric:'—', unit:'', metricSub:'Last Attempt',
+          statusKey:'Truck Status:', statusVal:'Offline',
+          btn:{label:'Restart System', cls:'btn-primary', disabled:true}
+        })
+      }
+    ]
+  },
+
+  /* 3. RESET CAN ERRORS */
+  {
+    id: 'canerrors', title: 'Reset CAN Errors', hasInput: false,
+    idleMetric: '3', idleUnit: '', idleMetricSub: 'Current CAN Errors',
+    idleStatusKey: 'Last Reset:', idleStatusVal: '10:32 AM',
+    idleBtnLabel: 'Reset',
+    scenarios: [
+      { id:'success', label:'All Cleared',
+        progressTo:100, progressDuration:1400,
+        resolve: () => ({
+          dotClass:'dot-green', cardClass:'state-success',
+          badge:{label:'Cleared', cls:'badge-ok'},
+          inputContent:{type:'pill', label:'All errors cleared', cls:'pill-success'},
+          metric:'0', unit:'', metricSub:'Current CAN Errors',
+          statusKey:'Last Reset:', statusVal:'just now',
+          btn:{label:'Reset', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'partial', label:'Partial Clear',
+        progressTo:65, progressDuration:1100, progressStall:400,
+        resolve: () => ({
+          dotClass:'dot-amber', cardClass:'state-partial',
+          badge:{label:'1 remaining', cls:'badge-warn'},
+          inputContent:{type:'pill', label:'Partial clear', cls:'pill-partial'},
+          metric:'1', unit:'', metricSub:'Current CAN Errors',
+          statusKey:'Last Reset:', statusVal:'just now',
+          btn:{label:'Reset Again', cls:'btn-partial', disabled:false}
+        })
+      },
+      { id:'error', label:'All Persist',
+        progressTo:100, progressDuration:1300,
+        resolve: () => ({
+          dotClass:'dot-red', cardClass:'state-error',
+          badge:{label:'Not cleared', cls:'badge-error'},
+          inputContent:{type:'pill', label:'Errors persist', cls:'pill-error'},
+          metric:'3', unit:'', metricSub:'Current CAN Errors',
+          statusKey:'Last Reset:', statusVal:'just now',
+          btn:{label:'Retry Reset', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'timeout', label:'Timeout',
+        progressTo:80, progressDuration:1400, stutter:true,
+        resolve: () => ({
+          dotClass:'dot-red-heavy', cardClass:'state-error-heavy',
+          badge:{label:'Timed Out', cls:'badge-error-heavy'},
+          inputContent:{type:'pill', label:'No response from truck', cls:'pill-error-heavy'},
+          metric:'3', unit:'', metricSub:'Current CAN Errors',
+          statusKey:'Last Reset:', statusVal:'Failed',
+          btn:{label:'Retry', cls:'btn-primary', disabled:false}
+        })
+      }
+    ]
+  },
+
+  /* 4. RESET SENSORS */
+  {
+    id: 'sensors', title: 'Reset Sensors', hasInput: false,
+    idleMetric: '2', idleUnit: 'min ago', idleMetricSub: 'Last Attempt',
+    idleStatusKey: 'Feed Status:', idleStatusVal: 'Active',
+    idleBtnLabel: 'Reset',
+    scenarios: [
+      { id:'success', label:'Feed Active',
+        progressTo:100, progressDuration:1300,
+        resolve: () => ({
+          dotClass:'dot-green', cardClass:'state-success',
+          badge:{label:'Feed Active', cls:'badge-ok'},
+          inputContent:{type:'pill', label:'Sensors responding', cls:'pill-success'},
+          metric:'just now', unit:'', metricSub:'Last Attempt',
+          statusKey:'Feed Status:', statusVal:'Active',
+          btn:{label:'Reset', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'error', label:'No Feed',
+        progressTo:100, progressDuration:1200,
+        resolve: () => ({
+          dotClass:'dot-red', cardClass:'state-error',
+          badge:{label:'No Feed', cls:'badge-error'},
+          inputContent:{type:'pill', label:'Sensors not reporting', cls:'pill-error'},
+          metric:'just now', unit:'', metricSub:'Last Attempt',
+          statusKey:'Feed Status:', statusVal:'No Feed',
+          btn:{label:'Retry', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'timeout', label:'Timeout',
+        progressTo:80, progressDuration:1400, stutter:true,
+        resolve: () => ({
+          dotClass:'dot-red-heavy', cardClass:'state-error-heavy',
+          badge:{label:'Timed Out', cls:'badge-error-heavy'},
+          inputContent:{type:'pill', label:'No response from truck', cls:'pill-error-heavy'},
+          metric:'2', unit:'min ago', metricSub:'Last Attempt',
+          statusKey:'Feed Status:', statusVal:'Unknown',
+          btn:{label:'Retry', cls:'btn-primary', disabled:false}
+        })
+      }
+    ]
+  },
+
+  /* 5. TILT CALIBRATION */
+  {
+    id: 'tilt', title: 'Tilt Calibration', hasInput: true,
+    inputPlaceholder: 'Measured angle (degrees)',
+    inputMax: 45, inputAllowDecimal: true,
+    idleMetric: '—', idleUnit: '', idleMetricSub: 'Current Tilt',
+    idleStatusKey: 'Baseline Tilt:', idleStatusVal: '--',
+    idleBtnLabel: 'Calibrate',
+    scenarios: [
+      { id:'success', label:'At Zero',
+        progressTo:100, progressDuration:1400,
+        resolve: (val) => ({
+          dotClass:'dot-green', cardClass:'state-success',
+          badge:{label:'Level', cls:'badge-ok'},
+          inputContent:{type:'pill', label:'Perfectly level', cls:'pill-success'},
+          metric:'0°', unit:'', metricSub:'Current Tilt',
+          statusKey:'Baseline Tilt:', statusVal:'0°',
+          btn:{label:'Calibrate', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'partial', label:'Needs Adjust',
+        progressTo:100, progressDuration:1400,
+        resolve: () => {
+          /* Random between -2.0 and +2.0, excluding 0, in 0.1 steps */
+          let raw;
+          do { raw = (Math.floor(Math.random() * 40) - 20) / 10; } while (raw === 0);
+          const correction = (raw > 0 ? '+' : '') + raw.toFixed(1) + '\u00b0';
+          return {
+            dotClass:'dot-amber', cardClass:'state-warn',
+            badge:{label:'Needs Adjustment', cls:'badge-warn'},
+            inputContent:{type:'pill', label:'Correction: ' + correction, cls:'pill-warning'},
+            metric: correction, unit:'', metricSub:'Current Tilt',
+            statusKey:'Baseline Tilt:', statusVal: correction,
+            btn:{label:'Calibrate Again', cls:'btn-primary', disabled:false}
+          };
+        }
+      },
+      { id:'error', label:'Major Issue',
+        progressTo:100, progressDuration:1400,
+        resolve: () => {
+          /* Random ±2.1 to ±10.0 */
+          const sign = Math.random() < 0.5 ? 1 : -1;
+          const raw = sign * (Math.floor(Math.random() * 80) + 21) / 10;
+          const correction = (raw > 0 ? '+' : '') + raw.toFixed(1) + '\u00b0';
+          return {
+            dotClass:'dot-red-heavy', cardClass:'state-major',
+            badge:{label:'Major Issue', cls:'badge-major'},
+            inputContent:{type:'pill', label: correction + ' — significant work needed', cls:'pill-major'},
+            metric: correction, unit:'', metricSub:'Current Tilt',
+            statusKey:'Baseline Tilt:', statusVal: correction,
+            btn:{label:'Calibrate Again', cls:'btn-primary', disabled:false}
+          };
+        }
+      },
+      { id:'timeout', label:'Timeout',
+        progressTo:80, progressDuration:1400, stutter:true,
+        resolve: () => ({
+          dotClass:'dot-red-heavy', cardClass:'state-error-heavy',
+          badge:{label:'Timed Out', cls:'badge-error-heavy'},
+          inputContent:{type:'pill', label:'No response from truck', cls:'pill-error-heavy'},
+          metric:'—', unit:'', metricSub:'Current Tilt',
+          statusKey:'Baseline Tilt:', statusVal:'--',
+          btn:{label:'Retry', cls:'btn-primary', disabled:false}
+        })
+      }
+    ]
+  },
+
+  /* ── SECTION: WATER ── */
+  { _section: 'Water' },
+
+  /* 6. ADD WATER */
+  {
+    id: 'water', title: 'Add Water', hasInput: true,
+    inputPlaceholder: 'Add Water (liters)', inputMax: 999,
+    idleMetric: '—', idleUnit: '', idleMetricSub: 'Flow Rate',
+    idleStatusKey: 'Last Delivery:', idleStatusVal: '--',
+    idleBtnLabel: 'Add Water',
+    scenarios: [
+      { id:'success', label:'Full Delivery',
+        progressTo:100, progressDuration:1800,
+        resolve: (val) => ({
+          dotClass:'dot-green', cardClass:'state-success',
+          badge:{label:'Delivered', cls:'badge-ok'},
+          inputContent:{type:'pill', label:`${val}L delivered`, cls:'pill-success'},
+          metric:String(val), unit:'L', metricSub:'Flow Rate  15.0 gal/min',
+          statusKey:'Last Delivery:', statusVal:'just now',
+          btn:{label:'Add More Water', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'partial', label:'Partial Delivery',
+        progressTo:65, progressDuration:1100, progressStall:600,
+        resolve: (val) => {
+          const requested = parseInt(val) || 45;
+          const delivered = Math.max(1, Math.floor(requested * 0.67));
+          const short = requested - delivered;
+          return {
+            dotClass:'dot-amber', cardClass:'state-partial',
+            badge:{label:`${short}L short`, cls:'badge-partial'},
+            inputContent:{type:'pill', label:'Flow issue active', cls:'pill-partial'},
+            metric:String(delivered), unit:'L', metricSub:'Flow Rate  4.0 gal/min',
+            statusKey:'Short by:', statusVal:`${short}L`,
+            btn:{label:`Add remaining ${short}L`, cls:'btn-partial', disabled:false}
+          };
+        }
+      },
+      { id:'error', label:'Command Failed',
+        progressTo:40, progressDuration:700, retract:true,
+        resolve: (val) => ({
+          dotClass:'dot-red', cardClass:'state-error',
+          badge:{label:'Failed', cls:'badge-error'},
+          inputContent:{type:'input', val:val, locked:false},
+          metric:'—', unit:'', metricSub:'Flow Rate',
+          statusKey:'Requested:', statusVal:`${val}L`,
+          btn:{label:'Retry', cls:'btn-primary', disabled:false}
+        })
+      }
+    ]
+  },
+
+  /* 7. WATER STATE */
+  {
+    id: 'waterstate', title: 'Water State', hasInput: false,
+    idleMetric: 'On', idleUnit: '', idleMetricSub: 'Water State',
+    idleStatusKey: 'Last Changed:', idleStatusVal: '10:32 AM',
+    idleBtnLabel: 'Turn Off Water',
+    hasConfirm: true, confirmLabel: 'Confirm before turning off water',
+    confirmBtnLabel: 'Yes, Turn Off',
+    scenarios: [
+      { id:'success', label:'Starting On → Off',
+        progressTo:100, progressDuration:1400,
+        resolve: () => ({
+          dotClass:'dot-green', cardClass:'state-success',
+          badge:{label:'Acknowledged', cls:'badge-ok'},
+          inputContent:{type:'pill', label:'Water turned off', cls:'pill-success'},
+          metric:'Off', unit:'', metricSub:'Water State',
+          statusKey:'Last Changed:', statusVal:'just now',
+          btn:{label:'Turn On Water', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'error', label:'Starting On → Timeout',
+        progressTo:80, progressDuration:1400, stutter:true,
+        resolve: () => ({
+          dotClass:'dot-red', cardClass:'state-error',
+          badge:{label:'Timed Out', cls:'badge-error'},
+          inputContent:{type:'pill', label:'No response', cls:'pill-error'},
+          metric:'On', unit:'', metricSub:'Water State',
+          statusKey:'Last Changed:', statusVal:'Failed',
+          btn:{label:'Retry', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'success2', label:'Starting Off → On',
+        progressTo:100, progressDuration:1400,
+        isOffStart: true,
+        resolve: () => ({
+          dotClass:'dot-green', cardClass:'state-success',
+          badge:{label:'Acknowledged', cls:'badge-ok'},
+          inputContent:{type:'pill', label:'Water turned on', cls:'pill-success'},
+          metric:'On', unit:'', metricSub:'Water State',
+          statusKey:'Last Changed:', statusVal:'just now',
+          btn:{label:'Turn Off Water', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'error2', label:'Starting Off → Timeout',
+        progressTo:80, progressDuration:1400, stutter:true,
+        isOffStart: true,
+        resolve: () => ({
+          dotClass:'dot-red', cardClass:'state-error',
+          badge:{label:'Timed Out', cls:'badge-error'},
+          inputContent:{type:'pill', label:'No response', cls:'pill-error'},
+          metric:'Off', unit:'', metricSub:'Water State',
+          statusKey:'Last Changed:', statusVal:'Failed',
+          btn:{label:'Retry', cls:'btn-primary', disabled:false}
+        })
+      }
+    ]
+  },
+
+  /* 8. WATER PROPULSION */
+  {
+    id: 'waterprop', title: 'Water Propulsion', hasInput: false,
+    idleMetric: 'On', idleUnit: '', idleMetricSub: 'Propulsion State',
+    idleStatusKey: 'Last Changed:', idleStatusVal: '10:32 AM',
+    idleBtnLabel: 'Turn Off Propulsion',
+    hasConfirm: true, confirmLabel: 'Confirm before changing propulsion',
+    confirmBtnLabel: 'Yes, Turn Off',
+    scenarios: [
+      { id:'success', label:'On → Off',
+        progressTo:100, progressDuration:1400,
+        resolve: () => ({
+          dotClass:'dot-green', cardClass:'state-success',
+          badge:{label:'Acknowledged', cls:'badge-ok'},
+          inputContent:{type:'pill', label:'Propulsion turned off', cls:'pill-success'},
+          metric:'Off', unit:'', metricSub:'Propulsion State',
+          statusKey:'Last Changed:', statusVal:'just now',
+          btn:{label:'Turn On Propulsion', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'error', label:'On → Timeout',
+        progressTo:80, progressDuration:1400, stutter:true,
+        resolve: () => ({
+          dotClass:'dot-red', cardClass:'state-error',
+          badge:{label:'Timed Out', cls:'badge-error'},
+          inputContent:{type:'pill', label:'No response', cls:'pill-error'},
+          metric:'On', unit:'', metricSub:'Propulsion State',
+          statusKey:'Last Changed:', statusVal:'Failed',
+          btn:{label:'Retry', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'success2', label:'Off → On',
+        progressTo:100, progressDuration:1400,
+        isOffStart: true,
+        resolve: () => ({
+          dotClass:'dot-green', cardClass:'state-success',
+          badge:{label:'Acknowledged', cls:'badge-ok'},
+          inputContent:{type:'pill', label:'Propulsion turned on', cls:'pill-success'},
+          metric:'On', unit:'', metricSub:'Propulsion State',
+          statusKey:'Last Changed:', statusVal:'just now',
+          btn:{label:'Turn Off Propulsion', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'error2', label:'Off → Timeout',
+        progressTo:80, progressDuration:1400, stutter:true,
+        isOffStart: true,
+        resolve: () => ({
+          dotClass:'dot-red', cardClass:'state-error',
+          badge:{label:'Timed Out', cls:'badge-error'},
+          inputContent:{type:'pill', label:'No response', cls:'pill-error'},
+          metric:'Off', unit:'', metricSub:'Propulsion State',
+          statusKey:'Last Changed:', statusVal:'Failed',
+          btn:{label:'Retry', cls:'btn-primary', disabled:false}
+        })
+      }
+    ]
+  },
+
+  /* 9. RESET WATER FLOW ERROR */
+  {
+    id: 'waterflow', title: 'Reset Water Flow Error', hasInput: false,
+    idleMetric: '3', idleUnit: '', idleMetricSub: 'Current Flow Errors',
+    idleStatusKey: 'Last Reset:', idleStatusVal: '10:32 AM',
+    idleBtnLabel: 'Reset',
+    scenarios: [
+      { id:'success', label:'All Cleared',
+        progressTo:100, progressDuration:1400,
+        resolve: () => ({
+          dotClass:'dot-green', cardClass:'state-success',
+          badge:{label:'Cleared', cls:'badge-ok'},
+          inputContent:{type:'pill', label:'All errors cleared', cls:'pill-success'},
+          metric:'0', unit:'', metricSub:'Current Flow Errors',
+          statusKey:'Last Reset:', statusVal:'just now',
+          btn:{label:'Reset', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'partial', label:'Partial Clear',
+        progressTo:65, progressDuration:1100, progressStall:400,
+        resolve: () => ({
+          dotClass:'dot-amber', cardClass:'state-partial',
+          badge:{label:'1 remaining', cls:'badge-warn'},
+          inputContent:{type:'pill', label:'Partial clear', cls:'pill-partial'},
+          metric:'1', unit:'', metricSub:'Current Flow Errors',
+          statusKey:'Last Reset:', statusVal:'just now',
+          btn:{label:'Reset Again', cls:'btn-partial', disabled:false}
+        })
+      },
+      { id:'error', label:'All Persist',
+        progressTo:100, progressDuration:1300,
+        resolve: () => ({
+          dotClass:'dot-red', cardClass:'state-error',
+          badge:{label:'Not cleared', cls:'badge-error'},
+          inputContent:{type:'pill', label:'Errors persist', cls:'pill-error'},
+          metric:'3', unit:'', metricSub:'Current Flow Errors',
+          statusKey:'Last Reset:', statusVal:'just now',
+          btn:{label:'Retry Reset', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'timeout', label:'Timeout',
+        progressTo:80, progressDuration:1400, stutter:true,
+        resolve: () => ({
+          dotClass:'dot-red-heavy', cardClass:'state-error-heavy',
+          badge:{label:'Timed Out', cls:'badge-error-heavy'},
+          inputContent:{type:'pill', label:'No response from truck', cls:'pill-error-heavy'},
+          metric:'3', unit:'', metricSub:'Current Flow Errors',
+          statusKey:'Last Reset:', statusVal:'Failed',
+          btn:{label:'Retry', cls:'btn-primary', disabled:false}
+        })
+      }
+    ]
+  },
+
+  /* ── SECTION: ADMIX ── */
+  { _section: 'Admix' },
+
+  /* 10. ADD ADMIX */
+  {
+    id: 'admix', title: 'Add Admix', hasInput: true,
+    inputPlaceholder: 'Add Admix (oz)', inputMax: 999,
+    idleMetric: '—', idleUnit: '', idleMetricSub: 'Flow Rate',
+    idleStatusKey: 'Last Delivery:', idleStatusVal: '--',
+    idleBtnLabel: 'Add Admix',
+    scenarios: [
+      { id:'success', label:'Full Delivery',
+        progressTo:100, progressDuration:1800,
+        resolve: (val) => ({
+          dotClass:'dot-green', cardClass:'state-success',
+          badge:{label:'Delivered', cls:'badge-ok'},
+          inputContent:{type:'pill', label:`${val}oz delivered`, cls:'pill-success'},
+          metric:String(val), unit:'oz', metricSub:'Flow Rate  15.0 gal/min',
+          statusKey:'Last Delivery:', statusVal:'just now',
+          btn:{label:'Add More Admix', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'partial', label:'Partial Delivery',
+        progressTo:65, progressDuration:1100, progressStall:600,
+        resolve: (val) => {
+          const requested = parseInt(val) || 45;
+          const delivered = Math.max(1, Math.floor(requested * 0.67));
+          const short = requested - delivered;
+          return {
+            dotClass:'dot-amber', cardClass:'state-partial',
+            badge:{label:`${short}oz short`, cls:'badge-partial'},
+            inputContent:{type:'pill', label:'Flow issue active', cls:'pill-partial'},
+            metric:String(delivered), unit:'oz', metricSub:'Flow Rate  4.0 gal/min',
+            statusKey:'Short by:', statusVal:`${short}oz`,
+            btn:{label:`Add remaining ${short}oz`, cls:'btn-partial', disabled:false}
+          };
+        }
+      },
+      { id:'error', label:'Command Failed',
+        progressTo:40, progressDuration:700, retract:true,
+        resolve: (val) => ({
+          dotClass:'dot-red', cardClass:'state-error',
+          badge:{label:'Failed', cls:'badge-error'},
+          inputContent:{type:'input', val:val, locked:false},
+          metric:'—', unit:'', metricSub:'Flow Rate',
+          statusKey:'Requested:', statusVal:`${val}oz`,
+          btn:{label:'Retry', cls:'btn-primary', disabled:false}
+        })
+      }
+    ]
+  },
+
+  /* 11. ADMIX STATE */
+  {
+    id: 'admixstate', title: 'Admix State', hasInput: false,
+    idleMetric: 'On', idleUnit: '', idleMetricSub: 'Admix State',
+    idleStatusKey: 'Last Changed:', idleStatusVal: '10:32 AM',
+    idleBtnLabel: 'Turn Off Admix',
+    hasConfirm: true, confirmLabel: 'Confirm before turning off admix',
+    confirmBtnLabel: 'Yes, Turn Off',
+    scenarios: [
+      { id:'success', label:'Starting On → Off',
+        progressTo:100, progressDuration:1400,
+        resolve: () => ({
+          dotClass:'dot-green', cardClass:'state-success',
+          badge:{label:'Acknowledged', cls:'badge-ok'},
+          inputContent:{type:'pill', label:'Admix turned off', cls:'pill-success'},
+          metric:'Off', unit:'', metricSub:'Admix State',
+          statusKey:'Last Changed:', statusVal:'just now',
+          btn:{label:'Turn On Admix', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'error', label:'Starting On → Timeout',
+        progressTo:80, progressDuration:1400, stutter:true,
+        resolve: () => ({
+          dotClass:'dot-red', cardClass:'state-error',
+          badge:{label:'Timed Out', cls:'badge-error'},
+          inputContent:{type:'pill', label:'No response', cls:'pill-error'},
+          metric:'On', unit:'', metricSub:'Admix State',
+          statusKey:'Last Changed:', statusVal:'Failed',
+          btn:{label:'Retry', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'success2', label:'Starting Off → On',
+        progressTo:100, progressDuration:1400,
+        isOffStart: true,
+        resolve: () => ({
+          dotClass:'dot-green', cardClass:'state-success',
+          badge:{label:'Acknowledged', cls:'badge-ok'},
+          inputContent:{type:'pill', label:'Admix turned on', cls:'pill-success'},
+          metric:'On', unit:'', metricSub:'Admix State',
+          statusKey:'Last Changed:', statusVal:'just now',
+          btn:{label:'Turn Off Admix', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'error2', label:'Starting Off → Timeout',
+        progressTo:80, progressDuration:1400, stutter:true,
+        isOffStart: true,
+        resolve: () => ({
+          dotClass:'dot-red', cardClass:'state-error',
+          badge:{label:'Timed Out', cls:'badge-error'},
+          inputContent:{type:'pill', label:'No response', cls:'pill-error'},
+          metric:'Off', unit:'', metricSub:'Admix State',
+          statusKey:'Last Changed:', statusVal:'Failed',
+          btn:{label:'Retry', cls:'btn-primary', disabled:false}
+        })
+      }
+    ]
+  },
+
+  /* 12. ADMIX PROPULSION */
+  {
+    id: 'admixprop', title: 'Admix Propulsion', hasInput: false,
+    idleMetric: 'On', idleUnit: '', idleMetricSub: 'Propulsion State',
+    idleStatusKey: 'Last Changed:', idleStatusVal: '10:32 AM',
+    idleBtnLabel: 'Turn Off Propulsion',
+    hasConfirm: true, confirmLabel: 'Confirm before changing admix propulsion',
+    confirmBtnLabel: 'Yes, Turn Off',
+    scenarios: [
+      { id:'success', label:'On → Off',
+        progressTo:100, progressDuration:1400,
+        resolve: () => ({
+          dotClass:'dot-green', cardClass:'state-success',
+          badge:{label:'Acknowledged', cls:'badge-ok'},
+          inputContent:{type:'pill', label:'Admix propulsion off', cls:'pill-success'},
+          metric:'Off', unit:'', metricSub:'Propulsion State',
+          statusKey:'Last Changed:', statusVal:'just now',
+          btn:{label:'Turn On Propulsion', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'error', label:'On → Timeout',
+        progressTo:80, progressDuration:1400, stutter:true,
+        resolve: () => ({
+          dotClass:'dot-red', cardClass:'state-error',
+          badge:{label:'Timed Out', cls:'badge-error'},
+          inputContent:{type:'pill', label:'No response', cls:'pill-error'},
+          metric:'On', unit:'', metricSub:'Propulsion State',
+          statusKey:'Last Changed:', statusVal:'Failed',
+          btn:{label:'Retry', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'success2', label:'Off → On',
+        progressTo:100, progressDuration:1400,
+        isOffStart: true,
+        resolve: () => ({
+          dotClass:'dot-green', cardClass:'state-success',
+          badge:{label:'Acknowledged', cls:'badge-ok'},
+          inputContent:{type:'pill', label:'Admix propulsion on', cls:'pill-success'},
+          metric:'On', unit:'', metricSub:'Propulsion State',
+          statusKey:'Last Changed:', statusVal:'just now',
+          btn:{label:'Turn Off Propulsion', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'error2', label:'Off → Timeout',
+        progressTo:80, progressDuration:1400, stutter:true,
+        isOffStart: true,
+        resolve: () => ({
+          dotClass:'dot-red', cardClass:'state-error',
+          badge:{label:'Timed Out', cls:'badge-error'},
+          inputContent:{type:'pill', label:'No response', cls:'pill-error'},
+          metric:'Off', unit:'', metricSub:'Propulsion State',
+          statusKey:'Last Changed:', statusVal:'Failed',
+          btn:{label:'Retry', cls:'btn-primary', disabled:false}
+        })
+      }
+    ]
+  },
+
+  /* 13. RESET ADMIX FLOW ERROR */
+  {
+    id: 'admixflow', title: 'Reset Admix Flow Error', hasInput: false,
+    idleMetric: '3', idleUnit: '', idleMetricSub: 'Current Flow Errors',
+    idleStatusKey: 'Last Reset:', idleStatusVal: '10:32 AM',
+    idleBtnLabel: 'Reset',
+    scenarios: [
+      { id:'success', label:'All Cleared',
+        progressTo:100, progressDuration:1400,
+        resolve: () => ({
+          dotClass:'dot-green', cardClass:'state-success',
+          badge:{label:'Cleared', cls:'badge-ok'},
+          inputContent:{type:'pill', label:'All errors cleared', cls:'pill-success'},
+          metric:'0', unit:'', metricSub:'Current Flow Errors',
+          statusKey:'Last Reset:', statusVal:'just now',
+          btn:{label:'Reset', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'partial', label:'Partial Clear',
+        progressTo:65, progressDuration:1100, progressStall:400,
+        resolve: () => ({
+          dotClass:'dot-amber', cardClass:'state-partial',
+          badge:{label:'1 remaining', cls:'badge-warn'},
+          inputContent:{type:'pill', label:'Partial clear', cls:'pill-partial'},
+          metric:'1', unit:'', metricSub:'Current Flow Errors',
+          statusKey:'Last Reset:', statusVal:'just now',
+          btn:{label:'Reset Again', cls:'btn-partial', disabled:false}
+        })
+      },
+      { id:'error', label:'All Persist',
+        progressTo:100, progressDuration:1300,
+        resolve: () => ({
+          dotClass:'dot-red', cardClass:'state-error',
+          badge:{label:'Not cleared', cls:'badge-error'},
+          inputContent:{type:'pill', label:'Errors persist', cls:'pill-error'},
+          metric:'3', unit:'', metricSub:'Current Flow Errors',
+          statusKey:'Last Reset:', statusVal:'just now',
+          btn:{label:'Retry Reset', cls:'btn-primary', disabled:false}
+        })
+      },
+      { id:'timeout', label:'Timeout',
+        progressTo:80, progressDuration:1400, stutter:true,
+        resolve: () => ({
+          dotClass:'dot-red-heavy', cardClass:'state-error-heavy',
+          badge:{label:'Timed Out', cls:'badge-error-heavy'},
+          inputContent:{type:'pill', label:'No response from truck', cls:'pill-error-heavy'},
+          metric:'3', unit:'', metricSub:'Current Flow Errors',
+          statusKey:'Last Reset:', statusVal:'Failed',
+          btn:{label:'Retry', cls:'btn-primary', disabled:false}
+        })
+      }
+    ]
+  }
+
+];
+
+/* ════════════════════════════════════════
+   CARD STATE MANAGER
+════════════════════════════════════════ */
+class CardInstance {
+  constructor(def, container) {
+    this.def = def;
+    this.container = container;
+    this.activeScenarioIdx = 0;
+    this.phase = 'idle';
+    this.inputVal = '';
+    this.render();
+  }
+
+  get scenario() { return this.def.scenarios[this.activeScenarioIdx]; }
+
+  selectScenario(idx) {
+    this.activeScenarioIdx = idx;
+    this.reset();
+    this.updateScenarioBtns();
+  }
+
+  reset() {
+    this.phase = 'idle';
+    this.inputVal = '';
+    this.render();
+  }
+
+  updateScenarioBtns() {
+    const btns = this.container.querySelectorAll('.scenario-btn');
+    btns.forEach((b, i) => {
+      b.className = 'scenario-btn';
+      if (i === this.activeScenarioIdx) {
+        const sc = this.def.scenarios[i];
+        if (sc.id === 'success' || sc.id === 'success2') b.classList.add('active-success');
+        else if (sc.id === 'partial') b.classList.add('active-partial');
+        else if (sc.id === 'disabled') b.classList.add('active-disabled');
+        else b.classList.add('active-error');
+      }
+    });
+  }
+
+  /* ── Idle render ── */
+  render() {
+    const card = this.container.querySelector('.mc-card');
+    const sc   = this.scenario;
+    card.style.transition = 'border-color 0.4s ease, box-shadow 0.4s ease';
+
+    let content = card.querySelector('.card-content');
+    if (!content) {
+      content = document.createElement('div');
+      content.className = 'card-content';
+      content.style.cssText = 'display:contents;';
+      card.appendChild(content);
+    }
+
+    if (sc.isDisabled) {
+      card.className = 'mc-card state-disabled';
+      content.innerHTML = this.buildDisabledHTML(sc.resolve());
+      return;
+    }
+
+    /* Toggle cards starting from Off */
+    const isOffStart = sc.isOffStart;
+    const idleMetric = isOffStart ? 'Off' : this.def.idleMetric;
+    const idleBtnLabel = isOffStart
+      ? (this.def.title.includes('Propulsion') ? 'Turn On Propulsion' : `Turn On ${this.def.title.replace('Reset ','').replace(' State','').replace(' Propulsion','')}`)
+      : this.def.idleBtnLabel;
+    const confirmBtnLabel = isOffStart ? 'Yes, Turn On' : this.def.confirmBtnLabel;
+    const confirmLabel    = isOffStart ? this.def.confirmLabel.replace('turning off','turning on').replace('off','on') : this.def.confirmLabel;
+
+    card.className = 'mc-card';
+    content.innerHTML = this.buildIdleHTML(idleMetric, idleBtnLabel);
+    this.wireIdle(idleBtnLabel, confirmLabel, confirmBtnLabel);
+  }
+
+  buildDisabledHTML(result) {
+    const def = this.def;
+    return `
+      <div class="card-header">
+        <div class="signal-dot ${result.dotClass} anim-in"></div>
+        <span class="card-title anim-in anim-in-delay-1">${def.title}</span>
+        <span class="header-badge ${result.badge.cls} anim-in anim-in-delay-1">${result.badge.label}</span>
+      </div>
+      <div class="card-input-zone anim-in anim-in-delay-2">
+        <span class="slot-pill ${result.inputContent.cls}"><span class="pdot"></span>${result.inputContent.label}</span>
+      </div>
+      <div class="card-metric-zone anim-in anim-in-delay-2">
+        <div class="metric-row"><span class="mv-lg mv-muted">${result.metric}</span></div>
+        <div class="metric-sub">${result.metricSub}</div>
+      </div>
+      <div class="card-status anim-in anim-in-delay-3">
+        <span class="sk">${result.statusKey}</span><span class="sv">${result.statusVal}</span>
+      </div>
+      <div class="card-btn-zone anim-in anim-in-delay-4">
+        <button class="mc-btn btn-primary" disabled>${result.btn.label}</button>
+      </div>`;
+  }
+
+  buildIdleHTML(idleMetric, idleBtnLabel) {
+    const def = this.def;
+    const metric = idleMetric !== undefined ? idleMetric : def.idleMetric;
+    const btnLabel = idleBtnLabel || def.idleBtnLabel;
+
+    const inputZoneHTML = def.hasInput
+      ? `<div class="card-input-zone anim-in anim-in-delay-2">
+          <input class="slot-input" type="${def.inputAllowDecimal ? 'number' : 'number'}" step="${def.inputAllowDecimal ? '0.1' : '1'}" min="${def.inputAllowDecimal ? '-45' : '1'}" max="${def.inputMax}" placeholder="${def.inputPlaceholder}" id="input-${def.id}" />
+        </div>`
+      : '';
+
+    const isDash    = metric === '—';
+    const isWord    = isNaN(metric) && metric !== '—';
+    const metricClass = isDash
+      ? (def.hasInput ? 'mv-sm mv-muted' : 'mv-lg mv-muted')
+      : isWord
+        ? (def.hasInput ? 'mv-word-sm' : 'mv-word-lg')
+        : (def.hasInput ? 'mv-sm' : 'mv-lg');
+    const unitClass = def.hasInput ? 'mv-sm-unit' : 'mv-lg-unit';
+
+    return `
+      <div class="card-header">
+        <div class="signal-dot dot-green anim-in"></div>
+        <span class="card-title anim-in anim-in-delay-1">${def.title}</span>
+        <span class="header-badge badge-hidden">–</span>
+      </div>
+      ${inputZoneHTML}
+      <div class="card-metric-zone anim-in anim-in-delay-2">
+        <div class="metric-row">
+          <span class="${metricClass}" id="metric-val-${def.id}">${metric}</span>
+          ${def.idleUnit ? `<span class="${unitClass}">${def.idleUnit}</span>` : ''}
+        </div>
+        <div class="metric-sub" id="metric-sub-${def.id}">${def.idleMetricSub}</div>
+      </div>
+      <div class="card-status anim-in anim-in-delay-3">
+        <span class="sk">${def.idleStatusKey}</span>
+        <span class="sv" id="status-val-${def.id}">${def.idleStatusVal}</span>
+      </div>
+      <div class="card-btn-zone anim-in anim-in-delay-4" id="btnzone-${def.id}">
+        <button class="mc-btn btn-primary" id="main-btn-${def.id}" ${def.hasInput ? 'disabled' : ''}>
+          ${btnLabel}
+        </button>
+      </div>`;
+  }
+
+  wireIdle(idleBtnLabel, confirmLabel, confirmBtnLabel) {
+    const def = this.def;
+    const btn = this.container.querySelector(`#main-btn-${def.id}`);
+    if (!btn) return;
+
+    if (def.hasInput) {
+      const input = this.container.querySelector(`#input-${def.id}`);
+      input.addEventListener('input', () => {
+        const raw = def.inputAllowDecimal ? parseFloat(input.value) : parseInt(input.value);
+        if (input.value === '' || isNaN(raw)) {
+          input.classList.remove('has-val');
+          btn.disabled = true;
+          btn.textContent = idleBtnLabel || def.idleBtnLabel;
+          this.inputVal = '';
+        } else {
+          input.classList.add('has-val');
+          btn.disabled = false;
+          if (def.inputAllowDecimal) {
+            btn.textContent = `Calibrate ${raw > 0 ? '+':''}${raw}°`;
+          } else {
+            const unit = def.id === 'admix' ? 'oz' : 'L';
+            btn.textContent = `Add ${raw}${unit}`;
+          }
+          this.inputVal = raw;
+        }
+      });
+      btn.addEventListener('click', () => {
+        if (!btn.disabled && this.inputVal !== '') {
+          if (def.id === 'water' || def.id === 'admix') {
+            this.showInputConfirm();
+          } else {
+            this.startPending();
+          }
+        }
+      });
+    } else if (def.hasConfirm) {
+      btn.addEventListener('click', () => this.showConfirm(confirmLabel, confirmBtnLabel));
+    } else {
+      btn.addEventListener('click', () => this.startPending());
+    }
+  }
+
+  showInputConfirm() {
+    this.phase = 'confirm';
+    const card = this.container.querySelector('.mc-card');
+    const def  = this.def;
+    const unit = def.id === 'admix' ? 'oz' : 'L';
+    card.className = 'mc-card state-confirm';
+
+    /* Dot → amber */
+    const dot = card.querySelector('.signal-dot');
+    dot.className = 'signal-dot dot-amber';
+
+    /* Swap input zone to warning pill */
+    const inputZone = card.querySelector('.card-input-zone');
+    if (inputZone) {
+      inputZone.innerHTML = `<span class="slot-pill pill-warning"><span class="pdot"></span>Confirm before adding ${this.inputVal}${unit}</span>`;
+    }
+
+    /* Split button */
+    const btnZone = card.querySelector('.card-btn-zone');
+    btnZone.innerHTML = `
+      <button class="mc-btn btn-ghost confirm-split" id="cancel-confirm-${def.id}">Cancel</button>
+      <button class="mc-btn btn-danger confirm-split" id="yes-confirm-${def.id}">Yes, Add ${this.inputVal}${unit}</button>`;
+
+    btnZone.querySelector(`#cancel-confirm-${def.id}`).addEventListener('click', () => this.reset());
+    btnZone.querySelector(`#yes-confirm-${def.id}`).addEventListener('click', () => this.startPending());
+  }
+
+  showConfirm(confirmLabel, confirmBtnLabel) {
+    this.phase = 'confirm';
+    const card = this.container.querySelector('.mc-card');
+    card.className = 'mc-card state-confirm';
+
+    const badge = card.querySelector('.header-badge');
+    badge.className = 'header-badge badge-warn';
+    badge.textContent = 'Confirm?';
+
+    const dot = card.querySelector('.signal-dot');
+    dot.className = 'signal-dot dot-amber';
+
+    /* Insert pill into metric zone since no input zone on these cards */
+    const mzone = card.querySelector('.card-metric-zone');
+    const existing = mzone.querySelector('.pill-wrap');
+    if (!existing) {
+      const pillWrap = document.createElement('div');
+      pillWrap.className = 'pill-wrap';
+      pillWrap.style.marginBottom = '8px';
+      pillWrap.innerHTML = `<span class="slot-pill pill-warning"><span class="pdot"></span>${confirmLabel || 'Confirm before proceeding'}</span>`;
+      const metricRow = mzone.querySelector('.metric-row');
+      mzone.insertBefore(pillWrap, metricRow);
+    }
+
+    const btnZone = card.querySelector('.card-btn-zone');
+    btnZone.innerHTML = `
+      <button class="mc-btn btn-ghost confirm-split" id="cancel-btn-${this.def.id}">Cancel</button>
+      <button class="mc-btn btn-danger confirm-split" id="confirm-btn-${this.def.id}">${confirmBtnLabel || 'Confirm'}</button>`;
+
+    btnZone.querySelector(`#cancel-btn-${this.def.id}`).addEventListener('click', () => this.reset());
+    btnZone.querySelector(`#confirm-btn-${this.def.id}`).addEventListener('click', () => this.startPending());
+  }
+
+  startPending() {
+    this.phase = 'pending';
+    const card = this.container.querySelector('.mc-card');
+    const sc   = this.scenario;
+
+    card.className = 'mc-card state-pending';
+
+    const dot = card.querySelector('.signal-dot');
+    if (dot) dot.className = 'signal-dot dot-blue pulsing';
+
+    const badge = card.querySelector('.header-badge');
+    if (badge) { badge.className = 'header-badge badge-hidden'; badge.textContent = ''; }
+
+    const btnZone = card.querySelector('.card-btn-zone');
+    if (btnZone) btnZone.innerHTML = `<button class="mc-btn btn-primary" disabled>Sending…</button>`;
+
+    const input = card.querySelector('.slot-input');
+    if (input) input.disabled = true;
+
+    /* Remove any confirm pill */
+    const confirmPillWrap = card.querySelector('.card-metric-zone .pill-wrap');
+    if (confirmPillWrap) confirmPillWrap.remove();
+
+    const track = card.querySelector('.progress-track');
+    const fill  = card.querySelector('.progress-fill');
+    if (!track || !fill) { this.resolveCard(); return; }
+
+    track.classList.add('visible');
+    fill.style.background = '#1594ef';
+    fill.style.transition = 'none';
+    fill.style.width = '0%';
+
+    if (sc.retract) {
+      setTimeout(() => {
+        fill.style.transition = `width ${sc.progressDuration}ms cubic-bezier(0.4,0,0.6,1)`;
+        fill.style.width = sc.progressTo + '%';
+        setTimeout(() => {
+          fill.style.transition = 'width 0.5s cubic-bezier(0.4,0,1,1)';
+          fill.style.background = '#c13c2d';
+          fill.style.width = '0%';
+          setTimeout(() => { track.classList.remove('visible'); this.resolveCard(); }, 520);
+        }, sc.progressDuration + 100);
+      }, 20);
+
+    } else if (sc.stutter) {
+      setTimeout(() => {
+        fill.style.transition = `width ${sc.progressDuration}ms cubic-bezier(0.4,0,0.2,1)`;
+        fill.style.width = sc.progressTo + '%';
+        setTimeout(() => {
+          fill.style.transition = 'width 0.1s ease';
+          fill.style.width = (sc.progressTo - 3) + '%';
+          setTimeout(() => {
+            fill.style.width = (sc.progressTo + 1) + '%';
+            setTimeout(() => {
+              fill.style.width = (sc.progressTo - 1) + '%';
+              setTimeout(() => {
+                setTimeout(() => { track.classList.remove('visible'); this.resolveCard(); }, sc.progressStall || 600);
+              }, 100);
+            }, 100);
+          }, 100);
+        }, sc.progressDuration);
+      }, 20);
+
+    } else {
+      setTimeout(() => {
+        fill.style.transition = `width ${sc.progressDuration}ms cubic-bezier(0.4,0,0.2,1)`;
+        fill.style.width = sc.progressTo + '%';
+        setTimeout(() => {
+          setTimeout(() => { track.classList.remove('visible'); this.resolveCard(); }, 200);
+        }, sc.progressDuration);
+      }, 20);
+    }
+  }
+
+  resolveCard() {
+    this.phase = 'resolved';
+    const card   = this.container.querySelector('.mc-card');
+    const result = this.scenario.resolve(this.inputVal);
+    this.applyResult(result, card);
+
+    /* Log to command history table */
+    if (typeof logCommand === 'function') {
+      const def = this.def;
+      let value = '—';
+      if (def.hasInput && this.inputVal !== '') {
+        const unit = def.id === 'admix' ? 'oz' : def.id === 'tilt' ? '°' : 'L';
+        value = `${this.inputVal}${unit}`;
+      } else if (result.metric && result.metric !== '—') {
+        const unit = result.unit || '';
+        value = result.metric + (unit ? ' ' + unit : '');
+      }
+      const resultLabel = result.badge.label;
+      logCommand(def.title, value, resultLabel);
+    }
+  }
+
+  applyResult(result, card) {
+    const def = this.def;
+    card.className = `mc-card ${result.cardClass}`;
+
+    const dot = card.querySelector('.signal-dot');
+    dot.className = `signal-dot ${result.dotClass}`;
+    dot.classList.remove('pulsing');
+
+    const badge = card.querySelector('.header-badge');
+    /* Badge hidden on resolved — pill in card body carries the message */
+    badge.className = 'header-badge badge-hidden';
+    badge.textContent = result.badge.label;
+
+    /* Input / pill zone */
+    const inputZone = card.querySelector('.card-input-zone');
+    if (inputZone) {
+      if (result.inputContent.type === 'pill') {
+        inputZone.innerHTML = `<span class="slot-pill ${result.inputContent.cls}"><span class="pdot"></span>${result.inputContent.label}</span>`;
+      } else if (result.inputContent.type === 'input') {
+        inputZone.innerHTML = `<input class="slot-input has-val" type="number" value="${result.inputContent.val}" ${result.inputContent.locked ? 'disabled' : ''} />`;
+      }
+    } else if (result.inputContent.type === 'pill') {
+      /* No input zone — insert pill inside metric zone, above the metric row */
+      const mzone = card.querySelector('.card-metric-zone');
+      /* Remove any leftover pill */
+      const oldPill = mzone.querySelector('.pill-wrap');
+      if (oldPill) oldPill.remove();
+      const pillWrap = document.createElement('div');
+      pillWrap.className = 'pill-wrap';
+      pillWrap.style.marginBottom = '8px';
+      pillWrap.innerHTML = `<span class="slot-pill ${result.inputContent.cls}"><span class="pdot"></span>${result.inputContent.label}</span>`;
+      const metricRow = mzone.querySelector('.metric-row');
+      mzone.insertBefore(pillWrap, metricRow);
+    }
+
+    /* Metric value */
+    const metricEl = card.querySelector('[class*="mv-"]');
+    const unitEl   = card.querySelector('.mv-lg-unit, .mv-sm-unit');
+    if (metricEl) {
+      metricEl.style.opacity = '0';
+      if (unitEl) { unitEl.style.opacity = '0'; unitEl.textContent = ''; }
+      metricEl.style.transform = 'translateY(-8px)';
+      metricEl.style.transition = 'opacity 0.15s, transform 0.15s';
+      setTimeout(() => {
+        const m = result.metric;
+        const isDash     = m === '—';
+        const isWord     = isNaN(m.replace('°','').replace('just now','x')) && m !== '—';
+        const isDeg      = m.includes('°') && m !== '—';
+        const isTimedOut = m === 'Timed Out';
+        const isJustNow  = m === 'just now' || m === 'Just Now';
+
+        if (isTimedOut) {
+          metricEl.className = 'mv-timed-out';
+        } else if (isDeg) {
+          metricEl.className = 'mv-degree';
+          if (result.cardClass === 'state-warn')  metricEl.classList.add('mv-degree-warn');
+          if (result.cardClass === 'state-major') metricEl.classList.add('mv-degree-major');
+        } else if (isDash) {
+          metricEl.className = def.hasInput ? 'mv-sm mv-muted' : 'mv-lg mv-muted';
+        } else if (isWord || isJustNow) {
+          metricEl.className = def.hasInput ? 'mv-word-sm' : 'mv-word-lg';
+        } else {
+          metricEl.className = def.hasInput ? 'mv-sm' : 'mv-lg';
+        }
+        metricEl.textContent = m;
+
+        /* Update or hide the unit span */
+        if (unitEl) {
+          if (result.unit && !isJustNow && !isTimedOut && !isDash) {
+            unitEl.textContent = result.unit;
+            unitEl.style.transition = 'opacity 0.25s';
+            unitEl.style.opacity = '1';
+          } else {
+            unitEl.style.opacity = '0';
+          }
+        }
+
+        metricEl.style.transition = 'opacity 0.25s, transform 0.25s';
+        metricEl.style.opacity = '1';
+        metricEl.style.transform = 'translateY(0)';
+      }, 160);
+    }
+
+    /* Metric sub */
+    const metricSub = card.querySelector('.metric-sub');
+    if (metricSub) {
+      setTimeout(() => {
+        metricSub.style.opacity = '0';
+        setTimeout(() => {
+          metricSub.textContent = result.metricSub;
+          metricSub.style.transition = 'opacity 0.2s';
+          metricSub.style.opacity = '1';
+        }, 120);
+      }, 200);
+    }
+
+    /* Status */
+    const sv = card.querySelector('.sv');
+    if (sv) {
+      const sk = card.querySelector('.sk');
+      if (sk) sk.textContent = result.statusKey;
+      setTimeout(() => {
+        sv.style.opacity = '0';
+        setTimeout(() => {
+          sv.textContent = result.statusVal;
+          sv.style.transition = 'opacity 0.2s';
+          sv.style.opacity = '1';
+        }, 100);
+      }, 300);
+    }
+
+    /* Button */
+    const btnZone = card.querySelector('.card-btn-zone');
+    setTimeout(() => {
+      btnZone.style.opacity = '0';
+      btnZone.style.transform = 'translateY(4px)';
+      btnZone.style.transition = 'opacity 0.15s, transform 0.15s';
+      setTimeout(() => {
+        btnZone.innerHTML = `<button class="mc-btn ${result.btn.cls}" ${result.btn.disabled ? 'disabled' : ''}>${result.btn.label}</button>`;
+        const newBtn = btnZone.querySelector('.mc-btn');
+        if (newBtn && !result.btn.disabled) {
+          /* Water/admix "Add More" resets to idle */
+          if ((def.id === 'water' && result.btn.label === 'Add More Water') ||
+              (def.id === 'admix' && result.btn.label === 'Add More Admix')) {
+            newBtn.addEventListener('click', () => this.reset());
+          } else if (def.hasConfirm) {
+            const sc = this.scenario;
+            newBtn.addEventListener('click', () => {
+              this.reset();
+              setTimeout(() => {
+                const confirmLabel    = sc.isOffStart ? this.def.confirmLabel.replace('turning off','turning on') : this.def.confirmLabel;
+                const confirmBtnLabel = sc.isOffStart ? 'Yes, Turn On' : this.def.confirmBtnLabel;
+                this.showConfirm(confirmLabel, confirmBtnLabel);
+              }, 50);
+            });
+          } else {
+            newBtn.addEventListener('click', () => { if (this.phase === 'resolved') this.startPending(); });
+          }
+        }
+        btnZone.style.transition = 'opacity 0.25s, transform 0.25s';
+        btnZone.style.opacity = '1';
+        btnZone.style.transform = 'translateY(0)';
+      }, 160);
+    }, 180);
+  }
+}
+
+/* ════════════════════════════════════════
+   COMMAND HISTORY TABLE
+════════════════════════════════════════ */
+const commandLog = [];
+
+function formatTime() {
+  const now = new Date();
+  return now.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit', hour12:true});
+}
+
+function logCommand(title, value, result) {
+  commandLog.unshift({ title, value, result, time: formatTime() });
+  renderTable();
+}
+
+function renderTable() {
+  const body    = document.getElementById('table-body');
+  const empty   = document.getElementById('table-empty');
+  const updated = document.getElementById('table-updated');
+  const count   = document.getElementById('table-record-count');
+
+  if (commandLog.length === 0) {
+    empty.style.display = '';
+    count.style.display = 'none';
+    updated.textContent = 'No commands yet';
+    return;
+  }
+
+  empty.style.display = 'none';
+  count.style.display = '';
+  count.textContent = `${commandLog.length} record${commandLog.length !== 1 ? 's' : ''}`;
+  updated.textContent = `Last updated ${commandLog[0].time}`;
+
+  /* Rebuild rows */
+  const rows = commandLog.map(entry => {
+    const row = document.createElement('div');
+    row.className = 'table-row';
+    row.innerHTML = `
+      <span class="table-cell cmd">${entry.title}</span>
+      <span class="table-cell val">${entry.value}</span>
+      <span class="table-cell time">${entry.result}</span>`;
+    return row;
+  });
+
+  /* Clear and re-add */
+  Array.from(body.children).forEach(c => { if (c.id !== 'table-empty') c.remove(); });
+  rows.forEach(r => body.appendChild(r));
+}
+
+document.getElementById('table-clear-btn').addEventListener('click', () => {
+  commandLog.length = 0;
+  const body = document.getElementById('table-body');
+  Array.from(body.children).forEach(c => { if (c.id !== 'table-empty') c.remove(); });
+  renderTable();
+});
+
+/* ════════════════════════════════════════
+   VIEWPORT TOGGLE
+════════════════════════════════════════ */
+const mainLayout = document.getElementById('main-layout');
+const tablePanel = document.getElementById('table-panel');
+
+document.querySelectorAll('.vp-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const vp = btn.dataset.vp;
+    document.querySelectorAll('.vp-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    mainLayout.className = `main-layout vp-${vp}`;
+
+    /* On tablet/mobile move table below grid; on desktop restore sidebar */
+    if (vp === 'desktop') {
+      mainLayout.appendChild(tablePanel);
+    } else {
+      /* Move table below the vp-simulator */
+      mainLayout.appendChild(tablePanel);
+    }
+  });
+});
+
+/* ════════════════════════════════════════
+   BUILD THE PAGE
+════════════════════════════════════════ */
+const grid = document.getElementById('grid');
+
+let currentSectionCards = null;
+
+CARD_DEFS.forEach(def => {
+  /* Section header */
+  if (def._section) {
+    /* Create label */
+    const label = document.createElement('div');
+    label.className = 'section-label';
+    label.innerHTML = `
+      <span>${def._section}</span>
+      <svg class="section-chevron" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`;
+    grid.appendChild(label);
+
+    /* Create cards container */
+    const cardsWrap = document.createElement('div');
+    cardsWrap.className = 'section-cards';
+    cardsWrap.style.cssText = '';
+    grid.appendChild(cardsWrap);
+    currentSectionCards = cardsWrap;
+
+    /* Wire collapse toggle */
+    label.addEventListener('click', () => {
+      const collapsed = cardsWrap.classList.toggle('collapsed');
+      label.classList.toggle('collapsed', collapsed);
+    });
+    return;
+  }
+
+  const unit = document.createElement('div');
+  unit.className = def.hasInput ? 'card-unit input-card' : 'card-unit';
+
+  /* Scenario selector */
+  const selector = document.createElement('div');
+  selector.className = 'scenario-selector';
+  def.scenarios.forEach((sc, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'scenario-btn';
+    btn.textContent = sc.label;
+    btn.addEventListener('click', () => inst.selectScenario(i));
+    selector.appendChild(btn);
+  });
+
+  /* Card shell */
+  const cardEl = document.createElement('div');
+  cardEl.innerHTML = `<div class="mc-card"><div class="progress-track"><div class="progress-fill"></div></div></div>`;
+
+  /* Reset button */
+  const resetBtn = document.createElement('button');
+  resetBtn.className = 'reset-link';
+  resetBtn.textContent = '↺ Reset';
+  resetBtn.addEventListener('click', () => inst.reset());
+
+  unit.appendChild(cardEl);
+  unit.appendChild(selector);
+  unit.appendChild(resetBtn);
+
+  /* Append to current section wrapper or grid directly */
+  if (currentSectionCards) {
+    currentSectionCards.appendChild(unit);
+  } else {
+    grid.appendChild(unit);
+  }
+
+  const inst = new CardInstance(def, unit);
+  inst.def._logCommand = logCommand;
+  inst.updateScenarioBtns();
+});
+</script>
+</div><!-- /proto-chrome -->
+</body>
+</html>

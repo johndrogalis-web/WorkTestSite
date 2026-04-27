@@ -411,13 +411,25 @@
     position:absolute; top:0; left:0; right:0; z-index:1;
     background:linear-gradient(to bottom, rgba(255,255,255,0.9) 0%, transparent 100%);
   }
-  .dt-drawer-map-body { height:240px; }
+  .dt-drawer-map-body { height:240px; position:relative; }
   .dt-drawer-map-goto {
     display:flex; align-items:center; gap:6px;
     background:rgba(246,244,242,0.92); border:1px solid var(--border);
     border-radius:32px; padding:6px 12px;
     font-size:13px; font-weight:500; color:var(--strong);
     letter-spacing:-0.26px; cursor:pointer; font-family:var(--font);
+  }
+  .dt-drawer-map-pin-marker {
+    position:absolute; bottom:46px; left:50%; transform:translateX(-50%);
+    pointer-events:none; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    z-index:1;
+  }
+  .dt-drawer-map-pin-label {
+    background:rgba(255,255,255,0.95); border-radius:6px;
+    padding:4px 10px; font-size:12px; font-weight:600;
+    color:#36322d; letter-spacing:-0.24px; white-space:nowrap;
+    box-shadow:0 1px 3px rgba(0,0,0,0.15);
   }
 
   /* ── DESKTOP MANUAL CONTROL ── */
@@ -4287,15 +4299,25 @@
             <button class="dt-drawer-action-btn">Unlink Unit</button>
           </div>
 
-          <!-- Fleet map placeholder -->
+          <!-- Fleet map -->
           <div class="dt-drawer-map">
             <div class="dt-drawer-map-header">
               <span style="font-size:14px;font-weight:500;color:var(--strong);letter-spacing:-0.28px;">Fleet map</span>
               <button class="dt-drawer-map-goto">Go to the map <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
             </div>
             <div class="dt-drawer-map-body">
-              <div style="width:100%;height:100%;background:linear-gradient(135deg,#c8dfc8 0%,#a8c5d4 40%,#7aa8c4 70%,#c8dfc8 100%);border-radius:8px;display:flex;align-items:center;justify-content:center;">
-                <div style="background:rgba(255,255,255,0.9);border-radius:6px;padding:6px 12px;font-size:13px;font-weight:600;color:#36322d;letter-spacing:-0.26px;" id="dt-drawer-map-pin">Truck —</div>
+              <iframe
+                src="https://www.openstreetmap.org/export/embed.html?bbox=-112.1040%2C33.4184%2C-112.0440%2C33.4784&layer=mapnik"
+                style="width:100%;height:100%;border:none;display:block;"
+                loading="lazy">
+              </iframe>
+              <!-- Truck location pin -->
+              <div class="dt-drawer-map-pin-marker">
+                <svg width="28" height="36" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M14 0C6.268 0 0 6.268 0 14C0 24.5 14 36 14 36C14 36 28 24.5 28 14C28 6.268 21.732 0 14 0Z" fill="#1594ef"/>
+                  <circle cx="14" cy="14" r="6" fill="white"/>
+                </svg>
+                <div class="dt-drawer-map-pin-label" id="dt-drawer-map-pin">Truck —</div>
               </div>
             </div>
           </div>

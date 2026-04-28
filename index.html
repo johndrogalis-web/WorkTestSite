@@ -179,7 +179,7 @@
   #s-desktop { position:relative; }
   .dt-drawer-scrim {
     position:absolute; inset:0;
-    background:rgba(54,50,45,0.36);
+    background:rgba(54,50,45,0.5);
     z-index:20;
     opacity:0; pointer-events:none;
     transition:opacity 0.35s ease;
@@ -200,6 +200,9 @@
     transition:width 0.38s cubic-bezier(0.22,1,0.36,1);
     pointer-events:none;
   }
+  /* Used during drawer-to-drawer pivots — source drawer hides instantly so
+     the target slide-in is the only motion the user sees. */
+  .dt-drawer.no-anim { transition:none; }
   .dt-drawer.open {
     width:calc(100% - 40px);
     max-width:1400px;
@@ -244,6 +247,25 @@
     display:flex; align-items:center; justify-content:center;
     background:transparent; cursor:pointer; margin-left:2px;
   }
+  /* Cross-drawer breadcrumb pill — appears when truck drawer was opened
+     via "Open Truck" from a unit, gives the user a one-tap return path. */
+  .dt-drawer-back-to-unit {
+    display:flex; align-items:center; gap:8px;
+    height:32px; padding:0 14px;
+    background:rgba(48,105,227,0.08);
+    border:1px solid rgba(48,105,227,0.22);
+    border-radius:32px;
+    color:var(--blue-link);
+    font-size:13px; font-weight:500; letter-spacing:-0.26px;
+    font-family:var(--font);
+    cursor:pointer;
+    transition:background 0.12s, border-color 0.12s;
+  }
+  .dt-drawer-back-to-unit:hover {
+    background:rgba(48,105,227,0.14);
+    border-color:rgba(48,105,227,0.4);
+  }
+  .dt-drawer-back-to-unit strong { font-weight:600; }
   .dt-drawer-tabs {
     display:flex; border-bottom:1px solid var(--border);
     overflow-x:auto; scrollbar-width:none;
@@ -401,6 +423,82 @@
     font-family:var(--font); cursor:pointer;
   }
   .dt-drawer-action-btn:hover { background:#1281d4; }
+  /* Destructive variant — used for Unlink Unit. Outlined treatment so it
+     reads as a deliberate, careful action rather than a primary CTA. */
+  .dt-drawer-action-btn.danger {
+    background:white; color:var(--red);
+    border:1.5px solid var(--red);
+  }
+  .dt-drawer-action-btn.danger:hover {
+    background:rgba(215,1,0,0.06);
+  }
+  .dt-drawer-action-btn:disabled {
+    opacity:0.4; cursor:not-allowed;
+  }
+
+  /* ── Ping Truck animation states ────────────────────────────
+     Three-phase animation that communicates a real network round-trip:
+     1. "Pinging..." while the request is in flight
+     2. Brief "Connected ✓" green flash when data has refreshed
+     3. Settle back to "Ping Truck"
+     The button stays full-width and same-height throughout; only the
+     content changes so layout doesn't shift. */
+  .dt-drawer-action-btn.pinging {
+    background:#1281d4; opacity:1; cursor:wait;
+    pointer-events:none;
+  }
+  .dt-drawer-action-btn.pinged {
+    background:#16a34a; cursor:default;
+    pointer-events:none;
+  }
+  .dt-ping-content {
+    display:inline-flex; align-items:center; gap:8px;
+    justify-content:center;
+  }
+  /* Inline spinner for the pinging state */
+  .dt-ping-spinner {
+    width:14px; height:14px; flex-shrink:0;
+    border:1.6px solid rgba(255,255,255,0.35);
+    border-top-color:white;
+    border-radius:50%;
+    animation:dtPingSpin 0.7s linear infinite;
+  }
+  @keyframes dtPingSpin {
+    to { transform:rotate(360deg); }
+  }
+
+  /* Refreshing shimmer — applied to elements whose data is being "refreshed"
+     during the ping. A diagonal sheen sweeps across once. */
+  .dt-refreshing {
+    position:relative; overflow:hidden;
+  }
+  .dt-refreshing::after {
+    content:'';
+    position:absolute; inset:0;
+    background:linear-gradient(
+      105deg,
+      transparent 30%,
+      rgba(255,255,255,0.55) 50%,
+      transparent 70%
+    );
+    background-size:220% 100%;
+    background-position:200% 0;
+    animation:dtRefreshSweep 0.9s cubic-bezier(0.4,0,0.2,1) forwards;
+    pointer-events:none;
+    z-index:5;
+  }
+  @keyframes dtRefreshSweep {
+    to { background-position:-100% 0; }
+  }
+  /* Briefly bump the connectivity dot during the ping handshake so the
+     chip reads "active" while we're talking to the truck. */
+  .dt-drawer-ign-badge.pinging .dt-drawer-ign-dot {
+    animation:dtPingDotPulse 0.5s ease-in-out infinite alternate;
+  }
+  @keyframes dtPingDotPulse {
+    from { transform:scale(1);   opacity:1; }
+    to   { transform:scale(1.5); opacity:0.55; }
+  }
   .dt-drawer-map {
     position:relative; margin:0 16px 16px;
     border:1px solid var(--border);
@@ -1089,6 +1187,819 @@
     margin-left:2px;
   }
   .dt-active-filter-clear:hover { text-decoration:underline; }
+
+  /* ── DESKTOP UNITS PAGE — bits that don't already exist in the trucks system ── */
+  /* Status pill in the units table — uses mobile pill colors via ustatus.* but desktop sizing */
+  .dt-units-status-pill {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:3px 10px; border-radius:16px;
+    font-size:13px; font-weight:500; letter-spacing:-0.26px;
+    line-height:1.3; white-space:nowrap;
+  }
+  .dt-units-status-pill .dot {
+    width:7px; height:7px; border-radius:50%; flex-shrink:0;
+  }
+  .dt-units-status-pill.linked   { background:#d5f1d2; color:#1e6252; }
+  .dt-units-status-pill.linked   .dot { background:#16a34a; }
+  .dt-units-status-pill.unlinked { background:rgba(54,50,45,0.08); color:rgba(54,50,45,0.62); }
+  .dt-units-status-pill.unlinked .dot { background:#9c9890; }
+  .dt-units-status-pill.maint    { background:#fff3cd; color:#7a5800; }
+  .dt-units-status-pill.maint    .dot { background:#f59e0b; }
+  .dt-units-status-pill.pending  { background:#fde7c2; color:#8a4a00; }
+  .dt-units-status-pill.pending  .dot { background:#e8851a; }
+
+  /* Date column secondary tone (Figma's two-tone treatment) */
+  .dt-units-date-secondary { color:rgba(54,50,45,0.62); }
+
+  /* ── DESKTOP UNIT DRAWER ─────────────────────────────── */
+  /* Side panel body padding */
+  #dt-ud-side-body { padding:16px 16px 24px; }
+
+  /* Side panel: top "summary chips" — Status & Account.
+     For Unlinked units, Connectivity/Truck Mode aren't meaningful,
+     so we show Status + Account as the top-of-panel chips. */
+  .dt-ud-side-chips {
+    display:flex; gap:8px; padding:0 8px 16px;
+  }
+  .dt-ud-side-chip {
+    flex:1; min-width:0; padding:8px;
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .dt-ud-side-chip-icon {
+    width:16px; height:16px; flex-shrink:0;
+  }
+  .dt-ud-side-chip-label {
+    font-size:14px; font-weight:500; color:var(--strong);
+    letter-spacing:-0.28px; line-height:1.3;
+  }
+  .dt-ud-side-chip-val {
+    font-size:14px; color:var(--strong); letter-spacing:-0.28px;
+    line-height:1.3;
+  }
+  .dt-ud-side-chip-val.dim { color:var(--soft); }
+  .dt-ud-side-chip-val.linkish { color:var(--blue-link); }
+
+  /* GPS Location button — appears at bottom of side panel for Linked units */
+  .dt-ud-side-gps-btn {
+    margin:16px 8px 0;
+    height:40px; padding:0 22px;
+    background:var(--blue); color:white; border:none;
+    border-radius:32px;
+    font-size:14px; font-weight:500; letter-spacing:-0.28px;
+    font-family:var(--font); cursor:pointer;
+    transition:opacity 0.12s;
+    align-self:flex-start;
+  }
+  .dt-ud-side-gps-btn:hover { opacity:0.9; }
+
+  /* Meta table (Code version / Commissioned / etc.) */
+  .dt-ud-meta {
+    display:grid; grid-template-columns:1fr 1fr;
+  }
+  .dt-ud-meta-cell {
+    height:32px; padding:0 10px;
+    display:flex; align-items:center;
+    font-size:13px; color:var(--defined);
+    letter-spacing:-0.24px; line-height:1.3;
+  }
+  .dt-ud-meta-cell.val {
+    color:var(--strong);
+    justify-content:flex-end; text-align:right;
+  }
+  .dt-ud-meta-row.alt .dt-ud-meta-cell {
+    background:var(--layer-1);
+  }
+
+  /* Unit drawer status pill (matches truck drawer's ign badge) */
+  #dt-ud-drawer .dt-drawer-ign-badge.unlinked {
+    background:rgba(54,50,45,0.08);
+    color:rgba(54,50,45,0.62);
+  }
+  #dt-ud-drawer .dt-drawer-ign-badge.unlinked .dt-drawer-ign-dot {
+    background:#9c9890;
+  }
+  #dt-ud-drawer .dt-drawer-ign-badge.linked {
+    background:#d5f1d2; color:#1e6252;
+  }
+  #dt-ud-drawer .dt-drawer-ign-badge.linked .dt-drawer-ign-dot {
+    background:#16a34a;
+  }
+  #dt-ud-drawer .dt-drawer-ign-badge.maint {
+    background:#fff3cd; color:#7a5800;
+  }
+  #dt-ud-drawer .dt-drawer-ign-badge.maint .dt-drawer-ign-dot {
+    background:#f59e0b;
+  }
+  #dt-ud-drawer .dt-drawer-ign-badge.pending {
+    background:#fde7c2; color:#8a4a00;
+  }
+  #dt-ud-drawer .dt-drawer-ign-badge.pending .dt-drawer-ign-dot {
+    background:#e8851a;
+  }
+
+  /* ── Lifespan tab (component accordion, ported from mobile, expanded for desktop) ── */
+  .dt-ls-section-label {
+    font-size:11px; font-weight:600; letter-spacing:0.4px;
+    text-transform:uppercase; color:var(--soft);
+    margin:0 0 12px;
+  }
+  .dt-ls-section-label.removed-section { margin-top:24px; }
+
+  /* Context banner — appears at top of Unit Lifespan when unit is Linked */
+  .dt-ls-context-banner {
+    display:flex; align-items:center; gap:14px;
+    padding:14px 16px; margin-bottom:18px;
+    background:rgba(48,105,227,0.06);
+    border:1px solid rgba(48,105,227,0.2);
+    border-radius:12px;
+  }
+  .dt-ls-context-icon {
+    width:36px; height:36px; flex-shrink:0;
+    border-radius:50%; background:rgba(48,105,227,0.12);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .dt-ls-context-text { flex:1; min-width:0; }
+  .dt-ls-context-title {
+    font-size:14px; font-weight:500; color:var(--strong);
+    letter-spacing:-0.28px; line-height:1.3;
+  }
+  .dt-ls-context-sub {
+    font-size:12px; color:var(--soft); letter-spacing:-0.2px;
+    line-height:1.3; margin-top:2px;
+  }
+  .dt-ls-context-link {
+    display:flex; align-items:center; gap:6px;
+    background:none; border:none; cursor:pointer;
+    color:var(--blue-link); font-size:13px; font-weight:500;
+    letter-spacing:-0.26px; font-family:var(--font);
+    flex-shrink:0;
+  }
+  .dt-ls-context-link:hover { text-decoration:underline; }
+
+  .dt-ls-card {
+    background:var(--layer-1); border:1px solid var(--border);
+    border-radius:12px; margin-bottom:8px; overflow:hidden;
+    transition:border-color 0.12s;
+  }
+  .dt-ls-card:hover { border-color:var(--border-mid); }
+  .dt-ls-card.removed { background:var(--base); }
+
+  .dt-ls-card-hdr {
+    display:flex; align-items:center; justify-content:space-between;
+    gap:14px; padding:16px 18px;
+    cursor:pointer; user-select:none;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .dt-ls-card-left { flex:1; min-width:0; }
+  .dt-ls-name-row {
+    display:flex; align-items:center; gap:8px; margin-bottom:4px;
+  }
+  .dt-ls-comp-name {
+    font-size:15px; font-weight:500; color:var(--strong);
+    letter-spacing:-0.3px; line-height:1.3;
+  }
+  .dt-ls-comp-name.dim { color:#9ca3af; }
+  .dt-ls-comp-mac {
+    font-size:13px; color:var(--soft);
+    font-family:'DM Mono', monospace;
+    letter-spacing:0; padding-left:21px;
+  }
+  .dt-ls-comp-mac.dim { color:#9ca3af; }
+  .dt-ls-changes {
+    font-size:12px; color:var(--soft);
+    letter-spacing:-0.2px; white-space:nowrap;
+  }
+  .dt-ls-chev { transition:transform 0.2s; flex-shrink:0; }
+  .dt-ls-card.open .dt-ls-chev { transform:rotate(180deg); }
+
+  .dt-ls-history {
+    display:none; padding:4px 18px 12px;
+    border-top:1px solid var(--border);
+  }
+  .dt-ls-card.open .dt-ls-history { display:block; }
+  .dt-ls-entry {
+    display:grid; grid-template-columns:18px 130px 1fr auto;
+    gap:14px; padding:12px 0;
+    align-items:start;
+  }
+  .dt-ls-entry + .dt-ls-entry { border-top:1px solid var(--border); }
+  .dt-ls-entry-rail {
+    display:flex; flex-direction:column; align-items:center;
+    padding-top:3px; min-height:28px;
+  }
+  .dt-ls-entry-dot {
+    width:10px; height:10px; border-radius:50%;
+    flex-shrink:0; border:2px solid white;
+  }
+  .dt-ls-entry-dot.current  { background:#16a34a; box-shadow:0 0 0 1px #16a34a; }
+  .dt-ls-entry-dot.original { background:var(--blue);   box-shadow:0 0 0 1px var(--blue); }
+  .dt-ls-entry-dot.middle   { background:var(--border-mid); }
+  .dt-ls-entry-dot.removed  { background:#9ca3af; box-shadow:0 0 0 1px #9ca3af; }
+  .dt-ls-entry-connector {
+    width:1px; flex:1; background:var(--border);
+    margin:4px 0; min-height:14px;
+  }
+  .dt-ls-entry-date {
+    font-size:12px; color:var(--soft); letter-spacing:-0.2px;
+    line-height:1.4;
+  }
+  .dt-ls-entry-removed-tag {
+    color:#9ca3af; font-size:11px;
+  }
+  .dt-ls-entry-mac {
+    font-size:13px; font-weight:500; color:var(--strong);
+    letter-spacing:0; font-family:'DM Mono', monospace;
+    line-height:1.4;
+  }
+  .dt-ls-entry-mac.dim { color:#9ca3af; }
+  .dt-ls-entry-tag {
+    font-size:11px; font-weight:500; letter-spacing:-0.2px;
+    line-height:1.4; padding-top:1px;
+    white-space:nowrap;
+  }
+  .dt-ls-entry-tag.current  { color:#16a34a; }
+  .dt-ls-entry-tag.original { color:var(--blue-link); }
+
+  /* ── Attach tab — matches Figma 378:32882 ── */
+  .dt-attach-title {
+    font-size:20px; font-weight:500; color:var(--strong);
+    letter-spacing:-0.6px; line-height:1.2;
+    margin-bottom:14px;
+  }
+  .dt-attach-toolbar {
+    display:flex; align-items:center; justify-content:space-between;
+    gap:14px; margin-bottom:18px;
+  }
+  .dt-attach-search {
+    display:flex; align-items:center; gap:10px;
+    background:var(--base); border:1px solid var(--border);
+    border-radius:24px; padding:8px 14px;
+    width:295px; height:36px;
+    box-sizing:border-box;
+    transition:border-color 0.12s, box-shadow 0.12s;
+  }
+  .dt-attach-search:focus-within {
+    border-color:var(--blue);
+    box-shadow:0 0 0 3px rgba(48,105,227,0.12);
+  }
+  .dt-attach-search input {
+    flex:1; border:none; outline:none; background:none;
+    font-size:14px; color:var(--strong); letter-spacing:-0.28px;
+    font-family:var(--font);
+  }
+  .dt-attach-search input::placeholder { color:var(--soft); }
+
+  .dt-attach-cta {
+    height:40px; padding:0 24px;
+    background:var(--blue); color:white; border:none;
+    border-radius:32px;
+    font-size:14px; font-weight:500; letter-spacing:-0.28px;
+    font-family:var(--font); cursor:pointer;
+    transition:opacity 0.12s, background 0.12s;
+    white-space:nowrap; flex-shrink:0;
+  }
+  .dt-attach-cta:hover:not(:disabled) { opacity:0.9; }
+  .dt-attach-cta:disabled {
+    background:rgba(54,50,45,0.15); color:var(--soft);
+    cursor:not-allowed;
+  }
+
+  /* Table */
+  .dt-attach-table {
+    border-radius:8px; overflow:hidden;
+  }
+  .dt-attach-table-hdr {
+    display:flex;
+    border-bottom:1px solid var(--border);
+  }
+  .dt-attach-th {
+    position:relative;
+    display:flex; align-items:center; gap:8px;
+    padding:8px 10px;
+    font-size:14px; font-weight:500; color:var(--strong);
+    letter-spacing:-0.28px; line-height:1.3;
+    flex-shrink:0; box-sizing:border-box;
+  }
+  .dt-attach-th-label { flex:1; min-width:0; }
+  .dt-attach-th-menu {
+    width:16px; height:16px; flex-shrink:0;
+    cursor:pointer; opacity:0.55;
+    display:flex; align-items:center; justify-content:center;
+    transition:opacity 0.12s;
+  }
+  .dt-attach-th-menu:hover { opacity:1; }
+  .dt-attach-th-divider {
+    position:absolute; right:0; top:50%;
+    transform:translateY(-50%);
+    width:1.4px; height:14px;
+    background:rgba(54,50,45,0.14); border-radius:1.4px;
+  }
+
+  .dt-attach-table-body { display:flex; flex-direction:column; }
+  .dt-attach-row {
+    display:flex; min-height:50px;
+    align-items:center;
+    cursor:pointer;
+    background:var(--layer-1);
+    transition:background 0.1s;
+  }
+  .dt-attach-row.alt { background:var(--layer-2); }
+  .dt-attach-row:hover { background:rgba(48,105,227,0.04); }
+  .dt-attach-row.selected,
+  .dt-attach-row.selected.alt {
+    background:rgba(48,105,227,0.08);
+    box-shadow:inset 3px 0 0 var(--blue);
+  }
+  .dt-attach-cell {
+    padding:10px;
+    font-size:14px; color:var(--defined);
+    letter-spacing:-0.28px; line-height:1.3;
+    flex-shrink:0; box-sizing:border-box;
+  }
+  .dt-attach-row.selected .dt-attach-cell:first-child {
+    font-weight:500; color:var(--strong);
+  }
+
+  .dt-attach-empty {
+    padding:48px 16px; text-align:center;
+    font-size:14px; color:var(--soft);
+    letter-spacing:-0.28px;
+  }
+
+  /* Attach confirm overlay (lives inside the unit drawer) */
+  .dt-attach-confirm {
+    position:absolute; inset:0;
+    background:rgba(20,18,16,0.45);
+    backdrop-filter:blur(2px);
+    -webkit-backdrop-filter:blur(2px);
+    display:flex; align-items:center; justify-content:center;
+    z-index:50;
+    animation:dtAuFadeIn 0.18s ease-out;
+  }
+  .dt-attach-confirm-card {
+    width:420px; max-width:calc(100% - 48px);
+    background:white; border-radius:16px;
+    box-shadow:0 16px 40px rgba(0,0,0,0.18);
+    padding:24px;
+  }
+  .dt-attach-confirm-title {
+    font-size:18px; font-weight:500; color:var(--strong);
+    letter-spacing:-0.36px; line-height:1.2;
+    margin-bottom:10px;
+  }
+  .dt-attach-confirm-body {
+    font-size:14px; color:var(--defined); letter-spacing:-0.28px;
+    line-height:1.5;
+    margin-bottom:20px;
+  }
+  .dt-attach-confirm-body strong {
+    color:var(--strong); font-weight:500;
+  }
+  .dt-attach-confirm-btns {
+    display:flex; gap:10px; justify-content:flex-end;
+  }
+  .dt-attach-confirm-btn {
+    height:38px; padding:0 22px;
+    border-radius:32px;
+    font-size:13px; font-weight:500; letter-spacing:-0.26px;
+    font-family:var(--font); cursor:pointer;
+    transition:background 0.12s, border-color 0.12s, opacity 0.12s;
+  }
+  .dt-attach-confirm-cancel {
+    background:white; border:1px solid var(--border);
+    color:var(--strong);
+  }
+  .dt-attach-confirm-cancel:hover {
+    background:var(--layer-2); border-color:var(--border-mid);
+  }
+  .dt-attach-confirm-go {
+    background:var(--blue); color:white; border:none;
+  }
+  .dt-attach-confirm-go:hover { opacity:0.9; }
+  /* Destructive variant for the confirm dialog — used by Unlink Unit */
+  .dt-attach-confirm-go.danger {
+    background:var(--red);
+  }
+  .dt-attach-confirm-go.danger:hover { background:#b80100; }
+
+  /* Inline confirm panel — appears beneath the action button that
+     triggered it. Used for destructive actions where we want contextual
+     confirmation without a modal/scrim. The panel slides down into place
+     so the cause/effect feels visually adjacent. Default is destructive (red);
+     add `.informational` for non-destructive actions like linking. */
+  .dt-inline-confirm {
+    margin:0 16px 16px;
+    padding:14px;
+    background:rgba(215,1,0,0.04);
+    border:1px solid rgba(215,1,0,0.18);
+    border-radius:12px;
+    animation:dtInlineConfirmIn 0.18s cubic-bezier(0.4,0,0.2,1);
+  }
+  .dt-inline-confirm.informational {
+    background:rgba(48,105,227,0.05);
+    border-color:rgba(48,105,227,0.22);
+  }
+  .dt-inline-confirm.informational .dt-inline-confirm-icon {
+    background:rgba(48,105,227,0.12);
+  }
+
+  /* Toolbar-row variant — used by the unit drawer's Attach to Truck flow.
+     Sits in the same horizontal slot the toolbar (search + Attach Unit CTA)
+     occupies, so when the confirm appears the toolbar hides without any
+     vertical layout shift. The truck table doesn't move; the row the user
+     just selected stays exactly where it was. */
+  .dt-inline-confirm.toolbar-row {
+    margin:0 0 18px;
+    padding:8px 14px;
+    display:flex; align-items:center; gap:14px;
+    min-height:52px; box-sizing:border-box;
+  }
+  .dt-inline-confirm.toolbar-row .dt-inline-confirm-head {
+    display:flex; align-items:center; gap:10px;
+    margin:0; flex:1; min-width:0;
+  }
+  .dt-inline-confirm.toolbar-row .dt-inline-confirm-icon {
+    width:24px; height:24px; flex-shrink:0;
+  }
+  .dt-inline-confirm.toolbar-row .dt-inline-confirm-icon svg {
+    width:12px; height:12px;
+  }
+  .dt-inline-confirm.toolbar-row .dt-inline-confirm-text { flex:1; min-width:0; }
+  .dt-inline-confirm.toolbar-row .dt-inline-confirm-title {
+    font-size:13px; margin-bottom:1px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .dt-inline-confirm.toolbar-row .dt-inline-confirm-body {
+    font-size:12px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .dt-inline-confirm.toolbar-row .dt-inline-confirm-btns {
+    flex-shrink:0;
+  }
+  .dt-inline-confirm.toolbar-row .dt-inline-confirm-btn {
+    flex:0 0 auto; height:36px; padding:0 18px;
+  }
+  @keyframes dtInlineConfirmIn {
+    from { opacity:0; transform:translateY(-4px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .dt-inline-confirm-head {
+    display:flex; align-items:flex-start; gap:10px;
+    margin-bottom:12px;
+  }
+  .dt-inline-confirm-icon {
+    width:28px; height:28px; flex-shrink:0;
+    border-radius:50%;
+    background:rgba(215,1,0,0.10);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .dt-inline-confirm-text {
+    flex:1; min-width:0;
+  }
+  .dt-inline-confirm-title {
+    font-size:13px; font-weight:500; color:var(--strong);
+    letter-spacing:-0.26px; line-height:1.3;
+    margin-bottom:4px;
+  }
+  .dt-inline-confirm-body {
+    font-size:12px; color:var(--defined);
+    letter-spacing:-0.2px; line-height:1.4;
+  }
+  .dt-inline-confirm-body strong {
+    color:var(--strong); font-weight:500;
+  }
+  .dt-inline-confirm-btns {
+    display:flex; gap:8px;
+  }
+  .dt-inline-confirm-btn {
+    flex:1; height:34px; padding:0 14px;
+    border-radius:32px;
+    font-size:13px; font-weight:500; letter-spacing:-0.26px;
+    font-family:var(--font); cursor:pointer;
+    transition:background 0.12s, border-color 0.12s, opacity 0.12s;
+  }
+  .dt-inline-confirm-btn.cancel {
+    background:white; border:1px solid var(--border);
+    color:var(--strong);
+  }
+  .dt-inline-confirm-btn.cancel:hover {
+    background:var(--layer-2); border-color:var(--border-mid);
+  }
+  .dt-inline-confirm-btn.danger {
+    background:var(--red); color:white; border:none;
+  }
+  .dt-inline-confirm-btn.danger:hover { background:#b80100; }
+  .dt-inline-confirm-btn.primary {
+    background:var(--blue); color:white; border:none;
+  }
+  .dt-inline-confirm-btn.primary:hover { opacity:0.9; }
+
+  /* ── Truck drawer empty state — shown when truck has no linked unit.
+     Matches Figma node 608:38407: centered illustration of broken plugs,
+     "Truck Not Connected" title, supporting copy, and a Connect Unit CTA. */
+  .dt-truck-empty {
+    display:flex; flex-direction:column; align-items:center;
+    text-align:center;
+    padding:48px 32px 32px;
+    max-width:455px; margin:0 auto;
+  }
+  .dt-truck-empty-illust {
+    width:340px; height:340px;
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:24px;
+  }
+  .dt-truck-empty-title {
+    font-size:32px; font-weight:700; color:#111;
+    letter-spacing:-0.64px; line-height:0.95;
+    margin-bottom:14px;
+    font-family:'Archivo', var(--font);
+  }
+  .dt-truck-empty-sub {
+    font-size:16px; color:#6f6f6f;
+    letter-spacing:-0.16px; line-height:1.4;
+    margin-bottom:38px;
+    font-family:'Archivo', var(--font); font-weight:500;
+  }
+  .dt-truck-empty-cta {
+    width:100%; height:48px;
+    background:var(--blue); color:white; border:none;
+    border-radius:32px;
+    font-size:14px; font-weight:500; letter-spacing:-0.28px;
+    font-family:var(--font); cursor:pointer;
+    transition:opacity 0.12s;
+  }
+  .dt-truck-empty-cta:hover { opacity:0.92; }
+
+  /* ── ADD UNIT DRAWER (desktop) ────────────────────────
+     Slides in from the right over the units page. Same spatial
+     pattern as the truck drawer so the product reads consistently. */
+  .dt-au-drawer {
+    position:absolute; top:0; right:0; bottom:0;
+    width:0; overflow:hidden;
+    display:flex; flex-direction:row;
+    background:var(--layer-1);
+    border-left:1px solid var(--border);
+    border-radius:16px 0 0 16px;
+    box-shadow:-4px 0 32px rgba(54,50,45,0.1);
+    z-index:30;
+    transition:width 0.38s cubic-bezier(0.22,1,0.36,1);
+    pointer-events:none;
+  }
+  .dt-au-drawer.open {
+    width:520px;
+    pointer-events:all;
+  }
+  .dt-au-drawer-main {
+    flex:1; min-width:0;
+    display:flex; flex-direction:column;
+    overflow:hidden;
+  }
+  .dt-au-drawer-head {
+    display:flex; align-items:flex-start; justify-content:space-between;
+    gap:16px; padding:24px 24px 18px;
+    border-bottom:1px solid var(--border);
+    flex-shrink:0;
+  }
+  .dt-au-title {
+    font-size:20px; font-weight:500; color:var(--strong);
+    letter-spacing:-0.5px; line-height:1.2;
+  }
+  .dt-au-sub {
+    font-size:13px; color:var(--soft); letter-spacing:-0.26px;
+    line-height:1.4; margin-top:4px;
+  }
+  .dt-au-sub strong { color:var(--strong); font-weight:500; }
+  .dt-au-close {
+    width:32px; height:32px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    background:none; border:1px solid var(--border);
+    border-radius:50%; cursor:pointer;
+    color:var(--strong);
+    transition:background 0.12s, border-color 0.12s;
+  }
+  .dt-au-close:hover {
+    background:var(--layer-2); border-color:var(--border-mid);
+  }
+
+  /* Body — single-column form (drawer is narrow, no two-column split) */
+  .dt-au-body {
+    flex:1; overflow-y:auto;
+    padding:18px 24px 8px;
+  }
+  .dt-au-section-label {
+    font-size:11px; font-weight:600; letter-spacing:0.4px;
+    text-transform:uppercase; color:var(--soft);
+    margin:6px 0 12px;
+  }
+  .dt-au-section-label:not(:first-child) { margin-top:20px; }
+  .dt-au-field {
+    display:flex; flex-direction:column;
+    margin-bottom:14px;
+  }
+  .dt-au-label {
+    font-size:12px; color:var(--strong); letter-spacing:-0.24px;
+    margin-bottom:6px; font-weight:500;
+  }
+  .dt-au-req { color:var(--red); margin-left:2px; }
+  .dt-au-hint {
+    font-size:11px; color:var(--soft); letter-spacing:-0.22px;
+    margin-top:6px; line-height:1.4;
+  }
+  .dt-au-error {
+    font-size:11px; color:var(--red); letter-spacing:-0.22px;
+    margin-top:6px; line-height:1.4;
+    display:none;
+  }
+  .dt-au-error.show { display:block; }
+
+  /* Locked field (Account) */
+  .dt-au-locked {
+    display:flex; align-items:center; gap:8px;
+    height:40px; padding:0 14px;
+    border:1px solid var(--border); border-radius:10px;
+    background:var(--layer-2); color:var(--strong);
+    font-size:14px; letter-spacing:-0.28px; font-weight:500;
+  }
+  .dt-au-locked svg { flex-shrink:0; }
+
+  /* Text input */
+  .dt-au-input {
+    height:40px; padding:0 14px;
+    border:1px solid var(--border); border-radius:10px;
+    background:white; color:var(--strong);
+    font-size:14px; letter-spacing:-0.28px;
+    font-family:var(--font); outline:none;
+    transition:border-color 0.12s, box-shadow 0.12s;
+  }
+  .dt-au-input::placeholder { color:var(--soft); }
+  .dt-au-input:hover { border-color:var(--border-mid); }
+  .dt-au-input:focus {
+    border-color:var(--blue);
+    box-shadow:0 0 0 3px rgba(48,105,227,0.12);
+  }
+  .dt-au-input.error,
+  .dt-au-input.error:focus {
+    border-color:var(--red);
+    box-shadow:0 0 0 3px rgba(215,1,0,0.12);
+  }
+  .dt-au-input-mono { font-family:'DM Mono', monospace; }
+
+  /* Dropdown */
+  .dt-au-dd-wrap { position:relative; }
+  .dt-au-dd-btn {
+    width:100%; height:40px; padding:0 14px;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:8px;
+    background:white; border:1px solid var(--border);
+    border-radius:10px;
+    font-size:14px; color:var(--strong); letter-spacing:-0.28px;
+    font-family:var(--font); cursor:pointer;
+    transition:border-color 0.12s, box-shadow 0.12s;
+    text-align:left;
+  }
+  .dt-au-dd-btn:hover { border-color:var(--border-mid); }
+  .dt-au-dd-btn.open {
+    border-color:var(--blue);
+    box-shadow:0 0 0 3px rgba(48,105,227,0.12);
+  }
+  .dt-au-dd-btn .placeholder { color:var(--soft); }
+  .dt-au-chev { transition:transform 0.15s; flex-shrink:0; }
+  .dt-au-chev.open { transform:rotate(180deg); }
+  .dt-au-dd-menu {
+    display:none; position:absolute;
+    top:calc(100% + 4px); left:0; right:0;
+    background:white; border:1px solid var(--border);
+    border-radius:10px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.08);
+    overflow:hidden; z-index:10;
+    max-height:280px; overflow-y:auto;
+  }
+  .dt-au-dd-menu.open { display:block; }
+  .dt-au-dd-item {
+    padding:9px 14px;
+    font-size:14px; color:var(--strong); letter-spacing:-0.28px;
+    cursor:pointer; transition:background 0.1s;
+  }
+  .dt-au-dd-item:hover { background:var(--layer-2); }
+  .dt-au-dd-item.selected {
+    background:rgba(48,105,227,0.08); color:var(--blue-link);
+  }
+
+  .dt-au-foot {
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px; padding:16px 24px;
+    border-top:1px solid var(--border); background:var(--layer-2);
+    flex-shrink:0;
+  }
+  .dt-au-foot-hint {
+    font-size:12px; color:var(--soft); letter-spacing:-0.24px;
+    flex:1; min-width:0;
+  }
+  .dt-au-foot-hint.valid { color:#1e6252; }
+  .dt-au-foot-btns { display:flex; gap:10px; flex-shrink:0; }
+  .dt-au-cancel {
+    height:38px; padding:0 18px;
+    background:white; border:1px solid var(--border);
+    border-radius:32px;
+    font-size:13px; font-weight:500; color:var(--strong);
+    letter-spacing:-0.26px; font-family:var(--font);
+    cursor:pointer;
+    transition:background 0.12s, border-color 0.12s;
+  }
+  .dt-au-cancel:hover { background:var(--layer-2); border-color:var(--border-mid); }
+  .dt-au-submit {
+    height:38px; padding:0 22px;
+    background:var(--blue); color:white; border:none;
+    border-radius:32px;
+    font-size:13px; font-weight:500; letter-spacing:-0.26px;
+    font-family:var(--font);
+    cursor:pointer;
+    transition:opacity 0.12s, background 0.12s;
+  }
+  .dt-au-submit:hover:not(:disabled) { opacity:0.9; }
+  .dt-au-submit:disabled {
+    background:rgba(54,50,45,0.15); color:var(--soft);
+    cursor:not-allowed;
+  }
+
+  /* Success toast (top-right) */
+  /* ── Trinity toast (Success) — Trinity Design System node 56362:19143.
+     436px wide white card with a colored top accent bar that fades into
+     a tinted gradient wash over 121px. Has a title + body + chevron. */
+  .dt-au-toast {
+    position:fixed; top:76px; right:24px;
+    width:436px; max-width:calc(100vw - 48px);
+    background:white;
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:16px;
+    display:flex; align-items:center; gap:8px;
+    overflow:hidden;
+    box-shadow:0 14px 24px rgba(0,0,0,0.14);
+    z-index:10000;
+    font-family:var(--font);
+    animation:dtAuToastIn 0.25s cubic-bezier(0.4,0,0.2,1);
+  }
+  /* Colored top stripe + gradient wash. Default = Success green; the
+     style overrides via the variant classes below. */
+  .dt-au-toast::before {
+    content:'';
+    position:absolute;
+    top:-1px; left:-1.5px; right:-0.5px;
+    height:121px;
+    border-top:4px solid #2ecf1d;
+    background:linear-gradient(to bottom,
+      rgba(46,207,29,0.10) 3.7%,
+      rgba(46,207,29,0) 71%);
+    pointer-events:none;
+  }
+  .dt-au-toast.toast-info::before {
+    border-top-color:#41a8f2;
+    background:linear-gradient(to bottom,
+      rgba(65,168,242,0.10) 3.7%,
+      rgba(65,168,242,0) 71%);
+  }
+  .dt-au-toast.toast-warning::before {
+    border-top-color:#ffba0d;
+    background:linear-gradient(to bottom,
+      rgba(255,186,13,0.08) 3.7%,
+      rgba(255,186,13,0) 71%);
+  }
+  .dt-au-toast.toast-error::before {
+    border-top-color:#d70100;
+    background:linear-gradient(to bottom,
+      rgba(216,59,58,0.10) 3.7%,
+      rgba(216,59,58,0) 71%);
+  }
+  .dt-au-toast-content {
+    flex:1; min-width:0;
+    display:flex; flex-direction:column; gap:6px;
+    position:relative; /* sits above the gradient wash */
+  }
+  .dt-au-toast-title {
+    font-size:16px; font-weight:500; color:var(--strong);
+    letter-spacing:-0.32px; line-height:1.2;
+  }
+  .dt-au-toast-body {
+    font-size:14px; color:var(--defined);
+    letter-spacing:-0.28px; line-height:1.3;
+  }
+  .dt-au-toast-chev {
+    width:16px; height:16px; flex-shrink:0;
+    color:var(--strong); opacity:0.62;
+    position:relative; /* above the gradient */
+    cursor:pointer;
+  }
+  @keyframes dtAuToastIn {
+    from { opacity:0; transform:translateY(-8px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .dt-au-toast.out {
+    animation:dtAuToastOut 0.25s ease-in forwards;
+  }
+  @keyframes dtAuToastOut {
+    to { opacity:0; transform:translateY(-8px); }
+  }
   .dt-search-wrap {
     position:relative; flex:0 0 295px;
   }
@@ -1396,6 +2307,16 @@
   .dt-badge svg { flex-shrink:0; display:block; }
   .dt-badge.err { background:var(--red); color:white; }
   .dt-badge.wrn { background:var(--amber); color:var(--strong); }
+  /* Unlinked tag — replaces err/wrn badges in the Active Alerts column for
+     trucks with no linked unit. Neutral grey treatment to read as a status
+     rather than an alert. */
+  .dt-badge-unlinked {
+    display:inline-flex; align-items:center;
+    padding:4px 10px; border-radius:8px;
+    background:rgba(54,50,45,0.08); color:var(--soft);
+    font-size:12px; font-weight:500; line-height:1;
+    letter-spacing:-0.1px; white-space:nowrap;
+  }
   .dt-conn-dot {
     display:inline-block; width:7px; height:7px;
     border-radius:50%; margin-right:5px; vertical-align:middle;
@@ -1500,6 +2421,7 @@
     letter-spacing: -0.28px; line-height: 1.6;
     max-width: 320px;
   }
+  .phone-wrap::before {
     content: '';
     position: absolute;
     left: -3px; top: 120px;
@@ -1870,6 +2792,20 @@
     cursor: pointer;
   }
   .d-pill:active { background: var(--layer-2); }
+  /* Mobile ping animation — mirrors desktop's pinging/pinged states.
+     The pill stays the same shape; only background + content change. */
+  #ping-pill.pinging {
+    background: #1281d4 !important; opacity: 1 !important;
+    pointer-events: none;
+  }
+  #ping-pill.pinged {
+    background: #16a34a !important; border-color: #16a34a !important;
+    pointer-events: none;
+  }
+  /* Mobile ignition pill pulses its dot during the ping handshake */
+  .d-ign-pill.pinging .d-ign-dot {
+    animation: dtPingDotPulse 0.5s ease-in-out infinite alternate;
+  }
 
   /* ─── DRAWER CONTENT AREA ────────────────────────────────── */
   /* Single content pane — JS swaps between "logs-list" and "logs-detail" states */
@@ -3933,7 +4869,7 @@
             </svg>
           </div>
           <div style="font-size:18px;font-weight:500;color:var(--strong);letter-spacing:-0.4px;margin-bottom:8px;">Truck Not Connected</div>
-          <div style="font-size:14px;color:var(--soft);letter-spacing:-0.28px;line-height:1.6;margin-bottom:28px;">Attach Verifi Hardware to have a connected truck.</div>
+          <div style="font-size:14px;color:var(--soft);letter-spacing:-0.28px;line-height:1.6;margin-bottom:28px;">Attach Verifi hardware to have a connected truck.</div>
           <button onclick="switchUnlinkedTab('attach')" style="width:100%;background:var(--blue);color:white;border:none;border-radius:32px;padding:14px;font-size:15px;font-weight:500;font-family:var(--font);letter-spacing:-0.3px;cursor:pointer;">Attach Unit</button>
         </div>
 
@@ -4290,13 +5226,13 @@
             <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style="transform:rotate(180deg);flex-shrink:0;"><path d="M1 1.5l5 5 5-5" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
           </div>
           <div style="display:flex;flex-direction:column;gap:2px;margin-top:2px;">
-            <div style="background:#c2d7fa;border-radius:32px;padding:10px 12px 10px 44px;cursor:pointer;">
+            <div id="dt-nav-trucks" onclick="dtNavGo('trucks')" style="background:#c2d7fa;border-radius:32px;padding:10px 12px 10px 44px;cursor:pointer;">
               <span style="font-size:14px;color:#000;letter-spacing:-0.28px;font-family:var(--font);font-weight:500;">All trucks</span>
             </div>
             <div style="padding:10px 12px 10px 44px;border-radius:32px;cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.04)'" onmouseleave="this.style.background=''">
               <span style="font-size:14px;color:rgba(54,50,45,0.5);letter-spacing:-0.28px;font-family:var(--font);">Map</span>
             </div>
-            <div style="padding:10px 12px 10px 44px;border-radius:32px;cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.04)'" onmouseleave="this.style.background=''">
+            <div id="dt-nav-units" onclick="dtNavGo('units')" style="padding:10px 12px 10px 44px;border-radius:32px;cursor:pointer;" onmouseenter="if(this.style.background!=='rgb(194, 215, 250)')this.style.background='rgba(54,50,45,0.04)'" onmouseleave="if(!this.dataset.active)this.style.background=''">
               <span style="font-size:14px;color:rgba(54,50,45,0.5);letter-spacing:-0.28px;font-family:var(--font);">Units</span>
             </div>
             <div style="padding:10px 12px 10px 44px;border-radius:32px;cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.04)'" onmouseleave="this.style.background=''">
@@ -4368,11 +5304,19 @@
               <button class="dt-drawer-share-btn" title="Share">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="12" cy="3" r="1.5" stroke="#36322d" stroke-width="1.3"/><circle cx="12" cy="13" r="1.5" stroke="#36322d" stroke-width="1.3"/><circle cx="3" cy="8" r="1.5" stroke="#36322d" stroke-width="1.3"/><path d="M10.5 3.87L4.5 7.13M4.5 8.87l6 3.26" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg>
               </button>
+              <!-- Back-to-Unit pill — only shown when truck drawer was opened
+                   via a unit pivot. Sits at the right edge of the title row so
+                   it's visible from any tab (Components overview, etc.). -->
+              <button id="dt-drawer-back-to-unit" class="dt-drawer-back-to-unit" style="display:none;margin-left:auto;" onclick="dtBackToUnit()">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M9.5 6h-7M5.5 2.5L2 6l3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Back to Unit <strong id="dt-drawer-back-to-unit-id">—</strong></span>
+              </button>
             </div>
 
             <!-- Tabs -->
-            <div class="dt-drawer-tabs">
+            <div class="dt-drawer-tabs" id="dt-drawer-tabs">
               <button class="dt-drawer-tab active" onclick="dtDrawerTab('overview', this)">Components overview</button>
+              <button class="dt-drawer-tab" onclick="dtDrawerTab('lifespan', this)">Unit Lifespan</button>
               <button class="dt-drawer-tab" onclick="dtDrawerTab('timeline', this)">Component timeline</button>
               <button class="dt-drawer-tab" onclick="dtDrawerTab('logs', this)">Trucks Logs</button>
               <button class="dt-drawer-tab" onclick="dtDrawerTab('manual', this)">Manual Control</button>
@@ -4489,13 +5433,18 @@
           </div>
 
           <!-- Action buttons -->
-          <div class="dt-drawer-actions">
-            <button class="dt-drawer-action-btn">Ping Truck</button>
-            <button class="dt-drawer-action-btn">Unlink Unit</button>
+          <div class="dt-drawer-actions" id="dt-drawer-actions">
+            <button class="dt-drawer-action-btn" id="dt-drawer-ping-btn" onclick="dtPingTruck()">Ping Truck</button>
+            <button class="dt-drawer-action-btn danger" id="dt-drawer-unlink-btn" onclick="dtTruckDrawerUnlinkUnit()">Unlink Unit</button>
           </div>
 
+          <!-- Inline unlink confirm — appears beneath the Unlink button when
+               the user clicks it. No modal/scrim — just a contextual panel
+               right where the action lives. -->
+          <div id="dt-drawer-unlink-confirm" class="dt-inline-confirm" style="display:none;"></div>
+
           <!-- Fleet map -->
-          <div class="dt-drawer-map">
+          <div class="dt-drawer-map" id="dt-drawer-map">
             <div class="dt-drawer-map-header">
               <span style="font-size:14px;font-weight:500;color:var(--strong);letter-spacing:-0.28px;">Fleet map</span>
               <button class="dt-drawer-map-goto">Go to the map <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -4573,6 +5522,64 @@
         </div>
       </div><!-- /dt-drawer -->
 
+      <!-- ══════════════════════════════════════════
+           DESKTOP UNIT DRAWER — Unlinked Units
+           Same chrome pattern as the truck drawer.
+           Two tabs: Unit Lifespan (per-component history accordion,
+           ported from mobile) and Attach to Truck (port of the mobile
+           attach flow, expanded for desktop scale).
+      ══════════════════════════════════════════ -->
+      <div id="dt-ud-drawer" class="dt-drawer">
+        <div class="dt-drawer-main">
+          <div class="dt-drawer-header">
+            <div class="dt-drawer-title-row">
+              <div class="dt-drawer-truck-label">Unit ID: <strong id="dt-ud-id">—</strong></div>
+              <div id="dt-ud-truck-label" class="dt-drawer-truck-label" style="display:none;color:var(--soft);font-size:14px;letter-spacing:-0.28px;"></div>
+              <div id="dt-ud-status-pill"></div>
+              <button class="dt-drawer-share-btn" title="Export">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 9v2.5C2 12.3 2.7 13 3.5 13h7c.8 0 1.5-.7 1.5-1.5V9M7 1v8M4 5l3-4 3 4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+            <!-- Tabs -->
+            <div class="dt-drawer-tabs" id="dt-ud-tabs"></div>
+          </div>
+          <div class="dt-drawer-scroll" id="dt-ud-scroll"></div>
+
+          <!-- Config save bar — lives outside scroll, pinned to bottom of drawer-main.
+               Same architecture as the truck drawer's save bar. -->
+          <div id="dt-ud-cfg-savebar" style="display:none;flex-shrink:0;background:var(--layer-1);border-top:1px solid var(--border);padding:14px 24px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span id="dt-ud-cfg-savebar-msg" style="font-size:13px;color:var(--soft);letter-spacing:-0.26px;">Unsaved changes across all sections</span>
+              <div style="display:flex;gap:8px;">
+                <button id="dt-ud-cfg-cancel-btn" onclick="dtCfgCancel()" style="background:transparent;border:1px solid var(--border);border-radius:20px;padding:8px 18px;font-size:13px;font-weight:500;color:var(--strong);font-family:var(--font);letter-spacing:-0.26px;cursor:pointer;">Cancel</button>
+                <button id="dt-ud-cfg-save-btn" onclick="dtCfgSave()" style="background:var(--blue);border:none;border-radius:20px;padding:8px 18px;font-size:13px;font-weight:500;color:white;font-family:var(--font);letter-spacing:-0.26px;cursor:pointer;">Save changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right side panel -->
+        <div class="dt-drawer-side">
+          <div class="dt-drawer-chrome">
+            <button class="dt-drawer-chrome-btn" onclick="dtUdNav(-1)" id="dt-ud-prev" title="Previous unit">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 3l-5 4 5 4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="dt-drawer-chrome-btn" onclick="dtUdNav(1)" id="dt-ud-next" title="Next unit">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l5 4-5 4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="dt-drawer-chrome-btn dt-drawer-close-btn" onclick="dtUdClose()" title="Close">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 8M10 2l-8 8" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+          <div id="dt-ud-side-body"></div>
+        </div>
+      </div><!-- /dt-ud-drawer -->
+
+      <!-- ══════════════════════════════════════════
+           DESKTOP TRUCKS PAGE
+      ══════════════════════════════════════════ -->
+      <div id="dt-page-trucks">
+
       <!-- Top bar -->
       <div class="dt-topbar">
         <div class="dt-page-title">Diagnostic Center</div>
@@ -4583,6 +5590,10 @@
           <div class="dt-stat-card">
             <div class="dt-stat-label">Trucks commissioned</div>
             <div class="dt-stat-value" id="dt-stat-commissioned">250</div>
+          </div>
+          <div class="dt-stat-card">
+            <div class="dt-stat-label">Unlinked Units</div>
+            <div class="dt-stat-value" id="dt-stat-unlinked">3</div>
           </div>
           <div class="dt-stat-card">
             <div class="dt-stat-label">Maintenance required</div>
@@ -4786,11 +5797,222 @@
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M5 12l4-4-4-4M9 12l4-4-4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
         </div>
+      </div><!-- /pagination -->
+
+      </div><!-- /dt-page-trucks -->
+
+      <!-- ══════════════════════════════════════════
+           DESKTOP UNITS PAGE
+           Mirrors the Figma at node 600:37658.
+           Status uses the mobile pill treatment via the shared statusPill() helper.
+      ══════════════════════════════════════════ -->
+      <div id="dt-page-units" style="display:none;">
+
+        <!-- Top bar -->
+        <div class="dt-topbar">
+          <div class="dt-page-title">Diagnostic Center</div>
+          <div class="dt-page-sub" id="dt-units-sub">All Units · — units</div>
+
+          <!-- Stat row — uses the same .dt-stat-row / .dt-stat-card system as Trucks -->
+          <div class="dt-stat-row" id="dt-units-stat-row">
+            <div class="dt-stat-card">
+              <div class="dt-stat-label">Trucks commissioned</div>
+              <div class="dt-stat-value" id="dt-units-stat-commissioned">—</div>
+            </div>
+            <div class="dt-stat-card">
+              <div class="dt-stat-label">Unlinked Units</div>
+              <div class="dt-stat-value" id="dt-units-stat-unlinked">—</div>
+            </div>
+            <div class="dt-stat-card">
+              <div class="dt-stat-label">Maintenance required</div>
+              <div class="dt-stat-value" id="dt-units-stat-maintreq">—</div>
+            </div>
+            <div class="dt-stat-card">
+              <div class="dt-stat-label">Scheduled for maintenance</div>
+              <div class="dt-stat-value" id="dt-units-stat-scheduled">—</div>
+            </div>
+            <div class="dt-stat-card">
+              <div class="dt-stat-label">Out of service</div>
+              <div class="dt-stat-value" id="dt-units-stat-oos">—</div>
+            </div>
+            <div class="dt-stat-card">
+              <div class="dt-stat-label">In maintenance</div>
+              <div class="dt-stat-value" id="dt-units-stat-inmaint">—</div>
+            </div>
+          </div>
+
+          <!-- Toolbar -->
+          <div class="dt-toolbar">
+            <button class="dt-filter-btn" id="dt-units-filter-btn">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 3h12M3 7h8M5 11h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              Filters
+            </button>
+
+            <div class="dt-search-wrap" id="dt-units-srch-wrap" style="position:relative;">
+              <div class="dt-search-field" id="dt-units-srch-field">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="#36322d9e" stroke-width="1.4"/><path d="M11 11l2.5 2.5" stroke="#36322d9e" stroke-width="1.4" stroke-linecap="round"/></svg>
+                <input placeholder="Unit Search" autocomplete="off"
+                       id="dt-units-search-input"
+                       oninput="dtUnitsSearchOnInput()"
+                       onfocus="dtUnitsSearchOnFocus()"
+                       onkeydown="dtUnitsSearchKey(event)" />
+                <button id="dt-units-srch-clear" onclick="dtUnitsSearchClear()" style="display:none;background:none;border:none;padding:2px;cursor:pointer;flex-shrink:0;line-height:0;">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="#36322d" stroke-width="1.4" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+              <div class="dt-srch-drop" id="dt-units-srch-drop" style="display:none;">
+                <div id="dt-units-srch-results"></div>
+              </div>
+            </div>
+
+            <button class="dt-add-btn" style="margin-left:auto;" onclick="dtUnitsAddPlaceholder()">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+              Add Unit
+            </button>
+            <div style="position:relative;flex-shrink:0;">
+              <button class="dt-filter-btn" id="dt-units-cols-btn" onclick="dtColsToggle(event, 'units')">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="5.5" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="10" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
+                Columns
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Units table — extra top spacing because there's no tab strip above it -->
+        <div class="dt-table-wrap" style="margin-top:20px;">
+          <table class="dt-table" id="dt-units-table">
+            <thead id="dt-units-thead"></thead>
+            <tbody id="dt-units-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="dt-pagination">
+          <div class="dt-page-left">
+            <select class="dt-rows-dd"><option>25</option><option>50</option><option selected>100</option></select>
+            Rows per page
+          </div>
+          <div class="dt-page-right">
+            <span class="dt-page-info" id="dt-units-page-info">— Records</span>
+            <button class="dt-page-btn" disabled><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M11 12L7 8l4-4M7 12L3 8l4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button class="dt-page-btn" disabled><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button class="dt-page-btn" disabled><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button class="dt-page-btn" disabled><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M5 12l4-4-4-4M9 12l4-4-4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+        </div>
+
+      </div><!-- /dt-page-units -->
+
+      <!-- ══════════════════════════════════════════
+           ADD UNIT DRAWER (desktop)
+           Slides over the units page from the right.
+           Matches the same spatial pattern as the truck drawer
+           and the mobile slide-in sheet — a "thing being created"
+           gets a drawer, not a modal.
+      ══════════════════════════════════════════ -->
+      <div id="dt-au-drawer" class="dt-au-drawer">
+        <div class="dt-au-drawer-main">
+          <!-- Header -->
+          <div class="dt-au-drawer-head">
+            <div>
+              <div class="dt-au-title">Add Unit</div>
+              <div class="dt-au-sub">New units are created as <strong>Unlinked</strong>. Attach to a truck after creating.</div>
+            </div>
+            <button class="dt-au-close" onclick="dtAuClose()" aria-label="Close">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+
+          <!-- Scrollable form body -->
+          <div class="dt-au-body">
+
+            <div class="dt-au-section-label">Account &amp; contract</div>
+
+            <div class="dt-au-field">
+              <label class="dt-au-label">Account</label>
+              <div class="dt-au-locked">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 5a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V5z" stroke="#36322d9e" stroke-width="1.3"/><path d="M5 5V3.5a2 2 0 014 0V5" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
+                <span>Cemex AZ</span>
+              </div>
+              <div class="dt-au-hint">Locked to your active account.</div>
+            </div>
+
+            <div class="dt-au-field">
+              <label class="dt-au-label">Contract <span class="dt-au-req">*</span></label>
+              <div class="dt-au-dd-wrap" id="dt-au-contract-wrap">
+                <button class="dt-au-dd-btn" id="dt-au-contract-btn" onclick="dtAuToggleDd('contract')">
+                  <span id="dt-au-contract-val" class="placeholder">Select a contract type</span>
+                  <svg class="dt-au-chev" id="dt-au-contract-chev" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <div class="dt-au-dd-menu" id="dt-au-contract-menu"></div>
+              </div>
+            </div>
+
+            <div class="dt-au-section-label">Unit identity</div>
+
+            <div class="dt-au-field">
+              <label class="dt-au-label">Unit ID <span class="dt-au-req">*</span></label>
+              <input class="dt-au-input" id="dt-au-unit-id" type="text" placeholder="Enter unit ID" autocomplete="off" oninput="dtAuValidate()" />
+              <div class="dt-au-error" id="dt-au-unit-id-err"></div>
+            </div>
+
+            <div class="dt-au-field">
+              <label class="dt-au-label">TGW 4 Number</label>
+              <input class="dt-au-input dt-au-input-mono" id="dt-au-tgw" type="text" placeholder="e.g. 210000095269" autocomplete="off" />
+              <div class="dt-au-hint">Optional. Can be added later.</div>
+            </div>
+
+            <div class="dt-au-section-label">System &amp; configuration</div>
+
+            <div class="dt-au-field">
+              <label class="dt-au-label">System Type <span class="dt-au-req">*</span></label>
+              <div class="dt-au-dd-wrap" id="dt-au-sysType-wrap">
+                <button class="dt-au-dd-btn" id="dt-au-sysType-btn" onclick="dtAuToggleDd('sysType')">
+                  <span id="dt-au-sysType-val" class="placeholder">Select type</span>
+                  <svg class="dt-au-chev" id="dt-au-sysType-chev" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <div class="dt-au-dd-menu" id="dt-au-sysType-menu">
+                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('sysType','V3')">V3</div>
+                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('sysType','V4')">V4</div>
+                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('sysType','V5')">V5</div>
+                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('sysType','Spark')">Spark</div>
+                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('sysType','Pulse')">Pulse</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="dt-au-field">
+              <label class="dt-au-label">Configuration <span class="dt-au-req">*</span></label>
+              <div class="dt-au-dd-wrap" id="dt-au-config-wrap">
+                <button class="dt-au-dd-btn" id="dt-au-config-btn" onclick="dtAuToggleDd('config')">
+                  <span id="dt-au-config-val" class="placeholder">Select config</span>
+                  <svg class="dt-au-chev" id="dt-au-config-chev" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <div class="dt-au-dd-menu" id="dt-au-config-menu">
+                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measured Only')">Measured Only</div>
+                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Temp+ Admix')">Temp+ Admix</div>
+                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Winter Water')">Winter Water</div>
+                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Color Blend Ratio')">Color Blend Ratio</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Footer pinned -->
+          <div class="dt-au-foot">
+            <span class="dt-au-foot-hint" id="dt-au-foot-hint">Fill required fields to add</span>
+            <div class="dt-au-foot-btns">
+              <button class="dt-au-cancel" onclick="dtAuClose()">Cancel</button>
+              <button class="dt-au-submit" id="dt-au-submit" onclick="dtAuSubmit()" disabled>Add Unit</button>
+            </div>
+          </div>
+        </div>
       </div>
 
     </div><!-- /dt-content -->
     <!-- Scrim covers entire desktop layout including sidebar -->
-    <div id="dt-drawer-scrim" class="dt-drawer-scrim" onclick="dtCloseDrawer()"></div>
+    <div id="dt-drawer-scrim" class="dt-drawer-scrim" onclick="dtScrimClose()"></div>
 
   </div><!-- /s-desktop -->
         <div id="sidenav-overlay" class="sidenav-overlay" onclick="closeNav()"></div>
@@ -5277,15 +6499,132 @@ function openDrawer(i, context) {
   document.getElementById('drawer').classList.add('open');
 }
 
+/* ════════════════════════════════════════════════════════════
+   PING TRUCK ANIMATION — shared helper for mobile + desktop
+   Three-phase: Pinging (request) → Receiving (shimmer + timestamps) →
+   Connected (brief green flash) → Settled.
+
+   We don't fabricate sensor values — the data is the same data, we just
+   communicate that it WAS refreshed. Faking different numbers would create
+   confusing prototypes. We DO refresh timestamps (Last Connect / Last
+   System Status) since those genuinely move with each ping. */
+
+function runPingAnimation(opts) {
+  const {
+    btnEl,                  // the Ping button to animate
+    chipEl,                 // optional: connection/ignition chip to pulse
+    refreshSelectors = [],  // CSS selectors of elements to apply shimmer to
+    timestampIds   = [],    // element IDs whose textContent should refresh to "now"
+    onComplete,             // optional callback after settle
+  } = opts;
+  if (!btnEl) return;
+
+  // Capture original button content so we can restore it
+  const origHTML = btnEl.innerHTML;
+
+  // ── Phase 1: Pinging (0–700ms) ────────────────────────────
+  btnEl.classList.add('pinging');
+  btnEl.disabled = true;
+  btnEl.innerHTML = `<span class="dt-ping-content">
+    <span class="dt-ping-spinner"></span>
+    <span>Pinging…</span>
+  </span>`;
+  if (chipEl) chipEl.classList.add('pinging');
+
+  // ── Phase 2: Receiving (700–1500ms) ───────────────────────
+  // Apply shimmer to data elements + refresh timestamps to "now".
+  setTimeout(() => {
+    refreshSelectors.forEach(sel => {
+      document.querySelectorAll(sel).forEach(el => {
+        el.classList.add('dt-refreshing');
+        // Self-clean after the sweep finishes (matches CSS animation duration)
+        setTimeout(() => el.classList.remove('dt-refreshing'), 950);
+      });
+    });
+    // Refresh timestamps. Format like the existing dt-drawer last-conn cells:
+    // "MMM D, YYYY, h:mm:ss A"
+    if (timestampIds.length) {
+      const now = new Date();
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const ts = `${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}, ` +
+        `${((now.getHours() % 12) || 12)}:${String(now.getMinutes()).padStart(2,'0')}:` +
+        `${String(now.getSeconds()).padStart(2,'0')} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
+      timestampIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = ts;
+      });
+    }
+  }, 700);
+
+  // ── Phase 3: Connected (1500–2100ms) ──────────────────────
+  setTimeout(() => {
+    btnEl.classList.remove('pinging');
+    btnEl.classList.add('pinged');
+    btnEl.innerHTML = `<span class="dt-ping-content">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <path d="M3.5 8.5L6.5 11.5L12.5 5.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Connected</span>
+    </span>`;
+    if (chipEl) chipEl.classList.remove('pinging');
+  }, 1500);
+
+  // ── Phase 4: Settle (2100ms+) ─────────────────────────────
+  setTimeout(() => {
+    btnEl.classList.remove('pinged');
+    btnEl.disabled = false;
+    btnEl.innerHTML = origHTML;
+    if (typeof onComplete === 'function') onComplete();
+  }, 2200);
+}
+
+/* Mobile entry point */
 function pingTruck() {
   const btn = document.getElementById('ping-pill');
   if (!btn) return;
-  btn.textContent = 'Pinging…';
-  btn.style.opacity = '0.7';
-  setTimeout(() => {
-    btn.textContent = 'Ping Truck';
-    btn.style.opacity = '1';
-  }, 1500);
+  // Mobile drawer's ignition chip is the live status badge in the chrome row
+  const chip = document.querySelector('#drawer .d-ign-pill');
+  runPingAnimation({
+    btnEl: btn,
+    chipEl: chip,
+    // Refresh sensor cards in the components state, plus the meta info table
+    refreshSelectors: [
+      '#state-components .co-card',
+      '#state-components .co-info-block',
+    ],
+    // Mobile doesn't expose the same timestamp IDs as desktop; the meta table
+    // shimmer sells the "data refreshed" feel without needing the literal swap.
+    timestampIds: [],
+  });
+}
+
+/* Desktop entry point — wires the truck-drawer ping button.
+   Refreshes the components-overview cards, the side panel chips, and the
+   timestamp meta rows. */
+function dtPingTruck() {
+  const btn = document.getElementById('dt-drawer-ping-btn');
+  if (!btn) return;
+  const chip = document.getElementById('dt-drawer-ign-badge');
+  runPingAnimation({
+    btnEl: btn,
+    chipEl: chip,
+    refreshSelectors: [
+      // Component cards in the overview tab
+      '#dt-drawer-mcs-cards .dt-co-card',
+      '#dt-drawer-fdm-cards .dt-co-card',
+      // Side panel chips (Connectivity, Truck Mode)
+      '.dt-drawer-side .dt-drawer-summary-row',
+      // Side panel meta rows
+      '.dt-drawer-side .dt-drawer-meta-row',
+    ],
+    // Last Connect / Last System Status / Last Reboot all move with each
+    // successful ping — refresh them to "now".
+    timestampIds: [
+      'dt-drawer-last-conn',
+      'dt-drawer-last-status',
+      'dt-drawer-last-reboot',
+    ],
+  });
 }
 
 function closeDrawer() {
@@ -8959,6 +10298,16 @@ function doAttach() {
   const idx = UNLINKED_TRUCKS.findIndex(t => t.number === attachSelectedTruck);
   if (idx > -1) UNLINKED_TRUCKS.splice(idx, 1);
 
+  /* Mark truck as re-linked — without this, a previously-unlinked truck
+     stays marked unlinked in trucks[]/CC_TRUCKS even after the unit attaches,
+     and reopening the truck drawer routes back to the empty state. Mirrors
+     the truck-side utabDoAttach mutations so both flows produce identical
+     post-link state. */
+  const t = trucks.find(t => t.num === attachSelectedTruck);
+  if (t) { t.unlinked = false; t.truckMode = 'Active'; t.unitId = u.id; }
+  const tCC = CC_TRUCKS.find(t => t.num === attachSelectedTruck);
+  if (tCC) { tCC.unlinked = false; }
+
   udCurrentUnit = u;
 
   /* Update status pill */
@@ -8990,6 +10339,12 @@ function doAttach() {
   `;
 
   renderUnits();
+  /* Truck tables and conditions reflect t.unlinked — refresh so the truck
+     moves out of the "Unlinked" tag treatment immediately. Mirrors the
+     truck-side utabDoAttach which already does this. */
+  if (typeof renderTrucks === 'function')    renderTrucks();
+  if (typeof renderOverview === 'function')  renderOverview();
+  if (typeof renderConditions === 'function') renderConditions();
 }
 
 function closeUnitDetail() {
@@ -9834,8 +11189,1506 @@ if (typeof window !== 'undefined') {
   requestAnimationFrame(() => {
     dtFilterUpdateBadge();
     dtFilterUpdateStrip();
+    // Live count Unlinked Units from the shared UNITS_DATA so trucks header stays in sync with units page
+    const unlinkedEl = document.getElementById('dt-stat-unlinked');
+    if (unlinkedEl && typeof UNITS_DATA !== 'undefined') {
+      unlinkedEl.textContent = UNITS_DATA.filter(u => u.status === 'Unlinked Unit').length;
+    }
   });
 }
+
+/* ════════════════════════════════════════════════════════════
+   DESKTOP UNITS PAGE
+   Renders per Figma 600:37658, but with the mobile pill treatment
+   for status (statusPill helper). Sidenav switches between Trucks
+   and Units pages by toggling display on the page wrappers.
+═══════════════════════════════════════════════════════════ */
+
+let dtUnitsActivePage = 'trucks';
+let dtUnitsSearchQuery = '';
+
+function dtNavGo(page) {
+  dtUnitsActivePage = page;
+  const trucks = document.getElementById('dt-page-trucks');
+  const units  = document.getElementById('dt-page-units');
+  if (trucks) trucks.style.display = page === 'trucks' ? '' : 'none';
+  if (units)  units.style.display  = page === 'units'  ? '' : 'none';
+
+  // Sidenav active state — same #c2d7fa highlight in both directions
+  const navT = document.getElementById('dt-nav-trucks');
+  const navU = document.getElementById('dt-nav-units');
+  if (navT && navU) {
+    if (page === 'units') {
+      navU.style.background = '#c2d7fa';
+      navU.dataset.active = '1';
+      navU.querySelector('span').style.color = '#000';
+      navU.querySelector('span').style.fontWeight = '500';
+      navT.style.background = '';
+      delete navT.dataset.active;
+      navT.querySelector('span').style.color = 'rgba(54,50,45,0.5)';
+      navT.querySelector('span').style.fontWeight = '';
+    } else {
+      navT.style.background = '#c2d7fa';
+      navT.dataset.active = '1';
+      navT.querySelector('span').style.color = '#000';
+      navT.querySelector('span').style.fontWeight = '500';
+      navU.style.background = '';
+      delete navU.dataset.active;
+      navU.querySelector('span').style.color = 'rgba(54,50,45,0.5)';
+      navU.querySelector('span').style.fontWeight = '';
+    }
+  }
+
+  if (page === 'units') dtUnitsRender();
+}
+
+function dtUnitsBuildHeaders() {
+  const cols = visibleCols('units');
+  const tab = 'units';
+  const ths = cols.map((col, i) => {
+    const locked = col.locked ? 'data-locked="1"' : '';
+    return `
+      <th class="dt-th" style="width:${col.width}px;min-width:${col.width}px;max-width:${col.width}px;"
+          data-col="${col.id}" data-tab="${tab}" data-idx="${i}" ${locked}
+          draggable="${col.locked ? 'false' : 'true'}"
+          ondragstart="dtColDragStart(event)"
+          ondragover="dtColDragOver(event)"
+          ondrop="dtColDrop(event)"
+          ondragend="dtColDragEnd(event)">
+        <div class="dt-th-inner">
+          <span class="dt-th-label">${col.label}</span>
+          ${col.locked ? '' : `
+          <button class="dt-th-menu-btn" onclick="dtColMenuOpen(event,'${col.id}','${tab}')" title="Column options">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="2" r="1" fill="currentColor"/><circle cx="6" cy="6" r="1" fill="currentColor"/><circle cx="6" cy="10" r="1" fill="currentColor"/></svg>
+          </button>
+          <div class="dt-th-menu" id="dt-th-menu-${col.id}">
+            <div class="dt-th-menu-item" onclick="dtColHide('${col.id}','${tab}')">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M6 2C3.5 2 1.5 4 1 6c.3 1 1 2 2 2.8M10 9.2C10.7 8.3 11.3 7.2 11 6c-.5-2-2.5-4-5-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              Hide column
+            </div>
+          </div>`}
+        </div>
+        ${col.locked ? '' : `<div class="dt-th-resize" data-col="${col.id}" data-tab="${tab}"
+          onmousedown="dtResizeStart(event,'${col.id}','${tab}')"></div>`}
+      </th>`;
+  }).join('');
+  const thead = document.getElementById('dt-units-thead');
+  if (thead) thead.innerHTML = `<tr>${ths}</tr>`;
+}
+
+function dtUnitsRender() {
+  // Stat counts
+  const linkedCount   = UNITS_DATA.filter(u => u.status === 'Linked Unit').length;
+  const unlinkedCount = UNITS_DATA.filter(u => u.status === 'Unlinked Unit').length;
+  const maintCount    = UNITS_DATA.filter(u => u.status === 'Maintenance').length;
+
+  // Static-ish prototype values where the data model doesn't have a real source
+  const setStat = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  setStat('dt-units-stat-commissioned', '250');
+  setStat('dt-units-stat-unlinked',     unlinkedCount);
+  setStat('dt-units-stat-maintreq',     maintCount);
+  setStat('dt-units-stat-scheduled',    '20');
+  setStat('dt-units-stat-oos',          '2');
+  setStat('dt-units-stat-inmaint',      '5');
+
+  // Make sure headers exist & match visible cols
+  dtUnitsBuildHeaders();
+
+  // Table rows
+  const q = (dtUnitsSearchQuery || '').toLowerCase();
+  const filtered = UNITS_DATA.filter(u => {
+    if (!q) return true;
+    return u.id.toLowerCase().includes(q) ||
+           u.status.toLowerCase().includes(q) ||
+           u.truck.toLowerCase().includes(q) ||
+           (u.tgw || '').toLowerCase().includes(q) ||
+           (u.contract || '').toLowerCase().includes(q) ||
+           (u.sysType || '').toLowerCase().includes(q) ||
+           (u.config || '').toLowerCase().includes(q);
+  });
+
+  document.getElementById('dt-units-page-info').textContent = `1 - ${filtered.length} of ${filtered.length} Records`;
+  const sub = document.getElementById('dt-units-sub');
+  if (sub) sub.textContent = `All Units · ${filtered.length} unit${filtered.length === 1 ? '' : 's'}`;
+
+  const tbody = document.getElementById('dt-units-tbody');
+  if (!tbody) return;
+
+  const cols = visibleCols('units');
+  const ncols = cols.length;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="${ncols}" style="padding:40px;text-align:center;color:var(--soft);font-size:14px;">No units match.</td></tr>`;
+    return;
+  }
+
+  /* Cell builder — maps col.id to unit data */
+  function unitsCell(col, u) {
+    const c = col.id;
+    if (c === 'unitid')   return `<td class="dt-td dt-td-strong">${u.id}</td>`;
+    if (c === 'status') {
+      let pillCls = 'unlinked';
+      let pillLabel = u.status;
+      if (u.status === 'Linked Unit')      { pillCls = 'linked';   pillLabel = 'Linked Unit'; }
+      else if (u.status === 'Maintenance') { pillCls = 'maint';    pillLabel = 'Maintenance Mode'; }
+      else if (u.status === 'Pending')     { pillCls = 'pending';  pillLabel = 'Pending Configuration'; }
+      return `<td class="dt-td"><span class="dt-units-status-pill ${pillCls}"><span class="dot"></span>${pillLabel}</span></td>`;
+    }
+    if (c === 'truck')     return `<td class="dt-td">${u.truck === '--' ? '<span style="color:var(--soft);">—</span>' : u.truck}</td>`;
+    if (c === 'tgw')       return `<td class="dt-td">${u.tgw}</td>`;
+    if (c === 'contract')  return `<td class="dt-td">${u.contract}</td>`;
+    if (c === 'sysType')   return `<td class="dt-td">${u.sysType}</td>`;
+    if (c === 'config')    return `<td class="dt-td">${u.config}</td>`;
+    if (c === 'firstComm') {
+      return u.firstCommissioned
+        ? `<td class="dt-td"><span>1:16 PM</span> <span class="dt-units-date-secondary">${u.firstCommissioned}</span></td>`
+        : `<td class="dt-td"><span style="color:var(--soft);">—</span></td>`;
+    }
+    return `<td class="dt-td">—</td>`;
+  }
+
+  tbody.innerHTML = filtered.map((u, i) => {
+    const canOpen = u.status === 'Unlinked Unit' || u.status === 'Pending' || u.status === 'Linked Unit';
+    const cursor = canOpen ? 'pointer' : 'default';
+    const onclick = canOpen ? `onclick="dtUdOpen('${u.id.replace(/'/g, "\\'")}')"` : '';
+    return `
+    <tr class="dt-tr${i % 2 === 1 ? ' alt' : ''}" data-unit="${u.id}" style="cursor:${cursor};" ${onclick}>
+      ${cols.map(col => unitsCell(col, u)).join('')}
+    </tr>`;
+  }).join('');
+}
+
+/* ── Units search — mirrors the mobile units typeahead flow ── */
+const DT_UNITS_SRCH_ICON = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="3" width="11" height="9" rx="1.5" stroke="#36322d9e" stroke-width="1.2"/><path d="M5.5 6h5M5.5 9h3" stroke="#36322d9e" stroke-width="1.2" stroke-linecap="round"/></svg>`;
+let dtUnitsSrchActiveIdx = -1;
+let dtUnitsSrchShown = [];
+
+function dtUnitsSearchOnInput() {
+  const input    = document.getElementById('dt-units-search-input');
+  const q        = input.value.trim();
+  dtUnitsSearchQuery = q;
+
+  const field    = document.getElementById('dt-units-srch-field');
+  const clearBtn = document.getElementById('dt-units-srch-clear');
+  const drop     = document.getElementById('dt-units-srch-drop');
+  const results  = document.getElementById('dt-units-srch-results');
+
+  if (field)    field.classList.toggle('active', q.length > 0);
+  if (clearBtn) clearBtn.style.display = q ? 'block' : 'none';
+
+  // Always re-render the table to reflect inline filter
+  dtUnitsRender();
+
+  if (!q) {
+    if (drop) drop.style.display = 'none';
+    return;
+  }
+
+  const ql = q.toLowerCase();
+  const matches = UNITS_DATA.filter(u =>
+    u.id.toLowerCase().includes(ql) ||
+    u.status.toLowerCase().includes(ql) ||
+    (u.truck && String(u.truck).toLowerCase().includes(ql)) ||
+    (u.sysType || '').toLowerCase().includes(ql)
+  );
+
+  const MAX = 5;
+  const shown = matches.slice(0, MAX);
+  const extra = matches.length - MAX;
+  dtUnitsSrchShown = shown;
+  dtUnitsSrchActiveIdx = -1;
+
+  if (matches.length === 0) {
+    results.innerHTML = `<div class="dt-srch-no-hits">No units found</div>`;
+  } else {
+    let html = `<div class="dt-srch-section-hdr">${DT_UNITS_SRCH_ICON}<span class="dt-srch-section-label">Units</span></div>`;
+    shown.forEach((u, i) => {
+      const primary   = dtSrchHighlight(u.id, q);
+      const secondary = `${u.status} · ${u.sysType}${u.truck && u.truck !== '--' ? ' · Truck ' + u.truck : ''}`;
+      html += `
+        <div class="dt-srch-row" data-idx="${i}" onclick="dtUnitsSrchSelect('${u.id}')">
+          <span class="dt-srch-match-text">${primary}</span>
+          <span class="dt-srch-meta">${secondary}</span>
+        </div>`;
+    });
+    if (extra > 0) {
+      html += `<div class="dt-srch-show-more" onclick="dtUnitsSrchShowAll()">+${extra} more unit${extra > 1 ? 's' : ''}</div>`;
+    }
+    results.innerHTML = html;
+  }
+
+  drop.style.display = 'block';
+}
+
+function dtUnitsSearchOnFocus() {
+  if (dtUnitsSearchQuery) dtUnitsSearchOnInput();
+}
+
+function dtUnitsSearchClear() {
+  const input = document.getElementById('dt-units-search-input');
+  if (input) input.value = '';
+  dtUnitsSearchQuery = '';
+  document.getElementById('dt-units-srch-field').classList.remove('active');
+  document.getElementById('dt-units-srch-clear').style.display = 'none';
+  document.getElementById('dt-units-srch-drop').style.display = 'none';
+  dtUnitsRender();
+  if (input) input.focus();
+}
+
+function dtUnitsSrchSelect(unitId) {
+  // Fill the input with the picked unit and dismiss the dropdown.
+  // Then scroll the matching row into view and flash-highlight it,
+  // mirroring the desktop trucks search behavior.
+  const input = document.getElementById('dt-units-search-input');
+  if (input) input.value = unitId;
+  dtUnitsSearchQuery = unitId;
+  document.getElementById('dt-units-srch-drop').style.display = 'none';
+  dtUnitsRender();
+  requestAnimationFrame(() => {
+    const tr = document.querySelector(`#dt-units-tbody tr[data-unit="${unitId}"]`);
+    if (tr) {
+      tr.scrollIntoView({ block:'center', behavior:'smooth' });
+      tr.classList.remove('dt-srch-flash');
+      void tr.offsetWidth;
+      tr.classList.add('dt-srch-flash');
+    }
+  });
+}
+
+function dtUnitsSrchShowAll() {
+  // Re-render dropdown without the MAX cap
+  const q = dtUnitsSearchQuery;
+  if (!q) return;
+  const ql = q.toLowerCase();
+  const matches = UNITS_DATA.filter(u =>
+    u.id.toLowerCase().includes(ql) ||
+    u.status.toLowerCase().includes(ql) ||
+    (u.truck && String(u.truck).toLowerCase().includes(ql)) ||
+    (u.sysType || '').toLowerCase().includes(ql)
+  );
+  let html = `<div class="dt-srch-section-hdr">${DT_UNITS_SRCH_ICON}<span class="dt-srch-section-label">Units</span></div>`;
+  matches.forEach((u, i) => {
+    const primary   = dtSrchHighlight(u.id, q);
+    const secondary = `${u.status} · ${u.sysType}${u.truck && u.truck !== '--' ? ' · Truck ' + u.truck : ''}`;
+    html += `
+      <div class="dt-srch-row" data-idx="${i}" onclick="dtUnitsSrchSelect('${u.id}')">
+        <span class="dt-srch-match-text">${primary}</span>
+        <span class="dt-srch-meta">${secondary}</span>
+      </div>`;
+  });
+  document.getElementById('dt-units-srch-results').innerHTML = html;
+  dtUnitsSrchShown = matches;
+  dtUnitsSrchActiveIdx = -1;
+}
+
+function dtUnitsSearchKey(e) {
+  const drop = document.getElementById('dt-units-srch-drop');
+  const open = drop && drop.style.display === 'block';
+  if (e.key === 'Escape') {
+    if (open) drop.style.display = 'none';
+    else dtUnitsSearchClear();
+    return;
+  }
+  if (!open || dtUnitsSrchShown.length === 0) return;
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    dtUnitsSrchActiveIdx = (dtUnitsSrchActiveIdx + 1) % dtUnitsSrchShown.length;
+    dtUnitsSrchUpdateActive();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    dtUnitsSrchActiveIdx = (dtUnitsSrchActiveIdx - 1 + dtUnitsSrchShown.length) % dtUnitsSrchShown.length;
+    dtUnitsSrchUpdateActive();
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    const i = dtUnitsSrchActiveIdx >= 0 ? dtUnitsSrchActiveIdx : 0;
+    if (dtUnitsSrchShown[i]) dtUnitsSrchSelect(dtUnitsSrchShown[i].id);
+  }
+}
+
+function dtUnitsSrchUpdateActive() {
+  document.querySelectorAll('#dt-units-srch-results .dt-srch-row').forEach(r => r.classList.remove('active'));
+  if (dtUnitsSrchActiveIdx < 0) return;
+  const row = document.querySelector(`#dt-units-srch-results .dt-srch-row[data-idx="${dtUnitsSrchActiveIdx}"]`);
+  if (row) {
+    row.classList.add('active');
+    row.scrollIntoView({ block:'nearest' });
+  }
+}
+
+// Click-outside dismisses the units search dropdown
+document.addEventListener('click', (e) => {
+  const drop = document.getElementById('dt-units-srch-drop');
+  const wrap = document.getElementById('dt-units-srch-wrap');
+  if (drop && wrap && drop.style.display === 'block' && !wrap.contains(e.target)) {
+    drop.style.display = 'none';
+  }
+});
+
+function dtUnitsAddPlaceholder() {
+  dtAuOpen();
+}
+
+/* ── Add Unit modal — desktop ──
+   Same data model + validation rules as the mobile flow, but laid out as
+   a centered 560px modal with two-column form rows, inline errors, and
+   a top-right toast on success. */
+const DT_AU_CONTRACTS_BY_ACCOUNT = (typeof AU_CONTRACTS !== 'undefined') ? AU_CONTRACTS : {
+  'Cemex AZ': ['SRM Tennessee', 'SRM Texas', 'SRM Arizona']
+};
+const dtAuValues = { account: 'Cemex AZ', contract: '', sysType: '', config: '' };
+
+function dtAuOpen() {
+  // Reset values
+  dtAuValues.contract = '';
+  dtAuValues.sysType  = '';
+  dtAuValues.config   = '';
+
+  // Populate Contract dropdown for the active account
+  const contracts = DT_AU_CONTRACTS_BY_ACCOUNT[dtAuValues.account] || [];
+  const contractMenu = document.getElementById('dt-au-contract-menu');
+  contractMenu.innerHTML = contracts.map(c => `<div class="dt-au-dd-item" onclick="dtAuSelectDd('contract','${c.replace(/'/g, "\\'")}')">${c}</div>`).join('');
+
+  // Reset all dropdown displays
+  ['contract','sysType','config'].forEach(key => {
+    const valEl  = document.getElementById('dt-au-' + key + '-val');
+    const menuEl = document.getElementById('dt-au-' + key + '-menu');
+    const chevEl = document.getElementById('dt-au-' + key + '-chev');
+    const btnEl  = document.getElementById('dt-au-' + key + '-btn');
+    if (valEl) {
+      valEl.textContent = key === 'contract' ? 'Select a contract type' : key === 'sysType' ? 'Select type' : 'Select config';
+      valEl.className = 'placeholder';
+    }
+    if (menuEl) {
+      menuEl.classList.remove('open');
+      menuEl.querySelectorAll('.dt-au-dd-item').forEach(el => el.classList.remove('selected'));
+    }
+    if (chevEl) chevEl.classList.remove('open');
+    if (btnEl)  btnEl.classList.remove('open');
+  });
+
+  // Reset text inputs and errors
+  ['dt-au-unit-id','dt-au-tgw'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.value = '';
+      el.classList.remove('error');
+      el.placeholder = id === 'dt-au-unit-id' ? 'Enter unit ID' : 'e.g. 210000095269';
+    }
+  });
+  document.getElementById('dt-au-unit-id-err').classList.remove('show');
+
+  dtAuValidate();
+
+  // Slide drawer in + show the same scrim that the truck drawer uses
+  document.getElementById('dt-drawer-scrim').classList.add('open');
+  const drawer = document.getElementById('dt-au-drawer');
+  requestAnimationFrame(() => drawer.classList.add('open'));
+
+  // Focus the Unit ID field after the open animation
+  setTimeout(() => {
+    const idInput = document.getElementById('dt-au-unit-id');
+    if (idInput) idInput.focus();
+  }, 200);
+}
+
+function dtAuClose() {
+  const drawer = document.getElementById('dt-au-drawer');
+  drawer.classList.remove('open');
+  document.getElementById('dt-drawer-scrim').classList.remove('open');
+  // Close any open dropdown
+  ['contract','sysType','config'].forEach(key => {
+    document.getElementById('dt-au-' + key + '-menu')?.classList.remove('open');
+    document.getElementById('dt-au-' + key + '-chev')?.classList.remove('open');
+    document.getElementById('dt-au-' + key + '-btn')?.classList.remove('open');
+  });
+}
+
+function dtAuToggleDd(key) {
+  const btn  = document.getElementById('dt-au-' + key + '-btn');
+  const menu = document.getElementById('dt-au-' + key + '-menu');
+  const chev = document.getElementById('dt-au-' + key + '-chev');
+  if (!menu || btn.disabled) return;
+  const open = menu.classList.contains('open');
+  // Close all other dropdowns first
+  ['contract','sysType','config'].forEach(k => {
+    document.getElementById('dt-au-' + k + '-menu')?.classList.remove('open');
+    document.getElementById('dt-au-' + k + '-chev')?.classList.remove('open');
+    document.getElementById('dt-au-' + k + '-btn')?.classList.remove('open');
+  });
+  if (!open) {
+    menu.classList.add('open');
+    chev.classList.add('open');
+    btn.classList.add('open');
+  }
+}
+
+function dtAuSelectDd(key, value) {
+  dtAuValues[key] = value;
+  const valEl  = document.getElementById('dt-au-' + key + '-val');
+  const menuEl = document.getElementById('dt-au-' + key + '-menu');
+  const chevEl = document.getElementById('dt-au-' + key + '-chev');
+  const btnEl  = document.getElementById('dt-au-' + key + '-btn');
+  if (valEl) {
+    valEl.textContent = value;
+    valEl.className = '';  // remove placeholder class so it gets strong color
+  }
+  if (menuEl) {
+    menuEl.querySelectorAll('.dt-au-dd-item').forEach(el => {
+      el.classList.toggle('selected', el.textContent.trim() === value);
+    });
+    menuEl.classList.remove('open');
+  }
+  if (chevEl) chevEl.classList.remove('open');
+  if (btnEl)  btnEl.classList.remove('open');
+  dtAuValidate();
+}
+
+function dtAuValidate() {
+  const unitId = (document.getElementById('dt-au-unit-id').value || '').trim();
+  const valid  = unitId && dtAuValues.contract && dtAuValues.sysType && dtAuValues.config;
+  const submit = document.getElementById('dt-au-submit');
+  const hint   = document.getElementById('dt-au-foot-hint');
+  submit.disabled = !valid;
+  if (valid) {
+    hint.textContent = 'Ready to add';
+    hint.classList.add('valid');
+  } else {
+    // Tell the user exactly what's missing
+    const missing = [];
+    if (!unitId)               missing.push('Unit ID');
+    if (!dtAuValues.contract)  missing.push('Contract');
+    if (!dtAuValues.sysType)   missing.push('System Type');
+    if (!dtAuValues.config)    missing.push('Configuration');
+    hint.textContent = missing.length === 4
+      ? 'Fill required fields to add'
+      : `Still need: ${missing.join(', ')}`;
+    hint.classList.remove('valid');
+  }
+  // Clear duplicate error if user has changed the value
+  const idInput = document.getElementById('dt-au-unit-id');
+  const idErr   = document.getElementById('dt-au-unit-id-err');
+  if (idInput.classList.contains('error') && idInput.value !== '') {
+    idInput.classList.remove('error');
+    idErr.classList.remove('show');
+  }
+}
+
+function dtAuSubmit() {
+  const unitId  = (document.getElementById('dt-au-unit-id').value || '').trim();
+  const tgw     = (document.getElementById('dt-au-tgw').value || '').trim();
+  const account = dtAuValues.account;
+  const { contract, sysType, config } = dtAuValues;
+  if (!unitId || !contract || !sysType || !config) return;
+
+  // Duplicate check
+  if (UNITS_DATA.find(u => u.id === unitId)) {
+    const idInput = document.getElementById('dt-au-unit-id');
+    const idErr   = document.getElementById('dt-au-unit-id-err');
+    idInput.classList.add('error');
+    idErr.textContent = `Unit ${unitId} already exists. Pick a different ID.`;
+    idErr.classList.add('show');
+    idInput.focus();
+    idInput.select();
+    return;
+  }
+
+  UNITS_DATA.push({
+    id: unitId,
+    status: 'Unlinked Unit',
+    truck: '--',
+    tgw: tgw || '—',
+    contract: contract,
+    sysType: sysType,
+    config: config,
+    firstCommissioned: new Date().toLocaleDateString('en-US', {month:'2-digit',day:'2-digit',year:'numeric'}),
+    assignedToTruck: null,
+    decommissioned: null,
+  });
+
+  // Close modal first, then re-render and toast
+  dtAuClose();
+  dtUnitsRender();
+  // Trucks header has an Unlinked Units stat — keep it in sync
+  const unlinkedEl = document.getElementById('dt-stat-unlinked');
+  if (unlinkedEl) unlinkedEl.textContent = UNITS_DATA.filter(u => u.status === 'Unlinked Unit').length;
+
+  // Top-right Trinity Success toast
+  dtShowToast({
+    title: 'Unit added',
+    body: `Unit ${unitId} was created in Unlinked status. Open it to attach to a truck.`,
+  });
+}
+
+/* Trinity-styled toast helper — Success variant by default.
+   Pass `variant: 'info' | 'warning' | 'error'` to use the other treatments. */
+function dtShowToast({ title, body, variant }) {
+  const toast = document.createElement('div');
+  toast.className = 'dt-au-toast' + (variant && variant !== 'success' ? ' toast-' + variant : '');
+  toast.innerHTML = `
+    <div class="dt-au-toast-content">
+      <div class="dt-au-toast-title">${title}</div>
+      <div class="dt-au-toast-body">${body}</div>
+    </div>
+    <svg class="dt-au-toast-chev" viewBox="0 0 16 16" fill="none">
+      <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+  toast.addEventListener('click', () => {
+    toast.classList.add('out');
+    setTimeout(() => toast.remove(), 250);
+  });
+  document.body.appendChild(toast);
+  setTimeout(() => { toast.classList.add('out'); setTimeout(() => toast.remove(), 250); }, 3200);
+}
+
+// Click outside any open dropdown inside the drawer closes it
+document.addEventListener('click', (e) => {
+  const drawer = document.getElementById('dt-au-drawer');
+  if (!drawer || !drawer.classList.contains('open')) return;
+  ['contract','sysType','config'].forEach(key => {
+    const wrap = document.getElementById('dt-au-' + key + '-wrap');
+    const menu = document.getElementById('dt-au-' + key + '-menu');
+    if (wrap && menu && menu.classList.contains('open') && !wrap.contains(e.target)) {
+      menu.classList.remove('open');
+      document.getElementById('dt-au-' + key + '-chev')?.classList.remove('open');
+      document.getElementById('dt-au-' + key + '-btn')?.classList.remove('open');
+    }
+  });
+});
+
+/* Scrim helper — close whichever drawer is open. The scrim is shared
+   between the truck drawer and the Add Unit drawer. */
+function dtScrimClose() {
+  const auDrawer    = document.getElementById('dt-au-drawer');
+  const udDrawer    = document.getElementById('dt-ud-drawer');
+  const truckDrawer = document.getElementById('dt-drawer');
+  if (auDrawer && auDrawer.classList.contains('open')) {
+    dtAuClose();
+  } else if (udDrawer && udDrawer.classList.contains('open')) {
+    dtUdClose();
+  } else if (truckDrawer && truckDrawer.classList.contains('open')) {
+    dtCloseDrawer();
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   DESKTOP UNIT DRAWER — Unlinked units (Linked comes later)
+   Two tabs: Unit Lifespan + Attach to Truck.
+   Re-uses the truck drawer's chrome + scrim. The Lifespan tab is
+   a desktop-scaled version of the mobile component-history accordion.
+   The Attach tab is the mobile flow expanded into a wider table with
+   inline confirm.
+═══════════════════════════════════════════════════════════ */
+
+let dtUdCurrentUnitId = null;
+let dtUdActiveTab     = 'lifespan'; // 'lifespan' | 'attach' | 'config' | 'timeline' | 'logs' | 'manual' | 'sensor'
+let dtUdAttachSelected = null;
+let dtUdAttachQuery    = '';
+/* Snapshot of pre-Pending state, used to revert the link if the user
+   closes the drawer or cancels Configuration during the Pending stage. */
+let dtUdPendingPrevState = null;
+
+function dtUdOpen(unitId) {
+  const u = UNITS_DATA.find(x => x.id === unitId);
+  if (!u) return;
+  // Only Unlinked / Pending / Linked open the unit drawer for now.
+  // (Maintenance not wired in this iteration.)
+  if (u.status !== 'Unlinked Unit' && u.status !== 'Pending' && u.status !== 'Linked Unit') return;
+
+  dtUdCurrentUnitId = unitId;
+  // Default tab depends on status
+  if (u.status === 'Pending')      dtUdActiveTab = 'config';
+  else                              dtUdActiveTab = 'lifespan';
+  dtUdAttachSelected = null;
+  dtUdAttachQuery = '';
+
+  document.getElementById('dt-ud-id').textContent = u.id;
+  dtUdApplyStatusUI(u);
+
+  dtUdBuildTabs();
+  dtUdRenderActiveTab();
+  dtUdRenderSidePanel();
+  dtUdUpdateNavArrows();
+
+  // Slide drawer in over the units page; reuse the existing scrim
+  document.getElementById('dt-drawer-scrim').classList.add('open');
+  const drawer = document.getElementById('dt-ud-drawer');
+  requestAnimationFrame(() => drawer.classList.add('open'));
+}
+
+/* Render the header status pill + linked-truck label based on current status */
+function dtUdApplyStatusUI(u) {
+  let badgeCls = 'unlinked', label = u.status;
+  if (u.status === 'Linked Unit')      { badgeCls = 'linked';   label = 'Linked'; }
+  else if (u.status === 'Pending')     { badgeCls = 'pending';  label = 'Pending Configuration'; }
+  else if (u.status === 'Maintenance') { badgeCls = 'maint';    label = 'Maintenance Mode'; }
+  else                                 { badgeCls = 'unlinked'; label = 'Unlinked'; }
+
+  const pill = document.getElementById('dt-ud-status-pill');
+  if (pill) {
+    pill.innerHTML = `
+      <span class="dt-drawer-ign-badge ${badgeCls}">
+        <span class="dt-drawer-ign-dot"></span>${label}
+      </span>`;
+  }
+  // Linked truck label — sits next to Unit ID so the FST always knows which truck
+  const truckLabel = document.getElementById('dt-ud-truck-label');
+  if (truckLabel) {
+    if (u.truck && u.truck !== '--') {
+      truckLabel.style.display = '';
+      truckLabel.innerHTML = `Truck: <strong>${u.truck}</strong>`;
+    } else {
+      truckLabel.style.display = 'none';
+      truckLabel.innerHTML = '';
+    }
+  }
+}
+
+function dtUdClose() {
+  // If the user is closing the drawer while their unit is Pending,
+  // they didn't finish — revert the entire link attempt.
+  if (dtUdPendingPrevState) {
+    dtUdRevertPending();
+  }
+  const drawer = document.getElementById('dt-ud-drawer');
+  if (drawer) drawer.classList.remove('open');
+  document.getElementById('dt-drawer-scrim')?.classList.remove('open');
+  // Clear any pending attach confirm overlay
+  document.querySelector('#dt-ud-drawer .dt-attach-confirm')?.remove();
+  // Stop sensor animation if it was running
+  if (typeof senStop === 'function') senStop();
+  dtUdCurrentUnitId = null;
+}
+
+function dtUdNav(dir) {
+  // Walk only across Unlinked units in the currently rendered table order
+  const rows = Array.from(document.querySelectorAll('#dt-units-tbody tr[data-unit]'));
+  const ids  = rows.map(r => r.dataset.unit).filter(id => {
+    const u = UNITS_DATA.find(x => x.id === id);
+    return u && u.status === 'Unlinked Unit';
+  });
+  const idx = ids.indexOf(dtUdCurrentUnitId);
+  if (idx === -1) return;
+  const next = Math.min(Math.max(idx + dir, 0), ids.length - 1);
+  if (next === idx) return;
+  dtUdOpen(ids[next]);
+}
+
+function dtUdUpdateNavArrows() {
+  const rows = Array.from(document.querySelectorAll('#dt-units-tbody tr[data-unit]'));
+  const ids  = rows.map(r => r.dataset.unit).filter(id => {
+    const u = UNITS_DATA.find(x => x.id === id);
+    return u && u.status === 'Unlinked Unit';
+  });
+  const idx = ids.indexOf(dtUdCurrentUnitId);
+  document.getElementById('dt-ud-prev').disabled = idx <= 0;
+  document.getElementById('dt-ud-next').disabled = idx === -1 || idx >= ids.length - 1;
+}
+
+function dtUdBuildTabs() {
+  const u = UNITS_DATA.find(x => x.id === dtUdCurrentUnitId);
+  if (!u) return;
+  let tabs;
+  if (u.status === 'Pending') {
+    tabs = [
+      { id:'lifespan', label:'Unit Lifespan' },
+      { id:'config',   label:'Configuration' },
+    ];
+  } else if (u.status === 'Linked Unit') {
+    tabs = [
+      { id:'lifespan', label:'Unit Lifespan' },
+      { id:'timeline', label:'Component timeline' },
+      { id:'logs',     label:'Trucks Logs' },
+      { id:'manual',   label:'Manual Control' },
+      { id:'sensor',   label:'Sensor' },
+      { id:'config',   label:'Configuration' },
+    ];
+  } else {
+    // Unlinked
+    tabs = [
+      { id:'lifespan', label:'Unit Lifespan' },
+      { id:'attach',   label:'Attach to Truck' },
+    ];
+  }
+  document.getElementById('dt-ud-tabs').innerHTML = tabs.map(t => `
+    <button class="dt-drawer-tab${t.id === dtUdActiveTab ? ' active' : ''}"
+            onclick="dtUdSelectTab('${t.id}')">${t.label}</button>
+  `).join('');
+}
+
+function dtUdSelectTab(tab) {
+  // Stop sensor animation if leaving sensor tab (mirrors truck drawer behavior)
+  if (typeof senStop === 'function') senStop();
+  dtUdActiveTab = tab;
+  dtUdBuildTabs();
+  dtUdRenderActiveTab();
+}
+
+function dtUdRenderActiveTab() {
+  if (dtUdActiveTab === 'attach')        dtUdRenderAttach();
+  else if (dtUdActiveTab === 'config')   dtUdRenderConfig();
+  else if (dtUdActiveTab === 'timeline') dtUdRenderTimeline();
+  else if (dtUdActiveTab === 'logs')     dtUdRenderLogs();
+  else if (dtUdActiveTab === 'manual')   dtUdRenderManual();
+  else if (dtUdActiveTab === 'sensor')   dtUdRenderSensor();
+  else                                    dtUdRenderLifespan();
+}
+
+/* ── Pending/Linked-state tab adapters ──
+   These render the same content the truck drawer's tabs render, but
+   mounted into the unit drawer's scroll. Tabs share the same Configuration
+   helpers (dtCfgStartEdit / dtCfgSave / dtCfgCancel) so saves work identically. */
+function dtUdRenderConfig() {
+  const u = UNITS_DATA.find(x => x.id === dtUdCurrentUnitId);
+  if (!u) return;
+  const scroll = document.getElementById('dt-ud-scroll');
+  scroll.innerHTML = dtBuildConfig();
+  // The topbar with the "Update" button comes from dtBuildConfig's output and only
+  // makes sense in the truck drawer (read-only → click Update → edit). In the unit
+  // drawer we either auto-enter edit mode (Pending) or show read-only without an
+  // Update affordance (Linked, future Unlink flow handles edits separately).
+  // Always hide the topbar in this context.
+  const topbar = scroll.querySelector('#dt-cfg-topbar');
+  if (topbar) topbar.style.display = 'none';
+
+  // For Pending state, immediately enter edit mode so the FST can fill the unit's config.
+  // dtCfgStartEdit opens the unit drawer's save bar (#dt-ud-cfg-savebar) because
+  // dtCfgActiveContext detects the open unit drawer. We then re-label and rebind
+  // the buttons so saving completes the link transition.
+  if (u.status === 'Pending') {
+    requestAnimationFrame(() => {
+      dtCfgStartEdit();
+      const saveBtn = document.getElementById('dt-ud-cfg-save-btn');
+      if (saveBtn) {
+        saveBtn.textContent = 'Save & Link Unit';
+        saveBtn.dataset.role = 'pending-link';
+        saveBtn.onclick = dtUdCfgSaveAndLink;
+      }
+      // Cancel during pending = cancel the entire link attempt → revert to Unlinked.
+      const cancelBtn = document.getElementById('dt-ud-cfg-cancel-btn');
+      if (cancelBtn) {
+        cancelBtn.textContent = 'Cancel attach';
+        cancelBtn.onclick = dtUdCfgCancelLink;
+      }
+      // Update the savebar message text to match the linking context
+      const msgEl = document.getElementById('dt-ud-cfg-savebar-msg');
+      if (msgEl) msgEl.textContent = 'Fill in the configuration to finalize this link';
+    });
+  }
+}
+
+/* When user saves config during Pending state — finalize the link */
+function dtUdCfgSaveAndLink() {
+  // Run the standard config save (commits field values to data-orig)
+  dtCfgSave();
+  // Promote unit from Pending → Linked
+  const u = UNITS_DATA.find(x => x.id === dtUdCurrentUnitId);
+  if (!u) return;
+  u.status = 'Linked Unit';
+  // assignedToTruck was already set when the link started; keep it as the timestamp
+
+  // Clear the truck's unlinked state so reopening the truck drawer shows the
+  // full Linked view (Components overview, Sensor, etc.) instead of the
+  // "Truck Not Connected" empty state. Mirrors mobile's doAttach mutations.
+  if (typeof trucks !== 'undefined' && u.truck && u.truck !== '--') {
+    const t = trucks.find(x => x.num === u.truck);
+    if (t) {
+      t.unlinked  = false;
+      t.truckMode = 'Active';
+      t.unitId    = u.id;
+    }
+    if (typeof CC_TRUCKS !== 'undefined') {
+      const tCC = CC_TRUCKS.find(x => x.num === u.truck);
+      if (tCC) tCC.unlinked = false;
+    }
+  }
+
+  // Re-render header + tabs + side panel with the Linked treatment
+  dtUdApplyStatusUI(u);
+  dtUdActiveTab = 'lifespan';
+  dtUdBuildTabs();
+  dtUdRenderActiveTab();
+  dtUdRenderSidePanel();
+  // Refresh the units table + trucks header stat
+  if (typeof dtUnitsRender === 'function') dtUnitsRender();
+  // Re-render whichever trucks table is visible so the truck moves out of
+  // the "unlinked" treatment (greyed alerts pill, "--" cells) immediately.
+  if (typeof dtRefreshTable === 'function' && typeof dtActiveTab !== 'undefined') {
+    dtRefreshTable(dtActiveTab);
+  }
+  const unlinkedEl = document.getElementById('dt-stat-unlinked');
+  if (unlinkedEl && typeof UNITS_DATA !== 'undefined') {
+    unlinkedEl.textContent = UNITS_DATA.filter(x => x.status === 'Unlinked Unit').length;
+  }
+  // Trinity Success toast
+  dtShowToast({
+    title: 'Unit linked successfully',
+    body: `Unit ${u.id} is now linked to Truck ${u.truck} and ready for deployment.`,
+  });
+}
+
+/* When user cancels config during Pending state — revert the entire link attempt */
+function dtUdCfgCancelLink() {
+  dtUdRevertPending();
+}
+
+function dtUdRenderTimeline() {
+  const scroll = document.getElementById('dt-ud-scroll');
+  scroll.innerHTML = dtBuildTimeline();
+  if (typeof dtTimelineRenderRows === 'function') dtTimelineRenderRows();
+}
+
+function dtUdRenderLogs() {
+  const scroll = document.getElementById('dt-ud-scroll');
+  scroll.innerHTML = dtBuildLogs();
+  if (typeof dtLogsRender === 'function') dtLogsRender();
+  if (typeof dtLogsRenderEventDetails === 'function') dtLogsRenderEventDetails();
+}
+
+function dtUdRenderManual() {
+  const scroll = document.getElementById('dt-ud-scroll');
+  scroll.innerHTML = dtBuildManual();
+  if (typeof dtInitManualCards === 'function') dtInitManualCards();
+}
+
+function dtUdRenderSensor() {
+  const scroll = document.getElementById('dt-ud-scroll');
+  scroll.innerHTML = dtBuildSensor();
+  document.querySelectorAll('#dt-sen-chips .sen-chip').forEach(el => {
+    el.classList.toggle('active', senSelected.has(el.dataset.sensor));
+  });
+  if (typeof dtSenRenderCards === 'function') dtSenRenderCards();
+  if (typeof senStart === 'function') senStart();
+}
+
+/* ── Lifespan tab — per-component accordion ── */
+/* ── Lifespan content builder. Pure HTML output so both drawers can use it.
+   `targetUnitId`: which unit's lifespan to render
+   `linkedTruckNum`: optional — when set, shows the "Currently installed on Truck X"
+                     banner. Falls back to the unit's truck if not provided.
+   `showOpenTruckLink`: when true, the banner has an "Open Truck" button.
+                       Used by the unit drawer; suppressed by the truck drawer. */
+function dtBuildLifespanHTML(targetUnitId, linkedTruckNum, showOpenTruckLink) {
+  const u = UNITS_DATA.find(x => x.id === targetUnitId);
+  if (!u) {
+    return `<div style="padding:48px;text-align:center;color:var(--soft);font-size:14px;">No unit found.</div>`;
+  }
+  const truckNum = linkedTruckNum || (u.truck && u.truck !== '--' ? u.truck : null);
+  const isLinked = !!truckNum;
+
+  const comps = (typeof UNIT_HISTORY !== 'undefined')
+    ? (UNIT_HISTORY[u.id] || UNIT_HISTORY['_default'] || [])
+    : [];
+  const activeComps  = comps.filter(c => !c.removed);
+  const removedComps = comps.filter(c => c.removed);
+
+  const iconLinked  = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5a3.5 3.5 0 005 0l2-2a3.5 3.5 0 00-5-5L7.5 3.5" stroke="#16a34a" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 6.5a3.5 3.5 0 00-5 0l-2 2a3.5 3.5 0 005 5l1-1" stroke="#16a34a" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const iconRemoved = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5a3.5 3.5 0 005 0l2-2a3.5 3.5 0 00-5-5L7.5 3.5" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 6.5a3.5 3.5 0 00-5 0l-2 2a3.5 3.5 0 005 5l1-1" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 3l10 10" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+
+  function buildEntries(comp) {
+    return comp.history.map((h, hi) => {
+      const isFirst = hi === 0;
+      const isLast  = hi === comp.history.length - 1;
+      const isRemoved = comp.removed;
+      let dotCls = 'middle';
+      if (isFirst && !isRemoved)        dotCls = 'current';
+      else if (isFirst && isRemoved)    dotCls = 'removed';
+      else if (isLast)                  dotCls = 'original';
+      const connector = !isLast ? `<div class="dt-ls-entry-connector"></div>` : '';
+      const dateLabel = isFirst && isRemoved
+        ? `${h.date} <span class="dt-ls-entry-removed-tag">· removed ${comp.removedDate}</span>`
+        : h.date;
+      const tag = (isFirst && !isRemoved)
+        ? `<span class="dt-ls-entry-tag current">Currently installed</span>`
+        : (isLast)
+          ? `<span class="dt-ls-entry-tag original">Originally installed</span>`
+          : '';
+      return `
+        <div class="dt-ls-entry">
+          <div class="dt-ls-entry-rail">
+            <div class="dt-ls-entry-dot ${dotCls}"></div>
+            ${connector}
+          </div>
+          <div class="dt-ls-entry-date">${dateLabel}</div>
+          <div class="dt-ls-entry-mac ${isFirst && isRemoved ? 'dim' : ''}">${h.mac}</div>
+          ${tag}
+        </div>`;
+    }).join('');
+  }
+
+  function buildCard(comp, ci, isRemoved) {
+    const current    = comp.history[0];
+    const hasHistory = comp.history.length > 1;
+    const icon       = isRemoved ? iconRemoved : iconLinked;
+    const changesTxt = hasHistory
+      ? `<span class="dt-ls-changes">${comp.history.length - 1} change${comp.history.length > 2 ? 's' : ''}</span>`
+      : '';
+    return `
+      <div class="dt-ls-card${isRemoved ? ' removed' : ''}" id="dt-ls-card-${ci}">
+        <div class="dt-ls-card-hdr" onclick="dtUdLsToggle(${ci})">
+          <div class="dt-ls-card-left">
+            <div class="dt-ls-name-row">
+              ${icon}
+              <span class="dt-ls-comp-name${isRemoved ? ' dim' : ''}">${comp.name}</span>
+            </div>
+            <div class="dt-ls-comp-mac${isRemoved ? ' dim' : ''}">${current.mac}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            ${changesTxt}
+            <svg class="dt-ls-chev" width="11" height="7" viewBox="0 0 10 6" fill="none"><path d="M8.75 4.75L4.75 0.75L0.75 4.75" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div class="dt-ls-history">${buildEntries(comp)}</div>
+      </div>`;
+  }
+
+  let html = '';
+  if (isLinked) {
+    const safeTruck = truckNum.replace(/'/g, "\\'");
+    const openLink = showOpenTruckLink
+      ? `<button class="dt-ls-context-link" onclick="dtUdJumpToTruck('${safeTruck}')">
+          Open Truck
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6h7M6.5 2.5l3.5 3.5-3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>`
+      : '';
+    html += `
+      <div class="dt-ls-context-banner">
+        <div class="dt-ls-context-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="4" width="9" height="7" rx="1" stroke="#3069e3" stroke-width="1.4"/>
+            <circle cx="5" cy="12" r="1.4" stroke="#3069e3" stroke-width="1.2"/>
+            <circle cx="11" cy="12" r="1.4" stroke="#3069e3" stroke-width="1.2"/>
+          </svg>
+        </div>
+        <div class="dt-ls-context-text">
+          <div class="dt-ls-context-title">Currently installed on Truck ${truckNum}</div>
+          <div class="dt-ls-context-sub">Live diagnostics for this truck live in the truck view.</div>
+        </div>
+        ${openLink}
+      </div>`;
+  }
+  if (comps.length === 0) {
+    return html + `<div style="padding:48px;text-align:center;color:var(--soft);font-size:14px;">No component history available for this unit yet.</div>`;
+  }
+  html += `<div class="dt-ls-section-label">Components · ${activeComps.length} active${removedComps.length ? ` · <span style="color:#9ca3af;">${removedComps.length} removed</span>` : ''}</div>`;
+  html += activeComps.map((c, i) => buildCard(c, i, false)).join('');
+  if (removedComps.length) {
+    html += `<div class="dt-ls-section-label removed-section">Removed · ${removedComps.length}</div>`;
+    html += removedComps.map((c, i) => buildCard(c, activeComps.length + i, true)).join('');
+  }
+  return html;
+}
+
+/* Builder used by the truck drawer's Unit Lifespan tab.
+   Looks up which unit is installed on this truck. If nothing is installed,
+   shows an empty state so the tab still works.
+   Suppresses the lifespan banner — we add our own header showing the unit ID
+   with an "Open Unit" pivot link. */
+function dtBuildLifespanForTruck(truckNum) {
+  const u = UNITS_DATA.find(x => x.status === 'Linked Unit' && x.truck === truckNum);
+  if (!u) {
+    return `<div style="padding:48px;text-align:center;color:var(--soft);font-size:14px;">No unit installed on this truck yet.</div>`;
+  }
+  const inner = dtBuildLifespanHTML(u.id, null, false); // no banner — we render our own
+  const safeId = u.id.replace(/'/g, "\\'");
+  return `
+    <div class="dt-ls-context-banner">
+      <div class="dt-ls-context-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <rect x="3" y="3" width="10" height="10" rx="1.5" stroke="#3069e3" stroke-width="1.4"/>
+          <path d="M5.5 6h5M5.5 9h3" stroke="#3069e3" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="dt-ls-context-text">
+        <div class="dt-ls-context-title">Unit ${u.id}</div>
+        <div class="dt-ls-context-sub">Component lifespan for the unit installed on this truck.</div>
+      </div>
+      <button class="dt-ls-context-link" onclick="dtUdJumpToUnitFromTruck('${safeId}')">
+        Open Unit
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6h7M6.5 2.5l3.5 3.5-3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    ${inner}
+  `;
+}
+
+function dtUdRenderLifespan() {
+  const u = UNITS_DATA.find(x => x.id === dtUdCurrentUnitId);
+  if (!u) return;
+  document.getElementById('dt-ud-scroll').innerHTML = dtBuildLifespanHTML(u.id, null, true);
+}
+
+/* Track the unit ID the user pivoted from so the truck drawer can offer a
+   "Back to Unit" return path. Cleared whenever the truck drawer is closed
+   in any other way. */
+let dtTruckOpenedFromUnit = null;
+
+function dtUdJumpToTruck(truckNum) {
+  if (!dtUdCurrentUnitId) return;
+  // Remember which unit we came from so the truck drawer can pivot back
+  dtTruckOpenedFromUnit = dtUdCurrentUnitId;
+  // Close the unit drawer instantly (no slide-out) so the only animation
+  // the user sees is the truck drawer sliding in. Closing with the standard
+  // animation while the target also animates in produces the jarring two-
+  // drawer-fighting effect.
+  const ud = document.getElementById('dt-ud-drawer');
+  if (ud) {
+    ud.classList.add('no-anim');
+    ud.classList.remove('open');
+    // Reset state without firing the close animation
+    document.querySelector('#dt-ud-drawer .dt-attach-confirm')?.remove();
+    if (typeof senStop === 'function') senStop();
+    dtUdCurrentUnitId = null;
+    // Clean up no-anim on next tick so future opens animate normally
+    requestAnimationFrame(() => requestAnimationFrame(() => ud.classList.remove('no-anim')));
+  }
+  // Keep the scrim visible the whole time — no flicker
+  document.getElementById('dt-drawer-scrim')?.classList.add('open');
+  // Make sure the truck record exists. Newly-linked trucks aren't in the static
+  // trucks array; synthesize one if needed so dtOpenTruck can render.
+  dtEnsureTruckRecord(truckNum);
+  // Wait one frame so the no-anim hide commits, then slide the truck drawer in.
+  requestAnimationFrame(() => {
+    if (typeof dtOpenTruck === 'function') dtOpenTruck(truckNum);
+  });
+}
+
+function dtUdJumpToUnitFromTruck(unitId) {
+  // Reverse pivot: hide truck drawer instantly, slide unit drawer in.
+  const td = document.getElementById('dt-drawer');
+  if (td) {
+    td.classList.add('no-anim');
+    td.classList.remove('open');
+    dtDrawerTruckNum = null;
+    if (typeof dtLogsSelectedId !== 'undefined') dtLogsSelectedId = null;
+    if (typeof dtLogsEdTab !== 'undefined') dtLogsEdTab = 'structured';
+    if (typeof senStop === 'function') senStop();
+    requestAnimationFrame(() => requestAnimationFrame(() => td.classList.remove('no-anim')));
+  }
+  // Pivoting back to unit clears the cross-drawer breadcrumb
+  dtTruckOpenedFromUnit = null;
+  document.getElementById('dt-drawer-scrim')?.classList.add('open');
+  requestAnimationFrame(() => dtUdOpen(unitId));
+}
+
+/* Ensure the trucks array has a record for the given truck number. When a unit
+   is linked to a truck that originated from UNLINKED_TRUCKS, the truck isn't in
+   the main trucks list — synthesize a minimal record using the unit's data so
+   the truck drawer can render. */
+function dtEnsureTruckRecord(truckNum) {
+  if (typeof trucks === 'undefined') return;
+  if (trucks.find(t => t.num === truckNum)) return;
+  // Find the unit that's linked to this truck so we can pull contextual data
+  const u = (typeof UNITS_DATA !== 'undefined')
+    ? UNITS_DATA.find(x => x.truck === truckNum && x.status === 'Linked Unit')
+    : null;
+  trucks.push({
+    num: truckNum,
+    ver: u?.sysType || 'V4',
+    ign: 'On', ignDetail: '—',
+    source: 'Newly linked',
+    plant: 'Phoenix Central',
+    impact: 'None', issue: '',
+    account: 'Cemex AZ',
+    age: 'Just now',
+    conn: 'live',
+    err: 0, wrn: 0,
+    unitId: u?.id || '',
+    readyMaint: 'No',
+    truckMode: 'Active',
+    lastConn: new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}) + ' today',
+  });
+}
+
+function dtUdLsToggle(ci) {
+  document.getElementById('dt-ls-card-' + ci)?.classList.toggle('open');
+}
+
+/* ── Attach tab — pick an unlinked truck and confirm.
+   Layout matches Figma 378:32882: title row, search left + Attach Unit
+   button right, 6-column table with zebra stripes, no bottom selected card. */
+function dtUdRenderAttach() {
+  const trucks = (typeof UNLINKED_TRUCKS !== 'undefined') ? UNLINKED_TRUCKS : [];
+  const q = (dtUdAttachQuery || '').toLowerCase();
+  const filtered = trucks.filter(t =>
+    !q ||
+    t.number.toLowerCase().includes(q) ||
+    (t.type   || '').toLowerCase().includes(q) ||
+    (t.drum   || '').toLowerCase().includes(q) ||
+    (t.water  || '').toLowerCase().includes(q) ||
+    (t.mixer  || '').toLowerCase().includes(q)
+  );
+
+  const cols = [
+    { id:'number', label:'Truck Number',     width:160 },
+    { id:'type',   label:'Truck Type',       width:120 },
+    { id:'drum',   label:'Drum Size',        width:140 },
+    { id:'water',  label:'Water propulsion', width:160 },
+    { id:'mixer',  label:'Mixer Type',       width:140 },
+    { id:'status', label:'Unit Status',      width:140 },
+  ];
+
+  const headerCells = cols.map((c, i) => {
+    const isLast = i === cols.length - 1;
+    const showDivider = !isLast;
+    return `
+      <div class="dt-attach-th" style="width:${c.width}px;${isLast ? 'flex:1;' : ''}">
+        <span class="dt-attach-th-label">${c.label}</span>
+        <div class="dt-attach-th-menu">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="3" r="1.2" fill="#36322d"/>
+            <circle cx="8" cy="8" r="1.2" fill="#36322d"/>
+            <circle cx="8" cy="13" r="1.2" fill="#36322d"/>
+          </svg>
+        </div>
+        ${showDivider ? '<div class="dt-attach-th-divider"></div>' : ''}
+      </div>`;
+  }).join('');
+
+  const rows = filtered.map((t, i) => {
+    const sel  = dtUdAttachSelected === t.number;
+    const safe = t.number.replace(/'/g, "\\'");
+    const alt  = i % 2 === 1;
+    return `
+      <div class="dt-attach-row${sel ? ' selected' : ''}${alt ? ' alt' : ''}" onclick="dtUdAttachSelect('${safe}')">
+        <div class="dt-attach-cell" style="width:${cols[0].width}px;">${t.number}</div>
+        <div class="dt-attach-cell" style="width:${cols[1].width}px;">${t.type}</div>
+        <div class="dt-attach-cell" style="width:${cols[2].width}px;">${t.drum}</div>
+        <div class="dt-attach-cell" style="width:${cols[3].width}px;">${t.water}</div>
+        <div class="dt-attach-cell" style="width:${cols[4].width}px;">${t.mixer}</div>
+        <div class="dt-attach-cell" style="flex:1;">Unlinked Unit</div>
+      </div>`;
+  }).join('');
+
+  const empty = filtered.length === 0
+    ? `<div class="dt-attach-empty">No unlinked trucks match your search.</div>`
+    : '';
+
+  const btnDisabled = !dtUdAttachSelected;
+
+  document.getElementById('dt-ud-scroll').innerHTML = `
+    <div class="dt-attach-title">${trucks.length} Trucks Unlinked</div>
+
+    <div class="dt-attach-toolbar" id="dt-ud-attach-toolbar">
+      <div class="dt-attach-search">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="#36322d9e" stroke-width="1.4"/><path d="M11 11l2.5 2.5" stroke="#36322d9e" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <input id="dt-attach-search" placeholder="Search" autocomplete="off"
+               value="${dtUdAttachQuery.replace(/"/g, '&quot;')}"
+               oninput="dtUdAttachSearch()" />
+      </div>
+      <button class="dt-attach-cta" ${btnDisabled ? 'disabled' : ''} onclick="dtUdAttachConfirm()">
+        Attach Unit
+      </button>
+    </div>
+
+    <!-- Inline link-confirm — replaces the toolbar row when the user clicks
+         Attach Unit. Same height + horizontal position, so the truck table
+         below doesn't shift and the selected row stays exactly in place. -->
+    <div id="dt-ud-attach-confirm" class="dt-inline-confirm informational toolbar-row" style="display:none;"></div>
+
+    <div class="dt-attach-table">
+      <div class="dt-attach-table-hdr">
+        ${headerCells}
+      </div>
+      <div class="dt-attach-table-body" id="dt-attach-table-body">
+        ${rows}${empty}
+      </div>
+    </div>
+  `;
+}
+
+function dtUdAttachSelect(truckNum) {
+  dtUdAttachSelected = dtUdAttachSelected === truckNum ? null : truckNum;
+  // Update row selection state without re-rendering the whole panel (keeps search focus)
+  document.querySelectorAll('#dt-attach-table-body .dt-attach-row').forEach(r => r.classList.remove('selected'));
+  if (dtUdAttachSelected) {
+    const safe = dtUdAttachSelected.replace(/'/g, "\\'");
+    const row = document.querySelector(`#dt-attach-table-body .dt-attach-row[onclick*="${safe}"]`);
+    if (row) row.classList.add('selected');
+  }
+  // Toggle the Attach Unit button
+  const cta = document.querySelector('#dt-ud-scroll .dt-attach-cta');
+  if (cta) cta.disabled = !dtUdAttachSelected;
+}
+
+function dtUdAttachSearch() {
+  dtUdAttachQuery = document.getElementById('dt-attach-search').value;
+  const trucks = (typeof UNLINKED_TRUCKS !== 'undefined') ? UNLINKED_TRUCKS : [];
+  const q = dtUdAttachQuery.toLowerCase();
+  const filtered = trucks.filter(t =>
+    !q ||
+    t.number.toLowerCase().includes(q) ||
+    (t.type || '').toLowerCase().includes(q) ||
+    (t.drum || '').toLowerCase().includes(q) ||
+    (t.water|| '').toLowerCase().includes(q) ||
+    (t.mixer|| '').toLowerCase().includes(q)
+  );
+  const body = document.getElementById('dt-attach-table-body');
+  if (!body) return;
+  if (filtered.length === 0) {
+    body.innerHTML = `<div class="dt-attach-empty">No unlinked trucks match your search.</div>`;
+    return;
+  }
+  const cols = [160,120,140,160,140];
+  body.innerHTML = filtered.map((t, i) => {
+    const sel  = dtUdAttachSelected === t.number;
+    const safe = t.number.replace(/'/g, "\\'");
+    const alt  = i % 2 === 1;
+    return `
+      <div class="dt-attach-row${sel ? ' selected' : ''}${alt ? ' alt' : ''}" onclick="dtUdAttachSelect('${safe}')">
+        <div class="dt-attach-cell" style="width:${cols[0]}px;">${t.number}</div>
+        <div class="dt-attach-cell" style="width:${cols[1]}px;">${t.type}</div>
+        <div class="dt-attach-cell" style="width:${cols[2]}px;">${t.drum}</div>
+        <div class="dt-attach-cell" style="width:${cols[3]}px;">${t.water}</div>
+        <div class="dt-attach-cell" style="width:${cols[4]}px;">${t.mixer}</div>
+        <div class="dt-attach-cell" style="flex:1;">Unlinked Unit</div>
+      </div>`;
+  }).join('');
+}
+
+function dtUdAttachConfirm() {
+  if (!dtUdAttachSelected || !dtUdCurrentUnitId) return;
+  const panel = document.getElementById('dt-ud-attach-confirm');
+  if (!panel) return;
+  // Tighter, single-line copy — toolbar-row variant has no vertical room for
+  // a multi-line body, so we keep the title self-explanatory.
+  panel.innerHTML = `
+    <div class="dt-inline-confirm-head">
+      <div class="dt-inline-confirm-icon">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+          <path d="M6.5 9.5a3.5 3.5 0 005 0l2-2a3.5 3.5 0 00-5-5L7.5 3.5" stroke="#3069e3" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9.5 6.5a3.5 3.5 0 00-5 0l-2 2a3.5 3.5 0 005 5l1-1" stroke="#3069e3" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="dt-inline-confirm-text">
+        <div class="dt-inline-confirm-title">Link Unit ${dtUdCurrentUnitId} to Truck ${dtUdAttachSelected}?</div>
+        <div class="dt-inline-confirm-body">Unit moves to Pending Configuration — fill in config, then save to finalize.</div>
+      </div>
+    </div>
+    <div class="dt-inline-confirm-btns">
+      <button class="dt-inline-confirm-btn cancel" onclick="dtUdAttachCancel()">Cancel</button>
+      <button class="dt-inline-confirm-btn primary" onclick="dtUdAttachDo()">Link to truck</button>
+    </div>`;
+  panel.style.display = 'flex';
+  // Hide the toolbar row — the confirm row takes its slot, so layout doesn't shift.
+  const toolbar = document.getElementById('dt-ud-attach-toolbar');
+  if (toolbar) toolbar.style.display = 'none';
+}
+
+function dtUdAttachCancel() {
+  const panel = document.getElementById('dt-ud-attach-confirm');
+  if (panel) { panel.style.display = 'none'; panel.innerHTML = ''; }
+  // Restore the toolbar row
+  const toolbar = document.getElementById('dt-ud-attach-toolbar');
+  if (toolbar) toolbar.style.display = '';
+  // Re-enable the toolbar Attach Unit CTA based on current selection
+  const cta = document.querySelector('.dt-attach-cta');
+  if (cta) cta.disabled = !dtUdAttachSelected;
+}
+
+function dtUdAttachDo() {
+  dtUdAttachCancel();
+  if (!dtUdAttachSelected || !dtUdCurrentUnitId) return;
+
+  const u = UNITS_DATA.find(x => x.id === dtUdCurrentUnitId);
+  if (!u) return;
+
+  // Stage 1 of the link: set Pending, claim the truck.
+  // Capture original state in case the user cancels mid-config.
+  dtUdPendingPrevState = {
+    unitId: u.id,
+    prevStatus: u.status,        // 'Unlinked Unit'
+    prevTruck:  u.truck,          // '--'
+    prevAssigned: u.assignedToTruck || null,
+    truckSnapshot: (typeof UNLINKED_TRUCKS !== 'undefined')
+      ? UNLINKED_TRUCKS.find(t => t.number === dtUdAttachSelected)
+      : null,
+  };
+
+  u.status = 'Pending';
+  u.truck  = dtUdAttachSelected;
+  u.assignedToTruck = new Date().toLocaleDateString('en-US', {month:'2-digit',day:'2-digit',year:'numeric'});
+
+  // Remove from the unlinked truck pool while pending — if user cancels we put it back.
+  const idx = (typeof UNLINKED_TRUCKS !== 'undefined')
+    ? UNLINKED_TRUCKS.findIndex(t => t.number === dtUdAttachSelected) : -1;
+  if (idx > -1) UNLINKED_TRUCKS.splice(idx, 1);
+
+  // Re-shape the drawer for Pending: tabs become Lifespan + Configuration,
+  // jump straight into Configuration in edit mode.
+  dtUdActiveTab = 'config';
+  dtUdApplyStatusUI(u);
+  dtUdBuildTabs();
+  dtUdRenderActiveTab();
+  dtUdRenderSidePanel();
+
+  // Reflect in the units table immediately
+  if (typeof dtUnitsRender === 'function') dtUnitsRender();
+}
+
+/* Revert a pending unit back to Unlinked. Called when user closes the drawer
+   mid-configuration, or hits Cancel on the configuration save bar. */
+function dtUdRevertPending() {
+  const snap = dtUdPendingPrevState;
+  if (!snap) return;
+  const u = UNITS_DATA.find(x => x.id === snap.unitId);
+  if (u && u.status === 'Pending') {
+    u.status = snap.prevStatus;          // back to 'Unlinked Unit'
+    u.truck  = snap.prevTruck;           // back to '--'
+    u.assignedToTruck = snap.prevAssigned;
+    // Put the truck back in the pool so it's available again
+    if (snap.truckSnapshot && typeof UNLINKED_TRUCKS !== 'undefined') {
+      const exists = UNLINKED_TRUCKS.find(t => t.number === snap.truckSnapshot.number);
+      if (!exists) UNLINKED_TRUCKS.push(snap.truckSnapshot);
+    }
+  }
+  dtUdPendingPrevState = null;
+  if (typeof dtUnitsRender === 'function') dtUnitsRender();
+  // If the drawer is still open and showing this unit, reshape it back to Unlinked
+  if (u && dtUdCurrentUnitId === u.id) {
+    dtUdActiveTab = 'lifespan';
+    dtUdApplyStatusUI(u);
+    dtUdBuildTabs();
+    dtUdRenderActiveTab();
+    dtUdRenderSidePanel();
+  }
+}
+
+/* ── Side panel ── */
+function dtUdRenderSidePanel() {
+  const u = UNITS_DATA.find(x => x.id === dtUdCurrentUnitId);
+  if (!u) return;
+  const isLinked  = u.status === 'Linked Unit';
+  const isPending = u.status === 'Pending';
+
+  // Top row chips: Linked → Connectivity / Truck Mode (mirroring truck drawer).
+  // Pending → Pending / Account. Unlinked → Status / Account.
+  let chip1, chip2;
+  if (isLinked) {
+    chip1 = {
+      icon: `<svg class="dt-ud-side-chip-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 6.5a8 8 0 0112 0M4.5 9a4.5 4.5 0 017 0M7 11.5a1.5 1.5 0 012 0" stroke="#36322d" stroke-width="1.4" stroke-linecap="round"/></svg>`,
+      label: 'Connectivity',
+      val: 'Connected',
+      valClass: 'linkish',
+    };
+    chip2 = {
+      icon: `<svg class="dt-ud-side-chip-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="#36322d" stroke-width="1.4"/><circle cx="8" cy="8" r="2" stroke="#36322d" stroke-width="1.4"/></svg>`,
+      label: 'Truck Mode',
+      val: 'Live',
+      valClass: '',
+    };
+  } else if (isPending) {
+    chip1 = {
+      icon: `<svg class="dt-ud-side-chip-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#e8851a" stroke-width="1.4"/><path d="M8 5v3.2L10 10" stroke="#e8851a" stroke-width="1.4" stroke-linecap="round"/></svg>`,
+      label: 'Status',
+      val: 'Pending Configuration',
+      valClass: '',
+    };
+    chip2 = {
+      icon: `<svg class="dt-ud-side-chip-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="#36322d" stroke-width="1.4"/><path d="M2 6h12" stroke="#36322d" stroke-width="1.4"/></svg>`,
+      label: 'Account',
+      val: 'Cemex AZ',
+      valClass: '',
+    };
+  } else {
+    chip1 = {
+      icon: `<svg class="dt-ud-side-chip-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="#36322d" stroke-width="1.4"/><path d="M5.5 7V5a2.5 2.5 0 015 0v2" stroke="#36322d" stroke-width="1.4" stroke-linecap="round"/></svg>`,
+      label: 'Status',
+      val: 'Not attached',
+      valClass: 'dim',
+    };
+    chip2 = {
+      icon: `<svg class="dt-ud-side-chip-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="#36322d" stroke-width="1.4"/><path d="M2 6h12" stroke="#36322d" stroke-width="1.4"/></svg>`,
+      label: 'Account',
+      val: 'Cemex AZ',
+      valClass: '',
+    };
+  }
+
+  // Meta rows — when Linked, fill in real-ish data. When Unlinked/Pending, mostly "—".
+  const metaRows = isLinked ? [
+    { k:'Code version',       v: u.sysType === 'Spark' ? '5.01.003' : u.sysType === 'V4' ? '4.02.011' : '3.04.029' },
+    { k:'Commissioned',       v: u.firstCommissioned || '—' },
+    { k:'Last Connect',       v: 'Mar 24, 2025, 1:16:38 PM' },
+    { k:'Last System Status', v: 'Mar 24, 2025, 1:16:38 PM' },
+    { k:'Last Reboot',        v: 'Mar 24, 2025, 1:16 PM' },
+    { k:'Configuration',      v: u.config || '—' },
+    { k:'TGW 4 Number',       v: u.tgw && u.tgw !== '--' ? u.tgw : '—' },
+    { k:'Contract',           v: u.contract || '—' },
+  ] : [
+    { k:'Code version',       v: '—' },
+    { k:'Commissioned',       v: u.firstCommissioned || '—' },
+    { k:'Last Connect',       v: '—' },
+    { k:'Last System Status', v: '—' },
+    { k:'Last Reboot',        v: '—' },
+    { k:'Configuration',      v: u.config || '—' },
+    { k:'TGW 4 Number',       v: u.tgw && u.tgw !== '--' ? u.tgw : '—' },
+    { k:'Contract',           v: u.contract || '—' },
+  ];
+
+  // Linked also gets a GPS Location button at the bottom (matches Figma)
+  const gpsBtn = isLinked
+    ? `<button class="dt-ud-side-gps-btn" onclick="dtUdGpsPlaceholder()">GPS Location</button>`
+    : '';
+
+  document.getElementById('dt-ud-side-body').innerHTML = `
+    <div class="dt-ud-side-chips">
+      <div class="dt-ud-side-chip">
+        ${chip1.icon}
+        <div class="dt-ud-side-chip-label">${chip1.label}</div>
+        <div class="dt-ud-side-chip-val ${chip1.valClass}">${chip1.val}</div>
+      </div>
+      <div class="dt-ud-side-chip">
+        ${chip2.icon}
+        <div class="dt-ud-side-chip-label">${chip2.label}</div>
+        <div class="dt-ud-side-chip-val ${chip2.valClass}">${chip2.val}</div>
+      </div>
+    </div>
+    <div class="dt-ud-meta">
+      ${metaRows.map((r, i) => `
+        <div class="dt-ud-meta-row${i % 2 === 1 ? ' alt' : ''}" style="display:contents;">
+          <div class="dt-ud-meta-cell" style="${i % 2 === 1 ? 'background:var(--layer-1);border-radius:4px 0 0 4px;' : ''}">${r.k}</div>
+          <div class="dt-ud-meta-cell val" style="${i % 2 === 1 ? 'background:var(--layer-1);border-radius:0 4px 4px 0;' : ''}">${r.v}</div>
+        </div>
+      `).join('')}
+    </div>
+    ${gpsBtn}
+  `;
+}
+
+function dtUdGpsPlaceholder() {
+  // Placeholder — GPS Location flow comes later
+  alert('GPS Location — coming soon');
+}
+
+// Esc closes drawer (or just the open dropdown if one is open)
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const drawer = document.getElementById('dt-au-drawer');
+  if (!drawer || !drawer.classList.contains('open')) return;
+  // First close any open dropdown
+  let closedDd = false;
+  ['contract','sysType','config'].forEach(key => {
+    const menu = document.getElementById('dt-au-' + key + '-menu');
+    if (menu && menu.classList.contains('open')) {
+      menu.classList.remove('open');
+      document.getElementById('dt-au-' + key + '-chev')?.classList.remove('open');
+      document.getElementById('dt-au-' + key + '-btn')?.classList.remove('open');
+      closedDd = true;
+    }
+  });
+  if (!closedDd) dtAuClose();
+});
+
+// Esc on the unit drawer — close the confirm overlay first if open, else the drawer
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const ud = document.getElementById('dt-ud-drawer');
+  if (!ud || !ud.classList.contains('open')) return;
+  const confirm = ud.querySelector('.dt-attach-confirm');
+  if (confirm) { confirm.remove(); return; }
+  dtUdClose();
+});
 
 function dtSelectTab(tab, el) {
   dtActiveTab = tab;
@@ -9895,10 +12748,20 @@ const COL_DEFS = {
     { id:'cwr',      label:'CWR',             width:70,  dot:true },
     { id:'wds',      label:'WDS',             width:70,  dot:true },
   ],
+  units: [
+    { id:'unitid',     label:'Unit ID',               width:120, locked:true },
+    { id:'status',     label:'Unit Status',           width:170 },
+    { id:'truck',      label:'Assigned Trucks',       width:140 },
+    { id:'tgw',        label:'TGW 4 Number',          width:150 },
+    { id:'contract',   label:'Contracts',             width:170 },
+    { id:'sysType',    label:'System Type',           width:120 },
+    { id:'config',     label:'Configuration',         width:170 },
+    { id:'firstComm',  label:'First Commission Date', width:200 },
+  ],
 };
 
 /* Runtime state — cloned from COL_DEFS on first use */
-let colState = { wts: null, overview: null, cc: null };
+let colState = { wts: null, overview: null, cc: null, units: null };
 let colDragSrc = null;
 let colResizing = null;
 
@@ -10053,13 +12916,29 @@ function dtResizeStart(e, colId, tab) {
   document.addEventListener('mouseup', onUp);
 }
 
+/* Tracks which tab the cols popover is currently displaying.
+   Trucks pages set this to dtActiveTab; Units page sets it to 'units'. */
+let dtColsCurrentTab = null;
+
 /* ── Columns popover ── */
-function dtColsToggle(e) {
+function dtColsToggle(e, forTab) {
   e.stopPropagation();
   const pop = document.getElementById('dt-cols-popover');
   const isOpen = pop.classList.contains('open');
   pop.classList.toggle('open', !isOpen);
-  if (!isOpen) dtColsPopRefresh(dtActiveTab);
+  if (!isOpen) {
+    dtColsCurrentTab = forTab || dtActiveTab;
+    // Position popover relative to the button that opened it
+    const btn = e.currentTarget;
+    if (btn) {
+      const wrap = pop.parentElement;
+      // If popover is in a different position context, move it next to the trigger
+      if (wrap && !wrap.contains(btn)) {
+        btn.parentElement.appendChild(pop);
+      }
+    }
+    dtColsPopRefresh(dtColsCurrentTab);
+  }
 }
 function dtColsPopRefresh(tab) {
   const list = document.getElementById('dt-cols-pop-list');
@@ -10082,17 +12961,23 @@ function dtColToggle(colId, tab, btn) {
   dtRefreshTable(tab);
 }
 function dtColsReset() {
-  colState[dtActiveTab] = COL_DEFS[dtActiveTab].map(c => ({ ...c, hidden: false }));
-  dtColsPopRefresh(dtActiveTab);
-  dtRefreshTable(dtActiveTab);
+  const tab = dtColsCurrentTab || dtActiveTab;
+  colState[tab] = COL_DEFS[tab].map(c => ({ ...c, hidden: false }));
+  dtColsPopRefresh(tab);
+  dtRefreshTable(tab);
 }
 
 /* ── Central refresh — rebuilds headers + rows for active tab ── */
 function dtRefreshTable(tab) {
+  if (tab === 'units') {
+    dtUnitsBuildHeaders();
+    dtUnitsRender();
+    return;
+  }
   dtBuildHeaders(tab);
-  if (tab === 'wts')      dtRenderTable();
+  if (tab === 'wts')           dtRenderTable();
   else if (tab === 'overview') dtRenderOverview();
-  else if (tab === 'cc')  dtRenderCC();
+  else if (tab === 'cc')       dtRenderCC();
 }
 
 function dtRenderWtsHeaders() {
@@ -10154,13 +13039,15 @@ function dtRenderCC() {
 
   function ccCell(col, t, cc) {
     const c = col.id;
+    const dim = '<span style="color:var(--soft)">--</span>';
     if (c === 'truck')    return `<td class="dt-td dt-td-strong">${t.num}</td>`;
-    if (c === 'sysver')   return `<td class="dt-td">${t.ver}</td>`;
-    if (c === 'ignition') return `<td class="dt-td">${t.ign}</td>`;
+    if (c === 'sysver')   return `<td class="dt-td">${t.unlinked ? dim : t.ver}</td>`;
+    if (c === 'ignition') return `<td class="dt-td">${t.unlinked ? dim : t.ign}</td>`;
     if (c === 'startups') return `<td class="dt-td dt-td-soft">—</td>`;
     if (compMap[c]) {
-      const comp = cc ? cc.components.find(cp => cp.name === compMap[c]) : null;
-      return `<td class="dt-td dt-td--dot"><div>${dtCCDot(comp ? comp.state : 'grey')}</div></td>`;
+      // Unlinked trucks have no unit reporting component states — show grey dots
+      const state = t.unlinked ? 'grey' : (cc ? (cc.components.find(cp => cp.name === compMap[c])?.state || 'grey') : 'grey');
+      return `<td class="dt-td dt-td--dot"><div>${dtCCDot(state)}</div></td>`;
     }
     return `<td class="dt-td">—</td>`;
   }
@@ -10169,8 +13056,10 @@ function dtRenderCC() {
   truckGroups.forEach(group => {
     if (!selectedAccounts.has(group.account)) return;
     if (!selectedLocations.has(group.label)) return;
+    // Include unlinked trucks. They'll render with grey dots across all
+    // component columns since there's no unit reporting state for them.
     group.trucks.forEach(t => {
-      if (!t.unlinked && dtTruckMatchesSearch(t) && filterMatch(t)) {
+      if (dtTruckMatchesSearch(t) && filterMatch(t)) {
         const cc = CC_TRUCKS.find(c => c.num === t.num);
         allTrucks.push({ t, cc });
       }
@@ -10222,16 +13111,18 @@ function dtRenderOverview() {
   function ovCell(col, t, badges, connDot) {
     const cl = 'dt-td';
     const c = col.id;
+    const dim = '<span style="color:var(--soft)">--</span>';
     if (c === 'truck')    return `<td class="dt-td dt-td-strong">${t.num}</td>`;
     if (c === 'alerts')   return `<td class="${cl}"><div class="dt-badge-wrap">${badges || '<span style="color:var(--soft)">—</span>'}</div></td>`;
-    if (c === 'unitid')   return `<td class="dt-td dt-td-soft">${t.unitId || '—'}</td>`;
-    if (c === 'sysver')   return `<td class="${cl}">${t.ver}</td>`;
-    if (c === 'ignition') return `<td class="${cl}">${t.ign} · ${t.ignDetail}</td>`;
-    if (c === 'impact')   return `<td class="${cl}">${t.impact || '—'}</td>`;
+    // Live-data cells show -- for unlinked trucks (no unit reporting, so no data)
+    if (c === 'unitid')   return `<td class="dt-td dt-td-soft">${t.unlinked ? '--' : (t.unitId || '—')}</td>`;
+    if (c === 'sysver')   return `<td class="${cl}">${t.unlinked ? dim : t.ver}</td>`;
+    if (c === 'ignition') return `<td class="${cl}">${t.unlinked ? dim : `${t.ign} · ${t.ignDetail}`}</td>`;
+    if (c === 'impact')   return `<td class="${cl}">${t.unlinked ? dim : (t.impact || '—')}</td>`;
     if (c === 'plant')    return `<td class="dt-td dt-td-strong">${t.plant}</td>`;
     if (c === 'account')  return `<td class="${cl}">${t.account}</td>`;
     if (c === 'conn')     return `<td class="${cl}">${connDot}</td>`;
-    if (c === 'lastconn') return `<td class="dt-td dt-td-soft">${t.lastConn}</td>`;
+    if (c === 'lastconn') return `<td class="dt-td dt-td-soft">${t.unlinked ? '--' : t.lastConn}</td>`;
     return `<td class="${cl}">—</td>`;
   }
 
@@ -10239,7 +13130,10 @@ function dtRenderOverview() {
   truckGroups.forEach(group => {
     if (!selectedAccounts.has(group.account)) return;
     if (!selectedLocations.has(group.label)) return;
-    group.trucks.forEach(t => { if (!t.unlinked && dtTruckMatchesSearch(t) && filterMatch(t)) allTrucks.push(t); });
+    // Include unlinked trucks too — they show with an "Unlinked" tag instead
+    // of err/wrn badges and a grey "Unlinked Truck" pill in the Connection
+    // column, matching the mobile rendering pattern.
+    group.trucks.forEach(t => { if (dtTruckMatchesSearch(t) && filterMatch(t)) allTrucks.push(t); });
   });
 
   if (allTrucks.length === 0) {
@@ -10250,13 +13144,22 @@ function dtRenderOverview() {
   let rows = '';
   allTrucks.forEach((t, idx) => {
     const alt = idx % 2 === 1;
-    const badges = [
-      t.err > 0 ? `<span class="dt-badge err"><svg width="11" height="11" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.375 0H8.25C9.00195 0 9.625 0.623047 9.625 1.375V8.25C9.625 9.02344 9.00195 9.625 8.25 9.625H1.375C0.601562 9.625 0 9.02344 0 8.25V1.375C0 0.623047 0.601562 0 1.375 0ZM4.8125 2.0625C4.51172 2.0625 4.29688 2.29883 4.29688 2.57812V4.98438C4.29688 5.28516 4.51172 5.5 4.8125 5.5C5.0918 5.5 5.32812 5.28516 5.32812 4.98438V2.57812C5.32812 2.29883 5.0918 2.0625 4.8125 2.0625ZM4.125 6.875C4.125 7.26172 4.42578 7.5625 4.8125 7.5625C5.17773 7.5625 5.5 7.26172 5.5 6.875C5.5 6.50977 5.17773 6.1875 4.8125 6.1875C4.42578 6.1875 4.125 6.50977 4.125 6.875Z" fill="white"/></svg>${t.err}</span>` : '',
-      t.wrn > 0 ? `<span class="dt-badge wrn"><svg width="11" height="10" viewBox="0 0 12 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.54297 0C5.84375 0 6.12305 0.171875 6.27344 0.429688L10.9141 8.33594C11.0645 8.61523 11.0645 8.9375 10.9141 9.19531C10.7637 9.47461 10.4844 9.625 10.1836 9.625H0.902344C0.580078 9.625 0.300781 9.47461 0.150391 9.19531C0 8.9375 0 8.61523 0.150391 8.33594L4.79102 0.429688C4.94141 0.171875 5.2207 0 5.54297 0ZM5.54297 2.75C5.24219 2.75 5.02734 2.98633 5.02734 3.26562V5.67188C5.02734 5.97266 5.24219 6.1875 5.54297 6.1875C5.82227 6.1875 6.05859 5.97266 6.05859 5.67188V3.26562C6.05859 2.98633 5.82227 2.75 5.54297 2.75ZM6.23047 7.5625C6.23047 7.19727 5.9082 6.875 5.54297 6.875C5.15625 6.875 4.85547 7.19727 4.85547 7.5625C4.85547 7.94922 5.15625 8.25 5.54297 8.25C5.9082 8.25 6.23047 7.94922 6.23047 7.5625Z" fill="#36322d"/></svg>${t.wrn}</span>` : '',
-    ].join('');
-    const connDot = t.conn === 'live'
-      ? `<span class="dt-conn-dot live"></span>Live`
-      : `<span class="dt-conn-dot none"></span><span style="color:var(--soft)">No connection</span>`;
+    // Unlinked trucks render with a single "Unlinked" tag instead of err/wrn
+    // badges. Their connection cell shows a grey "Unlinked Truck" pill — both
+    // patterns mirror what mobile does so the surfaces stay in sync.
+    let badges, connDot;
+    if (t.unlinked) {
+      badges  = `<span class="dt-badge-unlinked">Unlinked</span>`;
+      connDot = `<span class="dt-units-status-pill unlinked"><span class="dot"></span>Unlinked Truck</span>`;
+    } else {
+      badges = [
+        t.err > 0 ? `<span class="dt-badge err"><svg width="11" height="11" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.375 0H8.25C9.00195 0 9.625 0.623047 9.625 1.375V8.25C9.625 9.02344 9.00195 9.625 8.25 9.625H1.375C0.601562 9.625 0 9.02344 0 8.25V1.375C0 0.623047 0.601562 0 1.375 0ZM4.8125 2.0625C4.51172 2.0625 4.29688 2.29883 4.29688 2.57812V4.98438C4.29688 5.28516 4.51172 5.5 4.8125 5.5C5.0918 5.5 5.32812 5.28516 5.32812 4.98438V2.57812C5.32812 2.29883 5.0918 2.0625 4.8125 2.0625ZM4.125 6.875C4.125 7.26172 4.42578 7.5625 4.8125 7.5625C5.17773 7.5625 5.5 7.26172 5.5 6.875C5.5 6.50977 5.17773 6.1875 4.8125 6.1875C4.42578 6.1875 4.125 6.50977 4.125 6.875Z" fill="white"/></svg>${t.err}</span>` : '',
+        t.wrn > 0 ? `<span class="dt-badge wrn"><svg width="11" height="10" viewBox="0 0 12 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.54297 0C5.84375 0 6.12305 0.171875 6.27344 0.429688L10.9141 8.33594C11.0645 8.61523 11.0645 8.9375 10.9141 9.19531C10.7637 9.47461 10.4844 9.625 10.1836 9.625H0.902344C0.580078 9.625 0.300781 9.47461 0.150391 9.19531C0 8.9375 0 8.61523 0.150391 8.33594L4.79102 0.429688C4.94141 0.171875 5.2207 0 5.54297 0ZM5.54297 2.75C5.24219 2.75 5.02734 2.98633 5.02734 3.26562V5.67188C5.02734 5.97266 5.24219 6.1875 5.54297 6.1875C5.82227 6.1875 6.05859 5.97266 6.05859 5.67188V3.26562C6.05859 2.98633 5.82227 2.75 5.54297 2.75ZM6.23047 7.5625C6.23047 7.19727 5.9082 6.875 5.54297 6.875C5.15625 6.875 4.85547 7.19727 4.85547 7.5625C4.85547 7.94922 5.15625 8.25 5.54297 8.25C5.9082 8.25 6.23047 7.94922 6.23047 7.5625Z" fill="#36322d"/></svg>${t.wrn}</span>` : '',
+      ].join('');
+      connDot = t.conn === 'live'
+        ? `<span class="dt-conn-dot live"></span>Live`
+        : `<span class="dt-conn-dot none"></span><span style="color:var(--soft)">No connection</span>`;
+    }
     rows += `<tr class="dt-tr${alt ? ' alt' : ''}" data-truck="${t.num}" onclick="dtOpenTruck('${t.num}')">
       ${cols.map(col => ovCell(col, t, badges, connDot)).join('')}
     </tr>`;
@@ -10279,6 +13182,76 @@ function dtOpenTruck(truckNum) {
   if (!t) return;
 
   const drawer = document.getElementById('dt-drawer');
+
+  /* Show or hide the Back-to-Unit breadcrumb in the header. dtTruckOpenedFromUnit
+     is set by dtUdJumpToTruck when the user pivoted from a unit drawer. */
+  const backPill = document.getElementById('dt-drawer-back-to-unit');
+  const backId   = document.getElementById('dt-drawer-back-to-unit-id');
+  if (backPill && backId) {
+    if (dtTruckOpenedFromUnit) {
+      backId.textContent = dtTruckOpenedFromUnit;
+      backPill.style.display = 'flex';
+    } else {
+      backPill.style.display = 'none';
+    }
+  }
+
+  /* Unlink Unit button — only meaningful if there's actually a linked unit on
+     this truck. Hide otherwise so users don't try to unlink nothing.
+     A truck has a linked unit if either the truck record's own unitId is
+     populated (most fleet trucks) or there's a UNITS_DATA registry entry
+     pointing at this truck (recently attached / unlink-cycled units). */
+  const unlinkBtn = document.getElementById('dt-drawer-unlink-btn');
+  if (unlinkBtn) {
+    const hasLinkedUnit = !t.unlinked && (
+      (t.unitId && t.unitId !== '--') ||
+      ((typeof UNITS_DATA !== 'undefined') &&
+        UNITS_DATA.some(u => u.status === 'Linked Unit' && u.truck === truckNum))
+    );
+    unlinkBtn.style.display = hasLinkedUnit ? '' : 'none';
+  }
+  /* Restore Ping Truck + Fleet map for any drawer open path — they get hidden
+     by dtTruckDrawerApplyUnlinkedState, so we put them back any time we
+     start opening a truck. The unlinked branch below will re-hide them. */
+  const pingBtn = document.getElementById('dt-drawer-ping-btn');
+  if (pingBtn) pingBtn.style.display = '';
+  const fleetMap = document.getElementById('dt-drawer-map');
+  if (fleetMap) fleetMap.style.display = '';
+
+  /* Branch: if the truck is in unlinked state, reshape the drawer to the
+     "Truck Not Connected" empty state and stop here. The full Linked drawer
+     (Components overview, Sensor, etc.) doesn't apply when nothing's attached.
+
+     Source of truth is t.unlinked on the truck record itself — that flag is
+     set/cleared by attach/unlink mutations. Don't cross-check UNITS_DATA
+     here: UNITS_DATA is the unit registry (units with full lifecycle history),
+     and most fleet trucks have synthetic unitId references without a UNITS_DATA
+     row. Cross-checking would falsely flag those as unlinked. */
+  if (t.unlinked) {
+    /* Header label */
+    document.getElementById('dt-drawer-truck-num').textContent = t.num;
+    /* Reshape into empty state (tabs, side panel, scroll content all swapped) */
+    dtTruckDrawerApplyUnlinkedState(truckNum);
+    /* Open the drawer */
+    document.getElementById('dt-drawer-scrim').classList.add('open');
+    requestAnimationFrame(() => drawer.classList.add('open'));
+    return;
+  }
+
+  /* Linked-truck path: ensure tabs are restored to the full set. If we're
+     coming back from a previously-shown empty state, the tabs container was
+     overwritten. Rebuild it. */
+  const tabsEl = document.getElementById('dt-drawer-tabs');
+  if (tabsEl && !tabsEl.querySelector('[onclick*="overview"]')) {
+    tabsEl.innerHTML = `
+      <button class="dt-drawer-tab active" onclick="dtDrawerTab('overview', this)">Components overview</button>
+      <button class="dt-drawer-tab" onclick="dtDrawerTab('lifespan', this)">Unit Lifespan</button>
+      <button class="dt-drawer-tab" onclick="dtDrawerTab('timeline', this)">Component timeline</button>
+      <button class="dt-drawer-tab" onclick="dtDrawerTab('logs', this)">Trucks Logs</button>
+      <button class="dt-drawer-tab" onclick="dtDrawerTab('manual', this)">Manual Control</button>
+      <button class="dt-drawer-tab" onclick="dtDrawerTab('sensor', this)">Sensor</button>
+      <button class="dt-drawer-tab" onclick="dtDrawerTab('config', this)">Configuration</button>`;
+  }
 
   /* Ensure the drawer is reset to Components overview before populating cards.
      Without this, reopening the drawer after the user left it on a different
@@ -10513,8 +13486,503 @@ function dtTimelineOpenLog(severity) {
   dtJumpToLogRow(rowId);
 }
 
-function dtCloseDrawer() {
-  const drawer = document.getElementById('dt-drawer');
+/* Back-to-Unit pivot — used when truck drawer was opened from a unit and the
+   user wants to return to that unit's drawer. Reuses the unit-drawer pivot
+   logic (instant close, animated open). */
+function dtBackToUnit() {
+  const unitId = dtTruckOpenedFromUnit;
+  if (!unitId) return;
+  dtUdJumpToUnitFromTruck(unitId);
+}
+
+/* ════════════════════════════════════════════════════════════
+   TRUCK DRAWER → UNLINK UNIT
+   Mirrors the mobile workflow:
+   - Confirm dialog (centered overlay inside the drawer, red icon, danger CTA)
+   - On confirm, mutate the data: revert unit to Unlinked, push truck back into
+     UNLINKED_TRUCKS pool, mark truck.unlinked in trucks[] / CC_TRUCKS so all
+     surfaces reflect the change, update headers + tables
+   - Success state replaces the scroll content with two CTAs: Back to Trucks /
+     Go to Unit (pivots into the now-unlinked unit drawer)
+═══════════════════════════════════════════════════════════ */
+
+function dtTruckDrawerUnlinkUnit() {
+  const truckNum = dtDrawerTruckNum;
+  if (!truckNum) return;
+  const u = (typeof UNITS_DATA !== 'undefined')
+    ? UNITS_DATA.find(x => x.status === 'Linked Unit' && x.truck === truckNum)
+    : null;
+  if (!u) return; // nothing to unlink
+
+  // Render the inline confirm panel right below the Unlink Unit button.
+  // No modal — the user can still see the components view, side panel, and
+  // header context while reading the confirmation.
+  const panel = document.getElementById('dt-drawer-unlink-confirm');
+  if (!panel) return;
+  panel.innerHTML = `
+    <div class="dt-inline-confirm-head">
+      <div class="dt-inline-confirm-icon">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
+          <path d="M8 12a4.5 4.5 0 006 0l2.5-2.5a4.5 4.5 0 00-6-6L9 5" stroke="#d70100" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 8a4.5 4.5 0 00-6 0L3.5 10.5a4.5 4.5 0 006 6L11 15" stroke="#d70100" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3 3l14 14" stroke="#d70100" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="dt-inline-confirm-text">
+        <div class="dt-inline-confirm-title">Unlink Unit ${u.id} from this truck?</div>
+        <div class="dt-inline-confirm-body">
+          The unit becomes inactive and will need to be reattached before it can collect data again.
+        </div>
+      </div>
+    </div>
+    <div class="dt-inline-confirm-btns">
+      <button class="dt-inline-confirm-btn cancel" onclick="dtTruckDrawerUnlinkCancel()">Cancel</button>
+      <button class="dt-inline-confirm-btn danger" onclick="dtTruckDrawerUnlinkDo()">Confirm Unlink</button>
+    </div>`;
+  panel.style.display = 'block';
+
+  // Disable the trigger button while the confirm is showing — re-clicking it
+  // would re-trigger the same panel; this also signals "we heard you, decide now."
+  const btn = document.getElementById('dt-drawer-unlink-btn');
+  if (btn) btn.setAttribute('aria-pressed', 'true');
+}
+
+function dtTruckDrawerUnlinkCancel() {
+  const panel = document.getElementById('dt-drawer-unlink-confirm');
+  if (panel) { panel.style.display = 'none'; panel.innerHTML = ''; }
+  const btn = document.getElementById('dt-drawer-unlink-btn');
+  if (btn) btn.removeAttribute('aria-pressed');
+}
+
+function dtTruckDrawerUnlinkDo() {
+  dtTruckDrawerUnlinkCancel();
+  const truckNum = dtDrawerTruckNum;
+  if (!truckNum) return;
+  const u = (typeof UNITS_DATA !== 'undefined')
+    ? UNITS_DATA.find(x => x.status === 'Linked Unit' && x.truck === truckNum)
+    : null;
+  if (!u) return;
+
+  const unitId = u.id;
+
+  // 1. Revert the unit to Unlinked
+  u.status = 'Unlinked Unit';
+  u.truck  = '--';
+  u.assignedToTruck = null;
+
+  // 2. Add truck back into UNLINKED_TRUCKS pool if not already there.
+  //    Synthesize defaults if we don't have detailed metadata.
+  if (typeof UNLINKED_TRUCKS !== 'undefined') {
+    const exists = UNLINKED_TRUCKS.find(t => t.number === truckNum);
+    if (!exists) {
+      UNLINKED_TRUCKS.push({
+        number: truckNum,
+        type:   'Front',
+        drum:   '--',
+        water:  '--',
+        mixer:  '--',
+      });
+    }
+  }
+
+  // 3. Mark the truck as unlinked in main trucks[] and CC_TRUCKS so other
+  //    surfaces (All Trucks page, Conditions, Overview) all reflect it.
+  if (typeof trucks !== 'undefined') {
+    const tMain = trucks.find(t => t.num === truckNum);
+    if (tMain) {
+      tMain.unlinked = true;
+      tMain.err = 0;
+      tMain.wrn = 0;
+      tMain.truckMode = 'Non Active';
+      tMain.unitId = '--';
+    }
+  }
+  if (typeof CC_TRUCKS !== 'undefined') {
+    const tCC = CC_TRUCKS.find(t => t.num === truckNum);
+    if (tCC) {
+      tCC.unlinked = true;
+      tCC.err = 0;
+      tCC.wrn = 0;
+    }
+  }
+
+  // 4. Update Trucks-page Unlinked Units stat live so the header counter
+  //    reflects the change immediately.
+  const unlinkedEl = document.getElementById('dt-stat-unlinked');
+  if (unlinkedEl && typeof UNITS_DATA !== 'undefined') {
+    unlinkedEl.textContent = UNITS_DATA.filter(x => x.status === 'Unlinked Unit').length;
+  }
+
+  // 5. Re-render any visible tables so the change shows immediately.
+  if (typeof dtRefreshTable === 'function' && typeof dtActiveTab !== 'undefined') {
+    dtRefreshTable(dtActiveTab);
+  }
+  if (typeof dtUnitsRender === 'function') dtUnitsRender();
+
+  // 6. Reshape the truck drawer for the unlinked state.
+  //    The drawer becomes the "Truck Not Connected" view: only Logs + Attach Unit
+  //    tabs, grey status pill, empty side panel, illustration + "Connect Unit"
+  //    CTA in the scroll area. Matches Figma node 608:38407.
+  dtTruckDrawerApplyUnlinkedState(truckNum);
+  // Clear the cross-drawer breadcrumb — it's stale once the unit is detached.
+  dtTruckOpenedFromUnit = null;
+
+  // 7. Trinity Success toast — confirms the action while the empty state
+  //    explains the new persistent reality of the truck drawer.
+  dtShowToast({
+    title: 'Unit unlinked',
+    body: `Unit ${unitId} was removed from Truck ${truckNum}. Connect a new unit to bring this truck back online.`,
+  });
+}
+
+/* ════════════════════════════════════════════════════════════
+   TRUCK DRAWER — UNLINKED STATE RENDERER
+   Reshapes the truck drawer to the empty-state view used when the truck
+   has no unit attached. Called from dtTruckDrawerUnlinkDo (immediately
+   after unlink) and from dtOpenTruck (whenever opening an unlinked truck).
+═══════════════════════════════════════════════════════════ */
+
+function dtTruckDrawerApplyUnlinkedState(truckNum) {
+  // Tabs — only Logs + Attach Unit. Default to Logs (active).
+  // Logs in the unlinked state is essentially "no activity to show" — we render
+  // the empty state directly. Routing to dtDrawerTab('logs') would render the
+  // full Linked-truck logs analyzer, which doesn't apply here.
+  const tabsEl = document.getElementById('dt-drawer-tabs');
+  if (tabsEl) {
+    tabsEl.innerHTML = `
+      <button class="dt-drawer-tab active" onclick="dtTruckDrawerShowUnlinkedLogs()">Logs</button>
+      <button class="dt-drawer-tab" onclick="dtTruckDrawerOpenAttachUnit()">Attach Unit</button>`;
+  }
+
+  // Status pill — grey "Not Connected" (no green ignition)
+  const ignBadge = document.getElementById('dt-drawer-ign-badge');
+  const ignText  = document.getElementById('dt-drawer-ign-text');
+  if (ignBadge) ignBadge.classList.add('off');
+  if (ignText)  ignText.textContent = 'Not Connected';
+
+  // Hide the Unlink Unit button (nothing to unlink) and the Back-to-Unit pill
+  const unlinkBtn = document.getElementById('dt-drawer-unlink-btn');
+  if (unlinkBtn) unlinkBtn.style.display = 'none';
+  const backPill = document.getElementById('dt-drawer-back-to-unit');
+  if (backPill)  backPill.style.display = 'none';
+  // Hide Ping Truck — nothing live to ping. Hide Fleet map — no GPS without a unit.
+  const pingBtn = document.getElementById('dt-drawer-ping-btn');
+  if (pingBtn) pingBtn.style.display = 'none';
+  const fleetMap = document.getElementById('dt-drawer-map');
+  if (fleetMap) fleetMap.style.display = 'none';
+  // Also collapse the inline confirm panel if it was somehow open
+  const inlineConfirm = document.getElementById('dt-drawer-unlink-confirm');
+  if (inlineConfirm) { inlineConfirm.style.display = 'none'; inlineConfirm.innerHTML = ''; }
+
+  // Side panel — Connectivity + Truck Mode chips become "--"
+  const connEl = document.getElementById('dt-drawer-conn');
+  if (connEl) { connEl.textContent = '--'; connEl.style.color = 'var(--soft)'; }
+  const modeEl = document.getElementById('dt-drawer-mode');
+  if (modeEl) modeEl.textContent = '--';
+  // Side panel meta — most fields go to "--". Drum manufacturer/size/loads
+  // remain because they're physical truck properties that survive a unit swap.
+  ['dt-drawer-ver','dt-drawer-commissioned','dt-drawer-last-conn',
+   'dt-drawer-last-status','dt-drawer-last-reboot'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '--';
+  });
+
+  // Scroll area — illustration + copy + "Connect Unit" CTA
+  const scroll = document.getElementById('dt-drawer-scroll');
+  if (scroll) {
+    scroll.innerHTML = `
+      <div class="dt-truck-empty">
+        <div class="dt-truck-empty-illust">${dtTruckEmptyIllustrationSvg()}</div>
+        <div class="dt-truck-empty-title">Truck Not Connected</div>
+        <div class="dt-truck-empty-sub">Attach Verifi hardware to have a connected truck.</div>
+        <button class="dt-truck-empty-cta" onclick="dtTruckDrawerOpenAttachUnit()">Connect Unit</button>
+      </div>`;
+  }
+}
+
+/* Illustration matches the Figma's broken-plug graphic — soft blue blob
+   background with two unplugged connectors and spark marks. Inline SVG so
+   we don't depend on an asset URL that might expire. Sourced from Trinity
+   Design System (illustration node), preserving the original viewBox. */
+function dtTruckEmptyIllustrationSvg() {
+  return `
+    <svg width="340" height="340" viewBox="0 0 395 395" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M119.285 104.232C119.285 104.232 161.64 136.374 226.03 76.2745C283.215 22.9019 329.908 107.112 330.235 147.439C330.658 199.677 273.049 241.477 301.007 275.788C328.964 310.099 245.563 366.758 200.615 317.724C144.7 256.726 129.552 306.286 97.6813 306.286C74.8071 306.286 27.8442 249.45 59.5577 207.165C86.2443 171.583 71.6899 159.775 64.6418 147.439C54.4747 129.648 78.6196 81.358 119.285 104.232Z" fill="#DEE9FF"/>
+      <path d="M289.326 175.26C291.603 176.106 294.091 176.162 296.458 175.619C306.375 173.343 340.476 167.315 334.55 193.74C333.26 198.983 313.288 228.345 341.731 239.063C343.815 239.858 346.019 240.292 348.249 240.346C357.006 240.527 374.36 238.459 381.623 231.066C390.396 222.135 380.811 226.37 380.811 226.37C380.811 226.37 347.456 240.926 335.674 225.483C334.363 223.765 333.528 221.269 333.289 219.121C332.875 215.396 334.529 210.474 336.701 206.189C339.642 200.389 353.76 174.301 323.108 166.702C316.047 165.02 305.791 163.51 292.568 169.077C284.854 172.324 286.563 174.233 289.326 175.26Z" fill="#BDD6F9"/>
+      <path d="M296.152 165.521L287.274 168.844C284.209 169.991 282.654 173.405 283.801 176.47L284.242 177.645C285.389 180.71 288.803 182.265 291.867 181.118L300.745 177.795C303.81 176.648 305.365 173.234 304.218 170.169L303.778 168.993C302.631 165.929 299.216 164.374 296.152 165.521Z" fill="#0E84E5"/>
+      <path d="M241.656 175.136L212.377 186.094C210.845 186.667 210.067 188.374 210.641 189.907L210.756 190.215C211.33 191.747 213.037 192.524 214.569 191.951L243.848 180.993C245.381 180.419 246.158 178.712 245.584 177.18L245.469 176.872C244.896 175.339 243.189 174.562 241.656 175.136Z" fill="white"/>
+      <path d="M249.828 196.969L220.549 207.927C219.016 208.501 218.239 210.208 218.813 211.74L218.928 212.048C219.501 213.581 221.209 214.358 222.741 213.784L252.02 202.826C253.553 202.253 254.33 200.546 253.756 199.013L253.641 198.705C253.067 197.173 251.36 196.396 249.828 196.969Z" fill="white"/>
+      <path d="M276.86 160.235L253.13 169.117C250.065 170.264 248.511 173.678 249.658 176.743L257.759 198.39C258.906 201.455 262.321 203.01 265.385 201.863L289.116 192.981C292.18 191.834 293.735 188.42 292.588 185.355L284.486 163.708C283.339 160.643 279.925 159.088 276.86 160.235Z" fill="#5895F9"/>
+      <path d="M255.581 165.915L231.851 174.796C228.786 175.943 227.232 179.357 228.379 182.422L238.045 208.248C239.192 211.313 242.606 212.868 245.671 211.721L269.401 202.839C272.466 201.692 274.02 198.278 272.873 195.213L263.207 169.387C262.06 166.322 258.646 164.768 255.581 165.915Z" fill="#699CFF"/>
+      <path d="M259.296 160.673L259.11 160.743C257.067 161.508 256.031 163.784 256.795 165.827L270.336 202.007C271.101 204.05 273.377 205.086 275.42 204.322L275.606 204.252C277.649 203.487 278.686 201.211 277.921 199.168L264.38 162.988C263.615 160.945 261.339 159.909 259.296 160.673Z" fill="#208AF2"/>
+      <path d="M17.3259 183.805C17.3259 183.805 64.9842 170.412 58.065 201.269C56.8634 206.151 39.5666 231.291 60.1698 243.361C64.5938 245.953 69.6992 247.101 74.8261 247.074C84.0183 247.026 98.5908 245.257 105.137 238.594C113.911 229.662 104.326 233.898 104.326 233.898C104.326 233.898 76.9551 245.157 62.8737 236.182C58.0656 233.117 55.8862 227.184 57.1919 221.634C57.8592 218.877 58.8755 216.216 60.216 213.716C63.2784 207.981 77.2745 181.829 46.6225 174.229C39.5614 172.548 29.3059 171.037 16.0822 176.605C2.85863 182.172 17.3259 183.805 17.3259 183.805Z" fill="#BDD6F9"/>
+      <path d="M111.546 226.993L102.668 230.316C99.6032 231.463 98.0486 234.877 99.1956 237.942L99.6356 239.117C100.783 242.182 104.197 243.737 107.262 242.59L116.14 239.267C119.204 238.12 120.759 234.706 119.612 231.641L119.172 230.465C118.025 227.401 114.61 225.846 111.546 226.993Z" fill="#0E84E5"/>
+      <path d="M126.545 212.386L113.388 217.311C110.323 218.458 108.769 221.872 109.916 224.936L116.26 241.889C117.407 244.953 120.821 246.508 123.886 245.361L137.044 240.436C140.108 239.289 141.663 235.875 140.516 232.811L134.171 215.858C133.024 212.794 129.61 211.239 126.545 212.386Z" fill="#5895F9"/>
+      <path d="M148.45 199.334L128.828 206.678C125.764 207.825 124.209 211.239 125.356 214.304L135.022 240.131C136.169 243.195 139.583 244.75 142.648 243.603L162.27 236.259C165.334 235.112 166.889 231.698 165.742 228.633L156.076 202.807C154.929 199.742 151.515 198.187 148.45 199.334Z" fill="#699CFF"/>
+      <path d="M152.606 193.986L152.42 194.056C150.377 194.82 149.341 197.096 150.105 199.139L163.646 235.319C164.411 237.363 166.687 238.399 168.73 237.634L168.916 237.565C170.959 236.8 171.996 234.524 171.231 232.481L157.69 196.301C156.925 194.258 154.649 193.221 152.606 193.986Z" fill="#208AF2"/>
+      <path d="M202.711 170.936C202.005 170.858 201.356 170.508 200.902 169.961C200.448 169.414 200.224 168.712 200.277 168.003L201.741 141.262C201.828 139.665 203.177 138.451 204.708 138.592L206.841 138.79C208.371 138.931 209.467 140.37 209.253 141.956L205.656 168.5C205.573 169.207 205.221 169.855 204.672 170.309C204.124 170.762 203.421 170.987 202.711 170.936Z" fill="#418DF9"/>
+      <path d="M190.07 173.242C189.85 173.307 189.62 173.327 189.392 173.303C189.164 173.278 188.943 173.209 188.742 173.1C188.541 172.99 188.364 172.841 188.22 172.663C188.076 172.485 187.969 172.28 187.904 172.06L182.676 155.425C182.524 154.952 182.566 154.438 182.793 153.996C183.019 153.554 183.412 153.219 183.885 153.066L185.238 152.658C185.47 152.59 185.714 152.571 185.954 152.602C186.194 152.634 186.425 152.714 186.632 152.839C186.839 152.964 187.018 153.13 187.158 153.328C187.298 153.526 187.395 153.75 187.443 153.987L191.318 171.03C191.426 171.488 191.358 171.97 191.126 172.38C190.895 172.79 190.518 173.098 190.07 173.242Z" fill="#418DF9"/>
+      <path d="M183.015 182.835C182.078 183.995 180.194 183.982 178.744 182.803L152.996 161.884C151.458 160.634 151.004 158.566 151.998 157.335L153.383 155.62C154.377 154.388 156.418 154.489 157.873 155.841L182.236 178.477C183.608 179.752 183.951 181.674 183.015 182.835Z" fill="#418DF9"/>
+      <path d="M194.917 236.868C195.58 237.124 196.118 237.628 196.417 238.272C196.716 238.917 196.754 239.653 196.522 240.325L188.277 265.805C187.784 267.327 186.17 268.155 184.726 267.629L182.713 266.893C181.269 266.366 180.576 264.694 181.189 263.216L191.447 238.471C191.707 237.809 192.213 237.272 192.86 236.973C193.506 236.674 194.243 236.636 194.917 236.868Z" fill="#418DF9"/>
+      <path d="M207.728 237.867C207.957 237.861 208.185 237.9 208.399 237.981C208.613 238.063 208.809 238.186 208.975 238.344C209.141 238.501 209.275 238.69 209.368 238.899C209.462 239.108 209.513 239.334 209.52 239.563L210.326 256.981C210.352 257.477 210.181 257.964 209.849 258.334C209.517 258.703 209.052 258.926 208.555 258.954L207.142 259.003C206.9 259.009 206.66 258.965 206.436 258.874C206.212 258.782 206.009 258.645 205.841 258.472C205.672 258.298 205.541 258.091 205.457 257.864C205.372 257.638 205.336 257.396 205.349 257.154L205.956 239.687C205.969 239.216 206.158 238.768 206.486 238.431C206.815 238.094 207.258 237.892 207.728 237.867Z" fill="#418DF9"/>
+      <path d="M216.999 230.394C218.201 229.511 220.019 230.006 221.12 231.515L240.672 258.316C241.839 259.917 241.75 262.032 240.474 262.969L238.697 264.274C237.422 265.21 235.474 264.591 234.412 262.912L216.637 234.805C215.638 233.223 215.796 231.277 216.999 230.394Z" fill="#418DF9"/>
+    </svg>`;
+}
+
+/* Connect Unit / Attach Unit tab handler — placeholder for the truck-side
+   attach flow (pick a unit to attach to this truck). For now, surfaces a
+   helpful message so users understand what to do; full picker comes next. */
+/* Logs tab handler in the unlinked state — re-renders the empty state.
+   Used when the user navigates back to Logs after visiting Attach Unit.
+   Routing through dtDrawerTab('logs') would render the full Linked-truck
+   logs analyzer, which doesn't apply when there's no unit reporting. */
+function dtTruckDrawerShowUnlinkedLogs() {
+  // Update tab active state — Logs is index 0
+  document.querySelectorAll('#dt-drawer-tabs .dt-drawer-tab').forEach(t => t.classList.remove('active'));
+  const tabs = document.querySelectorAll('#dt-drawer-tabs .dt-drawer-tab');
+  if (tabs.length >= 1) tabs[0].classList.add('active');
+
+  const scroll = document.getElementById('dt-drawer-scroll');
+  if (!scroll) return;
+  scroll.innerHTML = `
+    <div class="dt-truck-empty">
+      <div class="dt-truck-empty-illust">${dtTruckEmptyIllustrationSvg()}</div>
+      <div class="dt-truck-empty-title">Truck Not Connected</div>
+      <div class="dt-truck-empty-sub">Attach Verifi hardware to have a connected truck.</div>
+      <button class="dt-truck-empty-cta" onclick="dtTruckDrawerOpenAttachUnit()">Connect Unit</button>
+    </div>`;
+}
+
+/* ════════════════════════════════════════════════════════════
+   TRUCK DRAWER → ATTACH UNIT (truck-side picker)
+   Mirror of the unit-side Attach to Truck flow. From an unlinked truck,
+   the user picks a unit out of all the Unlinked Unit candidates. Same UX
+   patterns: table of options with search, click-to-select, toolbar-row
+   inline confirm. On confirm, the unit goes to Pending and the user is
+   pivoted into the unit drawer's Configuration tab in edit mode — same
+   completion path as the unit-side flow, so we have one source of truth
+   for the Pending → Linked workflow.
+═══════════════════════════════════════════════════════════ */
+
+let dtTrAttachSelected = null;  // currently-selected unit id (null = none)
+let dtTrAttachQuery    = '';    // search query
+
+function dtTruckDrawerOpenAttachUnit() {
+  // Reset state on each open so a previous selection doesn't carry over
+  dtTrAttachSelected = null;
+  dtTrAttachQuery    = '';
+
+  // Tab active state
+  document.querySelectorAll('#dt-drawer-tabs .dt-drawer-tab').forEach(t => t.classList.remove('active'));
+  const tabs = document.querySelectorAll('#dt-drawer-tabs .dt-drawer-tab');
+  if (tabs.length >= 2) tabs[1].classList.add('active');
+
+  dtTruckDrawerRenderAttachUnit();
+}
+
+function dtTruckDrawerRenderAttachUnit() {
+  const truckNum = dtDrawerTruckNum;
+  if (!truckNum) return;
+
+  const allUnits = (typeof UNITS_DATA !== 'undefined') ? UNITS_DATA : [];
+  // Only Unlinked Units are valid candidates — already-linked or pending ones
+  // can't be reattached; maintenance is not in scope here.
+  const candidates = allUnits.filter(u => u.status === 'Unlinked Unit');
+  const q = (dtTrAttachQuery || '').toLowerCase();
+  const filtered = candidates.filter(u =>
+    !q ||
+    String(u.id).toLowerCase().includes(q) ||
+    (u.contract || '').toLowerCase().includes(q) ||
+    (u.sysType  || '').toLowerCase().includes(q) ||
+    (u.config   || '').toLowerCase().includes(q) ||
+    (u.tgw      || '').toLowerCase().includes(q)
+  );
+
+  const cols = [
+    { id:'id',         label:'Unit ID',       width:140 },
+    { id:'contract',   label:'Contract',      width:160 },
+    { id:'sysType',    label:'System Type',   width:120 },
+    { id:'config',     label:'Config',        width:170 },
+    { id:'firstComm',  label:'Commissioned',  width:140 },
+    { id:'status',     label:'Status',        width:140 },
+  ];
+
+  const headerCells = cols.map((c, i) => {
+    const isLast = i === cols.length - 1;
+    return `
+      <div class="dt-attach-th" style="width:${c.width}px;${isLast ? 'flex:1;' : ''}">
+        <span class="dt-attach-th-label">${c.label}</span>
+        <div class="dt-attach-th-menu">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="3" r="1.2" fill="#36322d"/>
+            <circle cx="8" cy="8" r="1.2" fill="#36322d"/>
+            <circle cx="8" cy="13" r="1.2" fill="#36322d"/>
+          </svg>
+        </div>
+        ${isLast ? '' : '<div class="dt-attach-th-divider"></div>'}
+      </div>`;
+  }).join('');
+
+  const rows = filtered.map((u, i) => {
+    const sel  = dtTrAttachSelected === u.id;
+    const safe = String(u.id).replace(/'/g, "\\'");
+    const alt  = i % 2 === 1;
+    return `
+      <div class="dt-attach-row${sel ? ' selected' : ''}${alt ? ' alt' : ''}" onclick="dtTrAttachSelect('${safe}')">
+        <div class="dt-attach-cell" style="width:${cols[0].width}px;">${u.id}</div>
+        <div class="dt-attach-cell" style="width:${cols[1].width}px;">${u.contract || '—'}</div>
+        <div class="dt-attach-cell" style="width:${cols[2].width}px;">${u.sysType || '—'}</div>
+        <div class="dt-attach-cell" style="width:${cols[3].width}px;">${u.config || '—'}</div>
+        <div class="dt-attach-cell" style="width:${cols[4].width}px;">${u.firstCommissioned || '—'}</div>
+        <div class="dt-attach-cell" style="flex:1;">Unlinked Unit</div>
+      </div>`;
+  }).join('');
+
+  const empty = filtered.length === 0
+    ? `<div class="dt-attach-empty">${candidates.length === 0 ? 'No unlinked units available. Add a new unit from the Units page.' : 'No unlinked units match your search.'}</div>`
+    : '';
+
+  const btnDisabled = !dtTrAttachSelected;
+
+  const scroll = document.getElementById('dt-drawer-scroll');
+  if (!scroll) return;
+  scroll.innerHTML = `
+    <div class="dt-attach-title">${candidates.length} Unit${candidates.length === 1 ? '' : 's'} Unlinked</div>
+
+    <div class="dt-attach-toolbar" id="dt-tr-attach-toolbar">
+      <div class="dt-attach-search">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="#36322d9e" stroke-width="1.4"/><path d="M11 11l2.5 2.5" stroke="#36322d9e" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <input id="dt-tr-attach-search" placeholder="Search" autocomplete="off"
+               value="${dtTrAttachQuery.replace(/"/g, '&quot;')}"
+               oninput="dtTrAttachSearch()" />
+      </div>
+      <button class="dt-attach-cta" ${btnDisabled ? 'disabled' : ''} onclick="dtTrAttachConfirm()">
+        Attach Unit
+      </button>
+    </div>
+
+    <!-- Inline link-confirm — replaces the toolbar row when the user clicks
+         Attach Unit. Same height + horizontal position, so the unit table
+         below doesn't shift and the selected row stays exactly in place. -->
+    <div id="dt-tr-attach-confirm" class="dt-inline-confirm informational toolbar-row" style="display:none;"></div>
+
+    <div class="dt-attach-table">
+      <div class="dt-attach-table-hdr">
+        ${headerCells}
+      </div>
+      <div class="dt-attach-table-body" id="dt-tr-attach-table-body">
+        ${rows}${empty}
+      </div>
+    </div>
+  `;
+}
+
+function dtTrAttachSelect(unitId) {
+  dtTrAttachSelected = dtTrAttachSelected === unitId ? null : unitId;
+  // Update row selection without re-rendering (preserves search focus)
+  document.querySelectorAll('#dt-tr-attach-table-body .dt-attach-row').forEach(r => r.classList.remove('selected'));
+  if (dtTrAttachSelected) {
+    const safe = String(dtTrAttachSelected).replace(/'/g, "\\'");
+    const row = document.querySelector(`#dt-tr-attach-table-body .dt-attach-row[onclick*="${safe}"]`);
+    if (row) row.classList.add('selected');
+  }
+  // Toggle the Attach Unit CTA
+  const cta = document.querySelector('#dt-drawer-scroll .dt-attach-cta');
+  if (cta) cta.disabled = !dtTrAttachSelected;
+}
+
+function dtTrAttachSearch() {
+  dtTrAttachQuery = document.getElementById('dt-tr-attach-search').value;
+  dtTruckDrawerRenderAttachUnit();
+  // Restore focus + caret since we re-rendered the input
+  const input = document.getElementById('dt-tr-attach-search');
+  if (input) {
+    input.focus();
+    const len = input.value.length;
+    input.setSelectionRange(len, len);
+  }
+}
+
+function dtTrAttachConfirm() {
+  if (!dtTrAttachSelected || !dtDrawerTruckNum) return;
+  const panel = document.getElementById('dt-tr-attach-confirm');
+  if (!panel) return;
+  panel.innerHTML = `
+    <div class="dt-inline-confirm-head">
+      <div class="dt-inline-confirm-icon">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+          <path d="M6.5 9.5a3.5 3.5 0 005 0l2-2a3.5 3.5 0 00-5-5L7.5 3.5" stroke="#3069e3" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9.5 6.5a3.5 3.5 0 00-5 0l-2 2a3.5 3.5 0 005 5l1-1" stroke="#3069e3" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="dt-inline-confirm-text">
+        <div class="dt-inline-confirm-title">Link Unit ${dtTrAttachSelected} to Truck ${dtDrawerTruckNum}?</div>
+        <div class="dt-inline-confirm-body">Unit moves to Pending Configuration — fill in config, then save to finalize.</div>
+      </div>
+    </div>
+    <div class="dt-inline-confirm-btns">
+      <button class="dt-inline-confirm-btn cancel" onclick="dtTrAttachCancel()">Cancel</button>
+      <button class="dt-inline-confirm-btn primary" onclick="dtTrAttachDo()">Link to unit</button>
+    </div>`;
+  panel.style.display = 'flex';
+  const toolbar = document.getElementById('dt-tr-attach-toolbar');
+  if (toolbar) toolbar.style.display = 'none';
+}
+
+function dtTrAttachCancel() {
+  const panel = document.getElementById('dt-tr-attach-confirm');
+  if (panel) { panel.style.display = 'none'; panel.innerHTML = ''; }
+  const toolbar = document.getElementById('dt-tr-attach-toolbar');
+  if (toolbar) toolbar.style.display = '';
+  const cta = document.querySelector('#dt-drawer-scroll .dt-attach-cta');
+  if (cta) cta.disabled = !dtTrAttachSelected;
+}
+
+function dtTrAttachDo() {
+  dtTrAttachCancel();
+  if (!dtTrAttachSelected || !dtDrawerTruckNum) return;
+
+  const truckNum = dtDrawerTruckNum;
+  const u = UNITS_DATA.find(x => x.id === dtTrAttachSelected);
+  if (!u) return;
+
+  // Stage 1 of the link — set Pending, claim the truck. This mirrors the
+  // mutations in dtUdAttachDo so the Pending state is identical regardless
+  // of which side initiated. Capture original state for revert-on-cancel.
+  dtUdPendingPrevState = {
+    unitId: u.id,
+    prevStatus: u.status,        // 'Unlinked Unit'
+    prevTruck:  u.truck,          // '--'
+    prevAssigned: u.assignedToTruck || null,
+    truckSnapshot: (typeof UNLINKED_TRUCKS !== 'undefined')
+      ? UNLINKED_TRUCKS.find(t => t.number === truckNum)
+      : null,
+  };
+
+  u.status = 'Pending';
+  u.truck  = truckNum;
+  u.assignedToTruck = new Date().toLocaleDateString('en-US', {month:'2-digit',day:'2-digit',year:'numeric'});
+
+  // Remove the truck from the unlinked pool while pending — if the user
+  // cancels mid-config we'll put it back via dtUdRevertPending.
+  const idx = (typeof UNLINKED_TRUCKS !== 'undefined')
+    ? UNLINKED_TRUCKS.findIndex(t => t.number === truckNum) : -1;
+  if (idx > -1) UNLINKED_TRUCKS.splice(idx, 1);
+
+  // Refresh the units table so the unit's status reflects Pending immediately
+  if (typeof dtUnitsRender === 'function') dtUnitsRender();
+
+  // Pivot to the unit drawer. dtUdOpen detects status === 'Pending' and
+  // routes to Configuration tab in edit mode automatically — same completion
+  // path as the unit-side flow, so the rest of the workflow (Save & Link
+  // → Linked) is shared logic.
+  dtTruckOpenedFromUnit = null;  // we're going TO the unit, not FROM it
+  dtUdJumpToUnitFromTruck(u.id);
+}
+
+
+
+function dtCloseDrawer() {  const drawer = document.getElementById('dt-drawer');
   drawer.classList.remove('open');
   document.getElementById('dt-drawer-scrim').classList.remove('open');
   dtDrawerTruckNum = null;
@@ -10523,6 +13991,9 @@ function dtCloseDrawer() {
   if (typeof dtLogsEdTab !== 'undefined') dtLogsEdTab = 'structured';
   // Stop sensor ticker if it was running
   if (typeof senStop === 'function') senStop();
+  // Closing normally clears any cross-drawer breadcrumb — a future truck open
+  // shouldn't show "Back to Unit" unless the user pivoted in fresh.
+  dtTruckOpenedFromUnit = null;
 }
 
 function dtDrawerNav(dir) {
@@ -11721,6 +15192,24 @@ function dtCfgSearchKey(e) {
   if (e.key === 'ArrowUp')   { e.preventDefault(); dtCfgSearchStep(-1); }
 }
 
+/* Returns the IDs of the save-bar elements + topbar for whichever drawer
+   is currently active. Truck drawer and unit drawer each have their own
+   save bar pinned to the bottom of their drawer-main; the topbar (with
+   the "Update" button) only exists in the truck drawer.
+
+   We detect the active drawer by the application's logical state — is a
+   unit currently open? — rather than the DOM `.open` class. The DOM check
+   was unreliable during pivot animations: when pivoting truck → unit, the
+   render pass runs before the unit drawer gets its `.open` class added,
+   so the active-context check resolved to the truck drawer instead and
+   the save bar appeared in the (now-closed) truck drawer. */
+function dtCfgActiveContext() {
+  const isUd = !!dtUdCurrentUnitId;
+  return isUd
+    ? { saveBarId:'dt-ud-cfg-savebar', saveBtnId:'dt-ud-cfg-save-btn', topbarId:null }
+    : { saveBarId:'dt-cfg-savebar',    saveBtnId:'dt-cfg-save-btn',    topbarId:'dt-cfg-topbar' };
+}
+
 function dtCfgStartEdit() {
   dtCfgEditMode = true;
 
@@ -11741,10 +15230,14 @@ function dtCfgStartEdit() {
     el.style.opacity = '1';
   });
 
-  /* Swap Edit button for save bar */
-  document.getElementById('dt-cfg-topbar').style.display = 'none';
-  const bar = document.getElementById('dt-cfg-savebar');
-  bar.style.display = 'block';
+  /* Swap Edit button for save bar (use the active drawer's save bar) */
+  const ctx = dtCfgActiveContext();
+  if (ctx.topbarId) {
+    const tb = document.getElementById(ctx.topbarId);
+    if (tb) tb.style.display = 'none';
+  }
+  const bar = document.getElementById(ctx.saveBarId);
+  if (bar) bar.style.display = 'block';
 }
 
 function dtCfgSave() {
@@ -11757,13 +15250,17 @@ function dtCfgSave() {
   document.querySelectorAll('#dt-cfg-accs .cfg-edit-toggle').forEach(el => {
     el.dataset.orig = el.classList.contains('on') ? 'on' : 'off';
   });
-  dtCfgExitEdit();
 
-  /* Brief confirmation flash */
-  const saveBtn = document.getElementById('dt-cfg-save-btn');
+  /* Brief confirmation flash on whichever save button is visible */
+  const ctx = dtCfgActiveContext();
+  const saveBtn = document.getElementById(ctx.saveBtnId);
+  const originalLabel = saveBtn ? saveBtn.textContent : 'Save changes';
   if (saveBtn) {
     saveBtn.textContent = 'Saved ✓';
-    setTimeout(() => { saveBtn.textContent = 'Save changes'; dtCfgExitEdit(); }, 1000);
+    setTimeout(() => {
+      saveBtn.textContent = originalLabel;
+      dtCfgExitEdit();
+    }, 1000);
   } else {
     dtCfgExitEdit();
   }
@@ -11801,9 +15298,19 @@ function dtCfgExitEdit() {
   const nav = document.getElementById('dt-cfg-search-nav');
   if (nav) nav.style.display = 'none';
 
-  /* Restore Edit button, hide save bar */
-  document.getElementById('dt-cfg-topbar').style.display = 'flex';
-  document.getElementById('dt-cfg-savebar').style.display = 'none';
+  /* Restore Edit button (truck drawer only — unit drawer hides it permanently
+     since the Update affordance doesn't apply there), hide whichever save bar
+     is showing. Both bars get hidden defensively so leftover state from one
+     drawer doesn't leak into the other. */
+  const ctx = dtCfgActiveContext();
+  if (ctx.topbarId) {
+    const truckTopbar = document.getElementById(ctx.topbarId);
+    if (truckTopbar) truckTopbar.style.display = 'flex';
+  }
+  const truckBar = document.getElementById('dt-cfg-savebar');
+  if (truckBar) truckBar.style.display = 'none';
+  const udBar = document.getElementById('dt-ud-cfg-savebar');
+  if (udBar) udBar.style.display = 'none';
 }
   const CHEV = `<svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   const CARET = `<svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg>`;
@@ -11957,6 +15464,10 @@ function dtDrawerTab(tab, el) {
   const scroll = document.getElementById('dt-drawer-scroll');
   if (tab === 'timeline') {
     scroll.innerHTML = dtBuildTimeline();
+  } else if (tab === 'lifespan') {
+    // Render Unit Lifespan content for the unit installed on this truck.
+    // Looks up UNITS_DATA by truck number; falls back to a default if no link.
+    scroll.innerHTML = dtBuildLifespanForTruck(dtDrawerTruckNum);
   } else if (tab === 'overview') {
     scroll.innerHTML = `
       <div class="dt-drawer-section-hdr" onclick="dtDrawerToggleSection('mcs',this)">

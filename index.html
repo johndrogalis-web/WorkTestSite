@@ -266,6 +266,31 @@
     border-color:rgba(48,105,227,0.4);
   }
   .dt-drawer-back-to-unit strong { font-weight:600; }
+
+  /* ── "Also viewing" cross-drawer footer ─────────────────────
+     Persistent row at the bottom of a side panel or scroll area
+     that lets the user pivot to the companion drawer (truck ↔ unit).
+     Matches the mobile pattern shown in the screenshots. */
+  .dt-also-viewing {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 16px; margin:0 0 4px;
+    border-top:1px solid var(--border);
+  }
+  .dt-also-viewing-label {
+    font-size:13px; color:var(--soft); letter-spacing:-0.26px;
+  }
+  .dt-also-viewing-link {
+    display:inline-flex; align-items:center; gap:5px;
+    font-size:13px; font-weight:500; color:var(--blue-link);
+    letter-spacing:-0.26px; background:none; border:none;
+    cursor:pointer; padding:0; font-family:var(--font);
+  }
+  .dt-also-viewing-link:hover { opacity:0.75; }
+  .dt-also-viewing-link svg { flex-shrink:0; }
+  /* Inline variant — lives inside scroll content (unit lifespan footer) */
+  .dt-also-viewing.inline {
+    margin:16px 0 0; padding:16px 0 0;
+  }
   .dt-drawer-tabs {
     display:flex; border-bottom:1px solid var(--border);
     overflow-x:auto; scrollbar-width:none;
@@ -5308,15 +5333,15 @@
                    via a unit pivot. Sits at the right edge of the title row so
                    it's visible from any tab (Components overview, etc.). -->
               <button id="dt-drawer-back-to-unit" class="dt-drawer-back-to-unit" style="display:none;margin-left:auto;" onclick="dtBackToUnit()">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M9.5 6h-7M5.5 2.5L2 6l3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <span>Back to Unit <strong id="dt-drawer-back-to-unit-id">—</strong></span>
+                <svg id="dt-drawer-back-to-unit-arrow-left" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M9.5 6h-7M5.5 2.5L2 6l3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span id="dt-drawer-back-to-unit-label">Back to Unit </span><strong id="dt-drawer-back-to-unit-id">—</strong>
+                <svg id="dt-drawer-back-to-unit-arrow-right" width="12" height="12" viewBox="0 0 12 12" fill="none" style="display:none;"><path d="M2.5 6h7M6.5 2.5L10 6l-3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
             </div>
 
             <!-- Tabs -->
             <div class="dt-drawer-tabs" id="dt-drawer-tabs">
               <button class="dt-drawer-tab active" onclick="dtDrawerTab('overview', this)">Components overview</button>
-              <button class="dt-drawer-tab" onclick="dtDrawerTab('lifespan', this)">Unit Lifespan</button>
               <button class="dt-drawer-tab" onclick="dtDrawerTab('timeline', this)">Component timeline</button>
               <button class="dt-drawer-tab" onclick="dtDrawerTab('logs', this)">Trucks Logs</button>
               <button class="dt-drawer-tab" onclick="dtDrawerTab('manual', this)">Manual Control</button>
@@ -12176,6 +12201,7 @@ function dtBuildLifespanHTML(targetUnitId, linkedTruckNum, showOpenTruckLink) {
     html += `<div class="dt-ls-section-label removed-section">Removed · ${removedComps.length}</div>`;
     html += removedComps.map((c, i) => buildCard(c, activeComps.length + i, true)).join('');
   }
+
   return html;
 }
 
@@ -12218,9 +12244,29 @@ function dtUdRenderLifespan() {
   document.getElementById('dt-ud-scroll').innerHTML = dtBuildLifespanHTML(u.id, null, true);
 }
 
-/* Track the unit ID the user pivoted from so the truck drawer can offer a
-   "Back to Unit" return path. Cleared whenever the truck drawer is closed
-   in any other way. */
+/* Open the unit linked to the currently-open truck drawer. Pivots using the
+   same cross-drawer animation as the existing dtUdJumpToTruck flow (in reverse).
+   The unit drawer opens on the Lifespan tab; the "Also viewing → Components
+   Overview" footer in the lifespan view lets the user come back. */
+function dtDrawerOpenLinkedUnit() {
+  const truckNum = dtDrawerTruckNum;
+  if (!truckNum) return;
+  // Find the linked unit — check UNITS_DATA registry first, then fall back
+  // to the truck record's unitId for synthetic prototype trucks.
+  let unitId = null;
+  if (typeof UNITS_DATA !== 'undefined') {
+    const u = UNITS_DATA.find(x => x.status === 'Linked Unit' && x.truck === truckNum);
+    if (u) unitId = u.id;
+  }
+  if (!unitId) {
+    const t = (typeof trucks !== 'undefined') && trucks.find(x => x.num === truckNum);
+    if (t && t.unitId && t.unitId !== '--') unitId = t.unitId;
+  }
+  if (!unitId) return;
+  // Pivot: truck drawer → unit drawer (same animation as dtUdJumpToUnitFromTruck)
+  dtUdJumpToUnitFromTruck(unitId);
+}
+
 let dtTruckOpenedFromUnit = null;
 
 function dtUdJumpToTruck(truckNum) {
@@ -13183,13 +13229,32 @@ function dtOpenTruck(truckNum) {
 
   const drawer = document.getElementById('dt-drawer');
 
-  /* Show or hide the Back-to-Unit breadcrumb in the header. dtTruckOpenedFromUnit
-     is set by dtUdJumpToTruck when the user pivoted from a unit drawer. */
-  const backPill = document.getElementById('dt-drawer-back-to-unit');
-  const backId   = document.getElementById('dt-drawer-back-to-unit-id');
+  /* Show the unit pill in the header whenever the truck has a linked unit.
+     - Arrived via unit pivot (dtTruckOpenedFromUnit set): "← Back to Unit X"
+     - Arrived directly from All Trucks: "Unit X →"
+     Either way the pill opens the unit drawer; dtBackToUnit handles both. */
+  const backPill       = document.getElementById('dt-drawer-back-to-unit');
+  const backId         = document.getElementById('dt-drawer-back-to-unit-id');
+  const backLabel      = document.getElementById('dt-drawer-back-to-unit-label');
+  const arrowLeft      = document.getElementById('dt-drawer-back-to-unit-arrow-left');
+  const arrowRight     = document.getElementById('dt-drawer-back-to-unit-arrow-right');
   if (backPill && backId) {
-    if (dtTruckOpenedFromUnit) {
-      backId.textContent = dtTruckOpenedFromUnit;
+    const unitId = dtTruckOpenedFromUnit ||
+      (typeof UNITS_DATA !== 'undefined' && UNITS_DATA.find(u => u.status === 'Linked Unit' && u.truck === truckNum)?.id) ||
+      (t.unitId && t.unitId !== '--' ? t.unitId : null);
+    if (unitId) {
+      backId.textContent = unitId;
+      if (dtTruckOpenedFromUnit) {
+        // Back navigation — left arrow, "Back to Unit X"
+        if (backLabel)  backLabel.textContent = 'Back to Unit ';
+        if (arrowLeft)  arrowLeft.style.display  = '';
+        if (arrowRight) arrowRight.style.display = 'none';
+      } else {
+        // Forward navigation — right arrow, "Unit X"
+        if (backLabel)  backLabel.textContent = 'Unit ';
+        if (arrowLeft)  arrowLeft.style.display  = 'none';
+        if (arrowRight) arrowRight.style.display = '';
+      }
       backPill.style.display = 'flex';
     } else {
       backPill.style.display = 'none';
@@ -13245,7 +13310,6 @@ function dtOpenTruck(truckNum) {
   if (tabsEl && !tabsEl.querySelector('[onclick*="overview"]')) {
     tabsEl.innerHTML = `
       <button class="dt-drawer-tab active" onclick="dtDrawerTab('overview', this)">Components overview</button>
-      <button class="dt-drawer-tab" onclick="dtDrawerTab('lifespan', this)">Unit Lifespan</button>
       <button class="dt-drawer-tab" onclick="dtDrawerTab('timeline', this)">Component timeline</button>
       <button class="dt-drawer-tab" onclick="dtDrawerTab('logs', this)">Trucks Logs</button>
       <button class="dt-drawer-tab" onclick="dtDrawerTab('manual', this)">Manual Control</button>
@@ -13486,13 +13550,27 @@ function dtTimelineOpenLog(severity) {
   dtJumpToLogRow(rowId);
 }
 
-/* Back-to-Unit pivot — used when truck drawer was opened from a unit and the
-   user wants to return to that unit's drawer. Reuses the unit-drawer pivot
-   logic (instant close, animated open). */
+/* Unit pivot — opens the unit linked to the current truck. Handles both:
+   - Back navigation: user arrived via a unit pivot, returns to that unit
+   - Forward navigation: user arrived from All Trucks, opens the linked unit */
 function dtBackToUnit() {
-  const unitId = dtTruckOpenedFromUnit;
-  if (!unitId) return;
-  dtUdJumpToUnitFromTruck(unitId);
+  const truckNum = dtDrawerTruckNum;
+  // Back path: we know exactly which unit to return to
+  if (dtTruckOpenedFromUnit) {
+    dtUdJumpToUnitFromTruck(dtTruckOpenedFromUnit);
+    return;
+  }
+  // Forward path: find the linked unit from the truck record
+  let unitId = null;
+  if (typeof UNITS_DATA !== 'undefined') {
+    const u = UNITS_DATA.find(x => x.status === 'Linked Unit' && x.truck === truckNum);
+    if (u) unitId = u.id;
+  }
+  if (!unitId && typeof trucks !== 'undefined') {
+    const t = trucks.find(x => x.num === truckNum);
+    if (t && t.unitId && t.unitId !== '--') unitId = t.unitId;
+  }
+  if (unitId) dtUdJumpToUnitFromTruck(unitId);
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -15650,203 +15728,343 @@ renderTrucks();
 renderOverview();
 
 
-/* ══════════════════════════════════════════════════
-   DEEP LINK — hash-based URL state
-   Format: #section/view/detail
-   Examples:
-     #trucks                        → All Trucks, Where to start
-     #trucks/overview               → All Trucks, Overview
-     #trucks/cc                     → All Trucks, Components Condition
-     #units                         → Units list
-     #units/47382910                → Units list, unit 47382910 open, Life Span
-     #units/47382910/attach         → Units list, unit 47382910 open, Attach tab
-═══════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════
+   DEEP LINK — hash-based URL routing for prototype
+   ──────────────────────────────────────────────────────────────
+   Every meaningful state has a unique URL so Jira tickets can
+   link directly to the exact screen being specced. Developers
+   can copy the URL from the browser bar at any point — the hash
+   updates automatically as you navigate.
+
+   HASH FORMAT
+   ───────────
+   #view/section[/subview][/id][/tab]
+
+   VIEW       → mobile | desktop   (which prototype mode)
+   SECTION    → trucks | units     (main nav section)
+   SUBVIEW    → wts | overview | cc  (desktop WTS sub-tabs only)
+   ID         → truck number or unit id (when a drawer is open)
+   TAB        → drawer tab slug
+
+   EXAMPLES
+   ───────────────────────────────────────────────────────────────
+   #mobile/trucks                          All Trucks list
+   #mobile/trucks/45689                    Truck drawer, default tab
+   #mobile/trucks/45689/components         Truck drawer, Components tab
+   #mobile/trucks/45689/logs               Truck drawer, Logs tab
+   #mobile/trucks/45689/sensor             Truck drawer, Sensor tab
+   #mobile/trucks/45689/manual             Truck drawer, Manual Control tab
+   #mobile/trucks/45689/config             Truck drawer, Config tab
+   #mobile/trucks/45689/timeline           Truck drawer, Component timeline tab
+   #mobile/units                           Units list
+   #mobile/units/83651024                  Unit drawer, default tab
+   #mobile/units/83651024/lifespan         Unit drawer, Lifespan tab
+   #mobile/units/83651024/config           Unit drawer, Config tab
+   #mobile/units/83651024/attach           Unit drawer, Attach to Truck tab
+
+   #desktop/trucks                         All Trucks (WTS default)
+   #desktop/trucks/wts                     All Trucks — Where to Start
+   #desktop/trucks/overview                All Trucks — Overview
+   #desktop/trucks/cc                      All Trucks — Component Conditions
+   #desktop/trucks/45689                   Truck drawer open (default tab)
+   #desktop/trucks/45689/logs              Truck drawer — Logs
+   #desktop/trucks/45689/overview          Truck drawer — Components overview
+   #desktop/trucks/45689/timeline          Truck drawer — Component timeline
+   #desktop/trucks/45689/manual            Truck drawer — Manual Control
+   #desktop/trucks/45689/sensor            Truck drawer — Sensor
+   #desktop/trucks/45689/config            Truck drawer — Configuration
+   #desktop/units                          Units page
+   #desktop/units/83651024                 Unit drawer open (default tab)
+   #desktop/units/83651024/lifespan        Unit drawer — Lifespan
+   #desktop/units/83651024/config          Unit drawer — Configuration
+   #desktop/units/83651024/attach          Unit drawer — Attach to Truck
+
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Write / Read hash ─────────────────────────────────────── */
 
 function setHash(parts) {
-  const hash = parts.filter(Boolean).join('/');
-  try { history.replaceState(null, '', '#' + hash); }
-  catch(e) { location.hash = hash; }
+  const hash = parts.filter(x => x !== null && x !== undefined && x !== '').join('/');
+  try { history.replaceState(null, '', '#' + hash); } catch(e) { location.hash = hash; }
 }
 
-function readHash() {
-  const raw   = location.hash.replace('#', '');
-  const parts = raw ? raw.split('/') : [];
-  return {
-    section: parts[0] || 'trucks',
-    view:    parts[1] || '',
-    detail:  parts[2] || '',
-  };
+function readHashParts() {
+  return location.hash.replace(/^#/, '').split('/').filter(Boolean);
 }
 
-/* Patch navigation functions to write the hash */
+/* ── Determine current view name from body class ───────────── */
+function currentViewName() {
+  if (document.body.classList.contains('view-desktop')) return 'desktop';
+  if (document.body.classList.contains('view-tablet'))  return 'tablet';
+  return 'mobile';
+}
+
+/* ── MOBILE hash writers ────────────────────────────────────── */
+
+/* Patch setView to write view into hash */
+const _origSetView = setView;
+setView = function(view) {
+  _origSetView(view);
+  /* Preserve the rest of the hash if already set, just swap the view segment */
+  const parts = readHashParts();
+  if (parts.length > 0) {
+    parts[0] = view;
+    setHash(parts);
+  } else {
+    setHash([view, 'trucks']);
+  }
+};
+
 const _origSelectWts = selectWts;
 selectWts = function(label, el) {
   _origSelectWts(label, el);
-  const map = { 'Where to start': '', 'Overview': 'overview', 'Components Condition': 'cc' };
-  setHash(['trucks', map[label]]);
+  const map = { 'Where to start': 'wts', 'Overview': 'overview', 'Components Condition': 'cc' };
+  setHash(['mobile', 'trucks', map[label] || 'wts']);
 };
 
 const _origOpenUnits = openUnits;
 openUnits = function() {
   _origOpenUnits();
-  setHash(['units']);
+  setHash(['mobile', 'units']);
 };
 
 const _origGoToAllTrucks = goToAllTrucks;
 goToAllTrucks = function() {
   _origGoToAllTrucks();
-  setHash(['trucks']);
+  setHash(['mobile', 'trucks']);
 };
 
-const _origOpenUnitDetail = openUnitDetail;
-openUnitDetail = function(unitId) {
-  _origOpenUnitDetail(unitId);
-  const tab = typeof udCurrentTab !== 'undefined' ? udCurrentTab : 'lifespan';
-  setHash(['units', unitId, tab === 'attach' ? 'attach' : '']);
-};
-
-const _origUdSelectNav = typeof udSelectNav !== 'undefined' ? udSelectNav : null;
-if (_origUdSelectNav) {
-  udSelectNav = function(label, el) {
-    _origUdSelectNav(label, el);
-    const unitId = udCurrentUnit ? udCurrentUnit.id : '';
-    setHash(['units', unitId, label === 'Attach to Truck' ? 'attach' : '']);
-  };
-}
-
-const _origCloseUnitDetail = closeUnitDetail;
-closeUnitDetail = function() {
-  _origCloseUnitDetail();
-  setHash(['units']);
-};
-
-/* ── Drawer hash routing ── */
-const DRAWER_TAB_HASH = {
-  'Components Overview': 'overview',
-  'Component Timeline':  'timeline',
-  'Manual Control':      'manual',
-  'Sensor':              'sensor',
-  'Configuration':       'config',
-  'Truck Logs':          'logs',
-};
-const DRAWER_HASH_TAB = Object.fromEntries(
-  Object.entries(DRAWER_TAB_HASH).map(([k,v]) => [v, k])
-);
-
-function drawerSetHash() {
-  /* Read current truck num and active nav label */
-  const truckNumEl = document.getElementById('drawer-truck-num');
-  const truckNum   = truckNumEl ? truckNumEl.textContent.replace('Truck: ','').trim() : '';
-  const navLabel   = document.getElementById('drawer-nav-label')
-                       ? document.getElementById('drawer-nav-label').textContent.trim()
-                       : 'Components Overview';
-  const tab = DRAWER_TAB_HASH[navLabel] || 'overview';
-  const wtsLabel = document.getElementById('wts-label') ? document.getElementById('wts-label').textContent : 'Where to start';
-  const screenMap = { 'Where to start': '', 'Overview': 'overview', 'Components Condition': 'cc' };
-  const screen = screenMap[wtsLabel] || '';
-  if (truckNum) {
-    setHash(['trucks', screen, truckNum, tab].filter(Boolean));
-  } else {
-    setHash(['trucks', screen].filter(Boolean));
-  }
-}
-
+/* Mobile truck drawer — openDrawer(idx, context) */
 const _origOpenDrawer = openDrawer;
 openDrawer = function(i, context) {
   _origOpenDrawer(i, context);
-  drawerSetHash();
+  const truckNum = trucks[i] ? trucks[i].num : '';
+  if (truckNum) setHash(['mobile', 'trucks', truckNum, 'overview']);
 };
 
 const _origCloseDrawer = closeDrawer;
 closeDrawer = function() {
   _origCloseDrawer();
-  /* Restore hash to the current trucks page (wts/overview/cc) */
-  const wtsLabel = document.getElementById('wts-label') ? document.getElementById('wts-label').textContent : 'Where to start';
-  const map = { 'Where to start': '', 'Overview': 'overview', 'Components Condition': 'cc' };
-  setHash(['trucks', map[wtsLabel]]);
+  setHash(['mobile', 'trucks']);
 };
 
+/* Mobile drawer tab nav */
 const _origSelectDrawerNav = selectDrawerNav;
 selectDrawerNav = function(label, el) {
   _origSelectDrawerNav(label, el);
-  drawerSetHash();
+  const truckNumEl = document.getElementById('drawer-truck-num');
+  const truckNum   = truckNumEl ? truckNumEl.textContent.replace('Truck:','').trim() : '';
+  const tabMap = {
+    'Components Overview': 'components',
+    'Component Timeline':  'timeline',
+    'Manual Control':      'manual',
+    'Sensor':              'sensor',
+    'Configuration':       'config',
+    'Truck Logs':          'logs',
+  };
+  const tab = tabMap[label] || 'overview';
+  if (truckNum) setHash(['mobile', 'trucks', truckNum, tab]);
 };
 
-/* On load — restore state from hash */
-(function restoreFromHash() {
-  const { section, view, detail } = readHash();
-  const parts = location.hash.replace('#','').split('/').filter(Boolean);
+/* Mobile unit detail */
+const _origOpenUnitDetail = openUnitDetail;
+openUnitDetail = function(unitId) {
+  _origOpenUnitDetail(unitId);
+  setHash(['mobile', 'units', unitId, 'lifespan']);
+};
 
-  if (section === 'units') {
-    openUnits();
-    if (view && view.length > 4) {
-      const unitId = view;
+const _origCloseUnitDetail = closeUnitDetail;
+closeUnitDetail = function() {
+  _origCloseUnitDetail();
+  setHash(['mobile', 'units']);
+};
+
+/* Mobile unit nav (Lifespan / Attach to Truck) */
+const _origUdSelectNav = typeof udSelectNav !== 'undefined' ? udSelectNav : null;
+if (_origUdSelectNav) {
+  udSelectNav = function(label, el) {
+    _origUdSelectNav(label, el);
+    const unitId = udCurrentUnit ? udCurrentUnit.id : '';
+    const tabMap = { 'Life Span': 'lifespan', 'Attach to Truck': 'attach', 'Configuration': 'config' };
+    const tab = tabMap[label] || 'lifespan';
+    if (unitId) setHash(['mobile', 'units', unitId, tab]);
+  };
+}
+
+/* ── DESKTOP hash writers ───────────────────────────────────── */
+
+/* Patch dtNavGo to keep hash in sync */
+const _origDtNavGo = dtNavGo;
+dtNavGo = function(page) {
+  _origDtNavGo(page);
+  setHash(['desktop', page]);
+};
+
+/* Patch dtOpenTruck */
+const _origDtOpenTruck = dtOpenTruck;
+dtOpenTruck = function(truckNum) {
+  _origDtOpenTruck(truckNum);
+  setHash(['desktop', 'trucks', truckNum, 'overview']);
+};
+
+/* Patch dtCloseDrawer */
+const _origDtCloseDrawer = dtCloseDrawer;
+dtCloseDrawer = function() {
+  _origDtCloseDrawer();
+  /* Return to the current desktop sub-page (wts / overview / cc) */
+  const wtsEl = document.getElementById('dt-wts-label');
+  const subMap = { 'Where to start': 'wts', 'Overview': 'overview', 'Component Conditions': 'cc' };
+  const sub = wtsEl ? (subMap[wtsEl.textContent.trim()] || 'wts') : 'wts';
+  setHash(['desktop', 'trucks', sub]);
+};
+
+/* Patch dtDrawerTab (truck drawer tabs on desktop) */
+const _origDtDrawerTab = dtDrawerTab;
+dtDrawerTab = function(tab, el) {
+  _origDtDrawerTab(tab, el);
+  const parts = readHashParts();
+  /* Preserve view + section + truckNum, just swap the tab slug */
+  const truckNum = parts[3] && parts[3].length <= 6 ? parts[3] : (parts[2] && parts[2].length <= 6 ? parts[2] : '');
+  if (truckNum) setHash(['desktop', 'trucks', truckNum, tab]);
+};
+
+/* Patch dtUdOpen (unit drawer open on desktop) */
+const _origDtUdOpen = dtUdOpen;
+dtUdOpen = function(unitId) {
+  _origDtUdOpen(unitId);
+  setHash(['desktop', 'units', unitId, 'lifespan']);
+};
+
+/* Patch dtUdSelectTab (unit drawer tab switches on desktop) */
+const _origDtUdSelectTab = dtUdSelectTab;
+dtUdSelectTab = function(tab) {
+  _origDtUdSelectTab(tab);
+  const unitId = dtUdCurrentUnitId || '';
+  if (unitId) setHash(['desktop', 'units', unitId, tab]);
+};
+
+/* Desktop WTS sub-tab switch (selectWts is mobile-only; desktop uses selectDtTab) */
+const _origSelectDtTab = typeof selectDtTab !== 'undefined' ? selectDtTab : null;
+if (_origSelectDtTab) {
+  selectDtTab = function(tab, el) {
+    _origSelectDtTab(tab, el);
+    const tabMap = { 'Where to start': 'wts', 'Overview': 'overview', 'Components Condition': 'cc' };
+    setHash(['desktop', 'trucks', tabMap[tab] || 'wts']);
+  };
+}
+
+/* ── RESTORE from hash on page load ─────────────────────────── */
+
+(function restoreFromHash() {
+  const parts = readHashParts();
+  if (!parts.length) {
+    /* No hash — default to mobile trucks */
+    setHash(['mobile', 'trucks']);
+    return;
+  }
+
+  const view    = parts[0]; // mobile | desktop | tablet
+  const section = parts[1]; // trucks | units
+  const p2      = parts[2]; // subview (wts/overview/cc) OR id OR tab
+  const p3      = parts[3]; // id or tab
+  const p4      = parts[4]; // tab
+
+  /* Set view mode first */
+  if (view === 'desktop' || view === 'tablet' || view === 'mobile') {
+    /* Call the original to avoid double hash write */
+    _origSetView(view);
+  }
+
+  if (view === 'desktop') {
+    /* ── Desktop restore ── */
+    if (section === 'units') {
+      /* Open units page */
       setTimeout(() => {
-        openUnitDetail(unitId);
-        if (detail === 'attach') {
-          setTimeout(() => udSelectNav('Attach to Truck',
-            document.querySelector('#ud-nav-dropdown .wts-option:nth-child(2)')), 50);
+        dtNavGo('units');
+        if (p2 && p2.length > 4) {
+          /* Unit drawer */
+          setTimeout(() => {
+            _origDtUdOpen(p2);
+            const tab = p3 || 'lifespan';
+            setTimeout(() => {
+              if (typeof dtUdSelectTab === 'function') _origDtUdSelectTab(tab);
+            }, 80);
+          }, 60);
         }
-      }, 50);
+      }, 60);
+    } else {
+      /* trucks page (default) */
+      setTimeout(() => {
+        /* Sub-tab: wts / overview / cc */
+        const subTabs = { 'wts': 'Where to start', 'overview': 'Overview', 'cc': 'Components Condition' };
+        if (p2 && subTabs[p2]) {
+          /* Sub-tab only, no drawer */
+          const label = subTabs[p2];
+          const el = document.querySelector(`.dt-sub-tab[data-label="${label}"]`);
+          if (el && typeof selectDtTab === 'function') selectDtTab(label, el);
+        } else if (p2 && !subTabs[p2]) {
+          /* p2 is a truck number — open its drawer */
+          const truckNum = p2;
+          const tab = p3 || 'overview';
+          setTimeout(() => {
+            _origDtOpenTruck(truckNum);
+            setTimeout(() => {
+              if (tab !== 'overview') _origDtDrawerTab(tab, null);
+            }, 80);
+          }, 80);
+        }
+      }, 80);
     }
   } else {
-    /* trucks screen */
-    /* Check if a truck drawer URL: #trucks/[screen]/[truckNum]/[tab] or #trucks/[truckNum]/[tab] */
-    let truckNum = null;
-    let tabHash  = null;
-    let screenPart = '';
-
-    if (parts.length >= 3 && parts[0] === 'trucks') {
-      /* Could be #trucks/overview/45689/timeline or #trucks/45689/timeline */
-      const screenMap = { 'overview': 'Overview', 'cc': 'Components Condition' };
-      if (screenMap[parts[1]]) {
-        /* #trucks/overview/truckNum/tab */
-        screenPart = parts[1];
-        truckNum   = parts[2];
-        tabHash    = parts[3] || 'overview';
-      } else {
-        /* #trucks/truckNum/tab */
-        truckNum = parts[1];
-        tabHash  = parts[2] || 'overview';
-      }
-    } else if (parts.length === 2 && parts[0] === 'trucks') {
-      /* Could be #trucks/overview or #trucks/45689 */
-      const screenMap = { 'overview': 'Overview', 'cc': 'Components Condition' };
-      if (screenMap[parts[1]]) {
-        screenPart = parts[1];
-      } else {
-        truckNum = parts[1];
-        tabHash  = 'overview';
-      }
-    }
-
-    /* Restore WTS page state */
-    if (screenPart) {
-      const screenMap = { 'overview': 'Overview', 'cc': 'Components Condition' };
-      const label = screenMap[screenPart];
-      if (label) {
-        const el = document.querySelector(`#wts-dropdown .wts-option:nth-child(${label === 'Overview' ? 2 : 3})`);
-        if (el) _origSelectWts(label, el);
-      }
-    }
-
-    /* Restore truck drawer */
-    if (truckNum) {
-      const truckIdx = trucks.findIndex(t => t.num === truckNum);
-      if (truckIdx > -1) {
+    /* ── Mobile / tablet restore ── */
+    if (section === 'units') {
+      _origOpenUnits();
+      if (p2 && p2.length > 4) {
         setTimeout(() => {
-          _origOpenDrawer(truckIdx);
-          /* Restore drawer tab */
-          if (tabHash && DRAWER_HASH_TAB[tabHash]) {
+          _origOpenUnitDetail(p2);
+          const tab = p3 || 'lifespan';
+          if (tab === 'attach') {
             setTimeout(() => {
-              const navLabel = DRAWER_HASH_TAB[tabHash];
-              const navOpts  = document.querySelectorAll('#drawer-nav-dropdown .wts-option');
-              navOpts.forEach(o => {
-                if (o.textContent.trim() === navLabel) _origSelectDrawerNav(navLabel, o);
-              });
-            }, 100);
+              const attachEl = document.querySelector('#ud-nav-dropdown .wts-option:nth-child(2)');
+              if (attachEl && _origUdSelectNav) _origUdSelectNav('Attach to Truck', attachEl);
+            }, 80);
           }
-        }, 50);
+        }, 60);
+      }
+    } else {
+      /* trucks page */
+      const subMap = { 'wts': 'Where to start', 'overview': 'Overview', 'cc': 'Components Condition' };
+      if (p2 && subMap[p2]) {
+        const label = subMap[p2];
+        const el = document.querySelector(`#wts-dropdown .wts-option[data-label="${label}"]`);
+        if (el) _origSelectWts(label, el);
+      } else if (p2 && !subMap[p2]) {
+        /* p2 is a truck number — open drawer */
+        const truckNum = p2;
+        const tab = p3 || 'overview';
+        const truckIdx = trucks.findIndex(t => t.num === truckNum);
+        if (truckIdx > -1) {
+          setTimeout(() => {
+            _origOpenDrawer(truckIdx);
+            const tabLabelMap = {
+              'components': 'Components Overview',
+              'timeline':   'Component Timeline',
+              'manual':     'Manual Control',
+              'sensor':     'Sensor',
+              'config':     'Configuration',
+              'logs':       'Truck Logs',
+            };
+            const navLabel = tabLabelMap[tab] || 'Components Overview';
+            if (navLabel !== 'Components Overview') {
+              setTimeout(() => {
+                const navOpts = document.querySelectorAll('#drawer-nav-dropdown .wts-option');
+                navOpts.forEach(o => {
+                  if (o.textContent.trim() === navLabel) _origSelectDrawerNav(navLabel, o);
+                });
+              }, 80);
+            }
+          }, 60);
+        }
       }
     }
   }

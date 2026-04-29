@@ -6633,9 +6633,10 @@ function renderTrucks() {
           <div class="exp-row"><div class="exp-label">Connection</div><div class="exp-val" style="gap:5px;display:flex;align-items:center;">${connIcon}</div></div>
           <div class="exp-row">
             <div class="exp-label">Last Seen</div>
-            <div class="exp-val" style="flex-direction:column;align-items:flex-start;gap:2px;text-align:left;">
+            <div class="exp-val" style="flex-direction:column;align-items:flex-start;gap:1px;text-align:left;">
               <span>${dtLastConnLocal(t.lastConn, TRUCK_TZ_MAP[t.account] || 'America/Phoenix')}</span>
-              <span style="font-size:11px;color:var(--soft);">${dtLastConnTruckLocal(t.lastConn, TRUCK_TZ_MAP[t.account] || 'America/Phoenix')} · truck time</span>
+              <span style="font-size:11px;color:var(--soft);">${t.lastConn}</span>
+              <span style="font-size:11px;color:var(--soft);">${(function(raw, tz) { var parts = raw ? raw.match(/(\d+:\d+\s*[AP]M)\s+(\d+\/\d+\/\d+)/i) : null; if (!parts) return ''; try { var time = parts[1], date = parts[2], dp = date.split('/'), stored = new Date('20'+dp[2]+'-'+dp[0].padStart(2,'0')+'-'+dp[1].padStart(2,'0')+' '+time); var tzAbbr = new Intl.DateTimeFormat('en-US',{timeZone:tz,timeZoneName:'short'}).formatToParts(stored).find(function(p){return p.type==='timeZoneName';}); return (tzAbbr ? tzAbbr.value : tz) + ' · truck time'; } catch(e) { return ''; } })(t.lastConn, TRUCK_TZ_MAP[t.account] || 'America/Phoenix')}</span>
             </div>
           </div>
           <button class="view-truck-btn" onclick="${viewTruckAction}">View Truck</button>

@@ -2490,7 +2490,33 @@
   .dt-conn-dot.live { background:#16a34a; }
   .dt-conn-dot.none { background:rgba(54,50,45,0.25); }
 
-  /* Software version pill — WTS, Overview, CC tables.
+  /* ── Last Connection timezone tooltip ──────────────────────
+     Hover a lastconn cell to peek at the truck's local time.
+     Default display is the viewer's local timezone. */
+  .dt-lastconn-cell {
+    position:relative; cursor:default;
+  }
+  .dt-lastconn-cell .dt-tz-tooltip {
+    display:none;
+    position:absolute; bottom:calc(100% + 6px); left:50%;
+    transform:translateX(-50%);
+    background:#1a1814; color:white;
+    font-size:12px; letter-spacing:-0.24px; line-height:1.5;
+    padding:6px 10px; border-radius:7px; white-space:nowrap;
+    z-index:999; pointer-events:none;
+    box-shadow:0 2px 8px rgba(0,0,0,0.25);
+  }
+  .dt-lastconn-cell .dt-tz-tooltip::after {
+    content:''; position:absolute; top:100%; left:50%;
+    transform:translateX(-50%);
+    border:5px solid transparent;
+    border-top-color:#1a1814;
+  }
+  .dt-lastconn-cell:hover .dt-tz-tooltip { display:block; }
+  .dt-lastconn-header {
+    display:inline-flex; align-items:center; gap:5px;
+  }
+  .dt-lastconn-header svg { opacity:0.45; flex-shrink:0; }
      Monospace, subtle background, no colour coding. */
   .dt-ver-pill {
     display:inline-flex; align-items:center;
@@ -4052,7 +4078,7 @@
     <svg width="72" height="18" viewBox="0 0 96 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="white"/>
     </svg>
-    <span style="font-size:10px;font-family:'DM Mono',monospace;color:rgba(255,255,255,0.4);letter-spacing:0.2px;margin-left:8px;align-self:center;">v2.4.1</span>
+    <span style="font-size:10px;font-family:'DM Mono',monospace;color:rgba(255,255,255,0.4);letter-spacing:0.2px;margin-left:8px;align-self:center;">v2.4.2</span>
   </div>
   <div class="vp-pills">
     <button class="vp-pill active" onclick="setView('mobile')">Mobile</button>
@@ -5852,6 +5878,21 @@
               </div>
             </div>
           </div>
+          <!-- Columns button + popover — sits next to Filters (left side, table config) -->
+          <div style="position:relative;flex-shrink:0;">
+            <button class="dt-filter-btn" id="dt-cols-btn" onclick="dtColsToggle(event)">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="5.5" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="10" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
+              Columns
+            </button>
+            <div class="dt-cols-popover" id="dt-cols-popover">
+              <div class="dt-cols-pop-head">
+                <span>Columns</span>
+                <button class="dt-cols-pop-reset" onclick="dtColsReset()">Reset</button>
+              </div>
+              <div class="dt-cols-pop-list" id="dt-cols-pop-list"></div>
+            </div>
+          </div>
+
           <div class="dt-search-wrap" id="dt-srch-wrap" style="position:relative;">
             <div class="dt-search-field" id="dt-srch-field">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="#36322d9e" stroke-width="1.4"/><path d="M11 11l2.5 2.5" stroke="#36322d9e" stroke-width="1.4" stroke-linecap="round"/></svg>
@@ -5894,21 +5935,6 @@
             </button>
           </div>
           <div class="dt-spacer"></div>
-
-          <!-- Columns button + popover -->
-          <div style="position:relative;flex-shrink:0;">
-            <button class="dt-filter-btn" id="dt-cols-btn" onclick="dtColsToggle(event)">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="5.5" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="10" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
-              Columns
-            </button>
-            <div class="dt-cols-popover" id="dt-cols-popover">
-              <div class="dt-cols-pop-head">
-                <span>Columns</span>
-                <button class="dt-cols-pop-reset" onclick="dtColsReset()">Reset</button>
-              </div>
-              <div class="dt-cols-pop-list" id="dt-cols-pop-list"></div>
-            </div>
-          </div>
 
           <button class="dt-add-btn" onclick="dtAtOpen()">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -6605,7 +6631,13 @@ function renderTrucks() {
           <div class="exp-row"><div class="exp-label">Issue</div><div class="exp-val">${t.issue}</div></div>
           <div class="exp-row"><div class="exp-label">Age</div><div class="exp-val">${t.age}</div></div>
           <div class="exp-row"><div class="exp-label">Connection</div><div class="exp-val" style="gap:5px;display:flex;align-items:center;">${connIcon}</div></div>
-          <div class="exp-row"><div class="exp-label">Last Seen</div><div class="exp-val">1:16 PM 07/23/25</div></div>
+          <div class="exp-row">
+            <div class="exp-label">Last Seen</div>
+            <div class="exp-val" style="flex-direction:column;align-items:flex-start;gap:2px;text-align:left;">
+              <span>${dtLastConnLocal(t.lastConn, TRUCK_TZ_MAP[t.account] || 'America/Phoenix')}</span>
+              <span style="font-size:11px;color:var(--soft);">${dtLastConnTruckLocal(t.lastConn, TRUCK_TZ_MAP[t.account] || 'America/Phoenix')} · truck time</span>
+            </div>
+          </div>
           <button class="view-truck-btn" onclick="${viewTruckAction}">View Truck</button>
         </div>` : `<div class="exp-wrap"></div>`;
 
@@ -11032,6 +11064,72 @@ function dtVerPill(ver) {
   return `<span class="dt-ver-pill">${ver}</span>`;
 }
 
+/* ── Truck timezone helper ───────────────────────────────────
+   Maps account/plant to a representative IANA timezone.
+   Used to label the "truck local time" tooltip. All stored
+   lastConn strings are assumed to be America/Phoenix origin
+   (Cemex AZ HQ). Other accounts get their home timezone. */
+const TRUCK_TZ_MAP = {
+  'Cemex AZ':   'America/Phoenix',
+  'Vulcan AZ':  'America/Phoenix',
+  'SRM Tennessee': 'America/Chicago',
+  'SRM Texas':  'America/Chicago',
+  'AZ Materials': 'America/Phoenix',
+};
+
+/* Convert a stored lastConn string (assumed America/Phoenix) to
+   the viewer's local timezone using Intl.DateTimeFormat.
+   Returns formatted string like "1:16 PM" or falls back to raw. */
+function dtLastConnLocal(rawStr, truckTz) {
+  if (!rawStr || rawStr === '--') return rawStr;
+  try {
+    var parts = rawStr.match(/(\d+:\d+\s*[AP]M)\s+(\d+\/\d+\/\d+)/i);
+    if (!parts) return rawStr;
+    var time = parts[1];
+    var date = parts[2];
+    var dateParts = date.split('/');
+    var mo = dateParts[0], dy = dateParts[1], yr = dateParts[2];
+    var fullYear = yr.length === 2 ? '20' + yr : yr;
+    var stored = new Date(fullYear + '-' + mo.padStart(2,'0') + '-' + dy.padStart(2,'0') + ' ' + time);
+    var viewerStr = stored.toLocaleString('en-US', {
+      hour:'numeric', minute:'2-digit', hour12:true,
+      month:'2-digit', day:'2-digit', year:'2-digit',
+    });
+    return viewerStr;
+  } catch(e) {
+    return rawStr;
+  }
+}
+
+function dtLastConnTruckLocal(rawStr, truckTz) {
+  if (!rawStr || rawStr === '--') return rawStr;
+  var tz = truckTz || 'America/Phoenix';
+  var parts = rawStr.match(/(\d+:\d+\s*[AP]M)\s+(\d+\/\d+\/\d+)/i);
+  if (!parts) return rawStr;
+  try {
+    var time = parts[1];
+    var date = parts[2];
+    var dateParts = date.split('/');
+    var mo = dateParts[0], dy = dateParts[1], yr = dateParts[2];
+    var fullYear = yr.length === 2 ? '20' + yr : yr;
+    var stored = new Date(fullYear + '-' + mo.padStart(2,'0') + '-' + dy.padStart(2,'0') + ' ' + time);
+    var tzAbbr = new Intl.DateTimeFormat('en-US', {timeZone:tz, timeZoneName:'short'})
+      .formatToParts(stored).find(function(p) { return p.type === 'timeZoneName'; });
+    return rawStr + ' ' + (tzAbbr ? tzAbbr.value : tz);
+  } catch(e) {
+    return rawStr;
+  }
+}
+
+function dtLastConnHeaderLabel(col) {
+  if (col.id !== 'lastconn') return col.label;
+  return '<span class="dt-lastconn-header">' + col.label +
+    '<svg width="11" height="11" viewBox="0 0 16 16" fill="none">' +
+    '<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3"/>' +
+    '<path d="M8 1.5C8 1.5 5.5 4 5.5 8s2.5 6.5 2.5 6.5M8 1.5C8 1.5 10.5 4 10.5 8s-2.5 6.5-2.5 6.5M1.5 8h13" stroke="currentColor" stroke-width="1.3"/>' +
+    '</svg><span style="font-size:10px;font-weight:400;color:var(--soft);">Your time</span></span>';
+}
+
 function dtRenderTable() {
   const tbody = document.getElementById('dt-tbody');
   if (!tbody) return;
@@ -11053,7 +11151,18 @@ function dtRenderTable() {
     if (c === 'account')  return `<td class="${cl}">${t.account}</td>`;
     if (c === 'age')      return `<td class="dt-td dt-td-soft">${t.age}</td>`;
     if (c === 'conn')     return `<td class="${cl}">${connDot}</td>`;
-    if (c === 'lastconn') return `<td class="dt-td dt-td-soft">${t.lastConn}</td>`;
+    if (c === 'lastconn') {
+      const truckTz = TRUCK_TZ_MAP[t.account] || 'America/Phoenix';
+      const local  = dtLastConnLocal(t.lastConn, truckTz);
+      const truckLocal = dtLastConnTruckLocal(t.lastConn, truckTz);
+      const sameZone = Intl.DateTimeFormat().resolvedOptions().timeZone === truckTz;
+      const tooltip = sameZone
+        ? `<div class="dt-tz-tooltip">Truck local time: ${truckLocal}</div>`
+        : `<div class="dt-tz-tooltip"><div style="font-size:11px;opacity:0.7;margin-bottom:2px;">Truck local time</div>${truckLocal}</div>`;
+      return `<td class="dt-td dt-td-soft">
+        <div class="dt-lastconn-cell">${local}${tooltip}</div>
+      </td>`;
+    }
     return `<td class="${cl}">—</td>`;
   }
 
@@ -13385,7 +13494,7 @@ const COL_DEFS = {
     { id:'account',  label:'Account',         width:110 },
     { id:'age',      label:'Age',             width:80  },
     { id:'conn',     label:'Connection',      width:100 },
-    { id:'lastconn', label:'Last Connection', width:160 },
+    { id:'lastconn', label:'Last Connection', width:210 },
   ],
   overview: [
     { id:'truck',    label:'Truck',           width:80,  locked:true },
@@ -13397,7 +13506,7 @@ const COL_DEFS = {
     { id:'plant',    label:'Plant',           width:130 },
     { id:'account',  label:'Account',         width:110 },
     { id:'conn',     label:'Connection',      width:100 },
-    { id:'lastconn', label:'Last Connection', width:160 },
+    { id:'lastconn', label:'Last Connection', width:210 },
   ],
   cc: [
     { id:'truck',    label:'Truck',           width:78,  locked:true },
@@ -13457,7 +13566,7 @@ function dtBuildHeaders(tab) {
           ondrop="dtColDrop(event)"
           ondragend="dtColDragEnd(event)">
         <div class="dt-th-inner">
-          <span class="dt-th-label">${col.label}</span>
+          <span class="dt-th-label">${dtLastConnHeaderLabel(col)}</span>
           ${col.locked ? '' : `
           <button class="dt-th-menu-btn" onclick="dtColMenuOpen(event,'${col.id}','${tab}')" title="Column options">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="2" r="1" fill="currentColor"/><circle cx="6" cy="6" r="1" fill="currentColor"/><circle cx="6" cy="10" r="1" fill="currentColor"/></svg>

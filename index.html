@@ -6239,17 +6239,6 @@
 
             <div class="dt-au-field-row">
               <div class="dt-au-field">
-                <label class="dt-au-label">Drum Year</label>
-                <input class="dt-au-input" id="dt-at-drum-year" type="text" placeholder="2007" autocomplete="off" maxlength="4" />
-              </div>
-              <div class="dt-au-field">
-                <label class="dt-au-label">Drum Type</label>
-                <input class="dt-au-input" id="dt-at-drum-type" type="text" placeholder="Type of drum" autocomplete="off" />
-              </div>
-            </div>
-
-            <div class="dt-au-field-row">
-              <div class="dt-au-field">
                 <label class="dt-au-label">Min Agitation Speed</label>
                 <input class="dt-au-input" id="dt-at-min-agit" type="text" placeholder="Typical range: 2–6 RPM" autocomplete="off" />
               </div>
@@ -6269,13 +6258,13 @@
               </div>
             </div>
 
-            <div class="dt-au-section-label">Drum Details</div>
+            <div class="dt-au-section-label">Mixer Details</div>
 
             <div class="dt-au-field">
-              <label class="dt-au-label">Drum Manufacturer</label>
+              <label class="dt-au-label">Mixer Type</label>
               <div class="dt-au-dd-wrap" id="dt-at-drum-mfr-wrap">
                 <button class="dt-au-dd-btn" id="dt-at-drum-mfr-btn" onclick="dtAtToggleDd('drum-mfr')">
-                  <span id="dt-at-drum-mfr-val" class="placeholder">Select manufacturer</span>
+                  <span id="dt-at-drum-mfr-val" class="placeholder">Select mixer type</span>
                   <svg class="dt-au-chev" id="dt-at-drum-mfr-chev" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
                 <div class="dt-au-dd-menu" id="dt-at-drum-mfr-menu">
@@ -12193,7 +12182,7 @@ const dtAtValues = { discharge: 'Front Discharge', 'drum-mfr': null };
 function dtAtOpen() {
   // Reset all fields
   ['dt-at-truck-num','dt-at-vin','dt-at-drum-size','dt-at-min-mix',
-   'dt-at-max-mix','dt-at-drum-year','dt-at-drum-type','dt-at-min-agit']
+   'dt-at-max-mix','dt-at-min-agit']
     .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   // Reset dropdowns
   dtAtValues.discharge  = 'Front Discharge';
@@ -12307,12 +12296,8 @@ function dtAtSubmit() {
   }
 
   const drumSize = (document.getElementById('dt-at-drum-size')?.value || '').trim();
-  const drumYear = (document.getElementById('dt-at-drum-year')?.value || '').trim();
-  const drumType = (document.getElementById('dt-at-drum-type')?.value || '').trim();
   const drumMfr  = dtAtValues['drum-mfr'];
-
-  // Build drum label matching existing truck data format "Manufacturer, Year"
-  const drumLabel = [drumMfr, drumYear].filter(Boolean).join(', ') || '--';
+  const drumLabel = drumMfr || '--';
 
   // Add to trucks array as an unlinked truck
   const newTruck = {

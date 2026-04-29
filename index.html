@@ -739,13 +739,14 @@
 
   /* Search */
   .dt-logs-search-wrap {
-    width:367px; max-width:100%;
+    display:flex; align-items:center; gap:10px;
+    width:100%; max-width:100%; margin-bottom:0;
   }
   .dt-logs-search {
     display:flex; align-items:center; gap:16px;
     background:var(--layer-2); border:1px solid var(--border);
     border-radius:24px; padding:8px 12px; height:36px;
-    transition:border-color 0.15s;
+    transition:border-color 0.15s; flex:1;
   }
   .dt-logs-search:focus-within { border-color:var(--strong); background:var(--layer-1); }
   .dt-logs-search-icon { width:20px; height:20px; flex-shrink:0; opacity:0.55; }
@@ -755,6 +756,27 @@
     color:var(--strong);
   }
   .dt-logs-search-input::placeholder { color:var(--soft); }
+
+  /* Refresh button */
+  .dt-logs-refresh-btn {
+    display:inline-flex; align-items:center; gap:7px;
+    height:36px; padding:0 14px; flex-shrink:0;
+    background:var(--layer-1); border:1px solid var(--border);
+    border-radius:24px; cursor:pointer; font-family:var(--font);
+    font-size:13px; font-weight:500; color:var(--defined);
+    letter-spacing:-0.26px; transition:border-color 0.15s, color 0.15s;
+    white-space:nowrap;
+  }
+  .dt-logs-refresh-btn:hover { border-color:var(--border-mid); color:var(--strong); }
+  .dt-logs-refresh-btn:disabled { opacity:0.5; cursor:not-allowed; }
+  .dt-logs-refresh-btn.refreshing { color:var(--blue); border-color:rgba(48,105,227,0.3); pointer-events:none; }
+  .dt-logs-refresh-btn.refreshing svg {
+    animation:dtLogsRefreshSpin 0.8s linear infinite;
+  }
+  .dt-logs-refresh-btn.refreshed { color:#16a34a; border-color:rgba(22,163,74,0.3); pointer-events:none; }
+  @keyframes dtLogsRefreshSpin {
+    to { transform:rotate(360deg); }
+  }
 
   /* Table */
   .dt-logs-table-wrap {
@@ -14961,7 +14983,7 @@ function dtBuildLogs() {
         </div>
       </div>
 
-      <!-- Search -->
+      <!-- Search + Refresh -->
       <div class="dt-logs-search-wrap">
         <div class="dt-logs-search">
           <svg class="dt-logs-search-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -14971,6 +14993,13 @@ function dtBuildLogs() {
           <input class="dt-logs-search-input" id="dt-logs-search" type="text" placeholder="Search"
                  oninput="dtLogsFilters.search=this.value;dtLogsRender();">
         </div>
+        <button class="dt-logs-refresh-btn" id="dt-logs-refresh-btn" onclick="dtLogsRefresh()" title="Refresh logs">
+          <svg id="dt-logs-refresh-icon" width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path d="M13.5 8A5.5 5.5 0 1 1 8 2.5c1.8 0 3.4.87 4.4 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M12 2v3h-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span id="dt-logs-refresh-label">Refresh</span>
+        </button>
       </div>
 
       <!-- Table -->
@@ -15016,6 +15045,35 @@ function dtLogsOnMsgTypeChange(val) {
 }
 
 /* Apply filters and render the table body */
+function dtLogsRefresh() {
+  const btn   = document.getElementById('dt-logs-refresh-btn');
+  const icon  = document.getElementById('dt-logs-refresh-icon');
+  const label = document.getElementById('dt-logs-refresh-label');
+  if (!btn) return;
+
+  // Phase 1 — spinning
+  btn.classList.add('refreshing');
+  if (label) label.textContent = 'Refreshing…';
+
+  setTimeout(() => {
+    // Re-render the log table (simulates fresh data arriving)
+    dtLogsRender();
+
+    // Phase 2 — done
+    btn.classList.remove('refreshing');
+    btn.classList.add('refreshed');
+    if (icon) icon.innerHTML = `<path d="M3 8l3.5 3.5L13 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    if (label) label.textContent = 'Updated';
+
+    // Phase 3 — settle back
+    setTimeout(() => {
+      btn.classList.remove('refreshed');
+      if (icon) icon.innerHTML = `<path d="M13.5 8A5.5 5.5 0 1 1 8 2.5c1.8 0 3.4.87 4.4 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 2v3h-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+      if (label) label.textContent = 'Refresh';
+    }, 1800);
+  }, 900);
+}
+
 function dtLogsRender() {
   const tbody = document.getElementById('dt-logs-tbody');
   if (!tbody) return;

@@ -2468,6 +2468,17 @@
   .dt-conn-dot.live { background:#16a34a; }
   .dt-conn-dot.none { background:rgba(54,50,45,0.25); }
 
+  /* Software version pill — WTS, Overview, CC tables.
+     Monospace, subtle background, no colour coding. */
+  .dt-ver-pill {
+    display:inline-flex; align-items:center;
+    padding:2px 7px; border-radius:6px;
+    font-size:12px; font-weight:500; letter-spacing:-0.12px;
+    font-family:'DM Mono', monospace;
+    background:rgba(54,50,45,0.07); color:var(--defined);
+    white-space:nowrap;
+  }
+
   /* ── Pagination ── */
   .dt-pagination {
     display:flex; align-items:center; justify-content:space-between;
@@ -6151,10 +6162,15 @@
                   <svg class="dt-au-chev" id="dt-au-config-chev" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
                 <div class="dt-au-dd-menu" id="dt-au-config-menu">
-                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measured Only')">Measured Only</div>
-                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Temp+ Admix')">Temp+ Admix</div>
-                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Winter Water')">Winter Water</div>
-                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Color Blend Ratio')">Color Blend Ratio</div>
+                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measure')">Measure</div>
+                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measure Water')">Measure Water</div>
+                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measure Water Admix')">Measure Water Admix</div>
+                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measure Temperate Water')">Measure Temperate Water</div>
+                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measure Temperate Admix')">Measure Temperate Admix</div>
+                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measure Temperate Water Admix')">Measure Temperate Water Admix</div>
+                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measure Winter Water')">Measure Winter Water</div>
+                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measure Winter Admix')">Measure Winter Admix</div>
+                  <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measure Winter Water Admix')">Measure Winter Water Admix</div>
                 </div>
               </div>
             </div>
@@ -6374,12 +6390,12 @@ const truckGroups = [
     attention: 4,
     open: true,
     trucks: [
-      { num:'45689', ver:'V3', ign:'On',  ignDetail:'6 hr',   source:'Customer Ticket', plant:'Phoenix Central', impact:'Not Managing',  issue:'Water System', account:'Cemex AZ', age:'3 min',  conn:'live',  err:1, wrn:10, unitId:'UID-45689', readyMaint:'No',  truckMode:'Active',   lastConn:'1:16 PM 07/23/25' },
-      { num:'12457', ver:'V4', ign:'On',  ignDetail:'5 hr',   source:'Customer Ticket', plant:'Phoenix Central', impact:'Not Measuring', issue:'Water System', account:'Cemex AZ', age:'15 min', conn:'none',  err:2, wrn:10, unitId:'UID-12457', readyMaint:'No',  truckMode:'Active',   lastConn:'12:44 PM 07/23/25' },
-      { num:'39821', ver:'V3', ign:'On',  ignDetail:'3 hr',   source:'Customer Ticket', plant:'Phoenix Central', impact:'Verify Down',   issue:'Drum RPM',     account:'Cemex AZ', age:'8 hrs',  conn:'live',  err:0, wrn:10, unitId:'UID-39821', readyMaint:'Yes', truckMode:'Active',   lastConn:'9:02 AM 07/23/25' },
-      { num:'53127', ver:'V3', ign:'On',  ignDetail:'1 hr',   source:'Customer Ticket', plant:'Phoenix Central', impact:'Not Measuring', issue:'Water System', account:'Cemex AZ', age:'2 days', conn:'live',  err:1, wrn:0,  unitId:'UID-53127', readyMaint:'No',  truckMode:'Standby',  lastConn:'8:30 AM 07/21/25' },
-      { num:'61042', ver:'V4', ign:'Off', ignDetail:'2 hr',   source:'Customer Ticket', plant:'Phoenix Central', impact:'None',         issue:'',             account:'Cemex AZ', age:'4 hrs',  conn:'live',  err:0, wrn:0,  unitId:'UID-61042', readyMaint:'Yes', truckMode:'Standby',  lastConn:'10:15 AM 07/23/25' },
-      { num:'77391', ver:'V3', ign:'Off', ignDetail:'8 hr',   source:'Customer Ticket', plant:'Phoenix Central', impact:'None',         issue:'',             account:'Cemex AZ', age:'1 day',  conn:'live',  err:0, wrn:0,  unitId:'UID-77391', readyMaint:'No',  truckMode:'Inactive', lastConn:'2:00 PM 07/22/25' },
+      { num:'45689', ver:'v3.04.029', ign:'On',  ignDetail:'6 hr',   source:'Customer Ticket', plant:'Phoenix Central', impact:'Not Managing',  issue:'Water System', account:'Cemex AZ', age:'3 min',  conn:'live',  err:1, wrn:10, unitId:'UID-45689', readyMaint:'No',  truckMode:'Active',   lastConn:'1:16 PM 07/23/25' },
+      { num:'12457', ver:'v4.02.017', ign:'On',  ignDetail:'5 hr',   source:'Customer Ticket', plant:'Phoenix Central', impact:'Not Measuring', issue:'Water System', account:'Cemex AZ', age:'15 min', conn:'none',  err:2, wrn:10, unitId:'UID-12457', readyMaint:'No',  truckMode:'Active',   lastConn:'12:44 PM 07/23/25' },
+      { num:'39821', ver:'v3.04.029', ign:'On',  ignDetail:'3 hr',   source:'Customer Ticket', plant:'Phoenix Central', impact:'Verify Down',   issue:'Drum RPM',     account:'Cemex AZ', age:'8 hrs',  conn:'live',  err:0, wrn:10, unitId:'UID-39821', readyMaint:'Yes', truckMode:'Active',   lastConn:'9:02 AM 07/23/25' },
+      { num:'53127', ver:'v3.04.029', ign:'On',  ignDetail:'1 hr',   source:'Customer Ticket', plant:'Phoenix Central', impact:'Not Measuring', issue:'Water System', account:'Cemex AZ', age:'2 days', conn:'live',  err:1, wrn:0,  unitId:'UID-53127', readyMaint:'No',  truckMode:'Standby',  lastConn:'8:30 AM 07/21/25' },
+      { num:'61042', ver:'v4.02.017', ign:'Off', ignDetail:'2 hr',   source:'Customer Ticket', plant:'Phoenix Central', impact:'None',         issue:'',             account:'Cemex AZ', age:'4 hrs',  conn:'live',  err:0, wrn:0,  unitId:'UID-61042', readyMaint:'Yes', truckMode:'Standby',  lastConn:'10:15 AM 07/23/25' },
+      { num:'77391', ver:'v3.04.029', ign:'Off', ignDetail:'8 hr',   source:'Customer Ticket', plant:'Phoenix Central', impact:'None',         issue:'',             account:'Cemex AZ', age:'1 day',  conn:'live',  err:0, wrn:0,  unitId:'UID-77391', readyMaint:'No',  truckMode:'Inactive', lastConn:'2:00 PM 07/22/25' },
     ]
   },
   {
@@ -6389,12 +6405,12 @@ const truckGroups = [
     attention: 4,
     open: true,
     trucks: [
-      { num:'67234', ver:'V4', ign:'Off', ignDetail:'3 hrs',  source:'Customer Ticket', plant:'Mesa South', impact:'At Risk',       issue:'Water System', account:'Cemex AZ', age:'15 min', conn:'live',  err:0, wrn:10, unitId:'UID-67234', readyMaint:'No',  truckMode:'Standby',  lastConn:'1:00 PM 07/23/25' },
-      { num:'84760', ver:'V5', ign:'Off', ignDetail:'1 hr',   source:'System Alert',    plant:'Mesa South', impact:'Not Measuring', issue:'Hydraulic',    account:'Cemex AZ', age:'4 hrs',  conn:'live',  err:2, wrn:10, unitId:'UID-84760', readyMaint:'No',  truckMode:'Active',   lastConn:'9:45 AM 07/23/25' },
-      { num:'98214', ver:'V5', ign:'Off', ignDetail:'30 min', source:'System Alert',    plant:'Mesa South', impact:'At Risk',       issue:'Hydraulic',    account:'Cemex AZ', age:'1 day',  conn:'none',  err:1, wrn:0,  unitId:'UID-98214', readyMaint:'Yes', truckMode:'Standby',  lastConn:'1:30 PM 07/22/25' },
-      { num:'21348', ver:'V3', ign:'On',  ignDetail:'1 hr',   source:'System Alert',    plant:'Mesa South', impact:'Not Measuring', issue:'Hydraulic',    account:'Cemex AZ', age:'2 days', conn:'live',  err:2, wrn:10, unitId:'UID-21348', readyMaint:'No',  truckMode:'Active',   lastConn:'8:00 AM 07/21/25' },
-      { num:'33501', ver:'V4', ign:'On',  ignDetail:'2 hr',   source:'Customer Ticket', plant:'Mesa South', impact:'None',         issue:'',             account:'Cemex AZ', age:'5 min',  conn:'live',  err:0, wrn:0,  unitId:'UID-33501', readyMaint:'No',  truckMode:'Active',   lastConn:'1:10 PM 07/23/25' },
-      { num:'44892', ver:'V5', ign:'Off', ignDetail:'4 hr',   source:'Customer Ticket', plant:'Mesa South', impact:'None',         issue:'',             account:'Cemex AZ', age:'6 hrs',  conn:'live',  err:0, wrn:0,  unitId:'UID-44892', readyMaint:'Yes', truckMode:'Inactive', lastConn:'7:45 AM 07/23/25' },
+      { num:'67234', ver:'v4.02.017', ign:'Off', ignDetail:'3 hrs',  source:'Customer Ticket', plant:'Mesa South', impact:'At Risk',       issue:'Water System', account:'Cemex AZ', age:'15 min', conn:'live',  err:0, wrn:10, unitId:'UID-67234', readyMaint:'No',  truckMode:'Standby',  lastConn:'1:00 PM 07/23/25' },
+      { num:'84760', ver:'v5.01.008', ign:'Off', ignDetail:'1 hr',   source:'System Alert',    plant:'Mesa South', impact:'Not Measuring', issue:'Hydraulic',    account:'Cemex AZ', age:'4 hrs',  conn:'live',  err:2, wrn:10, unitId:'UID-84760', readyMaint:'No',  truckMode:'Active',   lastConn:'9:45 AM 07/23/25' },
+      { num:'98214', ver:'v5.01.008', ign:'Off', ignDetail:'30 min', source:'System Alert',    plant:'Mesa South', impact:'At Risk',       issue:'Hydraulic',    account:'Cemex AZ', age:'1 day',  conn:'none',  err:1, wrn:0,  unitId:'UID-98214', readyMaint:'Yes', truckMode:'Standby',  lastConn:'1:30 PM 07/22/25' },
+      { num:'21348', ver:'v3.04.029', ign:'On',  ignDetail:'1 hr',   source:'System Alert',    plant:'Mesa South', impact:'Not Measuring', issue:'Hydraulic',    account:'Cemex AZ', age:'2 days', conn:'live',  err:2, wrn:10, unitId:'UID-21348', readyMaint:'No',  truckMode:'Active',   lastConn:'8:00 AM 07/21/25' },
+      { num:'33501', ver:'v4.02.017', ign:'On',  ignDetail:'2 hr',   source:'Customer Ticket', plant:'Mesa South', impact:'None',         issue:'',             account:'Cemex AZ', age:'5 min',  conn:'live',  err:0, wrn:0,  unitId:'UID-33501', readyMaint:'No',  truckMode:'Active',   lastConn:'1:10 PM 07/23/25' },
+      { num:'44892', ver:'v5.01.008', ign:'Off', ignDetail:'4 hr',   source:'Customer Ticket', plant:'Mesa South', impact:'None',         issue:'',             account:'Cemex AZ', age:'6 hrs',  conn:'live',  err:0, wrn:0,  unitId:'UID-44892', readyMaint:'Yes', truckMode:'Inactive', lastConn:'7:45 AM 07/23/25' },
     ]
   },
   {
@@ -6404,11 +6420,11 @@ const truckGroups = [
     attention: 3,
     open: true,
     trucks: [
-      { num:'55120', ver:'V3', ign:'On',  ignDetail:'1 hr',   source:'Customer Ticket', plant:'Tempe East', impact:'Not Managing',  issue:'Drum RPM',     account:'Cemex AZ', age:'10 min', conn:'live',  err:3, wrn:5,  unitId:'UID-55120', readyMaint:'No',  truckMode:'Active',   lastConn:'1:05 PM 07/23/25' },
-      { num:'66783', ver:'V4', ign:'On',  ignDetail:'3 hr',   source:'System Alert',    plant:'Tempe East', impact:'At Risk',       issue:'Water System', account:'Cemex AZ', age:'30 min', conn:'live',  err:1, wrn:8,  unitId:'UID-66783', readyMaint:'No',  truckMode:'Active',   lastConn:'12:45 PM 07/23/25' },
-      { num:'72914', ver:'V4', ign:'Off', ignDetail:'6 hr',   source:'Customer Ticket', plant:'Tempe East', impact:'None',         issue:'',             account:'Cemex AZ', age:'2 hrs',  conn:'live',  err:0, wrn:0,  unitId:'UID-72914', readyMaint:'Yes', truckMode:'Standby',  lastConn:'11:00 AM 07/23/25' },
-      { num:'81056', ver:'V3', ign:'Off', ignDetail:'2 hr',   source:'Customer Ticket', plant:'Tempe East', impact:'None',         issue:'',             account:'Cemex AZ', age:'3 hrs',  conn:'none',  err:0, wrn:0,  unitId:'UID-81056', readyMaint:'No',  truckMode:'Inactive', lastConn:'10:30 AM 07/23/25' },
-      { num:'90237', ver:'V5', ign:'On',  ignDetail:'30 min', source:'System Alert',    plant:'Tempe East', impact:'Verify Down',  issue:'Hydraulic',    account:'Cemex AZ', age:'1 hr',   conn:'live',  err:2, wrn:3,  unitId:'UID-90237', readyMaint:'No',  truckMode:'Active',   lastConn:'12:15 PM 07/23/25' },
+      { num:'55120', ver:'v3.04.029', ign:'On',  ignDetail:'1 hr',   source:'Customer Ticket', plant:'Tempe East', impact:'Not Managing',  issue:'Drum RPM',     account:'Cemex AZ', age:'10 min', conn:'live',  err:3, wrn:5,  unitId:'UID-55120', readyMaint:'No',  truckMode:'Active',   lastConn:'1:05 PM 07/23/25' },
+      { num:'66783', ver:'v4.02.017', ign:'On',  ignDetail:'3 hr',   source:'System Alert',    plant:'Tempe East', impact:'At Risk',       issue:'Water System', account:'Cemex AZ', age:'30 min', conn:'live',  err:1, wrn:8,  unitId:'UID-66783', readyMaint:'No',  truckMode:'Active',   lastConn:'12:45 PM 07/23/25' },
+      { num:'72914', ver:'v4.02.017', ign:'Off', ignDetail:'6 hr',   source:'Customer Ticket', plant:'Tempe East', impact:'None',         issue:'',             account:'Cemex AZ', age:'2 hrs',  conn:'live',  err:0, wrn:0,  unitId:'UID-72914', readyMaint:'Yes', truckMode:'Standby',  lastConn:'11:00 AM 07/23/25' },
+      { num:'81056', ver:'v3.04.029', ign:'Off', ignDetail:'2 hr',   source:'Customer Ticket', plant:'Tempe East', impact:'None',         issue:'',             account:'Cemex AZ', age:'3 hrs',  conn:'none',  err:0, wrn:0,  unitId:'UID-81056', readyMaint:'No',  truckMode:'Inactive', lastConn:'10:30 AM 07/23/25' },
+      { num:'90237', ver:'v5.01.008', ign:'On',  ignDetail:'30 min', source:'System Alert',    plant:'Tempe East', impact:'Verify Down',  issue:'Hydraulic',    account:'Cemex AZ', age:'1 hr',   conn:'live',  err:2, wrn:3,  unitId:'UID-90237', readyMaint:'No',  truckMode:'Active',   lastConn:'12:15 PM 07/23/25' },
     ]
   },
   {
@@ -6418,10 +6434,10 @@ const truckGroups = [
     attention: 3,
     open: true,
     trucks: [
-      { num:'30471', ver:'V4', ign:'On',  ignDetail:'2 hr',   source:'System Alert',    plant:'Scottsdale North', impact:'Not Measuring', issue:'Drum RPM',     account:'Vulcan AZ', age:'22 min', conn:'live',  err:2, wrn:6,  unitId:'UID-30471', readyMaint:'No',  truckMode:'Active',   lastConn:'1:10 PM 07/23/25' },
-      { num:'41852', ver:'V3', ign:'On',  ignDetail:'4 hr',   source:'Customer Ticket', plant:'Scottsdale North', impact:'At Risk',       issue:'Water System', account:'Vulcan AZ', age:'1 hr',   conn:'live',  err:0, wrn:8,  unitId:'UID-41852', readyMaint:'No',  truckMode:'Active',   lastConn:'12:30 PM 07/23/25' },
-      { num:'52963', ver:'V5', ign:'Off', ignDetail:'1 hr',   source:'System Alert',    plant:'Scottsdale North', impact:'Verify Down',   issue:'Hydraulic',    account:'Vulcan AZ', age:'3 hrs',  conn:'none',  err:1, wrn:0,  unitId:'UID-52963', readyMaint:'Yes', truckMode:'Standby',  lastConn:'10:45 AM 07/23/25' },
-      { num:'64074', ver:'V4', ign:'On',  ignDetail:'30 min', source:'Customer Ticket', plant:'Scottsdale North', impact:'None',         issue:'',             account:'Vulcan AZ', age:'5 min',  conn:'live',  err:0, wrn:0,  unitId:'UID-64074', readyMaint:'No',  truckMode:'Active',   lastConn:'1:25 PM 07/23/25' },
+      { num:'30471', ver:'v4.02.017', ign:'On',  ignDetail:'2 hr',   source:'System Alert',    plant:'Scottsdale North', impact:'Not Measuring', issue:'Drum RPM',     account:'Vulcan AZ', age:'22 min', conn:'live',  err:2, wrn:6,  unitId:'UID-30471', readyMaint:'No',  truckMode:'Active',   lastConn:'1:10 PM 07/23/25' },
+      { num:'41852', ver:'v3.04.029', ign:'On',  ignDetail:'4 hr',   source:'Customer Ticket', plant:'Scottsdale North', impact:'At Risk',       issue:'Water System', account:'Vulcan AZ', age:'1 hr',   conn:'live',  err:0, wrn:8,  unitId:'UID-41852', readyMaint:'No',  truckMode:'Active',   lastConn:'12:30 PM 07/23/25' },
+      { num:'52963', ver:'v5.01.008', ign:'Off', ignDetail:'1 hr',   source:'System Alert',    plant:'Scottsdale North', impact:'Verify Down',   issue:'Hydraulic',    account:'Vulcan AZ', age:'3 hrs',  conn:'none',  err:1, wrn:0,  unitId:'UID-52963', readyMaint:'Yes', truckMode:'Standby',  lastConn:'10:45 AM 07/23/25' },
+      { num:'64074', ver:'v4.02.017', ign:'On',  ignDetail:'30 min', source:'Customer Ticket', plant:'Scottsdale North', impact:'None',         issue:'',             account:'Vulcan AZ', age:'5 min',  conn:'live',  err:0, wrn:0,  unitId:'UID-64074', readyMaint:'No',  truckMode:'Active',   lastConn:'1:25 PM 07/23/25' },
     ]
   },
   {
@@ -6431,8 +6447,8 @@ const truckGroups = [
     attention: 0,
     open: true,
     trucks: [
-      { num:'75185', ver:'V5', ign:'On',  ignDetail:'3 hr',   source:'Customer Ticket', plant:'Gilbert East', impact:'None', issue:'', account:'Vulcan AZ', age:'10 min', conn:'live', err:0, wrn:0, unitId:'UID-75185', readyMaint:'No',  truckMode:'Active',  lastConn:'1:20 PM 07/23/25' },
-      { num:'86296', ver:'V4', ign:'Off', ignDetail:'2 hr',   source:'Customer Ticket', plant:'Gilbert East', impact:'None', issue:'', account:'Vulcan AZ', age:'2 hrs',  conn:'live', err:0, wrn:0, unitId:'UID-86296', readyMaint:'Yes', truckMode:'Standby', lastConn:'11:30 AM 07/23/25' },
+      { num:'75185', ver:'v5.01.008', ign:'On',  ignDetail:'3 hr',   source:'Customer Ticket', plant:'Gilbert East', impact:'None', issue:'', account:'Vulcan AZ', age:'10 min', conn:'live', err:0, wrn:0, unitId:'UID-75185', readyMaint:'No',  truckMode:'Active',  lastConn:'1:20 PM 07/23/25' },
+      { num:'86296', ver:'v4.02.017', ign:'Off', ignDetail:'2 hr',   source:'Customer Ticket', plant:'Gilbert East', impact:'None', issue:'', account:'Vulcan AZ', age:'2 hrs',  conn:'live', err:0, wrn:0, unitId:'UID-86296', readyMaint:'Yes', truckMode:'Standby', lastConn:'11:30 AM 07/23/25' },
     ]
   },
 ];
@@ -6492,7 +6508,7 @@ function filterMatch(t) {
     if (!pass) return false;
   }
   if (plant.size > 0 && !plant.has(t.plant)) return false;
-  if (version.size > 0 && !version.has(t.ver)) return false;
+  if (version.size > 0 && ![...version].some(v => t.ver.toLowerCase().startsWith(v.toLowerCase()))) return false;
   return true;
 }
 
@@ -8924,7 +8940,7 @@ function toggleNavItem(itemId, subId) {
 
 /* ─── COMPONENT CONDITIONS DATA ─────────────────── */
 const CC_TRUCKS = [
-  { num:'45689', ver:'V3', ign:'On',  ignOff:false, err:1,  wrn:10, ignDetail:'3 min',  plant:'Phoenix Central', lastConn:'1:16 PM 07/23/25',
+  { num:'45689', ver:'v3.04.029', ign:'On',  ignOff:false, err:1,  wrn:10, ignDetail:'3 min',  plant:'Phoenix Central', lastConn:'1:16 PM 07/23/25',
     components:[
       { name:'Iox/Robotex', dot:'#ffba0d', state:'warn',  evt:'2 Warnings' },
       { name:'Charge',      dot:'#d70100', state:'alarm', evt:'Alarm · ongoing' },
@@ -8936,7 +8952,7 @@ const CC_TRUCKS = [
       { name:'CWR',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'WDS',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
     ]},
-  { num:'12457', ver:'V4', ign:'On',  ignOff:false, err:2,  wrn:10, ignDetail:'15 min', plant:'Phoenix Central', lastConn:'12:44 PM 07/23/25',
+  { num:'12457', ver:'v4.02.017', ign:'On',  ignOff:false, err:2,  wrn:10, ignDetail:'15 min', plant:'Phoenix Central', lastConn:'12:44 PM 07/23/25',
     components:[
       { name:'Iox/Robotex', dot:'#ffba0d', state:'warn',  evt:'2 Warnings' },
       { name:'Charge',      dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
@@ -8948,7 +8964,7 @@ const CC_TRUCKS = [
       { name:'CWR',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'WDS',         dot:'#d70100', state:'alarm', evt:'Alarm · no signal' },
     ]},
-  { num:'39821', ver:'V3', ign:'On',  ignOff:false, err:0,  wrn:10, ignDetail:'8 hrs',  plant:'Phoenix Central', lastConn:'9:02 AM 07/23/25',
+  { num:'39821', ver:'v3.04.029', ign:'On',  ignOff:false, err:0,  wrn:10, ignDetail:'8 hrs',  plant:'Phoenix Central', lastConn:'9:02 AM 07/23/25',
     components:[
       { name:'Iox/Robotex', dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Charge',      dot:'#2ecf1d', state:'clean', evt:'No Events' },
@@ -8960,7 +8976,7 @@ const CC_TRUCKS = [
       { name:'CWR',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'WDS',         dot:'#d70100', state:'alarm', evt:'Alarm · ongoing' },
     ]},
-  { num:'53127', ver:'Spark', ign:'On',  ignOff:false, err:1, wrn:0,  ignDetail:'2 days', plant:'Phoenix Central', lastConn:'2 days ago',
+  { num:'53127', ver:'vS.02.004', ign:'On',  ignOff:false, err:1, wrn:0,  ignDetail:'2 days', plant:'Phoenix Central', lastConn:'2 days ago',
     components:[
       { name:'Iox/Robotex', dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Charge',      dot:'#2ecf1d', state:'clean', evt:'No Events' },
@@ -8972,7 +8988,7 @@ const CC_TRUCKS = [
       { name:'CWR',         dot:'#d70100', state:'alarm', evt:'1 Alarm' },
       { name:'WDS',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
     ]},
-  { num:'67234', ver:'V5',    ign:'Off', ignOff:true,  err:0, wrn:10,  ignDetail:'15 min', plant:'Mesa South',      lastConn:'2:05 PM 07/23/25',
+  { num:'67234', ver:'v5.01.008',    ign:'Off', ignOff:true,  err:0, wrn:10,  ignDetail:'15 min', plant:'Mesa South',      lastConn:'2:05 PM 07/23/25',
     components:[
       { name:'Iox/Robotex', dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
       { name:'Charge',      dot:'#2ecf1d', state:'clean', evt:'No Events' },
@@ -8984,7 +9000,7 @@ const CC_TRUCKS = [
       { name:'CWR',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'WDS',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
     ]},
-  { num:'84760', ver:'Pulse', ign:'Off', ignOff:true,  err:2, wrn:10,  ignDetail:'4 hrs',  plant:'Mesa South',      lastConn:'11:30 AM 07/23/25',
+  { num:'84760', ver:'vP.01.011', ign:'Off', ignOff:true,  err:2, wrn:10,  ignDetail:'4 hrs',  plant:'Mesa South',      lastConn:'11:30 AM 07/23/25',
     components:[
       { name:'Iox/Robotex', dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
       { name:'Charge',      dot:'#d70100', state:'alarm', evt:'2 Alarms' },
@@ -8996,7 +9012,7 @@ const CC_TRUCKS = [
       { name:'CWR',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'WDS',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
     ]},
-  { num:'98214', ver:'V3',    ign:'Off', ignOff:true,  err:1, wrn:0,   ignDetail:'1 day',  plant:'Mesa South',      lastConn:'07/22/25',
+  { num:'98214', ver:'v3.04.029',    ign:'Off', ignOff:true,  err:1, wrn:0,   ignDetail:'1 day',  plant:'Mesa South',      lastConn:'07/22/25',
     components:[
       { name:'Iox/Robotex', dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Charge',      dot:'#2ecf1d', state:'clean', evt:'No Events' },
@@ -9008,7 +9024,7 @@ const CC_TRUCKS = [
       { name:'CWR',         dot:'#d70100', state:'alarm', evt:'1 Alarm' },
       { name:'WDS',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
     ]},
-  { num:'21348', ver:'V5',    ign:'On',  ignOff:false, err:2, wrn:10,  ignDetail:'2 days', plant:'Mesa South',      lastConn:'07/21/25',
+  { num:'21348', ver:'v5.01.008',    ign:'On',  ignOff:false, err:2, wrn:10,  ignDetail:'2 days', plant:'Mesa South',      lastConn:'07/21/25',
     components:[
       { name:'Iox/Robotex', dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
       { name:'Charge',      dot:'#ffba0d', state:'warn',  evt:'2 Warnings' },
@@ -9020,7 +9036,7 @@ const CC_TRUCKS = [
       { name:'CWR',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'WDS',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
     ]},
-  { num:'55120', ver:'Spark', ign:'On',  ignOff:false, err:3, wrn:5,   ignDetail:'10 min', plant:'Tempe East',      lastConn:'2:10 PM 07/23/25',
+  { num:'55120', ver:'vS.02.004', ign:'On',  ignOff:false, err:3, wrn:5,   ignDetail:'10 min', plant:'Tempe East',      lastConn:'2:10 PM 07/23/25',
     components:[
       { name:'Iox/Robotex', dot:'#d70100', state:'alarm', evt:'1 Alarm' },
       { name:'Charge',      dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
@@ -9032,7 +9048,7 @@ const CC_TRUCKS = [
       { name:'CWR',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'WDS',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
     ]},
-  { num:'6456',  ver:'V3',    ign:'On',  ignOff:false, err:1, wrn:10,  ignDetail:'6 hr',   plant:'Phoenix Central', lastConn:'1:16 PM 07/23/25',
+  { num:'6456',  ver:'v3.04.029',    ign:'On',  ignOff:false, err:1, wrn:10,  ignDetail:'6 hr',   plant:'Phoenix Central', lastConn:'1:16 PM 07/23/25',
     components:[
       { name:'Iox/Robotex', dot:'#ffba0d', state:'warn',  evt:'2 Warnings' },
       { name:'Charge',      dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
@@ -9460,11 +9476,11 @@ const UNITS_DATA = [
   { id:'83651024', status:'Unlinked Unit', truck:'--',     tgw:'210000222277', contract:'SRM Texas',     sysType:'V5',    config:'Temp+ Admix',       firstCommissioned:'04/11/2022', assignedToTruck:null,         decommissioned:null },
   { id:'12039487', status:'Maintenance',   truck:'749253', tgw:'203719811007', contract:'SRM Tennessee', sysType:'Spark', config:'Winter Water',      firstCommissioned:'05/01/2021', assignedToTruck:'06/02/2025', decommissioned:null },
   { id:'55512378', status:'Linked Unit',   truck:'762723', tgw:'210000194770', contract:'SRM Tennessee', sysType:'Pulse', config:'Color Blend Ratio', firstCommissioned:'07/20/2022', assignedToTruck:'07/23/2025', decommissioned:null },
-  { id:'29104856', status:'Linked Unit',   truck:'45689',  tgw:'210000381924', contract:'Cemex Houston', sysType:'V3',   config:'Measured Only',     firstCommissioned:'01/14/2020', assignedToTruck:'06/12/2025', decommissioned:null },
-  { id:'60483751', status:'Unlinked Unit', truck:'--',     tgw:'210000401138', contract:'Cemex Houston', sysType:'V4',   config:'Temp+ Admix',       firstCommissioned:'08/30/2021', assignedToTruck:null,         decommissioned:null },
-  { id:'73920614', status:'Linked Unit',   truck:'12457',  tgw:'210000502847', contract:'Cemex Houston', sysType:'V4',   config:'Winter Water',      firstCommissioned:'11/03/2019', assignedToTruck:'05/01/2025', decommissioned:null },
-  { id:'18475930', status:'Maintenance',   truck:'--',     tgw:'210000608331', contract:'AZ Materials',  sysType:'V3',   config:'Measured Only',     firstCommissioned:'02/28/2021', assignedToTruck:'04/17/2025', decommissioned:null },
-  { id:'96013482', status:'Linked Unit',   truck:'84760',  tgw:'210000714560', contract:'AZ Materials',  sysType:'V5',   config:'Color Blend Ratio', firstCommissioned:'03/09/2020', assignedToTruck:'03/09/2025', decommissioned:null },
+  { id:'29104856', status:'Linked Unit',   truck:'45689',  tgw:'210000381924', contract:'Cemex AZ', sysType:'V3',   config:'Measured Only',     firstCommissioned:'01/14/2020', assignedToTruck:'06/12/2025', decommissioned:null },
+  { id:'60483751', status:'Unlinked Unit', truck:'--',     tgw:'210000401138', contract:'Cemex AZ', sysType:'V4',   config:'Temp+ Admix',       firstCommissioned:'08/30/2021', assignedToTruck:null,         decommissioned:null },
+  { id:'73920614', status:'Linked Unit',   truck:'12457',  tgw:'210000502847', contract:'Cemex AZ', sysType:'V4',   config:'Winter Water',      firstCommissioned:'11/03/2019', assignedToTruck:'05/01/2025', decommissioned:null },
+  { id:'18475930', status:'Maintenance',   truck:'--',     tgw:'210000608331', contract:'Cemex AZ', sysType:'V3',   config:'Measured Only',     firstCommissioned:'02/28/2021', assignedToTruck:'04/17/2025', decommissioned:null },
+  { id:'96013482', status:'Linked Unit',   truck:'84760',  tgw:'210000714560', contract:'Cemex AZ', sysType:'V5',   config:'Color Blend Ratio', firstCommissioned:'03/09/2020', assignedToTruck:'03/09/2025', decommissioned:null },
   { id:'34861097', status:'Unlinked Unit', truck:'--',     tgw:'210000819204', contract:'Vulcan',        sysType:'Spark',config:'Temp+ Admix',       firstCommissioned:'06/15/2022', assignedToTruck:null,         decommissioned:'01/10/2025' },
 ];
 
@@ -9567,6 +9583,13 @@ const AU_CONTRACTS = {
   'AZ Materials':  ['AZ Standard'],
   'Vulcan':        ['Vulcan Core', 'Vulcan Plus'],
 };
+
+/* Active account — scopes unit pickers so only units belonging to this
+   account appear when attaching to a truck. In production this would come
+   from the authenticated session; in the prototype it is fixed to Cemex AZ.
+   The contract label "Cemex AZ" is used as the umbrella — any unit whose
+   contract value is "Cemex AZ" belongs to this account. */
+const ACTIVE_ACCOUNT = 'Cemex AZ';
 
 /* Track custom dropdown values */
 const auValues = { account: '', contract: '', 'sys-type': '', config: '' };
@@ -10989,6 +11012,14 @@ function unitsFilterUpdateCount() {
 let dtSearchQuery = '';
 let dtActiveTab   = 'wts';
 
+/* Version pill — renders a clean monospace version badge.
+   Formats 'V3' style shorthand as 'v3.04.029' if no dots present,
+   otherwise renders the full version string as-is. */
+function dtVerPill(ver) {
+  if (!ver || ver === '--' || ver === '—') return '<span style="color:var(--soft)">—</span>';
+  return `<span class="dt-ver-pill">${ver}</span>`;
+}
+
 function dtRenderTable() {
   const tbody = document.getElementById('dt-tbody');
   if (!tbody) return;
@@ -11003,7 +11034,7 @@ function dtRenderTable() {
     if (c === 'alerts')   return `<td class="${cl}"><div class="dt-badge-wrap">${badges || '<span style="color:var(--soft)">—</span>'}</div></td>`;
     if (c === 'source')   return `<td class="${cl}">${t.source === 'Customer Ticket' ? 'Customer' : 'System'}</td>`;
     if (c === 'ignition') return `<td class="${cl}">${t.ign} · ${t.ignDetail}</td>`;
-    if (c === 'version')  return `<td class="${cl}">${t.ver}</td>`;
+    if (c === 'version')  return `<td class="${cl}">${dtVerPill(t.ver)}</td>`;
     if (c === 'impact')   return `<td class="${cl}">${t.impact || '—'}</td>`;
     if (c === 'issue')    return `<td class="${cl}">${t.issue || '—'}</td>`;
     if (c === 'plant')    return `<td class="dt-td dt-td-strong">${t.plant}</td>`;
@@ -13668,7 +13699,7 @@ function dtRenderCC() {
     const c = col.id;
     const dim = '<span style="color:var(--soft)">--</span>';
     if (c === 'truck')    return `<td class="dt-td dt-td-strong">${t.num}</td>`;
-    if (c === 'sysver')   return `<td class="dt-td">${t.unlinked ? dim : t.ver}</td>`;
+    if (c === 'sysver')   return `<td class="dt-td">${t.unlinked ? dim : dtVerPill(t.ver)}</td>`;
     if (c === 'ignition') return `<td class="dt-td">${t.unlinked ? dim : t.ign}</td>`;
     if (c === 'startups') return `<td class="dt-td dt-td-soft">—</td>`;
     if (compMap[c]) {
@@ -13743,7 +13774,7 @@ function dtRenderOverview() {
     if (c === 'alerts')   return `<td class="${cl}"><div class="dt-badge-wrap">${badges || '<span style="color:var(--soft)">—</span>'}</div></td>`;
     // Live-data cells show -- for unlinked trucks (no unit reporting, so no data)
     if (c === 'unitid')   return `<td class="dt-td dt-td-soft">${t.unlinked ? '--' : (t.unitId || '—')}</td>`;
-    if (c === 'sysver')   return `<td class="${cl}">${t.unlinked ? dim : t.ver}</td>`;
+    if (c === 'sysver')   return `<td class="${cl}">${t.unlinked ? dim : dtVerPill(t.ver)}</td>`;
     if (c === 'ignition') return `<td class="${cl}">${t.unlinked ? dim : `${t.ign} · ${t.ignDetail}`}</td>`;
     if (c === 'impact')   return `<td class="${cl}">${t.unlinked ? dim : (t.impact || '—')}</td>`;
     if (c === 'plant')    return `<td class="dt-td dt-td-strong">${t.plant}</td>`;
@@ -13956,8 +13987,7 @@ function dtOpenTruck(truckNum) {
   };
 
   // Code version: map "V3"/"V4"/"V5" to plausible semver strings
-  const verMap = { 'V3':'3.04.029', 'V4':'4.02.011', 'V5':'5.01.003' };
-  document.getElementById('dt-drawer-ver').textContent = verMap[t.ver] || t.ver || '—';
+  document.getElementById('dt-drawer-ver').textContent = t.ver || '—';
 
   // Last connect / system status — formatted timestamps
   const lastTs = formatTs(t.lastConn);
@@ -14444,9 +14474,12 @@ function dtTruckDrawerRenderAttachUnit() {
   if (!truckNum) return;
 
   const allUnits = (typeof UNITS_DATA !== 'undefined') ? UNITS_DATA : [];
-  // Only Unlinked Units are valid candidates — already-linked or pending ones
-  // can't be reattached; maintenance is not in scope here.
-  const candidates = allUnits.filter(u => u.status === 'Unlinked Unit');
+  // Only Unlinked Units belonging to the active account are valid candidates.
+  // Units from other accounts are not visible to this customer.
+  const candidates = allUnits.filter(u =>
+    u.status === 'Unlinked Unit' &&
+    u.contract === ACTIVE_ACCOUNT
+  );
   const q = (dtTrAttachQuery || '').toLowerCase();
   const filtered = candidates.filter(u =>
     !q ||

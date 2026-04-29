@@ -6154,7 +6154,7 @@
               <label class="dt-au-label">Account</label>
               <div class="dt-au-locked">
                 <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 5a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V5z" stroke="#36322d9e" stroke-width="1.3"/><path d="M5 5V3.5a2 2 0 014 0V5" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
-                <span>Cemex AZ</span>
+                <span>Cemex</span>
               </div>
               <div class="dt-au-hint">Locked to your active account.</div>
             </div>
@@ -9621,11 +9621,19 @@ function closeUnits() {
 
 /* Contract options per account */
 const AU_CONTRACTS = {
+  'Cemex AZ': [
+    'Cemex San Diego',
+    'Cemex San Antonio',
+    'Cemex Ocala',
+    'Cemex Orlando',
+    'Cemex Miami',
+    'Cemex Houston',
+    'Cemex Phoenix',
+    'Cemex Tucson',
+  ],
   'Readymix ABC':  ['Standard Service', 'Premium Service', 'Full Fleet'],
   'SRM Tennessee': ['SRM Standard', 'SRM Extended'],
   'SRM Texas':     ['SRM Standard', 'SRM Extended'],
-  'Cemex Houston': ['Cemex Basic', 'Cemex Pro'],
-  'AZ Materials':  ['AZ Standard'],
   'Vulcan':        ['Vulcan Core', 'Vulcan Plus'],
 };
 
@@ -12123,30 +12131,28 @@ const DT_AU_CONTRACTS_BY_ACCOUNT = (typeof AU_CONTRACTS !== 'undefined') ? AU_CO
 const dtAuValues = { account: 'Cemex AZ', contract: '', sysType: '', config: '' };
 
 function dtAuOpen() {
-  // Reset values
-  dtAuValues.contract = '';
+  // Reset values — contract defaults to Cemex AZ
+  dtAuValues.contract = 'Cemex AZ';
   dtAuValues.sysType  = '';
   dtAuValues.config   = '';
 
   // Populate Contract dropdown for the active account
   const contracts = DT_AU_CONTRACTS_BY_ACCOUNT[dtAuValues.account] || [];
   const contractMenu = document.getElementById('dt-au-contract-menu');
-  contractMenu.innerHTML = contracts.map(c => `<div class="dt-au-dd-item" onclick="dtAuSelectDd('contract','${c.replace(/'/g, "\\'")}')">${c}</div>`).join('');
+  contractMenu.innerHTML = contracts.map(c => `<div class="dt-au-dd-item${c === 'Cemex AZ' ? ' selected' : ''}" onclick="dtAuSelectDd('contract','${c.replace(/'/g, "\\'")}')">${c}</div>`).join('');
 
-  // Reset all dropdown displays
-  ['contract','sysType','config'].forEach(key => {
+  // Set contract display to default
+  const contractVal = document.getElementById('dt-au-contract-val');
+  if (contractVal) { contractVal.textContent = 'Cemex AZ'; contractVal.className = ''; }
+
+  // Reset sysType and config dropdown displays
+  ['sysType','config'].forEach(key => {
     const valEl  = document.getElementById('dt-au-' + key + '-val');
     const menuEl = document.getElementById('dt-au-' + key + '-menu');
     const chevEl = document.getElementById('dt-au-' + key + '-chev');
     const btnEl  = document.getElementById('dt-au-' + key + '-btn');
-    if (valEl) {
-      valEl.textContent = key === 'contract' ? 'Select a contract type' : key === 'sysType' ? 'Select type' : 'Select config';
-      valEl.className = 'placeholder';
-    }
-    if (menuEl) {
-      menuEl.classList.remove('open');
-      menuEl.querySelectorAll('.dt-au-dd-item').forEach(el => el.classList.remove('selected'));
-    }
+    if (valEl) { valEl.textContent = key === 'sysType' ? 'Select type' : 'Select config'; valEl.className = 'placeholder'; }
+    if (menuEl) { menuEl.classList.remove('open'); menuEl.querySelectorAll('.dt-au-dd-item').forEach(el => el.classList.remove('selected')); }
     if (chevEl) chevEl.classList.remove('open');
     if (btnEl)  btnEl.classList.remove('open');
   });

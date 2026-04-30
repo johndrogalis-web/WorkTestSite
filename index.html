@@ -662,6 +662,22 @@
     border-radius:24px; padding:24px;
     display:flex; flex-direction:column; gap:14px;
   }
+  /* Skeleton loading state for newly linked trucks */
+  .dt-co-card.skeleton {
+    background:var(--layer-1);
+    border:1px solid var(--border);
+    pointer-events:none;
+  }
+  .dt-skel-line {
+    border-radius:6px;
+    background:linear-gradient(90deg, var(--base) 25%, #ede9e5 50%, var(--base) 75%);
+    background-size:200% 100%;
+    animation:dtSkelShimmer 1.4s infinite;
+  }
+  @keyframes dtSkelShimmer {
+    0%   { background-position:200% 0; }
+    100% { background-position:-200% 0; }
+  }
   .dt-co-card.alarm { background:#d70100; border-color:#9a1f1e; }
   .dt-co-card.warn  { background:#ffba0d; border-color:#887f13; }
   .dt-co-card.grey  { background:var(--layer-2); }
@@ -2005,6 +2021,7 @@
   }
   .dt-ls-entry-tag.current  { color:#16a34a; }
   .dt-ls-entry-tag.original { color:var(--blue-link); }
+  .dt-ls-entry-tag.replaced { color:#d97706; }
 
   /* ── Attach tab — matches Figma 378:32882 ── */
   .dt-attach-title {
@@ -4624,7 +4641,7 @@
     <svg width="72" height="18" viewBox="0 0 96 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="white"/>
     </svg>
-    <span style="font-size:10px;font-family:'DM Mono',monospace;color:rgba(255,255,255,0.4);letter-spacing:0.2px;margin-left:8px;align-self:center;">v3.2.1</span>
+    <span style="font-size:10px;font-family:'DM Mono',monospace;color:rgba(255,255,255,0.4);letter-spacing:0.2px;margin-left:8px;align-self:center;">v3.2.6</span>
   </div>
   <div class="vp-pills">
     <button class="vp-pill" onclick="setView('mobile')">Mobile</button>
@@ -5805,9 +5822,9 @@
             </div>
           </div>
 
-          <!-- TGW 4 Number -->
+          <!-- TCG ID -->
           <div style="margin-bottom:32px;">
-            <div style="font-size:12px;color:var(--soft);letter-spacing:-0.24px;margin-bottom:6px;">TGW 4 Number</div>
+            <div style="font-size:12px;color:var(--soft);letter-spacing:-0.24px;margin-bottom:6px;">TCG ID</div>
             <input id="au-tgw" type="text" placeholder="e.g. 210000095269" autocomplete="off"
               class="au-input" style="font-family:monospace;" oninput="auValidate()" />
           </div>
@@ -6799,7 +6816,7 @@
             </div>
 
             <div class="dt-au-field">
-              <label class="dt-au-label">TGW 4 Number</label>
+              <label class="dt-au-label">TCG ID</label>
               <input class="dt-au-input dt-au-input-mono" id="dt-au-tgw" type="text" placeholder="e.g. 210000095269" autocomplete="off" />
               <div class="dt-au-hint">Optional. Can be added later.</div>
             </div>
@@ -10344,11 +10361,12 @@ function renderMobileCards() {
 
   /* MCS cards data — matches the hardcoded defaults + session state */
   var mcsCards = [
-    { name:'CPS',           label:'Charge Pressure Sensor',   value:'204',  unit:'psi',    startup:2,  err:'--', extra:null },
+    { name:'TCG',           label:'Telematics Control Gateway', value:'Active', unit:'', startup:null, err:'--', extra:{label:'Status', val:'Connected'} },
     { name:'DPS pressure',  label:'Drum Pressure Sensor',     value:'196',  unit:'psi',    startup:2,  err:'--', extra:null },
     { name:'DRS',           label:'Drum Rotation Speed',      value:'138',  unit:'rpm',    startup:2,  err:'--', extra:null },
-    { name:'CWR (35.0) Temp', label:'CWR Temp',  value:'91', unit:'°F', startup:2, err:'--', extra:{label:'Tilt Degree', val:'1'} },
     { name:'WDS', label:'Water Drum Sensor\nNo connection', value:'--', unit:'', startup:2, err:'14', forceAlarm:true, flipBack:{ lastSeen:'Mar 23 · 08:24 AM' } },
+    { name:'CPS',           label:'Charge Pressure Sensor',   value:'204',  unit:'psi',    startup:2,  err:'--', extra:null },
+    { name:'CWR (35.0) Temp', label:'CWR Temp',  value:'91', unit:'°F', startup:2, err:'--', extra:{label:'Tilt Degree', val:'1'} },
     { name:'ICD (1468)', label:'Input Current Detector', value:'1468', unit:'mA', startup:2, err:'--', greyDot:true },
     { name:'ED (8195)',  label:'Electrical Signal value', value:'8195', unit:'counts', startup:2, err:'--' },
     { name:'Water Pump',  state:'empty',   label:'Water Delivery System', value:'--', unit:'', startup:null, err:null, removedDate:'07/23/25 · 2:14 PM' },
@@ -11469,16 +11487,16 @@ function coViewTruckLogs() {
 ═══════════════════════════════════════════════════ */
 
 const UNITS_DATA = [
-  { id:'47382910', status:'Linked Unit',   truck:'749590', tgw:'210000095269', contract:'SRM Tennessee', sysType:'V5',    config:'Measured Only',     firstCommissioned:'03/06/2021', assignedToTruck:'07/23/2025', decommissioned:null },
-  { id:'83651024', status:'Unlinked Unit', truck:'--',     tgw:'210000222277', contract:'SRM Texas',     sysType:'V5',    config:'Temp+ Admix',       firstCommissioned:'04/11/2022', assignedToTruck:null,         decommissioned:null },
-  { id:'12039487', status:'Maintenance',   truck:'749253', tgw:'203719811007', contract:'SRM Tennessee', sysType:'Spark', config:'Winter Water',      firstCommissioned:'05/01/2021', assignedToTruck:'06/02/2025', decommissioned:null },
-  { id:'55512378', status:'Linked Unit',   truck:'762723', tgw:'210000194770', contract:'SRM Tennessee', sysType:'Pulse', config:'Color Blend Ratio', firstCommissioned:'07/20/2022', assignedToTruck:'07/23/2025', decommissioned:null },
-  { id:'29104856', status:'Linked Unit',   truck:'45689',  tgw:'210000381924', contract:'Cemex AZ', sysType:'V3',   config:'Measured Only',     firstCommissioned:'01/14/2020', assignedToTruck:'06/12/2025', decommissioned:null },
-  { id:'60483751', status:'Unlinked Unit', truck:'--',     tgw:'210000401138', contract:'Cemex AZ', sysType:'V4',   config:'Temp+ Admix',       firstCommissioned:'08/30/2021', assignedToTruck:null,         decommissioned:null },
-  { id:'73920614', status:'Linked Unit',   truck:'12457',  tgw:'210000502847', contract:'Cemex AZ', sysType:'V4',   config:'Winter Water',      firstCommissioned:'11/03/2019', assignedToTruck:'05/01/2025', decommissioned:null },
-  { id:'18475930', status:'Maintenance',   truck:'--',     tgw:'210000608331', contract:'Cemex AZ', sysType:'V3',   config:'Measured Only',     firstCommissioned:'02/28/2021', assignedToTruck:'04/17/2025', decommissioned:null },
-  { id:'96013482', status:'Linked Unit',   truck:'84760',  tgw:'210000714560', contract:'Cemex AZ', sysType:'V5',   config:'Color Blend Ratio', firstCommissioned:'03/09/2020', assignedToTruck:'03/09/2025', decommissioned:null },
-  { id:'34861097', status:'Unlinked Unit', truck:'--',     tgw:'210000819204', contract:'Vulcan',        sysType:'Spark',config:'Temp+ Admix',       firstCommissioned:'06/15/2022', assignedToTruck:null,         decommissioned:'01/10/2025' },
+  { id:'U-473829', status:'Linked Unit',   truck:'749590', tgw:'210000095269', contract:'Cemex AZ', sysType:'V5',    config:'Measured Only',     firstCommissioned:'03/06/2021', assignedToTruck:'07/23/2025', decommissioned:null },
+  { id:'U-836510', status:'Unlinked Unit', truck:'--',     tgw:'210000222277', contract:'Cemex AZ',     sysType:'V5',    config:'Temp+ Admix',       firstCommissioned:null,          assignedToTruck:null,         decommissioned:null },
+  { id:'U-120394', status:'Maintenance',   truck:'749253', tgw:'203719811007', contract:'Cemex AZ', sysType:'Spark', config:'Winter Water',      firstCommissioned:'05/01/2021', assignedToTruck:'06/02/2025', decommissioned:null },
+  { id:'U-555123', status:'Linked Unit',   truck:'762723', tgw:'210000194770', contract:'Cemex AZ', sysType:'Pulse', config:'Color Blend Ratio', firstCommissioned:'07/20/2022', assignedToTruck:'07/23/2025', decommissioned:null },
+  { id:'U-291048', status:'Linked Unit',   truck:'45689',  tgw:'210000381924', contract:'Cemex AZ', sysType:'V3',   config:'Measured Only',     firstCommissioned:'01/14/2020', assignedToTruck:'06/12/2025', decommissioned:null },
+  { id:'U-604837', status:'Unlinked Unit', truck:'--',     tgw:'210000401138', contract:'Cemex AZ', sysType:'V4',   config:'Temp+ Admix',       firstCommissioned:null,          assignedToTruck:null,         decommissioned:null },
+  { id:'U-739206', status:'Linked Unit',   truck:'12457',  tgw:'210000502847', contract:'Cemex AZ', sysType:'V4',   config:'Winter Water',      firstCommissioned:'11/03/2019', assignedToTruck:'05/01/2025', decommissioned:null },
+  { id:'U-184759', status:'Maintenance',   truck:'--',     tgw:'210000608331', contract:'Cemex AZ', sysType:'V3',   config:'Measured Only',     firstCommissioned:'02/28/2021', assignedToTruck:'04/17/2025', decommissioned:null },
+  { id:'U-960134', status:'Linked Unit',   truck:'84760',  tgw:'210000714560', contract:'Cemex AZ', sysType:'V5',   config:'Color Blend Ratio', firstCommissioned:'03/09/2020', assignedToTruck:'03/09/2025', decommissioned:null },
+  { id:'U-348610', status:'Unlinked Unit', truck:'--',     tgw:'210000819204', contract:'Cemex AZ',        sysType:'Spark',config:'Temp+ Admix',       firstCommissioned:null,          assignedToTruck:null,         decommissioned:'01/10/2025' },
 ];
 
 const unitsFilterState = { status: new Set(), sysType: new Set(), assigned: new Set() };
@@ -11749,7 +11767,7 @@ function submitAddUnit() {
     contract: contract,
     sysType: sysType,
     config: config,
-    firstCommissioned: new Date().toLocaleDateString('en-US', {month:'2-digit',day:'2-digit',year:'numeric'}),
+    firstCommissioned: null, /* set when first linked to a truck */
     assignedToTruck: null,
     decommissioned: null,
   });
@@ -11777,52 +11795,52 @@ function submitAddUnit() {
 const UNIT_HISTORY = {
 
   /* 47382910 — has both Winter Water & Admix currently installed */
-  '47382910': [
+  'U-473829': [
     { name: 'Bluetooth Radio', history: [
-      { date: 'Current',   mac: 'JJJ-210095269' },
+      { date: 'Current', mac: 'JJJ-210095269' },
       { date: '5/23/2023', mac: 'JJJ-210082341' },
       { date: '3/6/2021',  mac: 'RRR-109034821' },
     ]},
     { name: 'Sensor', history: [
-      { date: 'Current',   mac: 'BBB-203719811' },
+      { date: 'Current', mac: 'BBB-203719811' },
       { date: '5/23/2023', mac: 'BBB-203701042' },
       { date: '3/6/2021',  mac: 'RRR-109020034' },
     ]},
     { name: 'Temperate Water', history: [
-      { date: 'Current',   mac: 'RRR-109041822' },
+      { date: 'Current', mac: 'RRR-109041822' },
       { date: '3/6/2021',  mac: 'RRR-109000192' },
     ]},
     { name: 'Winter Water', history: [
-      { date: 'Current',   mac: 'EEE-301820042' },
+      { date: 'Current', mac: 'EEE-301820042' },
       { date: '5/23/2023', mac: 'EEE-301801193' },
     ]},
     { name: 'Admix', history: [
-      { date: 'Current',   mac: 'RRR-109044018' },
+      { date: 'Current', mac: 'RRR-109044018' },
       { date: '1/3/2022',  mac: 'RRR-109028811' },
       { date: '3/6/2021',  mac: 'JJJ-210011029' },
     ]},
     { name: 'Drum Sensor', history: [
-      { date: 'Current',   mac: 'BBB-203728814' },
+      { date: 'Current', mac: 'BBB-203728814' },
       { date: '1/3/2022',  mac: 'BBB-203701009' },
     ]},
     { name: 'External Displays', history: [
-      { date: 'Current',   mac: 'NNN-401820091' },
+      { date: 'Current', mac: 'NNN-401820091' },
       { date: '3/6/2021',  mac: 'UUU-501820013' },
     ]},
     { name: 'WDS', history: [
-      { date: 'Current',   mac: 'WWW-601920044' },
+      { date: 'Current', mac: 'WWW-601920044' },
       { date: '3/6/2021',  mac: 'WWW-601900012' },
     ]},
   ],
 
   /* 83651024 — Winter Water removed, Admix never added */
-  '83651024': [
+  'U-836510': [
     { name: 'Bluetooth Radio', history: [
-      { date: 'Current',   mac: 'JJJ-210093801' },
+      { date: 'Current', mac: 'JJJ-210093801' },
       { date: '4/11/2022', mac: 'RRR-109028831' },
     ]},
     { name: 'Sensor', history: [
-      { date: 'Current',   mac: 'BBB-203714290' },
+      { date: 'Current', mac: 'BBB-203714290' },
       { date: '4/11/2022', mac: 'BBB-203700881' },
     ]},
     { name: 'Temperate Water', history: [
@@ -11840,39 +11858,39 @@ const UNIT_HISTORY = {
   ],
 
   /* 12039487 — Admix recently added, Winter Water never installed */
-  '12039487': [
+  'U-120394': [
     { name: 'Bluetooth Radio', history: [
-      { date: 'Current',   mac: 'JJJ-210091144' },
+      { date: 'Current', mac: 'JJJ-210091144' },
       { date: '2/2/2023',  mac: 'JJJ-210077832' },
       { date: '5/1/2021',  mac: 'RRR-109019204' },
     ]},
     { name: 'Sensor', history: [
-      { date: 'Current',   mac: 'BBB-203708811' },
+      { date: 'Current', mac: 'BBB-203708811' },
       { date: '5/1/2021',  mac: 'RRR-109011003' },
     ]},
     { name: 'Temperate Water', history: [
-      { date: 'Current',   mac: 'RRR-109038820' },
+      { date: 'Current', mac: 'RRR-109038820' },
       { date: '5/1/2021',  mac: 'RRR-109002901' },
     ]},
     { name: 'Admix', history: [
-      { date: 'Current',   mac: 'RRR-109042018' },
+      { date: 'Current', mac: 'RRR-109042018' },
       { date: '3/15/2024', mac: 'RRR-109039100' },
     ]},
     { name: 'Drum Sensor', history: [
-      { date: 'Current',   mac: 'BBB-203722091' },
+      { date: 'Current', mac: 'BBB-203722091' },
       { date: '5/1/2021',  mac: 'RRR-109028120' },
     ]},
     { name: 'External Displays', history: [
       { date: 'Current',   mac: 'NNN-401814088' },
     ]},
     { name: 'WDS', history: [
-      { date: 'Current',   mac: 'WWW-601908831' },
+      { date: 'Current', mac: 'WWW-601908831' },
       { date: '5/1/2021',  mac: 'WWW-601899204' },
     ]},
   ],
 
   /* 55512378 — both Winter Water & Admix removed */
-  '55512378': [
+  'U-555123': [
     { name: 'Bluetooth Radio', history: [
       { date: 'Current',   mac: 'JJJ-210088923' },
     ]},
@@ -11889,7 +11907,7 @@ const UNIT_HISTORY = {
       { date: '7/20/2022', mac: 'RRR-109031810' },
     ]},
     { name: 'Drum Sensor', history: [
-      { date: 'Current',   mac: 'BBB-203718800' },
+      { date: 'Current', mac: 'BBB-203718800' },
       { date: '7/20/2022', mac: 'BBB-203699041' },
     ]},
     { name: 'WDS', history: [
@@ -11908,29 +11926,29 @@ const UNIT_HISTORY = {
 
   /* 29104856 — linked to truck 45689. WDS, Water Pump and Admix Pump
      are the components involved in the prototype replacement workflow. */
-  '29104856': [
+  'U-291048': [
     { name: 'Bluetooth Radio', history: [
-      { date: 'Current',    mac: 'JJJ-210095269' },
+      { date: 'Current', mac: 'JJJ-210095269' },
       { date: '1/14/2020',  mac: 'JJJ-210081044' },
     ]},
     { name: 'Sensor', history: [
-      { date: 'Current',    mac: 'BBB-203719811' },
+      { date: 'Current', mac: 'BBB-203719811' },
       { date: '1/14/2020',  mac: 'BBB-203700193' },
     ]},
     { name: 'Temperate Water', history: [
       { date: 'Current',    mac: 'RRR-109041099' },
     ]},
     { name: 'Drum Sensor', history: [
-      { date: 'Current',    mac: 'BBB-203728001' },
+      { date: 'Current', mac: 'BBB-203728001' },
       { date: '1/14/2020',  mac: 'BBB-203700882' },
     ]},
     { name: 'WDS', history: [
-      { date: 'Current',    mac: 'WWW-601920044' },
+      { date: 'Current', mac: 'WWW-601920044' },
       { date: '3/12/2023',  mac: 'WWW-601901193' },
       { date: '1/14/2020',  mac: 'WWW-601900012' },
     ]},
     { name: 'Water Pump', history: [
-      { date: 'Current',    mac: 'WP-88100' },
+      { date: 'Current', mac: 'WP-88100' },
       { date: '6/12/2025',  mac: 'WP-44019' },
     ]},
     { name: 'Admix Pump', history: [
@@ -12078,7 +12096,7 @@ function udRenderConfig() {
               <div class="cfg-field"><label>Contract</label><div class="cfg-select">${u.contract} <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
               <div class="cfg-field"><label>System Type</label><div class="cfg-select">${u.sysType} <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
               <div class="cfg-field"><label>Configuration</label><div class="cfg-select">${u.config} <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
-              <div class="cfg-field"><label>TGW 4 Number</label><input type="text" value="${u.tgw}" style="font-family:monospace;"></div>
+              <div class="cfg-field"><label>TCG ID</label><input type="text" value="${u.tgw}" style="font-family:monospace;"></div>
               <div class="cfg-field"><label>Mode</label><div class="cfg-select">Live <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
             </div>
           </div>
@@ -12227,7 +12245,7 @@ function udRenderConfig() {
         </div>
         <div class="co-tbl-row"><div class="co-tbl-k">First Commissioned</div><div class="co-tbl-v">${u.firstCommissioned || '--'}</div></div>
         <div class="co-tbl-row co-tbl-row--alt"><div class="co-tbl-k">Assigned to Truck</div><div class="co-tbl-v">${u.assignedToTruck || '--'}</div></div>
-        <div class="co-tbl-row"><div class="co-tbl-k">TGW 4 Number</div><div class="co-tbl-v" style="font-family:monospace;">${u.tgw}</div></div>
+        <div class="co-tbl-row"><div class="co-tbl-k">TCG ID</div><div class="co-tbl-v" style="font-family:monospace;">${u.tgw}</div></div>
         <div class="co-tbl-row co-tbl-row--alt"><div class="co-tbl-k">Contract</div><div class="co-tbl-v">${u.contract}</div></div>
 
         <!-- Also viewing toggle -->
@@ -12322,9 +12340,13 @@ function udRenderLifespan() {
   const iconRemoved  = `<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5a3.5 3.5 0 005 0l2-2a3.5 3.5 0 00-5-5L7.5 3.5" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 6.5a3.5 3.5 0 00-5 0l-2 2a3.5 3.5 0 005 5l1-1" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 3l10 10" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round"/></svg>`;
 
   function buildEntries(comp) {
-    return comp.history.map((h, hi) => {
-      const isLast = hi === comp.history.length - 1;
-      const isFirst = hi === 0;
+    /* Strip the date:'Current' placeholder — it belongs in the card header only.
+       Reverse so Originally installed is at top, most recent Replaced at bottom.
+       The bottom (most recent) entry = the serial shown in the card header. */
+    const hist = comp.history.filter(h => h.date !== 'Current');
+    return hist.map((h, hi) => {
+      const isLast  = hi === hist.length - 1; /* most recent = bottom = current */
+      const isFirst = hi === 0;               /* originally installed = top */
       const connector = !isLast
         ? `<div style="width:1px;background:var(--border);flex-grow:1;margin:4px 0;min-height:12px;"></div>` : '';
       const isRemoved = comp.removed;
@@ -12347,7 +12369,7 @@ function udRenderLifespan() {
           <div style="flex:1;min-width:0;">
             <div style="font-size:11px;color:var(--soft);letter-spacing:-0.1px;margin-bottom:3px;">${dateLabel}</div>
             <div style="font-size:13px;font-weight:500;color:${isFirst && isRemoved ? '#9ca3af' : 'var(--strong)'};letter-spacing:-0.2px;font-family:monospace;">${h.mac}</div>
-            ${isFirst && !isRemoved ? '<div style="font-size:11px;color:#16a34a;font-weight:500;margin-top:2px;">Currently installed</div>' : ''}
+            ${!isLast ? '<div style="font-size:11px;color:#d97706;font-weight:500;margin-top:2px;">Replaced</div>' : ''}
             ${isLast ? '<div style="font-size:11px;color:var(--blue);font-weight:500;margin-top:2px;">Originally installed</div>' : ''}
           </div>
         </div>`;
@@ -12355,14 +12377,16 @@ function udRenderLifespan() {
   }
 
   function buildCard(comp, ci, isRemoved) {
-    const current    = comp.history[0];
-    const hasHistory = comp.history.length > 1;
+    /* Card header shows the most recent real serial — skip the 'Current' placeholder */
+    const realHist   = comp.history.filter(h => h.date !== 'Current');
+    const current    = realHist.length > 0 ? realHist[0] : comp.history[0];
+    const hasHistory = realHist.length > 1;
     const cardBg     = isRemoved ? 'background:var(--base);' : '';
     const nameColor  = isRemoved ? 'color:#9ca3af;' : '';
     const macColor   = isRemoved ? 'color:#9ca3af;' : 'color:var(--soft);';
     const icon       = isRemoved ? iconRemoved : iconLinked;
     const changesTxt = hasHistory
-      ? `<span style="font-size:11px;color:var(--soft);letter-spacing:-0.1px;">${comp.history.length - 1} change${comp.history.length > 2 ? 's' : ''}</span>` : '';
+      ? `<span style="font-size:11px;color:var(--soft);letter-spacing:-0.1px;">${realHist.length - 1} change${realHist.length > 2 ? 's' : ''}</span>` : '';
 
     return `
       <div class="ls-card" style="${cardBg}">
@@ -12436,7 +12460,7 @@ function udRenderLifespan() {
       <div class="ud-row"><span class="ud-key">Decommissioned</span><span class="ud-val">${u.decommissioned || '--'}</span></div>
     </div>
     <div class="ud-card">
-      <div class="ud-row"><span class="ud-key">TGW 4 Number</span><span class="ud-val" style="font-family:monospace;font-size:13px;">${u.tgw}</span></div>
+      <div class="ud-row"><span class="ud-key">TCG ID</span><span class="ud-val" style="font-family:monospace;font-size:13px;">${u.tgw}</span></div>
       <div class="ud-row"><span class="ud-key">Contract</span><span class="ud-val">${u.contract}</span></div>
       <div class="ud-row"><span class="ud-key">Assigned Truck</span><span class="ud-val">${u.truck}</span></div>
       ${u.truck !== '--' ? `<div class="also-viewing">
@@ -14203,7 +14227,7 @@ function dtAuSubmit() {
     contract: contract,
     sysType: sysType,
     config: config,
-    firstCommissioned: new Date().toLocaleDateString('en-US', {month:'2-digit',day:'2-digit',year:'numeric'}),
+    firstCommissioned: null, /* set when first linked to a truck */
     assignedToTruck: null,
     decommissioned: null,
   });
@@ -15230,12 +15254,45 @@ function dtUdCfgSaveAndLink() {
     }
   }
 
-  // Re-render header + tabs + side panel with the Linked treatment
-  dtUdApplyStatusUI(u);
-  dtUdActiveTab = 'lifespan';
-  dtUdBuildTabs();
-  dtUdRenderActiveTab();
-  dtUdRenderSidePanel();
+  // Close the unit drawer and open the truck drawer on Components Overview
+  setTimeout(function() {
+    // Ensure the truck exists in trucks[] — if it came from UNLINKED_TRUCKS it won't be there
+    const truckNum = u.truck;
+    if (truckNum && truckNum !== '--') {
+      let t = trucks.find(function(x) { return x.num === truckNum; });
+      if (!t) {
+        // Create a synthetic trucks[] entry so dtOpenTruck can build the drawer
+        t = {
+          num: truckNum, ver:'v3.04.029', ign:'On', ignOff:false,
+          err:0, wrn:0, ignDetail:'Just linked', plant:'Phoenix Central',
+          lastConn:'Just now', conn:'live', unlinked:false,
+          truckMode:'Active', unitId:u.id,
+          account:'Cemex AZ', age:'0 min', source:'Unit Link',
+          impact:'Not Managing', issue:'None', readyMaint:'Yes',
+          newlyLinked:true
+        };
+        trucks.push(t);
+      }
+      // Also ensure CC_TRUCKS has an entry
+      if (!CC_TRUCKS.find(function(x) { return x.num === truckNum; })) {
+        CC_TRUCKS.push({ num:truckNum, unlinked:false, components:[] });
+      }
+    }
+
+    // Clear pending state so dtUdClose doesn't revert the link
+    dtUdPendingPrevState = null;
+    dtUdClose();
+
+    setTimeout(function() {
+      if (truckNum && truckNum !== '--') {
+        dtOpenTruck(truckNum);
+        setTimeout(function() {
+          const overviewTab = document.querySelector('.dt-drawer-tab[onclick*="overview"]');
+          if (overviewTab) dtDrawerTab('overview', overviewTab);
+        }, 200);
+      }
+    }, 100);
+  }, 1300);
   // Refresh the units table + trucks header stat
   if (typeof dtUnitsRender === 'function') dtUnitsRender();
   // Re-render whichever trucks table is visible so the truck moves out of
@@ -15313,23 +15370,24 @@ function dtBuildLifespanHTML(targetUnitId, linkedTruckNum, showOpenTruckLink) {
   const iconRemoved = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5a3.5 3.5 0 005 0l2-2a3.5 3.5 0 00-5-5L7.5 3.5" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 6.5a3.5 3.5 0 00-5 0l-2 2a3.5 3.5 0 005 5l1-1" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 3l10 10" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round"/></svg>`;
 
   function buildEntries(comp) {
-    return comp.history.map((h, hi) => {
-      const isFirst = hi === 0;
-      const isLast  = hi === comp.history.length - 1;
+    /* Strip date:'Current' placeholder — header-only. Reverse so oldest is first,
+       most recent Replaced at bottom matches the serial in the card header. */
+    const hist = comp.history.filter(h => h.date !== 'Current');
+    return hist.map((h, hi) => {
+      const isFirst = hi === 0;               /* originally installed = top */
+      const isLast  = hi === hist.length - 1; /* most recent = bottom = currently installed */
       const isRemoved = comp.removed;
       let dotCls = 'middle';
       if (isFirst && !isRemoved)        dotCls = 'current';
       else if (isFirst && isRemoved)    dotCls = 'removed';
-      else if (isLast)                  dotCls = 'original';
+      else if (isLast && !isFirst)      dotCls = 'original';
       const connector = !isLast ? `<div class="dt-ls-entry-connector"></div>` : '';
       const dateLabel = isFirst && isRemoved
         ? `${h.date} <span class="dt-ls-entry-removed-tag">· removed ${comp.removedDate}</span>`
         : h.date;
-      const tag = (isFirst && !isRemoved)
-        ? `<span class="dt-ls-entry-tag current">Currently installed</span>`
-        : (isLast)
-          ? `<span class="dt-ls-entry-tag original">Originally installed</span>`
-          : '';
+      const tag = !isLast
+        ? `<span class="dt-ls-entry-tag replaced">Replaced</span>`
+        : `<span class="dt-ls-entry-tag original">Originally installed</span>`;
       return `
         <div class="dt-ls-entry">
           <div class="dt-ls-entry-rail">
@@ -15344,7 +15402,9 @@ function dtBuildLifespanHTML(targetUnitId, linkedTruckNum, showOpenTruckLink) {
   }
 
   function buildCard(comp, ci, isRemoved) {
-    const current    = comp.history[0];
+    /* Use first real dated serial for the card header */
+    const realHist = comp.history.filter(h => h.date !== 'Current');
+    const current  = realHist.length > 0 ? realHist[0] : comp.history[0];
     const hasHistory = comp.history.length > 1;
     const icon       = isRemoved ? iconRemoved : iconLinked;
     const changesTxt = hasHistory
@@ -15861,7 +15921,7 @@ function dtUdRenderSidePanel() {
     { k:'Last System Status', v: 'Mar 24, 2025, 1:16:38 PM' },
     { k:'Last Reboot',        v: 'Mar 24, 2025, 1:16 PM' },
     { k:'Configuration',      v: u.config || '—' },
-    { k:'TGW 4 Number',       v: u.tgw && u.tgw !== '--' ? u.tgw : '—' },
+    { k:'TCG ID',       v: u.tgw && u.tgw !== '--' ? u.tgw : '—' },
     { k:'Contract',           v: u.contract || '—' },
   ] : [
     { k:'Code version',       v: '—' },
@@ -15870,7 +15930,7 @@ function dtUdRenderSidePanel() {
     { k:'Last System Status', v: '—' },
     { k:'Last Reboot',        v: '—' },
     { k:'Configuration',      v: u.config || '—' },
-    { k:'TGW 4 Number',       v: u.tgw && u.tgw !== '--' ? u.tgw : '—' },
+    { k:'TCG ID',       v: u.tgw && u.tgw !== '--' ? u.tgw : '—' },
     { k:'Contract',           v: u.contract || '—' },
   ];
 
@@ -16000,7 +16060,7 @@ const COL_DEFS = {
     { id:'unitid',     label:'Unit ID',               width:120, locked:true },
     { id:'status',     label:'Unit Status',           width:170 },
     { id:'truck',      label:'Assigned Trucks',       width:140 },
-    { id:'tgw',        label:'TGW 4 Number',          width:150 },
+    { id:'tgw',        label:'TCG ID',          width:150 },
     { id:'contract',   label:'Contracts',             width:170 },
     { id:'sysType',    label:'System Type',           width:120 },
     { id:'config',     label:'Configuration',         width:170 },
@@ -16527,6 +16587,15 @@ function dtOpenTruck(truckNum) {
     const scroll = document.getElementById('dt-drawer-scroll');
     if (scroll) {
       scroll.innerHTML = `
+        <div id="dt-overview-toolbar" style="display:flex;align-items:center;justify-content:space-between;padding:0 0 16px;">
+          <span id="dt-replace-hint" style="font-size:13px;color:#92400e;letter-spacing:-0.26px;display:none;">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style="vertical-align:middle;margin-right:4px;"><path d="M7 1v6M7 10h.01" stroke="#92400e" stroke-width="1.4" stroke-linecap="round"/><circle cx="7" cy="7" r="6" stroke="#92400e" stroke-width="1.2"/></svg>
+            Tap components to select them
+          </span>
+          <button class="co-replace-btn" id="dt-replace-btn" onclick="dtReplaceToggle()" style="margin-left:auto;">
+            ${CO_REPLACE_BTN_HTML}
+          </button>
+        </div>
         <div class="dt-drawer-section-hdr" onclick="dtDrawerToggleSection('mcs',this)">
           <svg class="dt-section-chev" width="14" height="14" viewBox="0 0 14 14" fill="none" style="transition:transform 0.2s;"><path d="M3 5l4 4 4-4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Measurement Component Status
@@ -16602,11 +16671,12 @@ function dtOpenTruck(truckNum) {
 
   /* Build component cards */
   const mcsCards = [
-    { name:'CPS',           label:'Charge Pressure Sensor',   value:'204',  unit:'psi',    startup:2,  err:'--', extra:null },
+    { name:'TCG',           label:'Telematics Control Gateway', value:'Active', unit:'', startup:null, err:'--', extra:{label:'Status', val:'Connected'} },
     { name:'DPS pressure',  label:'Drum Pressure Sensor',     value:'196',  unit:'psi',    startup:2,  err:'--', extra:null },
     { name:'DRS',           label:'Drum Rotation Speed',      value:'138',  unit:'rpm',    startup:2,  err:'--', extra:null },
-    { name:'CWR (35.0) temperature', label:'Charge Water Return Temp', value:'91', unit:'°F', startup:2, err:'--', extra:{label:'Tilt Degree', val:'1'} },
     { name:'WDS',           label:'Water Drum Sensor\nNo connection', value:'19.4', unit:'gal', startup:2, err:'14', extra:null, forceAlarm:true, flipBack:{ lastSeen:'Mar 23 · 08:24 AM', lastVoltage:'12.6', voltageUnit:'V' } },
+    { name:'CPS',           label:'Charge Pressure Sensor',   value:'204',  unit:'psi',    startup:2,  err:'--', extra:null },
+    { name:'CWR (35.0) temperature', label:'Charge Water Return Temp', value:'91', unit:'°F', startup:2, err:'--', extra:{label:'Tilt Degree', val:'1'} },
     { name:'ICD (1468)',    label:'Input Current Detector',   value:'1468', unit:'mA',     startup:2,  err:'--', extra:null, greyDot:true },
     { name:'ED (8195)',     label:'Electrical Signal value',  value:'8195', unit:'counts', startup:2,  err:'--', extra:null },
     { name:'Water Pump',    state:'empty',   label:'Water Delivery System', value:'--', unit:'', startup:null, err:null, removedDate:'07/23/25 · 2:14 PM' },
@@ -16766,6 +16836,52 @@ function dtOpenTruck(truckNum) {
 
   document.getElementById('dt-drawer-mcs-cards').innerHTML = mcsCards.map(buildCard).join('');
   document.getElementById('dt-drawer-fdm-cards').innerHTML = fdmCards.map(buildCard).join('');
+
+  /* Newly linked truck: start with skeleton cards, resolve to healthy after 2s */
+  if (t.newlyLinked) {
+    const skeletonCard = () => `
+      <div class="dt-co-card skeleton">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <div class="dt-skel-line" style="width:8px;height:8px;border-radius:50%;flex-shrink:0;"></div>
+          <div class="dt-skel-line" style="width:80px;height:10px;"></div>
+        </div>
+        <div class="dt-skel-line" style="width:60%;height:32px;margin-top:4px;"></div>
+        <div class="dt-skel-line" style="width:90%;height:10px;"></div>
+        <div class="dt-skel-line" style="width:70%;height:10px;"></div>
+        <div style="margin-top:auto;">
+          <div class="dt-skel-line" style="width:100%;height:10px;margin-bottom:6px;"></div>
+          <div class="dt-skel-line" style="width:100%;height:10px;"></div>
+        </div>
+      </div>`;
+    const skeletons = Array(9).fill(null).map(skeletonCard).join('');
+    document.getElementById('dt-drawer-mcs-cards').innerHTML = skeletons;
+    document.getElementById('dt-drawer-fdm-cards').innerHTML = Array(3).fill(null).map(skeletonCard).join('');
+
+    /* Resolve to healthy clean cards after 2s */
+    setTimeout(function() {
+      const cleanMcs = [
+        { name:'TCG',         label:'Telematics Control Gateway', value:'Active',  unit:'',        startup:null, err:'--', extra:{label:'Status', val:'Connected'} },
+        { name:'DPS pressure',label:'Drum Pressure Sensor',       value:'194',     unit:'psi',     startup:0, err:'--', extra:null },
+        { name:'DRS',         label:'Drum Rotation Speed',        value:'0',       unit:'rpm',     startup:0, err:'--', extra:null },
+        { name:'WDS',         label:'Water Drum Sensor',          value:'0.0',     unit:'gal',     startup:0, err:'--', extra:null },
+        { name:'CPS',         label:'Charge Pressure Sensor',     value:'201',     unit:'psi',     startup:0, err:'--', extra:null },
+        { name:'CWR (35.0) temperature', label:'Charge Water Return Temp', value:'72', unit:'°F', startup:0, err:'--', extra:{label:'Tilt Degree', val:'0'} },
+        { name:'ICD',         label:'Input Current Detector',     value:'1441',    unit:'mA',     startup:0, err:'--', extra:null },
+        { name:'ED',          label:'Electrical Signal value',    value:'8012',    unit:'counts', startup:0, err:'--', extra:null },
+        { name:'Water Pump',  label:'Water Delivery System',      value:'2.0',     unit:'gal/min', startup:0, err:'--', extra:null },
+      ];
+      const cleanFdm = [
+        { name:'IOX supply voltage',    label:'Onboard Power Supply',      value:'12.8', unit:'V',       startup:0, err:'--', extra:{label:'Temperature', val:'98 °F'} },
+        { name:'Water meter flow rate', label:'Active Water flow to drum', value:'0.0',  unit:'gal/min', startup:0, err:'--', extra:null },
+        { name:'Admix meter flow rate', label:'Admixture Dosing meter',    value:'0.0',  unit:'gal/min', startup:0, err:'--', extra:null },
+      ];
+      if (document.getElementById('dt-drawer-mcs-cards')) {
+        document.getElementById('dt-drawer-mcs-cards').innerHTML = cleanMcs.map(buildCard).join('');
+        document.getElementById('dt-drawer-fdm-cards').innerHTML = cleanFdm.map(buildCard).join('');
+        t.newlyLinked = false; /* don't repeat on next open */
+      }
+    }, 2000);
+  }
 
   /* Open */
   requestAnimationFrame(() => {

@@ -554,11 +554,19 @@
     letter-spacing:-0.28px;
   }
   .dt-drawer-ign-badge.off { background:#f6f4f2; color:var(--soft); }
+  .dt-drawer-ign-badge.maint { background:#fff3cd; color:#7a5800; }
+  .dt-drawer-ign-badge.maint .dt-drawer-ign-dot { background:#f59e0b; }
   .dt-drawer-ign-dot {
     width:8px; height:8px; border-radius:50%;
     background:#2ecf1d; flex-shrink:0;
   }
   .dt-drawer-ign-badge.off .dt-drawer-ign-dot { background:rgba(54,50,45,0.3); }
+  .dt-mode-opt {
+    padding:8px 10px; border-radius:8px; font-size:13px;
+    color:var(--strong); letter-spacing:-0.26px; cursor:pointer;
+  }
+  .dt-mode-opt:hover { background:var(--layer-2); }
+  .dt-mode-opt.active { font-weight:600; background:rgba(54,50,45,0.05); }
   .dt-drawer-share-btn {
     width:32px; height:32px; border-radius:50%;
     border:1px solid var(--border);
@@ -646,6 +654,7 @@
     grid-template-columns:repeat(3, minmax(200px, 1fr));
     gap:16px; margin-bottom:24px;
     overflow-x:auto;
+    padding:6px; margin-left:-6px; margin-right:-6px;
   }
   .dt-co-card {
     background:var(--layer-1);
@@ -656,15 +665,112 @@
   .dt-co-card.alarm { background:#d70100; border-color:#9a1f1e; }
   .dt-co-card.warn  { background:#ffba0d; border-color:#887f13; }
   .dt-co-card.grey  { background:var(--layer-2); }
+  /* Empty slot */
+  .dt-co-card.empty {
+    background:var(--layer-1);
+    border:1.5px dashed rgba(54,50,45,0.22) !important;
+  }
+  .dt-co-card.empty .dt-co-card-name { color:var(--soft); }
+  .dt-empty-slot-icon {
+    width:36px; height:36px; border-radius:50%;
+    background:rgba(54,50,45,0.06);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .dt-empty-label { font-size:13px; color:var(--soft); letter-spacing:-0.26px; }
+  .dt-empty-date  { font-size:11px; color:rgba(54,50,45,0.38); letter-spacing:-0.22px; }
+  .dt-empty-action { font-size:12px; font-weight:500; color:var(--blue); letter-spacing:-0.24px; cursor:pointer; }
+  /* Pending verification */
+  .dt-co-card.pending {
+    background:#fffbeb;
+    border-color:rgba(180,130,0,0.3) !important;
+  }
+  .dt-co-card.pending .dt-co-card-name { color:var(--strong); }
+  .dt-pending-badge {
+    display:inline-flex; align-items:center; gap:5px;
+    font-size:11px; font-weight:500; color:#92400e; letter-spacing:-0.22px;
+  }
+  .dt-pending-dot { width:7px; height:7px; border-radius:50%; background:#d97706; flex-shrink:0; }
+  .dt-pending-label { font-size:12px; color:#92400e; letter-spacing:-0.24px; }
+
+  /* Desktop replace mode */
+  .dt-replace-mode .dt-drawer-cards .dt-co-card,
+  .dt-replace-mode .dt-drawer-cards .dt-co-card-flip {
+    cursor:pointer; position:relative;
+    transition:transform 0.18s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .dt-replace-mode .dt-drawer-cards .dt-co-card:hover,
+  .dt-replace-mode .dt-drawer-cards .dt-co-card-flip:hover { transform:scale(1.02); }
+  /* Hollow circle on every card — visible immediately in replace mode */
+  .dt-replace-mode .dt-drawer-cards .dt-co-card::before,
+  .dt-replace-mode .dt-drawer-cards .dt-co-card-flip::before {
+    content:''; position:absolute; top:10px; right:10px; z-index:10;
+    width:22px; height:22px; border-radius:50%;
+    border:2px solid rgba(54,50,45,0.25); background:white;
+    pointer-events:none;
+    transition:all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+    transform:scale(1); opacity:1;
+  }
+  /* Alarm cards — white hollow ring at rest, clearly visible on red */
+  .dt-replace-mode .dt-drawer-cards .dt-co-card.alarm::before,
+  .dt-replace-mode .dt-drawer-cards .dt-co-card-flip::before {
+    border-color:rgba(255,255,255,0.7); background:rgba(255,255,255,0.15);
+  }
+  /* Selected: amber fill + white checkmark */
+  .dt-replace-mode .dt-drawer-cards .dt-co-card.co-selected::before,
+  .dt-replace-mode .dt-drawer-cards .dt-co-card-flip.co-selected::before {
+    background:#d97706; border-color:#d97706;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8' fill='none'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:center; background-size:10px 8px;
+    transform:scale(1.15);
+  }
+  /* Selected non-alarm: amber ring, scale up */
+  .dt-replace-mode .dt-drawer-cards .dt-co-card.co-selected {
+    transform:scale(1.02);
+    box-shadow:0 0 0 2px #d97706;
+  }
+  /* Alarm selected — dark overlay so red recedes, state is unmistakable */
+  .dt-replace-mode .dt-drawer-cards .dt-co-card.alarm.co-selected,
+  .dt-replace-mode .dt-drawer-cards .dt-co-card-flip.co-selected .dt-co-card.alarm {
+    border:1px solid #9a1f1e !important;
+    box-shadow:inset 0 0 0 1000px rgba(0,0,0,0.18);
+  }
+  /* Selected flip (WDS): white ring flush with card */
+  .dt-replace-mode .dt-drawer-cards .dt-co-card-flip.co-selected {
+    transform:scale(1.02);
+    border-radius:24px;
+  }
+  /* Alarm selected — white ring flush, no offset */
+  .dt-replace-mode .dt-drawer-cards .dt-co-card.alarm.co-selected {
+    transform:scale(1.02);
+    box-shadow:0 0 0 2px white;
+  }
+  /* Alarm selected checkmark — amber circle, white check */
+  .dt-replace-mode .dt-drawer-cards .dt-co-card.alarm.co-selected::before,
+  .dt-replace-mode .dt-drawer-cards .dt-co-card-flip.co-selected::before {
+    background:#d97706; border-color:#d97706;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8' fill='none'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:center; background-size:10px 8px;
+    transform:scale(1.15);
+  }
+  /* Desktop replace bar — same pattern as dt-cfg-savebar */
+  #dt-replace-bar {
+    display:none; flex-shrink:0; background:var(--layer-1);
+    border-top:1px solid var(--border); padding:14px 24px;
+    align-items:center; justify-content:space-between;
+  }
+  #dt-replace-bar.visible { display:flex; }
+  .dt-replace-bar-label { font-size:13px; color:var(--soft); letter-spacing:-0.26px; }
+  .dt-replace-bar-label strong { color:var(--strong); }
   .dt-co-card-head  { display:flex; align-items:center; gap:8px; }
   .dt-co-card-dot   { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
   .dt-co-card-name  { font-size:16px; font-weight:500; color:var(--strong); letter-spacing:-0.32px; }
   .dt-co-card.alarm .dt-co-card-name,
   .dt-co-card.alarm .dt-co-card-desc,
   .dt-co-card.alarm .dt-co-card-meta { color:white; }
+  .dt-co-card.alarm .dt-co-card-unit { color:rgba(255,255,255,0.7); }
 
   /* WDS flip card — desktop port of the mobile pattern */
-  .dt-co-card-flip { perspective:800px; cursor:pointer; }
+  .dt-co-card-flip { perspective:800px; cursor:pointer; border-radius:24px; }
   .dt-co-card-flip .dt-co-card-flip-inner {
     position:relative; transform-style:preserve-3d;
     transition:transform 0.45s ease; min-height:100%;
@@ -3679,6 +3785,131 @@
   .co-card--warn .co-card-head span { color:var(--strong); }
   .co-card--warn .co-value { color:var(--strong); }
   .co-card--warn .co-unit { color:var(--strong); }
+  /* Empty slot — component physically removed */
+  .co-card--empty {
+    background:var(--layer-1); border:1.5px dashed rgba(54,50,45,0.25);
+    border-radius:16px; padding:16px;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .co-card--empty .co-card-head span { color:var(--soft); }
+  .co-empty-slot-icon {
+    width:32px; height:32px; border-radius:50%;
+    background:rgba(54,50,45,0.06);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .co-empty-label { font-size:13px; color:var(--soft); letter-spacing:-0.26px; }
+  .co-empty-date  { font-size:11px; color:rgba(54,50,45,0.4); letter-spacing:-0.22px; }
+  .co-empty-action {
+    font-size:12px; font-weight:500; color:var(--blue);
+    letter-spacing:-0.24px; margin-top:2px; cursor:pointer;
+  }
+  /* Pending verification — replacement recorded, awaiting Error Reset */
+  .co-card--pending {
+    background:#fffbeb; border:1px solid rgba(180,130,0,0.3);
+    border-radius:16px; padding:16px;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .co-card--pending .co-card-head span { color:var(--strong); }
+  .co-pending-badge {
+    display:inline-flex; align-items:center; gap:5px;
+    font-size:11px; font-weight:500; color:#92400e;
+    letter-spacing:-0.22px;
+  }
+  .co-pending-dot {
+    width:7px; height:7px; border-radius:50%;
+    background:#d97706; flex-shrink:0;
+  }
+  .co-pending-label { font-size:12px; color:#92400e; letter-spacing:-0.24px; }
+
+  /* ── Chunk 2: Replace Components mode ── */
+  /* Mobile replace toolbar */
+  .co-replace-toolbar {
+    display:flex; align-items:center; justify-content:flex-end;
+    padding:8px 16px; border-bottom:1px solid var(--border);
+    flex-shrink:0; background:var(--layer-1);
+  }
+  .co-replace-btn {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:7px 14px; border-radius:20px;
+    border:1px solid var(--border); background:none;
+    font-size:13px; font-weight:500; color:var(--defined);
+    letter-spacing:-0.26px; cursor:pointer; font-family:var(--font);
+  }
+  .co-replace-btn:hover { border-color:var(--border-mid); color:var(--strong); }
+  .co-replace-btn.active { border-color:var(--amber); color:#92400e; background:rgba(255,186,13,0.08); }
+  /* Selection ring on cards in replace mode */
+  .co-grid { padding:4px; margin:-4px; } /* give ring room */
+  .co-replace-mode .co-card,
+  .co-replace-mode .co-card--empty,
+  .co-replace-mode .co-card--pending {
+    cursor:pointer; position:relative;
+    transition:transform 0.18s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .co-replace-mode .co-card:hover { transform:scale(1.02); }
+  /* Hollow circle visible on every card immediately */
+  .co-replace-mode .co-card::before,
+  .co-replace-mode .co-card--empty::before,
+  .co-replace-mode .co-card--pending::before {
+    content:''; position:absolute; top:8px; right:8px; z-index:10;
+    width:20px; height:20px; border-radius:50%;
+    border:2px solid rgba(54,50,45,0.25); background:white;
+    pointer-events:none;
+    transition:all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+    transform:scale(1); opacity:1;
+  }
+  /* Alarm cards — white hollow circle on red */
+  .co-replace-mode .co-card--fault::before {
+    border-color:rgba(255,255,255,0.5); background:rgba(255,255,255,0.15);
+  }
+  /* Selected: amber fill + white check */
+  .co-replace-mode .co-card.co-selected::before,
+  .co-replace-mode .co-card--empty.co-selected::before,
+  .co-replace-mode .co-card--pending.co-selected::before {
+    background:#d97706; border-color:#d97706;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8' fill='none'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:center; background-size:10px 8px;
+    transform:scale(1.15);
+  }
+  .co-replace-mode .co-card.co-selected,
+  .co-replace-mode .co-card--empty.co-selected,
+  .co-replace-mode .co-card--pending.co-selected {
+    transform:scale(1.03);
+    box-shadow:0 0 0 2px #d97706, 0 4px 12px rgba(217,119,6,0.2);
+  }
+  /* Fault card selected — white circle, red check */
+  .co-replace-mode .co-card--fault.co-selected::before {
+    background:white; border-color:white;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8' fill='none'%3E%3Cpath d='M1 4l3 3 5-6' stroke='%23bc302f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:center; background-size:10px 8px;
+    transform:scale(1.15);
+  }
+  /* Empty and pending cards selectable in replace mode */
+  .co-replace-mode .co-card--empty,
+  .co-replace-mode .co-card--pending { cursor:pointer; }
+  /* Mobile sticky replace bar */
+  .co-replace-bar {
+    display:none; flex-shrink:0;
+    border-top:1px solid var(--border); background:var(--layer-1);
+    padding:12px 16px;
+  }
+  .co-replace-bar.visible { display:flex; align-items:center; justify-content:space-between; }
+  .co-replace-bar-label { font-size:14px; color:var(--soft); letter-spacing:-0.28px; }
+  .co-replace-bar-label strong { color:var(--strong); }
+  .co-replace-bar-actions { display:flex; gap:8px; }
+  .co-replace-bar-cancel {
+    padding:8px 16px; border-radius:20px; border:1px solid var(--border);
+    background:none; font-size:13px; font-weight:500; color:var(--defined);
+    letter-spacing:-0.26px; cursor:pointer; font-family:var(--font);
+  }
+  .co-replace-bar-confirm {
+    padding:8px 16px; border-radius:20px; border:none;
+    background:#d97706; color:white;
+    font-size:13px; font-weight:500; letter-spacing:-0.26px;
+    cursor:pointer; font-family:var(--font); opacity:0.4;
+    transition:opacity 0.15s;
+  }
+  .co-replace-bar-confirm.enabled { opacity:1; }
   .co-card--warn .co-desc { color:var(--strong); }
   .co-card--warn .co-meta { color:var(--strong); }
   .co-card--fault, .co-card--fault * { color: white !important; }
@@ -4363,7 +4594,7 @@
 
 </style>
 </head>
-<body class="view-tablet">
+<body class="view-desktop">
 
 <!-- ─── VIEWPORT SWITCHER BAR ─────────────────────────────── -->
 <div class="vp-bar">
@@ -4371,12 +4602,12 @@
     <svg width="72" height="18" viewBox="0 0 96 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="white"/>
     </svg>
-    <span style="font-size:10px;font-family:'DM Mono',monospace;color:rgba(255,255,255,0.4);letter-spacing:0.2px;margin-left:8px;align-self:center;">v3.0.2</span>
+    <span style="font-size:10px;font-family:'DM Mono',monospace;color:rgba(255,255,255,0.4);letter-spacing:0.2px;margin-left:8px;align-self:center;">v3.1.2</span>
   </div>
   <div class="vp-pills">
     <button class="vp-pill" onclick="setView('mobile')">Mobile</button>
-    <button class="vp-pill active" onclick="setView('tablet')">Tablet</button>
-    <button class="vp-pill" onclick="setView('desktop')">Desktop</button>
+    <button class="vp-pill" onclick="setView('tablet')">Tablet</button>
+    <button class="vp-pill active" onclick="setView('desktop')">Desktop</button>
   </div>
 </div>
 
@@ -4646,7 +4877,14 @@
     <div class="d-chrome">
       <div class="d-truck-id">
         <div class="d-truck-label" id="drawer-truck-num">Truck: 90237</div>
-        <div class="d-ign-pill"><div class="d-ign-dot"></div>Ignition on</div>
+        <div class="d-ign-pill" id="mo-ign-pill" onclick="moToggleModePopover()" style="cursor:pointer;position:relative;" title="Change truck mode"><div class="d-ign-dot" id="mo-ign-dot"></div><span id="mo-ign-text">Ignition on</span>
+          <div id="mo-mode-popover" style="display:none;position:absolute;top:calc(100% + 8px);left:0;background:white;border:1px solid var(--border-mid);border-radius:12px;box-shadow:0 8px 24px rgba(54,50,45,0.14);padding:6px;min-width:180px;z-index:200;" onclick="event.stopPropagation()">
+            <div style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.4px;text-transform:uppercase;padding:4px 8px 6px;">Truck Mode</div>
+            <div class="dt-mode-opt" onclick="moSetMode('live')" id="mo-mode-opt-live">🟢 Live</div>
+            <div class="dt-mode-opt" onclick="moSetMode('maintenance')" id="mo-mode-opt-maintenance">🟡 Maintenance</div>
+            <div class="dt-mode-opt" onclick="moSetMode('offline')" id="mo-mode-opt-offline">⚪ Offline</div>
+          </div>
+        </div>
       </div>
       <div class="d-chrome-btns">
         <button class="chrome-btn chrome-btn--border" id="drawer-prev" onclick="navigateDrawer(-1)">
@@ -4745,7 +4983,19 @@
 
       <!-- STATE C: COMPONENTS OVERVIEW -->
       <div id="state-components" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
-        <div class="co-scroll">
+
+        <!-- Replace Components toolbar -->
+        <div class="co-replace-toolbar" id="co-replace-toolbar">
+          <span id="co-replace-hint" style="font-size:12px;color:#92400e;letter-spacing:-0.24px;display:none;flex:1;">
+            Tap components to select
+          </span>
+          <button class="co-replace-btn" id="co-replace-btn" onclick="coReplaceToggle()">
+            <svg width="14" height="14" viewBox="0 0 21 21" fill="none"><path d="M12.4513 5.05364C12.2681 5.24057 12.1655 5.49189 12.1655 5.75364C12.1655 6.01539 12.2681 6.26671 12.4513 6.45364L14.0513 8.05364C14.2382 8.23687 14.4896 8.3395 14.7513 8.3395C15.0131 8.3395 15.2644 8.23687 15.4513 8.05364L19.2213 4.28364C19.7242 5.39483 19.8764 6.63288 19.6578 7.83279C19.4392 9.0327 18.86 10.1375 17.9976 10.9999C17.1352 11.8624 16.0304 12.4415 14.8305 12.6601C13.6306 12.8787 12.3925 12.7265 11.2813 12.2236L4.37132 19.1336C3.9735 19.5315 3.43393 19.755 2.87132 19.755C2.30871 19.755 1.76914 19.5315 1.37132 19.1336C0.973496 18.7358 0.75 18.1962 0.75 17.6336C0.75 17.071 0.973496 16.5315 1.37132 16.1336L8.28132 9.22364C7.77848 8.11245 7.62624 6.87441 7.84486 5.6745C8.06349 4.47459 8.64261 3.3698 9.50504 2.50736C10.3675 1.64493 11.4723 1.06581 12.6722 0.847184C13.8721 0.628558 15.1101 0.780807 16.2213 1.28364L12.4613 5.04364L12.4513 5.05364Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Replace Components
+          </button>
+        </div>
+
+        <div class="co-scroll" id="co-scroll">
 
           <!-- Section: Measurement Component Status -->
           <div class="co-section-hdr" onclick="toggleCoSection('mcs', this)">
@@ -4968,7 +5218,17 @@
             <button onclick="truckDrawerUnlinkUnit()" style="width:100%;background:none;border:1.5px solid var(--red);color:var(--red);border-radius:32px;padding:10px 16px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">Unlink Unit</button>
           </div>
 
+        </div><!-- /co-scroll -->
+
+        <!-- Replace Components sticky bar — pinned to bottom, same pattern as cfg savebar -->
+        <div class="co-replace-bar" id="co-replace-bar">
+          <span class="co-replace-bar-label"><strong id="co-replace-count">0</strong> component<span id="co-replace-plural">s</span> selected</span>
+          <div class="co-replace-bar-actions">
+            <button class="co-replace-bar-cancel" onclick="coReplaceCancel()">Cancel</button>
+            <button class="co-replace-bar-confirm" id="co-replace-confirm" onclick="coReplaceConfirm()">Remove selected</button>
+          </div>
         </div>
+
       </div>
 
       <!-- STATE D: MANUAL CONTROL -->
@@ -5951,9 +6211,16 @@
           <div class="dt-drawer-header">
             <div class="dt-drawer-title-row">
               <span class="dt-drawer-truck-label">Truck: <strong id="dt-drawer-truck-num">—</strong></span>
-              <span class="dt-drawer-ign-badge" id="dt-drawer-ign-badge">
+              <span class="dt-drawer-ign-badge" id="dt-drawer-ign-badge" onclick="dtToggleModePopover()" style="cursor:pointer;position:relative;" title="Change truck mode">
                 <span class="dt-drawer-ign-dot"></span>
                 <span id="dt-drawer-ign-text">Ignition on</span>
+                <!-- Mode popover -->
+                <div id="dt-mode-popover" style="display:none;position:absolute;top:calc(100% + 8px);left:0;background:white;border:1px solid var(--border-mid);border-radius:12px;box-shadow:0 8px 24px rgba(54,50,45,0.14);padding:6px;min-width:180px;z-index:200;" onclick="event.stopPropagation()">
+                  <div style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.4px;text-transform:uppercase;padding:4px 8px 6px;">Truck Mode</div>
+                  <div class="dt-mode-opt" onclick="dtSetMode('live')" id="dt-mode-opt-live">🟢 Live</div>
+                  <div class="dt-mode-opt" onclick="dtSetMode('maintenance')" id="dt-mode-opt-maintenance">🟡 Maintenance</div>
+                  <div class="dt-mode-opt" onclick="dtSetMode('offline')" id="dt-mode-opt-offline">⚪ Offline</div>
+                </div>
               </span>
               <!-- Share icon -->
               <button class="dt-drawer-share-btn" title="Share">
@@ -5982,6 +6249,17 @@
 
           <!-- Scrollable card area -->
           <div class="dt-drawer-scroll" id="dt-drawer-scroll">
+            <!-- Overview toolbar: Replace button -->
+            <div id="dt-overview-toolbar" style="display:flex;align-items:center;justify-content:space-between;padding:0 0 16px;">
+              <span id="dt-replace-hint" style="font-size:13px;color:#92400e;letter-spacing:-0.26px;display:none;">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style="vertical-align:middle;margin-right:4px;"><path d="M7 1v6M7 10h.01" stroke="#92400e" stroke-width="1.4" stroke-linecap="round"/><circle cx="7" cy="7" r="6" stroke="#92400e" stroke-width="1.2"/></svg>
+                Tap components to select them
+              </span>
+              <button class="co-replace-btn" id="dt-replace-btn" onclick="dtReplaceToggle()" style="margin-left:auto;">
+                <svg width="14" height="14" viewBox="0 0 21 21" fill="none"><path d="M12.4513 5.05364C12.2681 5.24057 12.1655 5.49189 12.1655 5.75364C12.1655 6.01539 12.2681 6.26671 12.4513 6.45364L14.0513 8.05364C14.2382 8.23687 14.4896 8.3395 14.7513 8.3395C15.0131 8.3395 15.2644 8.23687 15.4513 8.05364L19.2213 4.28364C19.7242 5.39483 19.8764 6.63288 19.6578 7.83279C19.4392 9.0327 18.86 10.1375 17.9976 10.9999C17.1352 11.8624 16.0304 12.4415 14.8305 12.6601C13.6306 12.8787 12.3925 12.7265 11.2813 12.2236L4.37132 19.1336C3.9735 19.5315 3.43393 19.755 2.87132 19.755C2.30871 19.755 1.76914 19.5315 1.37132 19.1336C0.973496 18.7358 0.75 18.1962 0.75 17.6336C0.75 17.071 0.973496 16.5315 1.37132 16.1336L8.28132 9.22364C7.77848 8.11245 7.62624 6.87441 7.84486 5.6745C8.06349 4.47459 8.64261 3.3698 9.50504 2.50736C10.3675 1.64493 11.4723 1.06581 12.6722 0.847184C13.8721 0.628558 15.1101 0.780807 16.2213 1.28364L12.4613 5.04364L12.4513 5.05364Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Replace Components
+              </button>
+            </div>
             <!-- Measurement Component Status section -->
             <div class="dt-drawer-section-hdr" onclick="dtDrawerToggleSection('mcs', this)">
               <svg class="dt-section-chev" width="14" height="14" viewBox="0 0 14 14" fill="none" style="transition:transform 0.2s;"><path d="M3 5l4 4 4-4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -5997,6 +6275,9 @@
             <div class="dt-drawer-cards" id="dt-drawer-fdm-cards"></div>
           </div><!-- /dt-drawer-scroll -->
 
+          <!-- Persistent error reset banner — shown when errors remain after replacement -->
+          <div id="dt-error-banner" style="display:none;flex-shrink:0;"></div>
+
           <!-- Config save bar — lives outside scroll, pinned to bottom of drawer-main -->
           <div id="dt-cfg-savebar" style="display:none;flex-shrink:0;background:var(--layer-1);border-top:1px solid var(--border);padding:14px 24px;">
             <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -6005,6 +6286,15 @@
                 <button onclick="dtCfgCancel()" style="background:transparent;border:1px solid var(--border);border-radius:20px;padding:8px 18px;font-size:13px;font-weight:500;color:var(--strong);font-family:var(--font);letter-spacing:-0.26px;cursor:pointer;">Cancel</button>
                 <button id="dt-cfg-save-btn" onclick="dtCfgSave()" style="background:var(--blue);border:none;border-radius:20px;padding:8px 18px;font-size:13px;font-weight:500;color:white;font-family:var(--font);letter-spacing:-0.26px;cursor:pointer;">Save changes</button>
               </div>
+            </div>
+          </div>
+
+          <!-- Replace bar — lives outside scroll, pinned to bottom, same pattern as cfg savebar -->
+          <div id="dt-replace-bar" class="">
+            <span class="dt-replace-bar-label"><strong id="dt-replace-count">0</strong> component<span id="dt-replace-plural">s</span> selected</span>
+            <div style="display:flex;gap:8px;">
+              <button onclick="dtReplaceCancel()" style="background:transparent;border:1px solid var(--border);border-radius:20px;padding:8px 18px;font-size:13px;font-weight:500;color:var(--strong);font-family:var(--font);letter-spacing:-0.26px;cursor:pointer;">Cancel</button>
+              <button id="dt-replace-confirm" onclick="dtReplaceConfirm()" style="background:#d97706;border:none;border-radius:20px;padding:8px 18px;font-size:13px;font-weight:500;color:white;font-family:var(--font);letter-spacing:-0.26px;cursor:pointer;opacity:0.4;transition:opacity 0.15s;">Remove selected</button>
             </div>
           </div>
 
@@ -9277,7 +9567,17 @@ document.addEventListener('click', function(e) {
     const ch = document.getElementById('ts-account-chev');
     if (ch) ch.style.transform = '';
   }
-  // Tablet territory dropdowns
+  // Close mode popovers on outside click
+  var dtModePop = document.getElementById('dt-mode-popover');
+  var dtIgnBadge = document.getElementById('dt-drawer-ign-badge');
+  if (dtModePop && dtIgnBadge && !dtIgnBadge.contains(e.target)) {
+    dtModePop.style.display = 'none';
+  }
+  var moModePop = document.getElementById('mo-mode-popover');
+  var moIgnPill = document.getElementById('mo-ign-pill');
+  if (moModePop && moIgnPill && !moIgnPill.contains(e.target)) {
+    moModePop.style.display = 'none';
+  }
   var tbAccBtn = document.getElementById('tb-ts-account-btn');
   var tbLocBtn = document.getElementById('tb-ts-location-btn');
   var tbAccDD  = document.getElementById('tb-ts-account-dd');
@@ -9648,15 +9948,16 @@ function toggleNavItem(itemId, subId) {
 const CC_TRUCKS = [
   { num:'45689', ver:'v3.04.029', ign:'On',  ignOff:false, err:1,  wrn:10, ignDetail:'3 min',  plant:'Phoenix Central', lastConn:'1:16 PM 07/23/25',
     components:[
-      { name:'Iox/Robotex', dot:'#ffba0d', state:'warn',  evt:'2 Warnings' },
-      { name:'Charge',      dot:'#d70100', state:'alarm', evt:'Alarm · ongoing' },
-      { name:'Discharge',   dot:'#d70100', state:'alarm', evt:'Alarm · ongoing' },
-      { name:'Drum',        dot:'#2ecf1d', state:'clean', evt:'No Events' },
-      { name:'Int. Display',dot:'#d70100', state:'alarm', evt:'3 Alarms' },
-      { name:'Ext. Display',dot:'#2ecf1d', state:'clean', evt:'No Events' },
-      { name:'Bus Power',   dot:'#d70100', state:'alarm', evt:'Alarm · ongoing' },
-      { name:'CWR',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
-      { name:'WDS',         dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'Iox/Robotex', dot:'#ffba0d', state:'warn',    evt:'2 Warnings' },
+      { name:'Charge',      dot:'#d70100', state:'alarm',   evt:'Alarm · ongoing' },
+      { name:'Discharge',   dot:'#d70100', state:'alarm',   evt:'Alarm · ongoing' },
+      { name:'Drum',        dot:'#2ecf1d', state:'clean',   evt:'No Events' },
+      { name:'Int. Display',dot:'#d70100', state:'alarm',   evt:'3 Alarms' },
+      { name:'Ext. Display',dot:'#2ecf1d', state:'clean',   evt:'No Events' },
+      { name:'Bus Power',   dot:'#d70100', state:'alarm',   evt:'Alarm · ongoing' },
+      { name:'CWR',         dot:'#2ecf1d', state:'clean',   evt:'No Events' },
+      { name:'WDS',         dot:'#d70100', state:'empty',   evt:'Not installed', removedDate:'07/23/25 · 2:14 PM' },
+      { name:'Water Pump',  dot:'#d97706', state:'pending', evt:'Replacement recorded', installedDate:'07/23/25 · 3:40 PM', serial:'WP-4421' },
     ]},
   { num:'12457', ver:'v4.02.017', ign:'On',  ignOff:false, err:2,  wrn:10, ignDetail:'15 min', plant:'Phoenix Central', lastConn:'12:44 PM 07/23/25',
     components:[
@@ -10099,6 +10400,30 @@ function renderConditions() {
 
     // Build component status rows for the expanded section
     const compRows = t.components.map(c => {
+      if (c.state === 'empty') {
+        return `<div class="cc-comp-row cc-comp-row--empty" onclick="if(!coReplaceActive) coInstallOpen('${c.name}','${c.removedDate||''}')" style="cursor:pointer;">
+          <div class="cc-comp-row-left">
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="none" style="flex-shrink:0;margin-top:1px;"><rect x="0.5" y="0.5" width="7" height="7" rx="1.5" stroke="rgba(54,50,45,0.3)" stroke-width="1" stroke-dasharray="2 1.5"/></svg>
+            <span class="cc-comp-row-name" style="color:var(--soft);">${c.name}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;">
+            <span class="cc-comp-row-evt" style="color:var(--blue);font-weight:500;">Tap to install →</span>
+            ${c.removedDate ? `<span style="font-size:10px;color:rgba(54,50,45,0.4);">Removed ${c.removedDate}</span>` : ''}
+          </div>
+        </div>`;
+      }
+      if (c.state === 'pending') {
+        return `<div class="cc-comp-row cc-comp-row--pending">
+          <div class="cc-comp-row-left">
+            <div style="width:8px;height:8px;border-radius:50%;background:#d97706;flex-shrink:0;margin-top:1px;"></div>
+            <span class="cc-comp-row-name">${c.name}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;">
+            <span class="cc-comp-row-evt" style="color:#92400e;font-weight:500;">Pending verification</span>
+            ${c.serial ? `<span style="font-size:10px;color:rgba(54,50,45,0.5);">${c.serial}</span>` : ''}
+          </div>
+        </div>`;
+      }
       const evtColor = c.state === 'alarm' ? '#d70100' :
                        c.state === 'warn'  ? '#b07800' : 'var(--soft)';
       const evtWeight = c.state !== 'clean' ? '500' : '400';
@@ -10172,6 +10497,850 @@ function openDrawerFromCC(e, ccIdx) {
 }
 
 
+
+/* ══════════════════════════════════════════════════
+   CHUNK 2 — REPLACE COMPONENTS MODE
+   Shared state; mobile uses co- prefix, desktop dt- prefix
+   Both call the same underlying logic. No data mutation yet.
+═══════════════════════════════════════════════════ */
+
+var coReplaceActive = false;
+var coSelectedCards = new Set();
+
+function coReplaceUpdateBar() {
+  var count  = coSelectedCards.size;
+  var plural = count === 1 ? '' : 's';
+  var hasAny = count > 0;
+
+  // Mobile bar
+  var bar   = document.getElementById('co-replace-bar');
+  var cntEl = document.getElementById('co-replace-count');
+  var plEl  = document.getElementById('co-replace-plural');
+  var conf  = document.getElementById('co-replace-confirm');
+  if (bar)   bar.classList.toggle('visible', coReplaceActive);
+  if (cntEl) cntEl.textContent = count;
+  if (plEl)  plEl.textContent  = plural;
+  if (conf)  { conf.classList.toggle('enabled', hasAny); conf.style.opacity = hasAny ? '1' : '0.4'; }
+
+  // Desktop bar
+  var dtBar  = document.getElementById('dt-replace-bar');
+  var dtCnt  = document.getElementById('dt-replace-count');
+  var dtPl   = document.getElementById('dt-replace-plural');
+  var dtConf = document.getElementById('dt-replace-confirm');
+  if (dtBar)  dtBar.classList.toggle('visible', coReplaceActive);
+  if (dtCnt)  dtCnt.textContent = count;
+  if (dtPl)   dtPl.textContent  = plural;
+  if (dtConf) dtConf.style.opacity = hasAny ? '1' : '0.4';
+}
+
+function coReplaceEnter(btnId, scrollId, cardSelector) {
+  coReplaceActive = true;
+  coSelectedCards.clear();
+  var btn    = document.getElementById(btnId);
+  var scroll = document.getElementById(scrollId);
+  if (btn)    { btn.classList.add('active'); btn.textContent = '✕  Cancel'; }
+  if (scroll) scroll.classList.add(scrollId === 'co-scroll' ? 'co-replace-mode' : 'dt-replace-mode');
+  // Show hint
+  var hint = document.getElementById(btnId === 'co-replace-btn' ? 'co-replace-hint' : 'dt-replace-hint');
+  if (hint) hint.style.display = 'inline-flex';
+  coReplaceUpdateBar();
+}
+
+function coReplaceExit(btnId, scrollId, cardSelector, btnOrigHTML) {
+  coReplaceActive = false;
+  coSelectedCards.clear();
+  var btn    = document.getElementById(btnId);
+  var scroll = document.getElementById(scrollId);
+  if (btn)    { btn.classList.remove('active'); btn.innerHTML = btnOrigHTML; }
+  if (scroll) { scroll.classList.remove('co-replace-mode'); scroll.classList.remove('dt-replace-mode'); }
+  document.querySelectorAll(cardSelector).forEach(function(c) { c.classList.remove('co-selected'); });
+  // Hide hint
+  var hint = document.getElementById(btnId === 'co-replace-btn' ? 'co-replace-hint' : 'dt-replace-hint');
+  if (hint) hint.style.display = 'none';
+  coReplaceUpdateBar();
+}
+
+function coAutoFontSize(str) {
+  if (!str) return '36px';
+  var len = String(str).length;
+  if (len <= 6)  return '36px';
+  if (len <= 10) return '28px';
+  if (len <= 14) return '22px';
+  if (len <= 18) return '18px';
+  return '14px';
+}
+
+var CO_REPLACE_BTN_HTML = '<svg width="14" height="14" viewBox="0 0 21 21" fill="none"><path d="M12.4513 5.05364C12.2681 5.24057 12.1655 5.49189 12.1655 5.75364C12.1655 6.01539 12.2681 6.26671 12.4513 6.45364L14.0513 8.05364C14.2382 8.23687 14.4896 8.3395 14.7513 8.3395C15.0131 8.3395 15.2644 8.23687 15.4513 8.05364L19.2213 4.28364C19.7242 5.39483 19.8764 6.63288 19.6578 7.83279C19.4392 9.0327 18.86 10.1375 17.9976 10.9999C17.1352 11.8624 16.0304 12.4415 14.8305 12.6601C13.6306 12.8787 12.3925 12.7265 11.2813 12.2236L4.37132 19.1336C3.9735 19.5315 3.43393 19.755 2.87132 19.755C2.30871 19.755 1.76914 19.5315 1.37132 19.1336C0.973496 18.7358 0.75 18.1962 0.75 17.6336C0.75 17.071 0.973496 16.5315 1.37132 16.1336L8.28132 9.22364C7.77848 8.11245 7.62624 6.87441 7.84486 5.6745C8.06349 4.47459 8.64261 3.3698 9.50504 2.50736C10.3675 1.64493 11.4723 1.06581 12.6722 0.847184C13.8721 0.628558 15.1101 0.780807 16.2213 1.28364L12.4613 5.04364L12.4513 5.05364Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Replace Components';
+
+/* Mobile */
+function coReplaceToggle() {
+  if (coReplaceActive) { coReplaceCancel(); return; }
+  coReplaceEnter('co-replace-btn', 'co-scroll', '#co-scroll .co-card');
+}
+function coReplaceCardTap(el, idx) {
+  if (!coReplaceActive) return;
+  el.classList.toggle('co-selected');
+  if (el.classList.contains('co-selected')) coSelectedCards.add(idx);
+  else coSelectedCards.delete(idx);
+  coReplaceUpdateBar();
+}
+function coReplaceCancel() {
+  coReplaceExit('co-replace-btn', 'co-scroll', '#co-scroll .co-card', CO_REPLACE_BTN_HTML);
+}
+function makeBulletList(names) {
+  return names.map(function(n){
+    return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;">'
+      + '<div style="width:6px;height:6px;border-radius:50%;background:#d97706;flex-shrink:0;"></div>'
+      + '<span style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">' + n + '</span>'
+      + '</div>';
+  }).join('');
+}
+
+function coReplaceConfirm() {
+  if (coSelectedCards.size === 0) return;
+  var names = Array.from(coSelectedCards);
+  var bullets = makeBulletList(names);
+  var existing = document.getElementById('co-remove-confirm-overlay');
+  if (existing) existing.remove();
+  var bar = document.createElement('div');
+  bar.id = 'co-remove-confirm-overlay';
+  bar.style.cssText = 'position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--layer-1);border-top:1px solid var(--border);padding:16px 16px 36px;box-shadow:0 -8px 24px rgba(54,50,45,0.12);animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);';
+  bar.innerHTML = '<div style="font-size:15px;font-weight:500;color:var(--strong);letter-spacing:-0.3px;margin-bottom:4px;">Remove components?</div>'
+    + '<div style="font-size:13px;color:var(--soft);letter-spacing:-0.26px;margin-bottom:8px;">Are these physically off the truck?</div>'
+    + '<div style="border-top:1px solid var(--border);padding-top:8px;margin-bottom:16px;">' + bullets + '</div>'
+    + '<div style="display:flex;flex-direction:column;gap:8px;">'
+    + '<button onclick="coReplaceDoRemove()" style="background:#d97706;color:white;border:none;border-radius:32px;padding:13px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;width:100%;">Yes, remove from system</button>'
+    + '<button onclick="document.getElementById(&#39;co-remove-confirm-overlay&#39;).remove()" style="background:none;border:1px solid var(--border-mid);border-radius:32px;padding:13px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;color:var(--strong);cursor:pointer;width:100%;">Cancel</button>'
+    + '</div>';
+  var sc = document.getElementById('state-components');
+  if (sc) { sc.style.position = 'relative'; sc.appendChild(bar); }
+}
+
+function coReplaceDoRemove() {
+  var overlay = document.getElementById('co-remove-confirm-overlay');
+  if (overlay) overlay.remove();
+
+  var now = new Date();
+  var dateStr = (now.getMonth()+1) + '/' + now.getDate() + '/' + String(now.getFullYear()).slice(-2)
+    + ' · ' + now.toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit'});
+
+  // Transition selected cards to empty state in CC_TRUCKS data
+  coSelectedCards.forEach(function(compName) {
+    CC_TRUCKS.forEach(function(t) {
+      if (!t.components) return;
+      var comp = t.components.find(function(c) { return c.name === compName; });
+      if (comp) {
+        comp.state   = 'empty';
+        comp.evt     = 'Not installed';
+        comp.dot     = 'rgba(54,50,45,0.2)';
+        comp.removedDate = dateStr;
+      }
+    });
+  });
+
+  coReplaceCancel();
+  renderConditions();
+}
+
+/* Desktop */
+function dtReplaceToggle() {
+  if (coReplaceActive) { dtReplaceCancel(); return; }
+  coReplaceEnter('dt-replace-btn', 'dt-drawer-scroll', '#dt-drawer-scroll .dt-co-card');
+}
+function dtReplaceCardTap(el, idx) {
+  if (!coReplaceActive) return;
+  el.classList.toggle('co-selected');
+  if (el.classList.contains('co-selected')) coSelectedCards.add(idx);
+  else coSelectedCards.delete(idx);
+  coReplaceUpdateBar();
+}
+function dtReplaceCancel() {
+  coReplaceExit('dt-replace-btn', 'dt-drawer-scroll', '#dt-drawer-scroll .dt-co-card', CO_REPLACE_BTN_HTML);
+}
+
+function dtReplaceConfirm() {
+  if (coSelectedCards.size === 0) return;
+  var names = Array.from(coSelectedCards);
+  var bullets = makeBulletList(names);
+  var existing = document.getElementById('dt-remove-confirm-overlay');
+  if (existing) existing.remove();
+  var main = document.getElementById('dt-drawer-main');
+  if (!main) return;
+  var bar = document.createElement('div');
+  bar.id = 'dt-remove-confirm-overlay';
+  bar.style.cssText = 'position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--layer-1);border-top:1px solid var(--border);padding:16px 24px 24px;box-shadow:0 -8px 24px rgba(54,50,45,0.1);animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);';
+  bar.innerHTML = '<div style="font-size:14px;font-weight:500;color:var(--strong);letter-spacing:-0.28px;margin-bottom:4px;">Remove components?</div>'
+    + '<div style="font-size:13px;color:var(--soft);letter-spacing:-0.26px;margin-bottom:8px;">Are these physically off the truck?</div>'
+    + '<div style="border-top:1px solid var(--border);padding-top:6px;margin-bottom:12px;">' + bullets + '</div>'
+    + '<div style="display:flex;gap:8px;">'
+    + '<button onclick="document.getElementById(&#39;dt-remove-confirm-overlay&#39;).remove()" style="flex:1;background:none;border:1px solid var(--border-mid);border-radius:32px;padding:9px 16px;font-size:13px;font-weight:500;font-family:var(--font);letter-spacing:-0.26px;color:var(--strong);cursor:pointer;">Cancel</button>'
+    + '<button onclick="dtReplaceDoRemove()" style="flex:2;background:#d97706;color:white;border:none;border-radius:32px;padding:9px 16px;font-size:13px;font-weight:500;font-family:var(--font);letter-spacing:-0.26px;cursor:pointer;">Yes, remove from system</button>'
+    + '</div>';
+  main.style.position = 'relative';
+  main.appendChild(bar);
+}
+
+/* Track desktop component removals so they persist across dtOpenTruck rebuilds */
+var dtRemovedComponents = {}; /* { compName: removedDate } */
+
+function dtReplaceDoRemove() {
+  var el = document.getElementById('dt-remove-confirm-overlay');
+  if (el) el.remove();
+
+  var now = new Date();
+  var dateStr = (now.getMonth()+1) + '/' + now.getDate() + '/' + String(now.getFullYear()).slice(-2)
+    + ' · ' + now.toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit'});
+
+  coSelectedCards.forEach(function(compName) {
+    // Store removal so buildCard uses empty state on next rebuild
+    dtRemovedComponents[compName] = dateStr;
+    // Also update CC_TRUCKS for consistency across views
+    CC_TRUCKS.forEach(function(t) {
+      if (!t.components) return;
+      var comp = t.components.find(function(c) { return c.name === compName; });
+      if (comp) {
+        comp.state = 'empty'; comp.evt = 'Not installed';
+        comp.dot = 'rgba(54,50,45,0.2)'; comp.removedDate = dateStr;
+      }
+    });
+  });
+
+  dtReplaceCancel();
+  // Rebuild overview — buildCard will check dtRemovedComponents
+  if (dtDrawerTruckNum) dtOpenTruck(dtDrawerTruckNum);
+}
+
+/* Reset replace mode on drawer tab switch */
+(function() {
+  var _orig = window.dtDrawerTab;
+  if (typeof _orig === 'function') {
+    window.dtDrawerTab = function(tab, el) {
+      if (coReplaceActive) dtReplaceCancel();
+      _orig(tab, el);
+    };
+  }
+})();
+
+/* ══════════════════════════════════════════════════
+   CHUNK 4 — INSTALL REPLACEMENT FLOW
+═══════════════════════════════════════════════════ */
+
+function coInstallSerialInput(inp) {
+  var btn = document.getElementById('co-install-confirm-btn');
+  if (!btn) return;
+  var hasValue = inp.value.trim().length > 0;
+  btn.disabled = !hasValue;
+  btn.style.opacity = hasValue ? '1' : '0.4';
+}
+
+/* Mobile — open from empty comp row */
+function coInstallOpen(compName, removedDate) {
+  var existing = document.getElementById('co-install-bar');
+  if (existing) existing.remove();
+  var sc = document.getElementById('state-components');
+  if (!sc) return;
+  sc.style.position = 'relative';
+  var bar = document.createElement('div');
+  bar.id = 'co-install-bar';
+  bar.dataset.compName = compName;
+  bar.style.cssText = 'position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--layer-1);border-top:1px solid var(--border);padding:16px 16px 36px;box-shadow:0 -8px 24px rgba(54,50,45,0.12);animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);';
+  bar.innerHTML = '<div style="font-size:15px;font-weight:500;color:var(--strong);letter-spacing:-0.3px;margin-bottom:4px;">Install replacement</div>'
+    + '<div style="font-size:13px;color:var(--soft);letter-spacing:-0.26px;margin-bottom:14px;">Installing new <strong style="color:var(--strong);">' + compName + '</strong></div>'
+    + '<div style="margin-bottom:14px;"><label style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;display:block;margin-bottom:6px;">Serial Number</label>'
+    + '<input id="co-install-serial" type="text" placeholder="e.g. WP-4421" autocomplete="off" maxlength="15" oninput="coInstallSerialInput(this)" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--font);color:var(--strong);letter-spacing:-0.28px;outline:none;"/></div>'
+    + '<div style="display:flex;flex-direction:column;gap:8px;">'
+    + '<button id="co-install-confirm-btn" onclick="coInstallConfirm()" disabled style="background:#3069e3;color:white;border:none;border-radius:32px;padding:13px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;width:100%;opacity:0.4;transition:opacity 0.15s;">Confirm Installation</button>'
+    + '<button onclick="document.getElementById(&#39;co-install-bar&#39;).remove()" style="background:none;border:1px solid var(--border-mid);border-radius:32px;padding:13px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;color:var(--strong);cursor:pointer;width:100%;">Cancel</button>'
+    + '</div>';
+  sc.appendChild(bar);
+  setTimeout(function() { var i = document.getElementById('co-install-serial'); if(i) i.focus(); }, 100);
+}
+
+function coInstallConfirm() {
+  var bar = document.getElementById('co-install-bar');
+  if (!bar) return;
+  var serial   = (document.getElementById('co-install-serial')||{}).value||'';
+  var compName = bar.dataset.compName;
+  if (!serial.trim()) return;
+  bar.remove();
+  var now = new Date();
+  var dateStr = (now.getMonth()+1)+'/'+now.getDate()+'/'+String(now.getFullYear()).slice(-2)+' · '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  if (!window._dtSessionInstalls) window._dtSessionInstalls = {};
+  window._dtSessionInstalls[compName] = serial.trim();
+  CC_TRUCKS.forEach(function(t) {
+    if (!t.components) return;
+    var comp = t.components.find(function(c){ return c.name===compName; });
+    if (comp) { comp.state='pending'; comp.evt='Replacement recorded'; comp.dot='#d97706'; comp.serial=serial.trim(); comp.installedDate=dateStr; }
+  });
+  renderConditions();
+  /* Chunk 5: show Error Reset prompt only if no empty slots remain */
+  coCheckShowErrorResetPrompt('mobile');
+}
+
+/* Desktop — open from empty slot card */
+function dtInstallOpen(compName, removedDate) {
+  var existing = document.getElementById('co-install-bar');
+  if (existing) existing.remove();
+  var main = document.getElementById('dt-drawer-main');
+  if (!main) return;
+  main.style.position = 'relative';
+  var bar = document.createElement('div');
+  bar.id = 'co-install-bar';
+  bar.dataset.compName = compName;
+  bar.style.cssText = 'position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--layer-1);border-top:1px solid var(--border);padding:16px 24px 24px;box-shadow:0 -8px 24px rgba(54,50,45,0.1);animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);';
+  bar.innerHTML = '<div style="font-size:14px;font-weight:500;color:var(--strong);letter-spacing:-0.28px;margin-bottom:4px;">Install replacement</div>'
+    + '<div style="font-size:13px;color:var(--soft);letter-spacing:-0.26px;margin-bottom:12px;">Installing new <strong style="color:var(--strong);">' + compName + '</strong></div>'
+    + '<div style="margin-bottom:12px;"><label style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;display:block;margin-bottom:5px;">Serial Number</label>'
+    + '<input id="co-install-serial" type="text" placeholder="e.g. WP-4421" autocomplete="off" maxlength="15" oninput="coInstallSerialInput(this)" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);color:var(--strong);letter-spacing:-0.26px;outline:none;"/></div>'
+    + '<div style="display:flex;gap:8px;">'
+    + '<button onclick="document.getElementById(&#39;co-install-bar&#39;).remove()" style="flex:1;background:none;border:1px solid var(--border-mid);border-radius:32px;padding:9px 16px;font-size:13px;font-weight:500;font-family:var(--font);letter-spacing:-0.26px;color:var(--strong);cursor:pointer;">Cancel</button>'
+    + '<button id="co-install-confirm-btn" onclick="dtInstallConfirm()" disabled style="flex:2;background:#3069e3;color:white;border:none;border-radius:32px;padding:9px 16px;font-size:13px;font-weight:500;font-family:var(--font);letter-spacing:-0.26px;cursor:pointer;opacity:0.4;transition:opacity 0.15s;">Confirm Installation</button>'
+    + '</div>';
+  main.appendChild(bar);
+  setTimeout(function() { var i = document.getElementById('co-install-serial'); if(i) i.focus(); }, 100);
+}
+
+function dtInstallConfirm() {
+  var bar = document.getElementById('co-install-bar');
+  if (!bar) return;
+  var serial   = (document.getElementById('co-install-serial')||{}).value||'';
+  var compName = bar.dataset.compName;
+  if (!serial.trim()) return;
+  bar.remove();
+  var now = new Date();
+  var dateStr = (now.getMonth()+1)+'/'+now.getDate()+'/'+String(now.getFullYear()).slice(-2)+' · '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  if (!window._dtSessionInstalls) window._dtSessionInstalls = {};
+  window._dtSessionInstalls[compName] = serial.trim();
+  if (!window.dtPendingComponents) window.dtPendingComponents = {};
+  window.dtPendingComponents[compName] = { serial: serial.trim(), installedDate: dateStr };
+  if (window.dtRemovedComponents) delete window.dtRemovedComponents[compName];
+  CC_TRUCKS.forEach(function(t) {
+    if (!t.components) return;
+    var comp = t.components.find(function(c){ return c.name===compName; });
+    if (comp) { comp.state='pending'; comp.evt='Replacement recorded'; comp.dot='#d97706'; comp.serial=serial.trim(); comp.installedDate=dateStr; }
+  });
+  /* Chunk 5: show Error Reset prompt only if no empty slots remain */
+  coCheckShowErrorResetPrompt('desktop');
+  if (dtDrawerTruckNum) dtOpenTruck(dtDrawerTruckNum);
+}
+
+/* ── CHUNK 5: Error Reset prompt ──────────────────────────
+   Appears only when all removed components have been replaced
+   (no empty slots remaining). Direct jump to Error Reset card.  */
+
+function coHasEmptySlots() {
+  var hasEmpty = false;
+  CC_TRUCKS.forEach(function(t) {
+    if (!t.components) return;
+    t.components.forEach(function(c) { if (c.state === 'empty') hasEmpty = true; });
+  });
+  if (window.dtRemovedComponents && Object.keys(window.dtRemovedComponents).length > 0) hasEmpty = true;
+  return hasEmpty;
+}
+
+function coGetErrorCount() {
+  /* Get current error count from the active truck */
+  var t = trucks.find(function(tr) {
+    return String(tr.num) === String(dtDrawerTruckNum);
+  });
+  return t ? ((t.err || 0) + (t.wrn || 0)) : 0;
+}
+
+function coCheckShowErrorResetPrompt(view) {
+  if (coHasEmptySlots()) return;
+  var errCount = coGetErrorCount();
+  if (view === 'desktop') {
+    coShowErrorResetBannerDesktop(errCount);
+  } else {
+    coShowErrorResetBannerMobile(errCount);
+  }
+}
+
+function coErrorResetBannerHTML(errCount, isMobile) {
+  var errText = errCount > 0
+    ? errCount + ' active error' + (errCount > 1 ? 's' : '') + ' detected'
+    : 'No errors detected — verify with Error Reset';
+  var btnPad = isMobile ? '7px 12px' : '7px 14px';
+  return '<div style="flex:1;min-width:0;">'
+    + '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">All components replaced</div>'
+    + '<div style="font-size:12px;color:#92400e;letter-spacing:-0.24px;">' + errText + '</div>'
+    + '</div>'
+    + '<div style="display:flex;gap:6px;flex-shrink:0;align-items:center;">'
+    + '<button onclick="coRunErrorResetInline()" id="co-er-run-btn" style="background:#d97706;color:white;border:none;border-radius:20px;padding:' + btnPad + ';font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;cursor:pointer;white-space:nowrap;">Run Error Reset</button>'
+    + '<button onclick="coSetMaintenanceDirect()" style="background:none;border:1px solid var(--border-mid);border-radius:20px;padding:' + btnPad + ';font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;color:var(--strong);cursor:pointer;white-space:nowrap;">Set to Maintenance</button>'
+    + '</div>';
+}
+
+function coShowErrorResetBannerMobile(errCount) {
+  /* Replace the Replace Components button with the banner — same slot */
+  var toolbar = document.getElementById('co-replace-toolbar');
+  if (!toolbar) return;
+  toolbar.style.cssText = 'background:#fffbeb;border-bottom:1px solid rgba(180,130,0,0.2);padding:12px 16px;display:flex;align-items:flex-start;gap:10px;flex-shrink:0;';
+  toolbar.innerHTML = '<div style="width:28px;height:28px;border-radius:50%;background:rgba(217,119,6,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;">'
+    + '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v5M8 10h.01" stroke="#d97706" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="8" r="6.5" stroke="#d97706" stroke-width="1.2"/></svg>'
+    + '</div>'
+    + coErrorResetBannerHTML(errCount, true);
+  toolbar.dataset.bannerActive = '1';
+}
+
+function coShowErrorResetBannerDesktop(errCount) {
+  /* Use the persistent banner slot — survives tab switches */
+  var slot = document.getElementById('dt-error-banner');
+  if (!slot) return;
+  slot.style.cssText = 'flex-shrink:0;background:#fffbeb;border-top:1px solid rgba(180,130,0,0.2);padding:12px 24px;display:flex;align-items:center;gap:10px;animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);';
+  slot.innerHTML = '<div style="width:28px;height:28px;border-radius:50%;background:rgba(217,119,6,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+    + '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v5M8 10h.01" stroke="#d97706" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="8" r="6.5" stroke="#d97706" stroke-width="1.2"/></svg>'
+    + '</div>'
+    + coErrorResetBannerHTML(errCount, false);
+  /* Also restore the overview toolbar button since banner is now in its own slot */
+  var toolbar = document.getElementById('dt-overview-toolbar');
+  if (toolbar) {
+    toolbar.style.cssText = 'display:flex;align-items:center;justify-content:flex-end;padding:0 0 16px;';
+    toolbar.innerHTML = '<button class="co-replace-btn" id="dt-replace-btn" onclick="dtReplaceToggle()" style="margin-left:auto;">'
+      + CO_REPLACE_BTN_HTML + '</button>';
+  }
+}
+
+function coRunErrorResetInline() {
+  /* Disable button, show progress */
+  var btn = document.getElementById('co-er-run-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Running…'; btn.style.opacity = '0.6'; }
+
+  /* Simulate Error Reset — 1.8s progress then resolve */
+  setTimeout(function() {
+    var errCount = coGetErrorCount();
+    /* Prototype: first attempt always fails so FST can view logs, second attempt clears */
+    if (!window.coResetAttemptCount) window.coResetAttemptCount = 0;
+    window.coResetAttemptCount++;
+    var cleared = window.coResetAttemptCount >= 2;
+    /* Update mobile toolbar and desktop persistent banner */
+    var moToolbar = document.getElementById('co-replace-toolbar');
+    var dtBanner  = document.getElementById('dt-error-banner');
+
+    if (cleared) {
+      var successInner = '<div style="width:28px;height:28px;border-radius:50%;background:rgba(22,163,74,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+        + '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-7" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        + '</div>'
+        + '<div style="flex:1;min-width:0;">'
+        + '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">All errors cleared</div>'
+        + '<div style="font-size:12px;color:#166534;letter-spacing:-0.24px;">Truck is ready — confirm it is operational</div>'
+        + '</div>'
+        + '<div style="flex-shrink:0;">'
+        + '<button onclick="coConfirmOperational()" style="background:#16a34a;color:white;border:none;border-radius:20px;padding:7px 14px;font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;cursor:pointer;white-space:nowrap;">Confirm operational</button>'
+        + '</div>';
+      if (moToolbar) { moToolbar.style.cssText = 'background:#f0fdf4;border-bottom:1px solid rgba(22,163,74,0.2);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;'; moToolbar.innerHTML = successInner; }
+      if (dtBanner)  { dtBanner.style.cssText  = 'flex-shrink:0;background:#f0fdf4;border-top:1px solid rgba(22,163,74,0.2);padding:12px 24px;display:flex;align-items:center;gap:10px;'; dtBanner.innerHTML = successInner; }
+      coSetNavDot(false);
+      /* Auto-navigate back to Components Overview */
+      setTimeout(function() {
+        /* Mobile */
+        var coOpt = document.querySelector('#drawer-nav-dropdown .wts-option:nth-child(1)');
+        if (coOpt) { selectDrawerNav('Components Overview', coOpt); }
+        /* Desktop */
+        var overviewTab = document.querySelector('.dt-drawer-tab[onclick*="overview"]');
+        if (overviewTab) overviewTab.click();
+      }, 1200);
+    } else {
+      var remaining = Math.max(1, Math.floor(errCount * 0.6));
+      var failInner = '<div style="width:28px;height:28px;border-radius:50%;background:rgba(215,1,0,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+        + '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 3v4M7 9h.01" stroke="#d70100" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="7" r="6" stroke="#d70100" stroke-width="1.2"/></svg>'
+        + '</div>'
+        + '<div style="flex:1;min-width:0;">'
+        + '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">' + remaining + ' error' + (remaining > 1 ? 's' : '') + ' still active</div>'
+        + '<div style="font-size:12px;color:#991b1b;letter-spacing:-0.24px;">Go to Truck Logs to investigate · come back here to retry</div>'
+        + '</div>'
+        + '<div style="display:flex;gap:6px;flex-shrink:0;align-items:center;">'
+        + '<button onclick="coRunErrorResetInline()" id="co-er-run-btn" style="background:#d70100;color:white;border:none;border-radius:20px;padding:7px 12px;font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;cursor:pointer;white-space:nowrap;">Retry Reset</button>'
+        + '<button onclick="coViewTruckLogs()" style="background:none;border:1px solid var(--border-mid);border-radius:20px;padding:7px 12px;font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;color:var(--strong);cursor:pointer;white-space:nowrap;">View Truck Logs</button>'
+        + '</div>';
+      if (moToolbar) { moToolbar.style.cssText = 'background:#fff5f5;border-bottom:1px solid rgba(215,1,0,0.15);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;'; moToolbar.innerHTML = failInner; }
+      if (dtBanner)  { dtBanner.style.cssText  = 'flex-shrink:0;background:#fff5f5;border-top:1px solid rgba(215,1,0,0.15);padding:12px 24px;display:flex;align-items:center;gap:10px;'; dtBanner.innerHTML = failInner; }
+      coSetNavDot(true);
+    }
+  }, 1800);
+}
+
+function coSetMaintenanceDirect() {
+  dtSetMode('maintenance');
+
+  var maintInner = '<div style="width:28px;height:28px;border-radius:50%;background:rgba(217,119,6,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+    + '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v5M8 10h.01" stroke="#d97706" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="8" r="6.5" stroke="#d97706" stroke-width="1.2"/></svg>'
+    + '</div>'
+    + '<div style="flex:1;min-width:0;">'
+    + '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">Maintenance mode set</div>'
+    + '<div style="font-size:12px;color:#92400e;letter-spacing:-0.24px;">Truck is in manual operation · return here once new parts arrive</div>'
+    + '</div>'
+    + '<div style="flex-shrink:0;">'
+    + '<button onclick="coRunErrorResetInline()" id="co-er-run-btn" style="background:#d97706;color:white;border:none;border-radius:20px;padding:7px 12px;font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;cursor:pointer;white-space:nowrap;">Run Error Reset</button>'
+    + '</div>';
+
+  /* Update mobile toolbar banner */
+  var moToolbarBanner = document.getElementById('co-replace-toolbar');
+  if (moToolbarBanner) {
+    moToolbarBanner.style.cssText = 'background:#fffbeb;border-bottom:1px solid rgba(180,130,0,0.2);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;';
+    moToolbarBanner.innerHTML = maintInner;
+  }
+
+  /* Update desktop persistent banner */
+  var dtBanner = document.getElementById('dt-error-banner');
+  if (dtBanner) {
+    dtBanner.style.cssText = 'flex-shrink:0;background:#fffbeb;border-top:1px solid rgba(180,130,0,0.2);padding:12px 24px;display:flex;align-items:center;gap:10px;';
+    dtBanner.innerHTML = maintInner;
+  }
+
+  /* Keep nav dot — case still open */
+  var moToolbar = document.getElementById('co-replace-toolbar');
+  if (moToolbar) {
+    moToolbar.removeAttribute('style');
+    moToolbar.innerHTML = '<button class="co-replace-btn" id="co-replace-btn" onclick="coReplaceToggle()">'
+      + CO_REPLACE_BTN_HTML + '</button>';
+  }
+  var dtToolbar = document.getElementById('dt-overview-toolbar');
+  if (dtToolbar) {
+    dtToolbar.style.cssText = 'display:flex;align-items:center;justify-content:flex-end;padding:0 0 16px;';
+    dtToolbar.innerHTML = '<button class="co-replace-btn" id="dt-replace-btn" onclick="dtReplaceToggle()" style="margin-left:auto;">'
+      + CO_REPLACE_BTN_HTML + '</button>';
+  }
+}
+
+/* ── CHUNK 7: Write replacement to Unit Life Span ────────────────────
+   Called from coConfirmOperational. Finds the unit linked to the
+   active truck and prepends a new history entry for each replaced
+   component. Uses the serial number recorded during installation.
+   If no UNIT_HISTORY entry exists for the unit, creates one.        */
+
+function coWriteLifespanHistory() {
+  var truckNum = dtDrawerTruckNum || (typeof openTruckNum !== 'undefined' ? openTruckNum : null);
+  if (!truckNum) return;
+
+  var unit = UNITS_DATA.find(function(u) {
+    return String(u.truck) === String(truckNum) && u.status === 'Linked Unit';
+  });
+  if (!unit) return;
+
+  var now = new Date();
+  var dateStr = (now.getMonth()+1) + '/' + now.getDate() + '/' + now.getFullYear();
+
+  /* Ensure unit has its own history entry */
+  if (!UNIT_HISTORY[unit.id]) {
+    UNIT_HISTORY[unit.id] = JSON.parse(JSON.stringify(UNIT_HISTORY['_default'] || []));
+  }
+
+  /* Collect replaced components — session installs first (have real serials) */
+  var replacedComponents = [];
+  if (window._dtSessionInstalls) {
+    Object.keys(window._dtSessionInstalls).forEach(function(name) {
+      replacedComponents.push({ name: name, serial: window._dtSessionInstalls[name] });
+    });
+  }
+
+  /* Hardcoded pending/empty cards — use prototype serials */
+  var demoSerials = {
+    'WDS':        'WDS-4421A',
+    'Water Pump': 'WP-88210',
+    'Admix Pump': 'AP-33041',
+  };
+  /* Check CC_TRUCKS for components that were pending/empty */
+  CC_TRUCKS.forEach(function(t) {
+    if (String(t.num) !== String(truckNum)) return;
+    if (!t.components) return;
+    t.components.forEach(function(c) {
+      if (c.state === 'pending' || c.state === 'empty') {
+        var alreadyTracked = replacedComponents.some(function(r) { return r.name === c.name; });
+        if (!alreadyTracked) {
+          replacedComponents.push({
+            name:   c.name,
+            serial: c.serial || demoSerials[c.name] || ('SN-' + Math.floor(Math.random()*90000+10000))
+          });
+        }
+      }
+    });
+  });
+
+  /* Write to UNIT_HISTORY */
+  replacedComponents.forEach(function(r) {
+    var comp = UNIT_HISTORY[unit.id].find(function(c) {
+      return c.name === r.name;
+    });
+    if (comp) {
+      /* Move old "Current" label to a date */
+      if (comp.history[0] && comp.history[0].date === 'Current') {
+        comp.history[0].date = 'Previous';
+      }
+      comp.history.unshift({ date: dateStr, mac: r.serial });
+    } else {
+      UNIT_HISTORY[unit.id].push({
+        name: r.name,
+        history: [{ date: dateStr, mac: r.serial }]
+      });
+    }
+  });
+}
+
+function coConfirmOperational() {
+  /* Reset pill to live/green */
+  dtApplyMode('live');
+  /* Case closed — restore toolbar to Replace Components */
+  var moToolbar = document.getElementById('co-replace-toolbar');
+  if (moToolbar) {
+    moToolbar.removeAttribute('style');
+    moToolbar.innerHTML = '<button class="co-replace-btn" id="co-replace-btn" onclick="coReplaceToggle()">'
+      + CO_REPLACE_BTN_HTML + '</button>';
+  }
+  var dtToolbar = document.getElementById('dt-overview-toolbar');
+  if (dtToolbar) {
+    dtToolbar.style.cssText = 'display:flex;align-items:center;justify-content:flex-end;padding:0 0 16px;';
+    dtToolbar.innerHTML = '<button class="co-replace-btn" id="dt-replace-btn" onclick="dtReplaceToggle()" style="margin-left:auto;">'
+      + CO_REPLACE_BTN_HTML + '</button>';
+  }
+
+  /* Mark all session-tracked components as confirmed */
+  if (!window.dtConfirmedComponents) window.dtConfirmedComponents = {};
+  if (window.dtPendingComponents) {
+    Object.keys(window.dtPendingComponents).forEach(function(k) { window.dtConfirmedComponents[k] = true; });
+    window.dtPendingComponents = {};
+  }
+  if (window.dtRemovedComponents) {
+    Object.keys(window.dtRemovedComponents).forEach(function(k) { window.dtConfirmedComponents[k] = true; });
+    window.dtRemovedComponents = {};
+  }
+  /* Also capture hardcoded pending/empty cards — store confirmed data for rendering */
+  var confirmedDefaults = {
+    'Water Pump':  { label:'Water Delivery System', value:'2.1', unit:'gal/min', startup:1, err:'0' },
+    'Admix Pump':  { label:'Admixture Pump',         value:'0.3', unit:'gal/min', startup:1, err:'0' },
+  };
+  var allCards = (window._dtMcsCards || []).concat(window._dtFdmCards || []);
+  allCards.forEach(function(card) {
+    if (card && (card.state === 'pending' || card.state === 'empty')) {
+      window.dtConfirmedComponents[card.name] = confirmedDefaults[card.name] || true;
+    }
+  });
+
+  /* ── CHUNK 7: Write replacement events to UNIT_HISTORY ──────────────
+     Find the unit linked to the active truck and prepend a new history
+     entry for each replaced component so it shows in Life Span tab.   */
+  coWriteLifespanHistory();
+
+  /* Re-render Life Span tab if it's currently open */
+  if (typeof dtUdActiveTab !== 'undefined' && dtUdActiveTab === 'lifespan') {
+    if (typeof dtUdRenderLifespan === 'function') dtUdRenderLifespan();
+  }
+  if (typeof dtActiveTab !== 'undefined' && dtActiveTab === 'overview') {
+    /* Life Span tab inside truck drawer — rebuild if open */
+    var lsScroll = document.getElementById('dt-ls-scroll');
+    if (lsScroll && dtDrawerTruckNum) {
+      lsScroll.innerHTML = dtBuildLifespanForTruck(dtDrawerTruckNum);
+    }
+  }
+
+  /* Show success toast */
+  dtShowToast({
+    title: 'Truck marked operational',
+    body:  'Replacement logged in Unit Life Span tab',
+    variant: 'success'
+  });
+
+  /* Clear persistent desktop banner */
+  var dtBannerClr = document.getElementById('dt-error-banner');
+  if (dtBannerClr) { dtBannerClr.style.display = 'none'; dtBannerClr.innerHTML = ''; }
+  coSetNavDot(false);
+  window.coResetAttemptCount = 0;
+  window._dtSessionInstalls = {};
+  /* Reset CC_TRUCKS components to clean */
+  CC_TRUCKS.forEach(function(t) {
+    if (!t.components) return;
+    t.components.forEach(function(c) {
+      if (c.state === 'pending' || c.state === 'empty') {
+        c.state = 'clean'; c.dot = '#2ecf1d'; c.evt = 'No Events';
+        delete c.serial; delete c.installedDate; delete c.removedDate;
+      }
+    });
+  });
+
+  /* Reset truck error count */
+  if (dtDrawerTruckNum) {
+    var t = trucks.find(function(tr) { return String(tr.num) === String(dtDrawerTruckNum); });
+    if (t) { t.err = 0; t.wrn = 0; }
+  }
+
+  renderConditions();
+  renderTrucks();
+  if (dtDrawerTruckNum) dtOpenTruck(dtDrawerTruckNum);
+}
+
+function coSetNavDot(show) {
+  /* Amber dot on "Components Overview" nav item — signals unfinished business */
+  var navOpts = document.querySelectorAll('#drawer-nav-dropdown .wts-option');
+  navOpts.forEach(function(opt) {
+    if (opt.textContent.trim().startsWith('Components Overview')) {
+      var dot = opt.querySelector('.co-nav-dot');
+      if (show && !dot) {
+        dot = document.createElement('span');
+        dot.className = 'co-nav-dot';
+        dot.style.cssText = 'display:inline-block;width:7px;height:7px;border-radius:50%;background:#d97706;margin-left:auto;flex-shrink:0;';
+        opt.style.display = 'flex';
+        opt.style.alignItems = 'center';
+        opt.appendChild(dot);
+      } else if (!show && dot) {
+        dot.remove();
+      }
+    }
+  });
+  /* Also show dot on the nav pill label when in another tab */
+  var navLabel = document.getElementById('drawer-nav-label');
+  var existingDot = document.getElementById('co-nav-label-dot');
+  if (show && !existingDot && navLabel) {
+    var ldot = document.createElement('span');
+    ldot.id = 'co-nav-label-dot';
+    ldot.style.cssText = 'display:inline-block;width:7px;height:7px;border-radius:50%;background:#d97706;margin-left:6px;vertical-align:middle;flex-shrink:0;';
+    navLabel.parentNode.insertBefore(ldot, navLabel.nextSibling);
+  } else if (!show && existingDot) {
+    existingDot.remove();
+  }
+}
+
+/* ── MAINTENANCE MODE / TRUCK MODE POPOVER ──────────────
+   Tapping the live pill on desktop or mobile shows an inline
+   popover to switch between Live / Maintenance / Offline.    */
+
+var dtCurrentMode = 'live'; /* shared state */
+
+function dtApplyMode(mode) {
+  dtCurrentMode = mode;
+  var badge  = document.getElementById('dt-drawer-ign-badge');
+  var dot    = badge ? badge.querySelector('.dt-drawer-ign-dot') : null;
+  var text   = document.getElementById('dt-drawer-ign-text');
+
+  /* Update desktop badge */
+  if (badge) {
+    badge.className = 'dt-drawer-ign-badge' + (mode === 'maintenance' ? ' maint' : mode === 'offline' ? ' off' : '');
+  }
+  if (dot) {
+    dot.style.background = mode === 'live' ? '#2ecf1d' : mode === 'maintenance' ? '#f59e0b' : 'rgba(54,50,45,0.3)';
+  }
+  if (text) {
+    text.textContent = mode === 'live' ? 'Ignition on' : mode === 'maintenance' ? 'Maintenance' : 'Offline';
+  }
+
+  /* Update mobile pill */
+  var moPill = document.getElementById('mo-ign-pill');
+  var moDot  = document.getElementById('mo-ign-dot');
+  var moText = document.getElementById('mo-ign-text');
+  if (moPill) {
+    moPill.style.background = mode === 'live' ? '' : mode === 'maintenance' ? '#fff3cd' : '#f6f4f2';
+    moPill.style.color = mode === 'maintenance' ? '#7a5800' : mode === 'offline' ? 'var(--soft)' : '';
+  }
+  if (moDot) {
+    moDot.style.background = mode === 'live' ? '#2ecf1d' : mode === 'maintenance' ? '#f59e0b' : 'rgba(54,50,45,0.3)';
+  }
+  if (moText) {
+    moText.textContent = mode === 'live' ? 'Ignition on' : mode === 'maintenance' ? 'Maintenance' : 'Offline';
+  }
+
+  /* Update active state on all popovers */
+  ['dt-mode-opt-live','dt-mode-opt-maintenance','dt-mode-opt-offline'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('active', id.endsWith(mode));
+  });
+  ['mo-mode-opt-live','mo-mode-opt-maintenance','mo-mode-opt-offline'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('active', id.endsWith(mode));
+  });
+
+  /* If switching back to Live and there was an unresolved case — reshow banner */
+  if (mode === 'live') {
+    var dtBanner = document.getElementById('dt-error-banner');
+    /* If banner was populated before maintenance, it will reappear since it persists */
+  }
+
+  /* Update truck data */
+  if (dtDrawerTruckNum) {
+    var t = trucks.find(function(tr) { return String(tr.num) === String(dtDrawerTruckNum); });
+    if (t) t.truckMode = mode === 'live' ? 'Active' : mode === 'maintenance' ? 'Maintenance' : 'Offline';
+  }
+}
+
+/* Desktop popover */
+function dtToggleModePopover() {
+  var pop = document.getElementById('dt-mode-popover');
+  if (!pop) return;
+  var isOpen = pop.style.display !== 'none';
+  pop.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    /* Mark current mode */
+    ['live','maintenance','offline'].forEach(function(m) {
+      var el = document.getElementById('dt-mode-opt-' + m);
+      if (el) el.classList.toggle('active', m === dtCurrentMode);
+    });
+  }
+}
+function dtSetMode(mode) {
+  var pop = document.getElementById('dt-mode-popover');
+  if (pop) pop.style.display = 'none';
+  dtApplyMode(mode);
+  /* If going to maintenance, also clear the error banner via coSetMaintenanceDirect logic */
+  /* Banner and nav dot persist in maintenance — case still open */
+}
+
+/* Mobile popover */
+function moToggleModePopover() {
+  var pop = document.getElementById('mo-mode-popover');
+  if (!pop) return;
+  var isOpen = pop.style.display !== 'none';
+  pop.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    ['live','maintenance','offline'].forEach(function(m) {
+      var el = document.getElementById('mo-mode-opt-' + m);
+      if (el) el.classList.toggle('active', m === dtCurrentMode);
+    });
+  }
+}
+function moSetMode(mode) {
+  var pop = document.getElementById('mo-mode-popover');
+  if (pop) pop.style.display = 'none';
+  dtApplyMode(mode);
+  if (mode === 'maintenance') coSetNavDot(false);
+}
+
+/* Close popovers on outside click */
+
+function coViewTruckLogs() {
+  /* Pre-filter desktop logs to WdsNoConnection alarm from replacement date */
+  if (typeof dtLogsFilters !== 'undefined') {
+    dtLogsFilters.msgType = 'Event';
+    dtLogsFilters.subType = 'WdsNoConnection';
+    dtLogsFilters.from    = '2026-03-23';
+    dtLogsFilters.to      = '';
+    dtLogsFilters.source  = 'all';
+    dtLogsFilters.search  = '';
+  }
+
+  /* Mobile — navigate to Truck Logs and open the WDS alarm entry */
+  var logsOption = document.querySelector('#drawer-nav-dropdown .wts-option:nth-child(3)');
+  if (logsOption) {
+    selectDrawerNav('Truck Logs', logsOption);
+    renderLogRows();
+    setTimeout(function() { openDetail(15); }, 80);
+  }
+
+  /* Desktop — switch tab, sync filter UI, select WDS alarm row */
+  var logsTabBtn = document.querySelector(".dt-drawer-tab[onclick*=\"'logs'\"]");
+  if (logsTabBtn) {
+    dtDrawerTab('logs', logsTabBtn);
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        var msgSel = document.getElementById('dt-logs-msgtype');
+        var subSel = document.getElementById('dt-logs-subtype');
+        var fromEl = document.querySelector('.dt-logs-field-date input');
+        if (msgSel) { msgSel.value = 'Event'; dtLogsOnMsgTypeChange('Event'); }
+        if (subSel) { subSel.value = 'WdsNoConnection'; }
+        if (fromEl) { fromEl.value = '2026-03-23'; dtLogsFilters.from = '2026-03-23'; }
+        dtLogsRender();
+        setTimeout(function() { dtLogsSelectRow(15, { scrollIntoView:true }); }, 80);
+      });
+    });
+  }
+}
 
 /* ══════════════════════════════════════════════════
    UNITS SCREEN
@@ -10613,6 +11782,38 @@ const UNIT_HISTORY = {
     { name: 'Temperate Water', history: [{ date: 'Current', mac: 'RRR-109000099' }] },
     { name: 'Drum Sensor',     history: [{ date: 'Current', mac: 'BBB-203700002' }] },
     { name: 'WDS',             history: [{ date: 'Current', mac: 'WWW-601900001' }] },
+  ],
+
+  /* 29104856 — linked to truck 45689. WDS, Water Pump and Admix Pump
+     are the components involved in the prototype replacement workflow. */
+  '29104856': [
+    { name: 'Bluetooth Radio', history: [
+      { date: 'Current',    mac: 'JJJ-210095269' },
+      { date: '1/14/2020',  mac: 'JJJ-210081044' },
+    ]},
+    { name: 'Sensor', history: [
+      { date: 'Current',    mac: 'BBB-203719811' },
+      { date: '1/14/2020',  mac: 'BBB-203700193' },
+    ]},
+    { name: 'Temperate Water', history: [
+      { date: 'Current',    mac: 'RRR-109041099' },
+    ]},
+    { name: 'Drum Sensor', history: [
+      { date: 'Current',    mac: 'BBB-203728001' },
+      { date: '1/14/2020',  mac: 'BBB-203700882' },
+    ]},
+    { name: 'WDS', history: [
+      { date: 'Current',    mac: 'WWW-601920044' },
+      { date: '3/12/2023',  mac: 'WWW-601901193' },
+      { date: '1/14/2020',  mac: 'WWW-601900012' },
+    ]},
+    { name: 'Water Pump', history: [
+      { date: 'Current',    mac: 'WP-88100' },
+      { date: '6/12/2025',  mac: 'WP-44019' },
+    ]},
+    { name: 'Admix Pump', history: [
+      { date: 'Current',    mac: 'AP-33001' },
+    ]},
   ],
 };
 
@@ -15251,15 +16452,20 @@ function dtOpenTruck(truckNum) {
     { name:'DPS pressure',  label:'Drum Pressure Sensor',     value:'196',  unit:'psi',    startup:2,  err:'--', extra:null },
     { name:'DRS',           label:'Drum Rotation Speed',      value:'138',  unit:'rpm',    startup:2,  err:'--', extra:null },
     { name:'CWR (35.0) temperature', label:'Charge Water Return Temp', value:'91', unit:'°F', startup:2, err:'--', extra:{label:'Tilt Degree', val:'1'} },
-    { name:'WDS',           label:'Water Drum Sensor\nNo connection', value:'--', unit:'', startup:2, err:'14', extra:null, forceAlarm:true, flipBack:{ lastSeen:'Mar 23 · 08:24 AM', lastVoltage:'12.6', voltageUnit:'V' } },
+    { name:'WDS',           label:'Water Drum Sensor\nNo connection', value:'19.4', unit:'gal', startup:2, err:'14', extra:null, forceAlarm:true, flipBack:{ lastSeen:'Mar 23 · 08:24 AM', lastVoltage:'12.6', voltageUnit:'V' } },
     { name:'ICD (1468)',    label:'Input Current Detector',   value:'1468', unit:'mA',     startup:2,  err:'--', extra:null, greyDot:true },
     { name:'ED (8195)',     label:'Electrical Signal value',  value:'8195', unit:'counts', startup:2,  err:'--', extra:null },
+    { name:'Water Pump',    state:'empty',   label:'Water Delivery System', value:'--', unit:'', startup:null, err:null, removedDate:'07/23/25 · 2:14 PM' },
+    { name:'Admix Pump',    state:'pending', label:'Admixture Pump', value:'0.3', unit:'gal/min', startup:null, err:null },
   ];
   const fdmCards = [
     { name:'IOX supply voltage',    label:'Onboard Power Supply',  value:'12.9', unit:'V',       startup:1, err:'--', extra:{label:'Temperature', val:'113 ºF'} },
     { name:'Water meter flow rate', label:'Active Water flow to drum', value:'2.1', unit:'gal/min', startup:null, err:null, flowExtra:{error:1, noStop:0, rate:'1 gal/min'}, warnCard:true },
     { name:'Admix meter flow rate', label:'Admixture Dosing meter', value:'0.3', unit:'gal/min', startup:null, err:null, flowExtra:{error:0, noStop:0, rate:'1 gal/min'} },
   ];
+  /* Expose so dtReplaceDoRemove can mutate them */
+  window._dtMcsCards = mcsCards;
+  window._dtFdmCards = fdmCards;
 
   /* Map WDS alarm state from CC data if available */
   function getCardState(cardName) {
@@ -15269,11 +16475,60 @@ function dtOpenTruck(truckNum) {
   }
 
   function buildCard(card) {
+    if (!card) return '';
+    /* Confirmed operational — clear all override flags, fall through to normal green render */
+    if (window.dtConfirmedComponents && window.dtConfirmedComponents[card.name]) {
+      var confirmedData = window.dtConfirmedComponents[card.name];
+      var overrides = { state: null, forceAlarm: false, greyDot: false, warnCard: false, flipBack: null };
+      if (typeof confirmedData === 'object') Object.assign(overrides, confirmedData);
+      card = Object.assign({}, card, overrides);
+    }
+    /* Check if this component was removed this session */
+    else if (window.dtRemovedComponents && window.dtRemovedComponents[card.name]) {
+      card = { name: card.name, state: 'empty', removedDate: window.dtRemovedComponents[card.name] };
+    }
+    /* Check if a replacement was installed this session */
+    else if (window.dtPendingComponents && window.dtPendingComponents[card.name]) {
+      var p = window.dtPendingComponents[card.name];
+      card = { name: card.name, state: 'pending', value: p.serial, unit: '', label: 'Installed ' + p.installedDate };
+    }
+    /* Empty slot state */
+    if (card.state === 'empty' && !(window.dtConfirmedComponents && window.dtConfirmedComponents[card.name])) {
+      return `
+        <div class="dt-co-card empty" onclick="if(!coReplaceActive) dtInstallOpen('${card.name}','${card.removedDate||''}')">
+          <div class="dt-co-card-head">
+            <div class="dt-empty-slot-icon">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="rgba(54,50,45,0.3)" stroke-width="1.4" stroke-dasharray="3 2"/></svg>
+            </div>
+            <span class="dt-co-card-name">${card.name}</span>
+          </div>
+          <div class="dt-empty-label">Not installed</div>
+          <div class="dt-empty-date">Removed ${card.removedDate || '—'}</div>
+          <div class="dt-empty-action">Tap to install replacement →</div>
+        </div>`;
+    }
+    /* Pending verification state */
+    if (card.state === 'pending' && !(window.dtConfirmedComponents && window.dtConfirmedComponents[card.name])) {
+      return `
+        <div class="dt-co-card pending">
+          <div class="dt-co-card-head">
+            <span class="dt-co-card-dot" style="background:#d97706;"></span>
+            <span class="dt-co-card-name">${card.name}</span>
+          </div>
+          <div class="dt-co-card-value-row">
+            <span class="dt-co-card-value" style="color:var(--strong);font-size:${coAutoFontSize(card.value)};word-break:break-all;line-height:1.15;">${card.value}</span>
+            ${card.unit ? `<span class="dt-co-card-unit" style="color:var(--soft);">${card.unit}</span>` : ''}
+          </div>
+          <div class="dt-pending-badge"><span class="dt-pending-dot"></span>Replacement recorded</div>
+          <div class="dt-pending-label">Pending verification · Run Error Reset to confirm</div>
+        </div>`;
+    }
+
     let state = card.forceAlarm ? 'alarm' : (card.greyDot ? 'grey' : getCardState(card.name));
     if (card.warnCard) state = 'warn';
 
     const dotColor = state === 'alarm' ? 'rgba(255,255,255,0.7)' : state === 'warn' ? '#36322d' : state === 'grey' ? 'rgba(54,50,45,0.3)' : '#2ecf1d';
-    const descHtml = card.label.replace('\n', '<br>');
+    const descHtml = (card.label || card.name || '').replace('\n', '<br>');
 
     let metaHtml = '';
     if (card.extra) {
@@ -15297,7 +16552,7 @@ function dtOpenTruck(truckNum) {
     }
 
     return `
-      <div class="dt-co-card ${state}">
+      <div class="dt-co-card ${state}" onclick="dtReplaceCardTap(this,'${card.name}')">
         <div class="dt-co-card-head">
           <span class="dt-co-card-dot" style="background:${dotColor};"></span>
           <span class="dt-co-card-name">${card.name}</span>
@@ -15332,7 +16587,7 @@ function dtOpenTruck(truckNum) {
   function buildFlipCard(card, state, dotColor, descHtml, metaHtml) {
     const fb = card.flipBack;
     return `
-      <div class="dt-co-card-flip" onclick="dtFlipWdsCard(this)">
+      <div class="dt-co-card-flip" onclick="if(coReplaceActive){dtReplaceCardTap(this,'WDS');return;} dtFlipWdsCard(this);">
         <div class="dt-co-card-flip-inner">
           ${buildCardFront(card, state, dotColor, descHtml, metaHtml)}
           <div class="dt-co-card-back">
@@ -17612,6 +18867,12 @@ function setView(view) {
 tsUpdateLabels();
 renderTrucks();
 renderOverview();
+/* Desktop init — runs on load since desktop is the default view */
+if (document.body.classList.contains('view-desktop')) {
+  dtTsUpdateLabels();
+  dtBuildHeaders('wts');
+  dtRenderTable();
+}
 
 
 /* ══════════════════════════════════════════════════════════════
@@ -17845,7 +19106,7 @@ if (_origSelectDtTab) {
   const parts = readHashParts();
   if (!parts.length) {
     /* No hash — default to tablet */
-    setHash(['tablet', 'trucks']);
+    setHash(['desktop', 'trucks']);
     return;
   }
 

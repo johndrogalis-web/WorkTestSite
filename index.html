@@ -3760,8 +3760,9 @@
   }
   .ping-btn:active { opacity:0.85; }
   .co-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:8px; }
-  .co-card { background:var(--layer-1); border:1px solid var(--border); border-radius:16px; padding:16px; display:flex; flex-direction:column; gap:10px; }
+  .co-card { background:var(--layer-1); border:1px solid var(--border); border-radius:16px; padding:16px; display:flex; flex-direction:column; gap:10px; height:200px; overflow:hidden; box-sizing:border-box; }
   .co-card--fault { background:#bc302f; border-color:#bc302f; }
+  .co-card--warn { background:#fffbeb; border-color:rgba(180,130,0,0.3); }
   .co-card-head { display:flex; align-items:center; gap:8px; }
   .co-card-head span { font-size:14px; font-weight:500; color:var(--strong); letter-spacing:-0.28px; }
   .co-card--fault .co-card-head span { color:white; }
@@ -3775,7 +3776,9 @@
   .co-card--fault .co-unit { color:white; }
   .co-fault-msg { font-size:13px; color:white; letter-spacing:-0.2px; line-height:1.3; }
   /* flip card */
-  .co-card-flip { perspective:600px; cursor:pointer; }
+  .co-card-flip { perspective:600px; cursor:pointer; position:relative; border-radius:16px; overflow:visible; height:200px; }
+  .co-card-flip-inner { height:100%; }
+  .co-card-flip .co-card-front { height:100%; box-sizing:border-box; overflow:hidden; }
   .co-card-flip-inner { position:relative; transform-style:preserve-3d; transition:transform 0.45s ease; }
   .co-card-flip.flipped .co-card-flip-inner { transform:rotateY(180deg); }
   .co-card-front, .co-card-back { backface-visibility:hidden; -webkit-backface-visibility:hidden; }
@@ -3826,7 +3829,9 @@
   /* Mobile replace toolbar */
   .co-replace-toolbar {
     display:flex; align-items:center; justify-content:flex-end;
-    padding:8px 16px; border-bottom:1px solid var(--border);
+    padding:8px 16px;
+    border-top:1px solid var(--border);
+    border-bottom:1px solid var(--border);
     flex-shrink:0; background:var(--layer-1);
   }
   .co-replace-btn {
@@ -3839,18 +3844,20 @@
   .co-replace-btn:hover { border-color:var(--border-mid); color:var(--strong); }
   .co-replace-btn.active { border-color:var(--amber); color:#92400e; background:rgba(255,186,13,0.08); }
   /* Selection ring on cards in replace mode */
-  .co-grid { padding:4px; margin:-4px; } /* give ring room */
+  /* Cards use overflow:visible so ::before ring clips outside card bounds without affecting layout */
   .co-replace-mode .co-card,
   .co-replace-mode .co-card--empty,
-  .co-replace-mode .co-card--pending {
-    cursor:pointer; position:relative;
+  .co-replace-mode .co-card--pending,
+  .co-replace-mode .co-card-flip {
+    cursor:pointer; position:relative; overflow:visible;
     transition:transform 0.18s cubic-bezier(0.34,1.56,0.64,1);
   }
   .co-replace-mode .co-card:hover { transform:scale(1.02); }
   /* Hollow circle visible on every card immediately */
   .co-replace-mode .co-card::before,
   .co-replace-mode .co-card--empty::before,
-  .co-replace-mode .co-card--pending::before {
+  .co-replace-mode .co-card--pending::before,
+  .co-replace-mode .co-card-flip::before {
     content:''; position:absolute; top:8px; right:8px; z-index:10;
     width:20px; height:20px; border-radius:50%;
     border:2px solid rgba(54,50,45,0.25); background:white;
@@ -3876,6 +3883,21 @@
   .co-replace-mode .co-card--pending.co-selected {
     transform:scale(1.03);
     box-shadow:0 0 0 2px #d97706, 0 4px 12px rgba(217,119,6,0.2);
+  }
+  /* WDS flip card selected — no amber outline, dark overlay on inner fault card */
+  .co-replace-mode .co-card-flip.co-selected {
+    transform:scale(1.03);
+  }
+  .co-replace-mode .co-card-flip.co-selected .co-card--fault {
+    box-shadow:inset 0 0 0 1000px rgba(0,0,0,0.22), 0 0 0 2px #9a1f1e;
+    overflow:hidden;
+  }
+  /* Amber check on WDS flip when selected */
+  .co-replace-mode .co-card-flip.co-selected::before {
+    background:#d97706; border-color:#d97706;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8' fill='none'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:center; background-size:10px 8px;
+    transform:scale(1.15);
   }
   /* Fault card selected — white circle, red check */
   .co-replace-mode .co-card--fault.co-selected::before {
@@ -4602,7 +4624,7 @@
     <svg width="72" height="18" viewBox="0 0 96 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="white"/>
     </svg>
-    <span style="font-size:10px;font-family:'DM Mono',monospace;color:rgba(255,255,255,0.4);letter-spacing:0.2px;margin-left:8px;align-self:center;">v3.1.2</span>
+    <span style="font-size:10px;font-family:'DM Mono',monospace;color:rgba(255,255,255,0.4);letter-spacing:0.2px;margin-left:8px;align-self:center;">v3.2.1</span>
   </div>
   <div class="vp-pills">
     <button class="vp-pill" onclick="setView('mobile')">Mobile</button>
@@ -4611,7 +4633,7 @@
   </div>
 </div>
 
-<div class="phone-wrap">
+<div class="phone-wrap" id="phone-wrap">
 <div class="phone">
 <div class="phone-notch"></div>
 
@@ -5004,112 +5026,7 @@
             </svg>
             <span>Measurement Component Status</span>
           </div>
-          <div id="co-section-mcs">
-          <div class="co-grid">
-
-            <div class="co-card">
-              <div class="co-card-head"><div class="co-dot co-dot--green"></div><span>CPS</span></div>
-              <div class="co-value">204 <span class="co-unit">psi</span></div>
-              <div class="co-desc">Charge Pressure Sensor</div>
-              <div class="co-meta">
-                <div class="co-meta-row"><span>Startup Count:</span><span>2</span></div>
-                <div class="co-meta-row"><span>Error Count:</span><span>--</span></div>
-              </div>
-            </div>
-
-            <div class="co-card">
-              <div class="co-card-head"><div class="co-dot co-dot--green"></div><span>DPS pressure</span></div>
-              <div class="co-value">196 <span class="co-unit">psi</span></div>
-              <div class="co-desc">Drum Pressure Sensor</div>
-              <div class="co-meta">
-                <div class="co-meta-row"><span>Startup Count:</span><span>2</span></div>
-                <div class="co-meta-row"><span>Error Count:</span><span>--</span></div>
-              </div>
-            </div>
-
-            <div class="co-card">
-              <div class="co-card-head"><div class="co-dot co-dot--green"></div><span>DRS</span></div>
-              <div class="co-value">138 <span class="co-unit">rpm</span></div>
-              <div class="co-desc">Drum Rotation Speed</div>
-              <div class="co-meta">
-                <div class="co-meta-row"><span>Startup Count:</span><span>2</span></div>
-                <div class="co-meta-row"><span>Error Count:</span><span>--</span></div>
-              </div>
-            </div>
-
-            <div class="co-card">
-              <div class="co-card-head"><div class="co-dot co-dot--green"></div><span>CWR (35.0) Temp</span></div>
-              <div class="co-value">91 <span class="co-unit">°F</span></div>
-              <div class="co-desc">CWR Temp</div>
-              <div class="co-meta">
-                <div class="co-meta-row"><span>Tilt Degree:</span><span>1</span></div>
-                <div class="co-meta-row"><span>Startup Count:</span><span>2</span></div>
-                <div class="co-meta-row"><span>Error Count:</span><span>--</span></div>
-              </div>
-            </div>
-
-            <!-- WDS — flipping fault card -->
-            <div class="co-card-flip" onclick="flipCard(this)">
-              <div class="co-card-flip-inner">
-
-                <!-- FRONT: fault state -->
-                <div class="co-card co-card--fault co-card-front">
-                  <div class="co-card-head"><div class="co-dot co-dot--white"></div><span style="color:white;">WDS</span></div>
-                  <div class="co-value" style="color:rgba(229,229,229,0.75);">--</div>
-                  <div class="co-fault-msg">Water Drum Sensor<br>No connection</div>
-                  <div class="co-meta" style="color:rgba(255,255,255,0.75);">
-                    <div class="co-meta-row"><span>Startup Count:</span><span style="color:white;">2</span></div>
-                    <div class="co-meta-row"><span>Error Count:</span><span style="color:white;font-weight:500;">14</span></div>
-                  </div>
-                </div>
-
-                <!-- BACK: last known data -->
-                <div class="co-card co-card-back" style="background:#ffd0d0;border-color:#9a1f1e;display:flex;flex-direction:column;gap:8px;">
-                  <!-- Header -->
-                  <div style="display:flex;align-items:center;gap:6px;border-bottom:1px solid rgba(154,31,30,0.3);padding-bottom:8px;">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="flex-shrink:0;"><rect x="1" y="1" width="10" height="10" rx="2" stroke="#9a1f1e" stroke-width="1.4"/><path d="M6 4v2.5M6 8h.01" stroke="#9a1f1e" stroke-width="1.4" stroke-linecap="round"/></svg>
-                    <span style="color:#9a1f1e;font-size:14px;font-weight:500;flex:1;">WDS</span>
-                    <span style="color:rgba(154,31,30,0.5);font-size:16px;letter-spacing:-0.4px;">--</span>
-                  </div>
-                  <!-- Last seen -->
-                  <div>
-                    <div style="font-size:10px;font-weight:500;color:rgba(54,50,45,0.5);letter-spacing:0.4px;text-transform:uppercase;margin-bottom:2px;">Last seen</div>
-                    <div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">Mar 23 · 08:24 AM</div>
-                  </div>
-                  <!-- Last battery voltage -->
-                  <div>
-                    <div style="font-size:10px;font-weight:500;color:rgba(54,50,45,0.5);letter-spacing:0.4px;text-transform:uppercase;margin-bottom:2px;">Last battery voltage</div>
-                    <div style="font-size:20px;font-weight:400;color:var(--strong);letter-spacing:-0.5px;line-height:1.2;">12.6 <span style="font-size:13px;font-weight:500;">V</span></div>
-                  </div>
-                  <!-- View Truck Logs button -->
-                  <button onclick="event.stopPropagation();openWdsLog();" style="width:100%;background:#1594ef;color:white;border:none;border-radius:32px;padding:8px 12px;font-size:13px;font-weight:500;font-family:var(--font);letter-spacing:-0.2px;cursor:pointer;margin-top:auto;">View Truck Logs</button>
-                </div>
-
-              </div>
-            </div>
-
-            <div class="co-card">
-              <div class="co-card-head"><div class="co-dot co-dot--grey"></div><span>ICD (1468)</span></div>
-              <div class="co-value">1468 <span class="co-unit">mA</span></div>
-              <div class="co-desc">Input Current Detector</div>
-              <div class="co-meta">
-                <div class="co-meta-row"><span>Startup Count:</span><span>2</span></div>
-                <div class="co-meta-row"><span>Error Count:</span><span>--</span></div>
-              </div>
-            </div>
-
-            <div class="co-card">
-              <div class="co-card-head"><div class="co-dot co-dot--green"></div><span>ED (8195)</span></div>
-              <div class="co-value">8195 <span class="co-unit">counts</span></div>
-              <div class="co-desc">Electrical Signal value</div>
-              <div class="co-meta">
-                <div class="co-meta-row"><span>Startup Count:</span><span>2</span></div>
-                <div class="co-meta-row"><span>Error Count:</span><span>--</span></div>
-              </div>
-            </div>
-
-          </div><!-- /co-grid -->
-          </div><!-- /co-section-mcs -->
+          <div id="co-section-mcs"><div id="co-grid-mcs" class="co-grid"></div></div><!-- /co-section-mcs -->
 
           <!-- Section: V3 FDM -->
           <div class="co-section-hdr" style="margin-top:12px;" onclick="toggleCoSection('fdm', this)">
@@ -5118,45 +5035,7 @@
             </svg>
             <span>V3 FDM</span>
           </div>
-          <div id="co-section-fdm">
-          <div class="co-grid">
-
-            <div class="co-card">
-              <div class="co-card-head"><div class="co-dot co-dot--green"></div><span>IOX supply voltage</span></div>
-              <div class="co-value">12.9 <span class="co-unit">V</span></div>
-              <div class="co-desc">Onboard Power Supply</div>
-              <div class="co-meta">
-                <div class="co-meta-row"><span>Temperature:</span><span>113 °F</span></div>
-                <div class="co-meta-row"><span>Startup Count:</span><span>1</span></div>
-                <div class="co-meta-row"><span>Error Count:</span><span>--</span></div>
-              </div>
-            </div>
-
-            <!-- Water meter — amber warning card -->
-            <div class="co-card co-card--warn">
-              <div class="co-card-head"><div class="co-dot co-dot--green"></div><span>Water meter flow rate</span></div>
-              <div class="co-value">2.1 <span class="co-unit">gal/min</span></div>
-              <div class="co-desc">Active Water flow to drum</div>
-              <div class="co-meta">
-                <div class="co-meta-row"><span>Flow Error:</span><span>1</span></div>
-                <div class="co-meta-row"><span>No Stop:</span><span>0</span></div>
-                <div class="co-meta-row"><span>Flow Rate:</span><span>1 gal/min</span></div>
-              </div>
-            </div>
-
-            <div class="co-card">
-              <div class="co-card-head"><div class="co-dot co-dot--green"></div><span>Admix meter flow rate</span></div>
-              <div class="co-value">0.3 <span class="co-unit">gal/min</span></div>
-              <div class="co-desc">Admixture Dosing meter</div>
-              <div class="co-meta">
-                <div class="co-meta-row"><span>Flow Error:</span><span>0</span></div>
-                <div class="co-meta-row"><span>No Stop:</span><span>0</span></div>
-                <div class="co-meta-row"><span>Flow Rate:</span><span>1 gal/min</span></div>
-              </div>
-            </div>
-
-          </div><!-- /co-grid -->
-          </div><!-- /co-section-fdm -->
+          <div id="co-section-fdm"><div id="co-grid-fdm" class="co-grid"></div></div><!-- /co-section-fdm -->
 
           <!-- Fleet map -->
           <div class="co-map-block">
@@ -7584,6 +7463,7 @@ function openDrawer(i, context) {
     /* Normal connected truck */
     renderLogRows();
     document.getElementById('state-components').style.display = 'flex';
+    renderMobileCards();
     document.querySelector('.d-nav-row').style.display = 'flex';
     document.getElementById('drawer-nav-label').textContent   = 'Components Overview';
     document.getElementById('filters-pill').style.display = 'none';
@@ -8183,6 +8063,7 @@ function selectDrawerNav(label, el) {
   document.getElementById('state-list').style.display       = showList       ? 'flex' : 'none';
   document.getElementById('state-detail').style.display     = 'none';
   document.getElementById('state-components').style.display = showComponents ? 'flex' : 'none';
+  if (showComponents) renderMobileCards();
   document.getElementById('state-manual').style.display     = showManual     ? 'flex' : 'none';
   if (showManual) initMcCards();
   document.getElementById('state-timeline').style.display   = showTimeline   ? 'flex' : 'none';
@@ -8217,6 +8098,7 @@ document.addEventListener('click', function(e) {
 });
 
 function flipCard(el) {
+  if (coReplaceActive) return; /* replace mode intercepts all taps */
   el.classList.toggle('flipped');
 }
 
@@ -10381,6 +10263,161 @@ document.addEventListener('click', function(e) {
   }
 });
 
+/* ── MOBILE COMPONENT CARDS ─────────────────────────────────────────
+   Dynamically renders the grid cards in #co-grid-mcs and #co-grid-fdm
+   based on CC_TRUCKS data for the currently open truck. Called from
+   renderConditions() so card state reflects replacement workflow.    */
+
+function renderMobileCards() {
+  var gridMcs = document.getElementById('co-grid-mcs');
+  var gridFdm = document.getElementById('co-grid-fdm');
+  if (!gridMcs) return;
+
+  /* Find the open truck from the drawer header */
+  var truckLabel = document.getElementById('drawer-truck-num');
+  var truckNum = truckLabel ? truckLabel.textContent.replace('Truck: ', '').trim() : null;
+  var cc = truckNum ? CC_TRUCKS.find(function(t) { return String(t.num) === String(truckNum); }) : null;
+
+  function buildMobileCard(card) {
+    /* Empty slot */
+    if (card.state === 'empty') {
+      return '<div class="co-card co-card--empty" onclick="if(!coReplaceActive) coInstallOpen(\'' + card.name + '\',\'' + (card.removedDate||'') + '\')" style="cursor:pointer;">'
+        + '<div class="co-card-head"><div style="width:14px;height:14px;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="rgba(54,50,45,0.3)" stroke-width="1.2" stroke-dasharray="3 2"/></svg></div><span style="color:var(--soft);">' + card.name + '</span></div>'
+        + '<div class="co-value" style="color:var(--soft);font-size:14px;">Not installed</div>'
+        + (card.removedDate ? '<div class="co-desc" style="color:rgba(54,50,45,0.4);font-size:11px;">Removed ' + card.removedDate + '</div>' : '')
+        + '<div class="co-desc" style="color:var(--blue);font-weight:500;font-size:12px;">Tap to install →</div>'
+        + '</div>';
+    }
+    /* Pending verification */
+    if (card.state === 'pending') {
+      var serial = card.serial || (card.value || '--');
+      return '<div class="co-card co-card--pending">'
+        + '<div class="co-card-head"><div style="width:8px;height:8px;border-radius:50%;background:#d97706;flex-shrink:0;"></div><span>' + card.name + '</span></div>'
+        + '<div class="co-value" style="font-size:' + coAutoFontSize(serial) + ';word-break:break-all;line-height:1.15;">' + serial + '</div>'
+        + '<div class="co-desc" style="color:#92400e;font-size:11px;">Replacement recorded</div>'
+        + '<div class="co-desc" style="color:var(--soft);font-size:11px;">Pending verification</div>'
+        + '</div>';
+    }
+    /* Alarm/fault card */
+    if (card.forceAlarm || card.state === 'alarm') {
+      var hasFlip = !!card.flipBack;
+      if (hasFlip) {
+        return '<div class="co-card-flip" onclick="if(!coReplaceActive)flipCard(this)">'
+          + '<div class="co-card-flip-inner">'
+          + '<div class="co-card co-card--fault co-card-front">'
+          + '<div class="co-card-head"><div class="co-dot co-dot--white"></div><span style="color:white;">' + card.name + '</span></div>'
+          + '<div class="co-value" style="color:rgba(229,229,229,0.75);">--</div>'
+          + '<div class="co-fault-msg">' + (card.label||'').replace('\n','<br>') + '</div>'
+          + '<div class="co-meta" style="color:rgba(255,255,255,0.75);">'
+          + (card.startup!=null ? '<div class="co-meta-row"><span>Startup Count:</span><span style="color:white;">' + card.startup + '</span></div>' : '')
+          + (card.err!=null ? '<div class="co-meta-row"><span>Error Count:</span><span style="color:white;font-weight:500;">' + card.err + '</span></div>' : '')
+          + '</div></div>'
+          + '<div class="co-card co-card-back" style="background:#ffd0d0;border-color:#9a1f1e;display:flex;flex-direction:column;gap:8px;">'
+          + '<div style="border-bottom:1px solid rgba(154,31,30,0.3);padding-bottom:8px;display:flex;align-items:center;gap:6px;">'
+          + '<span style="color:#9a1f1e;font-size:14px;font-weight:500;flex:1;">' + card.name + '</span></div>'
+          + (card.flipBack.lastSeen ? '<div><div style="font-size:10px;font-weight:500;color:rgba(54,50,45,0.5);text-transform:uppercase;margin-bottom:2px;">Last seen</div><div style="font-size:13px;font-weight:500;color:var(--strong);">' + card.flipBack.lastSeen + '</div></div>' : '')
+          + '<button onclick="event.stopPropagation();openWdsLog();" style="width:100%;background:#1594ef;color:white;border:none;border-radius:32px;padding:8px 12px;font-size:13px;font-weight:500;font-family:var(--font);cursor:pointer;margin-top:auto;">View Truck Logs</button>'
+          + '</div></div></div>';
+      }
+      return '<div class="co-card co-card--fault">'
+        + '<div class="co-card-head"><div class="co-dot co-dot--white"></div><span style="color:white;">' + card.name + '</span></div>'
+        + '<div class="co-value" style="color:rgba(229,229,229,0.75);">' + (card.value||'--') + '</div>'
+        + '<div class="co-fault-msg">' + (card.label||'').replace('\n','<br>') + '</div>'
+        + '</div>';
+    }
+    /* Grey dot */
+    var dotClass = card.greyDot ? 'co-dot--grey' : (card.warnCard ? 'co-dot--green' : 'co-dot--green');
+    var cardClass = card.warnCard ? ' co-card--warn' : '';
+    return '<div class="co-card' + cardClass + '">'
+      + '<div class="co-card-head"><div class="co-dot ' + dotClass + '"></div><span>' + card.name + '</span></div>'
+      + '<div class="co-value">' + (card.value||'--') + (card.unit ? ' <span class="co-unit">' + card.unit + '</span>' : '') + '</div>'
+      + '<div class="co-desc">' + (card.label||card.name||'').replace('\n','<br>') + '</div>'
+      + '<div class="co-meta">'
+      + (card.extra ? '<div class="co-meta-row"><span>' + card.extra.label + ':</span><span>' + card.extra.val + '</span></div>' : '')
+      + (card.startup!=null ? '<div class="co-meta-row"><span>Startup Count:</span><span>' + card.startup + '</span></div>' : '')
+      + (card.err!=null ? '<div class="co-meta-row"><span>Error Count:</span><span>' + card.err + '</span></div>' : '')
+      + (card.flowExtra ? '<div class="co-meta-row"><span>Flow Error:</span><span>' + card.flowExtra.error + '</span></div>'
+        + '<div class="co-meta-row"><span>No Stop:</span><span>' + card.flowExtra.noStop + '</span></div>'
+        + '<div class="co-meta-row"><span>Flow Rate:</span><span>' + card.flowExtra.rate + '</span></div>' : '')
+      + '</div></div>';
+  }
+
+  /* MCS cards data — matches the hardcoded defaults + session state */
+  var mcsCards = [
+    { name:'CPS',           label:'Charge Pressure Sensor',   value:'204',  unit:'psi',    startup:2,  err:'--', extra:null },
+    { name:'DPS pressure',  label:'Drum Pressure Sensor',     value:'196',  unit:'psi',    startup:2,  err:'--', extra:null },
+    { name:'DRS',           label:'Drum Rotation Speed',      value:'138',  unit:'rpm',    startup:2,  err:'--', extra:null },
+    { name:'CWR (35.0) Temp', label:'CWR Temp',  value:'91', unit:'°F', startup:2, err:'--', extra:{label:'Tilt Degree', val:'1'} },
+    { name:'WDS', label:'Water Drum Sensor\nNo connection', value:'--', unit:'', startup:2, err:'14', forceAlarm:true, flipBack:{ lastSeen:'Mar 23 · 08:24 AM' } },
+    { name:'ICD (1468)', label:'Input Current Detector', value:'1468', unit:'mA', startup:2, err:'--', greyDot:true },
+    { name:'ED (8195)',  label:'Electrical Signal value', value:'8195', unit:'counts', startup:2, err:'--' },
+    { name:'Water Pump',  state:'empty',   label:'Water Delivery System', value:'--', unit:'', startup:null, err:null, removedDate:'07/23/25 · 2:14 PM' },
+    { name:'Admix Pump',  state:'pending', label:'Admixture Pump', value:'0.3', unit:'gal/min', startup:null, err:null },
+  ];
+  var fdmCards = [
+    { name:'IOX supply voltage',    label:'Onboard Power Supply',  value:'12.9', unit:'V', startup:1, err:'--', extra:{label:'Temperature', val:'113 °F'} },
+    { name:'Water meter flow rate', label:'Active Water flow to drum', value:'2.1', unit:'gal/min', startup:null, err:null, flowExtra:{error:1, noStop:0, rate:'1 gal/min'}, warnCard:true },
+    { name:'Admix meter flow rate', label:'Admixture Dosing meter', value:'0.3', unit:'gal/min', startup:null, err:null, flowExtra:{error:0, noStop:0, rate:'1 gal/min'} },
+  ];
+
+  /* Apply session state overrides — same logic as desktop buildCard */
+  function applyOverrides(card) {
+    var name = card.name;
+    /* Confirmed — clear all overrides */
+    if (window.dtConfirmedComponents && window.dtConfirmedComponents[name]) {
+      var def = window.dtConfirmedComponents[name];
+      return Object.assign({}, card, {
+        state:null, forceAlarm:false, greyDot:false, warnCard:false, flipBack:null,
+        value: (typeof def==='object' && def.value) ? def.value : card.value,
+        unit:  (typeof def==='object' && def.unit)  ? def.unit  : card.unit,
+        label: (typeof def==='object' && def.label) ? def.label : card.label,
+      });
+    }
+    /* Session removed */
+    if (window.dtRemovedComponents && window.dtRemovedComponents[name]) {
+      return { name:name, state:'empty', removedDate:window.dtRemovedComponents[name] };
+    }
+    if (window.moRemovedCards && window.moRemovedCards[name]) {
+      return { name:name, state:'empty', removedDate:window.moRemovedCards[name] };
+    }
+    /* Session pending install */
+    if (window.dtPendingComponents && window.dtPendingComponents[name]) {
+      var p = window.dtPendingComponents[name];
+      return { name:name, state:'pending', value:p.serial, unit:'', label:'Installed '+p.installedDate };
+    }
+    if (window.moPendingCards && window.moPendingCards[name]) {
+      var p = window.moPendingCards[name];
+      return { name:name, state:'pending', value:p.serial, unit:'', label:'Installed '+p.installedDate };
+    }
+    /* CC_TRUCKS overrides — only for replacement workflow cards (Water Pump, Admix Pump)
+       WDS keeps its alarm state from the card definition regardless of CC_TRUCKS */
+    var replacementCards = ['Water Pump', 'Admix Pump'];
+    if (cc && cc.components && replacementCards.indexOf(name) !== -1) {
+      var comp = cc.components.find(function(c){ return c.name===name; });
+      if (comp) {
+        if (comp.state==='empty')   return Object.assign({},card,{state:'empty',   removedDate:comp.removedDate});
+        if (comp.state==='pending') return Object.assign({},card,{state:'pending', value:comp.serial||card.value, label:card.label, serial:comp.serial});
+      }
+    }
+    return card;
+  }
+
+  gridMcs.innerHTML = mcsCards.map(function(c){ return buildMobileCard(applyOverrides(c)); }).join('');
+  if (gridFdm) gridFdm.innerHTML = fdmCards.map(function(c){ return buildMobileCard(applyOverrides(c)); }).join('');
+
+  /* Re-wire replace mode handlers if active */
+  if (coReplaceActive) {
+    document.querySelectorAll('#co-scroll .co-card:not(.co-card-front):not(.co-card-back):not(.co-card-flip *), #co-scroll .co-card-flip').forEach(function(card) {
+      var nameEl = card.querySelector('.co-card-head span') || card.querySelector('.co-card-front .co-card-head span');
+      if (!nameEl) return;
+      var compName = nameEl.textContent.trim();
+      card._coReplaceHandler = function(e) { e.stopPropagation(); e.preventDefault(); coMobileCardTap(card, compName); };
+      card.addEventListener('click', card._coReplaceHandler, true);
+      card.style.cursor = 'pointer';
+    });
+  }
+}
+
 function renderConditions() {
   const el = document.getElementById('cc-rows');
   if (!el) return;
@@ -10461,8 +10498,10 @@ function renderConditions() {
   });
 
   el.innerHTML = html;
+  el.innerHTML = html;
+  /* Also refresh mobile grid cards */
+  renderMobileCards();
 }
-
 
 function ccToggle(i) {
   ccExpanded[i] = !ccExpanded[i];
@@ -10543,6 +10582,31 @@ function coReplaceEnter(btnId, scrollId, cardSelector) {
   // Show hint
   var hint = document.getElementById(btnId === 'co-replace-btn' ? 'co-replace-hint' : 'dt-replace-hint');
   if (hint) hint.style.display = 'inline-flex';
+  // Wire click handlers on mobile co-cards
+  if (scrollId === 'co-scroll') {
+    document.querySelectorAll('#co-scroll .co-card:not(.co-card-front):not(.co-card-back):not(.co-card-flip *), #co-scroll .co-card-flip').forEach(function(card) {
+      /* Extract component name */
+      var nameEl = card.querySelector('.co-card-head span')
+                || card.querySelector('.co-card-front .co-card-head span');
+      if (!nameEl) return;
+      var compName = nameEl.textContent.trim();
+      card._coReplaceHandler = function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        coMobileCardTap(card, compName);
+      };
+      card.addEventListener('click', card._coReplaceHandler, true);
+      card.style.cursor = 'pointer';
+    });
+  }
+  coReplaceUpdateBar();
+}
+
+function coMobileCardTap(card, compName) {
+  if (!coReplaceActive) return;
+  card.classList.toggle('co-selected');
+  if (card.classList.contains('co-selected')) coSelectedCards.add(compName);
+  else coSelectedCards.delete(compName);
   coReplaceUpdateBar();
 }
 
@@ -10554,6 +10618,16 @@ function coReplaceExit(btnId, scrollId, cardSelector, btnOrigHTML) {
   if (btn)    { btn.classList.remove('active'); btn.innerHTML = btnOrigHTML; }
   if (scroll) { scroll.classList.remove('co-replace-mode'); scroll.classList.remove('dt-replace-mode'); }
   document.querySelectorAll(cardSelector).forEach(function(c) { c.classList.remove('co-selected'); });
+  // Unwire mobile card click handlers
+  if (scrollId === 'co-scroll') {
+    document.querySelectorAll('#co-scroll .co-card:not(.co-card-front):not(.co-card-back), #co-scroll .co-card-flip').forEach(function(card) {
+      if (card._coReplaceHandler) {
+        card.removeEventListener('click', card._coReplaceHandler, true);
+        delete card._coReplaceHandler;
+        card.style.cursor = '';
+      }
+    });
+  }
   // Hide hint
   var hint = document.getElementById(btnId === 'co-replace-btn' ? 'co-replace-hint' : 'dt-replace-hint');
   if (hint) hint.style.display = 'none';
@@ -10624,16 +10698,18 @@ function coReplaceDoRemove() {
   var dateStr = (now.getMonth()+1) + '/' + now.getDate() + '/' + String(now.getFullYear()).slice(-2)
     + ' · ' + now.toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit'});
 
-  // Transition selected cards to empty state in CC_TRUCKS data
+  if (!window.moRemovedCards) window.moRemovedCards = {};
+
   coSelectedCards.forEach(function(compName) {
+    /* Track in session state so renderMobileCards picks it up */
+    window.moRemovedCards[compName] = dateStr;
+    /* Also update CC_TRUCKS where component exists */
     CC_TRUCKS.forEach(function(t) {
       if (!t.components) return;
       var comp = t.components.find(function(c) { return c.name === compName; });
       if (comp) {
-        comp.state   = 'empty';
-        comp.evt     = 'Not installed';
-        comp.dot     = 'rgba(54,50,45,0.2)';
-        comp.removedDate = dateStr;
+        comp.state = 'empty'; comp.evt = 'Not installed';
+        comp.dot = 'rgba(54,50,45,0.2)'; comp.removedDate = dateStr;
       }
     });
   });
@@ -10736,14 +10812,15 @@ function coInstallSerialInput(inp) {
 /* Mobile — open from empty comp row */
 function coInstallOpen(compName, removedDate) {
   var existing = document.getElementById('co-install-bar');
+  var existing = document.getElementById('co-install-bar');
   if (existing) existing.remove();
-  var sc = document.getElementById('state-components');
+  /* Insert at top of co-scroll so keyboard doesn't cover it */
+  var sc = document.getElementById('co-scroll');
   if (!sc) return;
-  sc.style.position = 'relative';
   var bar = document.createElement('div');
   bar.id = 'co-install-bar';
   bar.dataset.compName = compName;
-  bar.style.cssText = 'position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--layer-1);border-top:1px solid var(--border);padding:16px 16px 36px;box-shadow:0 -8px 24px rgba(54,50,45,0.12);animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);';
+  bar.style.cssText = 'background:var(--layer-1);border-bottom:1px solid var(--border);padding:16px 16px 20px;animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);flex-shrink:0;margin-bottom:8px;';
   bar.innerHTML = '<div style="font-size:15px;font-weight:500;color:var(--strong);letter-spacing:-0.3px;margin-bottom:4px;">Install replacement</div>'
     + '<div style="font-size:13px;color:var(--soft);letter-spacing:-0.26px;margin-bottom:14px;">Installing new <strong style="color:var(--strong);">' + compName + '</strong></div>'
     + '<div style="margin-bottom:14px;"><label style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;display:block;margin-bottom:6px;">Serial Number</label>'
@@ -10752,8 +10829,13 @@ function coInstallOpen(compName, removedDate) {
     + '<button id="co-install-confirm-btn" onclick="coInstallConfirm()" disabled style="background:#3069e3;color:white;border:none;border-radius:32px;padding:13px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;width:100%;opacity:0.4;transition:opacity 0.15s;">Confirm Installation</button>'
     + '<button onclick="document.getElementById(&#39;co-install-bar&#39;).remove()" style="background:none;border:1px solid var(--border-mid);border-radius:32px;padding:13px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;color:var(--strong);cursor:pointer;width:100%;">Cancel</button>'
     + '</div>';
-  sc.appendChild(bar);
-  setTimeout(function() { var i = document.getElementById('co-install-serial'); if(i) i.focus(); }, 100);
+  sc.insertBefore(bar, sc.firstChild);
+  /* Scroll to top so bar is visible, then focus after keyboard settles */
+  sc.scrollTop = 0;
+  setTimeout(function() {
+    var i = document.getElementById('co-install-serial');
+    if (i) i.focus();
+  }, 350);
 }
 
 function coInstallConfirm() {
@@ -10767,6 +10849,10 @@ function coInstallConfirm() {
   var dateStr = (now.getMonth()+1)+'/'+now.getDate()+'/'+String(now.getFullYear()).slice(-2)+' · '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
   if (!window._dtSessionInstalls) window._dtSessionInstalls = {};
   window._dtSessionInstalls[compName] = serial.trim();
+  /* Track mobile pending for renderMobileCards */
+  if (!window.moPendingCards) window.moPendingCards = {};
+  window.moPendingCards[compName] = { serial: serial.trim(), installedDate: dateStr };
+  if (window.moRemovedCards) delete window.moRemovedCards[compName];
   CC_TRUCKS.forEach(function(t) {
     if (!t.components) return;
     var comp = t.components.find(function(c){ return c.name===compName; });
@@ -10835,6 +10921,7 @@ function coHasEmptySlots() {
     t.components.forEach(function(c) { if (c.state === 'empty') hasEmpty = true; });
   });
   if (window.dtRemovedComponents && Object.keys(window.dtRemovedComponents).length > 0) hasEmpty = true;
+  if (window.moRemovedCards && Object.keys(window.moRemovedCards).length > 0) hasEmpty = true;
   return hasEmpty;
 }
 
@@ -10860,7 +10947,19 @@ function coErrorResetBannerHTML(errCount, isMobile) {
   var errText = errCount > 0
     ? errCount + ' active error' + (errCount > 1 ? 's' : '') + ' detected'
     : 'No errors detected — verify with Error Reset';
-  var btnPad = isMobile ? '7px 12px' : '7px 14px';
+  var btnPad = isMobile ? '7px 10px' : '7px 14px';
+  if (isMobile) {
+    /* Mobile: stacked layout — text on top, buttons below */
+    return '<div style="flex:1;min-width:0;">'
+      + '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;margin-bottom:2px;">All components replaced</div>'
+      + '<div style="font-size:12px;color:#92400e;letter-spacing:-0.24px;margin-bottom:10px;">' + errText + '</div>'
+      + '<div style="display:flex;gap:6px;">'
+      + '<button onclick="coRunErrorResetInline()" id="co-er-run-btn" style="flex:1;background:#d97706;color:white;border:none;border-radius:20px;padding:' + btnPad + ';font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;cursor:pointer;">Run Error Reset</button>'
+      + '<button onclick="coSetMaintenanceDirect()" style="flex:1;background:none;border:1px solid var(--border-mid);border-radius:20px;padding:' + btnPad + ';font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;color:var(--strong);cursor:pointer;">Set to Maintenance</button>'
+      + '</div>'
+      + '</div>';
+  }
+  /* Desktop: single row */
   return '<div style="flex:1;min-width:0;">'
     + '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">All components replaced</div>'
     + '<div style="font-size:12px;color:#92400e;letter-spacing:-0.24px;">' + errText + '</div>'
@@ -10918,18 +11017,26 @@ function coRunErrorResetInline() {
     var dtBanner  = document.getElementById('dt-error-banner');
 
     if (cleared) {
-      var successInner = '<div style="width:28px;height:28px;border-radius:50%;background:rgba(22,163,74,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+      var isMo = !!moToolbar;
+      var icon = '<div style="width:28px;height:28px;border-radius:50%;background:rgba(22,163,74,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
         + '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-7" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-        + '</div>'
+        + '</div>';
+      var successMo = icon
+        + '<div style="flex:1;min-width:0;">'
+        + '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;margin-bottom:2px;">All errors cleared</div>'
+        + '<div style="font-size:12px;color:#166534;letter-spacing:-0.24px;margin-bottom:10px;">Truck is ready \u2014 confirm it is operational</div>'
+        + '<button onclick="coConfirmOperational()" style="width:100%;background:#16a34a;color:white;border:none;border-radius:20px;padding:8px 14px;font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;cursor:pointer;">Confirm operational</button>'
+        + '</div>';
+      var successDt = icon
         + '<div style="flex:1;min-width:0;">'
         + '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">All errors cleared</div>'
-        + '<div style="font-size:12px;color:#166534;letter-spacing:-0.24px;">Truck is ready — confirm it is operational</div>'
+        + '<div style="font-size:12px;color:#166534;letter-spacing:-0.24px;">Truck is ready \u2014 confirm it is operational</div>'
         + '</div>'
         + '<div style="flex-shrink:0;">'
         + '<button onclick="coConfirmOperational()" style="background:#16a34a;color:white;border:none;border-radius:20px;padding:7px 14px;font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;cursor:pointer;white-space:nowrap;">Confirm operational</button>'
         + '</div>';
-      if (moToolbar) { moToolbar.style.cssText = 'background:#f0fdf4;border-bottom:1px solid rgba(22,163,74,0.2);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;'; moToolbar.innerHTML = successInner; }
-      if (dtBanner)  { dtBanner.style.cssText  = 'flex-shrink:0;background:#f0fdf4;border-top:1px solid rgba(22,163,74,0.2);padding:12px 24px;display:flex;align-items:center;gap:10px;'; dtBanner.innerHTML = successInner; }
+      if (moToolbar) { moToolbar.style.cssText = 'background:#f0fdf4;border-bottom:1px solid rgba(22,163,74,0.2);padding:12px 16px;display:flex;align-items:flex-start;gap:10px;flex-shrink:0;'; moToolbar.innerHTML = successMo; }
+      if (dtBanner)  { dtBanner.style.cssText  = 'flex-shrink:0;background:#f0fdf4;border-top:1px solid rgba(22,163,74,0.2);padding:12px 24px;display:flex;align-items:center;gap:10px;'; dtBanner.innerHTML = successDt; }
       coSetNavDot(false);
       /* Auto-navigate back to Components Overview */
       setTimeout(function() {
@@ -10942,19 +11049,32 @@ function coRunErrorResetInline() {
       }, 1200);
     } else {
       var remaining = Math.max(1, Math.floor(errCount * 0.6));
-      var failInner = '<div style="width:28px;height:28px;border-radius:50%;background:rgba(215,1,0,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+      var failIcon = '<div style="width:28px;height:28px;border-radius:50%;background:rgba(215,1,0,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
         + '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 3v4M7 9h.01" stroke="#d70100" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="7" r="6" stroke="#d70100" stroke-width="1.2"/></svg>'
-        + '</div>'
+        + '</div>';
+      var failText = remaining + ' error' + (remaining > 1 ? 's' : '') + ' still active';
+      var failSub  = 'Go to Truck Logs to investigate · come back here to retry';
+      /* Mobile: stacked */
+      var failMo = failIcon
         + '<div style="flex:1;min-width:0;">'
-        + '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">' + remaining + ' error' + (remaining > 1 ? 's' : '') + ' still active</div>'
-        + '<div style="font-size:12px;color:#991b1b;letter-spacing:-0.24px;">Go to Truck Logs to investigate · come back here to retry</div>'
+        + '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;margin-bottom:2px;">' + failText + '</div>'
+        + '<div style="font-size:12px;color:#991b1b;letter-spacing:-0.24px;margin-bottom:10px;">' + failSub + '</div>'
+        + '<div style="display:flex;gap:6px;">'
+        + '<button onclick="coRunErrorResetInline()" id="co-er-run-btn" style="flex:1;background:#d70100;color:white;border:none;border-radius:20px;padding:8px 10px;font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;cursor:pointer;">Retry Reset</button>'
+        + '<button onclick="coViewTruckLogs()" style="flex:1;background:none;border:1px solid var(--border-mid);border-radius:20px;padding:8px 10px;font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;color:var(--strong);cursor:pointer;">View Truck Logs</button>'
+        + '</div></div>';
+      /* Desktop: single row */
+      var failDt = failIcon
+        + '<div style="flex:1;min-width:0;">'
+        + '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">' + failText + '</div>'
+        + '<div style="font-size:12px;color:#991b1b;letter-spacing:-0.24px;">' + failSub + '</div>'
         + '</div>'
         + '<div style="display:flex;gap:6px;flex-shrink:0;align-items:center;">'
         + '<button onclick="coRunErrorResetInline()" id="co-er-run-btn" style="background:#d70100;color:white;border:none;border-radius:20px;padding:7px 12px;font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;cursor:pointer;white-space:nowrap;">Retry Reset</button>'
         + '<button onclick="coViewTruckLogs()" style="background:none;border:1px solid var(--border-mid);border-radius:20px;padding:7px 12px;font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;color:var(--strong);cursor:pointer;white-space:nowrap;">View Truck Logs</button>'
         + '</div>';
-      if (moToolbar) { moToolbar.style.cssText = 'background:#fff5f5;border-bottom:1px solid rgba(215,1,0,0.15);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;'; moToolbar.innerHTML = failInner; }
-      if (dtBanner)  { dtBanner.style.cssText  = 'flex-shrink:0;background:#fff5f5;border-top:1px solid rgba(215,1,0,0.15);padding:12px 24px;display:flex;align-items:center;gap:10px;'; dtBanner.innerHTML = failInner; }
+      if (moToolbar) { moToolbar.style.cssText = 'background:#fff5f5;border-bottom:1px solid rgba(215,1,0,0.15);padding:12px 16px;display:flex;align-items:flex-start;gap:10px;flex-shrink:0;'; moToolbar.innerHTML = failMo; }
+      if (dtBanner)  { dtBanner.style.cssText  = 'flex-shrink:0;background:#fff5f5;border-top:1px solid rgba(215,1,0,0.15);padding:12px 24px;display:flex;align-items:center;gap:10px;'; dtBanner.innerHTML = failDt; }
       coSetNavDot(true);
     }
   }, 1800);
@@ -11146,6 +11266,8 @@ function coConfirmOperational() {
   coSetNavDot(false);
   window.coResetAttemptCount = 0;
   window._dtSessionInstalls = {};
+  window.moRemovedCards = {};
+  window.moPendingCards = {};
   /* Reset CC_TRUCKS components to clean */
   CC_TRUCKS.forEach(function(t) {
     if (!t.components) return;
@@ -14796,6 +14918,38 @@ function dtAtSubmit() {
 /* Trinity-styled toast helper — Success variant by default.
    Pass `variant: 'info' | 'warning' | 'error'` to use the other treatments. */
 function dtShowToast({ title, body, variant }) {
+  /* Mobile: show inline toast inside the drawer, not fixed position */
+  if (document.body.classList.contains('view-mobile')) {
+    var existing = document.getElementById('mo-toast');
+    if (existing) existing.remove();
+    var t = document.createElement('div');
+    t.id = 'mo-toast';
+    var stripe = variant === 'success' ? '#2ecf1d' : variant === 'warning' ? '#ffba0d' : variant === 'error' ? '#d70100' : '#41a8f2';
+    t.style.cssText = 'position:absolute;top:70px;left:16px;right:16px;z-index:10000;'
+      + 'background:white;border:1px solid var(--border);border-radius:12px;'
+      + 'padding:12px 14px;display:flex;align-items:flex-start;gap:10px;'
+      + 'box-shadow:0 8px 24px rgba(0,0,0,0.18);font-family:var(--font);'
+      + 'border-top:3px solid ' + stripe + ';'
+      + 'animation:dtAuToastIn 0.25s cubic-bezier(0.4,0,0.2,1);';
+    t.innerHTML = '<div style="flex:1;min-width:0;">'
+      + '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;margin-bottom:2px;">' + title + '</div>'
+      + '<div style="font-size:12px;color:var(--defined);letter-spacing:-0.24px;">' + body + '</div>'
+      + '</div>';
+    t.addEventListener('click', function() {
+      t.style.animation = 'dtAuToastOut 0.25s ease-in forwards';
+      setTimeout(function() { t.remove(); }, 250);
+    });
+    var pw = document.getElementById('phone-wrap');
+    (pw || document.body).appendChild(t);
+    setTimeout(function() {
+      if (!t.parentNode) return;
+      t.style.animation = 'dtAuToastOut 0.25s ease-in forwards';
+      setTimeout(function() { t.remove(); }, 250);
+    }, 3200);
+    return;
+  }
+
+  /* Desktop: original fixed toast */
   const toast = document.createElement('div');
   toast.className = 'dt-au-toast' + (variant && variant !== 'success' ? ' toast-' + variant : '');
   toast.innerHTML = `

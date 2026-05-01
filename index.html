@@ -43,23 +43,47 @@
     padding: 80px 16px 80px;
     font-family: var(--font);
   }
+  /* On narrow screens the top bar wraps to two rows, so body needs more top padding */
+  @media (max-width: 640px) {
+    body { padding: 110px 0 0 !important; }
+  }
+  @media (max-width: 700px) {
+    body.view-mobile { padding: 110px 0 0 !important; }
+  }
 
   /* ─── VIEWPORT SWITCHER BAR ──────────────────────────────── */
   .vp-bar {
     position: fixed; top: 0; left: 0; right: 0;
-    height: 52px;
+    min-height: 52px;
     background: rgba(42,38,34,0.96);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     display: flex; align-items: center;
     padding: 0 20px;
+    gap: 12px;
     z-index: 9999;
     border-bottom: 1px solid rgba(255,255,255,0.08);
+    flex-wrap: nowrap;
   }
   .vp-brand {
     font-size: 15px; font-weight: 600; color: white;
-    letter-spacing: -0.3px; flex: 1;
+    letter-spacing: -0.3px;
     display: flex; align-items: center; gap: 8px;
+    flex-shrink: 0;
+  }
+  .vp-version-tag {
+    font-size:10px;font-family:'DM Mono',monospace;color:rgba(255,255,255,0.4);
+    letter-spacing:0.2px;margin-left:8px;align-self:center;
+  }
+  /* Right cluster — all three pill groups grouped together with auto margin to push right */
+  .vp-right-cluster {
+    display: flex; align-items: center; gap: 8px;
+    margin-left: auto; flex-shrink: 0;
+  }
+  /* Centered version cluster — only used at desktop sizes */
+  .vp-center-cluster {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center;
   }
   .vp-pills {
     display: flex; gap: 4px;
@@ -72,11 +96,87 @@
     padding: 6px 14px; border-radius: 28px; border: none;
     cursor: pointer; background: none;
     transition: background 0.18s ease, color 0.18s ease;
+    white-space: nowrap;
   }
-  .vp-pill.active {
-    background: white; color: #1a1814;
-  }
+  .vp-pill.active { background: white; color: #1a1814; }
   .vp-pill:not(.active):hover { color: rgba(255,255,255,0.85); }
+  .role-pill {
+    font-family: var(--font); font-size: 13px; font-weight: 500;
+    letter-spacing: -0.26px; color: rgba(255,255,255,0.55);
+    padding: 6px 14px; border-radius: 28px; border: none;
+    cursor: pointer; background: none;
+    transition: background 0.18s ease, color 0.18s ease;
+    white-space: nowrap;
+  }
+  .role-pill.active { background: rgba(124,58,237,0.9); color: white; }
+  .role-pill:not(.active):hover { color: rgba(255,255,255,0.85); }
+  .role-divider { width:1px; height:16px; background:rgba(255,255,255,0.2); margin:0 4px; align-self:center; }
+  .ver-divider  { width:1px; height:16px; background:rgba(255,255,255,0.2); margin:0 4px; align-self:center; }
+  .ver-pill {
+    font-family: var(--font); font-size: 13px; font-weight: 500;
+    letter-spacing: -0.26px; color: rgba(255,255,255,0.55);
+    padding: 6px 14px; border-radius: 28px; border: none;
+    cursor: pointer; background: none;
+    transition: background 0.18s ease, color 0.18s ease;
+    white-space: nowrap;
+  }
+  .ver-pill.active { background: rgba(5,150,105,0.85); color: white; }
+  .ver-pill:not(.active):hover { color: rgba(255,255,255,0.85); }
+
+  /* The full-text labels — swap to short labels on narrow screens */
+  .vp-label-long  { display: inline; }
+  .vp-label-short { display: none; }
+
+  /* ─── Responsive breakpoints ───────────────────────────────
+     ≥1100px  Three-zone layout: brand left, version centered, view+role right
+     700-1099 Two-zone: brand left, all pills right (no centered group)
+     <700px   Two rows: brand+version up top, view+role pills below
+  ────────────────────────────────────────────────────────── */
+  @media (max-width: 1099px) {
+    .vp-center-cluster {
+      position: static; transform: none;
+      order: 2; /* sits between brand and right cluster */
+    }
+    /* Center cluster slides into the inline flow on the right */
+    .vp-bar .vp-center-cluster { margin-left: auto; }
+    .vp-right-cluster { margin-left: 8px; }
+  }
+  @media (max-width: 820px) {
+    .vp-bar { padding: 0 14px; gap: 8px; }
+    .vp-pill, .role-pill, .ver-pill { padding: 6px 11px; font-size: 12px; }
+    .vp-version-tag { display: none; }
+    /* Use short labels */
+    .vp-label-long  { display: none; }
+    .vp-label-short { display: inline; }
+  }
+  @media (max-width: 640px) {
+    .vp-bar {
+      flex-wrap: wrap;
+      padding: 8px 12px;
+      gap: 6px;
+      min-height: 0;
+    }
+    .vp-brand { width: 100%; justify-content: space-between; }
+    .vp-brand .vp-center-cluster { /* version moves into brand row's right side */
+      position: static; transform: none; margin-left: 0;
+    }
+    .vp-center-cluster {
+      position: static; transform: none;
+      margin-left: 0;
+      order: 1; /* sit on the brand row */
+    }
+    .vp-right-cluster {
+      width: 100%;
+      justify-content: flex-start;
+      margin-left: 0;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .vp-pill, .role-pill, .ver-pill {
+      padding: 5px 10px; font-size: 11px;
+    }
+    .role-divider, .ver-divider { display: none; }
+  }
 
   /* ─── PHONE SHELL ────────────────────────────────────────── */
   .phone-wrap {
@@ -493,6 +593,24 @@
     overflow:hidden;
     position:relative;
   }
+  #dt-page-units {
+    display:flex; flex-direction:column;
+    flex:1; min-width:0; overflow:hidden;
+  }
+  .dt-units-tab {
+    font-size:13px; font-weight:500; font-family:var(--font);
+    letter-spacing:-0.26px; color:var(--soft);
+    background:none; border:none; border-bottom:2px solid transparent;
+    padding:10px 16px; cursor:pointer; white-space:nowrap;
+    margin-bottom:-1px; transition:color 0.15s, border-color 0.15s;
+  }
+  .dt-units-tab:hover { color:var(--strong); }
+  .dt-units-tab.active { color:var(--strong); border-bottom-color:var(--strong); }
+  .dt-units-tab-badge {
+    display:inline-flex; align-items:center; justify-content:center;
+    background:#d97706; color:white; font-size:11px; font-weight:600;
+    border-radius:10px; padding:1px 6px; margin-left:6px; line-height:1.4;
+  }
 
   #s-desktop { position:relative; }
   .dt-drawer-scrim {
@@ -674,6 +792,23 @@
     background-size:200% 100%;
     animation:dtSkelShimmer 1.4s infinite;
   }
+  /* ── Scanning animation rings — sized for 64px container ── */
+  .co-scan-ring {
+    position:absolute; border-radius:50%; border:1.5px solid rgba(48,105,227,0.35);
+    animation:coScanPulse 1.8s ease-out infinite;
+  }
+  .co-scan-ring-1 { inset:18px; animation-delay:0s; }
+  .co-scan-ring-2 { inset:10px; animation-delay:0.45s; }
+  .co-scan-ring-3 { inset:2px;  animation-delay:0.9s; }
+  @keyframes coScanPulse {
+    0%   { opacity:0.7; transform:scale(0.55); }
+    100% { opacity:0;   transform:scale(1.9); }
+  }
+  @keyframes tcgSpin {
+    0%   { transform:rotate(0deg); }
+    100% { transform:rotate(360deg); }
+  }
+
   @keyframes dtSkelShimmer {
     0%   { background-position:200% 0; }
     100% { background-position:-200% 0; }
@@ -767,6 +902,43 @@
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8' fill='none'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     background-repeat:no-repeat; background-position:center; background-size:10px 8px;
     transform:scale(1.15);
+  }
+
+  /* ── TCG card — desktop ─────────────────────────────────────────
+     The TCG is the unit's brain. It's never folded into a multi-component
+     swap — it has its own dedicated Replace TCG flow. So:
+     - In replace mode: card dims, selection circle hidden, "Replace separately" hint visible
+     - Outside replace mode: small "Replace TCG" button visible on the card
+  ──────────────────────────────────────────────────────────────── */
+  .dt-co-card-tcg { position:relative; }
+  /* Corner wrench icon — sits in the top-right of the TCG card */
+  .dt-co-tcg-replace-btn {
+    position:absolute; top:12px; right:12px;
+    width:30px; height:30px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--layer-2); border:1px solid var(--border);
+    border-radius:50%; padding:0;
+    color:var(--soft); cursor:pointer;
+    transition:all 0.15s; z-index:5;
+  }
+  .dt-co-tcg-replace-btn:hover { border-color:var(--strong); color:var(--strong); background:var(--layer-1); }
+  .dt-co-tcg-lock-hint { display:none; }
+  /* In replace mode — TCG is locked out */
+  .dt-replace-mode .dt-drawer-cards .dt-co-card-tcg {
+    opacity:0.45; cursor:not-allowed !important;
+  }
+  .dt-replace-mode .dt-drawer-cards .dt-co-card-tcg:hover { transform:none; }
+  /* Hide the selection circle on TCG card during replace mode */
+  .dt-replace-mode .dt-drawer-cards .dt-co-card-tcg::before { display:none !important; }
+  /* Hide the inline replace button during replace mode (action lives elsewhere here) */
+  .dt-replace-mode .dt-drawer-cards .dt-co-card-tcg .dt-co-tcg-replace-btn { display:none; }
+  /* Show the lock hint pinned to the corner */
+  .dt-replace-mode .dt-drawer-cards .dt-co-card-tcg .dt-co-tcg-lock-hint {
+    display:block; position:absolute; top:10px; right:10px;
+    font-size:10px; font-weight:600; color:var(--soft);
+    letter-spacing:0.3px; text-transform:uppercase;
+    background:var(--layer-2); border:1px solid var(--border);
+    border-radius:6px; padding:3px 7px;
   }
   /* Desktop replace bar — same pattern as dt-cfg-savebar */
   #dt-replace-bar {
@@ -1714,38 +1886,39 @@
 
   /* ── Bulk action bar ──────────────────────────────────────── */
   .dt-units-bulk-bar {
-    display:flex; align-items:center; justify-content:space-between;
-    padding:14px 20px; margin:0 0 16px;
-    background:var(--layer-1); border:1px solid var(--border);
-    border-radius:10px; gap:16px;
-    animation:dtInlineConfirmIn 0.15s ease;
+    display:none; align-items:center; justify-content:space-between;
+    padding:10px 16px; margin:10px 24px 0;
+    background:var(--base); border:1px solid var(--border);
+    border-radius:10px; gap:16px; flex-shrink:0;
+    box-sizing:border-box; width:calc(100% - 48px); max-width:calc(100% - 48px);
   }
-  .dt-units-bulk-left  { display:flex; align-items:center; gap:20px; }
-  .dt-units-bulk-right { display:flex; align-items:center; gap:10px; }
+  .dt-units-bulk-bar.visible { display:flex; }
+  .dt-units-bulk-left  { display:flex; align-items:center; gap:16px; }
+  .dt-units-bulk-right { display:flex; align-items:center; gap:8px; }
   .dt-units-bulk-count {
-    font-size:14px; color:var(--defined); letter-spacing:-0.28px;
-    font-weight:500;
+    font-size:13px; color:var(--soft); letter-spacing:-0.26px;
   }
   .dt-units-bulk-select-all {
-    font-size:14px; color:var(--blue-link); letter-spacing:-0.28px;
+    font-size:13px; color:var(--blue-link); letter-spacing:-0.26px;
     background:none; border:none; cursor:pointer; padding:0;
     font-family:var(--font); font-weight:500;
   }
   .dt-units-bulk-select-all:hover { opacity:0.75; }
   .dt-units-bulk-cancel {
-    font-size:14px; color:var(--defined); letter-spacing:-0.28px;
-    background:none; border:1px solid var(--border); border-radius:8px;
-    padding:8px 18px; cursor:pointer; font-family:var(--font); font-weight:500;
+    font-size:13px; color:var(--strong); letter-spacing:-0.26px;
+    background:var(--layer-1); border:1px solid var(--border);
+    border-radius:32px; padding:7px 16px;
+    cursor:pointer; font-family:var(--font); font-weight:500;
   }
   .dt-units-bulk-cancel:hover { background:var(--base); }
   .dt-units-bulk-return {
-    font-size:14px; color:white; letter-spacing:-0.28px;
-    background:var(--red); border:none; border-radius:8px;
-    padding:8px 18px; cursor:pointer; font-family:var(--font); font-weight:500;
+    font-size:13px; color:white; letter-spacing:-0.26px;
+    background:var(--red); border:none; border-radius:32px;
+    padding:7px 16px; cursor:pointer; font-family:var(--font); font-weight:500;
     transition:opacity 0.12s;
   }
   .dt-units-bulk-return:disabled {
-    background:var(--red); opacity:0.35; cursor:not-allowed;
+    opacity:0.35; cursor:not-allowed;
   }
   .dt-units-bulk-return:not(:disabled):hover { opacity:0.88; }
 
@@ -3086,6 +3259,39 @@
     z-index: 999;
   }
 
+  /* ─── REAL-DEVICE RESPONSIVE: when the actual viewport is phone-sized,
+        drop the simulated phone bezel/notch and let the prototype fill
+        the screen edge-to-edge. Same idea for tablets. The mock device
+        chrome only makes sense on a desktop browser. ───────────────── */
+  @media (max-width: 700px) {
+    body.view-mobile .phone-wrap {
+      width: 100% !important;
+      max-width: none !important;
+    }
+    body.view-mobile .phone {
+      width: 100% !important;
+      height: calc(100vh - 56px) !important;
+      border-radius: 0 !important;
+      outline: none !important;
+      box-shadow: none !important;
+    }
+    body.view-mobile .phone-notch,
+    body.view-mobile .phone-wrap::before,
+    body.view-mobile .phone-wrap::after { display: none !important; }
+    body.view-mobile #s-main { padding-top: 0 !important; }
+  }
+  @media (max-width: 1100px) and (min-width: 701px) {
+    body.view-tablet .phone-wrap {
+      width: 100% !important;
+      max-width: none !important;
+    }
+    body.view-tablet #s-tablet {
+      width: 100% !important;
+      height: calc(100vh - 56px) !important;
+      max-width: none !important;
+    }
+  }
+
   /* ─── SCREENS ────────────────────────────────────────────── */
   /* All screens are stacked; JS toggles .active */
   .screen {
@@ -3926,6 +4132,35 @@
   /* Empty and pending cards selectable in replace mode */
   .co-replace-mode .co-card--empty,
   .co-replace-mode .co-card--pending { cursor:pointer; }
+
+  /* ── TCG card — mobile ──────────────────────────────────────────
+     Locked out of multi-select replace flow. Has its own dedicated path. */
+  .co-card-tcg { position:relative; }
+  /* Corner wrench icon — sits in the top-right of the TCG card */
+  .co-tcg-replace-btn {
+    position:absolute; top:8px; right:8px;
+    width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--layer-2); border:1px solid var(--border);
+    border-radius:50%; padding:0;
+    color:var(--soft); cursor:pointer;
+    transition:all 0.15s; z-index:5;
+  }
+  .co-tcg-replace-btn:active { background:var(--border); color:var(--strong); }
+  .co-tcg-lock-hint { display:none; }
+  /* In replace mode — TCG dims, selection circle hides, hint appears */
+  .co-replace-mode .co-card-tcg { opacity:0.45; cursor:not-allowed !important; }
+  .co-replace-mode .co-card-tcg:hover { transform:none; }
+  .co-replace-mode .co-card-tcg::before { display:none !important; }
+  .co-replace-mode .co-card-tcg .co-tcg-replace-btn { display:none; }
+  .co-replace-mode .co-card-tcg .co-tcg-lock-hint {
+    display:block; position:absolute; top:8px; right:8px;
+    font-size:9px; font-weight:600; color:var(--soft);
+    letter-spacing:0.3px; text-transform:uppercase;
+    background:var(--layer-2); border:1px solid var(--border);
+    border-radius:5px; padding:3px 6px;
+  }
+
   /* Mobile sticky replace bar */
   .co-replace-bar {
     display:none; flex-shrink:0;
@@ -4641,12 +4876,30 @@
     <svg width="72" height="18" viewBox="0 0 96 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="white"/>
     </svg>
-    <span style="font-size:10px;font-family:'DM Mono',monospace;color:rgba(255,255,255,0.4);letter-spacing:0.2px;margin-left:8px;align-self:center;">v3.2.6</span>
+    <span class="vp-version-tag">v3.2.6</span>
   </div>
-  <div class="vp-pills">
-    <button class="vp-pill" onclick="setView('mobile')">Mobile</button>
-    <button class="vp-pill" onclick="setView('tablet')">Tablet</button>
-    <button class="vp-pill active" onclick="setView('desktop')">Desktop</button>
+
+  <!-- Centered version toggle (Final / MVP) — at desktop, sits absolutely centered;
+       at smaller widths CSS reorders it inline -->
+  <div class="vp-center-cluster">
+    <div class="vp-pills">
+      <button class="ver-pill active" id="ver-pill-final" onclick="setVersion('final')">
+        <span class="vp-label-long">Final Version</span><span class="vp-label-short">Final</span>
+      </button>
+      <button class="ver-pill" id="ver-pill-mvp" onclick="setVersion('mvp')">MVP</button>
+    </div>
+  </div>
+
+  <!-- Right cluster: viewport switcher + role -->
+  <div class="vp-right-cluster">
+    <div class="vp-pills">
+      <button class="vp-pill" onclick="setView('mobile')">Mobile</button>
+      <button class="vp-pill" onclick="setView('tablet')">Tablet</button>
+      <button class="vp-pill active" onclick="setView('desktop')">Desktop</button>
+      <div class="role-divider"></div>
+      <button class="role-pill active" id="role-pill-external" onclick="setRole('external')">External</button>
+      <button class="role-pill" id="role-pill-internal" onclick="setRole('internal')">Internal</button>
+    </div>
   </div>
 </div>
 
@@ -5304,12 +5557,11 @@
               </div>
               <div class="cfg-acc-body">
                 <div class="cfg-fields">
-                  <div class="cfg-field"><label>Name</label><input type="text" value="1402 (MM North)"></div>
-                  <div class="cfg-field"><label>Batch System Code</label><input type="text" value="234-2981-8373"></div>
-                  <div class="cfg-field"><label>Contract</label><div class="cfg-select">Cemex Houston <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
-                  <div class="cfg-field"><label>Mixer Type</label><div class="cfg-select">McNeilus <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
-                  <div class="cfg-field"><label>WDS</label><div class="cfg-select">- <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
-                  <div class="cfg-field"><label>Vin</label><input type="text" value="1HGCM82633A123456"></div>
+                  <div class="cfg-field"><label>Name</label><input type="text" placeholder="e.g. Truck 45689 — Phoenix Central"></div>
+                  <div class="cfg-field"><label>Mixer Type</label><div class="cfg-select"><span id="mob-cfg-mixer-type">McNeilus</span> <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
+                  <div class="cfg-field"><label>Batch System Code</label><input type="text" placeholder="e.g. 234-2981-8373"></div>
+                  <div class="cfg-field"><label>Contract</label><div class="cfg-select">Cemex AZ <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
+                  <div class="cfg-field"><label>VIN</label><input type="text" placeholder="e.g. 1HGCM82633A123456"></div>
                   <div class="cfg-field"><label>Mode</label><div class="cfg-select">Live <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
                   <div class="cfg-field"><label>OOS Reason</label><div class="cfg-select">In Service <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
                 </div>
@@ -5327,8 +5579,8 @@
               </div>
               <div class="cfg-acc-body" style="display:none;">
                 <div class="cfg-fields">
-                  <div class="cfg-field"><label>Number of Drum Magnets</label><input type="number" value="3"></div>
-                  <div class="cfg-field"><label>Drum Size</label><input type="number" value="3"></div>
+                  <div class="cfg-field"><label>Number of Drum Magnets</label><input type="number" placeholder="e.g. 4"></div>
+                  <div class="cfg-field"><label>Drum Size (yd³)</label><input type="number" placeholder="e.g. 8"></div>
                   <div class="cfg-field cfg-field-toggle"><label>Front Discharge</label><div class="cfg-toggle on" onclick="toggleCfgSwitch(this)"><div class="cfg-toggle-knob"></div></div></div>
                   <div class="cfg-field cfg-field-toggle"><label>CWR Watchdog Enabled</label><div class="cfg-toggle" onclick="toggleCfgSwitch(this)"><div class="cfg-toggle-knob"></div></div></div>
                   <div class="cfg-field cfg-field-toggle"><label>Using Blue Water Meter</label><div class="cfg-toggle on" onclick="toggleCfgSwitch(this)"><div class="cfg-toggle-knob"></div></div></div>
@@ -5349,10 +5601,10 @@
               </div>
               <div class="cfg-acc-body" style="display:none;">
                 <div class="cfg-fields">
-                  <div class="cfg-field"><label>Min Batch Revolutions</label><input type="number" value="1402"></div>
-                  <div class="cfg-field"><label>Min Agitation Speed</label><input type="number" value="234"></div>
-                  <div class="cfg-field"><label>Min Mixing Speed</label><input type="number" value="234"></div>
-                  <div class="cfg-field"><label>Max Mixing Speed</label><input type="number" value="234"></div>
+                  <div class="cfg-field"><label>Min Batch Revolutions</label><input type="number" placeholder="e.g. 70"></div>
+                  <div class="cfg-field"><label>Min Agitation Speed (RPM)</label><input type="number" placeholder="e.g. 2"></div>
+                  <div class="cfg-field"><label>Min Mixing Speed (RPM)</label><input type="number" placeholder="e.g. 8"></div>
+                  <div class="cfg-field"><label>Max Mixing Speed (RPM)</label><input type="number" placeholder="e.g. 18"></div>
                 </div>
               </div>
             </div>
@@ -5411,9 +5663,9 @@
               </div>
               <div class="cfg-acc-body" style="display:none;">
                 <div class="cfg-fields">
-                  <div class="cfg-field"><label>Water Length Quick Connect to Nozzle</label><input type="text" value="234-2981-8373"></div>
-                  <div class="cfg-field"><label>Water Length FDM to Quick Connect</label><input type="text" value="234-2981-8373"></div>
-                  <div class="cfg-field"><label>Admix Hose Length</label><input type="text" value="1402 (MM North)"></div>
+                  <div class="cfg-field"><label>Water Hose: Quick Connect to Nozzle (ft)</label><input type="text" placeholder="e.g. 12 ft"></div>
+                  <div class="cfg-field"><label>Water Hose: FDM to Quick Connect (ft)</label><input type="text" placeholder="e.g. 6 ft"></div>
+                  <div class="cfg-field"><label>Admix Hose Length</label><input type="text" placeholder="e.g. 8 ft"></div>
                 </div>
               </div>
             </div>
@@ -5429,13 +5681,13 @@
               </div>
               <div class="cfg-acc-body" style="display:none;">
                 <div class="cfg-fields">
-                  <div class="cfg-field"><label>Slump Tolerance (in)</label><input type="text" value="1402 (MM North)"></div>
-                  <div class="cfg-field"><label>Initial Water Ratio</label><input type="text" value="1402 (MM North)"></div>
-                  <div class="cfg-field"><label>Initial Admix Ratio</label><input type="text" value="1402 (MM North)"></div>
-                  <div class="cfg-field"><label>Min Water Ratio</label><input type="text" value="1402 (MM North)"></div>
-                  <div class="cfg-field"><label>Max Water Ratio</label><input type="text" value="1402 (MM North)"></div>
-                  <div class="cfg-field"><label>Min Admix Ratio</label><input type="text" value="1402 (MM North)"></div>
-                  <div class="cfg-field"><label>Max Admix Ratio</label><input type="text" value="1402 (MM North)"></div>
+                  <div class="cfg-field"><label>Slump Tolerance (in)</label><input type="text" placeholder="e.g. 0.25 in"></div>
+                  <div class="cfg-field"><label>Initial Water Ratio</label><input type="text" placeholder="e.g. 0.10"></div>
+                  <div class="cfg-field"><label>Initial Admix Ratio</label><input type="text" placeholder="e.g. 0.05"></div>
+                  <div class="cfg-field"><label>Min Water Ratio</label><input type="text" placeholder="e.g. 0.05"></div>
+                  <div class="cfg-field"><label>Max Water Ratio</label><input type="text" placeholder="e.g. 0.20"></div>
+                  <div class="cfg-field"><label>Min Admix Ratio</label><input type="text" placeholder="e.g. 0.02"></div>
+                  <div class="cfg-field"><label>Max Admix Ratio</label><input type="text" placeholder="e.g. 0.10"></div>
                 </div>
               </div>
             </div>
@@ -5601,7 +5853,7 @@
                 <span id="units-filter-count" style="display:none;background:var(--blue);color:white;border-radius:10px;font-size:11px;font-weight:600;padding:1px 6px;margin-left:2px;"></span>
               </button>
             </div>
-            <button onclick="openAddUnit()" style="display:flex;align-items:center;gap:6px;background:var(--blue);color:white;border:none;border-radius:32px;padding:8px 16px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">
+            <span id="dt-units-add-btn-wrap" style="display:none;"><button id="dt-units-add-btn" onclick="openAddUnit()" style="display:flex;align-items:center;gap:6px;background:var(--blue);color:white;border:none;border-radius:32px;padding:8px 16px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                 <path d="M6 1v10M1 6h10" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
               </svg>
@@ -6712,54 +6964,85 @@
               </div>
             </div>
 
-            <button class="dt-add-btn" style="margin-left:auto;" onclick="dtUnitsAddPlaceholder()">
+            <span style="flex:1;"></span>
+            <span id="dt-units-add-btn-wrap2" style="display:none;">
+            <button class="dt-add-btn" onclick="dtUnitsAddPlaceholder()">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
               Add Unit
             </button>
+            </span>
             <button class="dt-filter-btn" id="dt-units-select-btn" onclick="dtUnitsSelectToggle()">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="1.5" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1.5" y="8.5" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8.5" y="1.5" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8.5" y="8.5" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
               Edit Units
             </button>
           </div>
 
-          <!-- Bulk action bar — slides up when units are selected in select mode -->
-          <div id="dt-units-bulk-bar" class="dt-units-bulk-bar" style="display:none;">
-            <div class="dt-units-bulk-left">
-              <button class="dt-units-bulk-select-all" onclick="dtUnitsSelectAll()">Select all unlinked</button>
-              <span class="dt-units-bulk-count" id="dt-units-bulk-count">0 selected</span>
+        </div><!-- /dt-topbar -->
+
+        <!-- Bulk action bar — sibling to topbar and table, pushes table down naturally -->
+        <div id="dt-units-bulk-bar" class="dt-units-bulk-bar">
+          <div class="dt-units-bulk-left">
+            <button class="dt-units-bulk-select-all" onclick="dtUnitsSelectAll()">Select all unlinked</button>
+            <span class="dt-units-bulk-count" id="dt-units-bulk-count">0 selected</span>
+          </div>
+          <div class="dt-units-bulk-right">
+            <button class="dt-units-bulk-cancel" onclick="dtUnitsSelectToggle()">Cancel</button>
+            <button class="dt-units-bulk-return" id="dt-units-bulk-return-btn" onclick="dtUnitsReturnConfirm()" disabled>
+              Return to Verifi
+            </button>
+          </div>
+        </div>
+
+        <!-- Tab strip — Units | Pending Return (N) -->
+        <div id="dt-units-tab-strip" style="display:flex;align-items:center;gap:2px;padding:0 24px;border-bottom:1px solid var(--border);">
+          <button id="dt-units-tab-units" class="dt-units-tab active" onclick="dtUnitsTabSwitch('units')">Units</button>
+          <button id="dt-units-tab-pending" class="dt-units-tab" onclick="dtUnitsTabSwitch('pending')" style="display:none;">Pending Return <span id="dt-units-pending-count" class="dt-units-tab-badge"></span></button>
+        </div>
+
+        <!-- Units tab content -->
+        <div id="dt-units-tab-content-units">
+          <div class="dt-table-wrap" style="margin-top:0;">
+            <table class="dt-table" id="dt-units-table">
+              <thead id="dt-units-thead"></thead>
+              <tbody id="dt-units-tbody"></tbody>
+            </table>
+          </div>
+          <!-- Pagination -->
+          <div class="dt-pagination">
+            <div class="dt-page-left">
+              <select class="dt-rows-dd"><option>25</option><option>50</option><option selected>100</option></select>
+              Rows per page
             </div>
-            <div class="dt-units-bulk-right">
-              <button class="dt-units-bulk-cancel" onclick="dtUnitsSelectToggle()">Cancel</button>
-              <button class="dt-units-bulk-return" id="dt-units-bulk-return-btn" onclick="dtUnitsReturnConfirm()" disabled>
-                Return to Verifi
-              </button>
+            <div class="dt-page-right">
+              <span class="dt-page-info" id="dt-units-page-info">— Records</span>
+              <button class="dt-page-btn" disabled><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M11 12L7 8l4-4M7 12L3 8l4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <button class="dt-page-btn" disabled><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <button class="dt-page-btn" disabled><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <button class="dt-page-btn" disabled><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M5 12l4-4-4-4M9 12l4-4-4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
             </div>
           </div>
         </div>
 
-        <!-- Units table — extra top spacing because there's no tab strip above it -->
-        <div class="dt-table-wrap" style="margin-top:20px;">
-          <table class="dt-table" id="dt-units-table">
-            <thead id="dt-units-thead"></thead>
-            <tbody id="dt-units-tbody"></tbody>
-          </table>
-        </div>
-
-        <!-- Pagination -->
-        <div class="dt-pagination">
-          <div class="dt-page-left">
-            <select class="dt-rows-dd"><option>25</option><option>50</option><option selected>100</option></select>
-            Rows per page
+        <!-- Pending Return tab content -->
+        <div id="dt-units-tab-content-pending" style="display:none;flex:1;min-width:0;overflow:hidden;flex-direction:column;display:none;">
+          <!-- Internal-only bulk bar -->
+          <div id="dt-pending-bulk-bar" style="display:none;align-items:center;justify-content:space-between;padding:10px 16px;margin:10px 24px 0;background:var(--base);border:1px solid var(--border);border-radius:10px;gap:16px;box-sizing:border-box;width:calc(100% - 48px);">
+            <div style="display:flex;align-items:center;gap:16px;">
+              <button onclick="dtPendingSelectAll()" style="font-size:13px;color:var(--blue-link);letter-spacing:-0.26px;background:none;border:none;cursor:pointer;padding:0;font-family:var(--font);font-weight:500;">Select all</button>
+              <span id="dt-pending-bulk-count" style="font-size:13px;color:var(--soft);letter-spacing:-0.26px;">0 selected</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <button onclick="dtPendingCancelSelect()" style="font-size:13px;color:var(--strong);background:var(--layer-1);border:1px solid var(--border);border-radius:32px;padding:7px 16px;cursor:pointer;font-family:var(--font);font-weight:500;">Cancel</button>
+              <button id="dt-pending-mark-btn" onclick="dtPendingMarkReceived()" disabled style="font-size:13px;color:white;background:var(--blue);border:none;border-radius:32px;padding:7px 16px;cursor:pointer;font-family:var(--font);font-weight:500;opacity:0.4;transition:opacity 0.15s;">Mark Received</button>
+            </div>
           </div>
-          <div class="dt-page-right">
-            <span class="dt-page-info" id="dt-units-page-info">— Records</span>
-            <button class="dt-page-btn" disabled><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M11 12L7 8l4-4M7 12L3 8l4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-            <button class="dt-page-btn" disabled><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-            <button class="dt-page-btn" disabled><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-            <button class="dt-page-btn" disabled><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M5 12l4-4-4-4M9 12l4-4-4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="dt-table-wrap" style="margin-top:8px;">
+            <table class="dt-table" id="dt-pending-table">
+              <thead id="dt-pending-thead"></thead>
+              <tbody id="dt-pending-tbody"></tbody>
+            </table>
           </div>
         </div>
-
       </div><!-- /dt-page-units -->
 
       <!-- ══════════════════════════════════════════
@@ -10345,7 +10628,8 @@ function renderMobileCards() {
     /* Grey dot */
     var dotClass = card.greyDot ? 'co-dot--grey' : (card.warnCard ? 'co-dot--green' : 'co-dot--green');
     var cardClass = card.warnCard ? ' co-card--warn' : '';
-    return '<div class="co-card' + cardClass + '">'
+    if (card.name === 'TCG') cardClass += ' co-card-tcg';
+    return '<div class="co-card' + cardClass + '" data-comp="' + card.name + '">'
       + '<div class="co-card-head"><div class="co-dot ' + dotClass + '"></div><span>' + card.name + '</span></div>'
       + '<div class="co-value">' + (card.value||'--') + (card.unit ? ' <span class="co-unit">' + card.unit + '</span>' : '') + '</div>'
       + '<div class="co-desc">' + (card.label||card.name||'').replace('\n','<br>') + '</div>'
@@ -10356,7 +10640,18 @@ function renderMobileCards() {
       + (card.flowExtra ? '<div class="co-meta-row"><span>Flow Error:</span><span>' + card.flowExtra.error + '</span></div>'
         + '<div class="co-meta-row"><span>No Stop:</span><span>' + card.flowExtra.noStop + '</span></div>'
         + '<div class="co-meta-row"><span>Flow Rate:</span><span>' + card.flowExtra.rate + '</span></div>' : '')
-      + '</div></div>';
+      + '</div>'
+      /* TCG gets its own "Replace TCG" affordance — corner wrench icon, outside replace mode (hidden via CSS) */
+      + (card.name === 'TCG'
+          ? '<button class="co-tcg-replace-btn" onclick="event.stopPropagation();coOpenTcgReplace(false);" title="Replace TCG" aria-label="Replace TCG">'
+            + '<svg width="13" height="13" viewBox="0 0 21 21" fill="none"><path d="M12.4513 5.05364C12.2681 5.24057 12.1655 5.49189 12.1655 5.75364C12.1655 6.01539 12.2681 6.26671 12.4513 6.45364L14.0513 8.05364C14.2382 8.23687 14.4896 8.3395 14.7513 8.3395C15.0131 8.3395 15.2644 8.23687 15.4513 8.05364L19.2213 4.28364C19.7242 5.39483 19.8764 6.63288 19.6578 7.83279C19.4392 9.0327 18.86 10.1375 17.9976 10.9999C17.1352 11.8624 16.0304 12.4415 14.8305 12.6601C13.6306 12.8787 12.3925 12.7265 11.2813 12.2236L4.37132 19.1336C3.9735 19.5315 3.43393 19.755 2.87132 19.755C2.30871 19.755 1.76914 19.5315 1.37132 19.1336C0.973496 18.7358 0.75 18.1962 0.75 17.6336C0.75 17.071 0.973496 16.5315 1.37132 16.1336L8.28132 9.22364C7.77848 8.11245 7.62624 6.87441 7.84486 5.6745C8.06349 4.47459 8.64261 3.3698 9.50504 2.50736C10.3675 1.64493 11.4723 1.06581 12.6722 0.847184C13.8721 0.628558 15.1101 0.780807 16.2213 1.28364L12.4613 5.04364L12.4513 5.05364Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+            + '</button>'
+          : '')
+      /* TCG locked-state hint — visible only when replace mode is active (CSS-driven) */
+      + (card.name === 'TCG'
+          ? '<div class="co-tcg-lock-hint">Replace separately</div>'
+          : '')
+      + '</div>';
   }
 
   /* MCS cards data — matches the hardcoded defaults + session state */
@@ -10622,6 +10917,9 @@ function coReplaceEnter(btnId, scrollId, cardSelector) {
 
 function coMobileCardTap(card, compName) {
   if (!coReplaceActive) return;
+  /* TCG is the unit's brain — it has its own dedicated replace flow.
+     Never folded into a multi-component swap. */
+  if (compName === 'TCG') return;
   card.classList.toggle('co-selected');
   if (card.classList.contains('co-selected')) coSelectedCards.add(compName);
   else coSelectedCards.delete(compName);
@@ -10743,6 +11041,8 @@ function dtReplaceToggle() {
 }
 function dtReplaceCardTap(el, idx) {
   if (!coReplaceActive) return;
+  /* TCG is the unit's brain — replaced through its own dedicated flow */
+  if (idx === 'TCG') return;
   el.classList.toggle('co-selected');
   if (el.classList.contains('co-selected')) coSelectedCards.add(idx);
   else coSelectedCards.delete(idx);
@@ -10819,41 +11119,211 @@ function dtReplaceDoRemove() {
    CHUNK 4 — INSTALL REPLACEMENT FLOW
 ═══════════════════════════════════════════════════ */
 
-function coInstallSerialInput(inp) {
+/* ── Install replacement panel ─────────────────────────────────────────────
+   Persistent frame: header + body + Cancel/Confirm footer.
+   Body swaps between three states without rebuilding the frame:
+     1. scanning  (default — TCG looks for nearby component, ~2.5s)
+     2. found     (serial auto-populates, Confirm enables)
+     3. manual    (user typed serial, accessed via small "+" link)
+
+   Per Martin: "nearby" is the explicit terminology — auto-discovery is the
+   norm, manual is the secondary fallback path.
+──────────────────────────────────────────────────────────────────────────── */
+var MOCK_SERIALS = {
+  'WDS':            'WDS-48291',
+  'CPS':            'CPS-73042',
+  'DPS pressure':   'DPS-19204',
+  'DRS':            'DRS-55817',
+  'CWR (35.0) temperature': 'CWR-30042',
+  'ICD (1468)':     'ICD-14680',
+  'ED (8195)':      'ED-81950',
+  'Water Pump':     'WP-44210',
+  'Admix Pump':     'AP-22834',
+  'TCG':            'TCG-38291',
+};
+
+/* Build the persistent panel frame. Body slot is empty — filled by state functions. */
+function coBuildInstallFrame(compName, isMobile) {
+  return ''
+    /* Header */
+    + '<div style="margin-bottom:14px;">'
+    +   '<div style="font-size:15px;font-weight:500;color:var(--strong);letter-spacing:-0.3px;margin-bottom:3px;">Install replacement</div>'
+    +   '<div style="font-size:13px;color:var(--soft);letter-spacing:-0.26px;">Installing new <strong style="color:var(--strong);font-weight:600;">' + compName + '</strong></div>'
+    + '</div>'
+    /* Body — swappable */
+    + '<div id="co-install-body" style="margin-bottom:14px;"></div>'
+    /* Footer — Cancel + Confirm side-by-side, persistent */
+    + '<div style="display:flex;gap:8px;">'
+    +   '<button onclick="coInstallCancel()" style="flex:0 0 auto;min-width:110px;background:var(--layer-1);border:1px solid var(--border);border-radius:32px;padding:12px 20px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;color:var(--strong);cursor:pointer;">Cancel</button>'
+    +   '<button id="co-install-confirm-btn" onclick="coInstallConfirmClick(' + (isMobile?'true':'false') + ')" disabled style="flex:1;background:#3069e3;color:white;border:none;border-radius:32px;padding:12px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;opacity:0.4;transition:opacity 0.15s;">Confirm Installation</button>'
+    + '</div>';
+}
+
+/* ── State 1: scanning ── */
+function coRenderScanning(compName) {
+  var body = document.getElementById('co-install-body');
+  if (!body) return;
+  body.innerHTML =
+    '<div style="display:flex;align-items:center;justify-content:center;gap:32px;padding:8px 0;">'
+      /* Radar — left */
+    + '<div style="position:relative;width:64px;height:64px;flex-shrink:0;">'
+    +   '<div class="co-scan-ring co-scan-ring-1"></div>'
+    +   '<div class="co-scan-ring co-scan-ring-2"></div>'
+    +   '<div class="co-scan-ring co-scan-ring-3"></div>'
+    +   '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">'
+    +     '<div style="width:10px;height:10px;border-radius:50%;background:#3069e3;"></div>'
+    +   '</div>'
+    + '</div>'
+      /* Text stack — right */
+    + '<div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;">'
+    +   '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">Scanning for nearby ' + compName + '…</div>'
+    +   '<div style="font-size:12px;color:var(--soft);letter-spacing:-0.24px;">TCG is looking nearby</div>'
+    +   '<button onclick="coRenderManual()" style="background:none;border:none;padding:0;margin-top:4px;font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;color:var(--blue-link);cursor:pointer;">+ Enter serial manually</button>'
+    + '</div>'
+    + '</div>';
+  coSetConfirmEnabled(false);
+}
+
+/* ── State 2: found ── */
+function coRenderFound(compName, serial) {
+  var body = document.getElementById('co-install-body');
+  if (!body) return;
+  body.innerHTML =
+    '<div style="display:flex;align-items:center;gap:12px;padding:14px 14px;background:rgba(22,163,74,0.06);border:1px solid rgba(22,163,74,0.25);border-radius:10px;">'
+    + '<div style="width:32px;height:32px;border-radius:50%;background:rgba(22,163,74,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+    +   '<svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M4 10l4 4 8-8" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    + '</div>'
+    + '<div style="flex:1;min-width:0;">'
+    +   '<div style="font-size:11px;font-weight:600;color:#16a34a;letter-spacing:0.3px;text-transform:uppercase;margin-bottom:2px;">Found nearby</div>'
+    +   '<div style="font-size:14px;font-weight:600;color:var(--strong);font-family:\'DM Mono\', monospace;letter-spacing:0.2px;" id="co-scan-serial">' + serial + '</div>'
+    + '</div>'
+    + '</div>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:0 4px;">'
+    +   '<button onclick="coRenderScanning(\'' + compName.replace(/'/g,"\\'") + '\');coStartScanTimer(\'' + compName.replace(/'/g,"\\'") + '\')" style="background:none;border:none;padding:0;font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;color:var(--soft);cursor:pointer;">Not this one? Scan again</button>'
+    +   '<button onclick="coRenderManual()" style="background:none;border:none;padding:0;font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;color:var(--blue-link);cursor:pointer;">Enter manually</button>'
+    + '</div>';
+  /* Cache serial on body for confirm */
+  body.dataset.serial = serial;
+  body.dataset.mode = 'scanned';
+  coSetConfirmEnabled(true);
+}
+
+/* ── State 3: manual ── */
+function coRenderManual() {
+  var body = document.getElementById('co-install-body');
+  if (!body) return;
+  var bar = document.getElementById('co-install-bar');
+  var compName = bar ? bar.dataset.compName : '';
+  body.innerHTML =
+    '<label style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;display:block;margin-bottom:6px;">Serial Number</label>'
+    + '<input id="co-install-serial" type="text" placeholder="e.g. WP-4421" autocomplete="off" maxlength="20" oninput="coManualInput(this)" style="width:100%;box-sizing:border-box;padding:11px 13px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--font);color:var(--strong);letter-spacing:-0.28px;outline:none;"/>'
+    + '<div style="margin-top:10px;padding:0 4px;">'
+    +   '<button onclick="coRenderScanning(\'' + compName.replace(/'/g,"\\'") + '\');coStartScanTimer(\'' + compName.replace(/'/g,"\\'") + '\')" style="background:none;border:none;padding:0;font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;color:var(--blue-link);cursor:pointer;">← Scan for nearby ' + compName + '</button>'
+    + '</div>';
+  body.dataset.mode = 'manual';
+  body.dataset.serial = '';
+  coSetConfirmEnabled(false);
+  setTimeout(function(){ var i = document.getElementById('co-install-serial'); if (i) i.focus(); }, 80);
+}
+
+/* Manual input handler — enables Confirm when value present */
+function coManualInput(inp) {
+  var body = document.getElementById('co-install-body');
+  var v = inp.value.trim();
+  if (body) body.dataset.serial = v;
+  coSetConfirmEnabled(v.length > 0);
+}
+
+function coSetConfirmEnabled(on) {
   var btn = document.getElementById('co-install-confirm-btn');
   if (!btn) return;
-  var hasValue = inp.value.trim().length > 0;
-  btn.disabled = !hasValue;
-  btn.style.opacity = hasValue ? '1' : '0.4';
+  btn.disabled = !on;
+  btn.style.opacity = on ? '1' : '0.4';
+}
+
+/* Kick off the scan timer — runs only once per scan, finds on first try */
+function coStartScanTimer(compName) {
+  /* Clear any existing timer */
+  if (window._coScanTimer) { clearTimeout(window._coScanTimer); window._coScanTimer = null; }
+  var serial = MOCK_SERIALS[compName] || (compName.replace(/\s+/g,'-').toUpperCase() + '-00001');
+  window._coScanTimer = setTimeout(function() {
+    var body = document.getElementById('co-install-body');
+    if (!body) return;
+    /* Only render found if we're still in scanning state (user may have switched to manual) */
+    var scanning = body.querySelector('.co-scan-ring');
+    if (!scanning) return;
+    coRenderFound(compName, serial);
+  }, 2500);
+}
+
+/* Confirm button — works for both scanned and manual modes */
+function coInstallConfirmClick(isMobile) {
+  var body = document.getElementById('co-install-body');
+  if (!body) return;
+  var serial = (body.dataset.serial || '').trim();
+  if (!serial) return;
+  /* TCG replace mode — route to reconnection animation instead of regular install */
+  if (coIsTcgReplaceMode()) {
+    coTcgConfirmInstall(serial, !isMobile);
+    return;
+  }
+  if (isMobile) coInstallConfirmScanned(serial);
+  else dtInstallConfirmScanned(serial);
+}
+
+/* Cancel — close the panel and clear scan timer */
+function coInstallCancel() {
+  if (window._coScanTimer) { clearTimeout(window._coScanTimer); window._coScanTimer = null; }
+  var bar = document.getElementById('co-install-bar');
+  if (bar) bar.remove();
+}
+
+/* Entry point — opens the panel in scanning state */
+function coStartScan(compName, isMobile) {
+  var bar = document.getElementById('co-install-bar');
+  if (!bar) return;
+  bar.dataset.compName = compName;
+  bar.innerHTML = coBuildInstallFrame(compName, isMobile);
+  coRenderScanning(compName);
+  coStartScanTimer(compName);
 }
 
 /* Mobile — open from empty comp row */
 function coInstallOpen(compName, removedDate) {
   var existing = document.getElementById('co-install-bar');
-  var existing = document.getElementById('co-install-bar');
   if (existing) existing.remove();
-  /* Insert at top of co-scroll so keyboard doesn't cover it */
+  window._coScanAttempt = 0;
+
   var sc = document.getElementById('co-scroll');
   if (!sc) return;
   var bar = document.createElement('div');
   bar.id = 'co-install-bar';
   bar.dataset.compName = compName;
   bar.style.cssText = 'background:var(--layer-1);border-bottom:1px solid var(--border);padding:16px 16px 20px;animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);flex-shrink:0;margin-bottom:8px;';
-  bar.innerHTML = '<div style="font-size:15px;font-weight:500;color:var(--strong);letter-spacing:-0.3px;margin-bottom:4px;">Install replacement</div>'
-    + '<div style="font-size:13px;color:var(--soft);letter-spacing:-0.26px;margin-bottom:14px;">Installing new <strong style="color:var(--strong);">' + compName + '</strong></div>'
-    + '<div style="margin-bottom:14px;"><label style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;display:block;margin-bottom:6px;">Serial Number</label>'
-    + '<input id="co-install-serial" type="text" placeholder="e.g. WP-4421" autocomplete="off" maxlength="15" oninput="coInstallSerialInput(this)" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--font);color:var(--strong);letter-spacing:-0.28px;outline:none;"/></div>'
-    + '<div style="display:flex;flex-direction:column;gap:8px;">'
-    + '<button id="co-install-confirm-btn" onclick="coInstallConfirm()" disabled style="background:#3069e3;color:white;border:none;border-radius:32px;padding:13px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;width:100%;opacity:0.4;transition:opacity 0.15s;">Confirm Installation</button>'
-    + '<button onclick="document.getElementById(&#39;co-install-bar&#39;).remove()" style="background:none;border:1px solid var(--border-mid);border-radius:32px;padding:13px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;color:var(--strong);cursor:pointer;width:100%;">Cancel</button>'
-    + '</div>';
   sc.insertBefore(bar, sc.firstChild);
-  /* Scroll to top so bar is visible, then focus after keyboard settles */
   sc.scrollTop = 0;
-  setTimeout(function() {
-    var i = document.getElementById('co-install-serial');
-    if (i) i.focus();
-  }, 350);
+  coStartScan(compName, true);
+}
+
+function coInstallConfirmScanned(serial) {
+  var bar = document.getElementById('co-install-bar');
+  if (!bar) return;
+  var compName = bar.dataset.compName;
+  bar.remove();
+  var now = new Date();
+  var dateStr = (now.getMonth()+1)+'/'+now.getDate()+'/'+String(now.getFullYear()).slice(-2)+' · '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  if (!window._dtSessionInstalls) window._dtSessionInstalls = {};
+  window._dtSessionInstalls[compName] = serial;
+  if (!window.moPendingCards) window.moPendingCards = {};
+  window.moPendingCards[compName] = { serial: serial, installedDate: dateStr };
+  if (window.moRemovedCards) delete window.moRemovedCards[compName];
+  CC_TRUCKS.forEach(function(t) {
+    if (!t.components) return;
+    var comp = t.components.find(function(c){ return c.name===compName; });
+    if (comp) { comp.state='pending'; comp.evt='Replacement recorded'; comp.dot='#d97706'; comp.serial=serial; comp.installedDate=dateStr; }
+  });
+  renderConditions();
+  coCheckShowErrorResetPrompt('mobile');
 }
 
 function coInstallConfirm() {
@@ -10862,29 +11332,15 @@ function coInstallConfirm() {
   var serial   = (document.getElementById('co-install-serial')||{}).value||'';
   var compName = bar.dataset.compName;
   if (!serial.trim()) return;
-  bar.remove();
-  var now = new Date();
-  var dateStr = (now.getMonth()+1)+'/'+now.getDate()+'/'+String(now.getFullYear()).slice(-2)+' · '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-  if (!window._dtSessionInstalls) window._dtSessionInstalls = {};
-  window._dtSessionInstalls[compName] = serial.trim();
-  /* Track mobile pending for renderMobileCards */
-  if (!window.moPendingCards) window.moPendingCards = {};
-  window.moPendingCards[compName] = { serial: serial.trim(), installedDate: dateStr };
-  if (window.moRemovedCards) delete window.moRemovedCards[compName];
-  CC_TRUCKS.forEach(function(t) {
-    if (!t.components) return;
-    var comp = t.components.find(function(c){ return c.name===compName; });
-    if (comp) { comp.state='pending'; comp.evt='Replacement recorded'; comp.dot='#d97706'; comp.serial=serial.trim(); comp.installedDate=dateStr; }
-  });
-  renderConditions();
-  /* Chunk 5: show Error Reset prompt only if no empty slots remain */
-  coCheckShowErrorResetPrompt('mobile');
+  coInstallConfirmScanned(serial.trim());
 }
 
 /* Desktop — open from empty slot card */
 function dtInstallOpen(compName, removedDate) {
   var existing = document.getElementById('co-install-bar');
   if (existing) existing.remove();
+  window._coScanAttempt = 0;
+
   var main = document.getElementById('dt-drawer-main');
   if (!main) return;
   main.style.position = 'relative';
@@ -10892,40 +11348,246 @@ function dtInstallOpen(compName, removedDate) {
   bar.id = 'co-install-bar';
   bar.dataset.compName = compName;
   bar.style.cssText = 'position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--layer-1);border-top:1px solid var(--border);padding:16px 24px 24px;box-shadow:0 -8px 24px rgba(54,50,45,0.1);animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);';
-  bar.innerHTML = '<div style="font-size:14px;font-weight:500;color:var(--strong);letter-spacing:-0.28px;margin-bottom:4px;">Install replacement</div>'
-    + '<div style="font-size:13px;color:var(--soft);letter-spacing:-0.26px;margin-bottom:12px;">Installing new <strong style="color:var(--strong);">' + compName + '</strong></div>'
-    + '<div style="margin-bottom:12px;"><label style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;display:block;margin-bottom:5px;">Serial Number</label>'
-    + '<input id="co-install-serial" type="text" placeholder="e.g. WP-4421" autocomplete="off" maxlength="15" oninput="coInstallSerialInput(this)" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);color:var(--strong);letter-spacing:-0.26px;outline:none;"/></div>'
-    + '<div style="display:flex;gap:8px;">'
-    + '<button onclick="document.getElementById(&#39;co-install-bar&#39;).remove()" style="flex:1;background:none;border:1px solid var(--border-mid);border-radius:32px;padding:9px 16px;font-size:13px;font-weight:500;font-family:var(--font);letter-spacing:-0.26px;color:var(--strong);cursor:pointer;">Cancel</button>'
-    + '<button id="co-install-confirm-btn" onclick="dtInstallConfirm()" disabled style="flex:2;background:#3069e3;color:white;border:none;border-radius:32px;padding:9px 16px;font-size:13px;font-weight:500;font-family:var(--font);letter-spacing:-0.26px;cursor:pointer;opacity:0.4;transition:opacity 0.15s;">Confirm Installation</button>'
-    + '</div>';
   main.appendChild(bar);
-  setTimeout(function() { var i = document.getElementById('co-install-serial'); if(i) i.focus(); }, 100);
+  coStartScan(compName, false);
 }
 
-function dtInstallConfirm() {
+function dtInstallConfirmScanned(serial) {
   var bar = document.getElementById('co-install-bar');
   if (!bar) return;
-  var serial   = (document.getElementById('co-install-serial')||{}).value||'';
   var compName = bar.dataset.compName;
-  if (!serial.trim()) return;
   bar.remove();
   var now = new Date();
   var dateStr = (now.getMonth()+1)+'/'+now.getDate()+'/'+String(now.getFullYear()).slice(-2)+' · '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
   if (!window._dtSessionInstalls) window._dtSessionInstalls = {};
-  window._dtSessionInstalls[compName] = serial.trim();
+  window._dtSessionInstalls[compName] = serial;
   if (!window.dtPendingComponents) window.dtPendingComponents = {};
-  window.dtPendingComponents[compName] = { serial: serial.trim(), installedDate: dateStr };
+  window.dtPendingComponents[compName] = { serial: serial, installedDate: dateStr };
   if (window.dtRemovedComponents) delete window.dtRemovedComponents[compName];
   CC_TRUCKS.forEach(function(t) {
     if (!t.components) return;
     var comp = t.components.find(function(c){ return c.name===compName; });
     if (comp) { comp.state='pending'; comp.evt='Replacement recorded'; comp.dot='#d97706'; comp.serial=serial.trim(); comp.installedDate=dateStr; }
   });
-  /* Chunk 5: show Error Reset prompt only if no empty slots remain */
   coCheckShowErrorResetPrompt('desktop');
   if (dtDrawerTruckNum) dtOpenTruck(dtDrawerTruckNum);
+}
+
+function dtInstallConfirm() {
+  var serial = (document.getElementById('co-install-serial')||{}).value||'';
+  if (!serial.trim()) return;
+  dtInstallConfirmScanned(serial.trim());
+}
+
+/* ══════════════════════════════════════════════════
+   CHUNK 4.5 — REPLACE TCG FLOW
+   ──────────────────────────────────────────────────
+   Per Brandon + Martin: TCG replacement is its own workflow.
+   Unit ID stays the same. Other components stay on the truck.
+   What happens: unit goes offline briefly while the new TCG syncs
+   with installed components, then everything reconnects.
+
+   Three stages:
+     A. Confirmation sheet (red icon, explains the consequence)
+     B. Scan for new TCG (reuses install panel scan UI)
+     C. Reconnection animation (components flip back to green one by one)
+═══════════════════════════════════════════════════ */
+
+/* Flag set on the install bar so the confirm handler knows to route
+   to the TCG completion path instead of regular component install. */
+function coIsTcgReplaceMode() {
+  var bar = document.getElementById('co-install-bar');
+  return !!(bar && bar.dataset.tcgReplace === '1');
+}
+
+/* Get the live component names for the current truck (for the "will reconnect" list) */
+function coGetTruckCompList(isDesktop) {
+  var truckNum = isDesktop
+    ? (typeof dtDrawerTruckNum !== 'undefined' ? dtDrawerTruckNum : null)
+    : (function(){
+        var lab = document.getElementById('drawer-truck-num');
+        return lab ? lab.textContent.replace('Truck:', '').trim() : null;
+      })();
+  if (!truckNum) return [];
+  var t = CC_TRUCKS.find(function(tr){ return String(tr.num) === String(truckNum); });
+  if (!t || !t.components) return [];
+  return t.components
+    .filter(function(c){ return c.name !== 'TCG' && c.state !== 'empty'; })
+    .map(function(c){ return c.name; });
+}
+
+/* Stage A — entry point. Renders the confirmation sheet. */
+function coOpenTcgReplace(isDesktop) {
+  var existing = document.getElementById('co-install-bar');
+  if (existing) existing.remove();
+
+  var bar = document.createElement('div');
+  bar.id = 'co-install-bar';
+  bar.dataset.tcgReplace = '1';
+  bar.dataset.compName = 'TCG';
+
+  if (isDesktop) {
+    var main = document.getElementById('dt-drawer-main');
+    if (!main) return;
+    main.style.position = 'relative';
+    bar.style.cssText = 'position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--layer-1);border-top:1px solid var(--border);padding:18px 24px 24px;box-shadow:0 -8px 24px rgba(54,50,45,0.1);animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);max-height:calc(100% - 60px);overflow-y:auto;';
+    main.appendChild(bar);
+  } else {
+    var sc = document.getElementById('state-components');
+    if (!sc) return;
+    sc.style.position = 'relative';
+    bar.style.cssText = 'position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--layer-1);border-top:1px solid var(--border);padding:18px 16px 36px;box-shadow:0 -8px 24px rgba(54,50,45,0.12);animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);max-height:calc(100% - 60px);overflow-y:auto;';
+    sc.appendChild(bar);
+  }
+
+  coRenderTcgConfirmStage(isDesktop);
+}
+
+/* Stage A render */
+function coRenderTcgConfirmStage(isDesktop) {
+  var bar = document.getElementById('co-install-bar');
+  if (!bar) return;
+  var comps = coGetTruckCompList(isDesktop);
+  var bullets = comps.length
+    ? comps.map(function(n){
+        return '<div style="display:flex;align-items:center;gap:8px;padding:3px 0;">'
+          + '<div style="width:5px;height:5px;border-radius:50%;background:var(--soft);flex-shrink:0;"></div>'
+          + '<span style="font-size:13px;color:var(--strong);letter-spacing:-0.26px;">' + n + '</span>'
+          + '</div>';
+      }).join('')
+    : '<div style="font-size:12px;color:var(--soft);font-style:italic;">No other components currently installed.</div>';
+
+  bar.innerHTML =
+    /* Header — red icon, title */
+    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">'
+    +   '<div style="width:36px;height:36px;border-radius:50%;background:rgba(216,59,58,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+    +     '<svg width="18" height="18" viewBox="0 0 20 20" fill="none">'
+    +       '<path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.2 4.2l2.1 2.1M13.7 13.7l2.1 2.1M4.2 15.8l2.1-2.1M13.7 6.3l2.1-2.1" stroke="var(--red)" stroke-width="1.4" stroke-linecap="round"/>'
+    +       '<circle cx="10" cy="10" r="3" stroke="var(--red)" stroke-width="1.4"/>'
+    +     '</svg>'
+    +   '</div>'
+    +   '<div>'
+    +     '<div style="font-size:16px;font-weight:600;color:var(--strong);letter-spacing:-0.32px;">Replace TCG</div>'
+    +     '<div style="font-size:12px;color:var(--soft);letter-spacing:-0.24px;">Telematics Control Gateway</div>'
+    +   '</div>'
+    + '</div>'
+    /* Body — explain consequence */
+    + '<div style="font-size:13px;color:var(--strong);letter-spacing:-0.26px;line-height:1.5;margin-bottom:14px;">'
+    +   'The unit will go offline briefly while the new TCG installs and re-syncs with your other components. '
+    +   '<strong>The unit ID stays the same</strong>, and you don\'t need to remove anything else from the truck.'
+    + '</div>'
+    /* Reconnect list */
+    + (comps.length
+        ? '<div style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;margin-bottom:4px;">These will reconnect to the new TCG</div>'
+          + '<div style="border-top:1px solid var(--border);padding:6px 0;margin-bottom:18px;">' + bullets + '</div>'
+        : '<div style="margin-bottom:18px;">' + bullets + '</div>'
+      )
+    /* Buttons — Cancel + Continue (continues to scan) */
+    + '<div style="display:flex;gap:8px;">'
+    +   '<button onclick="coInstallCancel()" style="flex:0 0 auto;min-width:110px;background:var(--layer-1);border:1px solid var(--border);border-radius:32px;padding:12px 20px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;color:var(--strong);cursor:pointer;">Cancel</button>'
+    +   '<button onclick="coTcgContinueToScan(' + (isDesktop?'true':'false') + ')" style="flex:1;background:var(--strong);color:white;border:none;border-radius:32px;padding:12px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">Continue</button>'
+    + '</div>';
+}
+
+/* Stage B — swap into the standard scan UI for TCG */
+function coTcgContinueToScan(isDesktop) {
+  var bar = document.getElementById('co-install-bar');
+  if (!bar) return;
+  /* Re-use coStartScan — it builds the install frame. tcgReplace flag stays set
+     on the bar so the confirm handler routes correctly afterward. */
+  coStartScan('TCG', !isDesktop);
+}
+
+/* Stage C — called when user confirms the new TCG install.
+   Plays the reconnection animation: TCG comes online, then each component
+   briefly flashes "reconnecting" before going back to green. */
+function coTcgConfirmInstall(serial, isDesktop) {
+  var bar = document.getElementById('co-install-bar');
+  if (!bar) return;
+  var comps = coGetTruckCompList(isDesktop);
+
+  /* Replace the install frame with the reconnection panel */
+  bar.innerHTML =
+    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">'
+    +   '<div style="width:36px;height:36px;border-radius:50%;background:rgba(22,163,74,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+    +     '<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 10l4 4 8-8" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    +   '</div>'
+    +   '<div>'
+    +     '<div style="font-size:15px;font-weight:600;color:var(--strong);letter-spacing:-0.3px;">New TCG installed</div>'
+    +     '<div style="font-size:12px;font-family:\'DM Mono\', monospace;color:var(--soft);letter-spacing:0.2px;">' + serial + '</div>'
+    +   '</div>'
+    + '</div>'
+    + '<div style="font-size:13px;color:var(--soft);letter-spacing:-0.26px;margin-bottom:12px;">Reconnecting components…</div>'
+    + '<div id="co-tcg-reconnect-list" style="border-top:1px solid var(--border);padding-top:6px;margin-bottom:14px;">'
+    +   comps.map(function(n, i){
+          return '<div class="co-tcg-reconnect-row" data-comp="' + n + '" data-idx="' + i + '" style="display:flex;align-items:center;gap:10px;padding:6px 0;">'
+            +   '<div class="co-tcg-reconnect-dot" style="width:14px;height:14px;border-radius:50%;background:var(--layer-2);border:1.5px solid var(--border-mid);flex-shrink:0;position:relative;">'
+            +   '</div>'
+            +   '<span style="flex:1;font-size:13px;color:var(--strong);letter-spacing:-0.26px;">' + n + '</span>'
+            +   '<span class="co-tcg-reconnect-status" style="font-size:11px;font-weight:500;color:var(--soft);letter-spacing:-0.22px;">Waiting</span>'
+            + '</div>';
+        }).join('')
+    + '</div>'
+    + '<button id="co-tcg-done-btn" disabled onclick="coTcgFinish(' + (isDesktop?'true':'false') + ')" style="width:100%;background:#3069e3;color:white;border:none;border-radius:32px;padding:12px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;opacity:0.4;transition:opacity 0.2s;">Reconnecting…</button>';
+
+  /* Animate each component reconnecting in sequence */
+  comps.forEach(function(name, i) {
+    setTimeout(function() {
+      var row = document.querySelector('.co-tcg-reconnect-row[data-idx="' + i + '"]');
+      if (!row) return;
+      /* Pending state */
+      var dot = row.querySelector('.co-tcg-reconnect-dot');
+      var status = row.querySelector('.co-tcg-reconnect-status');
+      if (dot) {
+        dot.style.background = 'rgba(48,105,227,0.15)';
+        dot.style.borderColor = '#3069e3';
+        dot.innerHTML = '<div style="position:absolute;inset:1px;border-radius:50%;border:1.5px solid #3069e3;border-top-color:transparent;animation:tcgSpin 0.7s linear infinite;"></div>';
+      }
+      if (status) { status.textContent = 'Connecting'; status.style.color = '#3069e3'; }
+
+      /* Connected state ~700ms later */
+      setTimeout(function() {
+        if (!row) return;
+        if (dot) {
+          dot.style.background = '#16a34a';
+          dot.style.borderColor = '#16a34a';
+          dot.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="position:absolute;inset:1px;"><path d="M2 5l2 2 4-5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        }
+        if (status) { status.textContent = 'Connected'; status.style.color = '#16a34a'; }
+        /* If this is the last one, enable the Done button */
+        if (i === comps.length - 1) {
+          var btn = document.getElementById('co-tcg-done-btn');
+          if (btn) {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.textContent = 'Done';
+          }
+        }
+      }, 700);
+    }, 350 + i * 600);
+  });
+
+  /* Edge case: no components — enable Done immediately */
+  if (comps.length === 0) {
+    var btn = document.getElementById('co-tcg-done-btn');
+    if (btn) {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.textContent = 'Done';
+    }
+  }
+}
+
+/* Stage C completion — close the panel, refresh views */
+function coTcgFinish(isDesktop) {
+  var bar = document.getElementById('co-install-bar');
+  if (bar) bar.remove();
+  /* For prototype: TCG card stays "Connected" — no destructive data updates needed */
+  if (isDesktop) {
+    if (dtDrawerTruckNum) dtOpenTruck(dtDrawerTruckNum);
+  } else {
+    if (typeof renderConditions === 'function') renderConditions();
+  }
 }
 
 /* ── CHUNK 5: Error Reset prompt ──────────────────────────
@@ -11039,32 +11701,35 @@ function coRunErrorResetInline() {
       var icon = '<div style="width:28px;height:28px;border-radius:50%;background:rgba(22,163,74,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
         + '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-7" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
         + '</div>';
+      /* No "Confirm operational" button — per Ariel's feedback, the system already
+         knows the errors are cleared, so a second confirm is ceremonial. Banner
+         shows the result, then the workflow auto-finalizes after a brief read. */
       var successMo = icon
         + '<div style="flex:1;min-width:0;">'
         + '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;margin-bottom:2px;">All errors cleared</div>'
-        + '<div style="font-size:12px;color:#166534;letter-spacing:-0.24px;margin-bottom:10px;">Truck is ready \u2014 confirm it is operational</div>'
-        + '<button onclick="coConfirmOperational()" style="width:100%;background:#16a34a;color:white;border:none;border-radius:20px;padding:8px 14px;font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;cursor:pointer;">Confirm operational</button>'
+        + '<div style="font-size:12px;color:#166534;letter-spacing:-0.24px;">Truck is operational</div>'
         + '</div>';
       var successDt = icon
         + '<div style="flex:1;min-width:0;">'
         + '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">All errors cleared</div>'
-        + '<div style="font-size:12px;color:#166534;letter-spacing:-0.24px;">Truck is ready \u2014 confirm it is operational</div>'
-        + '</div>'
-        + '<div style="flex-shrink:0;">'
-        + '<button onclick="coConfirmOperational()" style="background:#16a34a;color:white;border:none;border-radius:20px;padding:7px 14px;font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;cursor:pointer;white-space:nowrap;">Confirm operational</button>'
+        + '<div style="font-size:12px;color:#166534;letter-spacing:-0.24px;">Truck is operational</div>'
         + '</div>';
-      if (moToolbar) { moToolbar.style.cssText = 'background:#f0fdf4;border-bottom:1px solid rgba(22,163,74,0.2);padding:12px 16px;display:flex;align-items:flex-start;gap:10px;flex-shrink:0;'; moToolbar.innerHTML = successMo; }
+      if (moToolbar) { moToolbar.style.cssText = 'background:#f0fdf4;border-bottom:1px solid rgba(22,163,74,0.2);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;'; moToolbar.innerHTML = successMo; }
       if (dtBanner)  { dtBanner.style.cssText  = 'flex-shrink:0;background:#f0fdf4;border-top:1px solid rgba(22,163,74,0.2);padding:12px 24px;display:flex;align-items:center;gap:10px;'; dtBanner.innerHTML = successDt; }
       coSetNavDot(false);
-      /* Auto-navigate back to Components Overview */
+      /* Auto-finalize after the FST has had ~1.4s to register the success state.
+         coConfirmOperational handles all the cleanup: marks components confirmed,
+         clears the banner, writes lifespan history, fires the success toast,
+         and re-renders the truck drawer back on Components Overview. */
       setTimeout(function() {
-        /* Mobile */
+        /* Make sure the FST lands on Components Overview to see the green truck —
+           they may have been on Truck Logs during the failed-reset detour. */
         var coOpt = document.querySelector('#drawer-nav-dropdown .wts-option:nth-child(1)');
         if (coOpt) { selectDrawerNav('Components Overview', coOpt); }
-        /* Desktop */
         var overviewTab = document.querySelector('.dt-drawer-tab[onclick*="overview"]');
         if (overviewTab) overviewTab.click();
-      }, 1200);
+        coConfirmOperational();
+      }, 1400);
     } else {
       var remaining = Math.max(1, Math.floor(errCount * 0.6));
       var failIcon = '<div style="width:28px;height:28px;border-radius:50%;background:rgba(215,1,0,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
@@ -11271,13 +11936,6 @@ function coConfirmOperational() {
     }
   }
 
-  /* Show success toast */
-  dtShowToast({
-    title: 'Truck marked operational',
-    body:  'Replacement logged in Unit Life Span tab',
-    variant: 'success'
-  });
-
   /* Clear persistent desktop banner */
   var dtBannerClr = document.getElementById('dt-error-banner');
   if (dtBannerClr) { dtBannerClr.style.display = 'none'; dtBannerClr.innerHTML = ''; }
@@ -11306,6 +11964,16 @@ function coConfirmOperational() {
   renderConditions();
   renderTrucks();
   if (dtDrawerTruckNum) dtOpenTruck(dtDrawerTruckNum);
+
+  /* Toast fires AFTER the drawer rebuild has settled. Otherwise the rebuild
+     can blow away the toolbar mid-toast and the FST sees the button vanish. */
+  setTimeout(function() {
+    dtShowToast({
+      title: 'Truck marked operational',
+      body:  'Replacement logged in Unit Life Span tab',
+      variant: 'success'
+    });
+  }, 200);
 }
 
 function coSetNavDot(show) {
@@ -11483,6 +12151,172 @@ function coViewTruckLogs() {
 }
 
 /* ══════════════════════════════════════════════════
+   VERSION TOGGLE — Final Version / MVP
+═══════════════════════════════════════════════════ */
+var dtCurrentVersion = 'final';
+
+function setVersion(version) {
+  dtCurrentVersion = version;
+  document.getElementById('ver-pill-final').classList.toggle('active', version === 'final');
+  document.getElementById('ver-pill-mvp').classList.toggle('active', version === 'mvp');
+
+  var overlay = document.getElementById('mvp-overlay');
+  if (version === 'mvp') {
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'mvp-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:var(--base);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-family:var(--font);';
+      overlay.innerHTML = ''
+        + '<div style="width:56px;height:56px;border-radius:16px;background:var(--layer-1);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;">'
+        + '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="var(--strong)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        + '</div>'
+        + '<div style="text-align:center;">'
+        + '<div style="font-size:22px;font-weight:500;color:var(--strong);letter-spacing:-0.66px;margin-bottom:6px;">MVP — Coming Soon</div>'
+        + '<div style="font-size:14px;color:var(--soft);letter-spacing:-0.28px;max-width:320px;line-height:1.5;">The MVP scope is still being defined.<br>Switch back to Final Version to explore<br>the full prototype.</div>'
+        + '</div>'
+        + '<button onclick="setVersion(\'final\')" style="margin-top:8px;background:var(--strong);color:white;border:none;border-radius:32px;padding:10px 24px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">View Final Version</button>';
+      document.body.appendChild(overlay);
+    }
+    overlay.style.display = 'flex';
+  } else {
+    if (overlay) overlay.style.display = 'none';
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   ROLE TOGGLE — External / Internal
+═══════════════════════════════════════════════════ */
+var dtCurrentRole = 'external';
+
+function setRole(role) {
+  dtCurrentRole = role;
+  document.getElementById('role-pill-external').classList.toggle('active', role === 'external');
+  document.getElementById('role-pill-internal').classList.toggle('active', role === 'internal');
+  var addWrap = document.getElementById('dt-units-add-btn-wrap');
+  if (addWrap) addWrap.style.display = role === 'internal' ? '' : 'none';
+  var addWrap2 = document.getElementById('dt-units-add-btn-wrap2');
+  if (addWrap2) addWrap2.style.display = role === 'internal' ? '' : 'none';
+  dtUnitsUpdateTabs();
+  dtUnitsPendingRender();
+}
+
+/* ══════════════════════════════════════════════════
+   UNITS PAGE — TAB STRIP
+═══════════════════════════════════════════════════ */
+var dtUnitsActiveTab = 'units';
+
+function dtUnitsUpdateTabs() {
+  var pending = UNITS_DATA.filter(function(u) { return u.status === 'Pending Return'; });
+  var tab = document.getElementById('dt-units-tab-pending');
+  var badge = document.getElementById('dt-units-pending-count');
+  if (tab) { tab.style.display = pending.length > 0 ? '' : 'none'; }
+  if (badge) badge.textContent = pending.length;
+  if (pending.length === 0 && dtUnitsActiveTab === 'pending') dtUnitsTabSwitch('units');
+}
+
+function dtUnitsTabSwitch(tab) {
+  dtUnitsActiveTab = tab;
+  document.getElementById('dt-units-tab-units').classList.toggle('active', tab === 'units');
+  document.getElementById('dt-units-tab-pending').classList.toggle('active', tab === 'pending');
+  var uc = document.getElementById('dt-units-tab-content-units');
+  var pc = document.getElementById('dt-units-tab-content-pending');
+  if (uc) uc.style.display = tab === 'units' ? '' : 'none';
+  if (pc) { pc.style.display = tab === 'pending' ? 'flex' : 'none'; pc.style.flexDirection='column'; pc.style.flex='1'; pc.style.minWidth='0'; pc.style.overflow='hidden'; }
+  /* Hide Edit Units button on Pending Return tab */
+  var editBtn = document.getElementById('dt-units-select-btn');
+  if (editBtn) editBtn.style.display = tab === 'units' ? '' : 'none';
+  if (tab === 'pending') dtUnitsPendingRender();
+}
+
+/* ══════════════════════════════════════════════════
+   PENDING RETURN TAB
+═══════════════════════════════════════════════════ */
+var dtPendingSelected = new Set();
+var dtPendingSelectMode = false;
+
+function dtUnitsPendingRender() {
+  var pending = UNITS_DATA.filter(function(u) { return u.status === 'Pending Return'; });
+  dtUnitsUpdateTabs();
+  var thead = document.getElementById('dt-pending-thead');
+  if (!thead) return;
+  thead.innerHTML = '<tr>'
+    + '<th class="dt-th" style="width:40px;min-width:40px;padding:0 8px;"></th>'
+    + '<th class="dt-th">Unit ID</th><th class="dt-th">TCG ID</th>'
+    + '<th class="dt-th">Contract</th><th class="dt-th">System Type</th>'
+    + '<th class="dt-th">Return Requested</th><th class="dt-th">Days Pending</th></tr>';
+  var tbody = document.getElementById('dt-pending-tbody');
+  if (!tbody) return;
+  if (pending.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--soft);font-size:14px;">No units pending return</td></tr>';
+    return;
+  }
+  var now = new Date();
+  tbody.innerHTML = pending.map(function(u, i) {
+    var days = '--';
+    if (u.returnDate) { var rd = new Date(u.returnDate); days = Math.max(0, Math.floor((now-rd)/86400000)); }
+    var isSelected = dtPendingSelected.has(u.id);
+    var cbVis = (dtCurrentRole==='internal') ? '' : 'visibility:hidden;pointer-events:none;';
+    var safeId = u.id.replace(/'/g,"\\'");
+    var daysColor = days!=='--' ? (days>14?'#d70100':days>7?'#d97706':'var(--soft)') : 'var(--soft)';
+    var daysFw = days!=='--' && days>7 ? '500' : '400';
+    return '<tr class="dt-tr'+(i%2===1?' alt':'')+(isSelected?' dt-selected':'')+'" data-unit="'+u.id+'">'
+      +'<td class="dt-td" style="width:40px;min-width:40px;padding:0 8px;"><input type="checkbox" '+(isSelected?'checked':'')+' style="'+cbVis+'" onclick="event.stopPropagation();dtPendingToggleRow(\''+safeId+'\',this)"/></td>'
+      +'<td class="dt-td"><strong>'+u.id+'</strong></td>'
+      +'<td class="dt-td" style="font-family:monospace;font-size:12px;">'+(u.tgw||'--')+'</td>'
+      +'<td class="dt-td">'+(u.contract||'--')+'</td>'
+      +'<td class="dt-td">'+(u.sysType||'--')+'</td>'
+      +'<td class="dt-td">'+(u.returnDate||'--')+'</td>'
+      +'<td class="dt-td"><span style="color:'+daysColor+';font-weight:'+daysFw+';">'+(days!=='--'?days+' days':'--')+'</span></td>'
+      +'</tr>';
+  }).join('');
+  var bulkBar = document.getElementById('dt-pending-bulk-bar');
+  if (bulkBar) bulkBar.style.display = (dtCurrentRole==='internal') ? 'flex' : 'none';
+}
+
+function dtPendingToggleRow(id, cb) {
+  if (cb.checked) dtPendingSelected.add(id); else dtPendingSelected.delete(id);
+  var count = dtPendingSelected.size;
+  var countEl = document.getElementById('dt-pending-bulk-count');
+  if (countEl) countEl.textContent = count===0?'0 selected':count+' unit'+(count===1?'':'s')+' selected';
+  var btn = document.getElementById('dt-pending-mark-btn');
+  if (btn) { btn.disabled=count===0; btn.style.opacity=count===0?'0.4':'1'; }
+}
+
+function dtPendingSelectAll() {
+  UNITS_DATA.filter(function(u){return u.status==='Pending Return';}).forEach(function(u){dtPendingSelected.add(u.id);});
+  dtUnitsPendingRender();
+  dtPendingToggleRow('', {checked:false}); /* trigger count update */
+  var count = dtPendingSelected.size;
+  var countEl = document.getElementById('dt-pending-bulk-count');
+  if (countEl) countEl.textContent = count+' unit'+(count===1?'':'s')+' selected';
+  var btn = document.getElementById('dt-pending-mark-btn');
+  if (btn) { btn.disabled=false; btn.style.opacity='1'; }
+}
+
+function dtPendingCancelSelect() {
+  dtPendingSelected.clear();
+  dtUnitsPendingRender();
+  var countEl = document.getElementById('dt-pending-bulk-count');
+  if (countEl) countEl.textContent = '0 selected';
+  var btn = document.getElementById('dt-pending-mark-btn');
+  if (btn) { btn.disabled=true; btn.style.opacity='0.4'; }
+}
+
+function dtPendingMarkReceived() {
+  if (dtCurrentRole !== 'internal') return;
+  var ids = [...dtPendingSelected];
+  ids.forEach(function(id) {
+    var idx = UNITS_DATA.findIndex(function(u){return u.id===id;});
+    if (idx!==-1) UNITS_DATA.splice(idx,1);
+  });
+  dtPendingSelected.clear();
+  dtUnitsPendingRender();
+  dtUnitsRender();
+  dtUnitsUpdateTabs();
+  dtShowToast({ title:ids.length+' unit'+(ids.length===1?'':'s')+' marked received', body:'Removed from Pending Return', variant:'success' });
+}
+
+/* ══════════════════════════════════════════════════
    UNITS SCREEN
 ═══════════════════════════════════════════════════ */
 
@@ -11492,7 +12326,7 @@ const UNITS_DATA = [
   { id:'U-120394', status:'Maintenance',   truck:'749253', tgw:'203719811007', contract:'Cemex AZ', sysType:'Spark', config:'Winter Water',      firstCommissioned:'05/01/2021', assignedToTruck:'06/02/2025', decommissioned:null },
   { id:'U-555123', status:'Linked Unit',   truck:'762723', tgw:'210000194770', contract:'Cemex AZ', sysType:'Pulse', config:'Color Blend Ratio', firstCommissioned:'07/20/2022', assignedToTruck:'07/23/2025', decommissioned:null },
   { id:'U-291048', status:'Linked Unit',   truck:'45689',  tgw:'210000381924', contract:'Cemex AZ', sysType:'V3',   config:'Measured Only',     firstCommissioned:'01/14/2020', assignedToTruck:'06/12/2025', decommissioned:null },
-  { id:'U-604837', status:'Unlinked Unit', truck:'--',     tgw:'210000401138', contract:'Cemex AZ', sysType:'V4',   config:'Temp+ Admix',       firstCommissioned:null,          assignedToTruck:null,         decommissioned:null },
+  { id:'U-604837', status:'Pending Return', truck:'--',    tgw:'210000401138', contract:'Cemex AZ', sysType:'V4',   config:'Temp+ Admix',       firstCommissioned:null,          assignedToTruck:null,         decommissioned:null, returnDate:'04/22/2026' },
   { id:'U-739206', status:'Linked Unit',   truck:'12457',  tgw:'210000502847', contract:'Cemex AZ', sysType:'V4',   config:'Winter Water',      firstCommissioned:'11/03/2019', assignedToTruck:'05/01/2025', decommissioned:null },
   { id:'U-184759', status:'Maintenance',   truck:'--',     tgw:'210000608331', contract:'Cemex AZ', sysType:'V3',   config:'Measured Only',     firstCommissioned:'02/28/2021', assignedToTruck:'04/17/2025', decommissioned:null },
   { id:'U-960134', status:'Linked Unit',   truck:'84760',  tgw:'210000714560', contract:'Cemex AZ', sysType:'V5',   config:'Color Blend Ratio', firstCommissioned:'03/09/2020', assignedToTruck:'03/09/2025', decommissioned:null },
@@ -11597,7 +12431,7 @@ const AU_CONTRACTS = {
     'Cemex Ocala',
     'Cemex Orlando',
     'Cemex Miami',
-    'Cemex Houston',
+    'Cemex AZ',
     'Cemex Phoenix',
     'Cemex Tucson',
   ],
@@ -12091,18 +12925,20 @@ function udRenderConfig() {
           </div>
           <div class="cfg-acc-body">
             <div class="cfg-fields">
-              <div class="cfg-field"><label>Name</label><input type="text" value="${u.truck !== '--' ? u.truck : ''}"></div>
-              <div class="cfg-field"><label>Batch System Code</label><input type="text" value=""></div>
-              <div class="cfg-field"><label>Contract</label><div class="cfg-select">${u.contract} <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
-              <div class="cfg-field"><label>System Type</label><div class="cfg-select">${u.sysType} <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
-              <div class="cfg-field"><label>Configuration</label><div class="cfg-select">${u.config} <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
-              <div class="cfg-field"><label>TCG ID</label><input type="text" value="${u.tgw}" style="font-family:monospace;"></div>
+              <div class="cfg-field"><label>Name</label><input type="text" value="${u.truck !== '--' ? u.truck : ''}" placeholder="e.g. Truck 45689 — Phoenix Central"></div>
+              <div class="cfg-field"><label>Mixer Type</label><div class="cfg-select">${u.mixerType || 'Select mixer type'} <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
+              <div class="cfg-field"><label>Batch System Code</label><input type="text" value="" placeholder="e.g. 234-2981-8373"></div>
+              <div class="cfg-field"><label>Contract</label><div class="cfg-select">${u.contract || 'Select contract'} <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
+              <div class="cfg-field"><label>System Type</label><div class="cfg-select">${u.sysType || 'Select system type'} <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
+              <div class="cfg-field"><label>Configuration</label><div class="cfg-select">${u.config || 'Select configuration'} <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
+              <div class="cfg-field"><label>TCG ID</label><input type="text" value="${u.tgw || ''}" placeholder="e.g. 210000381924" style="font-family:monospace;"></div>
+              <div class="cfg-field"><label>VIN</label><input type="text" value="" placeholder="e.g. 1HGCM82633A123456"></div>
               <div class="cfg-field"><label>Mode</label><div class="cfg-select">Live <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg></div></div>
             </div>
           </div>
         </div>
 
-        <div class="cfg-acc" id="ud-cfg-acc-1">
+<div class="cfg-acc" id="ud-cfg-acc-1">
           <div class="cfg-acc-hdr" onclick="udToggleCfgAcc(1)">
             <div class="cfg-acc-text">
               <div class="cfg-acc-title">Equipment Settings</div>
@@ -12110,10 +12946,10 @@ function udRenderConfig() {
             </div>
             <svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
-          <div class="cfg-acc-body" style="display:none;">
+          <div class="cfg-acc-body">
             <div class="cfg-fields">
-              <div class="cfg-field"><label>Number of Drum Magnets</label><input type="number" value="3"></div>
-              <div class="cfg-field"><label>Drum Size</label><input type="number" value=""></div>
+              <div class="cfg-field"><label>Number of Drum Magnets</label><input type="number" value="" placeholder="e.g. 4"></div>
+              <div class="cfg-field"><label>Drum Size (yd³)</label><input type="number" value="" placeholder="e.g. 8"></div>
               <div class="cfg-field cfg-field-toggle"><label>Front Discharge</label><div class="cfg-toggle on" onclick="toggleCfgSwitch(this)"><div class="cfg-toggle-knob"></div></div></div>
               <div class="cfg-field cfg-field-toggle"><label>CWR Watchdog Enabled</label><div class="cfg-toggle" onclick="toggleCfgSwitch(this)"><div class="cfg-toggle-knob"></div></div></div>
               <div class="cfg-field cfg-field-toggle"><label>Using Blue Water Meter</label><div class="cfg-toggle on" onclick="toggleCfgSwitch(this)"><div class="cfg-toggle-knob"></div></div></div>
@@ -12123,7 +12959,7 @@ function udRenderConfig() {
           </div>
         </div>
 
-        <div class="cfg-acc" id="ud-cfg-acc-2">
+<div class="cfg-acc" id="ud-cfg-acc-2">
           <div class="cfg-acc-hdr" onclick="udToggleCfgAcc(2)">
             <div class="cfg-acc-text">
               <div class="cfg-acc-title">Mixing Settings</div>
@@ -12131,18 +12967,35 @@ function udRenderConfig() {
             </div>
             <svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
-          <div class="cfg-acc-body" style="display:none;">
+          <div class="cfg-acc-body">
             <div class="cfg-fields">
-              <div class="cfg-field"><label>Min Batch Revolutions</label><input type="number" value=""></div>
-              <div class="cfg-field"><label>Min Agitation Speed</label><input type="number" value=""></div>
-              <div class="cfg-field"><label>Min Mixing Speed</label><input type="number" value=""></div>
-              <div class="cfg-field"><label>Max Mixing Speed</label><input type="number" value=""></div>
+              <div class="cfg-field"><label>Min Batch Revolutions</label><input type="number" value="" placeholder="e.g. 70"></div>
+              <div class="cfg-field"><label>Min Agitation Speed (RPM)</label><input type="number" value="" placeholder="e.g. 2"></div>
+              <div class="cfg-field"><label>Min Mixing Speed (RPM)</label><input type="number" value="" placeholder="e.g. 8"></div>
+              <div class="cfg-field"><label>Max Mixing Speed (RPM)</label><input type="number" value="" placeholder="e.g. 18"></div>
             </div>
           </div>
         </div>
 
-        <div class="cfg-acc" id="ud-cfg-acc-3">
+<div class="cfg-acc" id="ud-cfg-acc-3">
           <div class="cfg-acc-hdr" onclick="udToggleCfgAcc(3)">
+            <div class="cfg-acc-text">
+              <div class="cfg-acc-title">Fluid Hose Length Settings</div>
+              <div class="cfg-acc-sub">Define hose lengths used for water and admixture delivery calculations.</div>
+            </div>
+            <svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="cfg-acc-body">
+            <div class="cfg-fields">
+              <div class="cfg-field"><label>Water Hose: Quick Connect to Nozzle (ft)</label><input type="text" value="" placeholder="e.g. 12"></div>
+              <div class="cfg-field"><label>Water Hose: FDM to Quick Connect (ft)</label><input type="text" value="" placeholder="e.g. 6"></div>
+              <div class="cfg-field"><label>Admix Hose Length (ft)</label><input type="text" value="" placeholder="e.g. 8"></div>
+            </div>
+          </div>
+        </div>
+
+<div class="cfg-acc" id="ud-cfg-acc-4">
+          <div class="cfg-acc-hdr" onclick="udToggleCfgAcc(4)">
             <div class="cfg-acc-text">
               <div class="cfg-acc-title">Workability Calculator Settings</div>
               <div class="cfg-acc-sub">Configure the time, rev, and drum speed limits that determine slump validity.</div>
@@ -12159,8 +13012,8 @@ function udRenderConfig() {
           </div>
         </div>
 
-        <div class="cfg-acc" id="ud-cfg-acc-4">
-          <div class="cfg-acc-hdr" onclick="udToggleCfgAcc(4)">
+<div class="cfg-acc" id="ud-cfg-acc-5">
+          <div class="cfg-acc-hdr" onclick="udToggleCfgAcc(5)">
             <div class="cfg-acc-text">
               <div class="cfg-acc-title">In-Cab Display Settings</div>
               <div class="cfg-acc-sub">Configure what drivers see in the cab, including slump step increments, limits, and display alerts.</div>
@@ -12182,24 +13035,7 @@ function udRenderConfig() {
           </div>
         </div>
 
-        <div class="cfg-acc" id="ud-cfg-acc-5">
-          <div class="cfg-acc-hdr" onclick="udToggleCfgAcc(5)">
-            <div class="cfg-acc-text">
-              <div class="cfg-acc-title">Fluid Hose Length Settings</div>
-              <div class="cfg-acc-sub">Define hose lengths used for water and admixture delivery calculations.</div>
-            </div>
-            <svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-          <div class="cfg-acc-body" style="display:none;">
-            <div class="cfg-fields">
-              <div class="cfg-field"><label>Water Length Quick Connect to Nozzle</label><input type="text" value=""></div>
-              <div class="cfg-field"><label>Water Length FDM to Quick Connect</label><input type="text" value=""></div>
-              <div class="cfg-field"><label>Admix Hose Length</label><input type="text" value=""></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="cfg-acc" id="ud-cfg-acc-6">
+<div class="cfg-acc" id="ud-cfg-acc-6">
           <div class="cfg-acc-hdr" onclick="udToggleCfgAcc(6)">
             <div class="cfg-acc-text">
               <div class="cfg-acc-title">Adjustment Manager Settings</div>
@@ -12220,7 +13056,7 @@ function udRenderConfig() {
           </div>
         </div>
 
-        <div class="cfg-acc" id="ud-cfg-acc-7">
+<div class="cfg-acc" id="ud-cfg-acc-7">
           <div class="cfg-acc-hdr" onclick="udToggleCfgAcc(7)">
             <div class="cfg-acc-text">
               <div class="cfg-acc-title">Location Monitor Settings</div>
@@ -12266,6 +13102,22 @@ function udRenderConfig() {
 
     </div>
   `;
+
+  /* Open 0-3: Info, Equipment, Mixing, Fluid Hose (now position 3) — close 4-7 */
+  [1, 2, 3].forEach(function(n) {
+    var acc = document.getElementById('ud-cfg-acc-' + n);
+    if (!acc) return;
+    acc.classList.add('open');
+    var body = acc.querySelector('.cfg-acc-body');
+    if (body) body.style.display = 'block';
+  });
+  [4, 5, 6, 7].forEach(function(n) {
+    var acc = document.getElementById('ud-cfg-acc-' + n);
+    if (!acc) return;
+    acc.classList.remove('open');
+    var body = acc.querySelector('.cfg-acc-body');
+    if (body) body.style.display = 'none';
+  });
 }
 
 function udToggleCfgAcc(n) {
@@ -12607,6 +13459,12 @@ function renderAttachBody() {
 function attachSelectTruck(number) {
   attachSelectedTruck = attachSelectedTruck === number ? null : number;
   renderAttachBody();
+  /* Update mixer type in mobile static config */
+  var mixerSpan = document.getElementById('mob-cfg-mixer-type');
+  if (mixerSpan) {
+    var t = attachSelectedTruck ? UNLINKED_TRUCKS.find(function(x){ return x.number === attachSelectedTruck; }) : null;
+    mixerSpan.textContent = (t && t.mixer) ? t.mixer : 'McNeilus';
+  }
 }
 
 function attachSearch() {
@@ -12649,10 +13507,13 @@ function doAttach() {
 
   /* Commit the attachment */
   const u = UNITS_DATA.find(u => u.id === udCurrentUnit.id);
+  /* Grab mixer type BEFORE we splice the truck out of UNLINKED_TRUCKS */
+  const attachedTruckData = UNLINKED_TRUCKS.find(t => t.number === attachSelectedTruck);
   if (u) {
     u.status          = 'Linked Unit';
     u.truck           = attachSelectedTruck;
     u.assignedToTruck = new Date().toLocaleDateString('en-US', {month:'2-digit',day:'2-digit',year:'numeric'});
+    u.mixerType       = attachedTruckData ? attachedTruckData.mixer : '';
   }
   const idx = UNLINKED_TRUCKS.findIndex(t => t.number === attachSelectedTruck);
   if (idx > -1) UNLINKED_TRUCKS.splice(idx, 1);
@@ -13640,7 +14501,7 @@ function dtUnitsBuildHeaders() {
       </th>`;
   }).join('');
   const thead = document.getElementById('dt-units-thead');
-  if (thead) thead.innerHTML = `<tr>${ths}</tr>`;
+  if (thead) thead.innerHTML = `<tr><th class="dt-th" style="width:40px;min-width:40px;max-width:40px;padding:0 8px;"></th>${ths}</tr>`;
 }
 
 function dtUnitsRender() {
@@ -13660,6 +14521,7 @@ function dtUnitsRender() {
 
   // Make sure headers exist & match visible cols
   dtUnitsBuildHeaders();
+  dtUnitsUpdateTabs();
 
   // Table rows
   const q = (dtUnitsSearchQuery || '').toLowerCase();
@@ -13720,16 +14582,15 @@ function dtUnitsRender() {
     const safeUnitId = u.id.split("'").join("\\'");
     const onclick   = canOpen && !dtUnitsSelectMode ? `onclick="dtUdOpen('${safeUnitId}')"` : '';
     const isSelected = dtUnitsSelected.has(u.id);
-    const cbCell = dtUnitsSelectMode ? (() => {
-      const eligible = u.status === 'Unlinked Unit';
-      const checked  = isSelected ? 'checked' : '';
-      const disabled = !eligible ? 'disabled' : '';
-      const safeId   = u.id.split("'").join("\\'");
-      return `<td class="dt-td dt-units-cb-cell">
-        <input type="checkbox" class="dt-units-cb" ${checked} ${disabled}
-               onclick="event.stopPropagation(); dtUnitsToggleRow('${safeId}', this)" />
-      </td>`;
-    })() : '';
+    const eligible = u.status === 'Unlinked Unit';
+    const checked  = isSelected ? 'checked' : '';
+    const disabled = !eligible ? 'disabled' : '';
+    const safeId   = u.id.split("'").join("\'");
+    const cbVis    = dtUnitsSelectMode ? '' : 'visibility:hidden;pointer-events:none;';
+    const cbCell   = `<td class="dt-td dt-units-cb-cell" style="width:40px;min-width:40px;padding:0 8px;">
+      <input type="checkbox" class="dt-units-cb" ${checked} ${disabled} style="${cbVis}"
+             onclick="event.stopPropagation(); dtUnitsToggleRow('${safeId}', this)" />
+    </td>`;
     return `
     <tr class="dt-tr${i % 2 === 1 ? ' alt' : ''}${isSelected ? ' dt-selected' : ''}"
         data-unit="${u.id}" style="cursor:${cursor};" ${onclick}>
@@ -13762,14 +14623,14 @@ function dtUnitsSelectToggle() {
       selectBtn.style.borderColor   = 'rgba(48,105,227,0.4)';
       selectBtn.style.color         = 'var(--blue)';
     }
-    if (bulkBar) bulkBar.style.display = 'flex';
+    if (bulkBar) { bulkBar.style.display='flex'; bulkBar.classList.add('visible'); }
   } else {
     if (selectBtn) {
       selectBtn.style.background  = '';
       selectBtn.style.borderColor = '';
       selectBtn.style.color       = '';
     }
-    if (bulkBar) bulkBar.style.display = 'none';
+    if (bulkBar) { bulkBar.style.display='none'; bulkBar.classList.remove('visible'); }
   }
 
   dtUnitsRender();
@@ -13853,13 +14714,13 @@ function dtUnitsReturnCancel() {
 
 function dtUnitsReturnDo() {
   const ids = [...dtUnitsSelected];
+  const now = new Date();
+  const dateStr = (now.getMonth()+1) + '/' + now.getDate() + '/' + now.getFullYear();
 
-  // Remove units from UNITS_DATA — from the customer's view they're gone entirely.
-  // Internally (Verifi side) the record would persist, but this prototype only
-  // models the customer Hub view.
+  // Switch to Pending Return — stays visible until Verifi marks received
   ids.forEach(id => {
-    const idx = UNITS_DATA.findIndex(u => u.id === id);
-    if (idx > -1) UNITS_DATA.splice(idx, 1);
+    const u = UNITS_DATA.find(u => u.id === id);
+    if (u) { u.status = 'Pending Return'; u.returnDate = dateStr; }
   });
 
   // Clean up UI
@@ -13870,15 +14731,18 @@ function dtUnitsReturnDo() {
   const selectBtn = document.getElementById('dt-units-select-btn');
   if (selectBtn) { selectBtn.style.background = ''; selectBtn.style.borderColor = ''; selectBtn.style.color = ''; }
   const bulkBar = document.getElementById('dt-units-bulk-bar');
-  if (bulkBar) bulkBar.style.display = 'none';
+  if (bulkBar) { bulkBar.style.display = 'none'; bulkBar.classList.remove('visible'); }
 
-  // Re-render table + stats
+  // Re-render table, pending tab, and update tab strip
   dtUnitsRender();
+  dtUnitsPendingRender();
+  dtUnitsUpdateTabs();
 
   // Toast
   dtShowToast({
-    title: `${ids.length} unit${ids.length === 1 ? '' : 's'} returned to Verifi`,
-    body: `${ids.length === 1 ? 'The unit has' : `${ids.length} units have`} been removed from your system.`,
+    title: `${ids.length} unit${ids.length === 1 ? '' : 's'} flagged for return`,
+    body: `Pending Return · Verifi will confirm receipt`,
+    variant: 'warning'
   });
 }
 
@@ -15194,13 +16058,41 @@ function dtUdRenderConfig() {
   if (!u) return;
   const scroll = document.getElementById('dt-ud-scroll');
   scroll.innerHTML = dtBuildConfig();
-  // The topbar with the "Update" button comes from dtBuildConfig's output and only
-  // makes sense in the truck drawer (read-only → click Update → edit). In the unit
-  // drawer we either auto-enter edit mode (Pending) or show read-only without an
-  // Update affordance (Linked, future Unlink flow handles edits separately).
-  // Always hide the topbar in this context.
   const topbar = scroll.querySelector('#dt-cfg-topbar');
   if (topbar) topbar.style.display = 'none';
+
+  /* Pre-populate Information fields from unit/truck data */
+  requestAnimationFrame(() => {
+    /* Truck number → Name field (first input in Information accordion) */
+    const truckNum = u.truck && u.truck !== '--' ? u.truck : (attachSelectedTruck || '');
+    const nameInput = scroll.querySelector('#dt-cfg-acc-0 .cfg-field input, .cfg-acc-body .cfg-field input');
+    if (nameInput && truckNum) { nameInput.value = truckNum; nameInput.dataset.orig = truckNum; }
+
+    /* Populate any inputs that have matching labels */
+    scroll.querySelectorAll('.cfg-field').forEach(function(field) {
+      const label = (field.querySelector('label') || {}).textContent || '';
+      const input = field.querySelector('input');
+      if (!input) return;
+      if (label === 'Name' && truckNum) { input.value = truckNum; input.dataset.orig = truckNum; }
+    });
+
+    /* Open accordions: 0=Information, 1=Equipment, 2=Mixing, 5=Fluid Hose */
+    [0, 1, 2, 5].forEach(function(idx) {
+      const acc = scroll.querySelector('.cfg-acc:nth-child(' + (idx+1) + ')');
+      if (!acc) return;
+      acc.classList.add('open');
+      const body = acc.querySelector('.cfg-acc-body');
+      if (body) body.style.display = '';
+    });
+    /* Close the rest */
+    [3, 4, 6, 7].forEach(function(idx) {
+      const acc = scroll.querySelectorAll('.cfg-acc')[idx];
+      if (!acc) return;
+      acc.classList.remove('open');
+      const body = acc.querySelector('.cfg-acc-body');
+      if (body) body.style.display = 'none';
+    });
+  });
 
   // For Pending state, immediately enter edit mode so the FST can fill the unit's config.
   // dtCfgStartEdit opens the unit drawer's save bar (#dt-ud-cfg-savebar) because
@@ -15224,6 +16116,16 @@ function dtUdRenderConfig() {
       // Update the savebar message text to match the linking context
       const msgEl = document.getElementById('dt-ud-cfg-savebar-msg');
       if (msgEl) msgEl.textContent = 'Fill in the configuration to finalize this link';
+
+      /* Force close accordions 4-7 — dtCfgStartEdit opens all, we override here */
+      const accs = document.querySelectorAll('#dt-cfg-accs .cfg-acc');
+      accs.forEach(function(acc, idx) {
+        if (idx >= 4) {
+          acc.classList.remove('open');
+          const body = acc.querySelector('.cfg-acc-body');
+          if (body) body.style.display = 'none';
+        }
+      });
     });
   }
 }
@@ -15816,6 +16718,11 @@ function dtUdAttachDo() {
   u.status = 'Pending';
   u.truck  = dtUdAttachSelected;
   u.assignedToTruck = new Date().toLocaleDateString('en-US', {month:'2-digit',day:'2-digit',year:'numeric'});
+
+  // Save mixer type BEFORE we splice the truck out of UNLINKED_TRUCKS
+  const truckForMixer = (typeof UNLINKED_TRUCKS !== 'undefined')
+    ? UNLINKED_TRUCKS.find(t => t.number === dtUdAttachSelected) : null;
+  u.mixerType = truckForMixer ? truckForMixer.mixer : '';
 
   // Remove from the unlinked truck pool while pending — if user cancels we put it back.
   const idx = (typeof UNLINKED_TRUCKS !== 'undefined')
@@ -16776,7 +17683,7 @@ function dtOpenTruck(truckNum) {
     }
 
     return `
-      <div class="dt-co-card ${state}" onclick="dtReplaceCardTap(this,'${card.name}')">
+      <div class="dt-co-card ${state}${card.name === 'TCG' ? ' dt-co-card-tcg' : ''}" data-comp="${card.name}" onclick="dtReplaceCardTap(this,'${card.name}')">
         <div class="dt-co-card-head">
           <span class="dt-co-card-dot" style="background:${dotColor};"></span>
           <span class="dt-co-card-name">${card.name}</span>
@@ -16787,6 +17694,8 @@ function dtOpenTruck(truckNum) {
         </div>
         <div class="dt-co-card-desc">${descHtml}</div>
         <div class="dt-co-card-meta">${metaHtml}</div>
+        ${card.name === 'TCG' ? `<button class="dt-co-tcg-replace-btn" onclick="event.stopPropagation();coOpenTcgReplace(true);" title="Replace TCG" aria-label="Replace TCG"><svg width="14" height="14" viewBox="0 0 21 21" fill="none"><path d="M12.4513 5.05364C12.2681 5.24057 12.1655 5.49189 12.1655 5.75364C12.1655 6.01539 12.2681 6.26671 12.4513 6.45364L14.0513 8.05364C14.2382 8.23687 14.4896 8.3395 14.7513 8.3395C15.0131 8.3395 15.2644 8.23687 15.4513 8.05364L19.2213 4.28364C19.7242 5.39483 19.8764 6.63288 19.6578 7.83279C19.4392 9.0327 18.86 10.1375 17.9976 10.9999C17.1352 11.8624 16.0304 12.4415 14.8305 12.6601C13.6306 12.8787 12.3925 12.7265 11.2813 12.2236L4.37132 19.1336C3.9735 19.5315 3.43393 19.755 2.87132 19.755C2.30871 19.755 1.76914 19.5315 1.37132 19.1336C0.973496 18.7358 0.75 18.1962 0.75 17.6336C0.75 17.071 0.973496 16.5315 1.37132 16.1336L8.28132 9.22364C7.77848 8.11245 7.62624 6.87441 7.84486 5.6745C8.06349 4.47459 8.64261 3.3698 9.50504 2.50736C10.3675 1.64493 11.4723 1.06581 12.6722 0.847184C13.8721 0.628558 15.1101 0.780807 16.2213 1.28364L12.4613 5.04364L12.4513 5.05364Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : ''}
+        ${card.name === 'TCG' ? `<div class="dt-co-tcg-lock-hint">Replace separately</div>` : ''}
       </div>`;
   }
 
@@ -18472,18 +19381,17 @@ function dtBuildConfig() {
     </div>`;
 
   const s1 = g3(`
-    ${fi('name','Name','1402 (MM North)')}
-    ${fi('bsc','Batch System Code','234-2981-8373')}
-    ${fd('contract','Contract','Cemex Houston')}
-    ${fd('mixer','Mixer Type','McNeilus')}
-    ${fd('wds','WDS','-')}
-    ${fi('vin','Vin','1HGCM82633A123456')}
+    ${fi('name','Name','')}
+    ${fd('mixer','Mixer Type',(function(){ var uid = typeof dtUdCurrentUnitId !== 'undefined' ? dtUdCurrentUnitId : null; var u = uid ? UNITS_DATA.find(function(x){ return x.id===uid; }) : null; return (u && u.mixerType) ? u.mixerType : 'McNeilus'; })())}
+    ${fi('bsc','Batch System Code','')}
+    ${fd('contract','Contract','Cemex AZ')}
+    ${fi('vin','VIN','')}
     ${fd('mode','Mode','Live')}
     ${fd('oos','OOS Reason','In Service')}
   `);
   const s2 = g3(`
-    ${fi('magnets','Number of Drum Magnets','3')}
-    ${fi('drumsize','Drum Size','3')}
+    ${fi('magnets','Number of Drum Magnets','')}
+    ${fi('drumsize','Drum Size (yd³)','')}
     ${ft('frontdisc','Front Discharge',true)}
     ${ft('cwr','CWR Watchdog Enabled',false)}
     ${ft('bluewtr','Using Blue Water Meter',true)}
@@ -18491,10 +19399,10 @@ function dtBuildConfig() {
     ${ft('metrics','Display Metrics Units',true)}
   `);
   const s3 = g3(`
-    ${fi('minbatch','Min Batch Revolutions','1402')}
-    ${fi('minagit','Min Agitation Speed','234')}
-    ${fi('minmix','Min Mixing Speed','234')}
-    ${fi('maxmix','Max Mixing Speed','234')}
+    ${fi('minbatch','Min Batch Revolutions','')}
+    ${fi('minagit','Min Agitation Speed (RPM)','')}
+    ${fi('minmix','Min Mixing Speed (RPM)','')}
+    ${fi('maxmix','Max Mixing Speed (RPM)','')}
   `);
   const s4 = g3(`
     ${fi('slumpsec','Slump Expiration In Seconds','0')}
@@ -18514,18 +19422,18 @@ function dtBuildConfig() {
     ${ft('noflow','Display No-Flow Errors',true)}
   `);
   const s6 = g3(`
-    ${fi('wtrqc','Water Length Quick Connect to Nozzle','234-2981-8373')}
-    ${fi('wtrfdm','Water Length FDM to Quick Connect','234-2981-8373')}
-    ${fi('admixhose','Admix Hose Length','1402 (MM North)')}
+    ${fi('wtrqc','Water Hose: Quick Connect to Nozzle (ft)','')}
+    ${fi('wtrfdm','Water Hose: FDM to Quick Connect (ft)','')}
+    ${fi('admixhose','Admix Hose Length (ft)','')}
   `);
   const s7 = g3(`
-    ${fi('slumptol','Slump Tolerance (in)','1402 (MM North)')}
-    ${fi('initwtr','Initial Water Ratio','1402 (MM North)')}
-    ${fi('initadmix','Initial Admix Ratio','1402 (MM North)')}
-    ${fi('minwtr','Min Water Ratio','1402 (MM North)')}
-    ${fi('maxwtr','Max Water Ratio','1402 (MM North)')}
-    ${fi('minadmix','Min Admix Ratio','1402 (MM North)')}
-    ${fi('maxadmix','Max Admix Ratio','1402 (MM North)')}
+    ${fi('slumptol','Slump Tolerance (in)','')}
+    ${fi('initwtr','Initial Water Ratio','')}
+    ${fi('initadmix','Initial Admix Ratio','')}
+    ${fi('minwtr','Min Water Ratio','')}
+    ${fi('maxwtr','Max Water Ratio','')}
+    ${fi('minadmix','Min Admix Ratio','')}
+    ${fi('maxadmix','Max Admix Ratio','')}
   `);
   const s8 = g3(`
     ${fi('awaydist','Away Distance Signal Meters','0')}
@@ -18565,9 +19473,9 @@ function dtBuildConfig() {
         ${acc('Information','Defines how this truck is registered and configured within the system for tracking and reporting.',s1,true)}
         ${acc('Equipment Settings','Manage system-level settings that control how this equipment behaves and reports data.',s2)}
         ${acc('Mixing Settings','Control how the drum mixes, agitates, and rotates during transit and discharge.',s3)}
+        ${acc('Fluid Hose Length Settings','Define hose lengths used for water and admixture delivery calculations.',s6)}
         ${acc('Workability Calculator Settings','Configure the time, rev, and drum speed limits that determine slump validity.',s4)}
         ${acc('In-Cab Display Settings','Configure what drivers see in the cab, including slump step increments, limits, and display alerts.',s5)}
-        ${acc('Fluid Hose Length Settings','Define hose lengths used for water and admixture delivery calculations.',s6)}
         ${acc('Adjustment Manager Settings','Control how the system adjusts water and admixtures within defined limits.',s7)}
         ${acc('Location Monitor Settings','Define how far a truck must move before the system marks it as away.',s8)}
       </div>
@@ -18701,8 +19609,11 @@ function dtCfgActiveContext() {
 function dtCfgStartEdit() {
   dtCfgEditMode = true;
 
-  /* Open all accordions */
-  document.querySelectorAll('#dt-cfg-accs .cfg-acc').forEach(acc => {
+  /* Open accordions — in the unit drawer only open the first 4;
+     in the truck drawer open all */
+  const isUnitDrawer = !!document.getElementById('dt-ud-drawer')?.classList.contains('open');
+  document.querySelectorAll('#dt-cfg-accs .cfg-acc').forEach((acc, idx) => {
+    if (isUnitDrawer && idx >= 4) return; /* keep 4+ closed in unit linking flow */
     acc.classList.add('open');
     const body = acc.querySelector('.cfg-acc-body');
     if (body) body.style.display = '';
@@ -18958,6 +19869,15 @@ function dtDrawerTab(tab, el) {
     scroll.innerHTML = dtBuildLifespanForTruck(dtDrawerTruckNum);
   } else if (tab === 'overview') {
     scroll.innerHTML = `
+      <div id="dt-overview-toolbar" style="display:flex;align-items:center;justify-content:space-between;padding:0 0 16px;">
+        <span id="dt-replace-hint" style="font-size:13px;color:#92400e;letter-spacing:-0.26px;display:none;">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style="vertical-align:middle;margin-right:4px;"><path d="M7 1v6M7 10h.01" stroke="#92400e" stroke-width="1.4" stroke-linecap="round"/><circle cx="7" cy="7" r="6" stroke="#92400e" stroke-width="1.2"/></svg>
+          Tap components to select them
+        </span>
+        <button class="co-replace-btn" id="dt-replace-btn" onclick="dtReplaceToggle()" style="margin-left:auto;">
+          ${CO_REPLACE_BTN_HTML}
+        </button>
+      </div>
       <div class="dt-drawer-section-hdr" onclick="dtDrawerToggleSection('mcs',this)">
         <svg class="dt-section-chev" width="14" height="14" viewBox="0 0 14 14" fill="none" style="transition:transform 0.2s;"><path d="M3 5l4 4 4-4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Measurement Component Status
@@ -19134,6 +20054,30 @@ function setView(view) {
 }
 
 /* ── INIT ──────────────────────────────────────── */
+
+/* Auto-detect viewport size on first load and switch to the matching view.
+   Real device width determines initial mode — phone users land on mobile,
+   tablets on tablet, big screens on desktop. The user can still override
+   via the top-bar pills. Resize doesn't re-trigger this — we don't want
+   to rip people out of a view they're using mid-task. */
+(function autoDetectView() {
+  var w = window.innerWidth;
+  var view;
+  if (w < 700) view = 'mobile';
+  else if (w < 1100) view = 'tablet';
+  else view = 'desktop';
+  /* Skip if already on the right view (default body class is view-desktop) */
+  var current = document.body.className.replace('view-', '').trim();
+  if (current !== view) {
+    document.body.className = 'view-' + view;
+    document.querySelectorAll('.vp-pill').forEach(function(p) { p.classList.remove('active'); });
+    var sel = document.querySelector('.vp-pill[onclick="setView(\'' + view + '\')"]');
+    if (sel) sel.classList.add('active');
+    var title = document.getElementById('cs-title');
+    if (title) title.textContent = view === 'tablet' ? 'Tablet View' : 'Desktop View';
+  }
+})();
+
 tsUpdateLabels();
 renderTrucks();
 renderOverview();

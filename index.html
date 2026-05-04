@@ -54,129 +54,104 @@
   /* ─── VIEWPORT SWITCHER BAR ──────────────────────────────── */
   .vp-bar {
     position: fixed; top: 0; left: 0; right: 0;
-    min-height: 52px;
+    height: 52px;
     background: rgba(42,38,34,0.96);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     display: flex; align-items: center;
-    padding: 0 20px;
-    gap: 12px;
+    padding: 0 16px;
+    gap: 10px;
     z-index: 9999;
     border-bottom: 1px solid rgba(255,255,255,0.08);
-    flex-wrap: nowrap;
   }
   .vp-brand {
-    font-size: 15px; font-weight: 600; color: white;
-    letter-spacing: -0.3px;
     display: flex; align-items: center; gap: 8px;
     flex-shrink: 0;
   }
   .vp-version-tag {
-    font-size:10px;font-family:'DM Mono',monospace;color:rgba(255,255,255,0.4);
-    letter-spacing:0.2px;margin-left:8px;align-self:center;
+    font-size:10px;font-family:'DM Mono',monospace;
+    color:rgba(255,255,255,0.35);letter-spacing:0.2px;
   }
-  /* Right cluster — all three pill groups grouped together with auto margin to push right */
   .vp-right-cluster {
     display: flex; align-items: center; gap: 8px;
     margin-left: auto; flex-shrink: 0;
   }
-  /* Centered version cluster — only used at desktop sizes */
-  .vp-center-cluster {
-    position: absolute; left: 50%; transform: translateX(-50%);
-    display: flex; align-items: center;
-  }
-  .vp-pills {
-    display: flex; gap: 4px;
+  /* Viewport pills — only shown at desktop width.
+     On real phones/tablets the user is already on the right view. */
+  .vp-viewport-pills {
+    display: flex; gap: 3px;
     background: rgba(255,255,255,0.08);
     border-radius: 32px; padding: 3px;
   }
+  @media (max-width: 1099px) { .vp-viewport-pills { display: none; } }
   .vp-pill {
     font-family: var(--font); font-size: 13px; font-weight: 500;
     letter-spacing: -0.26px; color: rgba(255,255,255,0.55);
-    padding: 6px 14px; border-radius: 28px; border: none;
+    padding: 5px 13px; border-radius: 28px; border: none;
     cursor: pointer; background: none;
-    transition: background 0.18s ease, color 0.18s ease;
+    transition: background 0.18s, color 0.18s;
     white-space: nowrap;
   }
   .vp-pill.active { background: white; color: #1a1814; }
   .vp-pill:not(.active):hover { color: rgba(255,255,255,0.85); }
-  .role-pill {
-    font-family: var(--font); font-size: 13px; font-weight: 500;
-    letter-spacing: -0.26px; color: rgba(255,255,255,0.55);
-    padding: 6px 14px; border-radius: 28px; border: none;
-    cursor: pointer; background: none;
-    transition: background 0.18s ease, color 0.18s ease;
-    white-space: nowrap;
-  }
-  .role-pill.active { background: rgba(124,58,237,0.9); color: white; }
-  .role-pill:not(.active):hover { color: rgba(255,255,255,0.85); }
-  .role-divider { width:1px; height:16px; background:rgba(255,255,255,0.2); margin:0 4px; align-self:center; }
-  .ver-divider  { width:1px; height:16px; background:rgba(255,255,255,0.2); margin:0 4px; align-self:center; }
-  .ver-pill {
-    font-family: var(--font); font-size: 13px; font-weight: 500;
-    letter-spacing: -0.26px; color: rgba(255,255,255,0.55);
-    padding: 6px 14px; border-radius: 28px; border: none;
-    cursor: pointer; background: none;
-    transition: background 0.18s ease, color 0.18s ease;
-    white-space: nowrap;
-  }
-  .ver-pill.active { background: rgba(5,150,105,0.85); color: white; }
-  .ver-pill:not(.active):hover { color: rgba(255,255,255,0.85); }
 
-  /* The full-text labels — swap to short labels on narrow screens */
-  .vp-label-long  { display: inline; }
-  .vp-label-short { display: none; }
-
-  /* ─── Responsive breakpoints ───────────────────────────────
-     ≥1100px  Three-zone layout: brand left, version centered, view+role right
-     700-1099 Two-zone: brand left, all pills right (no centered group)
-     <700px   Two rows: brand+version up top, view+role pills below
-  ────────────────────────────────────────────────────────── */
-  @media (max-width: 1099px) {
-    .vp-center-cluster {
-      position: static; transform: none;
-      order: 2; /* sits between brand and right cluster */
-    }
-    /* Center cluster slides into the inline flow on the right */
-    .vp-bar .vp-center-cluster { margin-left: auto; }
-    .vp-right-cluster { margin-left: 8px; }
+  /* Options button — three-dot, opens dropdown for role + version */
+  .vp-opts-wrap { position: relative; }
+  .vp-opts-btn {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 12px;
+    height: 34px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
   }
-  @media (max-width: 820px) {
-    .vp-bar { padding: 0 14px; gap: 8px; }
-    .vp-pill, .role-pill, .ver-pill { padding: 6px 11px; font-size: 12px; }
-    .vp-version-tag { display: none; }
-    /* Use short labels */
-    .vp-label-long  { display: none; }
-    .vp-label-short { display: inline; }
+  .vp-opts-btn:hover,
+  .vp-opts-btn.open {
+    background: rgba(255,255,255,0.18);
+    border-color: rgba(255,255,255,0.3);
+    color: white;
   }
-  @media (max-width: 640px) {
-    .vp-bar {
-      flex-wrap: wrap;
-      padding: 8px 12px;
-      gap: 6px;
-      min-height: 0;
-    }
-    .vp-brand { width: 100%; justify-content: space-between; }
-    .vp-brand .vp-center-cluster { /* version moves into brand row's right side */
-      position: static; transform: none; margin-left: 0;
-    }
-    .vp-center-cluster {
-      position: static; transform: none;
-      margin-left: 0;
-      order: 1; /* sit on the brand row */
-    }
-    .vp-right-cluster {
-      width: 100%;
-      justify-content: flex-start;
-      margin-left: 0;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-    .vp-pill, .role-pill, .ver-pill {
-      padding: 5px 10px; font-size: 11px;
-    }
-    .role-divider, .ver-divider { display: none; }
+  .vp-opts-badge {
+    position: absolute; top: -3px; right: -3px;
+    width: 8px; height: 8px;
+    background: #3069e3; border-radius: 50%;
+    border: 1.5px solid rgba(42,38,34,0.96);
   }
+  .vp-opts-dd {
+    display: none;
+    position: absolute; top: calc(100% + 8px); right: 0;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(54,50,45,0.14);
+    padding: 6px;
+    min-width: 180px;
+    z-index: 10000;
+  }
+  .vp-opts-dd.open { display: block; }
+  .vp-opts-section-label {
+    font-size: 10px; font-weight: 600;
+    color: var(--soft); letter-spacing: 0.4px;
+    text-transform: uppercase;
+    padding: 6px 10px 4px;
+    font-family: var(--font);
+  }
+  .vp-opts-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: 7px;
+    cursor: pointer;
+    font-size: 13px; font-weight: 500;
+    color: var(--strong); letter-spacing: -0.26px;
+    font-family: var(--font);
+    transition: background 0.12s;
+  }
+  .vp-opts-row:hover { background: var(--layer-2); }
+  .vp-opts-check { flex-shrink: 0; transition: opacity 0.15s; }
+  .vp-opts-divider { height: 1px; background: var(--border); margin: 4px 6px; }
 
   /* ─── PHONE SHELL ────────────────────────────────────────── */
   .phone-wrap {
@@ -484,7 +459,7 @@
     transition:color 0.15s;
   }
   .tb-drawer-tab.active { color:var(--strong); border-bottom-color:var(--strong); }
-  .tb-drawer-scroll { flex:1; overflow-y:auto; padding:20px 16px; }
+  .tb-drawer-scroll { flex:1; overflow-y:auto; padding:20px 16px; min-height:0; }
 
   /* Component cards in drawer */
   .tb-co-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
@@ -584,6 +559,38 @@
     padding-top:8px;
     flex-shrink:0;
   }
+
+  /* ── Master account picker ──────────────────────────────────────
+     Sits at the top of the sidebar footer, visually elevated above
+     Profile/Settings/Support. Bordered card to communicate "session-
+     level control" rather than nav-list secondary item. */
+  .dt-acct-picker {
+    display:flex; align-items:center; gap:10px;
+    padding:8px 12px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    background:var(--layer-1);
+    cursor:pointer;
+    transition:background 0.15s, border-color 0.15s;
+    font-family:var(--font);
+  }
+  .dt-acct-picker:hover { background:var(--layer-2); border-color:var(--border-mid); }
+  .dt-acct-picker.open { background:var(--layer-2); border-color:var(--border-mid); }
+  .dt-acct-picker.open #dt-acct-chev { transform:rotate(180deg); }
+
+  /* Account option rows in the dropdown */
+  .dt-acct-opt {
+    display:flex; align-items:center; gap:8px;
+    padding:9px 10px;
+    border-radius:7px;
+    cursor:pointer;
+    transition:background 0.12s;
+    font-family:var(--font);
+  }
+  .dt-acct-opt:hover { background:var(--layer-2); }
+  .dt-acct-opt-check { width:14px; flex-shrink:0; }
+  .dt-acct-opt-label { flex:1; font-size:13px; color:var(--strong); letter-spacing:-0.26px; font-weight:500; }
+  .dt-acct-opt.active .dt-acct-opt-label { color:var(--blue); }
 
   /* ── Page Content ── */
   .dt-content {
@@ -1182,6 +1189,9 @@
     display:grid; grid-template-columns:repeat(4, minmax(200px, 1fr)); gap:14px;
     padding:3px; margin:-3px;
     overflow-x:auto;
+  }
+  body.view-tablet #dt-state-manual .dt-mc-section-cards {
+    grid-template-columns:repeat(3, minmax(0, 1fr));
   }
   #dt-state-manual .dt-mc-section-cards > div { min-width:0; }
   #dt-state-manual .dt-mc-section.collapsed .dt-mc-section-cards { display:none; }
@@ -3591,17 +3601,23 @@
 
   /* ─── DRAWER CHROME ROW ──────────────────────────────────── */
   .d-chrome {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 18px 14px 12px; flex-shrink: 0;
+    display: flex; flex-direction: column; gap: 0;
+    padding: 16px 14px 12px; flex-shrink: 0;
   }
+  .d-chrome-row1 { display: flex; align-items: center; justify-content: space-between; }
   .d-truck-id { display: flex; align-items: center; gap: 10px; }
   .d-truck-label { font-size: 20px; font-weight: 500; color: var(--strong); letter-spacing: -0.5px; }
   .d-ign-pill {
-    display: flex; align-items: center; gap: 5px;
-    background: #d5f1d2; border-radius: 20px; padding: 5px 10px;
-    font-size: 13px; font-weight: 500; color: #1e6252;
+    display: flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px;
+    background: #d5f1d2; border-radius: 50%;
+    flex-shrink: 0; cursor: pointer; position: relative;
   }
-  .d-ign-dot { width: 7px; height: 7px; background: #16a34a; border-radius: 50%; flex-shrink: 0; }
+  .d-ign-pill.off  { background: rgba(54,50,45,0.08); }
+  .d-ign-pill.maint { background: #fff3cd; }
+  .d-ign-dot { width: 9px; height: 9px; background: #16a34a; border-radius: 50%; flex-shrink: 0; }
+  .d-ign-pill.off .d-ign-dot  { background: rgba(54,50,45,0.3); }
+  .d-ign-pill.maint .d-ign-dot { background: #f59e0b; }
   .d-chrome-btns { display: flex; align-items: center; gap: 5px; }
 
   /* ─── DRAWER NAV ROW ─────────────────────────────────────── */
@@ -3628,6 +3644,7 @@
     pointer-events: none;
   }
   /* Mobile ignition pill pulses its dot during the ping handshake */
+  .d-ign-pill.pinging { animation: dtPingPillPulse 0.5s ease-in-out infinite alternate; }
   .d-ign-pill.pinging .d-ign-dot {
     animation: dtPingDotPulse 0.5s ease-in-out infinite alternate;
   }
@@ -4879,26 +4896,46 @@
     <span class="vp-version-tag">v3.2.6</span>
   </div>
 
-  <!-- Centered version toggle (Final / MVP) — at desktop, sits absolutely centered;
-       at smaller widths CSS reorders it inline -->
-  <div class="vp-center-cluster">
-    <div class="vp-pills">
-      <button class="ver-pill active" id="ver-pill-final" onclick="setVersion('final')">
-        <span class="vp-label-long">Final Version</span><span class="vp-label-short">Final</span>
-      </button>
-      <button class="ver-pill" id="ver-pill-mvp" onclick="setVersion('mvp')">MVP</button>
-    </div>
-  </div>
-
-  <!-- Right cluster: viewport switcher + role -->
+  <!-- Viewport pills — desktop only. Hidden on mobile/tablet viewports since
+       the user is already on the right view. -->
   <div class="vp-right-cluster">
-    <div class="vp-pills">
+    <div class="vp-pills vp-viewport-pills">
       <button class="vp-pill" onclick="setView('mobile')">Mobile</button>
       <button class="vp-pill" onclick="setView('tablet')">Tablet</button>
       <button class="vp-pill active" onclick="setView('desktop')">Desktop</button>
-      <div class="role-divider"></div>
-      <button class="role-pill active" id="role-pill-external" onclick="setRole('external')">External</button>
-      <button class="role-pill" id="role-pill-internal" onclick="setRole('internal')">Internal</button>
+    </div>
+
+    <!-- Options button — opens a dropdown for role + version.
+         Follows the filter pattern: one button, dropdown below. -->
+    <div class="vp-opts-wrap" id="vp-opts-wrap">
+      <button class="vp-opts-btn" id="vp-opts-btn" onclick="vpOptsToggle()">
+        <span style="font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:-0.24px;">Options</span>
+        <span class="vp-opts-badge" id="vp-opts-badge" style="display:none;"></span>
+      </button>
+      <!-- Dropdown — opens downward -->
+      <div class="vp-opts-dd" id="vp-opts-dd">
+        <!-- Role section -->
+        <div class="vp-opts-section-label">Role</div>
+        <div class="vp-opts-row" id="vp-opt-external" onclick="setRole('external');vpOptsUpdateState()">
+          <svg class="vp-opts-check" id="vp-check-external" width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>External</span>
+        </div>
+        <div class="vp-opts-row" id="vp-opt-internal" onclick="setRole('internal');vpOptsUpdateState()">
+          <svg class="vp-opts-check" id="vp-check-internal" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Internal</span>
+        </div>
+        <div class="vp-opts-divider"></div>
+        <!-- Version section -->
+        <div class="vp-opts-section-label">Version</div>
+        <div class="vp-opts-row" id="vp-opt-final" onclick="setVersion('final');vpOptsUpdateState()">
+          <svg class="vp-opts-check" id="vp-check-final" width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Final Version</span>
+        </div>
+        <div class="vp-opts-row" id="vp-opt-mvp" onclick="setVersion('mvp');vpOptsUpdateState()">
+          <svg class="vp-opts-check" id="vp-check-mvp" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>MVP</span>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -5167,33 +5204,32 @@
 
     <!-- ROW 1: Truck ID + ignition pill + chrome buttons -->
     <div class="d-chrome">
-      <div class="d-truck-id">
-        <div class="d-truck-label" id="drawer-truck-num">Truck: 90237</div>
-        <div class="d-ign-pill" id="mo-ign-pill" onclick="moToggleModePopover()" style="cursor:pointer;position:relative;" title="Change truck mode"><div class="d-ign-dot" id="mo-ign-dot"></div><span id="mo-ign-text">Ignition on</span>
-          <div id="mo-mode-popover" style="display:none;position:absolute;top:calc(100% + 8px);left:0;background:white;border:1px solid var(--border-mid);border-radius:12px;box-shadow:0 8px 24px rgba(54,50,45,0.14);padding:6px;min-width:180px;z-index:200;" onclick="event.stopPropagation()">
-            <div style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.4px;text-transform:uppercase;padding:4px 8px 6px;">Truck Mode</div>
-            <div class="dt-mode-opt" onclick="moSetMode('live')" id="mo-mode-opt-live">🟢 Live</div>
-            <div class="dt-mode-opt" onclick="moSetMode('maintenance')" id="mo-mode-opt-maintenance">🟡 Maintenance</div>
-            <div class="dt-mode-opt" onclick="moSetMode('offline')" id="mo-mode-opt-offline">⚪ Offline</div>
+      <!-- Row 1: Dot pill + Truck name left, close button right -->
+      <div class="d-chrome-row1">
+        <div style="display:flex;flex-direction:column;gap:2px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="d-ign-pill" id="mo-ign-pill" onclick="moToggleModePopover()" title="Change truck mode">
+              <div class="d-ign-dot" id="mo-ign-dot"></div>
+              <div id="mo-mode-popover" style="display:none;position:absolute;top:calc(100% + 8px);left:0;background:white;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(54,50,45,0.14);padding:6px;min-width:180px;z-index:200;" onclick="event.stopPropagation()">
+                <div style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.4px;text-transform:uppercase;padding:4px 8px 6px;">Truck Mode</div>
+                <div class="dt-mode-opt" onclick="moSetMode('live')" id="mo-mode-opt-live">🟢 Live</div>
+                <div class="dt-mode-opt" onclick="moSetMode('maintenance')" id="mo-mode-opt-maintenance">🟡 Maintenance</div>
+                <div class="dt-mode-opt" onclick="moSetMode('offline')" id="mo-mode-opt-offline">⚪ Offline</div>
+              </div>
+            </div>
+            <div class="d-truck-label" id="drawer-truck-num">Truck: 90237</div>
+          </div>
+          <div style="font-size:11px;color:var(--soft);letter-spacing:0.2px;padding-left:32px;">
+            Unit <span id="drawer-unit-id" style="font-family:'DM Mono',monospace;color:var(--defined);">—</span>
           </div>
         </div>
-      </div>
-      <div class="d-chrome-btns">
-        <button class="chrome-btn chrome-btn--border" id="drawer-prev" onclick="navigateDrawer(-1)">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M9 3l-5 4 5 4" stroke="#36322d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-        <button class="chrome-btn chrome-btn--border" id="drawer-next" onclick="navigateDrawer(1)">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M5 3l5 4-5 4" stroke="#36322d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-        <button class="chrome-btn chrome-btn--dark" onclick="closeDrawer()">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M2 2l8 8M10 2l-8 8" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </button>
+        <div class="d-chrome-btns">
+          <button class="chrome-btn chrome-btn--dark" onclick="closeDrawer()">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M2 2l8 8M10 2l-8 8" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -5240,6 +5276,22 @@
 
       <!-- STATE A: LOG LIST -->
       <div id="state-list" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+        <!-- Search + filter bar -->
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--layer-1);">
+          <div style="flex:1;display:flex;align-items:center;gap:8px;background:var(--layer-2);border:1px solid var(--border);border-radius:24px;padding:7px 12px;">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;"><circle cx="6.5" cy="6.5" r="4" stroke="#36322d9e" stroke-width="1.4"/><path d="M10.5 10.5l3 3" stroke="#36322d9e" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <input id="mob-log-search" type="text" placeholder="Search logs…" oninput="mobLogsFilter()" style="flex:1;border:none;outline:none;font-size:13px;color:var(--strong);background:none;font-family:var(--font);letter-spacing:-0.26px;min-width:0;">
+          </div>
+          <button id="mob-log-filter-btn" onclick="mobLogsToggleFilter()" style="display:flex;align-items:center;gap:5px;background:var(--layer-1);border:1px solid var(--border);border-radius:20px;padding:7px 12px;font-size:13px;font-weight:500;color:var(--strong);font-family:var(--font);letter-spacing:-0.26px;cursor:pointer;flex-shrink:0;white-space:nowrap;">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M1 3h12M3 7h8M5 11h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            Filter
+          </button>
+        </div>
+        <!-- Filter panel (hidden by default) -->
+        <div id="mob-log-filter-panel" style="display:none;padding:10px 12px;border-bottom:1px solid var(--border);background:var(--layer-2);flex-shrink:0;gap:8px;flex-wrap:wrap;">
+          <div style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;margin-bottom:6px;width:100%;">Message Type</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;" id="mob-log-type-chips"></div>
+        </div>
         <div class="log-tbl-head">
           <div class="log-th">Message Time</div>
           <div class="log-th">Type</div>
@@ -5341,14 +5393,15 @@
                 <div class="co-info-val">Live</div>
               </div>
             </div>
-            <div class="co-tbl-row"><div class="co-tbl-k">Code version</div><div class="co-tbl-v">3.04.029</div></div>
-            <div class="co-tbl-row co-tbl-row--alt"><div class="co-tbl-k">Commissioned</div><div class="co-tbl-v">--</div></div>
-            <div class="co-tbl-row"><div class="co-tbl-k">Last Connect</div><div class="co-tbl-v">Nov 26, 2025, 10:52 PM</div></div>
-            <div class="co-tbl-row co-tbl-row--alt"><div class="co-tbl-k">Last System Status</div><div class="co-tbl-v">Nov 26, 2025, 10:52 PM</div></div>
-            <div class="co-tbl-row"><div class="co-tbl-k">Last Reboot</div><div class="co-tbl-v">Nov 26, 2025, 1:16 PM</div></div>
-            <div class="co-tbl-row co-tbl-row--alt"><div class="co-tbl-k">Drum Manufacturer</div><div class="co-tbl-v">Schwing, 2022</div></div>
-            <div class="co-tbl-row"><div class="co-tbl-k">Drum Size</div><div class="co-tbl-v">--</div></div>
-            <div class="co-tbl-row co-tbl-row--alt"><div class="co-tbl-k">Number of Loads</div><div class="co-tbl-v">--</div></div>
+            <div class="co-tbl-row"><div class="co-tbl-k">TCG ID</div><div class="co-tbl-v" id="drawer-tcg-id" style="font-family:'DM Mono',monospace;font-size:12px;">—</div></div>
+            <div class="co-tbl-row co-tbl-row--alt"><div class="co-tbl-k">Code version</div><div class="co-tbl-v">3.04.029</div></div>
+            <div class="co-tbl-row"><div class="co-tbl-k">Commissioned</div><div class="co-tbl-v">--</div></div>
+            <div class="co-tbl-row co-tbl-row--alt"><div class="co-tbl-k">Last Connect</div><div class="co-tbl-v">Nov 26, 2025, 10:52 PM</div></div>
+            <div class="co-tbl-row"><div class="co-tbl-k">Last System Status</div><div class="co-tbl-v">Nov 26, 2025, 10:52 PM</div></div>
+            <div class="co-tbl-row co-tbl-row--alt"><div class="co-tbl-k">Last Reboot</div><div class="co-tbl-v">Nov 26, 2025, 1:16 PM</div></div>
+            <div class="co-tbl-row"><div class="co-tbl-k">Drum Manufacturer</div><div class="co-tbl-v">Schwing, 2022</div></div>
+            <div class="co-tbl-row co-tbl-row--alt"><div class="co-tbl-k">Drum Size</div><div class="co-tbl-v">--</div></div>
+            <div class="co-tbl-row"><div class="co-tbl-k">Number of Loads</div><div class="co-tbl-v">--</div></div>
           </div>
 
           <!-- Also viewing toggle — unit lens -->
@@ -5364,7 +5417,7 @@
 
           <!-- Unlink Unit at bottom -->
           <div style="margin-top:16px;margin-bottom:8px;">
-            <button onclick="truckDrawerUnlinkUnit()" style="width:100%;background:none;border:1.5px solid var(--red);color:var(--red);border-radius:32px;padding:10px 16px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">Unlink Unit</button>
+            <button onclick="truckDrawerUnlinkUnit()" style="width:100%;background:none;border:1.5px solid var(--red);color:var(--red);border-radius:32px;padding:10px 16px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">De-install unit</button>
           </div>
 
         </div><!-- /co-scroll -->
@@ -6102,6 +6155,87 @@
   ═══════════════════════════════════════════════════ -->
   <div id="s-tablet">
 
+    <!-- Slide-in nav panel — mirrors desktop sidebar, slides from left -->
+    <div id="tb-nav-panel" style="position:absolute;top:0;left:0;bottom:0;width:280px;background:#f0ede9;border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:500;transform:translateX(-100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);overflow:hidden;">
+      <!-- Brand -->
+      <div class="dt-sidebar-brand">
+        <svg width="72" height="18" viewBox="0 0 96 24" fill="none"><path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="var(--strong)"/></svg>
+      </div>
+      <!-- Nav items — exact copy of desktop sidebar -->
+      <div class="dt-nav-section">
+        <div class="dt-nav-item">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.66699 9.16699H6.66699C6.71108 9.16708 6.753 9.18464 6.78418 9.21582C6.81536 9.247 6.83292 9.28892 6.83301 9.33301V13.333C6.83301 13.3772 6.81544 13.4199 6.78418 13.4512C6.75302 13.4822 6.711 13.4999 6.66699 13.5H2.66699C2.62279 13.5 2.58008 13.4824 2.54883 13.4512C2.51757 13.4199 2.5 13.3772 2.5 13.333V9.33301C2.50009 9.289 2.51775 9.24698 2.54883 9.21582C2.58008 9.18456 2.62279 9.16699 2.66699 9.16699ZM11.333 9.16699C11.3772 9.16699 11.4199 9.18456 11.4512 9.21582C11.4822 9.24698 11.4999 9.289 11.5 9.33301V11.167H13.333C13.3772 11.167 13.4199 11.1846 13.4512 11.2158C13.4822 11.247 13.4999 11.289 13.5 11.333C13.5 11.3772 13.4824 11.4199 13.4512 11.4512C13.4199 11.4824 13.3772 11.5 13.333 11.5H11.5V13.333C11.5 13.3772 11.4824 13.4199 11.4512 13.4512C13.4199 13.4824 13.3772 13.5 13.333 13.5C11.289 13.4999 11.247 13.4822 11.2158 13.4512C11.1846 13.4199 11.167 13.3772 11.167 13.333V11.5H9.33301C9.289 11.4999 9.24698 11.4822 9.21582 11.4512C9.18456 11.4199 9.16699 11.3772 9.16699 11.333C9.16708 11.2889 9.18464 11.247 9.21582 11.2158C9.247 11.1846 9.28892 11.1671 9.33301 11.167H11.167V9.33301C11.1671 9.28892 11.1846 9.247 11.2158 9.21582C11.247 9.18464 11.2889 9.16708 11.333 9.16699ZM2.83301 13.167H6.5V9.5H2.83301V13.167ZM2.66699 2.5H6.66699C6.711 2.50009 6.75302 2.51775 6.78418 2.54883C6.81544 2.58008 6.83301 2.62279 6.83301 2.66699V6.66699C6.83292 6.71108 6.81536 6.753 6.78418 6.78418C6.753 6.81536 6.71108 6.83292 6.66699 6.83301H2.66699C2.62279 6.83301 2.58008 6.81544 2.54883 6.78418C2.51775 6.75302 2.50009 6.711 2.5 6.66699V2.66699C2.5 2.62279 2.51757 2.58008 2.54883 2.54883C2.58008 2.51757 2.62279 2.5 2.66699 2.5ZM9.33301 2.5H13.333C13.3772 2.5 13.4199 2.51757 13.4512 2.54883C13.4824 2.58008 13.5 2.62279 13.5 2.66699V6.66699C13.4999 6.711 13.4822 6.75302 13.4512 6.78418C13.4199 6.81544 13.3772 6.83301 13.333 6.83301H9.33301C9.28892 6.83292 9.247 6.81536 9.21582 6.78418C9.18464 6.753 9.16708 6.71108 9.16699 6.66699V2.66699C9.16699 2.62279 9.18456 2.58008 9.21582 2.54883C9.24698 2.51775 9.289 2.50009 9.33301 2.5ZM2.83301 6.5H6.5V2.83301H2.83301V6.5ZM9.5 6.5H13.167V2.83301H9.5V6.5Z" fill="#36322D" stroke="#111111"/></svg>
+          <span style="flex:1;">Home</span>
+        </div>
+        <div class="dt-nav-item">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.00066 7.99988H4.66732C4.49051 7.99988 4.32094 8.07012 4.19592 8.19515C4.07089 8.32017 4.00066 8.48974 4.00066 8.66655C4.00066 8.84336 4.07089 9.01293 4.19592 9.13795C4.32094 9.26298 4.49051 9.33322 4.66732 9.33322H6.00066C6.17747 9.33322 6.34704 9.26298 6.47206 9.13795C6.59708 9.01293 6.66732 8.84336 6.66732 8.66655C6.66732 8.48974 6.59708 8.32017 6.47206 8.19515C6.34704 8.07012 6.17747 7.99988 6.00066 7.99988ZM5.33399 6.66655H8.00066C8.17747 6.66655 8.34704 6.59631 8.47206 6.47129C8.59708 6.34626 8.66732 6.17669 8.66732 5.99988C8.66732 5.82307 8.59708 5.6535 8.47206 5.52848C8.34704 5.40345 8.17747 5.33322 8.00066 5.33322H5.33399C5.15718 5.33322 4.98761 5.40345 4.86259 5.52848C4.73756 5.6535 4.66732 5.82307 4.66732 5.99988C4.66732 6.17669 4.73756 6.34626 4.86259 6.47129C4.98761 6.59631 5.15718 6.66655 5.33399 6.66655ZM6.00066 10.6665H4.66732C4.49051 10.6665 4.32094 10.7368 4.19592 10.8618C4.07089 10.9868 4.00066 11.1564 4.00066 11.3332C4.00066 11.51 4.07089 11.6796 4.19592 11.8046C4.32094 11.9296 4.49051 11.9999 4.66732 11.9999H6.00066C6.17747 11.9999 6.34704 11.9296 6.47206 11.8046C6.59708 11.6796 6.66732 11.51 6.66732 11.3332C6.66732 11.1564 6.59708 10.9868 6.47206 10.8618C6.34704 10.7368 6.17747 10.6665 6.00066 10.6665ZM14.0007 7.99988H12.0007V1.99988C12.0011 1.88241 11.9705 1.7669 11.912 1.66505C11.8535 1.56319 11.7691 1.47862 11.6673 1.41988C11.566 1.36137 11.451 1.33057 11.334 1.33057C11.217 1.33057 11.102 1.36137 11.0007 1.41988L9.00066 2.56655L7.00066 1.41988C6.89931 1.36137 6.78435 1.33057 6.66732 1.33057C6.5503 1.33057 6.43534 1.36137 6.33399 1.41988L4.33399 2.56655L2.33399 1.41988C2.23264 1.36137 2.11768 1.33057 2.00066 1.33057C1.88363 1.33057 1.76867 1.36137 1.66732 1.41988C1.56559 1.47862 1.48118 1.56319 1.42264 1.66505C1.36411 1.7669 1.33352 1.88241 1.33399 1.99988V12.6665C1.33399 13.197 1.5447 13.7057 1.91978 14.0808C2.29485 14.4558 2.80356 14.6665 3.33399 14.6665H12.6673C13.1978 14.6665 13.7065 14.4558 14.0815 14.0808C14.4566 13.7057 14.6673 13.197 14.6673 12.6665V8.66655C14.6673 8.48974 14.5971 8.32017 14.4721 8.19515C14.347 8.07012 14.1775 7.99988 14.0007 7.99988ZM3.33399 13.3332C3.15718 13.3332 2.98761 13.263 2.86259 13.138C2.73756 13.0129 2.66732 12.8434 2.66732 12.6665V3.15322L4.00066 3.91322C4.10355 3.96696 4.21791 3.99502 4.33399 3.99502C4.45007 3.99502 4.56443 3.96696 4.66732 3.91322L6.66732 2.76655L8.66732 3.91322C8.77021 3.96696 8.88457 3.99502 9.00066 3.99502C9.11674 3.99502 9.2311 3.96696 9.33399 3.91322L10.6673 3.15322V12.6665C10.6691 12.894 10.7097 13.1194 10.7873 13.3332H3.33399ZM13.334 12.6665C13.334 12.8434 13.2638 13.0129 13.1387 13.138C13.0137 13.263 12.8441 13.3332 12.6673 13.3332C12.4905 13.3332 12.3209 13.263 12.1959 13.138C12.0709 13.0129 12.0007 12.8434 12.0007 12.6665V9.33322H13.334V12.6665Z" fill="#36322D"/></svg>
+          <span style="flex:1;">Tickets</span>
+          <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style="opacity:0.5;flex-shrink:0;"><path d="M1 1.5l5 5 5-5" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </div>
+        <!-- Diagnostic Center — expanded -->
+        <div style="border-radius:8px;overflow:visible;">
+          <div class="dt-nav-item" style="border-radius:8px;">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="2.5" stroke="#36322d" stroke-width="1.3"/><path d="M5 8h2l1.5-3 2 6L12 8h-1" stroke="#36322d" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span style="flex:1;">Diagnostic Center</span>
+            <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style="transform:rotate(180deg);flex-shrink:0;"><path d="M1 1.5l5 5 5-5" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;margin-top:2px;">
+            <div onclick="tbNavClose()" style="background:#c2d7fa;border-radius:32px;padding:10px 12px 10px 44px;cursor:pointer;">
+              <span style="font-size:14px;color:#000;letter-spacing:-0.28px;font-family:var(--font);font-weight:500;">All trucks</span>
+            </div>
+            <div style="padding:10px 12px 10px 44px;border-radius:32px;cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.04)'" onmouseleave="this.style.background=''">
+              <span style="font-size:14px;color:rgba(54,50,45,0.5);letter-spacing:-0.28px;font-family:var(--font);">Map</span>
+            </div>
+            <div onclick="tbNavClose()" style="padding:10px 12px 10px 44px;border-radius:32px;cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.04)'" onmouseleave="this.style.background=''">
+              <span style="font-size:14px;color:rgba(54,50,45,0.5);letter-spacing:-0.28px;font-family:var(--font);">Units</span>
+            </div>
+            <div style="padding:10px 12px 10px 44px;border-radius:32px;cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.04)'" onmouseleave="this.style.background=''">
+              <span style="font-size:14px;color:rgba(54,50,45,0.5);letter-spacing:-0.28px;font-family:var(--font);">Software Update</span>
+            </div>
+          </div>
+        </div>
+        <div class="dt-nav-item">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.3327 10.6666C12.9189 10.6688 12.5159 10.7992 12.1793 11.04L10.546 10.0733C10.6231 9.83411 10.6635 9.58462 10.666 9.33331C10.6641 8.74361 10.4668 8.17117 10.1049 7.70555C9.74301 7.23994 9.237 6.90741 8.66602 6.75998V5.21332C9.11082 5.05605 9.48572 4.7466 9.72444 4.33966C9.96315 3.93272 10.0503 3.45449 9.97055 2.98949C9.89077 2.5245 9.64917 2.10267 9.28846 1.79858C8.92774 1.49448 8.47114 1.3277 7.99935 1.3277C7.52756 1.3277 7.07096 1.49448 6.71024 1.79858C6.34953 2.10267 6.10793 2.5245 6.02815 2.98949C5.94837 3.45449 6.03554 3.93272 6.27426 4.33966C6.51298 4.7466 6.88787 5.05605 7.33268 5.21332V6.75998C6.7617 6.90741 6.25569 7.23994 5.89381 7.70555C5.53193 8.17117 5.3346 8.74361 5.33268 9.33331C5.33516 9.58462 5.37562 9.83411 5.45268 10.0733L3.81935 11.04C3.48279 10.7992 3.07983 10.6688 2.66602 10.6666C2.27045 10.6666 1.88377 10.7839 1.55488 11.0037C1.22598 11.2235 0.969633 11.5358 0.818257 11.9013C0.666882 12.2667 0.627276 12.6689 0.704446 13.0568C0.781616 13.4448 0.972098 13.8012 1.2518 14.0809C1.53151 14.3606 1.88787 14.551 2.27584 14.6282C2.6638 14.7054 3.06593 14.6658 3.43138 14.5144C3.79684 14.363 4.10919 14.1067 4.32896 13.7778C4.54872 13.4489 4.66602 13.0622 4.66602 12.6666C4.66355 12.4861 4.63664 12.3067 4.58602 12.1333L6.11935 11.22C6.61898 11.7167 7.29485 11.9954 7.99935 11.9954C8.70384 11.9954 9.37972 11.7167 9.87935 11.22L11.4127 12.1333C11.301 12.5371 11.3189 12.9657 11.4638 13.3587C11.6088 13.7517 11.8735 14.0893 12.2206 14.3238C12.5677 14.5584 12.9797 14.678 13.3984 14.6658C13.8171 14.6536 14.2215 14.5103 14.5543 14.256C14.8872 14.0017 15.1319 13.6493 15.2538 13.2485C15.3756 12.8477 15.3686 12.4188 15.2336 12.0222C15.0986 11.6257 14.8425 11.2815 14.5015 11.0383C14.1604 10.795 13.7516 10.6651 13.3327 10.6666Z" fill="#211F1C"/></svg>
+          <span style="flex:1;">Mix Design</span>
+          <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style="opacity:0.5;flex-shrink:0;"><path d="M1 1.5l5 5 5-5" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </div>
+        <div class="dt-nav-item">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.99904 1.33336C6.97763 1.33151 5.96946 1.56439 5.05233 2.01401C4.13521 2.46363 3.33366 3.11797 2.70956 3.92653C2.08545 4.7351 1.65548 5.67625 1.45284 6.67736C1.25019 7.67846 1.28029 8.71274 1.5408 9.70037C1.80131 10.688 2.28528 11.6026 2.95534 12.3735C3.62541 13.1444 4.46364 13.751 5.40536 14.1465C6.34708 14.5421 7.36709 14.7159 8.38666 14.6547C9.40623 14.5935 10.3981 14.2988 11.2857 13.7934H11.3324H11.3657C12.6492 13.0627 13.6538 11.9265 14.2217 10.5632C14.7896 9.19983 14.8887 7.68649 14.5035 6.26072C14.1182 4.83494 13.2704 3.57745 12.0932 2.68564C10.9159 1.79382 9.47587 1.31818 7.99904 1.33336ZM8.66571 2.71336C9.83906 2.86216 10.9297 3.39676 11.766 4.23308C12.6023 5.06941 13.1369 6.16001 13.2857 7.33336H8.66571V2.71336ZM7.99904 13.3334C6.64871 13.3241 5.35215 12.8031 4.371 11.8753C3.38985 10.9474 2.79718 9.682 2.71257 8.33429C2.62797 6.98658 3.05774 5.65696 3.91516 4.61373C4.77258 3.57051 5.9938 2.89137 7.33237 2.71336V8.00003C7.335 8.07984 7.35077 8.15868 7.37904 8.23336V8.28669V8.33336L10.0457 12.9134C9.39887 13.1902 8.70263 13.3331 7.99904 13.3334ZM11.219 12.24L9.15237 8.66669H13.2857C13.1959 9.36975 12.967 10.0479 12.6121 10.6614C12.2573 11.275 11.7837 11.8116 11.219 12.24Z" fill="black"/></svg>
+          <span style="flex:1;">Insights</span>
+          <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style="opacity:0.5;flex-shrink:0;"><path d="M1 1.5l5 5 5-5" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </div>
+        <div class="dt-nav-item">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 6.5V12C6 12.5523 6.44772 13 7 13H10.5" stroke="#211F1C" stroke-width="1.2"/><path d="M2.5 13C1.94772 13 1.5 12.5523 1.5 12V9.80278C1.5 9.60535 1.55844 9.41234 1.66795 9.24808L3.20313 6.9453C3.3886 6.6671 3.70083 6.5 4.03518 6.5H6V12C6 12.5523 6.44772 13 7 13H11" stroke="#211F1C" stroke-width="1.2" stroke-linejoin="round"/><circle cx="4" cy="13" r="1.4" stroke="#211F1C" stroke-width="1.2"/><circle cx="12" cy="13" r="1.4" stroke="#211F1C" stroke-width="1.2"/><path d="M12.2242 5.15477L8.65195 6.06584C6.54213 6.60392 5.61922 9.08368 6.86385 10.8702L11.9902 10.8575L14.0825 7.82226C14.2046 7.64525 14.204 7.41112 14.0811 7.23472L12.7748 5.35971C12.6519 5.18331 12.4325 5.10164 12.2242 5.15477Z" stroke="#211F1C" stroke-width="1.2"/><path d="M9.33001 2.66939H6.27001L6.80334 2.14273C6.92888 2.01719 6.9994 1.84693 6.9994 1.66939C6.9994 1.49186 6.92888 1.3216 6.80334 1.19606C6.67781 1.07053 6.50754 1 6.33001 1C6.15247 1 5.98221 1.07053 5.85668 1.19606L4.19001 2.86273C4.12932 2.92613 4.08174 3.00089 4.05001 3.08273C3.98333 3.24504 3.98333 3.42709 4.05001 3.58939C4.08174 3.67123 4.12932 3.74599 4.19001 3.80939L5.85668 5.47606C5.91865 5.53855 5.99239 5.58814 6.07362 5.62199C6.15486 5.65583 6.242 5.67326 6.33001 5.67326C6.41802 5.67326 6.50515 5.65583 6.58639 5.62199C6.66763 5.58814 6.74137 5.53855 6.80334 5.47606C6.86583 5.41409 6.91542 5.34035 6.94927 5.25911C6.98312 5.17787 7.00054 5.09074 7.00054 5.00273C7.00054 4.91472 6.98312 4.82758 6.94927 4.74634C6.91542 4.6651 6.86583 4.59137 6.80334 4.52939L6.27001 4.00273H9.33001C9.50682 4.00273 9.67639 3.93249 9.80141 3.80747C9.92644 3.68244 9.99668 3.51287 9.99668 3.33606C9.99668 3.15925 9.92644 2.98968 9.80141 2.86466C9.67639 2.73963 9.50682 2.66939 9.33001 2.66939Z" fill="#211F1C"/></svg>
+          <span style="flex:1;">Returned Concrete</span>
+          <span style="font-size:11px;font-weight:600;color:#295ccc;border:1.5px solid #295ccc;border-radius:16px;padding:2px 8px;letter-spacing:-0.2px;white-space:nowrap;">New</span>
+        </div>
+      </div>
+      <!-- Footer -->
+      <div class="dt-sidebar-footer" style="display:flex;flex-direction:column;gap:0;">
+        <div class="dt-acct-picker" style="position:relative;margin-bottom:6px;">
+          <div style="display:flex;flex-direction:column;flex:1;min-width:0;">
+            <div style="font-size:10px;font-weight:600;color:var(--soft);letter-spacing:0.4px;text-transform:uppercase;margin-bottom:2px;">Account</div>
+            <div style="font-size:14px;font-weight:500;color:var(--strong);letter-spacing:-0.28px;">Cemex AZ</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round"/></svg>
+        </div>
+        <div class="dt-nav-item">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="#36322d" stroke-width="1.3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <span style="flex:1;">Profile</span>
+        </div>
+        <div class="dt-nav-item">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="#36322d" stroke-width="1.3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.1 3.1l1.4 1.4M11.5 11.5l1.4 1.4M3.1 12.9l1.4-1.4M11.5 4.5l1.4-1.4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <span style="flex:1;">Settings</span>
+        </div>
+        <div class="dt-nav-item">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#36322d" stroke-width="1.3"/><path d="M8 7v5M8 5v1" stroke="#36322d" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span style="flex:1;">Support</span>
+        </div>
+      </div>
+    </div>
+    <!-- Scrim — tap to close nav -->
+    <div id="tb-nav-scrim" onclick="tbNavClose()" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.3);z-index:499;"></div>
+
     <!-- ── Status bar spacer (below speaker/camera area on tablet) ── -->
     <div class="tb-status-bar"></div>
 
@@ -6230,26 +6364,89 @@
 
     <!-- Truck drawer — slides in from right -->
     <div class="tb-drawer" id="tb-drawer">
-      <div class="tb-drawer-header">
-        <button class="tb-drawer-back" onclick="tbCloseDrawer()">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="tb-drawer-title" id="tb-drawer-title">Truck —</div>
-        <div class="tb-drawer-ign" id="tb-drawer-ign">
-          <span class="tb-drawer-ign-dot"></span>
-          <span id="tb-drawer-ign-label">Ignition on</span>
+      <div class="dt-drawer-header" style="padding:16px 20px 0;">
+        <div class="dt-drawer-title-row">
+          <!-- Truck number + Unit subtitle -->
+          <div style="display:flex;flex-direction:column;gap:3px;">
+            <span class="dt-drawer-truck-label">Truck: <strong id="tb-drawer-truck-num">—</strong></span>
+            <span style="font-size:11px;color:var(--soft);letter-spacing:0.2px;">
+              Unit <span id="tb-drawer-unit-id" style="font-family:'DM Mono',monospace;color:var(--defined);">—</span>
+            </span>
+          </div>
+          <!-- Ignition / mode badge -->
+          <span class="dt-drawer-ign-badge" id="tb-drawer-ign-badge" onclick="tbToggleModePopover()" style="cursor:pointer;position:relative;" title="Change truck mode">
+            <span class="dt-drawer-ign-dot"></span>
+            <span id="tb-drawer-ign-text">Ignition on</span>
+            <div id="tb-mode-popover" style="display:none;position:absolute;top:calc(100% + 8px);left:0;background:white;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(54,50,45,0.14);padding:6px;min-width:180px;z-index:300;" onclick="event.stopPropagation()">
+              <div style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.4px;text-transform:uppercase;padding:4px 8px 6px;">Truck Mode</div>
+              <div class="dt-mode-opt" onclick="tbSetMode('live')">🟢 Live</div>
+              <div class="dt-mode-opt" onclick="tbSetMode('maintenance')">🟡 Maintenance</div>
+              <div class="dt-mode-opt" onclick="tbSetMode('offline')">⚪ Offline</div>
+            </div>
+          </span>
+          <!-- Share button -->
+          <button class="dt-drawer-share-btn" title="Share">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="12" cy="3" r="1.5" stroke="#36322d" stroke-width="1.3"/><circle cx="12" cy="13" r="1.5" stroke="#36322d" stroke-width="1.3"/><circle cx="3" cy="8" r="1.5" stroke="#36322d" stroke-width="1.3"/><path d="M10.5 3.87L4.5 7.13M4.5 8.87l6 3.26" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </button>
+          <!-- Unit pill + close — anchored to the right as a group -->
+          <div style="display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0;">
+            <button id="tb-drawer-back-to-unit" class="dt-drawer-back-to-unit" style="display:none;">
+              <span id="tb-drawer-back-to-unit-label">Unit </span><strong id="tb-drawer-back-to-unit-id">—</strong>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6h7M6.5 2.5L10 6l-3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="dt-drawer-chrome-btn dt-drawer-close-btn" onclick="tbCloseDrawer()" title="Close">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="white" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
+        <!-- Tabs -->
+        <div class="tb-drawer-tabs" style="margin-top:0;">
+          <button class="tb-drawer-tab active" onclick="tbDrawerTab('overview',this)">Components overview</button>
+          <button class="tb-drawer-tab" onclick="tbDrawerTab('timeline',this)">Component timeline</button>
+          <button class="tb-drawer-tab" onclick="tbDrawerTab('logs',this)">Trucks Logs</button>
+          <button class="tb-drawer-tab" onclick="tbDrawerTab('manual',this)">Manual Control</button>
+          <button class="tb-drawer-tab" onclick="tbDrawerTab('sensor',this)">Sensor</button>
+          <button class="tb-drawer-tab" onclick="tbDrawerTab('config',this)">Configuration</button>
         </div>
       </div>
-      <div class="tb-drawer-tabs">
-        <button class="tb-drawer-tab active" onclick="tbDrawerTab('overview',this)">Components overview</button>
-        <button class="tb-drawer-tab" onclick="tbDrawerTab('timeline',this)">Component timeline</button>
-        <button class="tb-drawer-tab" onclick="tbDrawerTab('logs',this)">Trucks Logs</button>
-        <button class="tb-drawer-tab" onclick="tbDrawerTab('manual',this)">Manual Control</button>
-        <button class="tb-drawer-tab" onclick="tbDrawerTab('sensor',this)">Sensor</button>
-        <button class="tb-drawer-tab" onclick="tbDrawerTab('config',this)">Configuration</button>
+      <!-- tb-drawer-main wraps the scroll so overlay panels (install, TCG replace,
+           error reset) have a positioned ancestor to attach to — mirrors the
+           dt-drawer-main role on desktop. Uses its own IDs to avoid conflicts. -->
+      <div class="dt-drawer-main" id="tb-drawer-main" style="flex:1;display:flex;flex-direction:column;min-height:0;position:relative;">
+        <div class="tb-drawer-scroll" id="tb-drawer-scroll" style="flex:1;overflow-y:auto;padding:20px 16px;">
+          <!-- content injected by tbDrawerTab() -->
+        </div>
+        <!-- Config save bar — pinned below scroll, same pattern as desktop -->
+        <div id="tb-cfg-savebar" style="display:none;flex-shrink:0;background:var(--layer-1);border-top:1px solid var(--border);padding:14px 24px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:13px;color:var(--soft);letter-spacing:-0.26px;">Unsaved changes</span>
+            <div style="display:flex;gap:8px;">
+              <button onclick="dtCfgCancel()" style="background:transparent;border:1px solid var(--border);border-radius:20px;padding:8px 18px;font-size:13px;font-weight:500;color:var(--strong);font-family:var(--font);letter-spacing:-0.26px;cursor:pointer;">Cancel</button>
+              <button id="tb-cfg-save-btn" onclick="dtCfgSave()" style="background:var(--blue);border:none;border-radius:20px;padding:8px 18px;font-size:13px;font-weight:500;color:white;font-family:var(--font);letter-spacing:-0.26px;cursor:pointer;">Save changes</button>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="tb-drawer-scroll" id="tb-drawer-scroll">
-        <!-- content injected by tbDrawerTab() -->
+      <!-- Full-cover log detail overlay — sits over header+tabs when a log row is tapped -->
+      <div id="tb-logs-overlay" style="display:none;position:absolute;inset:0;background:var(--layer-1);z-index:100;flex-direction:column;overflow:hidden;">
+        <!-- Back bar -->
+        <div style="display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--layer-1);">
+          <button onclick="tbLogsShowList()" style="display:flex;align-items:center;gap:6px;background:var(--layer-2);border:1px solid var(--border);border-radius:20px;padding:7px 14px;font-size:13px;font-weight:500;color:var(--strong);font-family:var(--font);cursor:pointer;flex-shrink:0;">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Logs
+          </button>
+          <div style="min-width:0;flex:1;">
+            <div id="tb-det-title" style="font-size:15px;font-weight:500;color:var(--strong);letter-spacing:-0.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+            <div id="tb-det-meta" style="font-size:12px;color:var(--soft);letter-spacing:-0.24px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+          </div>
+        </div>
+        <!-- Detail tabs -->
+        <div style="display:flex;border-bottom:1px solid var(--border);flex-shrink:0;padding:0 20px;">
+          <div id="tb-det-tab-structured" onclick="tbLogsTab('structured',this)" style="padding:10px 14px;font-size:13px;font-weight:500;color:var(--blue);border-bottom:2px solid var(--blue);cursor:pointer;letter-spacing:-0.26px;">Structured</div>
+          <div id="tb-det-tab-raw"        onclick="tbLogsTab('raw',this)"        style="padding:10px 14px;font-size:13px;color:var(--soft);border-bottom:2px solid transparent;cursor:pointer;letter-spacing:-0.26px;">Raw JSON</div>
+        </div>
+        <!-- Detail scroll -->
+        <div id="tb-det-scroll" style="flex:1;overflow-y:auto;padding:16px 20px;"></div>
       </div>
     </div>
 
@@ -6328,6 +6525,22 @@
 
       <!-- Footer — Profile, Support, Settings -->
       <div class="dt-sidebar-footer" style="display:flex;flex-direction:column;gap:0;">
+        <!-- Master account picker — sets the data scope for the whole session.
+             Single-select. Lives at the bottom of the sidebar, visually elevated
+             from the secondary controls below it. Mirrors the mobile pattern
+             where the picker sits at the top of the main nav. -->
+        <div class="dt-acct-picker" id="dt-acct-picker" onclick="dtAcctToggle()" style="position:relative;margin-bottom:6px;">
+          <div style="display:flex;flex-direction:column;flex:1;min-width:0;">
+            <div style="font-size:10px;font-weight:600;color:var(--soft);letter-spacing:0.4px;text-transform:uppercase;margin-bottom:2px;">Account</div>
+            <div id="dt-acct-current" style="font-size:14px;font-weight:500;color:var(--strong);letter-spacing:-0.28px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Cemex AZ</div>
+          </div>
+          <svg id="dt-acct-chev" width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;transition:transform 0.2s;"><path d="M3 5l4 4 4-4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <!-- Dropdown — opens upward since picker sits at the bottom -->
+          <div id="dt-acct-dd" style="display:none;position:absolute;left:0;right:0;bottom:calc(100% + 6px);background:white;border:1px solid var(--border);border-radius:12px;box-shadow:0 -4px 16px rgba(54,50,45,0.12);padding:6px;z-index:200;" onclick="event.stopPropagation()">
+            <div style="font-size:10px;font-weight:600;color:var(--soft);letter-spacing:0.4px;text-transform:uppercase;padding:6px 10px 8px;">Switch account</div>
+            <div id="dt-acct-options"></div>
+          </div>
+        </div>
         <div class="dt-nav-item">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="#36322d" stroke-width="1.3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg>
           <span style="flex:1;">Profile</span>
@@ -6358,7 +6571,12 @@
           <!-- Header -->
           <div class="dt-drawer-header">
             <div class="dt-drawer-title-row">
-              <span class="dt-drawer-truck-label">Truck: <strong id="dt-drawer-truck-num">—</strong></span>
+              <div style="display:flex;flex-direction:column;gap:3px;">
+                <span class="dt-drawer-truck-label">Truck: <strong id="dt-drawer-truck-num">—</strong></span>
+                <span style="font-size:11px;color:var(--soft);letter-spacing:0.2px;">
+                  Unit <span id="dt-drawer-unit-id" style="font-family:'DM Mono',monospace;color:var(--defined);">—</span>
+                </span>
+              </div>
               <span class="dt-drawer-ign-badge" id="dt-drawer-ign-badge" onclick="dtToggleModePopover()" style="cursor:pointer;position:relative;" title="Change truck mode">
                 <span class="dt-drawer-ign-dot"></span>
                 <span id="dt-drawer-ign-text">Ignition on</span>
@@ -6492,10 +6710,14 @@
           <!-- Metadata table -->
           <div class="dt-drawer-meta">
             <div class="dt-drawer-meta-row">
+              <span class="dt-drawer-meta-label">TCG ID</span>
+              <span class="dt-drawer-meta-val" id="dt-drawer-tcg-id" style="font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.2px;">—</span>
+            </div>
+            <div class="dt-drawer-meta-row alt">
               <span class="dt-drawer-meta-label">Code version</span>
               <span class="dt-drawer-meta-val" id="dt-drawer-ver">—</span>
             </div>
-            <div class="dt-drawer-meta-row alt">
+            <div class="dt-drawer-meta-row">
               <span class="dt-drawer-meta-label">Commissioned</span>
               <span class="dt-drawer-meta-val" id="dt-drawer-commissioned">—</span>
             </div>
@@ -6528,7 +6750,7 @@
           <!-- Action buttons -->
           <div class="dt-drawer-actions" id="dt-drawer-actions">
             <button class="dt-drawer-action-btn" id="dt-drawer-ping-btn" onclick="dtPingTruck()">Ping Truck</button>
-            <button class="dt-drawer-action-btn danger" id="dt-drawer-unlink-btn" onclick="dtTruckDrawerUnlinkUnit()">Unlink Unit</button>
+            <button class="dt-drawer-action-btn danger" id="dt-drawer-unlink-btn" onclick="dtTruckDrawerUnlinkUnit()">De-install unit</button>
           </div>
 
           <!-- Inline unlink confirm — appears beneath the Unlink button when
@@ -6626,8 +6848,12 @@
         <div class="dt-drawer-main">
           <div class="dt-drawer-header">
             <div class="dt-drawer-title-row">
-              <div class="dt-drawer-truck-label">Unit ID: <strong id="dt-ud-id">—</strong></div>
-              <div id="dt-ud-truck-label" class="dt-drawer-truck-label" style="display:none;color:var(--soft);font-size:14px;letter-spacing:-0.28px;"></div>
+              <div style="display:flex;flex-direction:column;gap:3px;">
+                <div class="dt-drawer-truck-label">Unit: <strong id="dt-ud-id">—</strong></div>
+                <span style="font-size:11px;color:var(--soft);letter-spacing:0.2px;">
+                  Truck <span id="dt-ud-truck-num" style="font-family:'DM Mono',monospace;color:var(--defined);">—</span>
+                </span>
+              </div>
               <div id="dt-ud-status-pill"></div>
               <button class="dt-drawer-share-btn" title="Export">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 9v2.5C2 12.3 2.7 13 3.5 13h7c.8 0 1.5-.7 1.5-1.5V9M7 1v8M4 5l3-4 3 4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -6682,7 +6908,7 @@
         <div class="dt-stat-row" id="dt-stat-row">
           <div class="dt-stat-card">
             <div class="dt-stat-label">Trucks commissioned</div>
-            <div class="dt-stat-value" id="dt-stat-commissioned">250</div>
+            <div class="dt-stat-value" id="dt-stat-commissioned">—</div>
           </div>
           <div class="dt-stat-card">
             <div class="dt-stat-label">Unlinked Units</div>
@@ -6906,31 +7132,27 @@
           <div class="dt-page-title">Diagnostic Center</div>
           <div class="dt-page-sub" id="dt-units-sub">All Units · — units</div>
 
-          <!-- Stat row — uses the same .dt-stat-row / .dt-stat-card system as Trucks -->
+          <!-- Stat row — same treatment as All Trucks -->
           <div class="dt-stat-row" id="dt-units-stat-row">
             <div class="dt-stat-card">
-              <div class="dt-stat-label">Trucks commissioned</div>
+              <div class="dt-stat-label">Units Active</div>
               <div class="dt-stat-value" id="dt-units-stat-commissioned">—</div>
+            </div>
+            <div class="dt-stat-card">
+              <div class="dt-stat-label">Total Units</div>
+              <div class="dt-stat-value" id="dt-units-stat-total">—</div>
             </div>
             <div class="dt-stat-card">
               <div class="dt-stat-label">Unlinked Units</div>
               <div class="dt-stat-value" id="dt-units-stat-unlinked">—</div>
             </div>
             <div class="dt-stat-card">
-              <div class="dt-stat-label">Maintenance required</div>
+              <div class="dt-stat-label">Maintenance Mode</div>
               <div class="dt-stat-value" id="dt-units-stat-maintreq">—</div>
             </div>
             <div class="dt-stat-card">
-              <div class="dt-stat-label">Scheduled for maintenance</div>
-              <div class="dt-stat-value" id="dt-units-stat-scheduled">—</div>
-            </div>
-            <div class="dt-stat-card">
-              <div class="dt-stat-label">Out of service</div>
-              <div class="dt-stat-value" id="dt-units-stat-oos">—</div>
-            </div>
-            <div class="dt-stat-card">
-              <div class="dt-stat-label">In maintenance</div>
-              <div class="dt-stat-value" id="dt-units-stat-inmaint">—</div>
+              <div class="dt-stat-label">Pending Return</div>
+              <div class="dt-stat-value" id="dt-units-stat-pending">—</div>
             </div>
           </div>
 
@@ -7450,7 +7672,7 @@ const logs = [
   { date:'02/17/2026', time:'04:14 PM', type:'Ticket Sent',       sub:'Ticketed Received'  },
   { date:'02/17/2026', time:'04:14 PM', type:'Ticketed Received',  sub:'Buildup Data'       },
   { date:'02/18/2026', time:'09:30 AM', type:'Backend Request',    sub:'Identity'           },
-  { date:'02/18/2026', time:'11:00 AM', type:'Event',              sub:'Drum Sensor'        },
+  { date:'02/18/2026', time:'11:00 AM', type:'Event',              sub:'WDS'        },
   { date:'02/19/2026', time:'02:15 PM', type:'Event',              sub:'Fluid Error'        },
   { date:'02/19/2026', time:'03:00 PM', type:'Ticketed Received',  sub:'Feedback Session'   },
   { date:'02/20/2026', time:'10:00 AM', type:'Event',              sub:'Build Up Data'      },
@@ -7733,6 +7955,14 @@ function openDrawer(i, context) {
   const t = trucks[i];
   const truckNum = t.num;
   document.getElementById('drawer-truck-num').textContent = 'Truck: ' + truckNum;
+  /* Populate Unit ID + TCG ID subtitle — look up the unit linked to this truck. */
+  const unitForTruck = (typeof UNITS_DATA !== 'undefined')
+    ? UNITS_DATA.find(u => String(u.truck) === String(truckNum))
+    : null;
+  const moUnitEl = document.getElementById('drawer-unit-id');
+  const moTcgEl  = document.getElementById('drawer-tcg-id');
+  if (moUnitEl) moUnitEl.textContent = unitForTruck ? unitForTruck.id : '—';
+  if (moTcgEl)  moTcgEl.textContent  = (unitForTruck && unitForTruck.tgw && unitForTruck.tgw !== '--') ? unitForTruck.tgw : '—';
 
   /* Hide all states first */
   document.getElementById('state-list').style.display       = 'none';
@@ -7749,11 +7979,8 @@ function openDrawer(i, context) {
     document.getElementById('state-unlinked').style.display = 'flex';
     document.querySelector('.d-nav-row').style.display = 'none';
     /* Update ignition pill to grey Not Connected */
-    const ignPill = document.querySelector('#drawer .d-ign-pill');
-    if (ignPill) {
-      ignPill.style.cssText = 'display:flex;align-items:center;gap:5px;background:rgba(54,50,45,0.08);border-radius:20px;padding:5px 10px;font-size:13px;font-weight:500;color:var(--soft);';
-      ignPill.innerHTML = `<span style="width:7px;height:7px;border-radius:50%;background:var(--soft);flex-shrink:0;display:inline-block;"></span>Not Connected`;
-    }
+    const ignPill = document.getElementById('mo-ign-pill');
+    if (ignPill) ignPill.className = 'd-ign-pill off';
     document.getElementById('filters-pill').style.display = 'none';
     document.getElementById('ping-pill').style.display    = 'none';
     document.getElementById('update-pill').style.display  = 'none';
@@ -7770,11 +7997,8 @@ function openDrawer(i, context) {
     document.getElementById('ping-pill').style.display    = 'flex';
     document.getElementById('update-pill').style.display  = 'none';
     /* Reset ignition pill to green */
-    const ignPill = document.querySelector('#drawer .d-ign-pill');
-    if (ignPill) {
-      ignPill.style.cssText = '';
-      ignPill.innerHTML = `<div class="d-ign-dot"></div>Ignition on`;
-    }
+    const ignPill = document.getElementById('mo-ign-pill');
+    if (ignPill) ignPill.className = 'd-ign-pill';
     renderTimeline(truckNum);
   }
 
@@ -8032,6 +8256,11 @@ function utabConfirmAttach() {
   const truckLabel = document.getElementById('drawer-truck-num');
   const truckId = truckLabel ? truckLabel.textContent.replace('Truck: ', '').trim() : '--';
 
+  /* Look up the unit's TCG ID for the confirmation surface — Martin flagged
+     this as the field FSTs need to verify before committing. */
+  const unitObj = (typeof UNITS_DATA !== 'undefined') ? UNITS_DATA.find(u => u.id === utabSelectedUnit) : null;
+  const tcgId = (unitObj && unitObj.tgw && unitObj.tgw !== '--') ? unitObj.tgw : '—';
+
   /* Show confirm overlay on the drawer */
   const existing = document.getElementById('utab-confirm-overlay');
   if (existing) existing.remove();
@@ -8047,8 +8276,19 @@ function utabConfirmAttach() {
         </svg>
       </div>
       <div class="confirm-title">Attach Unit to Truck</div>
-      <div class="confirm-body">
-        Unit <strong>${utabSelectedUnit}</strong> will be attached to Truck <strong>${truckId}</strong>.
+      <div style="background:var(--layer-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin:8px 0 14px;display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;">
+          <span style="color:var(--soft);letter-spacing:-0.26px;">Unit ID</span>
+          <span style="color:var(--strong);font-family:'DM Mono',monospace;letter-spacing:0.2px;">${utabSelectedUnit}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;">
+          <span style="color:var(--soft);letter-spacing:-0.26px;">TCG ID</span>
+          <span style="color:var(--strong);font-family:'DM Mono',monospace;letter-spacing:0.2px;">${tcgId}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;">
+          <span style="color:var(--soft);letter-spacing:-0.26px;">Truck</span>
+          <span style="color:var(--strong);font-weight:500;letter-spacing:-0.26px;">${truckId}</span>
+        </div>
       </div>
       <div class="confirm-btns">
         <button class="confirm-btn-primary" onclick="utabDoAttach('${utabSelectedUnit}','${truckId}')">Confirm Attachment</button>
@@ -8145,14 +8385,64 @@ function updateArrows() {
 }
 
 /* ── LOG LIST ────────────────────────────────────── */
+let mobLogSearchVal = '';
+let mobLogActiveTypes = new Set();
+
+function mobLogsFilter() {
+  mobLogSearchVal = (document.getElementById('mob-log-search')?.value || '').toLowerCase();
+  renderLogRows();
+}
+
+function mobLogsToggleFilter() {
+  const panel = document.getElementById('mob-log-filter-panel');
+  const btn   = document.getElementById('mob-log-filter-btn');
+  if (!panel) return;
+  const open = panel.style.display === 'flex';
+  panel.style.display = open ? 'none' : 'flex';
+  panel.style.flexDirection = 'column';
+  if (!open) mobLogsRenderChips();
+  btn.style.background = open ? 'var(--layer-1)' : 'var(--strong)';
+  btn.style.color      = open ? 'var(--strong)'  : 'white';
+}
+
+function mobLogsRenderChips() {
+  const types = [...new Set(logs.map(l => l.type))];
+  const wrap  = document.getElementById('mob-log-type-chips');
+  if (!wrap) return;
+  wrap.innerHTML = types.map(type => {
+    const active = mobLogActiveTypes.has(type);
+    return `<button onclick="mobLogsToggleType('${type}')" id="mob-chip-${type.replace(/\s/g,'_')}"
+      style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;cursor:pointer;border:1px solid ${active?'var(--blue)':'var(--border)'};background:${active?'var(--blue)':'var(--layer-1)'};color:${active?'white':'var(--strong)'};">
+      ${type}
+    </button>`;
+  }).join('');
+}
+
+function mobLogsToggleType(type) {
+  if (mobLogActiveTypes.has(type)) mobLogActiveTypes.delete(type);
+  else mobLogActiveTypes.add(type);
+  mobLogsRenderChips();
+  renderLogRows();
+}
+
 function renderLogRows() {
-  document.getElementById('log-scroll').innerHTML = logs.map((l,i) => `
-    <div class="log-row" id="lr-${i}" onclick="openDetail(${i})"
-         style="${i%2===0?'background:var(--layer-1)':'background:var(--layer-2)'}">
-      <div class="log-td time"><span class="t-main">${l.date}</span><span class="t-sub">${l.time}</span></div>
-      <div class="log-td">${l.type}</div>
-      <div class="log-td">${l.sub}</div>
-    </div>`).join('');
+  const query   = mobLogSearchVal;
+  const filtered = logs.filter((l, i) => {
+    if (mobLogActiveTypes.size > 0 && !mobLogActiveTypes.has(l.type)) return false;
+    if (query && !`${l.date} ${l.time} ${l.type} ${l.sub}`.toLowerCase().includes(query)) return false;
+    return true;
+  });
+  document.getElementById('log-scroll').innerHTML = filtered.length === 0
+    ? `<div style="padding:32px 16px;text-align:center;font-size:13px;color:var(--soft);">No matching logs</div>`
+    : filtered.map((l) => {
+        const i = logs.indexOf(l);
+        return `<div class="log-row" id="lr-${i}" onclick="openDetail(${i})"
+             style="${i%2===0?'background:var(--layer-1)':'background:var(--layer-2)'}">
+          <div class="log-td time"><span class="t-main">${l.date}</span><span class="t-sub">${l.time}</span></div>
+          <div class="log-td">${l.type}</div>
+          <div class="log-td">${l.sub}</div>
+        </div>`;
+      }).join('');
 }
 
 function showLogList() {
@@ -8287,15 +8577,6 @@ function renderDetailContent(tab) {
         <p>This snapshot reflects truck state at the moment this event was recorded — not current status. Review logs before and after this event to understand the full picture.</p>
       </div>`;
 
-  } else if (tab === 'summary') {
-    area.innerHTML = `
-      <div style="font-size:14px;color:var(--strong);line-height:1.6;margin-bottom:14px;letter-spacing:-0.28px;">A system status event was recorded. The truck reported 7 components online and 4 with no contact at this moment.</div>
-      ${[['Source','TRUCK'],['Event type','System Status'],['Components online','7'],['No contact','4'],['Message time','02/17/2026 04:14 PM']].map(([k,v])=>`
-        <div class="sum-kv"><span class="sum-k">${k}</span><span class="sum-v">${v}</span></div>`).join('')}
-      <div class="caveat" style="margin-top:14px;">
-        <p>This is a point-in-time snapshot. It does not reflect current truck state.</p>
-      </div>`;
-
   } else {
     area.innerHTML = `<div class="raw-block">{
   "wirelessDrum": {
@@ -8422,7 +8703,7 @@ const TIMELINE_DATA = {
     byDay: [
       /* 0: Mon 13 — mostly clean, one Iox warning resolved */
       [
-        { name:'Iox/Robotex', dot:'#ffba0d', events:[
+        { name:'TCG', dot:'#ffba0d', events:[
           { type:'warn', time:'11:20 - 11:45', sub:'Warning · 25 min (resolved)' },
         ]},
         { name:'Charge',      dot:'#2ecf1d', events:[] },
@@ -8436,7 +8717,7 @@ const TIMELINE_DATA = {
       ],
       /* 1: Tue 14 — warnings on Charge + Discharge, both resolved */
       [
-        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'TCG', dot:'#2ecf1d', events:[] },
         { name:'Charge',      dot:'#ffba0d', events:[
           { type:'warn', time:'08:30 - 09:15', sub:'Warning · 45 min (resolved)' },
           { type:'warn', time:'13:00 - 13:30', sub:'Warning · 30 min (resolved)' },
@@ -8453,7 +8734,7 @@ const TIMELINE_DATA = {
       ],
       /* 2: Wed 14 — CWR first alarm + Iox warning */
       [
-        { name:'Iox/Robotex', dot:'#ffba0d', events:[
+        { name:'TCG', dot:'#ffba0d', events:[
           { type:'warn', time:'07:50 - 08:30', sub:'Warning · 40 min (resolved)' },
         ]},
         { name:'Charge',      dot:'#2ecf1d', events:[] },
@@ -8469,7 +8750,7 @@ const TIMELINE_DATA = {
       ],
       /* 3: Thu 15 — CWR alarm resumes + WDS alarm first appears + Bus Power warnings */
       [
-        { name:'Iox/Robotex', dot:'#ffba0d', events:[
+        { name:'TCG', dot:'#ffba0d', events:[
           { type:'warn', time:'09:00 - 09:25', sub:'Warning · 25 min (resolved)' },
         ]},
         { name:'Charge',      dot:'#ffba0d', events:[
@@ -8493,7 +8774,7 @@ const TIMELINE_DATA = {
       ],
       /* 4: Fri 16 — escalating: Int. Display + Bus Power alarms, CWR all day, WDS persists */
       [
-        { name:'Iox/Robotex', dot:'#ffba0d', events:[
+        { name:'TCG', dot:'#ffba0d', events:[
           { type:'warn', time:'08:10 - 08:30', sub:'Warning · 20 min' },
           { type:'warn', time:'13:45 - 14:05', sub:'Warning · 20 min' },
         ]},
@@ -8521,7 +8802,7 @@ const TIMELINE_DATA = {
       ],
       /* 5: Sat 17 — sustained alarms, all major components affected */
       [
-        { name:'Iox/Robotex', dot:'#ffba0d', events:[
+        { name:'TCG', dot:'#ffba0d', events:[
           { type:'warn', time:'08:10 - 08:30', sub:'Warning · 20 min' },
           { type:'warn', time:'13:45 - 14:05', sub:'Warning · 20 min' },
         ]},
@@ -8552,7 +8833,7 @@ const TIMELINE_DATA = {
       ],
       /* 6: Today 18 — full active state, WDS unresolved + ongoing */
       [
-        { name:'Iox/Robotex', dot:'#ffba0d', events:[
+        { name:'TCG', dot:'#ffba0d', events:[
           { type:'warn', time:'08:10 - 08:30', sub:'Warning · 20 min' },
           { type:'warn', time:'13:45 - 14:05', sub:'Warning · 20 min' },
         ]},
@@ -8606,7 +8887,7 @@ const TIMELINE_DATA = {
     byDay: [
       /* 0: Mon — clean */
       [
-        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'TCG', dot:'#2ecf1d', events:[] },
         { name:'Charge',      dot:'#2ecf1d', events:[] },
         { name:'Discharge',   dot:'#2ecf1d', events:[] },
         { name:'Drum',        dot:'#2ecf1d', events:[] },
@@ -8618,7 +8899,7 @@ const TIMELINE_DATA = {
       ],
       /* 1: Tue — clean */
       [
-        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'TCG', dot:'#2ecf1d', events:[] },
         { name:'Charge',      dot:'#2ecf1d', events:[] },
         { name:'Discharge',   dot:'#2ecf1d', events:[] },
         { name:'Drum',        dot:'#2ecf1d', events:[] },
@@ -8630,7 +8911,7 @@ const TIMELINE_DATA = {
       ],
       /* 2: Wed — clean */
       [
-        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'TCG', dot:'#2ecf1d', events:[] },
         { name:'Charge',      dot:'#2ecf1d', events:[] },
         { name:'Discharge',   dot:'#2ecf1d', events:[] },
         { name:'Drum',        dot:'#2ecf1d', events:[] },
@@ -8642,7 +8923,7 @@ const TIMELINE_DATA = {
       ],
       /* 3: Thu — Drum RPM warnings */
       [
-        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'TCG', dot:'#2ecf1d', events:[] },
         { name:'Charge',      dot:'#2ecf1d', events:[] },
         { name:'Discharge',   dot:'#2ecf1d', events:[] },
         { name:'Drum',        dot:'#ffba0d', events:[
@@ -8657,7 +8938,7 @@ const TIMELINE_DATA = {
       ],
       /* 4: Fri — Drum warning continues, CWR brief warning */
       [
-        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'TCG', dot:'#2ecf1d', events:[] },
         { name:'Charge',      dot:'#2ecf1d', events:[] },
         { name:'Discharge',   dot:'#2ecf1d', events:[] },
         { name:'Drum',        dot:'#ffba0d', events:[
@@ -8673,7 +8954,7 @@ const TIMELINE_DATA = {
       ],
       /* 5: Sat — clean */
       [
-        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'TCG', dot:'#2ecf1d', events:[] },
         { name:'Charge',      dot:'#2ecf1d', events:[] },
         { name:'Discharge',   dot:'#2ecf1d', events:[] },
         { name:'Drum',        dot:'#2ecf1d', events:[] },
@@ -8685,7 +8966,7 @@ const TIMELINE_DATA = {
       ],
       /* 6: Today — WDS alarm active, no other issues */
       [
-        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'TCG', dot:'#2ecf1d', events:[] },
         { name:'Charge',      dot:'#2ecf1d', events:[] },
         { name:'Discharge',   dot:'#2ecf1d', events:[] },
         { name:'Drum',        dot:'#2ecf1d', events:[] },
@@ -8716,7 +8997,7 @@ const TIMELINE_DATA = {
     byDay: [
       /* 0: Mon — Charge warnings, early signs */
       [
-        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'TCG', dot:'#2ecf1d', events:[] },
         { name:'Charge',      dot:'#ffba0d', events:[
           { type:'warn', time:'09:00 - 09:40', sub:'Warning · 40 min (resolved)' },
           { type:'warn', time:'14:15 - 15:00', sub:'Warning · 45 min (resolved)' },
@@ -8731,7 +9012,7 @@ const TIMELINE_DATA = {
       ],
       /* 1: Tue — Charge alarm starts, Discharge warning */
       [
-        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'TCG', dot:'#2ecf1d', events:[] },
         { name:'Charge',      dot:'#d70100', events:[
           { type:'alarm', time:'06:00 - 17:00', sub:'Alarm · 11h (all day)' },
         ]},
@@ -8747,7 +9028,7 @@ const TIMELINE_DATA = {
       ],
       /* 2: Wed — Charge + Discharge both alarming */
       [
-        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },
+        { name:'TCG', dot:'#2ecf1d', events:[] },
         { name:'Charge',      dot:'#d70100', events:[
           { type:'alarm', time:'05:30 - 17:00', sub:'Alarm · 11h 30m (all day)' },
         ]},
@@ -8765,7 +9046,7 @@ const TIMELINE_DATA = {
       ],
       /* 3: Thu — escalating */
       [
-        { name:'Iox/Robotex', dot:'#ffba0d', events:[
+        { name:'TCG', dot:'#ffba0d', events:[
           { type:'warn', time:'07:00 - 07:40', sub:'Warning · 40 min' },
         ]},
         { name:'Charge',      dot:'#d70100', events:[
@@ -8788,7 +9069,7 @@ const TIMELINE_DATA = {
       ],
       /* 4: Fri */
       [
-        { name:'Iox/Robotex', dot:'#ffba0d', events:[
+        { name:'TCG', dot:'#ffba0d', events:[
           { type:'warn', time:'08:10 - 08:50', sub:'Warning · 40 min' },
         ]},
         { name:'Charge',      dot:'#d70100', events:[
@@ -8811,7 +9092,7 @@ const TIMELINE_DATA = {
       ],
       /* 5: Sat */
       [
-        { name:'Iox/Robotex', dot:'#ffba0d', events:[
+        { name:'TCG', dot:'#ffba0d', events:[
           { type:'warn', time:'08:10 - 08:50', sub:'Warning · 40 min' },
         ]},
         { name:'Charge',      dot:'#d70100', events:[
@@ -8835,7 +9116,7 @@ const TIMELINE_DATA = {
       ],
       /* 6: Today */
       [
-        { name:'Iox/Robotex', dot:'#ffba0d', events:[
+        { name:'TCG', dot:'#ffba0d', events:[
           { type:'warn', time:'07:30 - 08:10', sub:'Warning · 40 min' },
           { type:'warn', time:'12:00 - 12:25', sub:'Warning · 25 min' },
         ]},
@@ -8876,45 +9157,45 @@ const TIMELINE_DATA = {
     dates: ['Mon 3/13/2026','Tue 3/14/2026','Wed 3/14/2026','Thu 3/15/2026','Fri 3/16/2026','Sat 3/17/2026','Today 3/24/2026'],
     byDay: [
       /* 0 */ [
-        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },{ name:'Charge', dot:'#2ecf1d', events:[] },
+        { name:'TCG', dot:'#2ecf1d', events:[] },{ name:'Charge', dot:'#2ecf1d', events:[] },
         { name:'Discharge', dot:'#2ecf1d', events:[] },{ name:'Drum', dot:'#2ecf1d', events:[] },
         { name:'Int. Display', dot:'#2ecf1d', events:[] },{ name:'Ext. Display', dot:'#2ecf1d', events:[] },
         { name:'Bus Power', dot:'#2ecf1d', events:[] },{ name:'CWR', dot:'#2ecf1d', events:[] },{ name:'WDS', dot:'#2ecf1d', events:[] },
       ],
       /* 1 */ [
-        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },{ name:'Charge', dot:'#2ecf1d', events:[] },
+        { name:'TCG', dot:'#2ecf1d', events:[] },{ name:'Charge', dot:'#2ecf1d', events:[] },
         { name:'Discharge', dot:'#2ecf1d', events:[] },{ name:'Drum', dot:'#2ecf1d', events:[] },
         { name:'Int. Display', dot:'#2ecf1d', events:[] },{ name:'Ext. Display', dot:'#2ecf1d', events:[] },
         { name:'Bus Power', dot:'#2ecf1d', events:[] },{ name:'CWR', dot:'#2ecf1d', events:[] },{ name:'WDS', dot:'#2ecf1d', events:[] },
       ],
       /* 2 */ [
-        { name:'Iox/Robotex', dot:'#ffba0d', events:[{ type:'warn', time:'10:00 - 10:35', sub:'Warning · 35 min (resolved)' }]},
+        { name:'TCG', dot:'#ffba0d', events:[{ type:'warn', time:'10:00 - 10:35', sub:'Warning · 35 min (resolved)' }]},
         { name:'Charge', dot:'#2ecf1d', events:[] },{ name:'Discharge', dot:'#2ecf1d', events:[] },
         { name:'Drum', dot:'#2ecf1d', events:[] },{ name:'Int. Display', dot:'#2ecf1d', events:[] },
         { name:'Ext. Display', dot:'#2ecf1d', events:[] },{ name:'Bus Power', dot:'#2ecf1d', events:[] },
         { name:'CWR', dot:'#2ecf1d', events:[] },{ name:'WDS', dot:'#2ecf1d', events:[] },
       ],
       /* 3 */ [
-        { name:'Iox/Robotex', dot:'#ffba0d', events:[{ type:'warn', time:'09:00 - 09:30', sub:'Warning · 30 min (resolved)' }]},
+        { name:'TCG', dot:'#ffba0d', events:[{ type:'warn', time:'09:00 - 09:30', sub:'Warning · 30 min (resolved)' }]},
         { name:'Charge', dot:'#ffba0d', events:[{ type:'warn', time:'11:00 - 11:45', sub:'Warning · 45 min (resolved)' }]},
         { name:'Discharge', dot:'#2ecf1d', events:[] },{ name:'Drum', dot:'#2ecf1d', events:[] },
         { name:'Int. Display', dot:'#2ecf1d', events:[] },{ name:'Ext. Display', dot:'#2ecf1d', events:[] },
         { name:'Bus Power', dot:'#2ecf1d', events:[] },{ name:'CWR', dot:'#2ecf1d', events:[] },{ name:'WDS', dot:'#2ecf1d', events:[] },
       ],
       /* 4 */ [
-        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },{ name:'Charge', dot:'#2ecf1d', events:[] },
+        { name:'TCG', dot:'#2ecf1d', events:[] },{ name:'Charge', dot:'#2ecf1d', events:[] },
         { name:'Discharge', dot:'#2ecf1d', events:[] },{ name:'Drum', dot:'#2ecf1d', events:[] },
         { name:'Int. Display', dot:'#2ecf1d', events:[] },{ name:'Ext. Display', dot:'#2ecf1d', events:[] },
         { name:'Bus Power', dot:'#2ecf1d', events:[] },{ name:'CWR', dot:'#2ecf1d', events:[] },{ name:'WDS', dot:'#2ecf1d', events:[] },
       ],
       /* 5 */ [
-        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },{ name:'Charge', dot:'#2ecf1d', events:[] },
+        { name:'TCG', dot:'#2ecf1d', events:[] },{ name:'Charge', dot:'#2ecf1d', events:[] },
         { name:'Discharge', dot:'#2ecf1d', events:[] },{ name:'Drum', dot:'#2ecf1d', events:[] },
         { name:'Int. Display', dot:'#2ecf1d', events:[] },{ name:'Ext. Display', dot:'#2ecf1d', events:[] },
         { name:'Bus Power', dot:'#2ecf1d', events:[] },{ name:'CWR', dot:'#2ecf1d', events:[] },{ name:'WDS', dot:'#2ecf1d', events:[] },
       ],
       /* 6: Today — clean */ [
-        { name:'Iox/Robotex', dot:'#2ecf1d', events:[] },{ name:'Charge', dot:'#2ecf1d', events:[] },
+        { name:'TCG', dot:'#2ecf1d', events:[] },{ name:'Charge', dot:'#2ecf1d', events:[] },
         { name:'Discharge', dot:'#2ecf1d', events:[] },{ name:'Drum', dot:'#2ecf1d', events:[] },
         { name:'Int. Display', dot:'#2ecf1d', events:[] },{ name:'Ext. Display', dot:'#2ecf1d', events:[] },
         { name:'Bus Power', dot:'#2ecf1d', events:[] },{ name:'CWR', dot:'#2ecf1d', events:[] },{ name:'WDS', dot:'#2ecf1d', events:[] },
@@ -9828,14 +10109,154 @@ function doAccountSwitch(targetAccount, truckIdx, source) {
   const overlay = document.getElementById('acct-switch-overlay');
   if (overlay) overlay.remove();
 
-  activeAccount = targetAccount;
-
-  /* Update side nav account display */
-  const acctEl = document.querySelector('.sn-account-val');
-  if (acctEl) acctEl.textContent = targetAccount;
+  setActiveAccount(targetAccount);
 
   /* Open the truck drawer */
   openDrawerFromList(source, truckIdx);
+}
+
+/* ══════════════════════════════════════════════════
+   MASTER ACCOUNT PICKER (desktop sidebar)
+   ──────────────────────────────────────────────────
+   Single-select. Sets the data scope for the whole session.
+   Mobile shows the same value at the top of the main nav (read-
+   only today, the cross-account confirmation modal is the picker
+   on mobile). Desktop has a real picker dropdown.
+═══════════════════════════════════════════════════ */
+
+/* Single source of truth for changing the master account.
+   Updates the global, all reflective UI surfaces, and re-renders. */
+function setActiveAccount(acct) {
+  if (!acct) return;
+  activeAccount = acct;
+  /* Mobile side-nav label */
+  const mobileEl = document.querySelector('.sn-account-val');
+  if (mobileEl) mobileEl.textContent = acct;
+  /* Desktop sidebar picker label */
+  const dtEl = document.getElementById('dt-acct-current');
+  if (dtEl) dtEl.textContent = acct;
+  /* Re-render everything that's account-scoped */
+  if (typeof renderTrucks === 'function') renderTrucks();
+  if (typeof dtRefreshTable === 'function' && typeof dtActiveTab !== 'undefined') {
+    dtRefreshTable(dtActiveTab);
+  }
+  /* Re-render picker dropdown if open so the active checkmark moves */
+  if (document.getElementById('dt-acct-dd')?.style.display === 'block') {
+    dtAcctRenderOptions();
+  }
+}
+
+function dtAcctToggle() {
+  const picker = document.getElementById('dt-acct-picker');
+  const dd = document.getElementById('dt-acct-dd');
+  if (!dd) return;
+  const isOpen = dd.style.display === 'block';
+  if (isOpen) {
+    dd.style.display = 'none';
+    picker?.classList.remove('open');
+  } else {
+    dtAcctRenderOptions();
+    dd.style.display = 'block';
+    picker?.classList.add('open');
+  }
+}
+
+/* Close picker when clicking outside */
+document.addEventListener('click', function(e) {
+  const picker = document.getElementById('dt-acct-picker');
+  if (!picker) return;
+  if (picker.contains(e.target)) return;
+  const dd = document.getElementById('dt-acct-dd');
+  if (dd && dd.style.display === 'block') {
+    dd.style.display = 'none';
+    picker.classList.remove('open');
+  }
+});
+
+function dtAcctRenderOptions() {
+  const opts = document.getElementById('dt-acct-options');
+  if (!opts) return;
+  /* Pull the canonical account list from ACCOUNT_PLANTS */
+  const accounts = (typeof ACCOUNT_PLANTS !== 'undefined') ? Object.keys(ACCOUNT_PLANTS) : ['Cemex AZ'];
+  opts.innerHTML = accounts.map(acct => {
+    const isActive = acct === activeAccount;
+    const check = isActive
+      ? '<svg class="dt-acct-opt-check" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3 3 7-7" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      : '<span class="dt-acct-opt-check"></span>';
+    return `
+      <div class="dt-acct-opt ${isActive ? 'active' : ''}" onclick="dtAcctSelect('${acct}')">
+        ${check}
+        <span class="dt-acct-opt-label">${acct}</span>
+      </div>`;
+  }).join('');
+}
+
+function dtAcctSelect(acct) {
+  /* Close dropdown */
+  const dd = document.getElementById('dt-acct-dd');
+  const picker = document.getElementById('dt-acct-picker');
+  if (dd) dd.style.display = 'none';
+  if (picker) picker.classList.remove('open');
+  /* Apply */
+  if (acct === activeAccount) return;
+  setActiveAccount(acct);
+}
+
+/* Desktop wrapper for opening a truck — checks cross-account first.
+   Used by Where to Start, where the table can show trucks across all the
+   FST's accounts. Overview and Components Condition are scoped to the
+   active account so they never need this check. */
+function dtOpenTruckChecked(truckNum) {
+  const t = (typeof trucks !== 'undefined') ? trucks.find(tr => String(tr.num) === String(truckNum)) : null;
+  if (!t) { dtOpenTruck(truckNum); return; }
+  if (t.account && t.account !== activeAccount) {
+    dtShowAccountSwitchConfirm(t.account, truckNum);
+    return;
+  }
+  dtOpenTruck(truckNum);
+}
+
+/* Desktop cross-account confirmation modal — mirrors the mobile one but
+   appends to the desktop content area and routes to dtOpenTruck after switch. */
+function dtShowAccountSwitchConfirm(targetAccount, truckNum) {
+  const existing = document.getElementById('dt-acct-switch-overlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.id = 'dt-acct-switch-overlay';
+  overlay.innerHTML = `
+    <div class="confirm-sheet">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,186,13,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 2C5.6 2 2 5.6 2 10s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 12.5c-.4 0-.75-.35-.75-.75s.35-.75.75-.75.75.35.75.75-.35.75-.75.75zm.75-4h-1.5V5.5h1.5V10.5z" fill="#b07800"/>
+          </svg>
+        </div>
+        <div>
+          <div class="confirm-title" style="margin-bottom:2px;">Switch to ${targetAccount}?</div>
+          <div style="font-size:12px;color:var(--soft);letter-spacing:-0.2px;">You're currently in <strong style="color:var(--strong);">${activeAccount}</strong></div>
+        </div>
+      </div>
+      <div class="confirm-body">
+        This truck belongs to <strong>${targetAccount}</strong>. Switching will update your active account across the app. You can switch back anytime from the account picker in the sidebar.
+      </div>
+      <div class="confirm-btns">
+        <button class="confirm-btn-primary" onclick="dtDoAccountSwitch('${targetAccount}', '${truckNum}')">Switch to ${targetAccount}</button>
+        <button class="confirm-btn-cancel" onclick="document.getElementById('dt-acct-switch-overlay').remove()">Stay in ${activeAccount}</button>
+      </div>
+    </div>
+  `;
+  /* Append to dt-content so it overlays the desktop work area */
+  const host = document.querySelector('.dt-content') || document.body;
+  host.appendChild(overlay);
+}
+
+function dtDoAccountSwitch(targetAccount, truckNum) {
+  const overlay = document.getElementById('dt-acct-switch-overlay');
+  if (overlay) overlay.remove();
+  setActiveAccount(targetAccount);
+  dtOpenTruck(truckNum);
 }
 
 /* ─── SENSOR PAGE ───────────────────────────────────── */
@@ -10130,7 +10551,7 @@ function toggleNavItem(itemId, subId) {
 const CC_TRUCKS = [
   { num:'45689', ver:'v3.04.029', ign:'On',  ignOff:false, err:1,  wrn:10, ignDetail:'3 min',  plant:'Phoenix Central', lastConn:'1:16 PM 07/23/25',
     components:[
-      { name:'Iox/Robotex', dot:'#ffba0d', state:'warn',    evt:'2 Warnings' },
+      { name:'TCG', dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Charge',      dot:'#d70100', state:'alarm',   evt:'Alarm · ongoing' },
       { name:'Discharge',   dot:'#d70100', state:'alarm',   evt:'Alarm · ongoing' },
       { name:'Drum',        dot:'#2ecf1d', state:'clean',   evt:'No Events' },
@@ -10143,7 +10564,7 @@ const CC_TRUCKS = [
     ]},
   { num:'12457', ver:'v4.02.017', ign:'On',  ignOff:false, err:2,  wrn:10, ignDetail:'15 min', plant:'Phoenix Central', lastConn:'12:44 PM 07/23/25',
     components:[
-      { name:'Iox/Robotex', dot:'#ffba0d', state:'warn',  evt:'2 Warnings' },
+      { name:'TCG', dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Charge',      dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
       { name:'Discharge',   dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
       { name:'Drum',        dot:'#2ecf1d', state:'clean', evt:'No Events' },
@@ -10155,7 +10576,7 @@ const CC_TRUCKS = [
     ]},
   { num:'39821', ver:'v3.04.029', ign:'On',  ignOff:false, err:0,  wrn:10, ignDetail:'8 hrs',  plant:'Phoenix Central', lastConn:'9:02 AM 07/23/25',
     components:[
-      { name:'Iox/Robotex', dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'TCG', dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Charge',      dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Discharge',   dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Drum',        dot:'#2ecf1d', state:'clean', evt:'No Events' },
@@ -10167,7 +10588,7 @@ const CC_TRUCKS = [
     ]},
   { num:'53127', ver:'vS.02.004', ign:'On',  ignOff:false, err:1, wrn:0,  ignDetail:'2 days', plant:'Phoenix Central', lastConn:'2 days ago',
     components:[
-      { name:'Iox/Robotex', dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'TCG', dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Charge',      dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Discharge',   dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Drum',        dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
@@ -10179,7 +10600,7 @@ const CC_TRUCKS = [
     ]},
   { num:'67234', ver:'v5.01.008',    ign:'Off', ignOff:true,  err:0, wrn:10,  ignDetail:'15 min', plant:'Mesa South',      lastConn:'2:05 PM 07/23/25',
     components:[
-      { name:'Iox/Robotex', dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
+      { name:'TCG', dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Charge',      dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Discharge',   dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Drum',        dot:'#2ecf1d', state:'clean', evt:'No Events' },
@@ -10191,7 +10612,7 @@ const CC_TRUCKS = [
     ]},
   { num:'84760', ver:'vP.01.011', ign:'Off', ignOff:true,  err:2, wrn:10,  ignDetail:'4 hrs',  plant:'Mesa South',      lastConn:'11:30 AM 07/23/25',
     components:[
-      { name:'Iox/Robotex', dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
+      { name:'TCG', dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Charge',      dot:'#d70100', state:'alarm', evt:'2 Alarms' },
       { name:'Discharge',   dot:'#d70100', state:'alarm', evt:'1 Alarm' },
       { name:'Drum',        dot:'#2ecf1d', state:'clean', evt:'No Events' },
@@ -10203,7 +10624,7 @@ const CC_TRUCKS = [
     ]},
   { num:'98214', ver:'v3.04.029',    ign:'Off', ignOff:true,  err:1, wrn:0,   ignDetail:'1 day',  plant:'Mesa South',      lastConn:'07/22/25',
     components:[
-      { name:'Iox/Robotex', dot:'#2ecf1d', state:'clean', evt:'No Events' },
+      { name:'TCG', dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Charge',      dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Discharge',   dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Drum',        dot:'#2ecf1d', state:'clean', evt:'No Events' },
@@ -10215,7 +10636,7 @@ const CC_TRUCKS = [
     ]},
   { num:'21348', ver:'v5.01.008',    ign:'On',  ignOff:false, err:2, wrn:10,  ignDetail:'2 days', plant:'Mesa South',      lastConn:'07/21/25',
     components:[
-      { name:'Iox/Robotex', dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
+      { name:'TCG', dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Charge',      dot:'#ffba0d', state:'warn',  evt:'2 Warnings' },
       { name:'Discharge',   dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Drum',        dot:'#d70100', state:'alarm', evt:'1 Alarm' },
@@ -10227,7 +10648,7 @@ const CC_TRUCKS = [
     ]},
   { num:'55120', ver:'vS.02.004', ign:'On',  ignOff:false, err:3, wrn:5,   ignDetail:'10 min', plant:'Tempe East',      lastConn:'2:10 PM 07/23/25',
     components:[
-      { name:'Iox/Robotex', dot:'#d70100', state:'alarm', evt:'1 Alarm' },
+      { name:'TCG', dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Charge',      dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
       { name:'Discharge',   dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Drum',        dot:'#ffba0d', state:'warn',  evt:'2 Warnings' },
@@ -10239,7 +10660,7 @@ const CC_TRUCKS = [
     ]},
   { num:'6456',  ver:'v3.04.029',    ign:'On',  ignOff:false, err:1, wrn:10,  ignDetail:'6 hr',   plant:'Phoenix Central', lastConn:'1:16 PM 07/23/25',
     components:[
-      { name:'Iox/Robotex', dot:'#ffba0d', state:'warn',  evt:'2 Warnings' },
+      { name:'TCG', dot:'#2ecf1d', state:'clean', evt:'No Events' },
       { name:'Charge',      dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
       { name:'Discharge',   dot:'#ffba0d', state:'warn',  evt:'1 Warning' },
       { name:'Drum',        dot:'#2ecf1d', state:'clean', evt:'No Events' },
@@ -10656,16 +11077,20 @@ function renderMobileCards() {
 
   /* MCS cards data — matches the hardcoded defaults + session state */
   var mcsCards = [
+    /* Component order — per Martin's stated hierarchy at the post-commission
+       readout (he ranked these without being asked, which means it's how he
+       genuinely scans the screen in the field):
+         TCG → DPS / CPS → WDS → component readings → Admix → ED last */
     { name:'TCG',           label:'Telematics Control Gateway', value:'Active', unit:'', startup:null, err:'--', extra:{label:'Status', val:'Connected'} },
     { name:'DPS pressure',  label:'Drum Pressure Sensor',     value:'196',  unit:'psi',    startup:2,  err:'--', extra:null },
-    { name:'DRS',           label:'Drum Rotation Speed',      value:'138',  unit:'rpm',    startup:2,  err:'--', extra:null },
-    { name:'WDS', label:'Water Drum Sensor\nNo connection', value:'--', unit:'', startup:2, err:'14', forceAlarm:true, flipBack:{ lastSeen:'Mar 23 · 08:24 AM' } },
     { name:'CPS',           label:'Charge Pressure Sensor',   value:'204',  unit:'psi',    startup:2,  err:'--', extra:null },
+    { name:'WDS', label:'Water Drum Sensor\nNo connection', value:'--', unit:'', startup:2, err:'14', forceAlarm:true, flipBack:{ lastSeen:'Mar 23 · 08:24 AM' } },
+    { name:'DRS',           label:'Drum Rotation Speed',      value:'138',  unit:'rpm',    startup:2,  err:'--', extra:null },
     { name:'CWR (35.0) Temp', label:'CWR Temp',  value:'91', unit:'°F', startup:2, err:'--', extra:{label:'Tilt Degree', val:'1'} },
     { name:'ICD (1468)', label:'Input Current Detector', value:'1468', unit:'mA', startup:2, err:'--', greyDot:true },
-    { name:'ED (8195)',  label:'Electrical Signal value', value:'8195', unit:'counts', startup:2, err:'--' },
     { name:'Water Pump',  state:'empty',   label:'Water Delivery System', value:'--', unit:'', startup:null, err:null, removedDate:'07/23/25 · 2:14 PM' },
     { name:'Admix Pump',  state:'pending', label:'Admixture Pump', value:'0.3', unit:'gal/min', startup:null, err:null },
+    { name:'ED (8195)',  label:'Electrical Signal value', value:'8195', unit:'counts', startup:2, err:'--' },
   ];
   var fdmCards = [
     { name:'IOX supply voltage',    label:'Onboard Power Supply',  value:'12.9', unit:'V', startup:1, err:'--', extra:{label:'Temperature', val:'113 °F'} },
@@ -12033,16 +12458,11 @@ function dtApplyMode(mode) {
   /* Update mobile pill */
   var moPill = document.getElementById('mo-ign-pill');
   var moDot  = document.getElementById('mo-ign-dot');
-  var moText = document.getElementById('mo-ign-text');
   if (moPill) {
-    moPill.style.background = mode === 'live' ? '' : mode === 'maintenance' ? '#fff3cd' : '#f6f4f2';
-    moPill.style.color = mode === 'maintenance' ? '#7a5800' : mode === 'offline' ? 'var(--soft)' : '';
+    moPill.className = 'd-ign-pill' + (mode === 'offline' ? ' off' : mode === 'maintenance' ? ' maint' : '');
   }
   if (moDot) {
-    moDot.style.background = mode === 'live' ? '#2ecf1d' : mode === 'maintenance' ? '#f59e0b' : 'rgba(54,50,45,0.3)';
-  }
-  if (moText) {
-    moText.textContent = mode === 'live' ? 'Ignition on' : mode === 'maintenance' ? 'Maintenance' : 'Offline';
+    moDot.style.background = '';  /* controlled by CSS class */
   }
 
   /* Update active state on all popovers */
@@ -12157,8 +12577,8 @@ var dtCurrentVersion = 'final';
 
 function setVersion(version) {
   dtCurrentVersion = version;
-  document.getElementById('ver-pill-final').classList.toggle('active', version === 'final');
-  document.getElementById('ver-pill-mvp').classList.toggle('active', version === 'mvp');
+  /* Sync dropdown checkmarks */
+  vpOptsUpdateState();
 
   var overlay = document.getElementById('mvp-overlay');
   if (version === 'mvp') {
@@ -12190,8 +12610,8 @@ var dtCurrentRole = 'external';
 
 function setRole(role) {
   dtCurrentRole = role;
-  document.getElementById('role-pill-external').classList.toggle('active', role === 'external');
-  document.getElementById('role-pill-internal').classList.toggle('active', role === 'internal');
+  /* Sync dropdown checkmarks */
+  vpOptsUpdateState();
   var addWrap = document.getElementById('dt-units-add-btn-wrap');
   if (addWrap) addWrap.style.display = role === 'internal' ? '' : 'none';
   var addWrap2 = document.getElementById('dt-units-add-btn-wrap2');
@@ -12653,10 +13073,6 @@ const UNIT_HISTORY = {
       { date: '1/3/2022',  mac: 'RRR-109028811' },
       { date: '3/6/2021',  mac: 'JJJ-210011029' },
     ]},
-    { name: 'Drum Sensor', history: [
-      { date: 'Current', mac: 'BBB-203728814' },
-      { date: '1/3/2022',  mac: 'BBB-203701009' },
-    ]},
     { name: 'External Displays', history: [
       { date: 'Current', mac: 'NNN-401820091' },
       { date: '3/6/2021',  mac: 'UUU-501820013' },
@@ -12683,9 +13099,6 @@ const UNIT_HISTORY = {
     { name: 'Winter Water', removed: true, removedDate: '9/14/2023', history: [
       { date: '6/1/2022',  mac: 'EEE-301809922' },
     ]},
-    { name: 'Drum Sensor', history: [
-      { date: 'Current',   mac: 'BBB-203720041' },
-    ]},
     { name: 'WDS', history: [
       { date: 'Current',   mac: 'WWW-601911203' },
     ]},
@@ -12709,10 +13122,6 @@ const UNIT_HISTORY = {
     { name: 'Admix', history: [
       { date: 'Current', mac: 'RRR-109042018' },
       { date: '3/15/2024', mac: 'RRR-109039100' },
-    ]},
-    { name: 'Drum Sensor', history: [
-      { date: 'Current', mac: 'BBB-203722091' },
-      { date: '5/1/2021',  mac: 'RRR-109028120' },
     ]},
     { name: 'External Displays', history: [
       { date: 'Current',   mac: 'NNN-401814088' },
@@ -12740,10 +13149,6 @@ const UNIT_HISTORY = {
     { name: 'Admix', removed: true, removedDate: '11/2/2023', history: [
       { date: '7/20/2022', mac: 'RRR-109031810' },
     ]},
-    { name: 'Drum Sensor', history: [
-      { date: 'Current', mac: 'BBB-203718800' },
-      { date: '7/20/2022', mac: 'BBB-203699041' },
-    ]},
     { name: 'WDS', history: [
       { date: 'Current',   mac: 'WWW-601905510' },
     ]},
@@ -12754,27 +13159,12 @@ const UNIT_HISTORY = {
     { name: 'Bluetooth Radio', history: [{ date: 'Current', mac: 'JJJ-210095001' }] },
     { name: 'Sensor',          history: [{ date: 'Current', mac: 'BBB-203700001' }] },
     { name: 'Temperate Water', history: [{ date: 'Current', mac: 'RRR-109000099' }] },
-    { name: 'Drum Sensor',     history: [{ date: 'Current', mac: 'BBB-203700002' }] },
-    { name: 'WDS',             history: [{ date: 'Current', mac: 'WWW-601900001' }] },
-  ],
-
-  /* 29104856 — linked to truck 45689. WDS, Water Pump and Admix Pump
-     are the components involved in the prototype replacement workflow. */
-  'U-291048': [
-    { name: 'Bluetooth Radio', history: [
-      { date: 'Current', mac: 'JJJ-210095269' },
-      { date: '1/14/2020',  mac: 'JJJ-210081044' },
-    ]},
     { name: 'Sensor', history: [
       { date: 'Current', mac: 'BBB-203719811' },
       { date: '1/14/2020',  mac: 'BBB-203700193' },
     ]},
     { name: 'Temperate Water', history: [
       { date: 'Current',    mac: 'RRR-109041099' },
-    ]},
-    { name: 'Drum Sensor', history: [
-      { date: 'Current', mac: 'BBB-203728001' },
-      { date: '1/14/2020',  mac: 'BBB-203700882' },
     ]},
     { name: 'WDS', history: [
       { date: 'Current', mac: 'WWW-601920044' },
@@ -13324,7 +13714,7 @@ function udRenderLifespan() {
       </div>` : ''}
     </div>
     ${u.truck !== '--' ? `
-    <button onclick="unitDrawerShowUnlink()" style="width:100%;margin-top:6px;background:none;border:1.5px solid var(--red);color:var(--red);border-radius:32px;padding:13px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">Unlink Unit</button>
+    <button onclick="unitDrawerShowUnlink()" style="width:100%;margin-top:6px;background:none;border:1.5px solid var(--red);color:var(--red);border-radius:32px;padding:13px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">De-install unit</button>
     ` : ''}`;
 
   document.getElementById('ud-body').innerHTML = `
@@ -13479,13 +13869,29 @@ function confirmAttach() {
   const overlay = document.createElement('div');
   overlay.className = 'confirm-overlay';
   overlay.id = 'attach-confirm-overlay';
+  /* Pull TCG ID from the unit so the FST can verify it before committing —
+     per Martin: "TCG should be at the top, under the truck name" on every
+     screen where you're about to commit a configuration. */
+  const tcgId = (udCurrentUnit && udCurrentUnit.tgw && udCurrentUnit.tgw !== '--') ? udCurrentUnit.tgw : '—';
   overlay.innerHTML = `
     <div class="confirm-sheet">
       <div class="confirm-title">Attach Unit to Truck</div>
+      <div style="background:var(--layer-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin:8px 0 14px;display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;">
+          <span style="color:var(--soft);letter-spacing:-0.26px;">Unit ID</span>
+          <span style="color:var(--strong);font-family:'DM Mono',monospace;letter-spacing:0.2px;">${udCurrentUnit.id}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;">
+          <span style="color:var(--soft);letter-spacing:-0.26px;">TCG ID</span>
+          <span style="color:var(--strong);font-family:'DM Mono',monospace;letter-spacing:0.2px;">${tcgId}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;">
+          <span style="color:var(--soft);letter-spacing:-0.26px;">Truck</span>
+          <span style="color:var(--strong);font-weight:500;letter-spacing:-0.26px;">${attachSelectedTruck}</span>
+        </div>
+      </div>
       <div class="confirm-body">
-        Unit <strong>${udCurrentUnit.id}</strong> will be attached to
-        <strong>${attachSelectedTruck}</strong>. This will make the unit
-        active and ready for deployment.
+        This will make the unit active and ready for deployment.
       </div>
       <div class="confirm-btns">
         <button class="confirm-btn-primary" onclick="doAttach()">Confirm Attachment</button>
@@ -13648,7 +14054,7 @@ function showUnlinkConfirm(unitId, truckId, source) {
           <path d="M3 3l14 14" stroke="#d83b3a" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
       </div>
-      <div class="confirm-title">Unlink Unit from Truck</div>
+      <div class="confirm-title">Confirm unlink</div>
       <div class="confirm-body">
         ${unitId !== '--' ? `Unit <strong>${unitId}</strong> will be removed from Truck <strong>${truckId}</strong>.` : `Truck <strong>${truckId}</strong> will be unlinked.`}
         The unit will become inactive and unlinked, and will need to be reattached before it can collect data again.
@@ -13995,7 +14401,7 @@ function dtRenderTable() {
       const connDot = t.conn === 'live'
         ? `<span class="dt-conn-dot live"></span>Live`
         : `<span class="dt-conn-dot none"></span><span style="color:var(--soft)">No connection</span>`;
-      rows += `<tr class="dt-tr${alt ? ' alt' : ''}" data-truck="${t.num}" onclick="dtOpenTruck('${t.num}')">
+      rows += `<tr class="dt-tr${alt ? ' alt' : ''}" data-truck="${t.num}" onclick="dtOpenTruckChecked('${t.num}')">
         ${cols.map(col => wtsCell(col, t, badges, connDot)).join('')}
       </tr>`;
     });
@@ -14422,6 +14828,16 @@ if (typeof window !== 'undefined') {
     if (unlinkedEl && typeof UNITS_DATA !== 'undefined') {
       unlinkedEl.textContent = UNITS_DATA.filter(u => u.status === 'Unlinked Unit').length;
     }
+    // Units Active — units currently linked to a truck
+    const activeEl = document.getElementById('dt-stat-commissioned');
+    if (activeEl && typeof UNITS_DATA !== 'undefined') {
+      activeEl.textContent = '250';
+    }
+    // Total Units — all units in the system for this account
+    const totalEl = document.getElementById('dt-stat-total');
+    if (totalEl && typeof UNITS_DATA !== 'undefined') {
+      totalEl.textContent = UNITS_DATA.length;
+    }
   });
 }
 
@@ -14509,15 +14925,14 @@ function dtUnitsRender() {
   const linkedCount   = UNITS_DATA.filter(u => u.status === 'Linked Unit').length;
   const unlinkedCount = UNITS_DATA.filter(u => u.status === 'Unlinked Unit').length;
   const maintCount    = UNITS_DATA.filter(u => u.status === 'Maintenance').length;
+  const pendingCount  = UNITS_DATA.filter(u => u.status === 'Pending Return').length;
 
-  // Static-ish prototype values where the data model doesn't have a real source
   const setStat = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  setStat('dt-units-stat-commissioned', '250');
+  setStat('dt-units-stat-commissioned', linkedCount);
+  setStat('dt-units-stat-total',        UNITS_DATA.length);
   setStat('dt-units-stat-unlinked',     unlinkedCount);
   setStat('dt-units-stat-maintreq',     maintCount);
-  setStat('dt-units-stat-scheduled',    '20');
-  setStat('dt-units-stat-oos',          '2');
-  setStat('dt-units-stat-inmaint',      '5');
+  setStat('dt-units-stat-pending',      pendingCount);
 
   // Make sure headers exist & match visible cols
   dtUnitsBuildHeaders();
@@ -15546,22 +15961,72 @@ function tbOpenTruck(truckNum) {
   if (!t) return;
   tbDrawerTruck = t;
 
-  document.getElementById('tb-drawer-title').textContent = 'Truck: ' + t.num;
-  const ignEl = document.getElementById('tb-drawer-ign');
-  const ignLabel = document.getElementById('tb-drawer-ign-label');
-  if (ignEl && ignLabel) {
-    ignEl.style.background = t.ign === 'On' ? '#d5f1d2' : 'rgba(54,50,45,0.08)';
-    ignEl.style.color       = t.ign === 'On' ? '#1e6252' : 'var(--soft)';
-    const dot = ignEl.querySelector('.tb-drawer-ign-dot');
-    if (dot) dot.style.background = t.ign === 'On' ? '#16a34a' : '#9c9890';
-    ignLabel.textContent = 'Ignition ' + (t.ign === 'On' ? 'on' : 'off');
+  /* Truck number + unit subtitle */
+  const numEl = document.getElementById('tb-drawer-truck-num');
+  if (numEl) numEl.textContent = t.num;
+  const unitForTruck = (typeof UNITS_DATA !== 'undefined')
+    ? UNITS_DATA.find(u => String(u.truck) === String(t.num)) : null;
+  const unitIdEl = document.getElementById('tb-drawer-unit-id');
+  if (unitIdEl) unitIdEl.textContent = unitForTruck ? unitForTruck.id : '—';
+
+  /* Ignition badge */
+  const ignBadge = document.getElementById('tb-drawer-ign-badge');
+  const ignText  = document.getElementById('tb-drawer-ign-text');
+  const ignOn    = t.ign === 'On';
+  if (ignBadge) {
+    ignBadge.className = 'dt-drawer-ign-badge' + (ignOn ? '' : ' off');
+  }
+  if (ignText) ignText.textContent = ignOn ? 'Ignition on' : 'Ignition off';
+
+  /* Unit pill — show if truck has a linked unit */
+  const unitPill = document.getElementById('tb-drawer-back-to-unit');
+  const unitPillId = document.getElementById('tb-drawer-back-to-unit-id');
+  if (unitPill && unitPillId) {
+    if (unitForTruck) {
+      unitPillId.textContent = unitForTruck.id;
+      unitPill.style.display = 'flex';
+    } else {
+      unitPill.style.display = 'none';
+    }
   }
 
-  // Reset to overview tab
+  /* Reset to overview tab */
   document.querySelectorAll('.tb-drawer-tab').forEach(x => x.classList.remove('active'));
   document.querySelector('.tb-drawer-tab')?.classList.add('active');
   tbDrawerTab('overview', null);
   document.getElementById('tb-drawer').classList.add('open');
+}
+
+function tbToggleModePopover() {
+  const pop = document.getElementById('tb-mode-popover');
+  if (!pop) return;
+  const open = pop.style.display !== 'none';
+  pop.style.display = open ? 'none' : 'block';
+  if (!open) {
+    /* Close on outside click */
+    const handler = (e) => {
+      if (!pop.contains(e.target)) { pop.style.display = 'none'; document.removeEventListener('click', handler); }
+    };
+    setTimeout(() => document.addEventListener('click', handler), 0);
+  }
+}
+
+function tbSetMode(mode) {
+  const ignBadge = document.getElementById('tb-drawer-ign-badge');
+  const ignText  = document.getElementById('tb-drawer-ign-text');
+  if (!ignBadge || !ignText) return;
+  const labels = { live:'Ignition on', maintenance:'Maintenance', offline:'Ignition off' };
+  ignText.textContent = labels[mode] || mode;
+  ignBadge.className = 'dt-drawer-ign-badge' + (mode === 'offline' ? ' off' : mode === 'maintenance' ? ' maint' : '');
+  document.getElementById('tb-mode-popover').style.display = 'none';
+}
+
+function tbDrawerNav(dir) {
+  if (!tbDrawerTruck) return;
+  const allTrucks = truckGroups.flatMap(g => g.trucks);
+  const idx = allTrucks.findIndex(t => t.num === tbDrawerTruck.num);
+  const next = allTrucks[idx + dir];
+  if (next) tbOpenTruck(next.num);
 }
 
 function tbCloseDrawer() {
@@ -15574,49 +16039,553 @@ function tbDrawerTab(tab, el) {
     document.querySelectorAll('.tb-drawer-tab').forEach(x => x.classList.remove('active'));
     el.classList.add('active');
   }
+
+  if (typeof senStop === 'function') senStop();
+  /* Hide logs overlay whenever switching tabs */
+  const tbOverlay = document.getElementById('tb-logs-overlay');
+  if (tbOverlay) tbOverlay.style.display = 'none';
+
+  const t = tbDrawerTruck;
+  if (!t) return;
   const scroll = document.getElementById('tb-drawer-scroll');
   if (!scroll) return;
-  const t = tbDrawerTruck;
 
   if (tab === 'overview') {
-    const cards = [
-      { name:'CPS',         dot:'',      val:'142',  unit:'PSI', meta:'Concrete Pressure' },
-      { name:'DPS',         dot:'',      val:'87',   unit:'PSI', meta:'Drum Pressure' },
-      { name:'DRS',         dot:'warn',  val:'14.2', unit:'RPM', meta:'Drum Revolution' },
-      { name:'WDS',         dot:'alarm', val:'--',   unit:'',    meta:'Water Delivery' },
-      { name:'IOX Supply',  dot:'',      val:'12.6', unit:'V',   meta:'Bus Voltage' },
-      { name:'Water Flow',  dot:'',      val:'3.2',  unit:'gal', meta:'Flow Rate' },
-    ];
-    scroll.innerHTML = `
-      <div class="tb-section-hdr">Measurement Component Status</div>
-      <div class="tb-co-grid">
-        ${cards.map(c => `
-          <div class="tb-co-card">
-            <div class="tb-co-card-head">
-              <span class="tb-co-dot${c.dot ? ' '+c.dot : ''}"></span>
-              <span class="tb-co-name">${c.name}</span>
-            </div>
-            <div class="tb-co-val">${c.val} <span style="font-size:14px;font-weight:400;color:var(--soft);">${c.unit}</span></div>
-            <div class="tb-co-meta">${c.meta}</div>
-          </div>`).join('')}
-      </div>
-      <div class="tb-section-hdr">Truck Details</div>
-      <div class="tb-meta">
-        ${t ? [
-          ['Code version', t.ver || '—'],
-          ['Truck Mode', t.truckMode || '—'],
-          ['Plant', t.plant || '—'],
-          ['Last Connection', t.lastConn || '—'],
-          ['Connection', t.conn === 'live' ? 'Live' : 'No connection'],
-          ['Ignition', t.ign || '—'],
-        ].map(([k,v]) => `<div class="tb-meta-row"><span class="tb-meta-label">${k}</span><span class="tb-meta-val">${v}</span></div>`).join('') : ''}
-      </div>`;
-  } else {
-    scroll.innerHTML = `
-      <div style="padding:48px 0;text-align:center;color:var(--soft);font-size:14px;">
-        ${tab.charAt(0).toUpperCase() + tab.slice(1)} — coming soon for tablet
-      </div>`;
+    tbBuildOverview(t, scroll);
+    return;
   }
+
+  if (tab === 'timeline') {
+    scroll.innerHTML = dtBuildTimeline();
+    if (typeof dtTimelineRenderRows === 'function') {
+      dtTimelineRenderRows(typeof dtTimelineActiveDayIdx !== 'undefined' ? dtTimelineActiveDayIdx : 6);
+    }
+    /* Append the same side panel content (connectivity, meta, buttons, map)
+       that appears at the bottom of the Components Overview tab */
+    const ccSection = document.createElement('div');
+    ccSection.style.cssText = 'margin-top:24px;';
+    ccSection.innerHTML = tbBuildSidePanel(t);
+    scroll.appendChild(ccSection);
+    return;
+  }
+
+  if (tab === 'logs') {
+    scroll.innerHTML = `
+      <!-- STATE A: LOG LIST -->
+      <div id="tb-logs-list" style="display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0;">
+        <!-- Search + filter bar -->
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--layer-1);">
+          <div style="flex:1;display:flex;align-items:center;gap:8px;background:var(--layer-2);border:1px solid var(--border);border-radius:24px;padding:7px 14px;">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;"><circle cx="6.5" cy="6.5" r="4" stroke="#36322d9e" stroke-width="1.4"/><path d="M10.5 10.5l3 3" stroke="#36322d9e" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <input id="tb-log-search" type="text" placeholder="Search logs…" oninput="tbLogsFilter()" style="flex:1;border:none;outline:none;font-size:13px;color:var(--strong);background:none;font-family:var(--font);letter-spacing:-0.26px;min-width:0;">
+          </div>
+          <button id="tb-log-filter-btn" onclick="tbLogsToggleFilter()" style="display:flex;align-items:center;gap:5px;background:var(--layer-1);border:1px solid var(--border);border-radius:20px;padding:7px 14px;font-size:13px;font-weight:500;color:var(--strong);font-family:var(--font);letter-spacing:-0.26px;cursor:pointer;flex-shrink:0;white-space:nowrap;">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M1 3h12M3 7h8M5 11h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            Filter
+          </button>
+        </div>
+        <!-- Filter panel (hidden by default) -->
+        <div id="tb-log-filter-panel" style="display:none;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--layer-1);flex-shrink:0;gap:16px;flex-wrap:wrap;">
+          <!-- Custom time period -->
+          <div style="flex:1 1 220px;min-width:200px;">
+            <div class="dt-logs-field-label">Custom time period</div>
+            <div class="dt-logs-date-row">
+              <input class="dt-logs-date-input from" id="tb-logs-from" type="text" placeholder="From: dd/mm/yy"
+                     onfocus="this.type='date'" onblur="if(!this.value)this.type='text'"
+                     oninput="tbLogsFilters.from=this.value;tbLogsRenderList();">
+              <input class="dt-logs-date-input to" id="tb-logs-to" type="text" placeholder="To: dd/mm/yy"
+                     onfocus="this.type='date'" onblur="if(!this.value)this.type='text'"
+                     oninput="tbLogsFilters.to=this.value;tbLogsRenderList();">
+            </div>
+          </div>
+          <!-- Source -->
+          <div style="min-width:140px;">
+            <div class="dt-logs-field-label">Source</div>
+            <select class="dt-logs-select" id="tb-logs-source" onchange="tbLogsFilters.source=this.value;tbLogsRenderList();">
+              <option value="all">All</option>
+              <option value="TRUCK">TRUCK</option>
+              <option value="ICD">ICD</option>
+              <option value="BACKEND">BACKEND</option>
+            </select>
+          </div>
+          <!-- Message Type -->
+          <div style="min-width:150px;">
+            <div class="dt-logs-field-label">Message Type</div>
+            <select class="dt-logs-select" id="tb-logs-msgtype" onchange="tbLogsMsgTypeChange(this.value)">
+              <option value="all">All</option>
+              <option value="BackendRequest">BackendRequest</option>
+              <option value="DeviceBinding">DeviceBinding</option>
+              <option value="Event">Event</option>
+              <option value="Identity">Identity</option>
+            </select>
+          </div>
+          <!-- Sub Message Type -->
+          <div style="min-width:150px;">
+            <div class="dt-logs-field-label">Sub Message Type</div>
+            <select class="dt-logs-select" id="tb-logs-subtype" disabled onchange="tbLogsFilters.subType=this.value;tbLogsRenderList();">
+              <option value="all">All</option>
+            </select>
+            <div class="dt-logs-field-helper" id="tb-logs-subtype-helper">Select a message type first</div>
+          </div>
+        </div>
+        <div style="display:flex;background:var(--layer-2);border-bottom:1px solid var(--border);flex-shrink:0;">
+          <div style="flex:1.4;padding:10px 12px;font-size:12px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;">Message Time</div>
+          <div style="flex:1;padding:10px 12px;font-size:12px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;">Type</div>
+          <div style="flex:1.2;padding:10px 12px;font-size:12px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;">Sub Type</div>
+        </div>
+        <div style="flex:1;overflow-y:auto;" id="tb-log-scroll"></div>
+      </div>`;
+
+    /* Populate list */
+    tbLogsRenderList();
+    return;
+  }
+
+  if (tab === 'manual') {
+    scroll.innerHTML = dtBuildManual();
+    if (typeof dtInitManualCards === 'function') dtInitManualCards();
+    /* Append the same side panel (connectivity, meta, buttons, map) */
+    const sideSection = document.createElement('div');
+    sideSection.style.cssText = 'margin-top:24px;';
+    sideSection.innerHTML = tbBuildSidePanel(t);
+    scroll.appendChild(sideSection);
+    return;
+  }
+
+  if (tab === 'sensor') {
+    scroll.innerHTML = dtBuildSensor();
+    if (typeof dtSenRenderCards === 'function') dtSenRenderCards();
+    if (typeof senStart === 'function') senStart();
+    return;
+  }
+
+  if (tab === 'config') {
+    dtDrawerTruckNum = t.num;
+    scroll.innerHTML = dtBuildConfig();
+    const saveBar = document.getElementById('tb-cfg-savebar');
+    if (saveBar) saveBar.style.display = 'none';
+    return;
+  }
+
+  /* Other tabs — coming soon */
+  scroll.innerHTML = `
+    <div style="padding:48px 0;text-align:center;color:var(--soft);font-size:14px;">
+      ${tab.charAt(0).toUpperCase() + tab.slice(1)} — coming soon for tablet
+    </div>`;
+}
+
+function tbBuildOverview(t, scroll) {
+  const cc = (typeof CC_TRUCKS !== 'undefined') ? CC_TRUCKS.find(c => c.num === t.num) : null;
+
+  /* ── Card state helper ───────────────────────────────────── */
+  function tbGetState(cardName) {
+    if (!cc) return 'clean';
+    const comp = cc.components.find(c => c.name === cardName || cardName.startsWith(c.name.split(' ')[0]));
+    return comp ? comp.state : 'clean';
+  }
+
+  /* ── Build a single card using the same dt-co-card pattern as desktop ── */
+  function tbCard(card) {
+    /* Check session state overrides — mirrors desktop applyOverrides logic */
+    if (window.dtConfirmedComponents && window.dtConfirmedComponents[card.name]) {
+      const cd = window.dtConfirmedComponents[card.name];
+      card = Object.assign({}, card, { state:null, forceAlarm:false, greyDot:false, warnCard:false, flipBack:null }, (typeof cd === 'object' ? cd : {}));
+    } else if (window.dtRemovedComponents && window.dtRemovedComponents[card.name]) {
+      card = { name:card.name, state:'empty', removedDate:window.dtRemovedComponents[card.name] };
+    } else if (window.dtPendingComponents && window.dtPendingComponents[card.name]) {
+      const p = window.dtPendingComponents[card.name];
+      card = { name:card.name, state:'pending', value:p.serial, unit:'', label:'Installed '+p.installedDate };
+    }
+
+    if (card.state === 'empty') {
+      return `<div class="dt-co-card empty">
+        <div class="dt-co-card-head">
+          <div class="dt-empty-slot-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="rgba(54,50,45,0.3)" stroke-width="1.4" stroke-dasharray="3 2"/></svg></div>
+          <span class="dt-co-card-name">${card.name}</span>
+        </div>
+        <div class="dt-empty-label">Not installed</div>
+        <div class="dt-empty-date">Removed ${card.removedDate||'—'}</div>
+        <div class="dt-empty-action">Tap to install replacement →</div>
+      </div>`;
+    }
+    if (card.state === 'pending') {
+      return `<div class="dt-co-card pending">
+        <div class="dt-co-card-head">
+          <span class="dt-co-card-dot" style="background:#d97706;"></span>
+          <span class="dt-co-card-name">${card.name}</span>
+        </div>
+        <div class="dt-co-card-value-row">
+          <span class="dt-co-card-value" style="color:var(--strong);font-size:20px;word-break:break-all;">${card.value}</span>
+          ${card.unit ? `<span class="dt-co-card-unit" style="color:var(--soft);">${card.unit}</span>` : ''}
+        </div>
+        <div class="dt-pending-badge"><span class="dt-pending-dot"></span>Replacement recorded</div>
+      </div>`;
+    }
+
+    const state = card.forceAlarm ? 'alarm' : (card.warnCard ? 'warn' : (card.greyDot ? 'grey' : tbGetState(card.name)));
+    const dotColor = state==='alarm' ? 'rgba(255,255,255,0.7)' : state==='warn' ? '#36322d' : state==='grey' ? 'rgba(54,50,45,0.3)' : '#2ecf1d';
+    const descHtml = (card.label||card.name||'').replace('\n','<br>');
+    let metaHtml = '';
+    if (card.extra) metaHtml += `<div class="dt-co-card-meta-row"><span class="dt-co-card-meta-label">${card.extra.label}:</span><span>${card.extra.val}</span></div>`;
+    if (card.startup!=null) metaHtml += `<div class="dt-co-card-meta-row"><span class="dt-co-card-meta-label">Startup Count:</span><span>${card.startup}</span></div>`;
+    if (card.err!=null)     metaHtml += `<div class="dt-co-card-meta-row"><span class="dt-co-card-meta-label">Error Count:</span><span>${card.err}</span></div>`;
+
+    return `<div class="dt-co-card ${state}${card.name==='TCG' ? ' dt-co-card-tcg' : ''}">
+      <div class="dt-co-card-head">
+        <span class="dt-co-card-dot" style="background:${dotColor};"></span>
+        <span class="dt-co-card-name">${card.name}</span>
+      </div>
+      <div class="dt-co-card-value-row">
+        <span class="dt-co-card-value">${card.value||'—'}</span>
+        ${card.unit ? `<span class="dt-co-card-unit">${card.unit}</span>` : ''}
+      </div>
+      <div class="dt-co-card-desc">${descHtml}</div>
+      <div class="dt-co-card-meta">${metaHtml}</div>
+    </div>`;
+  }
+
+  /* Use the same card data as desktop */
+  const mcsCards = [
+    { name:'TCG',           label:'Telematics Control Gateway', value:'Active', unit:'', startup:null, err:'--', extra:{label:'Status', val:'Connected'} },
+    { name:'DPS pressure',  label:'Drum Pressure Sensor',     value:'196',  unit:'psi',    startup:2,  err:'--' },
+    { name:'CPS',           label:'Charge Pressure Sensor',   value:'204',  unit:'psi',    startup:2,  err:'--' },
+    { name:'WDS',           label:'Water Drum Sensor\nNo connection', value:'--', unit:'rpm', startup:2, err:'14', extra:{label:'Drum Temp', val:'91 °F'}, forceAlarm:true },
+    { name:'DRS',           label:'Drum Rotation Speed',      value:'138',  unit:'rpm',    startup:2,  err:'--' },
+    { name:'CWR (35.0) temperature', label:'Charge Water Return Temp', value:'91', unit:'°F', startup:2, err:'--', extra:{label:'Tilt Degree', val:'1'} },
+    { name:'ICD (1468)',    label:'Input Current Detector',   value:'1468', unit:'mA',     startup:2,  err:'--', greyDot:true },
+    { name:'Water Pump',    state:'empty',   label:'Water Delivery System', value:'--', unit:'', removedDate:'07/23/25 · 2:14 PM' },
+    { name:'Admix Pump',    state:'pending', label:'Admixture Pump', value:'0.3', unit:'gal/min' },
+    { name:'ED (8195)',     label:'Electrical Signal value',  value:'8195', unit:'counts', startup:2,  err:'--' },
+  ];
+  const fdmCards = [
+    { name:'IOX supply voltage',    label:'Onboard Power Supply',  value:'12.9', unit:'V',       startup:1, err:'--', extra:{label:'Temperature', val:'113 ºF'} },
+    { name:'Water meter flow rate', label:'Active Water flow to drum', value:'2.1', unit:'gal/min', warnCard:true },
+    { name:'Admix meter flow rate', label:'Admixture Dosing meter', value:'0.3', unit:'gal/min' },
+  ];
+
+  /* ── Meta rows matching desktop side panel ───────────────── */
+  scroll.innerHTML = `
+    <!-- Replace Components toolbar -->
+    <div id="dt-overview-toolbar" style="display:flex;align-items:center;justify-content:flex-end;padding:0 0 16px;">
+      <button class="co-replace-btn" style="margin-left:auto;">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Replace Components
+      </button>
+    </div>
+
+    <!-- MCS cards -->
+    <div class="dt-drawer-section-hdr">
+      <svg class="dt-section-chev" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round"/></svg>
+      Measurement Component Status
+    </div>
+    <div class="dt-drawer-cards" style="grid-template-columns:repeat(3,1fr);">
+      ${mcsCards.map(tbCard).join('')}
+    </div>
+
+    <!-- FDM cards -->
+    <div class="dt-drawer-section-hdr" style="margin-top:8px;">
+      <svg class="dt-section-chev" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round"/></svg>
+      V3 FDM
+    </div>
+    <div class="dt-drawer-cards" style="grid-template-columns:repeat(3,1fr);">
+      ${fdmCards.map(tbCard).join('')}
+    </div>
+
+    <!-- Connectivity + Truck Mode -->
+    ${tbBuildSidePanel(t)}`;
+}
+
+/* Side panel content — Connectivity, meta table, action buttons, fleet map.
+   Shared between the Components Overview and Component Timeline tabs. */
+function tbBuildSidePanel(t) {
+  const unitForTruck = (typeof UNITS_DATA !== 'undefined')
+    ? UNITS_DATA.find(u => String(u.truck) === String(t.num)) : null;
+  const connColor = t.conn === 'live' ? '#295ccc' : 'var(--soft)';
+  const connText  = t.conn === 'live' ? 'Connected' : 'No connection';
+  const modeText  = t.truckMode === 'Active' ? 'Live' : (t.truckMode || 'Live');
+  const tcgId     = (unitForTruck && unitForTruck.tgw && unitForTruck.tgw !== '--') ? unitForTruck.tgw : '—';
+  const formatTs  = (s) => {
+    if (!s || s === '—') return '—';
+    const m = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)\s+(\d{2})\/(\d{2})\/(\d{2,4})$/i);
+    if (!m) return s;
+    const [, hh, mm, ap, mo, da, yy] = m;
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${months[parseInt(mo,10)-1]} ${parseInt(da,10)}, ${yy.length===2?'20'+yy:yy}, ${parseInt(hh,10)}:${mm}:38 ${ap.toUpperCase()}`;
+  };
+  const lastTs = formatTs(t.lastConn);
+  const metaRows = [
+    ['TCG ID',             tcgId,          true],
+    ['Code version',       t.ver||'—',     false],
+    ['Commissioned',       '--',            true],
+    ['Last Connect',       lastTs,          false],
+    ['Last System Status', lastTs,          true],
+    ['Last Reboot',        lastTs,          false],
+    ['Drum Manufacturer',  'Schwing, 2022', true],
+    ['Drum Size',          '10yd³',         false],
+    ['Number of Loads',    '15,000',        true],
+  ];
+  const metaHtml = metaRows.map(([label, val, alt]) => `
+    <div class="dt-drawer-meta-row${alt?' alt':''}">
+      <span class="dt-drawer-meta-label">${label}</span>
+      <span class="dt-drawer-meta-val" style="${label==='TCG ID'?'font-family:\'DM Mono\',monospace;font-size:12px;':''}">${val}</span>
+    </div>`).join('');
+
+  return `
+    <div class="dt-drawer-summary-row" style="margin-top:8px;">
+      <div class="dt-drawer-summary-card">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 10a8 8 0 0112 0M5 13a4.5 4.5 0 016 0M8 16h.01" stroke="#36322d" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <div>
+          <div style="font-size:14px;font-weight:500;color:var(--strong);letter-spacing:-0.28px;">Connectivity</div>
+          <div style="font-size:14px;color:${connColor};letter-spacing:-0.28px;">${connText}</div>
+        </div>
+      </div>
+      <div class="dt-drawer-summary-card">
+        <svg width="16" height="13" viewBox="0 0 16 13" fill="none"><circle cx="8" cy="6.5" r="5.5" stroke="#36322d" stroke-width="1.4"/><circle cx="8" cy="6.5" r="2" stroke="#36322d" stroke-width="1.4"/></svg>
+        <div>
+          <div style="font-size:14px;font-weight:500;color:var(--strong);letter-spacing:-0.28px;">Truck Mode</div>
+          <div style="font-size:14px;color:var(--defined);letter-spacing:-0.28px;">${modeText}</div>
+        </div>
+      </div>
+    </div>
+    <div class="dt-drawer-meta">${metaHtml}</div>
+    <div class="dt-drawer-actions">
+      <button class="dt-drawer-action-btn">Ping Truck</button>
+      <button class="dt-drawer-action-btn danger">De-install unit</button>
+    </div>
+    <div style="margin:16px 8px 8px;background:white;border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);">
+        <span style="font-size:14px;font-weight:500;color:var(--strong);letter-spacing:-0.28px;">Fleet map</span>
+        <button style="background:transparent;border:1px solid var(--border);border-radius:20px;padding:6px 12px;font-size:13px;font-weight:500;color:var(--strong);font-family:var(--font);letter-spacing:-0.26px;cursor:pointer;display:flex;align-items:center;gap:4px;">
+          Go to the map <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <div style="height:160px;background:#e8e8e8;display:flex;align-items:center;justify-content:center;position:relative;">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style="opacity:0.25;"><rect width="40" height="40" rx="4" fill="#999"/><path d="M4 36l10-20 10 10 8-14 8 24H4z" fill="white"/></svg>
+        <div style="position:absolute;bottom:28px;left:50%;transform:translateX(-50%);">
+          <svg width="24" height="32" viewBox="0 0 24 32" fill="none"><path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 20 12 20S24 21 24 12C24 5.37 18.63 0 12 0z" fill="#3069e3"/><circle cx="12" cy="12" r="5" fill="white"/></svg>
+        </div>
+        <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:white;border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:500;color:var(--strong);font-family:var(--font);box-shadow:0 2px 8px rgba(0,0,0,0.12);white-space:nowrap;">
+          Truck ${t.num}
+        </div>
+      </div>
+    </div>`;
+}
+
+/* Builds the Component Conditions table for a single truck —
+   mirrors the desktop CC page: component columns with coloured dots. */
+function tbBuildCCTable(t) {
+  const cc = (typeof CC_TRUCKS !== 'undefined') ? CC_TRUCKS.find(c => c.num === t.num) : null;
+
+  const components = [
+    { label:'TCG',          key:'TCG' },
+    { label:'Bus Power',    key:'Bus Power' },
+    { label:'Iox',          key:'Iox/Robotex' },
+    { label:'Charge',       key:'Charge' },
+    { label:'Discharge',    key:'Discharge' },
+    { label:'Drum',         key:'Drum' },
+    { label:'Int. Disp',    key:'Int. Display' },
+    { label:'Ext. Disp',    key:'Ext. Display' },
+    { label:'CWR',          key:'CWR' },
+    { label:'WDS',          key:'WDS' },
+  ];
+
+  function dot(state) {
+    if (typeof dtCCDot === 'function') return dtCCDot(state);
+    const colors = { clean:'#16a34a', warn:'#ffba0d', alarm:'#d70100' };
+    const c = colors[state] || 'rgba(54,50,45,0.25)';
+    return `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${c};"></span>`;
+  }
+
+  function getState(key) {
+    if (!cc) return 'grey';
+    const comp = cc.components.find(c => c.name === key);
+    return comp ? comp.state : 'grey';
+  }
+
+  const th = (label) => `<th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;text-align:center;white-space:nowrap;">${label}</th>`;
+  const td = (state) => `<td style="padding:10px 12px;text-align:center;">${dot(state)}</td>`;
+
+  const headers = components.map(c => th(c.label)).join('');
+  const cells   = components.map(c => td(getState(c.key))).join('');
+
+  return `
+    <div style="font-size:16px;font-weight:500;color:var(--strong);letter-spacing:-0.32px;margin-bottom:12px;">Component Conditions</div>
+    <div style="background:white;border:1px solid var(--border);border-radius:16px;overflow:auto;">
+      <table style="width:100%;border-collapse:collapse;min-width:600px;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;text-align:left;white-space:nowrap;">Truck</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;text-align:left;white-space:nowrap;">Version</th>
+            <th style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;text-align:left;white-space:nowrap;">Ignition</th>
+            ${headers}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:10px 12px;font-size:14px;font-weight:600;color:var(--strong);letter-spacing:-0.28px;">${t.num}</td>
+            <td style="padding:10px 12px;font-size:13px;color:var(--defined);">${t.ver||'—'}</td>
+            <td style="padding:10px 12px;font-size:13px;color:var(--defined);">${t.ign||'—'}</td>
+            ${cells}
+          </tr>
+        </tbody>
+      </table>
+    </div>`;
+}
+
+/* ── TABLET TRUCK LOGS — mobile in-place navigation pattern ──────────────
+   State A: log list. Tap a row → State B: detail with back button.
+   Reuses the mobile `logs` data and renderDetailContent function. */
+let tbLogsActiveIdx = 0;
+let tbLogsActiveTab = 'structured';
+let tbLogSearchVal  = '';
+let tbLogsFilters = { from:'', to:'', source:'all', msgType:'all', subType:'all', search:'' };
+
+function tbLogsFilter() {
+  tbLogsFilters.search = (document.getElementById('tb-log-search')?.value || '').toLowerCase();
+  tbLogsRenderList();
+}
+
+function tbLogsToggleFilter() {
+  const panel = document.getElementById('tb-log-filter-panel');
+  const btn   = document.getElementById('tb-log-filter-btn');
+  if (!panel) return;
+  const open = panel.style.display === 'flex';
+  panel.style.display = open ? 'none' : 'flex';
+  panel.style.flexWrap = 'wrap';
+  btn.style.background = open ? 'var(--layer-1)' : 'var(--strong)';
+  btn.style.color      = open ? 'var(--strong)'  : 'white';
+  btn.style.borderColor = open ? 'var(--border)' : 'var(--strong)';
+}
+
+function tbLogsMsgTypeChange(val) {
+  tbLogsFilters.msgType = val;
+  tbLogsFilters.subType = 'all';
+  const sub    = document.getElementById('tb-logs-subtype');
+  const helper = document.getElementById('tb-logs-subtype-helper');
+  if (val === 'all') {
+    sub.disabled = true;
+    sub.innerHTML = `<option value="all">All</option>`;
+    if (helper) helper.textContent = 'Select a message type first';
+  } else {
+    sub.disabled = false;
+    const options = (typeof DT_LOGS_SUB_TYPES !== 'undefined' && DT_LOGS_SUB_TYPES[val]) || [];
+    sub.innerHTML = `<option value="all">All</option>` +
+      options.map(o => `<option value="${o}">${o}</option>`).join('');
+    if (helper) helper.textContent = '';
+  }
+  tbLogsRenderList();
+}
+
+function tbLogsRenderList() {
+  const container = document.getElementById('tb-log-scroll');
+  if (!container || typeof logs === 'undefined') return;
+  const f = tbLogsFilters;
+  const search = (f.search || '').toLowerCase();
+
+  const filtered = logs.filter(l => {
+    if (f.source  !== 'all' && l.source  !== f.source)  return false;
+    if (f.msgType !== 'all' && l.type    !== f.msgType)  return false;
+    if (f.subType !== 'all' && l.sub     !== f.subType)  return false;
+    if (f.from) {
+      const from = new Date(f.from);
+      const lDate = new Date(l.date);
+      if (!isNaN(from) && !isNaN(lDate) && lDate < from) return false;
+    }
+    if (f.to) {
+      const to = new Date(f.to);
+      const lDate = new Date(l.date);
+      if (!isNaN(to) && !isNaN(lDate) && lDate > to) return false;
+    }
+    if (search && !`${l.date} ${l.time} ${l.type} ${l.sub}`.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  container.innerHTML = filtered.length === 0
+    ? `<div style="padding:32px 16px;text-align:center;font-size:13px;color:var(--soft);">No matching logs</div>`
+    : filtered.map(l => {
+        const i = logs.indexOf(l);
+        return `<div onclick="tbLogsOpenDetail(${i})" style="display:flex;cursor:pointer;border-bottom:1px solid var(--border);${i%2===0?'background:var(--layer-1);':'background:var(--layer-2);'}">
+          <div style="flex:1.4;padding:10px 12px;">
+            <div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">${l.date}</div>
+            <div style="font-size:11px;color:var(--soft);letter-spacing:-0.22px;margin-top:2px;">${l.time}</div>
+          </div>
+          <div style="flex:1;padding:10px 12px;font-size:13px;color:var(--defined);letter-spacing:-0.26px;align-self:center;">${l.type}</div>
+          <div style="flex:1.2;padding:10px 12px;font-size:13px;color:var(--defined);letter-spacing:-0.26px;align-self:center;">${l.sub}</div>
+        </div>`;
+      }).join('');
+}
+
+function tbLogsOpenDetail(i) {
+  tbLogsActiveIdx = i;
+  const l = logs[i];
+  const titleEl = document.getElementById('tb-det-title');
+  const metaEl  = document.getElementById('tb-det-meta');
+  if (titleEl) titleEl.textContent = l.sub + ' Event';
+  if (metaEl)  metaEl.textContent  = l.date + ' ' + l.time + ' · TRUCK · ' + l.type;
+  document.getElementById('tb-logs-list').style.display   = 'none';
+  const overlay = document.getElementById('tb-logs-overlay');
+  if (overlay) { overlay.style.display = 'flex'; }
+  ['structured','raw'].forEach(tab => {
+    const el = document.getElementById('tb-det-tab-' + tab);
+    if (!el) return;
+    const active = tab === 'structured';
+    el.style.color        = active ? 'var(--blue)' : 'var(--soft)';
+    el.style.borderBottom = active ? '2px solid var(--blue)' : '2px solid transparent';
+    el.style.fontWeight   = active ? '500' : '400';
+  });
+  tbLogsRenderDetail('structured');
+}
+
+function tbLogsShowList() {
+  document.getElementById('tb-logs-list').style.display   = 'flex';
+  const overlay = document.getElementById('tb-logs-overlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+function tbLogsTab(tab, el) {
+  tbLogsActiveTab = tab;
+  ['structured','raw'].forEach(t => {
+    const tabEl = document.getElementById('tb-det-tab-' + t);
+    if (!tabEl) return;
+    const active = t === tab;
+    tabEl.style.color        = active ? 'var(--blue)' : 'var(--soft)';
+    tabEl.style.borderBottom = active ? '2px solid var(--blue)' : '2px solid transparent';
+    tabEl.style.fontWeight   = active ? '500' : '400';
+  });
+  tbLogsRenderDetail(tab);
+}
+
+function tbLogsRenderDetail(tab) {
+  /* Temporarily swap detail-scroll ID so mobile renderDetailContent writes
+     into the tablet detail area instead of the (hidden) mobile one. */
+  const tbArea   = document.getElementById('tb-det-scroll');
+  if (!tbArea) return;
+  const mobArea  = document.getElementById('detail-scroll');
+  if (mobArea)  mobArea.id = '__mob-det-hidden';
+  tbArea.id = 'detail-scroll';
+  const prevIdx  = typeof activeLogIdx !== 'undefined' ? activeLogIdx : 0;
+  if (typeof activeLogIdx !== 'undefined') activeLogIdx = tbLogsActiveIdx;
+  if (typeof renderDetailContent === 'function') renderDetailContent(tab);
+  /* Restore */
+  tbArea.id = 'tb-det-scroll';
+  if (mobArea)  mobArea.id = 'detail-scroll';
+  if (typeof activeLogIdx !== 'undefined') activeLogIdx = prevIdx;
+}
+
+function tbNavMenu() {
+  const panel = document.getElementById('tb-nav-panel');
+  const scrim  = document.getElementById('tb-nav-scrim');
+  if (!panel) return;
+  panel.style.transform = 'translateX(0)';
+  scrim.style.display   = 'block';
+}
+
+function tbNavClose() {
+  const panel = document.getElementById('tb-nav-panel');
+  const scrim  = document.getElementById('tb-nav-scrim');
+  if (!panel) return;
+  panel.style.transform = 'translateX(-100%)';
+  scrim.style.display   = 'none';
 }
 
 function tbNavUnits() {
@@ -15918,6 +16887,9 @@ function dtUdOpen(unitId) {
   dtUdAttachQuery = '';
 
   document.getElementById('dt-ud-id').textContent = u.id;
+  /* Truck subtitle — shows which truck this unit is on */
+  const udTruckNum = document.getElementById('dt-ud-truck-num');
+  if (udTruckNum) udTruckNum.textContent = (u.truck && u.truck !== '--') ? u.truck : 'Unlinked';
   dtUdApplyStatusUI(u);
 
   dtUdBuildTabs();
@@ -15945,17 +16917,6 @@ function dtUdApplyStatusUI(u) {
       <span class="dt-drawer-ign-badge ${badgeCls}">
         <span class="dt-drawer-ign-dot"></span>${label}
       </span>`;
-  }
-  // Linked truck label — sits next to Unit ID so the FST always knows which truck
-  const truckLabel = document.getElementById('dt-ud-truck-label');
-  if (truckLabel) {
-    if (u.truck && u.truck !== '--') {
-      truckLabel.style.display = '';
-      truckLabel.innerHTML = `Truck: <strong>${u.truck}</strong>`;
-    } else {
-      truckLabel.style.display = 'none';
-      truckLabel.innerHTML = '';
-    }
   }
 }
 
@@ -16660,6 +17621,10 @@ function dtUdAttachConfirm() {
   if (!dtUdAttachSelected || !dtUdCurrentUnitId) return;
   const panel = document.getElementById('dt-ud-attach-confirm');
   if (!panel) return;
+  // Pull TCG ID for display — Martin's callout: TCG must be visible at the
+  // moment of commit, not buried two screens away.
+  const unitObj = (typeof UNITS_DATA !== 'undefined') ? UNITS_DATA.find(u => u.id === dtUdCurrentUnitId) : null;
+  const tcgId = (unitObj && unitObj.tgw && unitObj.tgw !== '--') ? unitObj.tgw : '—';
   // Tighter, single-line copy — toolbar-row variant has no vertical room for
   // a multi-line body, so we keep the title self-explanatory.
   panel.innerHTML = `
@@ -16672,7 +17637,12 @@ function dtUdAttachConfirm() {
       </div>
       <div class="dt-inline-confirm-text">
         <div class="dt-inline-confirm-title">Link Unit ${dtUdCurrentUnitId} to Truck ${dtUdAttachSelected}?</div>
-        <div class="dt-inline-confirm-body">Unit moves to Pending Configuration — fill in config, then save to finalize.</div>
+        <div class="dt-inline-confirm-body" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;">TCG&nbsp;ID</span>
+          <span style="font-family:'DM Mono',monospace;color:var(--strong);font-size:12px;letter-spacing:0.2px;">${tcgId}</span>
+          <span style="color:var(--border-mid);">·</span>
+          <span style="color:var(--soft);">Unit moves to Pending Configuration after link.</span>
+        </div>
       </div>
     </div>
     <div class="dt-inline-confirm-btns">
@@ -16822,22 +17792,22 @@ function dtUdRenderSidePanel() {
 
   // Meta rows — when Linked, fill in real-ish data. When Unlinked/Pending, mostly "—".
   const metaRows = isLinked ? [
+    { k:'TCG ID',             v: u.tgw && u.tgw !== '--' ? u.tgw : '—' },
     { k:'Code version',       v: u.sysType === 'Spark' ? '5.01.003' : u.sysType === 'V4' ? '4.02.011' : '3.04.029' },
     { k:'Commissioned',       v: u.firstCommissioned || '—' },
     { k:'Last Connect',       v: 'Mar 24, 2025, 1:16:38 PM' },
     { k:'Last System Status', v: 'Mar 24, 2025, 1:16:38 PM' },
     { k:'Last Reboot',        v: 'Mar 24, 2025, 1:16 PM' },
     { k:'Configuration',      v: u.config || '—' },
-    { k:'TCG ID',       v: u.tgw && u.tgw !== '--' ? u.tgw : '—' },
     { k:'Contract',           v: u.contract || '—' },
   ] : [
+    { k:'TCG ID',             v: u.tgw && u.tgw !== '--' ? u.tgw : '—' },
     { k:'Code version',       v: '—' },
     { k:'Commissioned',       v: u.firstCommissioned || '—' },
     { k:'Last Connect',       v: '—' },
     { k:'Last System Status', v: '—' },
     { k:'Last Reboot',        v: '—' },
     { k:'Configuration',      v: u.config || '—' },
-    { k:'TCG ID',       v: u.tgw && u.tgw !== '--' ? u.tgw : '—' },
     { k:'Contract',           v: u.contract || '—' },
   ];
 
@@ -16909,6 +17879,12 @@ function dtSelectTab(tab, el) {
   dtActiveTab = tab;
   document.querySelectorAll('.dt-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
+  /* Territory selector is a Where to Start affordance only — it lets the FST
+     scan trucks across all their accounts at once. On Overview and Components
+     Condition we scope strictly to the master active account, so the selector
+     is hidden. */
+  const dtTerritory = document.getElementById('dt-territory');
+  if (dtTerritory) dtTerritory.style.display = (tab === 'wts') ? '' : 'none';
   dtBuildHeaders(tab);
   if (tab === 'overview') dtRenderOverview();
   else if (tab === 'cc')  dtRenderCC();
@@ -17269,8 +18245,9 @@ function dtRenderCC() {
 
   let allTrucks = [];
   truckGroups.forEach(group => {
-    if (!selectedAccounts.has(group.account)) return;
-    if (!selectedLocations.has(group.label)) return;
+    /* Components Condition is scoped to the master active account — the
+       territory selector is a Where to Start affordance only. */
+    if (group.account !== activeAccount) return;
     // Include unlinked trucks. They'll render with grey dots across all
     // component columns since there's no unit reporting state for them.
     group.trucks.forEach(t => {
@@ -17282,7 +18259,7 @@ function dtRenderCC() {
   });
 
   if (allTrucks.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="${ncols}" style="padding:40px;text-align:center;color:var(--soft);font-size:14px;">No trucks in selected territory.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${ncols}" style="padding:40px;text-align:center;color:var(--soft);font-size:14px;">No trucks in ${activeAccount}.</td></tr>`;
     return;
   }
 
@@ -17343,8 +18320,9 @@ function dtRenderOverview() {
 
   let allTrucks = [];
   truckGroups.forEach(group => {
-    if (!selectedAccounts.has(group.account)) return;
-    if (!selectedLocations.has(group.label)) return;
+    /* Overview is scoped to the master active account — the territory
+       selector is a Where to Start affordance only. */
+    if (group.account !== activeAccount) return;
     // Include unlinked trucks too — they show with an "Unlinked" tag instead
     // of err/wrn badges and a grey "Unlinked Truck" pill in the Connection
     // column, matching the mobile rendering pattern.
@@ -17352,7 +18330,7 @@ function dtRenderOverview() {
   });
 
   if (allTrucks.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="${ncols}" style="padding:40px;text-align:center;color:var(--soft);font-size:14px;">No trucks in selected territory.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${ncols}" style="padding:40px;text-align:center;color:var(--soft);font-size:14px;">No trucks in ${activeAccount}.</td></tr>`;
     return;
   }
 
@@ -17525,6 +18503,14 @@ function dtOpenTruck(truckNum) {
 
   /* Header */
   document.getElementById('dt-drawer-truck-num').textContent = t.num;
+  /* Unit ID + TCG ID subtitle — look up the unit linked to this truck. */
+  const unitForTruck = (typeof UNITS_DATA !== 'undefined')
+    ? UNITS_DATA.find(u => String(u.truck) === String(t.num))
+    : null;
+  const udUnitEl = document.getElementById('dt-drawer-unit-id');
+  const udTcgEl  = document.getElementById('dt-drawer-tcg-id');
+  if (udUnitEl) udUnitEl.textContent = unitForTruck ? unitForTruck.id : '—';
+  if (udTcgEl)  udTcgEl.textContent  = (unitForTruck && unitForTruck.tgw && unitForTruck.tgw !== '--') ? unitForTruck.tgw : '—';
   const ignBadge = document.getElementById('dt-drawer-ign-badge');
   const ignText  = document.getElementById('dt-drawer-ign-text');
   const ignOn    = t.ign === 'On';
@@ -17577,17 +18563,21 @@ function dtOpenTruck(truckNum) {
   document.getElementById('dt-drawer-map-pin').textContent = 'Truck ' + t.num;
 
   /* Build component cards */
+  /* Component order — per Martin's stated hierarchy at the post-commission readout:
+       TCG → DPS / CPS → WDS → component readings → Admix → ED last
+     WDS reads temperature + drum speed (Brandon: "that shouldn't say gallons
+     at all. It has nothing to do with water"). */
   const mcsCards = [
     { name:'TCG',           label:'Telematics Control Gateway', value:'Active', unit:'', startup:null, err:'--', extra:{label:'Status', val:'Connected'} },
     { name:'DPS pressure',  label:'Drum Pressure Sensor',     value:'196',  unit:'psi',    startup:2,  err:'--', extra:null },
-    { name:'DRS',           label:'Drum Rotation Speed',      value:'138',  unit:'rpm',    startup:2,  err:'--', extra:null },
-    { name:'WDS',           label:'Water Drum Sensor\nNo connection', value:'19.4', unit:'gal', startup:2, err:'14', extra:null, forceAlarm:true, flipBack:{ lastSeen:'Mar 23 · 08:24 AM', lastVoltage:'12.6', voltageUnit:'V' } },
     { name:'CPS',           label:'Charge Pressure Sensor',   value:'204',  unit:'psi',    startup:2,  err:'--', extra:null },
+    { name:'WDS',           label:'Water Drum Sensor\nNo connection', value:'--', unit:'rpm', startup:2, err:'14', extra:{label:'Drum Temp', val:'91 °F'}, forceAlarm:true, flipBack:{ lastSeen:'Mar 23 · 08:24 AM', lastVoltage:'12.6', voltageUnit:'V' } },
+    { name:'DRS',           label:'Drum Rotation Speed',      value:'138',  unit:'rpm',    startup:2,  err:'--', extra:null },
     { name:'CWR (35.0) temperature', label:'Charge Water Return Temp', value:'91', unit:'°F', startup:2, err:'--', extra:{label:'Tilt Degree', val:'1'} },
     { name:'ICD (1468)',    label:'Input Current Detector',   value:'1468', unit:'mA',     startup:2,  err:'--', extra:null, greyDot:true },
-    { name:'ED (8195)',     label:'Electrical Signal value',  value:'8195', unit:'counts', startup:2,  err:'--', extra:null },
     { name:'Water Pump',    state:'empty',   label:'Water Delivery System', value:'--', unit:'', startup:null, err:null, removedDate:'07/23/25 · 2:14 PM' },
     { name:'Admix Pump',    state:'pending', label:'Admixture Pump', value:'0.3', unit:'gal/min', startup:null, err:null },
+    { name:'ED (8195)',     label:'Electrical Signal value',  value:'8195', unit:'counts', startup:2,  err:'--', extra:null },
   ];
   const fdmCards = [
     { name:'IOX supply voltage',    label:'Onboard Power Supply',  value:'12.9', unit:'V',       startup:1, err:'--', extra:{label:'Temperature', val:'113 ºF'} },
@@ -17768,16 +18758,20 @@ function dtOpenTruck(truckNum) {
 
     /* Resolve to healthy clean cards after 2s */
     setTimeout(function() {
+      /* Martin's order at the post-commission readout — this is exactly the
+         moment he watches components come up green:
+           TCG → DPS / CPS → WDS → component readings → Admix → ED last
+         WDS reads drum speed + temperature, not gallons (Brandon's callout). */
       const cleanMcs = [
         { name:'TCG',         label:'Telematics Control Gateway', value:'Active',  unit:'',        startup:null, err:'--', extra:{label:'Status', val:'Connected'} },
         { name:'DPS pressure',label:'Drum Pressure Sensor',       value:'194',     unit:'psi',     startup:0, err:'--', extra:null },
-        { name:'DRS',         label:'Drum Rotation Speed',        value:'0',       unit:'rpm',     startup:0, err:'--', extra:null },
-        { name:'WDS',         label:'Water Drum Sensor',          value:'0.0',     unit:'gal',     startup:0, err:'--', extra:null },
         { name:'CPS',         label:'Charge Pressure Sensor',     value:'201',     unit:'psi',     startup:0, err:'--', extra:null },
+        { name:'WDS',         label:'Water Drum Sensor',          value:'0',       unit:'rpm',     startup:0, err:'--', extra:{label:'Drum Temp', val:'72 °F'} },
+        { name:'DRS',         label:'Drum Rotation Speed',        value:'0',       unit:'rpm',     startup:0, err:'--', extra:null },
         { name:'CWR (35.0) temperature', label:'Charge Water Return Temp', value:'72', unit:'°F', startup:0, err:'--', extra:{label:'Tilt Degree', val:'0'} },
         { name:'ICD',         label:'Input Current Detector',     value:'1441',    unit:'mA',     startup:0, err:'--', extra:null },
-        { name:'ED',          label:'Electrical Signal value',    value:'8012',    unit:'counts', startup:0, err:'--', extra:null },
         { name:'Water Pump',  label:'Water Delivery System',      value:'2.0',     unit:'gal/min', startup:0, err:'--', extra:null },
+        { name:'ED',          label:'Electrical Signal value',    value:'8012',    unit:'counts', startup:0, err:'--', extra:null },
       ];
       const cleanFdm = [
         { name:'IOX supply voltage',    label:'Onboard Power Supply',      value:'12.8', unit:'V',       startup:0, err:'--', extra:{label:'Temperature', val:'98 °F'} },
@@ -17887,7 +18881,7 @@ function dtTruckDrawerUnlinkUnit() {
         </svg>
       </div>
       <div class="dt-inline-confirm-text">
-        <div class="dt-inline-confirm-title">Unlink Unit ${u.id} from this truck?</div>
+        <div class="dt-inline-confirm-title">Confirm unlink</div>
         <div class="dt-inline-confirm-body">
           The unit becomes inactive and will need to be reattached before it can collect data again.
         </div>
@@ -18406,33 +19400,33 @@ const DT_TIMELINE_DAYS = (() => {
   ];
   const day4 = [
     [G(1440)],[G(1440)],[G(1440)],
-    [G(240),A(15,'15 m'),G(60),A(15,'15 m'),G(60),A(15,'15 m'),G(1065)],
+    [G(240),A(15,'15 m'),G(60),A(15,'15 m'),G(60),A(15,'15 m'),G(1035)],
     [G(1440)],[G(1440)],
     [G(480),W(15,'15 m'),G(945)],
-    [G(240),A(15,'15 m'),G(60),A(15,'15 m'),G(60),A(15,'15 m'),G(1065)],
+    [G(240),A(15,'15 m'),G(60),A(15,'15 m'),G(60),A(15,'15 m'),G(1035)],
     [G(480),W(15,'15 m'),G(945)],
   ];
   const day5 = [
     [G(460),W(15,'15 m'),G(965)],
     [G(460),W(30,'30 m'),G(950)],
     [G(1440)],
-    [G(240),A(15,'15 m'),G(60),A(15,'15 m'),G(60),A(15,'15 m'),G(60),A(15,'15 m'),G(1005)],
+    [G(240),A(15,'15 m'),G(60),A(15,'15 m'),G(60),A(15,'15 m'),G(60),A(15,'15 m'),G(960)],
     [G(460),W(15,'15 m'),G(965)],
     [G(1440)],
     [G(460),W(15,'15 m'),G(965)],
-    [G(240),A(15,'15 m'),G(60),A(15,'15 m'),G(60),A(15,'15 m'),G(60),A(15,'15 m'),G(1005)],
+    [G(240),A(15,'15 m'),G(60),A(15,'15 m'),G(60),A(15,'15 m'),G(60),A(15,'15 m'),G(960)],
     [G(460),W(15,'15 m'),G(965)],
   ];
   const day6 = [
-    [G(460),W(15,'15 m'),G(192),T(75,'1h 15m'),G(54),W(15,'15 m'),X(50),G(46),X(50),G(283)],
+    [G(460),W(15,'15 m'),G(192),T(300,'5h'),G(54),W(15,'15 m'),X(50),G(46),X(50),G(258)],
     [G(460),W(30,'30 m'),G(524),X(50),G(46),X(50),G(280)],
     [G(1134),X(50),G(46),X(50),W(15,'15 m'),G(145)],
-    [G(240),A(15,'15 m'),G(66),A(15,'15 m'),G(66),A(15,'15 m'),G(66),A(15,'15 m'),G(66),A(15,'15 m'),G(74),X(50),G(46),X(50),G(28),A(30,'30 m'),G(153)],
-    [G(448),W(15,'15 m'),G(140),T(90,'1h 30m'),G(82),A(15,'15 m'),X(50),G(46),X(50),G(304)],
+    [G(240),A(15,'15 m'),G(66),A(15,'15 m'),G(66),A(15,'15 m'),G(66),A(15,'15 m'),G(66),A(15,'15 m'),G(74),X(50),G(46),X(50),G(28),A(30,'30 m'),G(583)],
+    [G(448),W(15,'15 m'),G(140),T(270,'4h 30m'),G(82),A(15,'15 m'),X(50),G(46),X(50),G(324)],
     [G(1134),X(50),G(46),X(50),G(160)],
-    [G(460),W(15,'15 m'),G(240),T(60,'1h'),G(138),X(50),G(46),X(50),G(28),A(30,'30 m'),G(153)],
-    [G(240),A(15,'15 m'),G(66),A(15,'15 m'),G(66),A(15,'15 m'),G(66),A(15,'15 m'),G(66),A(15,'15 m'),G(74),X(50),G(46),X(50),G(28),A(30,'30 m'),G(153)],
-    [G(460),W(15,'15 m'),G(240),T(60,'1h'),G(138),X(50),G(46),X(50),G(28),A(30,'30 m'),G(153)],
+    [G(460),W(15,'15 m'),G(240),T(240,'4h'),G(138),X(50),G(46),X(50),G(28),A(30,'30 m'),G(143)],
+    [G(240),A(15,'15 m'),G(66),A(15,'15 m'),G(66),A(15,'15 m'),G(66),A(15,'15 m'),G(66),A(15,'15 m'),G(74),X(50),G(46),X(50),G(28),A(30,'30 m'),G(583)],
+    [A(1440,'24h')],
   ];
 
   return [day0, day1, day2, day3, day4, day5, day6];
@@ -18497,10 +19491,12 @@ function dtTimelineRenderRows(idx) {
     const h    = thin ? 'height:5px;' : s.t==='T' ? 'align-self:stretch;' : 'height:28px;';
     /* Proportional flex based on minutes; last segment fills remaining space */
     const flexVal = isLast ? '1 1 0' : `${s.m} 0 0`;
-    /* Pills: min-width scales with duration so 15-min is the floor (40px)
-       and longer durations are proportionally longer. The flex math can
-       grow them further when the row has extra space. */
-    const minW = thin ? 'min-width:0;' : `min-width:${Math.round(s.m * 40 / 15)}px;`;
+    /* Min-width: just enough to show the icon + label for alarm/warning pills.
+       A flat 40px floor for all durations — the flex proportions do the
+       positioning work. A 15-min bar and a 75-min bar both need ~40px to be
+       readable; scaling min-width with duration caused longer bars to stretch
+       far beyond their actual time span on the axis. */
+    const minW = thin ? 'min-width:0;' : 'min-width:40px;';
     let inner = '';
     let interactive = '';
     if (!thin) {
@@ -19243,7 +20239,7 @@ function dtBuildTimeline() {
 
       <!-- Header row — sits above the container -->
       <div style="display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-size:16px;font-weight:500;color:var(--strong);letter-spacing:-0.32px;">Components Alarm Timeline</span>
+        <span style="font-size:16px;font-weight:500;color:var(--strong);letter-spacing:-0.32px;">Component Status History</span>
         <div style="display:flex;align-items:center;gap:8px;">
           <span id="dt-timeline-date-label" style="font-size:14px;font-weight:500;color:var(--strong);letter-spacing:-0.28px;">Today ${M}/${D}/${Y}</span>
           <button style="width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="dtTimelineNav(-1)">
@@ -19601,6 +20597,10 @@ function dtCfgSearchKey(e) {
    the save bar appeared in the (now-closed) truck drawer. */
 function dtCfgActiveContext() {
   const isUd = !!dtUdCurrentUnitId;
+  /* On tablet, use the tablet-specific save bar but the same topbar Update button */
+  if (document.body.classList.contains('view-tablet')) {
+    return { saveBarId:'tb-cfg-savebar', saveBtnId:'tb-cfg-save-btn', topbarId:'dt-cfg-topbar' };
+  }
   return isUd
     ? { saveBarId:'dt-ud-cfg-savebar', saveBtnId:'dt-ud-cfg-save-btn', topbarId:null }
     : { saveBarId:'dt-cfg-savebar',    saveBtnId:'dt-cfg-save-btn',    topbarId:'dt-cfg-topbar' };
@@ -19629,11 +20629,15 @@ function dtCfgStartEdit() {
     el.style.opacity = '1';
   });
 
-  /* Swap Edit button for save bar (use the active drawer's save bar) */
+  /* Hide only the Update button inside the topbar — keep search bar visible.
+     The topbar itself stays so the FST can still search while editing. */
   const ctx = dtCfgActiveContext();
   if (ctx.topbarId) {
     const tb = document.getElementById(ctx.topbarId);
-    if (tb) tb.style.display = 'none';
+    if (tb) {
+      const updateBtn = tb.querySelector('button[onclick*="dtCfgStartEdit"]');
+      if (updateBtn) updateBtn.style.display = 'none';
+    }
   }
   const bar = document.getElementById(ctx.saveBarId);
   if (bar) bar.style.display = 'block';
@@ -19697,19 +20701,21 @@ function dtCfgExitEdit() {
   const nav = document.getElementById('dt-cfg-search-nav');
   if (nav) nav.style.display = 'none';
 
-  /* Restore Edit button (truck drawer only — unit drawer hides it permanently
-     since the Update affordance doesn't apply there), hide whichever save bar
-     is showing. Both bars get hidden defensively so leftover state from one
-     drawer doesn't leak into the other. */
+  /* Restore the Update button inside the topbar */
   const ctx = dtCfgActiveContext();
   if (ctx.topbarId) {
-    const truckTopbar = document.getElementById(ctx.topbarId);
-    if (truckTopbar) truckTopbar.style.display = 'flex';
+    const tb = document.getElementById(ctx.topbarId);
+    if (tb) {
+      const updateBtn = tb.querySelector('button[onclick*="dtCfgStartEdit"]');
+      if (updateBtn) updateBtn.style.display = '';
+    }
   }
   const truckBar = document.getElementById('dt-cfg-savebar');
   if (truckBar) truckBar.style.display = 'none';
   const udBar = document.getElementById('dt-ud-cfg-savebar');
   if (udBar) udBar.style.display = 'none';
+  const tbBar = document.getElementById('tb-cfg-savebar');
+  if (tbBar) tbBar.style.display = 'none';
 }
   const CHEV = `<svg class="cfg-chev" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M10.5 6L6 1.5 1.5 6" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   const CARET = `<svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg>`;
@@ -19851,7 +20857,7 @@ function dtDrawerToggleSection(section, el) {
 
 function dtDrawerTab(tab, el) {
   document.querySelectorAll('.dt-drawer-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
+  if (el) el.classList.add('active');
 
   /* Stop sensor animation whenever leaving sensor tab */
   senStop();
@@ -20041,6 +21047,61 @@ document.addEventListener('click', function(e) {
     const ch = document.getElementById('dt-ts-location-chev');
     if (ch) ch.style.transform = '';
   }
+});
+
+/* ══════════════════════════════════════════════════
+   TOP BAR OPTIONS DROPDOWN
+   Role (External/Internal) + Version (Final/MVP)
+   collapsed into a single three-dot button.
+═══════════════════════════════════════════════════ */
+function vpOptsToggle() {
+  var btn = document.getElementById('vp-opts-btn');
+  var dd  = document.getElementById('vp-opts-dd');
+  if (!btn || !dd) return;
+  var isOpen = dd.classList.contains('open');
+  if (isOpen) {
+    dd.classList.remove('open');
+    btn.classList.remove('open');
+  } else {
+    vpOptsUpdateState();
+    dd.classList.add('open');
+    btn.classList.add('open');
+  }
+}
+
+/* Sync checkmarks and row highlight with current role + version state */
+function vpOptsUpdateState() {
+  /* Role checkmarks */
+  var checkExt  = document.getElementById('vp-check-external');
+  var checkInt  = document.getElementById('vp-check-internal');
+  var rowExt    = document.getElementById('vp-opt-external');
+  var rowInt    = document.getElementById('vp-opt-internal');
+  if (checkExt) checkExt.style.opacity = dtCurrentRole === 'external' ? '1' : '0';
+  if (checkInt) checkInt.style.opacity = dtCurrentRole === 'internal' ? '1' : '0';
+  if (rowExt)   rowExt.style.fontWeight  = dtCurrentRole === 'external' ? '600' : '500';
+  if (rowInt)   rowInt.style.fontWeight  = dtCurrentRole === 'internal' ? '600' : '500';
+  /* Version checkmarks */
+  var checkFinal = document.getElementById('vp-check-final');
+  var checkMvp   = document.getElementById('vp-check-mvp');
+  var rowFinal   = document.getElementById('vp-opt-final');
+  var rowMvp     = document.getElementById('vp-opt-mvp');
+  if (checkFinal) checkFinal.style.opacity = dtCurrentVersion === 'final' ? '1' : '0';
+  if (checkMvp)   checkMvp.style.opacity   = dtCurrentVersion === 'mvp'   ? '1' : '0';
+  if (rowFinal)   rowFinal.style.fontWeight  = dtCurrentVersion === 'final' ? '600' : '500';
+  if (rowMvp)     rowMvp.style.fontWeight    = dtCurrentVersion === 'mvp'   ? '600' : '500';
+  /* Badge — show a dot if anything is non-default (Internal or MVP) */
+  var badge = document.getElementById('vp-opts-badge');
+  if (badge) badge.style.display = (dtCurrentRole === 'internal' || dtCurrentVersion === 'mvp') ? 'block' : 'none';
+}
+
+/* Close dropdown on outside click */
+document.addEventListener('click', function(e) {
+  var wrap = document.getElementById('vp-opts-wrap');
+  if (!wrap || wrap.contains(e.target)) return;
+  var dd  = document.getElementById('vp-opts-dd');
+  var btn = document.getElementById('vp-opts-btn');
+  if (dd)  dd.classList.remove('open');
+  if (btn) btn.classList.remove('open');
 });
 
 function setView(view) {

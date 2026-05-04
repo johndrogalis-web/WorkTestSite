@@ -647,8 +647,7 @@
      the target slide-in is the only motion the user sees. */
   .dt-drawer.no-anim { transition:none; }
   .dt-drawer.open {
-    width:calc(100% - 40px);
-    max-width:1400px;
+    width:clamp(860px, calc(100% - 280px), 1400px);
     pointer-events:all;
   }
   .dt-drawer-main {
@@ -6186,7 +6185,7 @@
             <div style="padding:10px 12px 10px 44px;border-radius:32px;cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.04)'" onmouseleave="this.style.background=''">
               <span style="font-size:14px;color:rgba(54,50,45,0.5);letter-spacing:-0.28px;font-family:var(--font);">Map</span>
             </div>
-            <div onclick="tbNavClose()" style="padding:10px 12px 10px 44px;border-radius:32px;cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.04)'" onmouseleave="this.style.background=''">
+            <div onclick="tbNavUnits()" style="padding:10px 12px 10px 44px;border-radius:32px;cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.04)'" onmouseleave="this.style.background=''">
               <span style="font-size:14px;color:rgba(54,50,45,0.5);letter-spacing:-0.28px;font-family:var(--font);">Units</span>
             </div>
             <div style="padding:10px 12px 10px 44px;border-radius:32px;cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.04)'" onmouseleave="this.style.background=''">
@@ -6259,93 +6258,21 @@
       <!-- Page header row -->
       <div class="tb-page-header">
         <div class="tb-page-title">Diagnostic Center</div>
-        <div style="display:flex;align-items:baseline;gap:12px;">
-          <span id="tb-truck-count" style="font-size:13px;font-weight:500;color:var(--defined);letter-spacing:-0.26px;"></span>
-          <div class="tb-page-sub">Last updated: 20 seconds ago</div>
-        </div>
+        <span id="tb-truck-count" style="font-size:13px;font-weight:500;color:var(--defined);letter-spacing:-0.26px;"></span>
       </div>
 
-      <!-- Row 1: Filter + Columns + Segmented — right aligned -->
-      <div class="tb-toolbar-row">
-        <button class="tb-icon-pill">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 3h12M3 7h8M5 11h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-        </button>
-        <div style="position:relative;flex-shrink:0;">
-          <button class="tb-icon-pill" id="tb-cols-btn" onclick="tbColsToggle(event)">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="5.5" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="10" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
-          </button>
-          <div class="dt-cols-popover" id="tb-cols-popover">
-            <div class="dt-cols-pop-head">
-              <span>Columns</span>
-              <button class="dt-cols-pop-reset" onclick="tbColsReset()">Reset</button>
-            </div>
-            <div class="dt-cols-pop-list" id="tb-cols-pop-list"></div>
-          </div>
-        </div>
-        <div class="tb-seg-ctrl">
-          <button class="tb-seg-btn active">
-            <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="5" height="5" rx="0.8" stroke="white" stroke-width="1.3"/><rect x="9.5" y="1.5" width="5" height="5" rx="0.8" stroke="white" stroke-width="1.3"/><rect x="1.5" y="9.5" width="5" height="5" rx="0.8" stroke="white" stroke-width="1.3"/><rect x="9.5" y="9.5" width="5" height="5" rx="0.8" stroke="white" stroke-width="1.3"/></svg>
-          </button>
-          <button class="tb-seg-btn">
-            <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M2 2l4 12 2-5 5-2L2 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-          </button>
-          <button class="tb-seg-btn">
-            <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M8 3v7M5 8l3 3 3-3M3 13h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Row 2: WTS pill + Search — left aligned, search fills space -->
-      <div class="tb-pill-search-row">
-        <div style="position:relative;flex-shrink:0;">
-          <button class="overview-pill" id="tb-wts-btn" onclick="tbToggleWtsDropdown()">
-            <span id="tb-wts-label">Where To Start</span>
-            <svg id="tb-wts-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" style="transition:transform 0.2s;">
-              <path d="M3 5l4 4 4-4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-          <div id="tb-wts-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:white;border:1px solid var(--border-mid);border-radius:8px;box-shadow:0 4px 16px rgba(54,50,45,0.12);padding:4px;min-width:220px;z-index:50;">
-            <div class="wts-option wts-active" onclick="tbSelectWts('Where To Start','wts',this)"><span class="wts-check">✓</span>Where To Start</div>
-            <div class="wts-option" onclick="tbSelectWts('Overview','overview',this)"><span class="wts-check" style="visibility:hidden">✓</span>Overview</div>
-            <div class="wts-option" onclick="tbSelectWts('Components Condition','cc',this)"><span class="wts-check" style="visibility:hidden">✓</span>Components Condition</div>
-          </div>
-        </div>
+      <!-- Search -->
+      <div class="tb-pill-search-row" style="padding-top:0;">
         <div class="tb-search2-wrap" style="flex:1;margin-bottom:0;position:relative;">
           <div class="tb-search2" id="tb-search2-field">
             <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5.5" stroke="#36322d9e" stroke-width="1.4"/><path d="M14 14l3 3" stroke="#36322d9e" stroke-width="1.4" stroke-linecap="round"/></svg>
-            <input id="tb-search-input" placeholder="Ticket, truck, order, mix, etc." autocomplete="off" oninput="tbSrchOnInput()" onfocus="tbSrchOnFocus()">
+            <input id="tb-search-input" placeholder="Search trucks…" autocomplete="off" oninput="tbSrchOnInput()" onfocus="tbSrchOnFocus()">
             <button id="tb-search-clear" onclick="tbSrchClear()" style="display:none;background:none;border:none;padding:2px;cursor:pointer;flex-shrink:0;line-height:0;">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="#36322d" stroke-width="1.4" stroke-linecap="round"/></svg>
             </button>
           </div>
           <div class="tb-srch-drop" id="tb-srch-drop" style="display:none;">
             <div id="tb-srch-results"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Territory selector — only shown on WTS tab, matches mobile position -->
-      <div class="tb-territory" id="tb-territory">
-        <div class="tb-territory-inner">
-          <div class="tb-ts-field" style="border-right:1px solid var(--border);">
-            <button class="tb-ts-btn" onclick="tbTsToggle('account')" id="tb-ts-account-btn">
-              <span id="tb-ts-account-label">Cemex AZ, +1</span>
-              <svg id="tb-ts-account-chev" width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;transition:transform 0.2s;"><path d="M3 5l4 4 4-4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
-            <div id="tb-ts-account-dd" class="ts-dropdown" style="top:calc(100% + 6px);left:0;">
-              <div style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.4px;text-transform:uppercase;padding:4px 8px 8px;">Accounts</div>
-              <div id="tb-ts-account-options"></div>
-            </div>
-          </div>
-          <div class="tb-ts-field">
-            <button class="tb-ts-btn" onclick="tbTsToggle('location')" id="tb-ts-location-btn">
-              <span id="tb-ts-location-label">All locations</span>
-              <svg id="tb-ts-location-chev" width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;transition:transform 0.2s;"><path d="M3 5l4 4 4-4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
-            <div id="tb-ts-location-dd" class="ts-dropdown" style="top:calc(100% + 6px);right:0;">
-              <div style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.4px;text-transform:uppercase;padding:4px 8px 8px;">Locations</div>
-              <div id="tb-ts-location-options"></div>
-            </div>
           </div>
         </div>
       </div>
@@ -6359,6 +6286,80 @@
           </table>
         </div>
       </div>
+
+      <!-- ══ TABLET UNITS PAGE ══════════════════════════════════════ -->
+      <div id="tb-page-units" style="display:none;flex:1;display:none;flex-direction:column;min-height:0;overflow:hidden;">
+
+        <!-- Topbar -->
+        <div class="dt-topbar" style="padding:0 20px 0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 0 12px;">
+            <div>
+              <div style="font-size:20px;font-weight:500;color:var(--strong);letter-spacing:-0.5px;">Units</div>
+              <div style="font-size:13px;color:var(--soft);letter-spacing:-0.26px;margin-top:2px;" id="tb-units-sub">All Units · — units</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span id="tb-units-add-btn-wrap" style="display:none;">
+                <button onclick="dtAuOpen()" style="display:flex;align-items:center;gap:6px;background:var(--blue);color:white;border:none;border-radius:32px;padding:8px 16px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+                  Add Unit
+                </button>
+              </span>
+              <button id="tb-units-select-btn" onclick="tbUnitsSelectToggle()" style="display:flex;align-items:center;gap:6px;background:var(--layer-1);border:1px solid var(--border);border-radius:32px;padding:8px 14px;font-size:13px;font-weight:500;color:var(--strong);font-family:var(--font);letter-spacing:-0.26px;cursor:pointer;">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="1.5" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1.5" y="8.5" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8.5" y="1.5" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8.5" y="8.5" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
+                Edit Units
+              </button>
+            </div>
+          </div>
+        </div><!-- /dt-topbar -->
+
+        <!-- Bulk action bar -->
+        <div id="tb-units-bulk-bar" class="dt-units-bulk-bar" style="margin:0 20px 8px;">
+          <div class="dt-units-bulk-left">
+            <button class="dt-units-bulk-select-all" onclick="tbUnitsSelectAll()">Select all unlinked</button>
+            <span class="dt-units-bulk-count" id="tb-units-bulk-count">0 selected</span>
+          </div>
+          <div class="dt-units-bulk-right">
+            <button class="dt-units-bulk-cancel" onclick="tbUnitsSelectToggle()">Cancel</button>
+            <button class="dt-units-bulk-return" id="tb-units-bulk-return-btn" onclick="tbUnitsReturnConfirm()" disabled>Return to Verifi</button>
+          </div>
+        </div>
+
+        <!-- Tab strip -->
+        <div style="display:flex;align-items:center;gap:2px;padding:0 20px;border-bottom:1px solid var(--border);flex-shrink:0;">
+          <button id="tb-units-tab-units" class="dt-units-tab active" onclick="tbUnitsTabSwitch('units')">Units</button>
+          <button id="tb-units-tab-pending" class="dt-units-tab" onclick="tbUnitsTabSwitch('pending')" style="display:none;">
+            Pending Return <span id="tb-units-pending-count" class="dt-units-tab-badge"></span>
+          </button>
+        </div>
+
+        <!-- Units table -->
+        <div id="tb-units-tab-content-units" style="flex:1;overflow-y:auto;min-height:0;">
+          <table style="width:100%;border-collapse:collapse;">
+            <thead id="tb-units-thead"></thead>
+            <tbody id="tb-units-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- Pending Return table -->
+        <div id="tb-units-tab-content-pending" style="display:none;flex:1;overflow-y:auto;min-height:0;">
+          <!-- Internal-only bulk bar -->
+          <div id="tb-pending-bulk-bar" style="display:none;align-items:center;justify-content:space-between;padding:10px 16px;margin:10px 20px 0;background:var(--base);border:1px solid var(--border);border-radius:10px;gap:16px;box-sizing:border-box;">
+            <div style="display:flex;align-items:center;gap:16px;">
+              <button onclick="tbPendingSelectAll()" style="font-size:13px;color:var(--blue-link);background:none;border:none;cursor:pointer;padding:0;font-family:var(--font);font-weight:500;">Select all</button>
+              <span id="tb-pending-bulk-count" style="font-size:13px;color:var(--soft);">0 selected</span>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button onclick="tbPendingCancelSelect()" style="font-size:13px;color:var(--strong);background:var(--layer-1);border:1px solid var(--border);border-radius:32px;padding:7px 16px;cursor:pointer;font-family:var(--font);font-weight:500;">Cancel</button>
+              <button id="tb-pending-mark-btn" onclick="tbPendingMarkReceived()" disabled style="font-size:13px;color:white;background:var(--blue);border:none;border-radius:32px;padding:7px 16px;cursor:pointer;font-family:var(--font);font-weight:500;opacity:0.4;transition:opacity 0.15s;">Mark Received</button>
+            </div>
+          </div>
+          <table style="width:100%;border-collapse:collapse;margin-top:8px;">
+            <thead id="tb-pending-thead"></thead>
+            <tbody id="tb-pending-tbody"></tbody>
+          </table>
+        </div>
+
+      </div><!-- /tb-page-units -->
 
     </div><!-- /tb-page -->
 
@@ -6447,6 +6448,142 @@
         </div>
         <!-- Detail scroll -->
         <div id="tb-det-scroll" style="flex:1;overflow-y:auto;padding:16px 20px;"></div>
+      </div>
+    </div>
+
+    <!-- Unit drawer scrim -->
+    <div id="tb-ud-scrim" onclick="tbUdClose()" style="display:none;position:absolute;inset:0;background:rgba(54,50,45,0.4);z-index:299;"></div>
+
+    <!-- Add Unit overlay — full-screen, internal role only -->
+    <div id="tb-au-overlay" style="display:none;position:absolute;inset:0;background:var(--layer-1);z-index:400;flex-direction:column;overflow:hidden;">
+      <!-- Header -->
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:20px 24px 16px;border-bottom:1px solid var(--border);flex-shrink:0;">
+        <div>
+          <div style="font-size:20px;font-weight:500;color:var(--strong);letter-spacing:-0.5px;">Add Unit</div>
+          <div style="font-size:13px;color:var(--soft);letter-spacing:-0.26px;margin-top:4px;">New units are created as <strong style="color:var(--defined);">Unlinked</strong>. Attach to a truck after creating.</div>
+        </div>
+        <button onclick="tbAuClose()" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:transparent;cursor:pointer;flex-shrink:0;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="#36322d" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <!-- Scrollable form — reuses all dt-au-* IDs since desktop drawer is hidden -->
+      <div class="dt-au-body" style="flex:1;overflow-y:auto;">
+        <div class="dt-au-section-label">Account &amp; contract</div>
+        <div class="dt-au-field">
+          <label class="dt-au-label">Account</label>
+          <div class="dt-au-locked">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 5a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V5z" stroke="#36322d9e" stroke-width="1.3"/><path d="M5 5V3.5a2 2 0 014 0V5" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <span>Cemex</span>
+          </div>
+          <div class="dt-au-hint">Locked to your active account.</div>
+        </div>
+        <div class="dt-au-field">
+          <label class="dt-au-label">Contract <span class="dt-au-req">*</span></label>
+          <div class="dt-au-dd-wrap" id="dt-au-contract-wrap">
+            <button class="dt-au-dd-btn" id="dt-au-contract-btn" onclick="dtAuToggleDd('contract')">
+              <span id="dt-au-contract-val" class="placeholder">Select a contract type</span>
+              <svg class="dt-au-chev" id="dt-au-contract-chev" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="dt-au-dd-menu" id="dt-au-contract-menu"></div>
+          </div>
+        </div>
+        <div class="dt-au-section-label">Unit identity</div>
+        <div class="dt-au-field">
+          <label class="dt-au-label">Unit ID <span class="dt-au-req">*</span></label>
+          <input class="dt-au-input" id="dt-au-unit-id" type="text" placeholder="Enter unit ID" autocomplete="off" oninput="dtAuValidate()" />
+          <div class="dt-au-error" id="dt-au-unit-id-err"></div>
+        </div>
+        <div class="dt-au-field">
+          <label class="dt-au-label">TCG ID</label>
+          <input class="dt-au-input dt-au-input-mono" id="dt-au-tgw" type="text" placeholder="e.g. 210000095269" autocomplete="off" />
+          <div class="dt-au-hint">Optional. Can be added later.</div>
+        </div>
+        <div class="dt-au-section-label">System &amp; configuration</div>
+        <div class="dt-au-field">
+          <label class="dt-au-label">System Type <span class="dt-au-req">*</span></label>
+          <div class="dt-au-dd-wrap" id="dt-au-sysType-wrap">
+            <button class="dt-au-dd-btn" id="dt-au-sysType-btn" onclick="dtAuToggleDd('sysType')">
+              <span id="dt-au-sysType-val" class="placeholder">Select type</span>
+              <svg class="dt-au-chev" id="dt-au-sysType-chev" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="dt-au-dd-menu" id="dt-au-sysType-menu">
+              <div class="dt-au-dd-item" onclick="dtAuSelectDd('sysType','V3')">V3</div>
+              <div class="dt-au-dd-item" onclick="dtAuSelectDd('sysType','V4')">V4</div>
+              <div class="dt-au-dd-item" onclick="dtAuSelectDd('sysType','V5')">V5</div>
+              <div class="dt-au-dd-item" onclick="dtAuSelectDd('sysType','Spark')">Spark</div>
+              <div class="dt-au-dd-item" onclick="dtAuSelectDd('sysType','Pulse')">Pulse</div>
+            </div>
+          </div>
+        </div>
+        <div class="dt-au-field">
+          <label class="dt-au-label">Configuration <span class="dt-au-req">*</span></label>
+          <div class="dt-au-dd-wrap" id="dt-au-config-wrap">
+            <button class="dt-au-dd-btn" id="dt-au-config-btn" onclick="dtAuToggleDd('config')">
+              <span id="dt-au-config-val" class="placeholder">Select config</span>
+              <svg class="dt-au-chev" id="dt-au-config-chev" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="dt-au-dd-menu" id="dt-au-config-menu">
+              <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measure')">Measure</div>
+              <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measure Water')">Measure Water</div>
+              <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measure Water Admix')">Measure Water Admix</div>
+              <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measure Temperate Water')">Measure Temperate Water</div>
+              <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measure Temperate Admix')">Measure Temperate Admix</div>
+              <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measure Temperate Water Admix')">Measure Temperate Water Admix</div>
+              <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measure Winter Water')">Measure Winter Water</div>
+              <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measure Winter Admix')">Measure Winter Admix</div>
+              <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measure Winter Water Admix')">Measure Winter Water Admix</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Footer -->
+      <div class="dt-au-foot">
+        <span class="dt-au-foot-hint" id="dt-au-foot-hint">Fill required fields to add</span>
+        <div class="dt-au-foot-btns">
+          <button class="dt-au-cancel" onclick="tbAuClose()">Cancel</button>
+          <button class="dt-au-submit" id="dt-au-submit" onclick="dtAuSubmit()" disabled>Add Unit</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Unit drawer — slides in from right, covers full tablet screen -->
+    <div id="tb-ud-drawer" style="position:absolute;top:0;right:0;bottom:0;width:100%;background:var(--layer-1);display:flex;flex-direction:column;z-index:300;transform:translateX(100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);overflow:hidden;">
+
+      <!-- Header: Unit ID + truck subtitle + status pill + export + close -->
+      <div class="dt-drawer-header" style="padding:16px 20px 0;">
+        <div class="dt-drawer-title-row">
+          <div style="display:flex;flex-direction:column;gap:3px;">
+            <span class="dt-drawer-truck-label">Unit: <strong id="tb-ud-id">—</strong></span>
+            <span style="font-size:11px;color:var(--soft);letter-spacing:0.2px;">
+              Truck <span id="tb-ud-truck-num" style="font-family:'DM Mono',monospace;color:var(--defined);">—</span>
+            </span>
+          </div>
+          <div id="tb-ud-status-pill"></div>
+          <button class="dt-drawer-share-btn" title="Export">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 9v2.5C2 12.3 2.7 13 3.5 13h7c.8 0 1.5-.7 1.5-1.5V9M7 1v8M4 5l3-4 3 4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div style="margin-left:auto;">
+            <button class="dt-drawer-chrome-btn dt-drawer-close-btn" onclick="tbUdClose()" title="Close">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="white" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
+        <!-- Tabs -->
+        <div class="dt-drawer-tabs" id="tb-ud-tabs" style="margin-top:0;"></div>
+      </div>
+
+      <!-- Main scroll -->
+      <div style="flex:1;overflow-y:auto;min-height:0;padding:20px 24px;" id="tb-ud-scroll"></div>
+
+      <!-- Config save bar — pinned below scroll -->
+      <div id="tb-ud-cfg-savebar" style="display:none;flex-shrink:0;background:var(--layer-1);border-top:1px solid var(--border);padding:14px 20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span id="tb-ud-cfg-savebar-msg" style="font-size:13px;color:var(--soft);letter-spacing:-0.26px;">Unsaved changes</span>
+          <div style="display:flex;gap:8px;">
+            <button onclick="dtCfgCancel()" style="background:transparent;border:1px solid var(--border);border-radius:20px;padding:8px 18px;font-size:13px;font-weight:500;color:var(--strong);font-family:var(--font);cursor:pointer;">Cancel</button>
+            <button id="tb-ud-cfg-save-btn" onclick="dtCfgSave()" style="background:var(--blue);border:none;border-radius:20px;padding:8px 18px;font-size:13px;font-weight:500;color:white;font-family:var(--font);cursor:pointer;">Save changes</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -15862,6 +15999,41 @@ function tbSrchOnInput() {
   if (field) field.classList.toggle('active', q.length > 0);
   if (clear) clear.style.display = q.length > 0 ? 'block' : 'none';
 
+  /* Units page mode */
+  var onUnitsPage = document.getElementById('tb-page-units') && document.getElementById('tb-page-units').style.display !== 'none';
+  if (onUnitsPage) {
+    if (!q) { drop.style.display = 'none'; tbUnitsRender(); return; }
+    var ql = q.toLowerCase();
+    var unitMatches = (typeof UNITS_DATA !== 'undefined') ? UNITS_DATA.filter(function(u) {
+      return (u.id + u.status + u.truck + (u.tgw||'') + (u.sysType||'')).toLowerCase().includes(ql);
+    }) : [];
+    var unitIcon = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="2.5" stroke="#36322d9e" stroke-width="1.3"/><path d="M5 8h2l1.5-3 2 6L12 8h-1" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    var resultsEl = document.getElementById('tb-srch-results');
+    if (unitMatches.length === 0) {
+      resultsEl.innerHTML = '<div style="font-size:14px;color:var(--soft);padding:8px;text-align:center;letter-spacing:-0.28px;">No units match</div>';
+      drop.style.display = 'block';
+    } else {
+      var MAX = 6, shown = unitMatches.slice(0, MAX), extra = unitMatches.length - MAX;
+      var html = '<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;margin-bottom:2px;">' + unitIcon + '<span style="font-size:14px;font-weight:500;color:var(--strong);letter-spacing:-0.28px;">Units</span></div>';
+      shown.forEach(function(u) {
+        var primaryRaw = u.id;
+        var primary = tbSrchHighlight(primaryRaw, q);
+        var secondary = u.status + ' \u00b7 ' + (u.sysType||'—') + (u.truck && u.truck !== '--' ? ' \u00b7 Truck ' + u.truck : '');
+        var safeId = u.id.replace(/[^a-zA-Z0-9_-]/g, '');
+        html += '<div class="srch-row" onclick="tbSrchSelectUnit(&#39;' + safeId + '&#39;,&#39;' + u.id.replace(/'/g,"\\'") + '&#39;)">'
+              + '<span class="srch-match-text">' + primary + '</span>'
+              + '<span class="srch-meta">' + secondary + '</span>'
+              + '</div>';
+      });
+      if (extra > 0) html += '<div class="srch-show-more">' + extra + ' more unit' + (extra > 1 ? 's' : '') + '</div>';
+      resultsEl.innerHTML = html;
+      drop.style.display = 'block';
+    }
+    /* Filter units table live */
+    tbUnitsRenderFiltered(q);
+    return;
+  }
+
   if (!q) { drop.style.display = 'none'; tbRenderTable(); return; }
 
   var list = tbSrchGetList();
@@ -15916,8 +16088,59 @@ function tbSrchClear() {
   if (field) field.classList.remove('active');
   if (clear) clear.style.display = 'none';
   if (drop)  drop.style.display  = 'none';
-  tbRenderTable();
+  var onUnitsPage = document.getElementById('tb-page-units') && document.getElementById('tb-page-units').style.display !== 'none';
+  if (onUnitsPage) { tbUnitsRender(); } else { tbRenderTable(); }
   input.focus();
+}
+
+function tbSrchSelectUnit(safeId, unitId) {
+  var drop = document.getElementById('tb-srch-drop');
+  var input = document.getElementById('tb-search-input');
+  if (drop) drop.style.display = 'none';
+  if (input) input.value = unitId;
+  tbUdOpen(unitId);
+}
+
+/* Filter units table rows live as user types in the global search */
+function tbUnitsRenderFiltered(q) {
+  if (typeof UNITS_DATA === 'undefined') return;
+  var ql = (q || '').toLowerCase();
+  var filtered = UNITS_DATA.filter(function(u) {
+    if (!ql) return true;
+    return (u.id + u.status + u.truck + (u.tgw||'') + (u.sysType||'')).toLowerCase().includes(ql);
+  });
+  var subEl = document.getElementById('tb-units-sub');
+  if (subEl) subEl.textContent = 'All Units \u00b7 ' + filtered.length + ' unit' + (filtered.length === 1 ? '' : 's');
+  var tbody = document.getElementById('tb-units-tbody');
+  if (!tbody) return;
+
+  function statusPill(u) {
+    var cls = 'unlinked', label = u.status;
+    if (u.status === 'Linked Unit')    { cls = 'linked';  label = 'Linked Unit'; }
+    if (u.status === 'Maintenance')    { cls = 'maint';   label = 'Maintenance'; }
+    if (u.status === 'Pending')        { cls = 'pending'; label = 'Pending Config'; }
+    if (u.status === 'Pending Return') { cls = 'pending'; label = 'Pending Return'; }
+    return '<span class="dt-units-status-pill ' + cls + '"><span class="dot"></span>' + label + '</span>';
+  }
+
+  var cbVis = tbUnitsSelectMode ? '' : 'visibility:hidden;pointer-events:none;';
+  tbody.innerHTML = filtered.map(function(u, i) {
+    var canOpen  = ['Unlinked Unit','Pending','Linked Unit'].includes(u.status);
+    var eligible = u.status === 'Unlinked Unit';
+    var selected = tbUnitsSelected.has(u.id);
+    var safeId   = u.id.replace(/'/g, "\\'");
+    var onclick  = canOpen && !tbUnitsSelectMode ? 'onclick="tbUdOpen(\'' + safeId + '\')"' : '';
+    var cursor   = canOpen && !tbUnitsSelectMode ? 'pointer' : 'default';
+    return '<tr class="dt-tr' + (i%2===1?' alt':'') + (selected?' dt-selected':'') + '" data-unit="' + u.id + '" style="cursor:' + cursor + ';" ' + onclick + '>'
+      + '<td class="dt-td" style="width:40px;padding:0 8px;"><input type="checkbox" class="dt-units-cb" ' + (selected?'checked':'') + ' ' + (!eligible?'disabled':'') + ' style="' + cbVis + '" onclick="event.stopPropagation();tbUnitsToggleRow(\'' + safeId + '\',this)"></td>'
+      + '<td class="dt-td dt-td-strong">' + u.id + '</td>'
+      + '<td class="dt-td">' + statusPill(u) + '</td>'
+      + '<td class="dt-td">' + (u.truck === '--' ? '<span style="color:var(--soft);">—</span>' : u.truck) + '</td>'
+      + '<td class="dt-td" style="font-family:\'DM Mono\',monospace;font-size:12px;">' + (u.tgw||'—') + '</td>'
+      + '<td class="dt-td">' + (u.sysType||'—') + '</td>'
+      + '<td class="dt-td">' + (u.config||'—') + '</td>'
+      + '</tr>';
+  }).join('');
 }
 
 function tbSrchSelect(truckNum) {
@@ -16588,10 +16811,626 @@ function tbNavClose() {
   scrim.style.display   = 'none';
 }
 
+/* ── TABLET UNITS PAGE ──────────────────────────────────────────────
+   Chunk 1: List view — stat row, toolbar, tab strip, units table,
+   pending return table, select mode, return-to-Verifi workflow.
+   All reads directly from UNITS_DATA (same source as desktop).
+   Uses tb- prefixed IDs to avoid conflicts with dt- desktop elements.
+────────────────────────────────────────────────────────────────── */
+
+let tbUnitsSelectMode = false;
+let tbUnitsSelected   = new Set();
+let tbUnitsPendingSelected = new Set();
+let tbUnitsActiveTab  = 'units';
+
 function tbNavUnits() {
-  /* placeholder — Units page coming soon for tablet */
-  alert('Units page coming soon for tablet.');
+  /* Switch tablet page to Units view */
+  tbNavClose();
+  document.getElementById('tb-content').style.display      = 'none';
+  document.getElementById('tb-page-units').style.display   = 'flex';
+  document.getElementById('tb-page-units').style.flexDirection = 'column';
+  /* Update page header */
+  const titleEl = document.querySelector('#tb-page .tb-page-title');
+  if (titleEl) titleEl.textContent = 'Units';
+  /* Swap search placeholder to units */
+  const searchInput = document.getElementById('tb-search-input');
+  if (searchInput) { searchInput.placeholder = 'Search units\u2026'; searchInput.value = ''; }
+  const drop = document.getElementById('tb-srch-drop');
+  if (drop) drop.style.display = 'none';
+  tbSrchActiveQuery = '';
+  /* Show Add Unit if internal role */
+  const addWrap = document.getElementById('tb-units-add-btn-wrap');
+  if (addWrap) addWrap.style.display = (typeof activeRole !== 'undefined' && activeRole === 'internal') ? '' : 'none';
+  tbUnitsRender();
 }
+
+function tbNavTrucks() {
+  /* Switch back to trucks (All Trucks) view */
+  document.getElementById('tb-content').style.display      = '';
+  document.getElementById('tb-page-units').style.display   = 'none';
+  const titleEl = document.querySelector('#tb-page .tb-page-title');
+  if (titleEl) titleEl.textContent = 'Diagnostic Center';
+  /* Restore search placeholder to trucks */
+  const searchInput = document.getElementById('tb-search-input');
+  if (searchInput) { searchInput.placeholder = 'Search trucks\u2026'; searchInput.value = ''; }
+  const drop = document.getElementById('tb-srch-drop');
+  if (drop) drop.style.display = 'none';
+  tbSrchActiveQuery = '';
+}
+
+function tbUnitsRender() {
+  if (typeof UNITS_DATA === 'undefined') return;
+
+  /* Stat counts — kept for tab badge logic */
+  const linked   = UNITS_DATA.filter(u => u.status === 'Linked Unit').length;
+  const unlinked = UNITS_DATA.filter(u => u.status === 'Unlinked Unit').length;
+  const maint    = UNITS_DATA.filter(u => u.status === 'Maintenance').length;
+  const pending  = UNITS_DATA.filter(u => u.status === 'Pending Return').length;
+
+  /* Update sub-label */
+  const subEl = document.getElementById('tb-units-sub');
+
+  /* Tab visibility */
+  tbUnitsUpdateTabs();
+
+  /* Filter — reads from global search bar when on units page */
+  const q = ((document.getElementById('tb-search-input') || {}).value || '').toLowerCase();
+  const filtered = UNITS_DATA.filter(u => {
+    if (!q) return true;
+    return (u.id + u.status + u.truck + (u.tgw||'') + (u.contract||'') + (u.sysType||'')).toLowerCase().includes(q);
+  });
+  if (subEl) subEl.textContent = `All Units · ${filtered.length} unit${filtered.length === 1 ? '' : 's'}`;
+
+  /* Build headers */
+  const thead = document.getElementById('tb-units-thead');
+  if (thead) {
+    const cbTh = `<th style="width:40px;padding:0 8px;background:var(--layer-1);position:sticky;top:0;z-index:1;border-bottom:1px solid var(--border);"></th>`;
+    const ths = ['Unit ID','Status','Truck','TCG ID','System','Config'].map(label =>
+      `<th style="padding:10px 12px;text-align:left;font-size:12px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;background:var(--layer-1);position:sticky;top:0;z-index:1;border-bottom:1px solid var(--border);white-space:nowrap;">${label}</th>`
+    ).join('');
+    thead.innerHTML = `<tr>${cbTh}${ths}</tr>`;
+  }
+
+  /* Build rows */
+  function statusPill(u) {
+    let cls = 'unlinked', label = u.status;
+    if (u.status === 'Linked Unit')     { cls = 'linked';  label = 'Linked Unit'; }
+    if (u.status === 'Maintenance')     { cls = 'maint';   label = 'Maintenance'; }
+    if (u.status === 'Pending')         { cls = 'pending'; label = 'Pending Config'; }
+    if (u.status === 'Pending Return')  { cls = 'pending'; label = 'Pending Return'; }
+    return `<span class="dt-units-status-pill ${cls}"><span class="dot"></span>${label}</span>`;
+  }
+
+  const tbody = document.getElementById('tb-units-tbody');
+  if (!tbody) return;
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="padding:40px;text-align:center;color:var(--soft);font-size:14px;">No units match.</td></tr>`;
+    return;
+  }
+  const cbVis = tbUnitsSelectMode ? '' : 'visibility:hidden;pointer-events:none;';
+  tbody.innerHTML = filtered.map((u, i) => {
+    const canOpen  = ['Unlinked Unit','Pending','Linked Unit'].includes(u.status);
+    const eligible = u.status === 'Unlinked Unit';
+    const selected = tbUnitsSelected.has(u.id);
+    const safeId   = u.id.replace(/'/g, "\\'");
+    const onclick  = canOpen && !tbUnitsSelectMode ? `onclick="tbUdOpen('${safeId}')"` : '';
+    const cursor   = canOpen && !tbUnitsSelectMode ? 'pointer' : 'default';
+    return `<tr class="dt-tr${i%2===1?' alt':''}${selected?' dt-selected':''}"
+        data-unit="${u.id}" style="cursor:${cursor};" ${onclick}>
+      <td class="dt-td" style="width:40px;padding:0 8px;">
+        <input type="checkbox" class="dt-units-cb" ${selected?'checked':''} ${!eligible?'disabled':''}
+          style="${cbVis}" onclick="event.stopPropagation();tbUnitsToggleRow('${safeId}',this)">
+      </td>
+      <td class="dt-td dt-td-strong">${u.id}</td>
+      <td class="dt-td">${statusPill(u)}</td>
+      <td class="dt-td">${u.truck === '--' ? '<span style="color:var(--soft);">—</span>' : u.truck}</td>
+      <td class="dt-td" style="font-family:'DM Mono',monospace;font-size:12px;">${u.tgw||'—'}</td>
+      <td class="dt-td">${u.sysType||'—'}</td>
+      <td class="dt-td">${u.config||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function tbUnitsUpdateTabs() {
+  if (typeof UNITS_DATA === 'undefined') return;
+  const pending = UNITS_DATA.filter(u => u.status === 'Pending Return').length;
+  const tabPending = document.getElementById('tb-units-tab-pending');
+  const countEl   = document.getElementById('tb-units-pending-count');
+  if (tabPending) tabPending.style.display = pending > 0 ? '' : 'none';
+  if (countEl) countEl.textContent = pending > 0 ? pending : '';
+  /* If pending tab was active but now empty, switch back to units */
+  if (pending === 0 && tbUnitsActiveTab === 'pending') tbUnitsTabSwitch('units');
+}
+
+function tbUnitsTabSwitch(tab) {
+  tbUnitsActiveTab = tab;
+  document.getElementById('tb-units-tab-units').classList.toggle('active', tab === 'units');
+  document.getElementById('tb-units-tab-pending').classList.toggle('active', tab === 'pending');
+  document.getElementById('tb-units-tab-content-units').style.display   = tab === 'units'   ? '' : 'none';
+  document.getElementById('tb-units-tab-content-pending').style.display = tab === 'pending' ? '' : 'none';
+  /* Hide Edit Units button on pending tab */
+  const selBtn = document.getElementById('tb-units-select-btn');
+  if (selBtn) selBtn.style.display = tab === 'pending' ? 'none' : '';
+  if (tab === 'pending') tbPendingRender();
+}
+
+/* ── Select mode ─────────────────────────────────────────────── */
+function tbUnitsSelectToggle() {
+  tbUnitsSelectMode = !tbUnitsSelectMode;
+  tbUnitsSelected.clear();
+  const bar = document.getElementById('tb-units-bulk-bar');
+  if (bar) bar.classList.toggle('visible', tbUnitsSelectMode);
+  const btn = document.getElementById('tb-units-select-btn');
+  if (btn) {
+    btn.textContent = tbUnitsSelectMode ? 'Cancel' : 'Edit Units';
+    btn.style.background = tbUnitsSelectMode ? 'var(--layer-2)' : 'var(--layer-1)';
+  }
+  tbUnitsRender();
+}
+
+function tbUnitsToggleRow(id, cb) {
+  if (cb.checked) tbUnitsSelected.add(id);
+  else tbUnitsSelected.delete(id);
+  const countEl = document.getElementById('tb-units-bulk-count');
+  if (countEl) countEl.textContent = tbUnitsSelected.size + ' selected';
+  const retBtn = document.getElementById('tb-units-bulk-return-btn');
+  if (retBtn) { retBtn.disabled = tbUnitsSelected.size === 0; }
+  /* Highlight row */
+  const row = document.querySelector(`#tb-units-tbody tr[data-unit="${id}"]`);
+  if (row) row.classList.toggle('dt-selected', cb.checked);
+}
+
+function tbUnitsSelectAll() {
+  if (typeof UNITS_DATA === 'undefined') return;
+  UNITS_DATA.filter(u => u.status === 'Unlinked Unit').forEach(u => tbUnitsSelected.add(u.id));
+  const countEl = document.getElementById('tb-units-bulk-count');
+  if (countEl) countEl.textContent = tbUnitsSelected.size + ' selected';
+  const retBtn = document.getElementById('tb-units-bulk-return-btn');
+  if (retBtn) retBtn.disabled = tbUnitsSelected.size === 0;
+  tbUnitsRender();
+}
+
+/* ── Return to Verifi workflow ───────────────────────────────── */
+function tbUnitsReturnConfirm() {
+  if (tbUnitsSelected.size === 0) return;
+  /* Reuse desktop confirm modal logic — it reads from dtUnitsSelected.
+     Swap in our selection set temporarily so the modal works. */
+  const prev = dtUnitsSelected;
+  dtUnitsSelected = tbUnitsSelected;
+  if (typeof dtUnitsReturnConfirm === 'function') {
+    dtUnitsReturnConfirm();
+  }
+  dtUnitsSelected = prev;
+}
+
+/* ── Pending Return table ────────────────────────────────────── */
+function tbPendingRender() {
+  if (typeof UNITS_DATA === 'undefined') return;
+  const pending = UNITS_DATA.filter(u => u.status === 'Pending Return');
+  const isInternal = typeof activeRole !== 'undefined' && activeRole === 'internal';
+
+  /* Bulk bar visibility — internal only */
+  const bulkBar = document.getElementById('tb-pending-bulk-bar');
+  if (bulkBar) bulkBar.style.display = isInternal ? 'flex' : 'none';
+
+  const thead = document.getElementById('tb-pending-thead');
+  if (thead) {
+    const cbTh = isInternal ? `<th style="width:40px;padding:0 8px;background:var(--layer-1);position:sticky;top:0;z-index:1;border-bottom:1px solid var(--border);"></th>` : '';
+    const ths = ['Unit ID','Status','Truck','TCG ID','Days Pending'].map(label =>
+      `<th style="padding:10px 12px;text-align:left;font-size:12px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;background:var(--layer-1);position:sticky;top:0;z-index:1;border-bottom:1px solid var(--border);white-space:nowrap;">${label}</th>`
+    ).join('');
+    thead.innerHTML = `<tr>${cbTh}${ths}</tr>`;
+  }
+
+  const tbody = document.getElementById('tb-pending-tbody');
+  if (!tbody) return;
+  if (pending.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="padding:40px;text-align:center;color:var(--soft);font-size:14px;">No pending returns.</td></tr>`;
+    return;
+  }
+
+  function daysSince(dateStr) {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    const diff = Math.floor((Date.now() - d.getTime()) / 86400000);
+    return isNaN(diff) ? '—' : diff;
+  }
+  function daysColor(days) {
+    if (typeof days !== 'number') return 'var(--soft)';
+    if (days > 14) return 'var(--red)';
+    if (days > 7)  return 'var(--amber)';
+    return '#16a34a';
+  }
+
+  tbody.innerHTML = pending.map((u, i) => {
+    const days = daysSince(u.returnDate);
+    const col  = daysColor(typeof days === 'number' ? days : -1);
+    const sel  = tbUnitsPendingSelected.has(u.id);
+    const cbTd = isInternal
+      ? `<td style="width:40px;padding:0 8px;"><input type="checkbox" class="dt-units-cb" ${sel?'checked':''} onclick="event.stopPropagation();tbPendingToggleRow('${u.id}',this)"></td>`
+      : '';
+    return `<tr class="dt-tr${i%2===1?' alt':''}${sel?' dt-selected':''}">
+      ${cbTd}
+      <td class="dt-td dt-td-strong">${u.id}</td>
+      <td class="dt-td"><span class="dt-units-status-pill pending"><span class="dot"></span>Pending Return</span></td>
+      <td class="dt-td">${u.truck === '--' ? '<span style="color:var(--soft);">—</span>' : u.truck}</td>
+      <td class="dt-td" style="font-family:'DM Mono',monospace;font-size:12px;">${u.tgw||'—'}</td>
+      <td class="dt-td" style="font-weight:600;color:${col};">${typeof days === 'number' ? days + 'd' : '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function tbPendingToggleRow(id, cb) {
+  if (cb.checked) tbUnitsPendingSelected.add(id);
+  else tbUnitsPendingSelected.delete(id);
+  const countEl = document.getElementById('tb-pending-bulk-count');
+  if (countEl) countEl.textContent = tbUnitsPendingSelected.size + ' selected';
+  const btn = document.getElementById('tb-pending-mark-btn');
+  if (btn) { btn.disabled = tbUnitsPendingSelected.size === 0; btn.style.opacity = tbUnitsPendingSelected.size > 0 ? '1' : '0.4'; }
+  const row = document.querySelector(`#tb-pending-tbody tr[data-unit="${id}"]`);
+  if (row) row.classList.toggle('dt-selected', cb.checked);
+}
+
+function tbPendingSelectAll() {
+  if (typeof UNITS_DATA === 'undefined') return;
+  UNITS_DATA.filter(u => u.status === 'Pending Return').forEach(u => tbUnitsPendingSelected.add(u.id));
+  const countEl = document.getElementById('tb-pending-bulk-count');
+  if (countEl) countEl.textContent = tbUnitsPendingSelected.size + ' selected';
+  const btn = document.getElementById('tb-pending-mark-btn');
+  if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+  tbPendingRender();
+}
+
+function tbPendingCancelSelect() {
+  tbUnitsPendingSelected.clear();
+  tbPendingRender();
+}
+
+function tbPendingMarkReceived() {
+  if (tbUnitsPendingSelected.size === 0) return;
+  /* Reuse desktop logic — temporarily swap selected set */
+  const prev = dtPendingSelected;
+  if (typeof dtPendingSelected !== 'undefined') dtPendingSelected = tbUnitsPendingSelected;
+  if (typeof dtPendingMarkReceived === 'function') dtPendingMarkReceived();
+  if (typeof dtPendingSelected !== 'undefined') dtPendingSelected = prev;
+  tbUnitsPendingSelected.clear();
+  tbUnitsUpdateTabs();
+  tbPendingRender();
+  tbUnitsRender();
+}
+
+/* ── TABLET UNIT DRAWER — Chunk 2 ─────────────────────────────────
+   Full unit drawer for tablet. Uses same data + render functions as
+   desktop by temporarily swapping element IDs so dtUdRender* functions
+   write into tablet elements instead of desktop ones.
+────────────────────────────────────────────────────────────────── */
+
+let tbUdCurrentUnitId = null;
+let tbUdActiveTab     = 'lifespan';
+
+function tbUdOpen(unitId) {
+  const u = UNITS_DATA.find(x => x.id === unitId);
+  if (!u) return;
+  if (u.status !== 'Unlinked Unit' && u.status !== 'Pending' && u.status !== 'Linked Unit') return;
+
+  tbUdCurrentUnitId = unitId;
+  tbUdActiveTab = u.status === 'Pending' ? 'config' : 'lifespan';
+
+  /* Header */
+  document.getElementById('tb-ud-id').textContent = u.id;
+  const truckEl = document.getElementById('tb-ud-truck-num');
+  if (truckEl) truckEl.textContent = (u.truck && u.truck !== '--') ? u.truck : 'Unlinked';
+
+  /* Status pill */
+  const pill = document.getElementById('tb-ud-status-pill');
+  if (pill) {
+    let cls = 'unlinked', label = 'Unlinked';
+    if (u.status === 'Linked Unit') { cls = 'linked';  label = 'Linked'; }
+    if (u.status === 'Pending')     { cls = 'pending'; label = 'Pending Configuration'; }
+    pill.innerHTML = `<span class="dt-drawer-ign-badge ${cls}"><span class="dt-drawer-ign-dot"></span>${label}</span>`;
+  }
+
+  /* Build tabs */
+  tbUdBuildTabs();
+
+  /* Render content into tb-ud-scroll via ID swap */
+  tbUdRenderActiveTab();
+
+  /* Scrim + slide in */
+  const scrim  = document.getElementById('tb-ud-scrim');
+  const drawer = document.getElementById('tb-ud-drawer');
+  if (scrim)  scrim.style.display = 'block';
+  if (drawer) requestAnimationFrame(() => drawer.style.transform = 'translateX(0)');
+}
+
+function tbUdClose() {
+  /* If unit was Pending and user cancels — revert */
+  if (typeof dtUdPendingPrevState !== 'undefined' && dtUdPendingPrevState && tbUdCurrentUnitId === dtUdCurrentUnitId) {
+    if (typeof dtUdRevertPending === 'function') dtUdRevertPending();
+  }
+  const scrim  = document.getElementById('tb-ud-scrim');
+  const drawer = document.getElementById('tb-ud-drawer');
+  if (drawer) drawer.style.transform = 'translateX(100%)';
+  if (scrim)  scrim.style.display = 'none';
+  /* Hide save bar */
+  const saveBar = document.getElementById('tb-ud-cfg-savebar');
+  if (saveBar) saveBar.style.display = 'none';
+  if (typeof senStop === 'function') senStop();
+  tbUdCurrentUnitId = null;
+  /* Re-render units list to reflect any state changes */
+  if (document.getElementById('tb-page-units')?.style.display !== 'none') tbUnitsRender();
+}
+
+function tbUdBuildTabs() {
+  const u = UNITS_DATA.find(x => x.id === tbUdCurrentUnitId);
+  if (!u) return;
+  let tabs;
+  if (u.status === 'Pending') {
+    tabs = [{ id:'lifespan', label:'Unit Lifespan' }, { id:'config', label:'Configuration' }];
+  } else if (u.status === 'Linked Unit') {
+    tabs = [
+      { id:'lifespan',  label:'Unit Lifespan' },
+      { id:'timeline',  label:'Component timeline' },
+      { id:'logs',      label:'Truck Logs' },
+      { id:'manual',    label:'Manual Control' },
+      { id:'sensor',    label:'Sensor' },
+      { id:'config',    label:'Configuration' },
+    ];
+  } else {
+    tabs = [{ id:'lifespan', label:'Unit Lifespan' }, { id:'attach', label:'Attach to Truck' }];
+  }
+  const tabsEl = document.getElementById('tb-ud-tabs');
+  if (tabsEl) tabsEl.innerHTML = tabs.map(t =>
+    `<button class="dt-drawer-tab${t.id === tbUdActiveTab ? ' active' : ''}" onclick="tbUdSelectTab('${t.id}')">${t.label}</button>`
+  ).join('');
+}
+
+function tbUdSelectTab(tab) {
+  if (typeof senStop === 'function') senStop();
+  tbUdActiveTab = tab;
+  tbUdBuildTabs();
+  tbUdRenderActiveTab();
+}
+
+/* ── ID swap helper ──────────────────────────────────────────────
+   Desktop render functions write into dt-ud-scroll, dt-ud-tabs,
+   dt-ud-side-body and read dtUdCurrentUnitId / dtUdActiveTab.
+   We temporarily remap those so the same functions write into our
+   tablet elements instead.                                       */
+function tbUdWithSwap(fn) {
+  /* Save desktop state */
+  const prevUnitId  = typeof dtUdCurrentUnitId !== 'undefined' ? dtUdCurrentUnitId : null;
+  const prevTab     = typeof dtUdActiveTab     !== 'undefined' ? dtUdActiveTab     : null;
+
+  /* Point globals at our unit */
+  if (typeof dtUdCurrentUnitId !== 'undefined') dtUdCurrentUnitId = tbUdCurrentUnitId;
+  if (typeof dtUdActiveTab     !== 'undefined') dtUdActiveTab     = tbUdActiveTab;
+
+  /* Swap scroll element — rename desktop scroll away, rename ours in */
+  const desktopScroll = document.getElementById('dt-ud-scroll');
+  const tbScroll      = document.getElementById('tb-ud-scroll');
+  if (desktopScroll) desktopScroll.id = '__dt-ud-scroll-hidden';
+  if (tbScroll)      tbScroll.id      = 'dt-ud-scroll';
+
+  /* Swap side-body too for side panel renders */
+  const desktopSide = document.getElementById('dt-ud-side-body');
+  const tbSide      = document.getElementById('tb-ud-side-body');
+  if (desktopSide) desktopSide.id = '__dt-ud-side-hidden';
+  if (tbSide)      tbSide.id      = 'dt-ud-side-body';
+
+  try { fn(); } finally {
+    /* Restore */
+    const swappedScroll = document.getElementById('dt-ud-scroll');
+    const hiddenScroll  = document.getElementById('__dt-ud-scroll-hidden');
+    if (swappedScroll) swappedScroll.id = 'tb-ud-scroll';
+    if (hiddenScroll)  hiddenScroll.id  = 'dt-ud-scroll';
+
+    const swappedSide = document.getElementById('dt-ud-side-body');
+    const hiddenSide  = document.getElementById('__dt-ud-side-hidden');
+    if (swappedSide) swappedSide.id = 'tb-ud-side-body';
+    if (hiddenSide)  hiddenSide.id  = 'dt-ud-side-body';
+
+    if (typeof dtUdCurrentUnitId !== 'undefined') dtUdCurrentUnitId = prevUnitId;
+    if (typeof dtUdActiveTab     !== 'undefined') dtUdActiveTab     = prevTab;
+  }
+}
+
+function tbUdRenderActiveTab() {
+  const tab = tbUdActiveTab;
+  tbUdWithSwap(() => {
+    if (tab === 'attach')       dtUdRenderAttach();
+    else if (tab === 'config')  dtUdRenderConfig();
+    else if (tab === 'timeline') dtUdRenderTimeline();
+    else if (tab === 'logs')    dtUdRenderLogs();
+    else if (tab === 'manual')  dtUdRenderManual();
+    else if (tab === 'sensor')  dtUdRenderSensor();
+    else                        dtUdRenderLifespan();
+  });
+
+  /* After rendering lifespan/config, also render side panel below scroll */
+  if (['lifespan','config','attach'].includes(tab)) {
+    tbUdRenderSidePanelSection();
+  }
+
+  /* Config: show tablet save bar, patch dtCfgActiveContext */
+  if (tab === 'config') {
+    const saveBar = document.getElementById('tb-ud-cfg-savebar');
+    if (saveBar) saveBar.style.display = 'none'; /* shown by dtCfgStartEdit */
+  }
+}
+
+function tbUdRenderSidePanelSection() {
+  /* Append side panel content (chips + meta) after the scroll content */
+  const scroll = document.getElementById('tb-ud-scroll');
+  if (!scroll) return;
+  /* Build side panel HTML using desktop logic */
+  const u = UNITS_DATA.find(x => x.id === tbUdCurrentUnitId);
+  if (!u) return;
+  const isLinked  = u.status === 'Linked Unit';
+  const isPending = u.status === 'Pending';
+
+  /* Reuse dtUdRenderSidePanel logic inline */
+  let chip1label, chip1val, chip1cls = '';
+  let chip2label, chip2val;
+  if (isLinked) {
+    chip1label = 'Connectivity'; chip1val = 'Connected'; chip1cls = 'linkish';
+    chip2label = 'Truck Mode';   chip2val = 'Live';
+  } else if (isPending) {
+    chip1label = 'Status';    chip1val = 'Pending Configuration';
+    chip2label = 'Account';   chip2val = 'Cemex AZ';
+  } else {
+    chip1label = 'Status';  chip1val = 'Not attached'; chip1cls = 'dim';
+    chip2label = 'Account'; chip2val = 'Cemex AZ';
+  }
+
+  const metaRows = isLinked ? [
+    ['TCG ID',             u.tgw && u.tgw !== '--' ? u.tgw : '—'],
+    ['Code version',       u.sysType === 'Spark' ? '5.01.003' : u.sysType === 'V4' ? '4.02.011' : '3.04.029'],
+    ['Commissioned',       u.firstCommissioned || '—'],
+    ['Last Connect',       'Mar 24, 2025, 1:16:38 PM'],
+    ['Last System Status', 'Mar 24, 2025, 1:16:38 PM'],
+    ['Last Reboot',        'Mar 24, 2025, 1:16 PM'],
+    ['Configuration',      u.config || '—'],
+    ['Contract',           u.contract || '—'],
+  ] : [
+    ['TCG ID',             u.tgw && u.tgw !== '--' ? u.tgw : '—'],
+    ['Code version',       '—'],
+    ['Commissioned',       u.firstCommissioned || '—'],
+    ['Last Connect',       '—'],
+    ['Last System Status', '—'],
+    ['Last Reboot',        '—'],
+    ['Configuration',      u.config || '—'],
+    ['Contract',           u.contract || '—'],
+  ];
+
+  const metaHtml = metaRows.map(([k, v], i) => `
+    <div class="dt-drawer-meta-row${i%2===1?' alt':''}">
+      <span class="dt-drawer-meta-label">${k}</span>
+      <span class="dt-drawer-meta-val" style="${k==='TCG ID'?'font-family:\'DM Mono\',monospace;font-size:12px;':''}">${v}</span>
+    </div>`).join('');
+
+  /* Append side panel as a section at the bottom of scroll */
+  let sideSec = document.getElementById('tb-ud-side-section');
+  if (!sideSec) {
+    sideSec = document.createElement('div');
+    sideSec.id = 'tb-ud-side-section';
+    sideSec.style.cssText = 'border-top:1px solid var(--border);margin-top:8px;padding-top:20px;padding-bottom:32px;';
+    scroll.appendChild(sideSec);
+  }
+  sideSec.innerHTML = `
+    <div class="dt-drawer-summary-row" style="margin-bottom:16px;">
+      <div class="dt-drawer-summary-card">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">${chip1label}</div>
+          <div class="dt-ud-side-chip-val ${chip1cls}" style="font-size:13px;letter-spacing:-0.26px;margin-top:2px;">${chip1val}</div>
+        </div>
+      </div>
+      <div class="dt-drawer-summary-card">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">${chip2label}</div>
+          <div style="font-size:13px;color:var(--defined);letter-spacing:-0.26px;margin-top:2px;">${chip2val}</div>
+        </div>
+      </div>
+    </div>
+    <div class="dt-drawer-meta">${metaHtml}</div>
+    ${isLinked ? `<button class="dt-ud-side-gps-btn" onclick="dtUdGpsPlaceholder()" style="margin-top:16px;">GPS Location</button>` : ''}`;
+}
+
+/* ── CHUNK 4 — ATTACH TO TRUCK (tablet) ────────────────────────────
+   The Attach to Truck tab renders via the ID-swap in tbUdRenderActiveTab,
+   so dtUdRenderAttach writes correctly into tb-ud-scroll already.
+   The canonical dtUdAttachDo, dtUdCfgSaveAndLink, and dtUdRevertPending
+   functions have been patched directly to handle both desktop and tablet.
+────────────────────────────────────────────────────────────────── */
+
+/* ── TABLET ADD UNIT — Chunk 3 ───────────────────────────────────
+   Full-screen overlay that reuses all dt-au-* form IDs and logic.
+   dtAuOpen/dtAuClose are patched to route to the tablet overlay
+   when in tablet mode, so the Add Unit button wires up for free.
+────────────────────────────────────────────────────────────────── */
+
+function tbAuOpen() {
+  /* Reset form via desktop logic (same IDs) */
+  if (typeof dtAuValues !== 'undefined') {
+    dtAuValues.contract = 'Cemex AZ';
+    dtAuValues.sysType  = '';
+    dtAuValues.config   = '';
+  }
+  /* Populate contract dropdown */
+  const contracts = (typeof DT_AU_CONTRACTS_BY_ACCOUNT !== 'undefined' && typeof dtAuValues !== 'undefined')
+    ? (DT_AU_CONTRACTS_BY_ACCOUNT[dtAuValues.account] || []) : ['Cemex AZ'];
+  const contractMenu = document.getElementById('dt-au-contract-menu');
+  if (contractMenu) contractMenu.innerHTML = contracts.map(c => {
+    const sel  = c === 'Cemex AZ' ? ' selected' : '';
+    const safe = c.replace(/'/g, "\\'");
+    return `<div class="dt-au-dd-item${sel}" onclick="dtAuSelectDd('contract','${safe}')">${c}</div>`;
+  }).join('');
+  const contractVal = document.getElementById('dt-au-contract-val');
+  if (contractVal) { contractVal.textContent = 'Cemex AZ'; contractVal.className = ''; }
+
+  /* Reset sysType and config */
+  ['sysType','config'].forEach(key => {
+    const valEl = document.getElementById('dt-au-' + key + '-val');
+    const menuEl = document.getElementById('dt-au-' + key + '-menu');
+    const chevEl = document.getElementById('dt-au-' + key + '-chev');
+    const btnEl  = document.getElementById('dt-au-' + key + '-btn');
+    if (valEl)  { valEl.textContent = key === 'sysType' ? 'Select type' : 'Select config'; valEl.className = 'placeholder'; }
+    if (menuEl) { menuEl.classList.remove('open'); menuEl.querySelectorAll('.dt-au-dd-item').forEach(el => el.classList.remove('selected')); }
+    if (chevEl) chevEl.classList.remove('open');
+    if (btnEl)  btnEl.classList.remove('open');
+  });
+
+  /* Reset inputs */
+  ['dt-au-unit-id','dt-au-tgw'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ''; el.classList.remove('error'); }
+  });
+  const idErr = document.getElementById('dt-au-unit-id-err');
+  if (idErr) idErr.classList.remove('show');
+
+  if (typeof dtAuValidate === 'function') dtAuValidate();
+
+  /* Show overlay */
+  const overlay = document.getElementById('tb-au-overlay');
+  if (overlay) overlay.style.display = 'flex';
+
+  setTimeout(() => document.getElementById('dt-au-unit-id')?.focus(), 200);
+}
+
+function tbAuClose() {
+  const overlay = document.getElementById('tb-au-overlay');
+  if (overlay) overlay.style.display = 'none';
+  /* Close any open dropdown */
+  ['contract','sysType','config'].forEach(key => {
+    document.getElementById('dt-au-' + key + '-menu')?.classList.remove('open');
+    document.getElementById('dt-au-' + key + '-chev')?.classList.remove('open');
+    document.getElementById('dt-au-' + key + '-btn')?.classList.remove('open');
+  });
+}
+
+/* Patch dtAuOpen and dtAuClose to route to tablet overlay on tablet */
+const _origDtAuOpen  = typeof dtAuOpen  === 'function' ? dtAuOpen  : null;
+const _origDtAuClose = typeof dtAuClose === 'function' ? dtAuClose : null;
+
+function dtAuOpen() {
+  if (document.body.classList.contains('view-tablet')) { tbAuOpen(); return; }
+  if (_origDtAuOpen) _origDtAuOpen();
+}
+
+function dtAuClose() {
+  if (document.body.classList.contains('view-tablet')) {
+    tbAuClose();
+    /* Re-render units list after close */
+    if (typeof tbUnitsRender === 'function') tbUnitsRender();
+    return;
+  }
+  if (_origDtAuClose) _origDtAuClose();
+  /* Also re-render tablet if visible */
+  if (typeof tbUnitsRender === 'function') tbUnitsRender();
+}
+
+/* Re-render Life Span if it's the active tab after Replace Components */
+const _origCoWriteLifespanHistory = typeof coWriteLifespanHistory === 'function' ? coWriteLifespanHistory : null;
 
 /* Initialize tablet table on first load */
 (function tbInit() {
@@ -16775,7 +17614,7 @@ function dtAtSubmit() {
 /* Trinity-styled toast helper — Success variant by default.
    Pass `variant: 'info' | 'warning' | 'error'` to use the other treatments. */
 function dtShowToast({ title, body, variant }) {
-  /* Mobile: show inline toast inside the drawer, not fixed position */
+  /* Mobile: show inline toast inside phone-wrap, position:absolute */
   if (document.body.classList.contains('view-mobile')) {
     var existing = document.getElementById('mo-toast');
     if (existing) existing.remove();
@@ -16802,6 +17641,37 @@ function dtShowToast({ title, body, variant }) {
       if (!t.parentNode) return;
       t.style.animation = 'dtAuToastOut 0.25s ease-in forwards';
       setTimeout(function() { t.remove(); }, 250);
+    }, 3200);
+    return;
+  }
+
+  /* Tablet: anchor inside #s-tablet so toast stays within the wrapper */
+  if (document.body.classList.contains('view-tablet')) {
+    const existing = document.getElementById('tb-toast');
+    if (existing) existing.remove();
+    const stripe = variant === 'success' ? '#2ecf1d' : variant === 'warning' ? '#ffba0d' : variant === 'error' ? '#d70100' : '#41a8f2';
+    const t = document.createElement('div');
+    t.id = 'tb-toast';
+    t.style.cssText = 'position:absolute;bottom:32px;left:50%;transform:translateX(-50%);z-index:10000;'
+      + 'background:white;border:1px solid var(--border);border-radius:12px;'
+      + 'padding:12px 16px;display:flex;align-items:flex-start;gap:10px;min-width:280px;max-width:420px;'
+      + 'box-shadow:0 8px 24px rgba(0,0,0,0.18);font-family:var(--font);'
+      + 'border-top:3px solid ' + stripe + ';'
+      + 'animation:dtAuToastIn 0.25s cubic-bezier(0.4,0,0.2,1);';
+    t.innerHTML = '<div style="flex:1;min-width:0;">'
+      + '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;margin-bottom:2px;">' + title + '</div>'
+      + '<div style="font-size:12px;color:var(--defined);letter-spacing:-0.24px;">' + body + '</div>'
+      + '</div>';
+    t.addEventListener('click', () => {
+      t.style.animation = 'dtAuToastOut 0.25s ease-in forwards';
+      setTimeout(() => t.remove(), 250);
+    });
+    const container = document.getElementById('s-tablet') || document.body;
+    container.appendChild(t);
+    setTimeout(() => {
+      if (!t.parentNode) return;
+      t.style.animation = 'dtAuToastOut 0.25s ease-in forwards';
+      setTimeout(() => t.remove(), 250);
     }, 3200);
     return;
   }
@@ -17062,20 +17932,25 @@ function dtUdRenderConfig() {
   if (u.status === 'Pending') {
     requestAnimationFrame(() => {
       dtCfgStartEdit();
-      const saveBtn = document.getElementById('dt-ud-cfg-save-btn');
+      /* Resolve correct save/cancel IDs — tablet uses tb-ud-* IDs */
+      const isTablet = document.body.classList.contains('view-tablet');
+      const saveBtnId    = isTablet ? 'tb-ud-cfg-save-btn'    : 'dt-ud-cfg-save-btn';
+      const cancelBtnId  = isTablet ? 'tb-ud-cfg-cancel-btn'  : 'dt-ud-cfg-cancel-btn';
+      const msgElId      = isTablet ? 'tb-ud-cfg-savebar-msg' : 'dt-ud-cfg-savebar-msg';
+      const saveBtn = document.getElementById(saveBtnId);
       if (saveBtn) {
         saveBtn.textContent = 'Save & Link Unit';
         saveBtn.dataset.role = 'pending-link';
         saveBtn.onclick = dtUdCfgSaveAndLink;
       }
       // Cancel during pending = cancel the entire link attempt → revert to Unlinked.
-      const cancelBtn = document.getElementById('dt-ud-cfg-cancel-btn');
+      const cancelBtn = document.getElementById(cancelBtnId);
       if (cancelBtn) {
         cancelBtn.textContent = 'Cancel attach';
         cancelBtn.onclick = dtUdCfgCancelLink;
       }
       // Update the savebar message text to match the linking context
-      const msgEl = document.getElementById('dt-ud-cfg-savebar-msg');
+      const msgEl = document.getElementById(msgElId);
       if (msgEl) msgEl.textContent = 'Fill in the configuration to finalize this link';
 
       /* Force close accordions 4-7 — dtCfgStartEdit opens all, we override here */
@@ -17093,85 +17968,81 @@ function dtUdRenderConfig() {
 
 /* When user saves config during Pending state — finalize the link */
 function dtUdCfgSaveAndLink() {
-  // Run the standard config save (commits field values to data-orig)
+  const isTablet  = document.body.classList.contains('view-tablet');
+  const currentId = isTablet ? tbUdCurrentUnitId : dtUdCurrentUnitId;
+
   dtCfgSave();
-  // Promote unit from Pending → Linked
-  const u = UNITS_DATA.find(x => x.id === dtUdCurrentUnitId);
+
+  const u = UNITS_DATA.find(x => x.id === currentId);
   if (!u) return;
   u.status = 'Linked Unit';
-  // assignedToTruck was already set when the link started; keep it as the timestamp
 
-  // Clear the truck's unlinked state so reopening the truck drawer shows the
-  // full Linked view (Components overview, Sensor, etc.) instead of the
-  // "Truck Not Connected" empty state. Mirrors mobile's doAttach mutations.
   if (typeof trucks !== 'undefined' && u.truck && u.truck !== '--') {
     const t = trucks.find(x => x.num === u.truck);
-    if (t) {
-      t.unlinked  = false;
-      t.truckMode = 'Active';
-      t.unitId    = u.id;
-    }
+    if (t) { t.unlinked = false; t.truckMode = 'Active'; t.unitId = u.id; }
     if (typeof CC_TRUCKS !== 'undefined') {
       const tCC = CC_TRUCKS.find(x => x.num === u.truck);
       if (tCC) tCC.unlinked = false;
     }
   }
 
-  // Close the unit drawer and open the truck drawer on Components Overview
-  setTimeout(function() {
-    // Ensure the truck exists in trucks[] — if it came from UNLINKED_TRUCKS it won't be there
-    const truckNum = u.truck;
-    if (truckNum && truckNum !== '--') {
-      let t = trucks.find(function(x) { return x.num === truckNum; });
-      if (!t) {
-        // Create a synthetic trucks[] entry so dtOpenTruck can build the drawer
-        t = {
-          num: truckNum, ver:'v3.04.029', ign:'On', ignOff:false,
-          err:0, wrn:0, ignDetail:'Just linked', plant:'Phoenix Central',
-          lastConn:'Just now', conn:'live', unlinked:false,
-          truckMode:'Active', unitId:u.id,
-          account:'Cemex AZ', age:'0 min', source:'Unit Link',
-          impact:'Not Managing', issue:'None', readyMaint:'Yes',
-          newlyLinked:true
-        };
-        trucks.push(t);
-      }
-      // Also ensure CC_TRUCKS has an entry
-      if (!CC_TRUCKS.find(function(x) { return x.num === truckNum; })) {
-        CC_TRUCKS.push({ num:truckNum, unlinked:false, components:[] });
-      }
-    }
-
-    // Clear pending state so dtUdClose doesn't revert the link
-    dtUdPendingPrevState = null;
-    dtUdClose();
-
-    setTimeout(function() {
-      if (truckNum && truckNum !== '--') {
-        dtOpenTruck(truckNum);
-        setTimeout(function() {
-          const overviewTab = document.querySelector('.dt-drawer-tab[onclick*="overview"]');
-          if (overviewTab) dtDrawerTab('overview', overviewTab);
-        }, 200);
-      }
-    }, 100);
-  }, 1300);
-  // Refresh the units table + trucks header stat
-  if (typeof dtUnitsRender === 'function') dtUnitsRender();
-  // Re-render whichever trucks table is visible so the truck moves out of
-  // the "unlinked" treatment (greyed alerts pill, "--" cells) immediately.
-  if (typeof dtRefreshTable === 'function' && typeof dtActiveTab !== 'undefined') {
-    dtRefreshTable(dtActiveTab);
-  }
-  const unlinkedEl = document.getElementById('dt-stat-unlinked');
-  if (unlinkedEl && typeof UNITS_DATA !== 'undefined') {
-    unlinkedEl.textContent = UNITS_DATA.filter(x => x.status === 'Unlinked Unit').length;
-  }
-  // Trinity Success toast
   dtShowToast({
     title: 'Unit linked successfully',
     body: `Unit ${u.id} is now linked to Truck ${u.truck} and ready for deployment.`,
   });
+
+  const truckNum = u.truck;
+
+  if (isTablet) {
+    if (typeof tbUnitsRender === 'function') tbUnitsRender();
+    if (typeof tbRenderTable === 'function') tbRenderTable();
+    dtUdPendingPrevState = null;
+    setTimeout(() => {
+      tbUdClose();
+      if (truckNum && truckNum !== '--') {
+        if (typeof dtEnsureTruckRecord === 'function') dtEnsureTruckRecord(truckNum);
+        setTimeout(() => { if (typeof tbOpenTruck === 'function') tbOpenTruck(truckNum); }, 100);
+      }
+    }, 1300);
+  } else {
+    setTimeout(function() {
+      if (truckNum && truckNum !== '--') {
+        let t = trucks.find(function(x) { return x.num === truckNum; });
+        if (!t) {
+          t = {
+            num: truckNum, ver:'v3.04.029', ign:'On', ignOff:false,
+            err:0, wrn:0, ignDetail:'Just linked', plant:'Phoenix Central',
+            lastConn:'Just now', conn:'live', unlinked:false,
+            truckMode:'Active', unitId:u.id,
+            account:'Cemex AZ', age:'0 min', source:'Unit Link',
+            impact:'Not Managing', issue:'None', readyMaint:'Yes',
+            newlyLinked:true
+          };
+          trucks.push(t);
+        }
+        if (!CC_TRUCKS.find(function(x) { return x.num === truckNum; })) {
+          CC_TRUCKS.push({ num:truckNum, unlinked:false, components:[] });
+        }
+      }
+      dtUdPendingPrevState = null;
+      dtUdClose();
+      setTimeout(function() {
+        if (truckNum && truckNum !== '--') {
+          dtOpenTruck(truckNum);
+          setTimeout(function() {
+            const overviewTab = document.querySelector('.dt-drawer-tab[onclick*="overview"]');
+            if (overviewTab) dtDrawerTab('overview', overviewTab);
+          }, 200);
+        }
+      }, 100);
+    }, 1300);
+    if (typeof dtUnitsRender === 'function') dtUnitsRender();
+    if (typeof dtRefreshTable === 'function' && typeof dtActiveTab !== 'undefined') dtRefreshTable(dtActiveTab);
+    const unlinkedEl = document.getElementById('dt-stat-unlinked');
+    if (unlinkedEl && typeof UNITS_DATA !== 'undefined') {
+      unlinkedEl.textContent = UNITS_DATA.filter(x => x.status === 'Unlinked Unit').length;
+    }
+  }
 }
 
 /* When user cancels config during Pending state — revert the entire link attempt */
@@ -17577,8 +18448,10 @@ function dtUdAttachSelect(truckNum) {
     const row = document.querySelector(`#dt-attach-table-body .dt-attach-row[onclick*="${safe}"]`);
     if (row) row.classList.add('selected');
   }
-  // Toggle the Attach Unit button
-  const cta = document.querySelector('#dt-ud-scroll .dt-attach-cta');
+  // Toggle the Attach Unit button — on tablet the content lives in tb-ud-scroll
+  const scrollId = (document.body.classList.contains('view-tablet') && document.getElementById('tb-ud-scroll'))
+    ? 'tb-ud-scroll' : 'dt-ud-scroll';
+  const cta = document.querySelector('#' + scrollId + ' .dt-attach-cta');
   if (cta) cta.disabled = !dtUdAttachSelected;
 }
 
@@ -17618,12 +18491,13 @@ function dtUdAttachSearch() {
 }
 
 function dtUdAttachConfirm() {
-  if (!dtUdAttachSelected || !dtUdCurrentUnitId) return;
+  // On tablet dtUdCurrentUnitId is null — use tbUdCurrentUnitId instead
+  const currentUnitId = (document.body.classList.contains('view-tablet') && typeof tbUdCurrentUnitId !== 'undefined')
+    ? tbUdCurrentUnitId : dtUdCurrentUnitId;
+  if (!dtUdAttachSelected || !currentUnitId) return;
   const panel = document.getElementById('dt-ud-attach-confirm');
   if (!panel) return;
-  // Pull TCG ID for display — Martin's callout: TCG must be visible at the
-  // moment of commit, not buried two screens away.
-  const unitObj = (typeof UNITS_DATA !== 'undefined') ? UNITS_DATA.find(u => u.id === dtUdCurrentUnitId) : null;
+  const unitObj = (typeof UNITS_DATA !== 'undefined') ? UNITS_DATA.find(u => u.id === currentUnitId) : null;
   const tcgId = (unitObj && unitObj.tgw && unitObj.tgw !== '--') ? unitObj.tgw : '—';
   // Tighter, single-line copy — toolbar-row variant has no vertical room for
   // a multi-line body, so we keep the title self-explanatory.
@@ -17636,7 +18510,7 @@ function dtUdAttachConfirm() {
         </svg>
       </div>
       <div class="dt-inline-confirm-text">
-        <div class="dt-inline-confirm-title">Link Unit ${dtUdCurrentUnitId} to Truck ${dtUdAttachSelected}?</div>
+        <div class="dt-inline-confirm-title">Link Unit ${currentUnitId} to Truck ${dtUdAttachSelected}?</div>
         <div class="dt-inline-confirm-body" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
           <span style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;">TCG&nbsp;ID</span>
           <span style="font-family:'DM Mono',monospace;color:var(--strong);font-size:12px;letter-spacing:0.2px;">${tcgId}</span>
@@ -17668,17 +18542,19 @@ function dtUdAttachCancel() {
 
 function dtUdAttachDo() {
   dtUdAttachCancel();
-  if (!dtUdAttachSelected || !dtUdCurrentUnitId) return;
 
-  const u = UNITS_DATA.find(x => x.id === dtUdCurrentUnitId);
+  /* On tablet, use tbUdCurrentUnitId — dtUdCurrentUnitId is null */
+  const isTablet  = document.body.classList.contains('view-tablet');
+  const currentId = isTablet ? tbUdCurrentUnitId : dtUdCurrentUnitId;
+  if (!dtUdAttachSelected || !currentId) return;
+
+  const u = UNITS_DATA.find(x => x.id === currentId);
   if (!u) return;
 
-  // Stage 1 of the link: set Pending, claim the truck.
-  // Capture original state in case the user cancels mid-config.
   dtUdPendingPrevState = {
     unitId: u.id,
-    prevStatus: u.status,        // 'Unlinked Unit'
-    prevTruck:  u.truck,          // '--'
+    prevStatus: u.status,
+    prevTruck:  u.truck,
     prevAssigned: u.assignedToTruck || null,
     truckSnapshot: (typeof UNLINKED_TRUCKS !== 'undefined')
       ? UNLINKED_TRUCKS.find(t => t.number === dtUdAttachSelected)
@@ -17689,26 +18565,31 @@ function dtUdAttachDo() {
   u.truck  = dtUdAttachSelected;
   u.assignedToTruck = new Date().toLocaleDateString('en-US', {month:'2-digit',day:'2-digit',year:'numeric'});
 
-  // Save mixer type BEFORE we splice the truck out of UNLINKED_TRUCKS
   const truckForMixer = (typeof UNLINKED_TRUCKS !== 'undefined')
     ? UNLINKED_TRUCKS.find(t => t.number === dtUdAttachSelected) : null;
   u.mixerType = truckForMixer ? truckForMixer.mixer : '';
 
-  // Remove from the unlinked truck pool while pending — if user cancels we put it back.
   const idx = (typeof UNLINKED_TRUCKS !== 'undefined')
     ? UNLINKED_TRUCKS.findIndex(t => t.number === dtUdAttachSelected) : -1;
   if (idx > -1) UNLINKED_TRUCKS.splice(idx, 1);
 
-  // Re-shape the drawer for Pending: tabs become Lifespan + Configuration,
-  // jump straight into Configuration in edit mode.
-  dtUdActiveTab = 'config';
-  dtUdApplyStatusUI(u);
-  dtUdBuildTabs();
-  dtUdRenderActiveTab();
-  dtUdRenderSidePanel();
-
-  // Reflect in the units table immediately
-  if (typeof dtUnitsRender === 'function') dtUnitsRender();
+  if (isTablet) {
+    /* Reshape tablet drawer for Pending */
+    tbUdActiveTab = 'config';
+    const pill = document.getElementById('tb-ud-status-pill');
+    if (pill) pill.innerHTML = `<span class="dt-drawer-ign-badge pending"><span class="dt-drawer-ign-dot"></span>Pending Configuration</span>`;
+    tbUdBuildTabs();
+    tbUdRenderActiveTab();
+    tbUdRenderSidePanelSection();
+    if (typeof tbUnitsRender === 'function') tbUnitsRender();
+  } else {
+    dtUdActiveTab = 'config';
+    dtUdApplyStatusUI(u);
+    dtUdBuildTabs();
+    dtUdRenderActiveTab();
+    dtUdRenderSidePanel();
+    if (typeof dtUnitsRender === 'function') dtUnitsRender();
+  }
 }
 
 /* Revert a pending unit back to Unlinked. Called when user closes the drawer
@@ -17718,10 +18599,9 @@ function dtUdRevertPending() {
   if (!snap) return;
   const u = UNITS_DATA.find(x => x.id === snap.unitId);
   if (u && u.status === 'Pending') {
-    u.status = snap.prevStatus;          // back to 'Unlinked Unit'
-    u.truck  = snap.prevTruck;           // back to '--'
+    u.status = snap.prevStatus;
+    u.truck  = snap.prevTruck;
     u.assignedToTruck = snap.prevAssigned;
-    // Put the truck back in the pool so it's available again
     if (snap.truckSnapshot && typeof UNLINKED_TRUCKS !== 'undefined') {
       const exists = UNLINKED_TRUCKS.find(t => t.number === snap.truckSnapshot.number);
       if (!exists) UNLINKED_TRUCKS.push(snap.truckSnapshot);
@@ -17729,13 +18609,26 @@ function dtUdRevertPending() {
   }
   dtUdPendingPrevState = null;
   if (typeof dtUnitsRender === 'function') dtUnitsRender();
-  // If the drawer is still open and showing this unit, reshape it back to Unlinked
-  if (u && dtUdCurrentUnitId === u.id) {
-    dtUdActiveTab = 'lifespan';
-    dtUdApplyStatusUI(u);
-    dtUdBuildTabs();
-    dtUdRenderActiveTab();
-    dtUdRenderSidePanel();
+  if (typeof tbUnitsRender === 'function') tbUnitsRender();
+
+  const isTablet = document.body.classList.contains('view-tablet');
+  if (isTablet) {
+    if (u && tbUdCurrentUnitId === u.id) {
+      tbUdActiveTab = 'lifespan';
+      const pill = document.getElementById('tb-ud-status-pill');
+      if (pill) pill.innerHTML = `<span class="dt-drawer-ign-badge unlinked"><span class="dt-drawer-ign-dot"></span>Unlinked</span>`;
+      tbUdBuildTabs();
+      tbUdRenderActiveTab();
+      tbUdRenderSidePanelSection();
+    }
+  } else {
+    if (u && dtUdCurrentUnitId === u.id) {
+      dtUdActiveTab = 'lifespan';
+      dtUdApplyStatusUI(u);
+      dtUdBuildTabs();
+      dtUdRenderActiveTab();
+      dtUdRenderSidePanel();
+    }
   }
 }
 
@@ -20597,8 +21490,12 @@ function dtCfgSearchKey(e) {
    the save bar appeared in the (now-closed) truck drawer. */
 function dtCfgActiveContext() {
   const isUd = !!dtUdCurrentUnitId;
-  /* On tablet, use the tablet-specific save bar but the same topbar Update button */
   if (document.body.classList.contains('view-tablet')) {
+    /* Tablet unit drawer — tbUdCurrentUnitId is set when unit drawer is open */
+    if (typeof tbUdCurrentUnitId !== 'undefined' && tbUdCurrentUnitId) {
+      return { saveBarId:'tb-ud-cfg-savebar', saveBtnId:'tb-ud-cfg-save-btn', topbarId:'dt-cfg-topbar' };
+    }
+    /* Tablet truck drawer */
     return { saveBarId:'tb-cfg-savebar', saveBtnId:'tb-cfg-save-btn', topbarId:'dt-cfg-topbar' };
   }
   return isUd
@@ -20611,7 +21508,8 @@ function dtCfgStartEdit() {
 
   /* Open accordions — in the unit drawer only open the first 4;
      in the truck drawer open all */
-  const isUnitDrawer = !!document.getElementById('dt-ud-drawer')?.classList.contains('open');
+  const isUnitDrawer = !!document.getElementById('dt-ud-drawer')?.classList.contains('open')
+    || (document.body.classList.contains('view-tablet') && typeof tbUdCurrentUnitId !== 'undefined' && !!tbUdCurrentUnitId);
   document.querySelectorAll('#dt-cfg-accs .cfg-acc').forEach((acc, idx) => {
     if (isUnitDrawer && idx >= 4) return; /* keep 4+ closed in unit linking flow */
     acc.classList.add('open');

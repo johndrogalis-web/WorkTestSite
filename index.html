@@ -594,11 +594,15 @@
 
   /* ── Page Content ── */
   .dt-content {
-    flex:1; min-width:0; height:100%;
+    flex:1; min-width:0; height:calc(100vh - 82px);
     display:flex; flex-direction:column;
     background:var(--layer-1);
     overflow:hidden;
     position:relative;
+  }
+  #dt-page-trucks {
+    display:flex; flex-direction:column;
+    flex:1; min-height:0; overflow:hidden;
   }
   #dt-page-units {
     display:flex; flex-direction:column;
@@ -2927,7 +2931,7 @@
 
   /* ── Table ── */
   .dt-table-wrap {
-    flex:1; overflow:auto; padding:0 24px;
+    flex:1; min-height:0; overflow:auto; padding:0 24px;
     -webkit-overflow-scrolling:touch;
   }
   .dt-table {
@@ -3130,6 +3134,7 @@
     display:flex; align-items:center; justify-content:space-between;
     padding:10px 24px; border-top:1px solid var(--border);
     flex-shrink:0; background:var(--layer-1);
+    position:sticky; bottom:0; z-index:2;
   }
   .dt-page-left { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--strong); letter-spacing:-0.26px; }
   .dt-rows-dd {
@@ -10403,44 +10408,80 @@ const SEN_CONFIGS = {
     type:'line', min:0, max:12,
     seed:[5.25,5.30,5.22,5.35,5.28,5.40,5.25,5.18,5.30,5.45,5.38,5.25,5.20,5.32,5.28],
     liveKey:'sv-slump', liveUnit:' in', liveDecimals:2,
-    liveBase:5.25, liveRange:0.3
+    liveBase:5.25, liveRange:0.3,
+    target: 5.0,            /* target/spec value — shown as dashed line */
+    targetTolerance: 0.5,   /* ± tolerance band */
+    phases: ['LP','AS','BP'],
+    phaseIdxs: [4, 15, 26],  /* which point index each phase starts at (out of 40) */
+    /* Time labels for X-axis — 5 evenly spaced */
+    timeLabels: ['01:25','01:30','01:40','02:10','02:15']
   },
   water: {
     title:'Water Addition', unit:'gal/yd³', color:'#3069e3',
     type:'line', min:0, max:2,
-    seed:[0.50,0.52,0.48,0.55,0.50,0.53,0.49,0.51,0.54,0.50,0.47,0.52,0.55,0.50,0.51],
+    /* Seed is monotonically increasing — water only goes up */
+    seed:[0.00,0.02,0.05,0.08,0.10,0.13,0.16,0.20,0.23,0.27,0.30,0.33,0.36,0.38,0.40,
+          0.42,0.43,0.45,0.47,0.48,0.50,0.52,0.53,0.55,0.56,0.57,0.58,0.59,0.60,0.61],
     liveKey:'sv-water', liveUnit:' gal', liveDecimals:2,
-    liveBase:0.5, liveRange:0.1
+    liveBase:0.5, liveRange:0.02,
+    allowable: 0.75,       /* max allowable water — dashed ceiling line */
+    phases: ['LP','AS','BP'],
+    phaseIdxs: [4, 15, 26],
+    timeLabels: ['01:25','01:30','01:40','02:10','02:15'],
+    stepped: true,
+    cumulative: true       /* never decreases — only monotonically increases */
   },
   pressure: {
     title:'Pressure', unit:'PSI', color:'#ffba0d',
     type:'line', min:0, max:60,
-    seed:[32,33,31,34,32,35,31,33,36,32,30,34,33,32,31],
+    seed:[32,33,31,34,32,35,31,33,36,32,30,34,33,32,31,32,34,31,35,33,32,31,34,32,33,35,32,30,33,32],
     liveKey:'sv-pressure', liveUnit:' PSI', liveDecimals:0,
-    liveBase:32, liveRange:4
+    liveBase:32, liveRange:4,
+    minPressure: 20,   /* lower dashed limit */
+    maxPressure: 45,   /* upper dashed limit */
+    phases: ['LP','AS','BP'],
+    phaseIdxs: [4, 15, 26],
+    timeLabels: ['01:25','01:30','01:40','02:10','02:15'],
+    ySteps: [0, 15, 30, 45, 60],
+    tooltipLabel: 'Pressure'
   },
   drum: {
-    title:'Drum Speed', unit:'RPM', color:'#9b59b6',
-    type:'line', min:0, max:400,
-    seed:[268,272,265,280,268,275,260,270,285,268,255,272,278,268,262],
+    title:'Drum Speed', unit:'RPM', color:'#7ab8f5',
+    type:'line', min:0, max:20,
+    seed:[18,13,10,5,18,17,5,5,12,5,12,12,12,13,16,13,12,16,14,12,17,5,5,18,5,5,5,5,5,5],
     liveKey:'sv-drum', liveUnit:' RPM', liveDecimals:0,
-    liveBase:268, liveRange:20
+    liveBase:10, liveRange:8,
+    phases: ['LP','AS','BP'],
+    phaseIdxs: [4, 15, 26],
+    timeLabels: ['01:25','01:30','01:40','02:10','02:15'],
+    ySteps: [0, 5, 10, 15, 20],
+    tooltipLabel: 'Speed'
   },
   cell: {
-    title:'Cell Coverage', unit:'', color:'#2ecf1d',
-    type:'status',
-    liveKey:'sv-cell', liveUnit:'', liveDecimals:0,
-    liveBase:1, liveRange:0,
-    statusLabel:'Active', statusSub:'Signal strength: Strong', statusColor:'green',
-    statusIcon:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M1 6C5 2 19 2 23 6" stroke="#2ecf1d" stroke-width="2" stroke-linecap="round"/><path d="M4 9.5C7 7 17 7 20 9.5" stroke="#2ecf1d" stroke-width="2" stroke-linecap="round"/><path d="M7 13C9 11.5 15 11.5 17 13" stroke="#2ecf1d" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="2" fill="#2ecf1d"/></svg>'
+    title:'Cell Coverage', unit:'%', color:'#2ecf1d',
+    type:'line', min:0, max:100,
+    seed:[95,95,92,96,95,94,95,96,93,95,96,94,95,92,96,95,94,96,95,93,95,96,95,94,95,96,93,95,94,96],
+    liveKey:'sv-cell', liveUnit:'%', liveDecimals:0,
+    liveBase:95, liveRange:4,
+    threshold: 60,    /* dashed minimum — below this signal is weak */
+    phases: ['LP','AS','BP'],
+    phaseIdxs: [4, 15, 26],
+    timeLabels: ['01:25','01:30','01:40','02:10','02:15'],
+    ySteps: [0, 25, 50, 75, 100],
+    tooltipLabel: 'Signal'
   },
   sat: {
     title:'Satellite Count', unit:'', color:'#1594ef',
-    type:'status',
+    type:'line', min:0, max:14,
+    seed:[8,8,9,8,9,10,9,8,9,10,9,8,9,8,9,8,10,9,8,9,8,9,10,9,8,8,9,8,9,9],
     liveKey:'sv-sat', liveUnit:' sats', liveDecimals:0,
-    liveBase:8, liveRange:1,
-    statusLabel:'8 Satellites', statusSub:'GPS fix: Strong', statusColor:'blue',
-    statusIcon:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" fill="#1594ef"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="#1594ef" stroke-width="2" stroke-linecap="round"/><path d="M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" stroke="#1594ef" stroke-width="1.5" stroke-linecap="round"/></svg>'
+    liveBase:8, liveRange:2,
+    threshold: 4,     /* dashed minimum — below this GPS fix is unreliable */
+    phases: ['LP','AS','BP'],
+    phaseIdxs: [4, 15, 26],
+    timeLabels: ['01:25','01:30','01:40','02:10','02:15'],
+    ySteps: [0, 4, 8, 12, 14],
+    tooltipLabel: 'Satellites'
   }
 };
 
@@ -10453,8 +10494,16 @@ const SEN_POINTS = 40;
 Object.entries(SEN_CONFIGS).forEach(([k, cfg]) => {
   if (cfg.type !== 'line') return;
   const buf = [];
-  for (let i = 0; i < SEN_POINTS; i++) {
-    buf.push(cfg.seed[i % cfg.seed.length] + (Math.random()-0.5)*cfg.liveRange*0.4);
+  if (cfg.cumulative) {
+    /* Water: seed already monotonic, extend to SEN_POINTS by holding last value */
+    for (let i = 0; i < SEN_POINTS; i++) {
+      const seedVal = cfg.seed[Math.min(i, cfg.seed.length - 1)];
+      buf.push(seedVal);
+    }
+  } else {
+    for (let i = 0; i < SEN_POINTS; i++) {
+      buf.push(cfg.seed[i % cfg.seed.length] + (Math.random()-0.5)*cfg.liveRange*0.4);
+    }
   }
   senData[k] = buf;
 });
@@ -10481,30 +10530,9 @@ function senRenderCards() {
   container.innerHTML = '';
   senCanvases = {};
 
-  senSelected.forEach(key => {
-    const cfg = SEN_CONFIGS[key];
-    const card = document.createElement('div');
-    card.className = 'sen-card';
-    card.id = 'sen-card-' + key;
-
-    if (cfg.type === 'status') {
-      card.innerHTML = `
-        <div class="sen-card-hdr">
-          <div class="sen-card-left">
-            <div class="sen-card-title">${cfg.title}</div>
-          </div>
-          <div class="sen-live-badge"><div class="sen-live-dot"></div><div class="sen-live-txt">Live</div></div>
-        </div>
-        <div class="sen-status-body">
-          <div class="sen-status-icon-wrap ${cfg.statusColor}">${cfg.statusIcon}</div>
-          <div class="sen-status-details">
-            <div class="sen-status-state">${cfg.statusLabel}</div>
-            <div class="sen-status-sub">${cfg.statusSub}</div>
-          </div>
-        </div>`;
-    } else {
-      card.innerHTML = `
-        <div class="sen-card-hdr">
+  /* Helper: generic line chart card HTML */
+  function lineCard(key, cfg, wrapId, h) {
+    return `<div class="sen-card-hdr">
           <div class="sen-card-left">
             <div class="sen-card-title">${cfg.title}</div>
             <div>
@@ -10514,21 +10542,40 @@ function senRenderCards() {
           </div>
           <div class="sen-live-badge"><div class="sen-live-dot"></div><div class="sen-live-txt">Live</div></div>
         </div>
-        <div class="sen-canvas-wrap">
-          <canvas class="sen-canvas" id="sc-${key}" height="80"></canvas>
-        </div>`;
-    }
+        <div class="sen-canvas-wrap" id="${wrapId}" style="height:${h}px;"></div>`;
+  }
+
+  senSelected.forEach(key => {
+    const cfg = SEN_CONFIGS[key];
+    const card = document.createElement('div');
+    card.className = 'sen-card';
+    card.id = 'sen-card-' + key;
+    card.innerHTML = lineCard(key, cfg, key + '-svg-wrap', 130);
     container.appendChild(card);
   });
 
-  /* Init canvases after DOM is ready */
+  /* Slump needs target pill in header */
+  const slumpCard = document.getElementById('sen-card-slump');
+  if (slumpCard) {
+    const cfg = SEN_CONFIGS.slump;
+    const hdr = slumpCard.querySelector('.sen-card-hdr .sen-card-left div:last-child');
+    if (hdr) {
+      hdr.insertAdjacentHTML('afterend', `<div style="display:flex;align-items:center;gap:4px;padding:2px 8px;background:rgba(21,148,239,0.08);border-radius:20px;margin-top:2px;">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="#1594ef" stroke-width="1.5" stroke-dasharray="2.5,2"/></svg>
+        <span style="font-size:11px;color:rgba(54,50,45,0.6);letter-spacing:-0.22px;">Target</span>
+        <span style="font-size:11px;font-weight:600;color:#1594ef;letter-spacing:-0.22px;font-family:'DM Mono',monospace;">${cfg.target.toFixed(1)} ${cfg.unit}</span>
+      </div>`);
+    }
+  }
+
+  /* Init all SVG charts */
   requestAnimationFrame(() => {
-    senSelected.forEach(key => {
-      const cfg = SEN_CONFIGS[key];
-      if (cfg.type !== 'line') return;
-      const canvas = document.getElementById('sc-' + key);
-      if (canvas) senCanvases[key] = canvas;
-    });
+    if (senSelected.has('slump'))    senDrawSlumpSVG('slump-svg-wrap', false);
+    if (senSelected.has('water'))    senDrawWaterSVG('water-svg-wrap', false);
+    if (senSelected.has('drum'))     senDrawDrumSVG('drum-svg-wrap', false);
+    if (senSelected.has('pressure')) senDrawLineSVG('pressure-svg-wrap', false, 'pressure');
+    if (senSelected.has('cell'))     senDrawLineSVG('cell-svg-wrap', false, 'cell');
+    if (senSelected.has('sat'))      senDrawLineSVG('sat-svg-wrap', false, 'sat');
   });
 }
 
@@ -10609,13 +10656,753 @@ function senDrawChart(canvasKey, dataKey) {
   ctx.fill();
 }
 
+/* ── SLUMP SVG CHART ─────────────────────────────────────────────
+   Builds a rich SVG chart matching the Figma Trinity design:
+   - Solid teal line = current live slump value
+   - Dashed teal line = target spec value
+   - Phase markers (LP / AS / BP) as vertical dashed dividers
+   - Y-axis labels, X-axis timestamps, hover tooltip + crosshair
+   - Runs in both mobile (#slump-svg-chart) and desktop (#dt-slump-svg-chart)
+──────────────────────────────────────────────────────────────── */
+function senDrawSlumpSVG(containerId, isDesktop) {
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  const cfg  = SEN_CONFIGS.slump;
+  const buf  = senData.slump;
+  const W    = wrap.offsetWidth  || (isDesktop ? 520 : 300);
+  const H    = isDesktop ? 180 : 130;
+  const PAD  = { top:24, right:12, bottom:30, left:28 };
+  const cW   = W - PAD.left - PAD.right;
+  const cH   = H - PAD.top  - PAD.bottom;
+  const n    = buf.length;
+  const range = cfg.max - cfg.min;
+
+  const toX = i  => PAD.left + (i / (n - 1)) * cW;
+  const toY = v  => PAD.top  + cH - ((v - cfg.min) / range) * cH * 0.88 - cH * 0.04;
+
+  /* Build SVG path string from data array */
+  function makePath(data) {
+    return data.map((v, i) => {
+      const x = toX(i), y = toY(v);
+      if (i === 0) return `M${x.toFixed(1)},${y.toFixed(1)}`;
+      const px = toX(i-1), py = toY(data[i-1]);
+      const cpx = ((px + x) / 2).toFixed(1);
+      return `C${cpx},${py.toFixed(1)} ${cpx},${y.toFixed(1)} ${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+  }
+
+  /* Target line — flat at target value */
+  const targetY = toY(cfg.target).toFixed(1);
+  const targetPath = `M${PAD.left},${targetY} L${(PAD.left + cW).toFixed(1)},${targetY}`;
+
+  /* Phase lines */
+  const phaseLines = (cfg.phaseIdxs || []).map((idx, pi) => {
+    const x = toX(idx).toFixed(1);
+    return `<line x1="${x}" y1="${PAD.top}" x2="${x}" y2="${PAD.top + cH}"
+      stroke="rgba(54,50,45,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
+    <text x="${x}" y="${PAD.top - 6}" text-anchor="middle"
+      font-family="ABC Repro,-apple-system,sans-serif" font-size="10"
+      fill="rgba(54,50,45,0.5)">${cfg.phases[pi]}</text>`;
+  }).join('');
+
+  /* Y-axis labels */
+  const ySteps = [0,3,6,9,12];
+  const yLabels = ySteps.map(v => {
+    const y = toY(v).toFixed(1);
+    return `<text x="${PAD.left - 5}" y="${y}" text-anchor="end" dominant-baseline="middle"
+      font-family="ABC Repro,-apple-system,sans-serif" font-size="10"
+      fill="rgba(54,50,45,0.5)">${v}</text>`;
+  }).join('');
+
+  /* Y-axis grid lines */
+  const gridLines = ySteps.map(v => {
+    const y = toY(v).toFixed(1);
+    return `<line x1="${PAD.left}" y1="${y}" x2="${PAD.left + cW}" y2="${y}"
+      stroke="rgba(54,50,45,0.07)" stroke-width="1"/>`;
+  }).join('');
+
+  /* X-axis time labels — 5 evenly spaced */
+  const labels = cfg.timeLabels || [];
+  const xLabels = labels.map((lbl, i) => {
+    const x = (PAD.left + (i / (labels.length - 1)) * cW).toFixed(1);
+    return `<text x="${x}" y="${H - 4}" text-anchor="middle"
+      font-family="ABC Repro,-apple-system,sans-serif" font-size="10"
+      fill="rgba(54,50,45,0.45)">${lbl}</text>`;
+  }).join('');
+
+  /* Gradient fill under solid line */
+  const gradId = containerId + '-grad';
+  const fillPath = makePath(buf) +
+    ` L${toX(n-1).toFixed(1)},${(PAD.top+cH).toFixed(1)} L${PAD.left},${(PAD.top+cH).toFixed(1)} Z`;
+
+  /* Live dot */
+  const lastX = toX(n - 1).toFixed(1);
+  const lastY = toY(buf[n - 1]).toFixed(1);
+
+  /* Legend */
+  const legend = `
+    <g transform="translate(${PAD.left},${H - 4})">
+      <line x1="0" y1="-2" x2="14" y2="-2" stroke="${cfg.color}" stroke-width="1.5"/>
+      <text x="18" y="0" dominant-baseline="middle" font-family="ABC Repro,-apple-system,sans-serif"
+        font-size="10" fill="rgba(54,50,45,0.6)">Current</text>
+      <line x1="68" y1="-2" x2="82" y2="-2" stroke="${cfg.color}" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="86" y="0" dominant-baseline="middle" font-family="ABC Repro,-apple-system,sans-serif"
+        font-size="10" fill="rgba(54,50,45,0.6)">Target ${cfg.target} in</text>
+    </g>`;
+
+  wrap.innerHTML = `
+  <svg id="${containerId}-svg" width="100%" height="${H}" viewBox="0 0 ${W} ${H}"
+    style="display:block;overflow:visible;cursor:crosshair;"
+    onmousemove="senSlumpHover(event,'${containerId}')"
+    onmouseleave="senSlumpHoverOut('${containerId}')">
+    <defs>
+      <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${cfg.color}" stop-opacity="0.18"/>
+        <stop offset="100%" stop-color="${cfg.color}" stop-opacity="0"/>
+      </linearGradient>
+      <clipPath id="${containerId}-clip">
+        <rect x="${PAD.left}" y="${PAD.top}" width="${cW}" height="${cH}"/>
+      </clipPath>
+    </defs>
+
+    ${gridLines}
+    ${yLabels}
+
+    <g clip-path="url(#${containerId}-clip)">
+      <!-- Gradient fill -->
+      <path d="${fillPath}" fill="url(#${gradId})"/>
+      <!-- Phase dividers -->
+      ${phaseLines}
+      <!-- Target dashed line -->
+      <path d="${targetPath}" stroke="${cfg.color}" stroke-width="1.5"
+        stroke-dasharray="6,4" fill="none" opacity="0.7"/>
+      <!-- Current solid line -->
+      <path d="${makePath(buf)}" stroke="${cfg.color}" stroke-width="2"
+        fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+      <!-- Live dot -->
+      <circle cx="${lastX}" cy="${lastY}" r="3.5" fill="${cfg.color}"/>
+      <circle cx="${lastX}" cy="${lastY}" r="7" fill="${cfg.color}" opacity="0.2"/>
+    </g>
+
+    ${xLabels}
+
+    <!-- Tooltip group (hidden by default) -->
+    <g id="${containerId}-tip" style="display:none;">
+      <line id="${containerId}-tip-line" x1="0" y1="${PAD.top}" x2="0" y2="${PAD.top + cH}"
+        stroke="rgba(54,50,45,0.35)" stroke-width="1"/>
+      <circle id="${containerId}-tip-dot" cx="0" cy="0" r="4.5" fill="white"
+        stroke="${cfg.color}" stroke-width="2"/>
+      <!-- Tooltip box — sized for content -->
+      <g id="${containerId}-tip-box" transform="translate(0,0)">
+        <rect rx="10" ry="10" width="148" height="82"
+          fill="white" stroke="rgba(54,50,45,0.14)" stroke-width="1"
+          filter="drop-shadow(0 4px 12px rgba(0,0,0,0.12))"/>
+        <text x="10" y="22" font-family="ABC Repro,-apple-system,sans-serif"
+          font-size="12" font-weight="600" fill="#36322d">Slump</text>
+        <text id="${containerId}-tip-time" x="138" y="22" text-anchor="end"
+          font-family="ABC Repro,-apple-system,sans-serif" font-size="11"
+          fill="rgba(54,50,45,0.5)">--:--</text>
+        <line x1="10" y1="32" x2="138" y2="32" stroke="rgba(54,50,45,0.1)" stroke-width="1"/>
+        <text x="10" y="50" font-family="ABC Repro,-apple-system,sans-serif"
+          font-size="11" fill="rgba(54,50,45,0.6)">Current:</text>
+        <text id="${containerId}-tip-cur" x="138" y="50" text-anchor="end"
+          font-family="ABC Repro,-apple-system,sans-serif" font-size="11" fill="#101010">--</text>
+        <line x1="10" y1="60" x2="138" y2="60" stroke="rgba(54,50,45,0.1)" stroke-width="1"/>
+        <text x="10" y="75" font-family="ABC Repro,-apple-system,sans-serif"
+          font-size="11" fill="rgba(54,50,45,0.6)">Target:</text>
+        <text id="${containerId}-tip-tgt" x="138" y="75" text-anchor="end"
+          font-family="ABC Repro,-apple-system,sans-serif" font-size="11" fill="#101010">${cfg.target.toFixed(1)} in</text>
+      </g>
+    </g>
+  </svg>`;
+}
+
+function senSlumpHover(evt, containerId) {
+  const cfg = SEN_CONFIGS.slump;
+  const buf = senData.slump;
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  const svg = document.getElementById(containerId + '-svg');
+  if (!svg) return;
+  const rect = svg.getBoundingClientRect();
+  const W = rect.width;
+  const H = parseInt(svg.getAttribute('height')) || rect.height;
+  const PAD = { top:24, right:12, bottom:30, left:28 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top - PAD.bottom;
+  const n = buf.length;
+  const range = cfg.max - cfg.min;
+
+  const mx = evt.clientX - rect.left;
+  /* Clamp to chart area */
+  const cx = Math.max(PAD.left, Math.min(PAD.left + cW, mx));
+  const idx = Math.round((cx - PAD.left) / cW * (n - 1));
+  const safeIdx = Math.max(0, Math.min(n - 1, idx));
+  const val = buf[safeIdx];
+  const x = PAD.left + (safeIdx / (n - 1)) * cW;
+  const y = PAD.top + cH - ((val - cfg.min) / range) * cH * 0.88 - cH * 0.04;
+
+  /* Time label interpolation */
+  const labels = cfg.timeLabels || [];
+  const tIdx = safeIdx / (n - 1) * (labels.length - 1);
+  const tLow = labels[Math.floor(tIdx)] || '';
+  const timeLbl = tLow;
+
+  /* Show tooltip group */
+  const tipGroup = document.getElementById(containerId + '-tip');
+  if (!tipGroup) return;
+  tipGroup.style.display = '';
+
+  const tipLine = document.getElementById(containerId + '-tip-line');
+  const tipDot  = document.getElementById(containerId + '-tip-dot');
+  const tipBox  = document.getElementById(containerId + '-tip-box');
+  const tipTime = document.getElementById(containerId + '-tip-time');
+  const tipCur  = document.getElementById(containerId + '-tip-cur');
+
+  if (tipLine) { tipLine.setAttribute('x1', x.toFixed(1)); tipLine.setAttribute('x2', x.toFixed(1)); }
+  if (tipDot)  { tipDot.setAttribute('cx', x.toFixed(1)); tipDot.setAttribute('cy', y.toFixed(1)); }
+  if (tipTime) tipTime.textContent = timeLbl;
+  if (tipCur)  tipCur.textContent  = val.toFixed(2) + ' in';
+
+  /* Position tooltip box — flip left if near right edge */
+  if (tipBox) {
+    const boxW = 148, boxH = 82;
+    let bx = x + 10, by = Math.max(PAD.top, y - boxH / 2);
+    if (bx + boxW > W - PAD.right) bx = x - boxW - 10;
+    tipBox.setAttribute('transform', `translate(${bx.toFixed(1)},${by.toFixed(1)})`);
+  }
+}
+
+function senSlumpHoverOut(containerId) {
+  const tipGroup = document.getElementById(containerId + '-tip');
+  if (tipGroup) tipGroup.style.display = 'none';
+}
+
+/* Redraw slump SVG charts on every tick */
+function senRedrawSlump() {
+  senDrawSlumpSVG('slump-svg-wrap', false);
+  senDrawSlumpSVG('dt-slump-svg-wrap', true);
+}
+
+/* ── WATER ADDITION SVG CHART ────────────────────────────────────
+   Stepped solid blue line = current water addition (cumulative)
+   Dashed blue line = allowable water baseline
+   Phase markers LP / AS / BP
+   Tooltip: Added (last step delta) + Current (total)
+──────────────────────────────────────────────────────────────── */
+function senDrawWaterSVG(containerId, isDesktop) {
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  const cfg = SEN_CONFIGS.water;
+  const buf = senData.water;
+  const W   = wrap.offsetWidth || (isDesktop ? 520 : 300);
+  const H   = isDesktop ? 180 : 130;
+  const PAD = { top:24, right:12, bottom:30, left:32 };
+  const cW  = W - PAD.left - PAD.right;
+  const cH  = H - PAD.top  - PAD.bottom;
+  const n   = buf.length;
+  const range = cfg.max - cfg.min;
+
+  const toX = i => PAD.left + (i / (n - 1)) * cW;
+  const toY = v => PAD.top  + cH - ((v - cfg.min) / range) * cH * 0.88 - cH * 0.04;
+
+  /* Stepped path — horizontal then vertical */
+  function makeSteppedPath(data) {
+    let d = '';
+    data.forEach((v, i) => {
+      const x = toX(i), y = toY(v);
+      if (i === 0) { d += 'M' + x.toFixed(1) + ',' + y.toFixed(1); return; }
+      const px = toX(i - 1);
+      d += ' H' + x.toFixed(1) + ' V' + y.toFixed(1);
+    });
+    return d;
+  }
+
+  /* Allowable ceiling — flat dashed line, hard limit water cannot exceed */
+  const allowY = toY(cfg.allowable).toFixed(1);
+  const allowPath = 'M' + PAD.left + ',' + allowY + ' L' + (PAD.left + cW).toFixed(1) + ',' + allowY;
+  /* Label on the right edge */
+  const allowLabel = '<text x="' + (PAD.left + cW + 3) + '" y="' + allowY + '" dominant-baseline="middle" font-family="ABC Repro,-apple-system,sans-serif" font-size="9" fill="' + cfg.color + '" opacity="0.7">max</text>';
+
+  /* Phase lines */
+  const phaseLines = (cfg.phaseIdxs || []).map(function(idx, pi) {
+    const x = toX(idx).toFixed(1);
+    return '<line x1="' + x + '" y1="' + PAD.top + '" x2="' + x + '" y2="' + (PAD.top + cH) + '" stroke="rgba(54,50,45,0.2)" stroke-width="1" stroke-dasharray="3,3"/>'
+      + '<text x="' + x + '" y="' + (PAD.top - 6) + '" text-anchor="middle" font-family="ABC Repro,-apple-system,sans-serif" font-size="10" fill="rgba(54,50,45,0.5)">' + cfg.phases[pi] + '</text>';
+  }).join('');
+
+  /* Y-axis */
+  const ySteps = [0, 0.5, 1, 1.5, 2];
+  const yLabels = ySteps.map(function(v) {
+    const y = toY(v).toFixed(1);
+    return '<text x="' + (PAD.left - 5) + '" y="' + y + '" text-anchor="end" dominant-baseline="middle" font-family="ABC Repro,-apple-system,sans-serif" font-size="10" fill="rgba(54,50,45,0.5)">' + v + '</text>';
+  }).join('');
+  const gridLines = ySteps.map(function(v) {
+    const y = toY(v).toFixed(1);
+    return '<line x1="' + PAD.left + '" y1="' + y + '" x2="' + (PAD.left + cW).toFixed(1) + '" y2="' + y + '" stroke="rgba(54,50,45,0.07)" stroke-width="1"/>';
+  }).join('');
+
+  /* X-axis labels */
+  const labels = cfg.timeLabels || [];
+  const xLabels = labels.map(function(lbl, i) {
+    const x = (PAD.left + (i / (labels.length - 1)) * cW).toFixed(1);
+    return '<text x="' + x + '" y="' + (H - 4) + '" text-anchor="middle" font-family="ABC Repro,-apple-system,sans-serif" font-size="10" fill="rgba(54,50,45,0.45)">' + lbl + '</text>';
+  }).join('');
+
+  /* Gradient fill */
+  const gradId = containerId + '-grad';
+  const steppedPath = makeSteppedPath(buf);
+  const fillPath = steppedPath + ' V' + (PAD.top + cH).toFixed(1) + ' H' + PAD.left + ' Z';
+
+  /* Live dot */
+  const lastX = toX(n - 1).toFixed(1);
+  const lastY = toY(buf[n - 1]).toFixed(1);
+
+  /* Last delta — difference between last two points */
+  const lastAdded = n > 1 ? Math.max(0, buf[n - 1] - buf[n - 2]) : 0;
+
+  wrap.innerHTML = '<svg id="' + containerId + '-svg" width="100%" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;overflow:visible;cursor:crosshair;" onmousemove="senWaterHover(event,\'' + containerId + '\')" onmouseleave="senWaterHoverOut(\'' + containerId + '\')">'
+    + '<defs>'
+    + '<linearGradient id="' + gradId + '" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="' + cfg.color + '" stop-opacity="0.15"/>'
+    + '<stop offset="100%" stop-color="' + cfg.color + '" stop-opacity="0"/>'
+    + '</linearGradient>'
+    + '<clipPath id="' + containerId + '-clip"><rect x="' + PAD.left + '" y="' + PAD.top + '" width="' + cW + '" height="' + cH + '"/></clipPath>'
+    + '</defs>'
+    + gridLines + yLabels
+    + '<g clip-path="url(#' + containerId + '-clip)">'
+    + '<path d="' + fillPath + '" fill="url(#' + gradId + ')"/>'
+    + phaseLines
+    + '<path d="' + allowPath + '" stroke="' + cfg.color + '" stroke-width="1.5" stroke-dasharray="6,4" fill="none" opacity="0.6"/>'
+    + allowLabel
+    + '<path d="' + steppedPath + '" stroke="' + cfg.color + '" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>'
+    + '<circle cx="' + lastX + '" cy="' + lastY + '" r="3.5" fill="' + cfg.color + '"/>'
+    + '<circle cx="' + lastX + '" cy="' + lastY + '" r="7" fill="' + cfg.color + '" opacity="0.2"/>'
+    + '</g>'
+    + xLabels
+    + '<g id="' + containerId + '-tip" style="display:none;">'
+    + '<line id="' + containerId + '-tip-line" x1="0" y1="' + PAD.top + '" x2="0" y2="' + (PAD.top + cH) + '" stroke="rgba(54,50,45,0.35)" stroke-width="1"/>'
+    + '<circle id="' + containerId + '-tip-dot" cx="0" cy="0" r="4.5" fill="white" stroke="' + cfg.color + '" stroke-width="2"/>'
+    + '<g id="' + containerId + '-tip-box" transform="translate(0,0)">'
+    + '<rect rx="10" ry="10" width="164" height="90" fill="white" stroke="rgba(54,50,45,0.14)" stroke-width="1" filter="drop-shadow(0 4px 12px rgba(0,0,0,0.12))"/>'
+    + '<text x="10" y="22" font-family="ABC Repro,-apple-system,sans-serif" font-size="12" font-weight="600" fill="#36322d">Water</text>'
+    + '<text id="' + containerId + '-tip-time" x="154" y="22" text-anchor="end" font-family="ABC Repro,-apple-system,sans-serif" font-size="11" fill="rgba(54,50,45,0.5)">--:--</text>'
+    + '<line x1="10" y1="32" x2="154" y2="32" stroke="rgba(54,50,45,0.1)" stroke-width="1"/>'
+    + '<text x="10" y="50" font-family="ABC Repro,-apple-system,sans-serif" font-size="11" fill="rgba(54,50,45,0.6)">Added:</text>'
+    + '<text id="' + containerId + '-tip-added" x="154" y="50" text-anchor="end" font-family="ABC Repro,-apple-system,sans-serif" font-size="11" fill="#101010">--</text>'
+    + '<line x1="10" y1="62" x2="154" y2="62" stroke="rgba(54,50,45,0.1)" stroke-width="1"/>'
+    + '<text x="10" y="78" font-family="ABC Repro,-apple-system,sans-serif" font-size="11" fill="rgba(54,50,45,0.6)">Current:</text>'
+    + '<text id="' + containerId + '-tip-cur" x="154" y="78" text-anchor="end" font-family="ABC Repro,-apple-system,sans-serif" font-size="11" fill="#101010">--</text>'
+    + '</g></g>'
+    + '</svg>';
+}
+
+function senWaterHover(evt, containerId) {
+  const cfg = SEN_CONFIGS.water;
+  const buf = senData.water;
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  const svg = document.getElementById(containerId + '-svg');
+  if (!svg) return;
+  const rect = svg.getBoundingClientRect();
+  const W = rect.width;
+  const H = parseInt(svg.getAttribute('height')) || rect.height;
+  const PAD = { top:24, right:12, bottom:30, left:32 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top - PAD.bottom;
+  const n = buf.length;
+  const range = cfg.max - cfg.min;
+
+  const cx = Math.max(PAD.left, Math.min(PAD.left + cW, evt.clientX - rect.left));
+  const idx = Math.round((cx - PAD.left) / cW * (n - 1));
+  const safeIdx = Math.max(0, Math.min(n - 1, idx));
+  const val = buf[safeIdx];
+  const added = safeIdx > 0 ? Math.max(0, val - buf[safeIdx - 1]) : 0;
+  const x = PAD.left + (safeIdx / (n - 1)) * cW;
+  const y = PAD.top + cH - ((val - cfg.min) / range) * cH * 0.88 - cH * 0.04;
+
+  const labels = cfg.timeLabels || [];
+  const tIdx = safeIdx / (n - 1) * (labels.length - 1);
+  const timeLbl = labels[Math.floor(tIdx)] || '';
+
+  const tipGroup = document.getElementById(containerId + '-tip');
+  if (!tipGroup) return;
+  tipGroup.style.display = '';
+
+  const tipLine = document.getElementById(containerId + '-tip-line');
+  const tipDot  = document.getElementById(containerId + '-tip-dot');
+  const tipBox  = document.getElementById(containerId + '-tip-box');
+  const tipTime = document.getElementById(containerId + '-tip-time');
+  const tipAdded = document.getElementById(containerId + '-tip-added');
+  const tipCur  = document.getElementById(containerId + '-tip-cur');
+
+  if (tipLine) { tipLine.setAttribute('x1', x.toFixed(1)); tipLine.setAttribute('x2', x.toFixed(1)); }
+  if (tipDot)  { tipDot.setAttribute('cx', x.toFixed(1)); tipDot.setAttribute('cy', y.toFixed(1)); }
+  if (tipTime)  tipTime.textContent  = timeLbl;
+  if (tipAdded) tipAdded.textContent = added.toFixed(2) + ' (gal/yd³)';
+  if (tipCur)   tipCur.textContent   = val.toFixed(2) + ' (gal/yd³)';
+
+  if (tipBox) {
+    const boxW = 164, boxH = 90;
+    let bx = x + 10, by = Math.max(PAD.top, y - boxH / 2);
+    if (bx + boxW > W - PAD.right) bx = x - boxW - 10;
+    tipBox.setAttribute('transform', 'translate(' + bx.toFixed(1) + ',' + by.toFixed(1) + ')');
+  }
+}
+
+function senWaterHoverOut(containerId) {
+  const tipGroup = document.getElementById(containerId + '-tip');
+  if (tipGroup) tipGroup.style.display = 'none';
+}
+
+function senRedrawWater() {
+  senDrawWaterSVG('water-svg-wrap', false);
+  senDrawWaterSVG('dt-water-svg-wrap', true);
+}
+
+/* ── DRUM SPEED SVG CHART ────────────────────────────────────────
+   Sharp angular light-blue line — volatile RPM, no smoothing,
+   no reference line. Single tooltip row: "Speed: N"
+──────────────────────────────────────────────────────────────── */
+function senDrawDrumSVG(containerId, isDesktop) {
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  const cfg = SEN_CONFIGS.drum;
+  const buf = senData.drum;
+  const W   = wrap.offsetWidth || (isDesktop ? 520 : 300);
+  const H   = isDesktop ? 180 : 130;
+  const PAD = { top:24, right:12, bottom:30, left:28 };
+  const cW  = W - PAD.left - PAD.right;
+  const cH  = H - PAD.top  - PAD.bottom;
+  const n   = buf.length;
+  const range = cfg.max - cfg.min;
+
+  const toX = i => PAD.left + (i / (n - 1)) * cW;
+  const toY = v => PAD.top  + cH - ((v - cfg.min) / range) * cH * 0.88 - cH * 0.04;
+
+  /* Sharp straight-line path */
+  const linePath = buf.map(function(v, i) {
+    return (i === 0 ? 'M' : 'L') + toX(i).toFixed(1) + ',' + toY(v).toFixed(1);
+  }).join(' ');
+
+  /* Fill path */
+  const fillPath = linePath + ' L' + toX(n-1).toFixed(1) + ',' + (PAD.top+cH).toFixed(1) + ' L' + PAD.left + ',' + (PAD.top+cH).toFixed(1) + ' Z';
+
+  /* Y-axis */
+  const ySteps = cfg.ySteps || [0,5,10,15,20];
+  const yLabels = ySteps.map(function(v) {
+    const y = toY(v).toFixed(1);
+    return '<text x="' + (PAD.left-5) + '" y="' + y + '" text-anchor="end" dominant-baseline="middle" font-family="ABC Repro,-apple-system,sans-serif" font-size="10" fill="rgba(54,50,45,0.5)">' + v + '</text>';
+  }).join('');
+  const gridLines = ySteps.map(function(v) {
+    const y = toY(v).toFixed(1);
+    return '<line x1="' + PAD.left + '" y1="' + y + '" x2="' + (PAD.left+cW).toFixed(1) + '" y2="' + y + '" stroke="rgba(54,50,45,0.07)" stroke-width="1"/>';
+  }).join('');
+
+  /* Phase lines */
+  const phaseLines = (cfg.phaseIdxs || []).map(function(idx, pi) {
+    const x = toX(idx).toFixed(1);
+    return '<line x1="' + x + '" y1="' + PAD.top + '" x2="' + x + '" y2="' + (PAD.top+cH) + '" stroke="rgba(54,50,45,0.2)" stroke-width="1" stroke-dasharray="3,3"/>'
+      + '<text x="' + x + '" y="' + (PAD.top-6) + '" text-anchor="middle" font-family="ABC Repro,-apple-system,sans-serif" font-size="10" fill="rgba(54,50,45,0.5)">' + cfg.phases[pi] + '</text>';
+  }).join('');
+
+  /* X-axis labels */
+  const labels = cfg.timeLabels || [];
+  const xLabels = labels.map(function(lbl, i) {
+    const x = (PAD.left + (i / (labels.length-1)) * cW).toFixed(1);
+    return '<text x="' + x + '" y="' + (H-4) + '" text-anchor="middle" font-family="ABC Repro,-apple-system,sans-serif" font-size="10" fill="rgba(54,50,45,0.45)">' + lbl + '</text>';
+  }).join('');
+
+  const gradId = containerId + '-grad';
+  const lastX = toX(n-1).toFixed(1);
+  const lastY = toY(buf[n-1]).toFixed(1);
+
+  wrap.innerHTML = '<svg id="' + containerId + '-svg" width="100%" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;overflow:visible;cursor:crosshair;" onmousemove="senDrumHover(event,\'' + containerId + '\')" onmouseleave="senDrumHoverOut(\'' + containerId + '\')">'
+    + '<defs>'
+    + '<linearGradient id="' + gradId + '" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="' + cfg.color + '" stop-opacity="0.18"/>'
+    + '<stop offset="100%" stop-color="' + cfg.color + '" stop-opacity="0"/>'
+    + '</linearGradient>'
+    + '<clipPath id="' + containerId + '-clip"><rect x="' + PAD.left + '" y="' + PAD.top + '" width="' + cW + '" height="' + cH + '"/></clipPath>'
+    + '</defs>'
+    + gridLines + yLabels
+    + '<g clip-path="url(#' + containerId + '-clip)">'
+    + '<path d="' + fillPath + '" fill="url(#' + gradId + ')"/>'
+    + phaseLines
+    + '<path d="' + linePath + '" stroke="' + cfg.color + '" stroke-width="1.8" fill="none" stroke-linejoin="miter" stroke-linecap="square"/>'
+    + '<circle cx="' + lastX + '" cy="' + lastY + '" r="3" fill="' + cfg.color + '"/>'
+    + '</g>'
+    + xLabels
+    + '<g id="' + containerId + '-tip" style="display:none;">'
+    + '<line id="' + containerId + '-tip-line" x1="0" y1="' + PAD.top + '" x2="0" y2="' + (PAD.top+cH) + '" stroke="rgba(54,50,45,0.35)" stroke-width="1"/>'
+    + '<circle id="' + containerId + '-tip-dot" cx="0" cy="0" r="4.5" fill="white" stroke="' + cfg.color + '" stroke-width="2"/>'
+    + '<g id="' + containerId + '-tip-box" transform="translate(0,0)">'
+    + '<rect rx="10" ry="10" width="148" height="66" fill="white" stroke="rgba(54,50,45,0.14)" stroke-width="1" filter="drop-shadow(0 4px 12px rgba(0,0,0,0.12))"/>'
+    + '<text x="10" y="20" font-family="ABC Repro,-apple-system,sans-serif" font-size="12" font-weight="600" fill="#36322d">Drum speed</text>'
+    + '<text id="' + containerId + '-tip-time" x="138" y="20" text-anchor="end" font-family="ABC Repro,-apple-system,sans-serif" font-size="11" fill="rgba(54,50,45,0.5)">--:--</text>'
+    + '<line x1="10" y1="30" x2="138" y2="30" stroke="rgba(54,50,45,0.1)" stroke-width="1"/>'
+    + '<text x="10" y="50" font-family="ABC Repro,-apple-system,sans-serif" font-size="11" fill="rgba(54,50,45,0.6)">Speed:</text>'
+    + '<text id="' + containerId + '-tip-val" x="138" y="50" text-anchor="end" font-family="ABC Repro,-apple-system,sans-serif" font-size="11" fill="#101010">--</text>'
+    + '</g></g>'
+    + '</svg>';
+}
+
+function senDrumHover(evt, containerId) {
+  const cfg = SEN_CONFIGS.drum;
+  const buf = senData.drum;
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  const svg = document.getElementById(containerId + '-svg');
+  if (!svg) return;
+  const rect = svg.getBoundingClientRect();
+  const W = rect.width;
+  const H = parseInt(svg.getAttribute('height')) || rect.height;
+  const PAD = { top:24, right:12, bottom:30, left:28 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top - PAD.bottom;
+  const n = buf.length;
+  const range = cfg.max - cfg.min;
+
+  const cx = Math.max(PAD.left, Math.min(PAD.left + cW, evt.clientX - rect.left));
+  const idx = Math.round((cx - PAD.left) / cW * (n - 1));
+  const safeIdx = Math.max(0, Math.min(n - 1, idx));
+  const val = buf[safeIdx];
+  const x = PAD.left + (safeIdx / (n - 1)) * cW;
+  const y = PAD.top + cH - ((val - cfg.min) / range) * cH * 0.88 - cH * 0.04;
+  const labels = cfg.timeLabels || [];
+  const timeLbl = labels[Math.floor(safeIdx / (n-1) * (labels.length-1))] || '';
+
+  const tipGroup = document.getElementById(containerId + '-tip');
+  if (!tipGroup) return;
+  tipGroup.style.display = '';
+
+  const tipLine = document.getElementById(containerId + '-tip-line');
+  const tipDot  = document.getElementById(containerId + '-tip-dot');
+  const tipBox  = document.getElementById(containerId + '-tip-box');
+  const tipTime = document.getElementById(containerId + '-tip-time');
+  const tipVal  = document.getElementById(containerId + '-tip-val');
+
+  if (tipLine) { tipLine.setAttribute('x1', x.toFixed(1)); tipLine.setAttribute('x2', x.toFixed(1)); }
+  if (tipDot)  { tipDot.setAttribute('cx', x.toFixed(1)); tipDot.setAttribute('cy', y.toFixed(1)); }
+  if (tipTime) tipTime.textContent = timeLbl;
+  if (tipVal)  tipVal.textContent  = Math.round(val) + ' RPM';
+
+  if (tipBox) {
+    const boxW = 148, boxH = 66;
+    let bx = x + 10, by = Math.max(PAD.top, y - boxH / 2);
+    if (bx + boxW > W - PAD.right) bx = x - boxW - 10;
+    tipBox.setAttribute('transform', 'translate(' + bx.toFixed(1) + ',' + by.toFixed(1) + ')');
+  }
+}
+
+function senDrumHoverOut(containerId) {
+  const tipGroup = document.getElementById(containerId + '-tip');
+  if (tipGroup) tipGroup.style.display = 'none';
+}
+
+function senRedrawDrum() {
+  senDrawDrumSVG('drum-svg-wrap', false);
+  senDrawDrumSVG('dt-drum-svg-wrap', true);
+}
+
+/* ── GENERIC SVG LINE CHART ──────────────────────────────────────
+   Reusable for pressure, cell, sat — smooth bezier, optional
+   threshold dashed line(s), configurable Y-axis, phase markers.
+──────────────────────────────────────────────────────────────── */
+function senDrawLineSVG(containerId, isDesktop, key) {
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  const cfg  = SEN_CONFIGS[key];
+  const buf  = senData[key];
+  const W    = wrap.offsetWidth || (isDesktop ? 520 : 300);
+  const H    = isDesktop ? 180 : 130;
+  const PAD  = { top:24, right:12, bottom:30, left:32 };
+  const cW   = W - PAD.left - PAD.right;
+  const cH   = H - PAD.top  - PAD.bottom;
+  const n    = buf.length;
+  const range = cfg.max - cfg.min;
+
+  const toX = i => PAD.left + (i / (n - 1)) * cW;
+  const toY = v => PAD.top  + cH - ((v - cfg.min) / range) * cH * 0.88 - cH * 0.04;
+
+  /* Smooth bezier path */
+  function makePath(data) {
+    return data.map(function(v, i) {
+      const x = toX(i), y = toY(v);
+      if (i === 0) return 'M' + x.toFixed(1) + ',' + y.toFixed(1);
+      const px = toX(i-1), py = toY(data[i-1]);
+      const cpx = ((px + x) / 2).toFixed(1);
+      return 'C' + cpx + ',' + py.toFixed(1) + ' ' + cpx + ',' + y.toFixed(1) + ' ' + x.toFixed(1) + ',' + y.toFixed(1);
+    }).join(' ');
+  }
+
+  const linePath = makePath(buf);
+  const fillPath = linePath + ' L' + toX(n-1).toFixed(1) + ',' + (PAD.top+cH).toFixed(1) + ' L' + PAD.left + ',' + (PAD.top+cH).toFixed(1) + ' Z';
+
+  /* Threshold lines */
+  let thresholdSVG = '';
+  if (cfg.threshold !== undefined) {
+    const ty = toY(cfg.threshold).toFixed(1);
+    thresholdSVG += '<line x1="' + PAD.left + '" y1="' + ty + '" x2="' + (PAD.left+cW).toFixed(1) + '" y2="' + ty + '" stroke="' + cfg.color + '" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.55"/>'
+      + '<text x="' + (PAD.left+cW+3) + '" y="' + ty + '" dominant-baseline="middle" font-family="ABC Repro,-apple-system,sans-serif" font-size="9" fill="' + cfg.color + '" opacity="0.65">min</text>';
+  }
+  if (cfg.minPressure !== undefined) {
+    const ty = toY(cfg.minPressure).toFixed(1);
+    thresholdSVG += '<line x1="' + PAD.left + '" y1="' + ty + '" x2="' + (PAD.left+cW).toFixed(1) + '" y2="' + ty + '" stroke="' + cfg.color + '" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.5"/>'
+      + '<text x="' + (PAD.left+cW+3) + '" y="' + ty + '" dominant-baseline="middle" font-family="ABC Repro,-apple-system,sans-serif" font-size="9" fill="' + cfg.color + '" opacity="0.65">min</text>';
+  }
+  if (cfg.maxPressure !== undefined) {
+    const ty = toY(cfg.maxPressure).toFixed(1);
+    thresholdSVG += '<line x1="' + PAD.left + '" y1="' + ty + '" x2="' + (PAD.left+cW).toFixed(1) + '" y2="' + ty + '" stroke="' + cfg.color + '" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.5"/>'
+      + '<text x="' + (PAD.left+cW+3) + '" y="' + ty + '" dominant-baseline="middle" font-family="ABC Repro,-apple-system,sans-serif" font-size="9" fill="' + cfg.color + '" opacity="0.65">max</text>';
+  }
+
+  /* Y-axis */
+  const ySteps = cfg.ySteps || [cfg.min, cfg.max];
+  const yLabels = ySteps.map(function(v) {
+    const y = toY(v).toFixed(1);
+    return '<text x="' + (PAD.left-5) + '" y="' + y + '" text-anchor="end" dominant-baseline="middle" font-family="ABC Repro,-apple-system,sans-serif" font-size="10" fill="rgba(54,50,45,0.5)">' + v + '</text>';
+  }).join('');
+  const gridLines = ySteps.map(function(v) {
+    const y = toY(v).toFixed(1);
+    return '<line x1="' + PAD.left + '" y1="' + y + '" x2="' + (PAD.left+cW).toFixed(1) + '" y2="' + y + '" stroke="rgba(54,50,45,0.07)" stroke-width="1"/>';
+  }).join('');
+
+  /* Phase lines */
+  const phaseLines = (cfg.phaseIdxs || []).map(function(idx, pi) {
+    const x = toX(idx).toFixed(1);
+    return '<line x1="' + x + '" y1="' + PAD.top + '" x2="' + x + '" y2="' + (PAD.top+cH) + '" stroke="rgba(54,50,45,0.2)" stroke-width="1" stroke-dasharray="3,3"/>'
+      + '<text x="' + x + '" y="' + (PAD.top-6) + '" text-anchor="middle" font-family="ABC Repro,-apple-system,sans-serif" font-size="10" fill="rgba(54,50,45,0.5)">' + cfg.phases[pi] + '</text>';
+  }).join('');
+
+  /* X-axis labels */
+  const labels = cfg.timeLabels || [];
+  const xLabels = labels.map(function(lbl, i) {
+    const x = (PAD.left + (i / (labels.length-1)) * cW).toFixed(1);
+    return '<text x="' + x + '" y="' + (H-4) + '" text-anchor="middle" font-family="ABC Repro,-apple-system,sans-serif" font-size="10" fill="rgba(54,50,45,0.45)">' + lbl + '</text>';
+  }).join('');
+
+  const gradId = containerId + '-grad';
+  const lastX  = toX(n-1).toFixed(1);
+  const lastY  = toY(buf[n-1]).toFixed(1);
+  const tipLabel = cfg.tooltipLabel || cfg.title;
+  const tipUnit  = cfg.unit ? ' ' + cfg.unit : '';
+
+  wrap.innerHTML = '<svg id="' + containerId + '-svg" width="100%" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;overflow:visible;cursor:crosshair;" onmousemove="senLineHover(event,\'' + containerId + '\',\'' + key + '\')" onmouseleave="senLineHoverOut(\'' + containerId + '\')">'
+    + '<defs>'
+    + '<linearGradient id="' + gradId + '" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="' + cfg.color + '" stop-opacity="0.18"/>'
+    + '<stop offset="100%" stop-color="' + cfg.color + '" stop-opacity="0"/>'
+    + '</linearGradient>'
+    + '<clipPath id="' + containerId + '-clip"><rect x="' + PAD.left + '" y="' + PAD.top + '" width="' + cW + '" height="' + cH + '"/></clipPath>'
+    + '</defs>'
+    + gridLines + yLabels
+    + '<g clip-path="url(#' + containerId + '-clip)">'
+    + '<path d="' + fillPath + '" fill="url(#' + gradId + ')"/>'
+    + phaseLines
+    + thresholdSVG
+    + '<path d="' + linePath + '" stroke="' + cfg.color + '" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>'
+    + '<circle cx="' + lastX + '" cy="' + lastY + '" r="3.5" fill="' + cfg.color + '"/>'
+    + '<circle cx="' + lastX + '" cy="' + lastY + '" r="7" fill="' + cfg.color + '" opacity="0.2"/>'
+    + '</g>'
+    + xLabels
+    + '<g id="' + containerId + '-tip" style="display:none;">'
+    + '<line id="' + containerId + '-tip-line" x1="0" y1="' + PAD.top + '" x2="0" y2="' + (PAD.top+cH) + '" stroke="rgba(54,50,45,0.35)" stroke-width="1"/>'
+    + '<circle id="' + containerId + '-tip-dot" cx="0" cy="0" r="4.5" fill="white" stroke="' + cfg.color + '" stroke-width="2"/>'
+    + '<g id="' + containerId + '-tip-box" transform="translate(0,0)">'
+    + '<rect rx="10" ry="10" width="148" height="66" fill="white" stroke="rgba(54,50,45,0.14)" stroke-width="1" filter="drop-shadow(0 4px 12px rgba(0,0,0,0.12))"/>'
+    + '<text x="10" y="20" font-family="ABC Repro,-apple-system,sans-serif" font-size="12" font-weight="600" fill="#36322d">' + cfg.title + '</text>'
+    + '<text id="' + containerId + '-tip-time" x="138" y="20" text-anchor="end" font-family="ABC Repro,-apple-system,sans-serif" font-size="11" fill="rgba(54,50,45,0.5)">--:--</text>'
+    + '<line x1="10" y1="30" x2="138" y2="30" stroke="rgba(54,50,45,0.1)" stroke-width="1"/>'
+    + '<text x="10" y="50" font-family="ABC Repro,-apple-system,sans-serif" font-size="11" fill="rgba(54,50,45,0.6)">' + tipLabel + ':</text>'
+    + '<text id="' + containerId + '-tip-val" x="138" y="50" text-anchor="end" font-family="ABC Repro,-apple-system,sans-serif" font-size="11" fill="#101010">--</text>'
+    + '</g></g>'
+    + '</svg>';
+}
+
+function senLineHover(evt, containerId, key) {
+  const cfg = SEN_CONFIGS[key];
+  const buf = senData[key];
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  const svg = document.getElementById(containerId + '-svg');
+  if (!svg) return;
+  const rect = svg.getBoundingClientRect();
+  const W = rect.width;
+  const H = parseInt(svg.getAttribute('height')) || rect.height;
+  const PAD = { top:24, right:12, bottom:30, left:32 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top - PAD.bottom;
+  const n = buf.length;
+  const range = cfg.max - cfg.min;
+
+  const cx = Math.max(PAD.left, Math.min(PAD.left + cW, evt.clientX - rect.left));
+  const idx = Math.round((cx - PAD.left) / cW * (n - 1));
+  const safeIdx = Math.max(0, Math.min(n - 1, idx));
+  const val = buf[safeIdx];
+  const x = PAD.left + (safeIdx / (n - 1)) * cW;
+  const y = PAD.top + cH - ((val - cfg.min) / range) * cH * 0.88 - cH * 0.04;
+  const labels = cfg.timeLabels || [];
+  const timeLbl = labels[Math.floor(safeIdx / (n-1) * (labels.length-1))] || '';
+
+  const tipGroup = document.getElementById(containerId + '-tip');
+  if (!tipGroup) return;
+  tipGroup.style.display = '';
+
+  const tl = document.getElementById(containerId + '-tip-line');
+  const td = document.getElementById(containerId + '-tip-dot');
+  const tb = document.getElementById(containerId + '-tip-box');
+  const tt = document.getElementById(containerId + '-tip-time');
+  const tv = document.getElementById(containerId + '-tip-val');
+
+  if (tl) { tl.setAttribute('x1', x.toFixed(1)); tl.setAttribute('x2', x.toFixed(1)); }
+  if (td) { td.setAttribute('cx', x.toFixed(1)); td.setAttribute('cy', y.toFixed(1)); }
+  if (tt) tt.textContent = timeLbl;
+  if (tv) tv.textContent = val.toFixed(cfg.liveDecimals) + (cfg.unit ? ' ' + cfg.unit : '');
+
+  if (tb) {
+    const boxW = 148, boxH = 66;
+    let bx = x + 10, by = Math.max(PAD.top, y - boxH / 2);
+    if (bx + boxW > W - PAD.right) bx = x - boxW - 10;
+    tb.setAttribute('transform', 'translate(' + bx.toFixed(1) + ',' + by.toFixed(1) + ')');
+  }
+}
+
+function senLineHoverOut(containerId) {
+  const g = document.getElementById(containerId + '-tip');
+  if (g) g.style.display = 'none';
+}
+
+function senRedrawPressure() {
+  senDrawLineSVG('pressure-svg-wrap', false, 'pressure');
+  senDrawLineSVG('dt-pressure-svg-wrap', true, 'pressure');
+}
+function senRedrawCell() {
+  senDrawLineSVG('cell-svg-wrap', false, 'cell');
+  senDrawLineSVG('dt-cell-svg-wrap', true, 'cell');
+}
+function senRedrawSat() {
+  senDrawLineSVG('sat-svg-wrap', false, 'sat');
+  senDrawLineSVG('dt-sat-svg-wrap', true, 'sat');
+}
+
 function senTick() {
   Object.entries(SEN_CONFIGS).forEach(([key, cfg]) => {
     if (cfg.type !== 'line') return;
     const buf = senData[key];
     const last = buf[buf.length - 1];
-    const next = last + (Math.random() - 0.48) * cfg.liveRange * 0.25;
-    const clamped = Math.max(cfg.min + (cfg.max-cfg.min)*0.05, Math.min(cfg.max * 0.95, next));
+    let clamped;
+
+    if (cfg.cumulative) {
+      /* Water: only ever increases in small steps, hard cap at allowable */
+      const increment = Math.random() < 0.6
+        ? (Math.random() * cfg.liveRange)   /* add a small amount */
+        : 0;                                  /* hold steady */
+      clamped = Math.min(cfg.allowable, last + increment);
+    } else {
+      const next = last + (Math.random() - 0.48) * cfg.liveRange * 0.25;
+      clamped = Math.max(cfg.min + (cfg.max-cfg.min)*0.05, Math.min(cfg.max * 0.95, next));
+    }
     buf.shift();
     buf.push(clamped);
 
@@ -10633,20 +11420,26 @@ function senTick() {
     if (dtChipVal) dtChipVal.innerHTML = clamped.toFixed(cfg.liveDecimals) + '<span class="sen-chip-unit"> ' + cfg.liveUnit + '</span>';
 
     if (senSelected.has(key)) {
-      senDrawChart(key);                 /* mobile */
-      senDrawChart('dt-' + key, key);   /* desktop */
+      if (key === 'slump') {
+        senRedrawSlump();
+      } else if (key === 'water') {
+        senRedrawWater();
+      } else if (key === 'drum') {
+        senRedrawDrum();
+      } else if (key === 'pressure') {
+        senRedrawPressure();
+      } else if (key === 'cell') {
+        senRedrawCell();
+      } else if (key === 'sat') {
+        senRedrawSat();
+      } else {
+        senDrawChart(key);
+        senDrawChart('dt-' + key, key);
+      }
     }
   });
 
-  /* satellite count drift */
-  const satChip = document.getElementById('sv-sat');
-  if (satChip) {
-    const cur = parseInt(satChip.textContent) || 8;
-    const next = Math.max(5, Math.min(12, cur + (Math.random() > 0.85 ? (Math.random()>0.5?1:-1) : 0)));
-    satChip.innerHTML = next + '<span class="sen-chip-unit"> sats</span>';
-    const statusState = document.querySelector('#sen-card-sat .sen-status-state');
-    if (statusState) statusState.textContent = next + ' Satellites';
-  }
+  /* satellite count is now handled by the main senTick loop above */
 
   senAnimId = setTimeout(senTick, 1200);
 }
@@ -18835,12 +19628,12 @@ const COL_DEFS = {
   units: [
     { id:'unitid',     label:'Unit ID',               width:120, locked:true },
     { id:'status',     label:'Unit Status',           width:170 },
-    { id:'truck',      label:'Assigned Trucks',       width:140 },
-    { id:'tgw',        label:'TCG ID',          width:150 },
-    { id:'contract',   label:'Contracts',             width:170 },
-    { id:'sysType',    label:'System Type',           width:120 },
-    { id:'config',     label:'Configuration',         width:170 },
-    { id:'firstComm',  label:'First Commission Date', width:200 },
+    { id:'truck',      label:'Assigned Truck',        width:130 },
+    { id:'tgw',        label:'TCG ID',                width:150 },
+    { id:'contract',   label:'Contract',              width:120 },
+    { id:'sysType',    label:'System Type',           width:160 },
+    { id:'config',     label:'Configuration',         width:220 },
+    { id:'firstComm',  label:'First Commission Date', width:180 },
   ],
 };
 
@@ -20048,9 +20841,9 @@ function dtTruckDrawerRenderAttachUnit() {
 
   const cols = [
     { id:'id',         label:'Unit ID',       width:140 },
-    { id:'contract',   label:'Contract',      width:160 },
-    { id:'sysType',    label:'System Type',   width:120 },
-    { id:'config',     label:'Config',        width:170 },
+    { id:'contract',   label:'Contract',      width:130 },
+    { id:'sysType',    label:'System Type',   width:160 },
+    { id:'config',     label:'Config',        width:220 },
     { id:'firstComm',  label:'Commissioned',  width:140 },
     { id:'status',     label:'Status',        width:140 },
   ];
@@ -21693,30 +22486,8 @@ function dtSenRenderCards() {
   if (!container) return;
   container.innerHTML = '';
 
-  senSelected.forEach(key => {
-    const cfg = SEN_CONFIGS[key];
-    const card = document.createElement('div');
-    card.className = 'sen-card';
-    card.id = 'dt-sen-card-' + key;
-
-    if (cfg.type === 'status') {
-      card.innerHTML = `
-        <div class="sen-card-hdr">
-          <div class="sen-card-left">
-            <div class="sen-card-title">${cfg.title}</div>
-          </div>
-          <div class="sen-live-badge"><div class="sen-live-dot"></div><div class="sen-live-txt">Live</div></div>
-        </div>
-        <div class="sen-status-body">
-          <div class="sen-status-icon-wrap ${cfg.statusColor}">${cfg.statusIcon}</div>
-          <div class="sen-status-details">
-            <div class="sen-status-state" id="dt-sc-state-${key}">${cfg.statusLabel}</div>
-            <div class="sen-status-sub">${cfg.statusSub}</div>
-          </div>
-        </div>`;
-    } else {
-      card.innerHTML = `
-        <div class="sen-card-hdr">
+  function lineCard(key, cfg, wrapId, h) {
+    return `<div class="sen-card-hdr">
           <div class="sen-card-left">
             <div class="sen-card-title">${cfg.title}</div>
             <div>
@@ -21726,25 +22497,37 @@ function dtSenRenderCards() {
           </div>
           <div class="sen-live-badge"><div class="sen-live-dot"></div><div class="sen-live-txt">Live</div></div>
         </div>
-        <div class="sen-canvas-wrap">
-          <canvas class="sen-canvas" id="dt-sc-${key}" height="100"></canvas>
-        </div>`;
-    }
+        <div class="sen-canvas-wrap" id="${wrapId}" style="height:${h}px;"></div>`;
+  }
+
+  senSelected.forEach(key => {
+    const cfg = SEN_CONFIGS[key];
+    const card = document.createElement('div');
+    card.className = 'sen-card';
+    card.id = 'dt-sen-card-' + key;
+    card.innerHTML = lineCard(key, cfg, 'dt-' + key + '-svg-wrap', 180);
     container.appendChild(card);
   });
 
-  /* Init canvases */
+  /* Slump: inject target pill */
+  const slumpCard = document.getElementById('dt-sen-card-slump');
+  if (slumpCard) {
+    const cfg = SEN_CONFIGS.slump;
+    const valRow = slumpCard.querySelector('#dt-sc-val-slump')?.parentElement;
+    if (valRow) valRow.insertAdjacentHTML('afterend', `<div style="display:flex;align-items:center;gap:4px;padding:2px 8px;background:rgba(21,148,239,0.08);border-radius:20px;margin-top:2px;">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="#1594ef" stroke-width="1.5" stroke-dasharray="2.5,2"/></svg>
+        <span style="font-size:11px;color:rgba(54,50,45,0.6);letter-spacing:-0.22px;">Target</span>
+        <span style="font-size:11px;font-weight:600;color:#1594ef;letter-spacing:-0.22px;font-family:'DM Mono',monospace;">${cfg.target.toFixed(1)} ${cfg.unit}</span>
+      </div>`);
+  }
+
   requestAnimationFrame(() => {
-    senSelected.forEach(key => {
-      const cfg = SEN_CONFIGS[key];
-      if (cfg.type !== 'line') return;
-      const canvas = document.getElementById('dt-sc-' + key);
-      if (canvas) senCanvases['dt-' + key] = canvas;
-    });
-    /* Draw initial state */
-    senSelected.forEach(key => {
-      if (SEN_CONFIGS[key].type === 'line') senDrawChart('dt-' + key, key);
-    });
+    if (senSelected.has('slump'))    senDrawSlumpSVG('dt-slump-svg-wrap', true);
+    if (senSelected.has('water'))    senDrawWaterSVG('dt-water-svg-wrap', true);
+    if (senSelected.has('drum'))     senDrawDrumSVG('dt-drum-svg-wrap', true);
+    if (senSelected.has('pressure')) senDrawLineSVG('dt-pressure-svg-wrap', true, 'pressure');
+    if (senSelected.has('cell'))     senDrawLineSVG('dt-cell-svg-wrap', true, 'cell');
+    if (senSelected.has('sat'))      senDrawLineSVG('dt-sat-svg-wrap', true, 'sat');
   });
 }
 

@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ConcreteCRM — CSM Visit Log Flow</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--blue:#1B3A6B;--accent:#2E75B6;--light:#E8EEF7;--green:#0D7A4E;--amber:#B85C00;--red:#C0392B;--gray:#F4F5F7;--border:#DDE2EA;--text:#1A1F2E;--sub:#6B7280;}
+body{font-family:'DM Sans',sans-serif;background:#0F1923;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 16px}
+
+.scenario-bar{width:100%;max-width:1060px;margin-bottom:22px}
+.scenario-bar h3{color:rgba(255,255,255,.4);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+.scenario-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.stab{padding:8px 16px;border-radius:20px;border:1.5px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;background:transparent}
+.stab.active{background:rgba(46,117,182,.3);border-color:#2E75B6;color:white}
+
+.scene{display:flex;gap:44px;align-items:flex-start;max-width:1060px;width:100%}
+
+.sidebar{flex:0 0 188px;padding-top:16px}
+.sidebar h3{color:rgba(255,255,255,.35);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
+.step-nav{display:flex;flex-direction:column;gap:2px}
+.si{display:flex;align-items:center;gap:9px;padding:6px 9px;border-radius:7px;color:rgba(255,255,255,.3);font-size:12px;cursor:pointer;transition:all .15s}
+.si.active{background:rgba(46,117,182,.2);color:white}
+.si.done{color:rgba(255,255,255,.42)}
+.sdot{width:7px;height:7px;border-radius:50%;border:1.5px solid rgba(255,255,255,.18);flex-shrink:0;transition:all .2s}
+.si.active .sdot{background:#2E75B6;border-color:#2E75B6}
+.si.done .sdot{background:#0D7A4E;border-color:#0D7A4E}
+
+.phone{flex:0 0 348px;background:#1A1A2E;border-radius:42px;padding:13px;box-shadow:0 36px 72px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08)}
+.notch{width:106px;height:24px;background:#0F1015;border-radius:0 0 14px 14px;margin:0 auto 10px}
+.pscreen{background:var(--gray);border-radius:28px;overflow:hidden;display:flex;flex-direction:column;min-height:640px}
+.sbar{background:var(--blue);padding:7px 16px;display:flex;justify-content:space-between}
+.sbar span{color:white;font-size:11px;font-weight:500}
+.ahead{background:var(--blue);padding:10px 16px 13px}
+.ahead .bk{color:rgba(255,255,255,.65);font-size:11px;margin-bottom:3px}
+.ahead h1{color:white;font-size:16px;font-weight:700}
+.ahead .sub{color:rgba(255,255,255,.6);font-size:11px;margin-top:1px}
+.pbar{background:rgba(255,255,255,.2);height:3px;border-radius:2px;margin-top:9px;overflow:hidden}
+.pfill{background:white;height:100%;border-radius:2px;transition:width .35s}
+
+.screens{flex:1;overflow:hidden}
+.scr{display:none;padding:16px;overflow-y:auto;max-height:490px}
+.scr.active{display:block}
+.scr::-webkit-scrollbar{width:3px}
+.scr::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+.slbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--sub);margin-bottom:4px}
+.sq{font-size:15px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:3px}
+.sh{font-size:11px;color:var(--sub);margin-bottom:13px}
+.div{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--sub);margin:13px 0 7px;border-top:1px solid var(--border);padding-top:9px}
+
+.clist{display:flex;flex-direction:column;gap:6px}
+.cc{display:flex;align-items:center;gap:10px;padding:10px 12px;background:white;border:2px solid var(--border);border-radius:11px;cursor:pointer;transition:all .15s;user-select:none}
+.cc.sel{border-color:var(--accent);background:var(--light)}
+.av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0}
+.cn{font-size:13px;font-weight:600;color:var(--text)}
+.cr{font-size:11px;color:var(--sub)}
+.ck{margin-left:auto;width:18px;height:18px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;color:transparent;transition:all .15s}
+.cc.sel .ck{background:var(--accent);border-color:var(--accent);color:white}
+.nudge{background:#FFF8E7;border:1px solid #F59E0B;border-radius:9px;padding:8px 11px;margin-top:9px;font-size:11px;color:#92400E;display:flex;align-items:center;gap:7px}
+.nbtn{margin-left:auto;background:#F59E0B;color:white;border:none;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:600;cursor:pointer}
+
+.plist{display:flex;flex-direction:column;gap:6px}
+.pick{padding:11px 14px;background:white;border:2px solid var(--border);border-radius:10px;font-size:13px;font-weight:500;color:var(--text);cursor:pointer;transition:all .15s}
+.pick.sel{border-color:var(--accent);background:var(--light);color:var(--accent)}
+.pick.dashed{border-style:dashed}
+.oi{width:100%;margin-top:5px;padding:9px 11px;border:2px solid var(--accent);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text);outline:none;background:white;display:none}
+.oi.show{display:block}
+textarea.oi{resize:none}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:6px 12px;background:white;border:2px solid var(--border);border-radius:16px;font-size:12px;font-weight:500;color:var(--text);cursor:pointer;transition:all .15s}
+.chip.sel{background:var(--accent);border-color:var(--accent);color:white}
+.chip.dashed{border-style:dashed}
+.url-inp{width:100%;padding:9px 11px;border:2px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text);outline:none;background:white;margin-top:6px}
+.url-inp:focus{border-color:var(--accent)}
+
+.ftext{width:100%;border:2px solid var(--border);border-radius:10px;padding:11px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);resize:none;background:white;outline:none;transition:border-color .15s;line-height:1.5}
+.ftext:focus,.ftext.filled{border-color:var(--accent)}
+.flbl{font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.sbadge{background:#F59E0B;color:white;font-size:10px;padding:2px 6px;border-radius:8px;font-weight:600}
+
+.scard{background:white;border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:7px}
+.scl{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px;display:flex;align-items:center;gap:4px}
+.tip{width:14px;height:14px;border-radius:50%;background:var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:9px;color:var(--sub);cursor:help;position:relative;flex-shrink:0}
+.tip:hover::after{content:attr(data-t);position:absolute;bottom:115%;left:50%;transform:translateX(-50%);background:var(--text);color:white;font-size:10px;padding:5px 8px;border-radius:6px;white-space:normal;width:180px;text-align:center;z-index:99}
+.sch{font-size:10px;color:var(--sub);margin-bottom:7px}
+.dots{display:flex;gap:6px}
+.dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--sub);cursor:pointer;transition:all .15s;background:white}
+.dot.s{color:white;border-color:transparent}
+.dot:nth-child(1).s{background:#C0392B}
+.dot:nth-child(2).s{background:#E07B1A}
+.dot:nth-child(3).s{background:#B85C00}
+.dot:nth-child(4).s{background:#2E75B6}
+.dot:nth-child(5).s{background:#0D7A4E}
+
+.vpsigned{background:#E8F5EE;border:1px solid #0D7A4E;border-radius:8px;padding:7px 10px;margin-bottom:9px;font-size:11px;color:#0D7A4E;font-weight:600}
+.vpgrid{display:flex;flex-direction:column;gap:5px}
+.vprow{display:flex;align-items:center;background:white;border-radius:8px;padding:7px 10px;border:1px solid var(--border)}
+.vpname{font-size:11px;font-weight:500;color:var(--text);flex:1}
+.vpdots{display:flex;gap:4px}
+.vd{width:21px;height:21px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:var(--sub);cursor:pointer;transition:all .12s;background:white}
+.vd.f{background:var(--accent);border-color:var(--accent);color:white}
+
+.ilist{display:flex;flex-direction:column;gap:6px}
+.ic{background:white;border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.iname{font-size:12px;font-weight:500;color:var(--text);margin-bottom:7px;line-height:1.3}
+.istat{display:flex;gap:4px}
+.sb{flex:1;padding:5px 2px;border:1.5px solid var(--border);border-radius:5px;font-size:9px;font-weight:600;color:var(--sub);background:white;cursor:pointer;text-align:center;transition:all .12s;line-height:1.2}
+.sb.sn{border-color:#6B7280;background:#F4F5F7;color:#6B7280}
+.sb.sf{border-color:#B85C00;background:#FFF3E0;color:#B85C00}
+.sb.si2{border-color:#0D7A4E;background:#E8F5EE;color:#0D7A4E}
+.sb.sc{border-color:#2E75B6;background:#E8EEF7;color:#2E75B6}
+.showall{text-align:center;margin-top:9px;font-size:11px;color:var(--accent);cursor:pointer;font-weight:600}
+
+.flagged{background:#FFF8E7;border:1px solid #F59E0B;border-radius:10px;padding:10px 12px;margin-bottom:11px}
+.fh{font-size:10px;font-weight:700;color:#92400E;margin-bottom:3px}
+.fb{font-size:12px;color:#78350F;line-height:1.4}
+.exprow{display:flex;gap:6px;margin-bottom:13px}
+.ebtn{flex:1;padding:9px 4px;border:2px solid var(--border);border-radius:9px;font-size:11px;font-weight:600;color:var(--sub);background:white;cursor:pointer;text-align:center;transition:all .15s;line-height:1.3}
+.ebtn.sel{border-color:var(--accent);background:var(--light);color:var(--accent)}
+.sumbox{background:var(--light);border-radius:9px;padding:10px;font-size:11px;color:var(--sub);line-height:1.5}
+
+.success{padding:28px 16px 16px;text-align:center}
+.sico{width:52px;height:52px;background:#0D7A4E;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 13px;font-size:22px;color:white}
+.stit{font-size:18px;font-weight:700;color:var(--text);margin-bottom:5px}
+.ssub{font-size:12px;color:var(--sub);line-height:1.5;margin-bottom:16px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-bottom:13px}
+.tag{background:var(--light);color:var(--accent);font-size:10px;font-weight:600;padding:3px 8px;border-radius:8px}
+
+.bnav{padding:12px 16px;background:white;border-top:1px solid var(--border);display:flex;gap:7px;flex-shrink:0;margin-top:auto}
+.bbk{padding:12px 16px;background:var(--gray);border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--sub);cursor:pointer}
+.bnxt{flex:1;padding:12px;background:var(--blue);border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;transition:all .15s}
+.bnxt.grn{background:#0D7A4E}
+.bnxt:active,.bbk:active{transform:scale(.97)}
+
+.ipanel{flex:1;color:rgba(255,255,255,.72);padding-top:16px}
+.ilbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:5px}
+.ibadge{display:inline-flex;align-items:center;border-radius:16px;font-size:11px;font-weight:600;padding:3px 10px;margin-bottom:14px;border:1px solid}
+.ibadge.ldr{background:rgba(13,122,78,.22);border-color:rgba(13,122,78,.45);color:#6ECFA3}
+.ibadge.fld{background:rgba(46,117,182,.22);border-color:rgba(46,117,182,.45);color:#90C4F0}
+.ibadge.mix{background:rgba(184,92,0,.22);border-color:rgba(184,92,0,.45);color:#F6B060}
+.ipanel h2{font-size:19px;font-weight:700;color:white;margin-bottom:7px}
+.ipanel .desc{font-size:12px;line-height:1.7;color:rgba(255,255,255,.5);margin-bottom:18px}
+.icard{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:13px 15px;margin-bottom:9px}
+.icard .il{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.32);margin-bottom:4px}
+.icard .iv{font-size:12px;color:rgba(255,255,255,.65);line-height:1.5}
+
+@media(max-width:860px){.sidebar,.ipanel{display:none}.scene{justify-content:center}}
+</style>
+</head>
+<body>
+
+<div class="scenario-bar">
+  <h3>Select a scenario</h3>
+  <div class="scenario-tabs">
+    <div class="stab active" onclick="load(0)">🏭 Acme Concrete — Leadership visit</div>
+    <div class="stab" onclick="load(1)">🚛 Summit Concrete — Field crew only</div>
+    <div class="stab" onclick="load(2)">⚠️ Cemex SD — Escalation / churn risk</div>
+    <div class="stab" onclick="load(3)">📞 Ridgeline RMC — Phone call</div>
+  </div>
+</div>
+
+<div class="scene">
+  <div class="sidebar"><h3>Flow Steps</h3><div class="step-nav" id="nav"></div></div>
+
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="pscreen">
+      <div class="sbar"><span>9:41</span><span id="sacct">ConcreteCRM</span><span>●●●</span></div>
+      <div class="ahead">
+        <div class="bk" id="hbk">←</div>
+        <h1 id="htit">Log Visit</h1>
+        <div class="sub" id="hsub">Step 1</div>
+        <div class="pbar"><div class="pfill" id="pf" style="width:10%"></div></div>
+      </div>
+      <div class="screens" id="screens"></div>
+      <div class="bnav" id="bnav">
+        <button class="bbk" id="bbk" onclick="prev()">Back</button>
+        <button class="bnxt" id="bnxt" onclick="next()">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ipanel">
+    <div class="ilbl" id="iscen">Scenario</div>
+    <div class="ibadge ldr" id="ibadge">⚡ Full leadership flow</div>
+    <h2 id="iptit">Step</h2>
+    <p class="desc" id="ipdesc"></p>
+    <div class="icard"><div class="il">Why this step</div><div class="iv" id="iwhy"></div></div>
+    <div class="icard"><div class="il">What gets saved</div><div class="iv" id="isave"></div></div>
+  </div>
+</div>
+
+<script>
+const SCENARIOS = [
+  { name:"Acme Concrete — Leadership visit", acct:"Acme Concrete", badge:"ldr", btxt:"⚡ Full leadership flow",
+    contacts:[
+      {i:"MR",c:"#1B3A6B",n:"Tom Bradley",r:"General Manager",t:"leader",sel:true},
+      {i:"JC",c:"#2E75B6",n:"Carlos M.",r:"Plant Manager",t:"mid",sel:true},
+      {i:"FC",c:"#0D7A4E",n:"Field Crew",r:"Drivers / Batchmen",t:"field",sel:false}
+    ],
+    nudge:"No Owner on record for this account",
+    vtype:"Relationship Check-in",
+    ctx:"Monthly check-in with Mike and Jorge. Mike mentioned Q4 budget review coming — all vendor contracts being evaluated. Jorge seems engaged, SOP follow-through improving.",
+    kn:"GM flagged Q4 budget review. All vendor contracts under evaluation.",
+    acts:["Strategic Planning","Coached Field Staff"],
+    signed:"Cement Savings, Concrete Quality",
+    vpd:[4,5,3,2,2,3,1,1,1,2,1],
+    inits:[{n:"Batching more accurately to target",s:"si2"},{n:"Leaving the job-site faster after finishing a pour",s:"sf"},{n:"Reducing cement from mixes",s:"si2"}],
+    sc:{sv:3,pv:3,ar:1,cr:2,ctr:3,sm:4,em:4}
+  },
+  { name:"Summit Concrete — Field crew only", acct:"Summit Concrete", badge:"fld", btxt:"🚛 Light field flow",
+    contacts:[
+      {i:"DT",c:"#0D7A4E",n:"Driver Team",r:"Drivers",t:"field",sel:true},
+      {i:"BT",c:"#2E75B6",n:"Batch Crew",r:"Batchmen",t:"field",sel:true}
+    ],
+    nudge:null,
+    vtype:"Training / Onboarding",
+    ctx:"Driver refresher on departure SOPs. Batchmen still inconsistent on moisture checks. Progress from last visit visible but slow.",
+    kn:"",
+    acts:["Ran Training","Coached Field Staff"],
+    signed:"Productivity / Efficiency, Safety",
+    vpd:[2,3,4,2,3,4,1,2,1,1,1],
+    inits:[{n:"Running consistent daily moisture checks",s:"si2"},{n:"Leaving the plant faster after batching",s:"sf"}],
+    sc:{sv:3,sop:2,sf2:3}
+  },
+  { name:"Cemex SD — Escalation / churn risk", acct:"Horizon Ready Mix", badge:"mix", btxt:"⚠️ Churn signals present",
+    contacts:[
+      {i:"RL",c:"#C0392B",n:"Sandra K.",r:"VP Operations",t:"leader",sel:true},
+      {i:"PM",c:"#2E75B6",n:"Plant Manager",r:"Plant Manager",t:"mid",sel:true}
+    ],
+    nudge:null,
+    vtype:"Escalation Follow-up",
+    ctx:"Roberto was cold. Mentioned they had a competitor demo last week. Budget cuts coming — evaluating reducing truck count by 15. PM frustrated with ticket response times.",
+    kn:"VP had competitor demo. Considering reducing 15 trucks. High churn risk — RM needs to know.",
+    acts:["Escalated Issue","Strategic Planning"],
+    signed:"Risk & Liability, Concrete Quality",
+    vpd:[2,3,2,4,1,3,1,1,1,2,1],
+    inits:[{n:"Reducing the number of high speed / total revolutions",s:"sn"},{n:"Improving truck interval spacing",s:"sf"}],
+    sc:{sv:2,pv:2,ar:2,cr:4,ctr:4,sm:2,em:2}
+  },
+  { name:"Ridgeline RMC — Phone call", acct:"Ridgeline RMC", badge:"fld", btxt:"📞 Mid-level phone call",
+    contacts:[
+      {i:"SA",c:"#2E75B6",n:"Lisa P.",r:"Ops Manager",t:"mid",sel:true}
+    ],
+    nudge:"No GM or Owner on record for this account",
+    vtype:"Troubleshooting",
+    ctx:"Sara called about load issue — drivers reporting incorrect slump readings on hub. Walked her through calibration check. She asked about a driver training refresher.",
+    kn:"",
+    acts:["Raised Jira Ticket","Ran Training"],
+    signed:"Concrete Quality, Productivity / Efficiency",
+    vpd:[1,4,4,2,1,2,2,3,1,1,1],
+    inits:[{n:"Making sure delivery, arrival and discharge slump is accurate",s:"si2"}],
+    sc:{sv:3,sm:3,em:4}
+  }
+];
+
+const VP_NAMES = ['Cement Savings','Concrete Quality','Productivity / Efficiency','Risk & Liability','Fuel Use','Safety','Driver Onboarding','Talent Management','CO2 Emissions','Contractor Charging','Delivery Radius'];
+
+const STEP_INFO = {
+  who:{why:"Contact selection filters every prompt that follows. Only the prompts relevant to who you selected appear — you won't be asked about churn risk if you only spoke to drivers.",saves:"Contact selections on Activity. Missing senior persona nudge fires if no Owner/VP/GM record exists on the account."},
+  why:{why:"Visit type is auto-detected from your user profile — CSM options appear automatically. 'Other' opens a free text field.",saves:"Visit_Type__c on Activity record. Used in coverage and frequency reports."},
+  ctx:{why:"Free text — one sentence or ten. Key Note field flags critical intel to the full account team and RM. Surfaces starred at the top of the account feed.",saves:"Call_Context__c + Key_Account_Note__c on Activity. Key notes trigger ⭐ flag in account feed."},
+  act:{why:"Captures what the rep did, not just what they observed. This proves the team is being proactive. 'Other' opens a free text field.",saves:"Action_Taken__c multi-select. Feeds CSM performance and coaching reports."},
+  scores:{why:"Customer Sees Value fires for ALL contact tiers — a driver who thinks the product is useless is just as valid a signal as a GM. Leaders get additional churn risk scoring.",saves:"All scored fields on Activity AND write back to Contact record. Roll up to Account Health Score monthly object."},
+  vp:{why:"Pre-filled from last visit — only adjust what changed. Signed value props shown at top as the north star. Gap between signed and current stakeholder priorities is your key risk signal.",saves:"All 11 ValProp_ fields write back to each Contact record automatically after every visit. Builds the stakeholder priority profile over time."},
+  inits:{why:"Only active initiatives shown — 3–5 at most. Non-priority and complete items hidden unless 'Show all' tapped.",saves:"Initiative_Tracker__c Status field updated. Last_Updated__c auto-set."},
+  exp:{why:"Expansion signals link directly to existing Goals object. Key note confirmed before saving.",saves:"Expansion_Signal__c + Goals linkage. Full visit summary shown for confirmation."},
+  done:{why:"",saves:""}
+};
+
+let SC = null, steps = [], cur = 0, sidx = 0;
+
+function getSteps(sc) {
+  const hasL = sc.contacts.some(c=>c.sel&&c.t==='leader');
+  const hasM = sc.contacts.some(c=>c.sel&&c.t==='mid');
+  const hasF = sc.contacts.some(c=>c.sel&&c.t==='field');
+  const s = [{id:'who',lbl:'Who did you see?',nav:'Who'}];
+  s.push({id:'why',lbl:'Why were you there?',nav:'Why'});
+  s.push({id:'ctx',lbl:'What happened?',nav:'Context'});
+  s.push({id:'act',lbl:'What did you do?',nav:'Actions'});
+  if(hasL||hasM||hasF) s.push({id:'scores',lbl:'Health & sentiment',nav:'Scores'});
+  if(hasL||hasM) s.push({id:'vp',lbl:'Value prop priorities',nav:'Value Props'});
+  if(hasL) s.push({id:'inits',lbl:'Best practice adoption',nav:'Initiatives'});
+  if(hasL) s.push({id:'exp',lbl:'Anything else?',nav:'Final'});
+  s.push({id:'done',lbl:'Saved ✓',nav:'Done ✓'});
+  return s;
+}
+
+function load(i) {
+  sidx = i;
+  SC = JSON.parse(JSON.stringify(SCENARIOS[i]));
+  steps = getSteps(SC);
+  cur = 0;
+  document.querySelectorAll('.stab').forEach((t,j)=>t.classList.toggle('active',j===i));
+  document.getElementById('sacct').textContent = SC.acct;
+  document.getElementById('hbk').textContent = '← '+SC.acct;
+  buildNav(); buildScreens(); render();
+}
+
+function buildNav() {
+  const nav = document.getElementById('nav');
+  nav.innerHTML='';
+  steps.forEach((s,i)=>{
+    const d=document.createElement('div');
+    d.className='si'; d.dataset.i=i;
+    d.innerHTML=`<div class="sdot"></div>${s.nav}`;
+    d.onclick=()=>{cur=i;render();};
+    nav.appendChild(d);
+  });
+}
+
+function buildScreens() {
+  const c=document.getElementById('screens');
+  c.innerHTML='';
+  steps.forEach((s,i)=>{
+    const d=document.createElement('div');
+    d.className='scr'; d.id='s'+i;
+    d.innerHTML=buildScreen(s.id);
+    c.appendChild(d);
+  });
+  setTimeout(buildVP,30);
+}
+
+function buildScreen(id) {
+  const sc=SC, s=sc.sc||{};
+  switch(id){
+    case 'who':{
+      let h=`<div class="slbl">Step 1</div><div class="sq">Who did you see?</div><div class="sh">Select everyone you spoke with — prompts adapt to your selection</div><div class="clist">`;
+      sc.contacts.forEach(c=>{
+        h+=`<div class="cc${c.sel?' sel':''}" onclick="toggleC(this,'${c.t}','${c.n}')">
+          <div class="av" style="background:${c.c}">${c.i}</div>
+          <div><div class="cn">${c.n}</div><div class="cr">${c.r}</div></div>
+          <div class="ck">${c.sel?'✓':''}</div></div>`;
+      });
+      h+='</div>';
+      if(sc.nudge) h+=`<div class="nudge">⚠️ ${sc.nudge} <button class="nbtn">Add one</button></div>`;
+      return h;
+    }
+    case 'why':{
+      const types=['Troubleshooting','Training / Onboarding','Relationship Check-in','QBR / Business Review','New Truck Launch','Escalation Follow-up','Other'];
+      let h=`<div class="slbl">Step 2</div><div class="sq">Why were you there?</div><div class="sh">Auto-detected: CSM visit</div><div class="plist">`;
+      types.forEach(t=>{ h+=`<div class="pick${t===sc.vtype?' sel':''} ${t==='Other'?'dashed':''}" onclick="pickOne(this,'wother')">${t}</div>`; });
+      h+=`</div><input class="oi" id="wother" placeholder="Describe visit type..." />`;
+      return h;
+    }
+    case 'ctx':{
+      return `<div class="slbl">Step 3</div><div class="sq">What happened?</div><div class="sh">One sentence is fine. This stays on the account record forever.</div>
+        <textarea class="ftext filled" rows="4">${sc.ctx}</textarea>
+        <div style="margin-top:13px"><div class="flbl">⭐ Key note for account team? <span class="sbadge">Flags to RM</span></div>
+        <div class="sh" style="margin-bottom:7px">Critical intel — surfaces starred at top of account feed</div>
+        <textarea class="ftext${sc.kn?' filled':''}" rows="2" placeholder="Optional">${sc.kn}</textarea></div>`;
+    }
+    case 'act':{
+      const al=['Ran Training','Escalated Issue','Shared Report','Coached Field Staff','Demoed Feature','Raised Jira Ticket','Strategic Planning','Other'];
+      let h=`<div class="slbl">Step 4</div><div class="sq">What did you do?</div><div class="sh">Select all that apply</div><div class="chips">`;
+      al.forEach(a=>{ h+=`<div class="chip${sc.acts.includes(a)?' sel':''} ${a==='Other'?'dashed':''}" onclick="toggleChip(this,'aother')">${a}</div>`; });
+      h+=`</div><textarea class="oi" id="aother" rows="2" placeholder="Describe action taken..."></textarea>
+        <div style="margin-top:13px"><div class="flbl" style="margin-bottom:5px">Related issue URL (optional)</div>
+        <input class="url-inp" type="text" placeholder="Paste Jira or support ticket link..." /></div>`;
+      return h;
+    }
+    case 'scores':{
+      const hasL=sc.contacts.some(c=>c.sel&&c.t==='leader');
+      const hasM=sc.contacts.some(c=>c.sel&&c.t==='mid');
+      const hasF=sc.contacts.some(c=>c.sel&&c.t==='field');
+      let h=`<div class="slbl">Step 5 — Contact-filtered</div><div class="sq">How is this account tracking?</div><div class="sh">Pre-filled from last visit. Tap to update.</div>`;
+      // Customer Sees Value — ALL tiers
+      h+=scard('Customer Sees Value','CSM\'s read on whether the customer believes they\'re getting value. 1 = No perceived value, 5 = Clearly sees value',s.sv||3,'1 = No perceived value','5 = Clearly sees value');
+      if(hasL){
+        h+=`<div class="div">We Can Prove Value — Leadership</div>`;
+        h+=scard('We Can Prove Value in this conversation','Did we demonstrate measurable proof of value? 1 = No proof, 5 = Clear ROI shown',s.pv||2,'1 = No proof discussed','5 = Clear ROI demonstrated');
+        h+=`<div class="div">Churn Risk Signals — Leadership only</div>`;
+        h+=scard('Acquisition / Leadership Change Risk','',s.ar||1,'1 = No risk','5 = High risk');
+        h+=scard('Competitor Risk','',s.cr||1,'1 = No risk','5 = High risk');
+        h+=scard('Cost Cutting Risk','',s.ctr||1,'1 = No risk','5 = High risk');
+      }
+      if(hasM){
+        sc.contacts.filter(c=>c.sel&&c.t==='mid').forEach(c=>{
+          h+=`<div class="div">Mid-level — ${c.n}</div>`;
+          h+=scard(`Sentiment toward ConcreteCRM · ${c.n}`,'',s.sm||3,'1 = Very Negative','5 = Very Positive');
+          h+=scard(`Engagement with ConcreteCRM · ${c.n}`,'',s.em||3,'1 = Completely Disengaged','5 = Very Engaged');
+        });
+      }
+      if(hasF){
+        sc.contacts.filter(c=>c.sel&&c.t==='field').forEach(c=>{
+          h+=`<div class="div">Field — ${c.n}</div>`;
+          h+=scard(`SOP Adoption · ${c.n}`,'Following best practice SOPs?',s.sop||2,'1 = No adoption','5 = High adoption');
+          h+=scard(`Sentiment toward ConcreteCRM · ${c.n}`,'',s.sf2||3,'1 = Very Negative','5 = Very Positive');
+        });
+      }
+      return h;
+    }
+    case 'vp':{
+      return `<div class="slbl">Value Props — All selected contacts</div><div class="sq">Value prop priorities</div>
+        <div class="sh">Pre-filled from last visit. Adjust what changed. 1 = Not important · 5 = Very important</div>
+        <div class="vpsigned">★ Signed on: ${sc.signed}</div>
+        <div class="vpgrid" id="vpg"></div>`;
+    }
+    case 'inits':{
+      let h=`<div class="slbl">Active Initiatives Only</div><div class="sq">ConcreteCRM best practice adoption</div>
+        <div class="sh">Showing ${sc.inits.length} active. Tap status to update.</div><div class="ilist">`;
+      sc.inits.forEach(it=>{
+        h+=`<div class="ic"><div class="iname">${it.n}</div><div class="istat">
+          <div class="sb${it.s==='sn'?' sn':''}" onclick="setSt(this,'sn')">Non-Priority</div>
+          <div class="sb${it.s==='sf'?' sf':''}" onclick="setSt(this,'sf')">Future Focus</div>
+          <div class="sb${it.s==='si2'?' si2':''}" onclick="setSt(this,'si2')">Implementing</div>
+          <div class="sb${it.s==='sc'?' sc':''}" onclick="setSt(this,'sc')">Complete</div>
+        </div></div>`;
+      });
+      h+=`</div><div class="showall">Show all 12 initiatives ↓</div>`;
+      return h;
+    }
+    case 'exp':{
+      let flagged=sc.kn?`<div class="flagged"><div class="fh">⭐ Flagged key note — visible to RM + account team</div><div class="fb">"${sc.kn}"</div></div>`:'';
+      const sel=sc.contacts.filter(c=>c.sel).map(c=>c.n).join(', ');
+      return `<div class="slbl">Final Step</div><div class="sq">Anything else?</div><div class="sh">Optional expansion signals or RM-level items.</div>
+        <div class="flbl" style="margin-bottom:7px">Expansion signal?</div>
+        <div class="exprow">
+          <div class="ebtn sel" onclick="selExp(this)">No</div>
+          <div class="ebtn" onclick="selExp(this)">Yes — link Goal</div>
+          <div class="ebtn" onclick="selExp(this)">Yes — new Goal</div>
+        </div>
+        ${flagged}
+        <div class="sumbox">Will update: <strong>${sel}</strong>. Value prop priorities saved to each Contact record.</div>`;
+    }
+    case 'done':{
+      const sel=sc.contacts.filter(c=>c.sel);
+      let tags=`<div class="tag">${sc.vtype}</div>`;
+      sel.forEach(c=>{tags+=`<div class="tag">${c.n}</div>`;});
+      sc.acts.forEach(a=>{tags+=`<div class="tag">${a}</div>`;});
+      if(sc.kn) tags+=`<div class="tag">⭐ Key note flagged</div>`;
+      tags+=`<div class="tag">VP scores updated</div>`;
+      let flagged=sc.kn?`<div class="flagged"><div class="fh">⭐ Flagged to account team</div><div class="fb">"${sc.kn}"</div></div>`:'';
+      return `<div class="success">
+        <div class="sico">✓</div>
+        <div class="stit">Visit logged</div>
+        <div class="ssub">${sc.acct} · ${sel.length} contact${sel.length>1?'s':''} updated</div>
+        <div class="tags">${tags}</div>
+        ${flagged}
+        <button class="bnxt grn" style="border-radius:10px;padding:12px;width:100%;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px" onclick="load(${sidx})">Start over</button>
+      </div>`;
+    }
+  }
+  return '';
+}
+
+function scard(label,tip,def,low,high){
+  const d=[1,2,3,4,5].map(n=>`<div class="dot${n===def?' s':''}" onclick="selDot(this)">${n}</div>`).join('');
+  return `<div class="scard"><div class="scl">${label}${tip?` <span class="tip" data-t="${tip}">?</span>`:''}</div>
+    <div class="sch">${low} &nbsp;·&nbsp; ${high}</div><div class="dots">${d}</div></div>`;
+}
+
+function buildVP(){
+  const g=document.getElementById('vpg');
+  if(!g||!SC) return;
+  g.innerHTML='';
+  VP_NAMES.forEach((n,i)=>{
+    const row=document.createElement('div'); row.className='vprow';
+    const nm=document.createElement('div'); nm.className='vpname'; nm.textContent=n;
+    const dots=document.createElement('div'); dots.className='vpdots';
+    const def=SC.vpd[i]||1;
+    for(let d=1;d<=5;d++){
+      const vd=document.createElement('div');
+      vd.className='vd'+(d<=def?' f':''); vd.textContent=d;
+      vd.onclick=function(){
+        const sib=this.parentElement.querySelectorAll('.vd');
+        const idx=Array.from(sib).indexOf(this)+1;
+        sib.forEach((s,si)=>s.classList.toggle('f',si<idx));
+      };
+      dots.appendChild(vd);
+    }
+    row.appendChild(nm); row.appendChild(dots); g.appendChild(row);
+  });
+}
+
+// Handlers
+function toggleC(el,tier,name){
+  el.classList.toggle('sel');
+  const ck=el.querySelector('.ck');
+  ck.textContent=el.classList.contains('sel')?'✓':'';
+  const c=SC.contacts.find(c=>c.n===name);
+  if(c) c.sel=el.classList.contains('sel');
+  steps=getSteps(SC); buildNav();
+  document.querySelectorAll('.si').forEach((s,i)=>{
+    s.classList.remove('active','done');
+    if(i===cur) s.classList.add('active');
+    if(i<cur) s.classList.add('done');
+  });
+}
+function pickOne(el,otherId){
+  el.closest('.plist').querySelectorAll('.pick').forEach(p=>p.classList.remove('sel'));
+  el.classList.add('sel');
+  const inp=document.getElementById(otherId);
+  if(inp) inp.classList.toggle('show',el.classList.contains('dashed'));
+}
+function toggleChip(el,otherId){
+  el.classList.toggle('sel');
+  if(el.classList.contains('dashed')){
+    const inp=document.getElementById(otherId);
+    if(inp) inp.classList.toggle('show',el.classList.contains('sel'));
+  }
+}
+function selDot(el){
+  el.closest('.dots').querySelectorAll('.dot').forEach(d=>d.classList.remove('s'));
+  el.classList.add('s');
+}
+function setSt(el,type){
+  el.closest('.istat').querySelectorAll('.sb').forEach(b=>b.className='sb');
+  el.classList.add(type);
+}
+function selExp(el){
+  el.closest('.exprow').querySelectorAll('.ebtn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function render(){
+  const step=steps[cur];
+  document.querySelectorAll('.scr').forEach((s,i)=>s.classList.toggle('active',i===cur));
+  document.querySelectorAll('.si').forEach((s,i)=>{
+    s.classList.remove('active','done');
+    if(i===cur) s.classList.add('active');
+    if(i<cur) s.classList.add('done');
+  });
+  const pct=Math.round((cur/Math.max(steps.length-1,1))*100);
+  document.getElementById('pf').style.width=pct+'%';
+  document.getElementById('htit').textContent=step.id==='done'?'Saved':'Log Visit';
+  document.getElementById('hsub').textContent=step.id==='done'?'Complete':`Step ${cur+1} of ${steps.length-1}`;
+  const bbk=document.getElementById('bbk'), bnxt=document.getElementById('bnxt'), bnav=document.getElementById('bnav');
+  bnav.style.display=step.id==='done'?'none':'flex';
+  bbk.style.display=cur===0?'none':'block';
+  bnxt.textContent=cur===steps.length-2?'✓ Save Visit':'Next →';
+  bnxt.className=cur===steps.length-2?'bnxt grn':'bnxt';
+  // Info panel
+  document.getElementById('iscen').textContent=SC.name;
+  const badge=document.getElementById('ibadge');
+  badge.className='ibadge '+SC.badge; badge.textContent=SC.btxt;
+  document.getElementById('iptit').textContent=step.lbl;
+  const info=STEP_INFO[step.id]||{why:'',saves:''};
+  document.getElementById('ipdesc').textContent=step.lbl;
+  document.getElementById('iwhy').textContent=info.why;
+  document.getElementById('isave').textContent=info.saves;
+  if(step.id==='vp') setTimeout(buildVP,40);
+}
+
+function next(){ if(cur<steps.length-1){cur++;render();} }
+function prev(){ if(cur>0){cur--;render();} }
+
+load(0);
+</script>
+</body>
+</html>

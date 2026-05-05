@@ -941,7 +941,7 @@
   /* Hide the selection circle on TCG card during replace mode */
   .dt-replace-mode .dt-drawer-cards .dt-co-card-tcg::before { display:none !important; }
   /* Hide the inline replace button during replace mode (action lives elsewhere here) */
-  .dt-replace-mode .dt-drawer-cards .dt-co-card-tcg .dt-co-tcg-replace-btn { display:none; }
+  /* TCG replace button visible on all breakpoints */
   /* Show the lock hint pinned to the corner */
   .dt-replace-mode .dt-drawer-cards .dt-co-card-tcg .dt-co-tcg-lock-hint {
     display:block; position:absolute; top:10px; right:10px;
@@ -4897,7 +4897,7 @@
     <svg width="72" height="18" viewBox="0 0 96 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="white"/>
     </svg>
-    <span class="vp-version-tag">v3.4.2</span>
+    <span class="vp-version-tag">v3.5.0</span>
   </div>
 
   <!-- Viewport pills — desktop only. Hidden on mobile/tablet viewports since
@@ -6421,6 +6421,19 @@
       <div class="dt-drawer-main" id="tb-drawer-main" style="flex:1;display:flex;flex-direction:column;min-height:0;position:relative;">
         <div class="tb-drawer-scroll" id="tb-drawer-scroll" style="flex:1;overflow-y:auto;padding:20px 16px;">
           <!-- content injected by tbDrawerTab() -->
+        </div>
+        <!-- Persistent error reset banner — shown when all components replaced -->
+        <div id="tb-error-banner" style="display:none;flex-shrink:0;"></div>
+
+        <!-- Replace Components save bar -->
+        <div id="tb-replace-bar" style="display:none;flex-shrink:0;background:var(--layer-1);border-top:1px solid var(--border);padding:12px 20px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <span id="tb-replace-hint" style="font-size:13px;color:var(--soft);letter-spacing:-0.26px;">Select components to remove</span>
+            <div style="display:flex;gap:8px;">
+              <button onclick="tbReplaceCancel()" style="background:transparent;border:1px solid var(--border);border-radius:20px;padding:8px 18px;font-size:13px;font-weight:500;color:var(--strong);font-family:var(--font);letter-spacing:-0.26px;cursor:pointer;">Cancel</button>
+              <button id="tb-replace-confirm" onclick="tbReplaceConfirm()" disabled style="background:#d97706;border:none;border-radius:20px;padding:8px 18px;font-size:13px;font-weight:500;color:white;font-family:var(--font);letter-spacing:-0.26px;cursor:pointer;opacity:0.4;transition:opacity 0.15s;">Remove selected</button>
+            </div>
+          </div>
         </div>
         <!-- Config save bar — pinned below scroll, same pattern as desktop -->
         <div id="tb-cfg-savebar" style="display:none;flex-shrink:0;background:var(--layer-1);border-top:1px solid var(--border);padding:14px 24px;">
@@ -11490,7 +11503,7 @@ const CC_TRUCKS = [
       { name:'Bus Power',   dot:'#d70100', state:'alarm',   evt:'Alarm · ongoing' },
       { name:'CWR',         dot:'#2ecf1d', state:'clean',   evt:'No Events' },
       { name:'WDS',         dot:'#d70100', state:'empty',   evt:'Not installed', removedDate:'07/23/25 · 2:14 PM' },
-      { name:'Water Pump',  dot:'#d97706', state:'pending', evt:'Replacement recorded', installedDate:'07/23/25 · 3:40 PM', serial:'WP-4421' },
+      { name:'Water Pump',  dot:'#2ecf1d', state:'clean', evt:'No Events' },
     ]},
   { num:'12457', ver:'v4.02.017', ign:'On',  ignOff:false, err:2,  wrn:10, ignDetail:'15 min', plant:'Phoenix Central', lastConn:'12:44 PM 07/23/25',
     components:[
@@ -12018,8 +12031,8 @@ function renderMobileCards() {
     { name:'DRS',           label:'Drum Rotation Speed',      value:'138',  unit:'rpm',    startup:2,  err:'--', extra:null },
     { name:'CWR (35.0) Temp', label:'CWR Temp',  value:'91', unit:'°F', startup:2, err:'--', extra:{label:'Tilt Degree', val:'1'} },
     { name:'ICD (1468)', label:'Input Current Detector', value:'1468', unit:'mA', startup:2, err:'--', greyDot:true },
-    { name:'Water Pump',  state:'empty',   label:'Water Delivery System', value:'--', unit:'', startup:null, err:null, removedDate:'07/23/25 · 2:14 PM' },
-    { name:'Admix Pump',  state:'pending', label:'Admixture Pump', value:'0.3', unit:'gal/min', startup:null, err:null },
+    { name:'Water Pump',  label:'Water Delivery System', value:'2.1', unit:'gal/min', startup:1, err:'0' },
+    { name:'Admix Pump',  label:'Admixture Pump',        value:'0.3', unit:'gal/min', startup:1, err:'0' },
     { name:'ED (8195)',  label:'Electrical Signal value', value:'8195', unit:'counts', startup:2, err:'--' },
   ];
   var fdmCards = [
@@ -12696,7 +12709,9 @@ function dtInstallOpen(compName, removedDate) {
   if (existing) existing.remove();
   window._coScanAttempt = 0;
 
-  var main = document.getElementById('dt-drawer-main');
+  /* On tablet route to tb-drawer-main; on desktop use dt-drawer-main */
+  var mainId = document.body.classList.contains('view-tablet') ? 'tb-drawer-main' : 'dt-drawer-main';
+  var main = document.getElementById(mainId);
   if (!main) return;
   main.style.position = 'relative';
   var bar = document.createElement('div');
@@ -12724,8 +12739,18 @@ function dtInstallConfirmScanned(serial) {
     var comp = t.components.find(function(c){ return c.name===compName; });
     if (comp) { comp.state='pending'; comp.evt='Replacement recorded'; comp.dot='#d97706'; comp.serial=serial.trim(); comp.installedDate=dateStr; }
   });
-  coCheckShowErrorResetPrompt('desktop');
-  if (dtDrawerTruckNum) dtOpenTruck(dtDrawerTruckNum);
+
+  if (document.body.classList.contains('view-tablet')) {
+    /* Tablet — re-render overview in place, check for error reset */
+    coCheckShowErrorResetPrompt('tablet');
+    var scroll = document.getElementById('tb-drawer-scroll');
+    if (scroll && typeof tbDrawerTruck !== 'undefined' && tbDrawerTruck) {
+      tbBuildOverview(tbDrawerTruck, scroll);
+    }
+  } else {
+    coCheckShowErrorResetPrompt('desktop');
+    if (dtDrawerTruckNum) dtOpenTruck(dtDrawerTruckNum);
+  }
 }
 
 function dtInstallConfirm() {
@@ -12757,12 +12782,15 @@ function coIsTcgReplaceMode() {
 
 /* Get the live component names for the current truck (for the "will reconnect" list) */
 function coGetTruckCompList(isDesktop) {
-  var truckNum = isDesktop
-    ? (typeof dtDrawerTruckNum !== 'undefined' ? dtDrawerTruckNum : null)
-    : (function(){
-        var lab = document.getElementById('drawer-truck-num');
-        return lab ? lab.textContent.replace('Truck:', '').trim() : null;
-      })();
+  var truckNum;
+  if (document.body.classList.contains('view-tablet')) {
+    truckNum = (typeof tbDrawerTruck !== 'undefined' && tbDrawerTruck) ? tbDrawerTruck.num : null;
+  } else if (isDesktop) {
+    truckNum = typeof dtDrawerTruckNum !== 'undefined' ? dtDrawerTruckNum : null;
+  } else {
+    var lab = document.getElementById('drawer-truck-num');
+    truckNum = lab ? lab.textContent.replace('Truck:', '').trim() : null;
+  }
   if (!truckNum) return [];
   var t = CC_TRUCKS.find(function(tr){ return String(tr.num) === String(truckNum); });
   if (!t || !t.components) return [];
@@ -12780,6 +12808,17 @@ function coOpenTcgReplace(isDesktop) {
   bar.id = 'co-install-bar';
   bar.dataset.tcgReplace = '1';
   bar.dataset.compName = 'TCG';
+
+  /* Tablet — route to tb-drawer-main */
+  if (document.body.classList.contains('view-tablet')) {
+    var main = document.getElementById('tb-drawer-main');
+    if (!main) return;
+    main.style.position = 'relative';
+    bar.style.cssText = 'position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--layer-1);border-top:1px solid var(--border);padding:18px 24px 24px;box-shadow:0 -8px 24px rgba(54,50,45,0.1);animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);max-height:calc(100% - 60px);overflow-y:auto;';
+    main.appendChild(bar);
+    coRenderTcgConfirmStage(true); /* pass true so confirm routes back through desktop/tablet path */
+    return;
+  }
 
   if (isDesktop) {
     var main = document.getElementById('dt-drawer-main');
@@ -12937,6 +12976,14 @@ function coTcgConfirmInstall(serial, isDesktop) {
 function coTcgFinish(isDesktop) {
   var bar = document.getElementById('co-install-bar');
   if (bar) bar.remove();
+  /* Tablet — re-render overview in place */
+  if (document.body.classList.contains('view-tablet')) {
+    var scroll = document.getElementById('tb-drawer-scroll');
+    if (scroll && typeof tbDrawerTruck !== 'undefined' && tbDrawerTruck) {
+      tbBuildOverview(tbDrawerTruck, scroll);
+    }
+    return;
+  }
   /* For prototype: TCG card stays "Connected" — no destructive data updates needed */
   if (isDesktop) {
     if (dtDrawerTruckNum) dtOpenTruck(dtDrawerTruckNum);
@@ -12961,21 +13008,50 @@ function coHasEmptySlots() {
 }
 
 function coGetErrorCount() {
-  /* Get current error count from the active truck */
-  var t = trucks.find(function(tr) {
-    return String(tr.num) === String(dtDrawerTruckNum);
-  });
+  /* Resolve active truck number — desktop uses dtDrawerTruckNum, tablet uses tbDrawerTruck */
+  var truckNum = document.body.classList.contains('view-tablet')
+    ? (typeof tbDrawerTruck !== 'undefined' && tbDrawerTruck ? tbDrawerTruck.num : null)
+    : (typeof dtDrawerTruckNum !== 'undefined' ? dtDrawerTruckNum : null);
+  var t = trucks.find(function(tr) { return String(tr.num) === String(truckNum); });
   return t ? ((t.err || 0) + (t.wrn || 0)) : 0;
 }
 
 function coCheckShowErrorResetPrompt(view) {
   if (coHasEmptySlots()) return;
   var errCount = coGetErrorCount();
-  if (view === 'desktop') {
+  if (view === 'tablet') {
+    coShowErrorResetBannerTablet(errCount);
+  } else if (view === 'desktop') {
     coShowErrorResetBannerDesktop(errCount);
   } else {
     coShowErrorResetBannerMobile(errCount);
   }
+}
+
+function coShowErrorResetBannerTablet(errCount) {
+  /* Write to #tb-error-banner — same persistent slot pattern as desktop.
+     Also restore the Replace Components button in the toolbar and
+     hide the replace save bar since all slots are now filled. */
+  var slot = document.getElementById('tb-error-banner');
+  if (!slot) return;
+  slot.style.cssText = 'flex-shrink:0;background:#fffbeb;border-top:1px solid rgba(180,130,0,0.2);padding:12px 20px;display:flex;align-items:center;gap:10px;animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);';
+  slot.innerHTML = '<div style="width:28px;height:28px;border-radius:50%;background:rgba(217,119,6,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+    + '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v5M8 10h.01" stroke="#d97706" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="8" r="6.5" stroke="#d97706" stroke-width="1.2"/></svg>'
+    + '</div>'
+    + coErrorResetBannerHTML(errCount, false);
+
+  /* Hide replace save bar — no more empty slots to fill */
+  var replaceBar = document.getElementById('tb-replace-bar');
+  if (replaceBar) replaceBar.style.display = 'none';
+
+  /* Restore Replace Components button */
+  var btn = document.getElementById('tb-replace-btn');
+  if (btn) {
+    btn.classList.remove('active');
+    btn.innerHTML = CO_REPLACE_BTN_HTML;
+  }
+  coReplaceActive = false;
+  coSelectedCards.clear();
 }
 
 function coErrorResetBannerHTML(errCount, isMobile) {
@@ -13047,18 +13123,16 @@ function coRunErrorResetInline() {
     if (!window.coResetAttemptCount) window.coResetAttemptCount = 0;
     window.coResetAttemptCount++;
     var cleared = window.coResetAttemptCount >= 2;
-    /* Update mobile toolbar and desktop persistent banner */
+
+    var isTablet = document.body.classList.contains('view-tablet');
     var moToolbar = document.getElementById('co-replace-toolbar');
     var dtBanner  = document.getElementById('dt-error-banner');
+    var tbBanner  = document.getElementById('tb-error-banner');
 
     if (cleared) {
-      var isMo = !!moToolbar;
       var icon = '<div style="width:28px;height:28px;border-radius:50%;background:rgba(22,163,74,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
         + '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-7" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
         + '</div>';
-      /* No "Confirm operational" button — per Ariel's feedback, the system already
-         knows the errors are cleared, so a second confirm is ceremonial. Banner
-         shows the result, then the workflow auto-finalizes after a brief read. */
       var successMo = icon
         + '<div style="flex:1;min-width:0;">'
         + '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;margin-bottom:2px;">All errors cleared</div>'
@@ -13071,18 +13145,20 @@ function coRunErrorResetInline() {
         + '</div>';
       if (moToolbar) { moToolbar.style.cssText = 'background:#f0fdf4;border-bottom:1px solid rgba(22,163,74,0.2);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;'; moToolbar.innerHTML = successMo; }
       if (dtBanner)  { dtBanner.style.cssText  = 'flex-shrink:0;background:#f0fdf4;border-top:1px solid rgba(22,163,74,0.2);padding:12px 24px;display:flex;align-items:center;gap:10px;'; dtBanner.innerHTML = successDt; }
+      if (tbBanner)  { tbBanner.style.cssText  = 'flex-shrink:0;background:#f0fdf4;border-top:1px solid rgba(22,163,74,0.2);padding:12px 20px;display:flex;align-items:center;gap:10px;'; tbBanner.innerHTML = successDt; }
       coSetNavDot(false);
-      /* Auto-finalize after the FST has had ~1.4s to register the success state.
-         coConfirmOperational handles all the cleanup: marks components confirmed,
-         clears the banner, writes lifespan history, fires the success toast,
-         and re-renders the truck drawer back on Components Overview. */
       setTimeout(function() {
-        /* Make sure the FST lands on Components Overview to see the green truck —
-           they may have been on Truck Logs during the failed-reset detour. */
-        var coOpt = document.querySelector('#drawer-nav-dropdown .wts-option:nth-child(1)');
-        if (coOpt) { selectDrawerNav('Components Overview', coOpt); }
-        var overviewTab = document.querySelector('.dt-drawer-tab[onclick*="overview"]');
-        if (overviewTab) overviewTab.click();
+        /* Desktop: navigate back to overview tab */
+        if (!isTablet) {
+          var coOpt = document.querySelector('#drawer-nav-dropdown .wts-option:nth-child(1)');
+          if (coOpt) { selectDrawerNav('Components Overview', coOpt); }
+          var overviewTab = document.querySelector('.dt-drawer-tab[onclick*="overview"]');
+          if (overviewTab) overviewTab.click();
+        } else {
+          /* Tablet: switch to overview tab in the truck drawer */
+          var tbOverviewTab = document.querySelector('.tb-drawer-tab[onclick*="overview"]');
+          if (tbOverviewTab) tbOverviewTab.click();
+        }
         coConfirmOperational();
       }, 1400);
     } else {
@@ -13101,7 +13177,7 @@ function coRunErrorResetInline() {
         + '<button onclick="coRunErrorResetInline()" id="co-er-run-btn" style="flex:1;background:#d70100;color:white;border:none;border-radius:20px;padding:8px 10px;font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;cursor:pointer;">Retry Reset</button>'
         + '<button onclick="coViewTruckLogs()" style="flex:1;background:none;border:1px solid var(--border-mid);border-radius:20px;padding:8px 10px;font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;color:var(--strong);cursor:pointer;">View Truck Logs</button>'
         + '</div></div>';
-      /* Desktop: single row */
+      /* Desktop/Tablet: single row */
       var failDt = failIcon
         + '<div style="flex:1;min-width:0;">'
         + '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">' + failText + '</div>'
@@ -13113,6 +13189,7 @@ function coRunErrorResetInline() {
         + '</div>';
       if (moToolbar) { moToolbar.style.cssText = 'background:#fff5f5;border-bottom:1px solid rgba(215,1,0,0.15);padding:12px 16px;display:flex;align-items:flex-start;gap:10px;flex-shrink:0;'; moToolbar.innerHTML = failMo; }
       if (dtBanner)  { dtBanner.style.cssText  = 'flex-shrink:0;background:#fff5f5;border-top:1px solid rgba(215,1,0,0.15);padding:12px 24px;display:flex;align-items:center;gap:10px;'; dtBanner.innerHTML = failDt; }
+      if (tbBanner)  { tbBanner.style.cssText  = 'flex-shrink:0;background:#fff5f5;border-top:1px solid rgba(215,1,0,0.15);padding:12px 20px;display:flex;align-items:center;gap:10px;'; tbBanner.innerHTML = failDt; }
       coSetNavDot(true);
     }
   }, 1800);
@@ -13146,6 +13223,13 @@ function coSetMaintenanceDirect() {
     dtBanner.innerHTML = maintInner;
   }
 
+  /* Update tablet banner */
+  var tbBanner = document.getElementById('tb-error-banner');
+  if (tbBanner) {
+    tbBanner.style.cssText = 'flex-shrink:0;background:#fffbeb;border-top:1px solid rgba(180,130,0,0.2);padding:12px 20px;display:flex;align-items:center;gap:10px;';
+    tbBanner.innerHTML = maintInner;
+  }
+
   /* Keep nav dot — case still open */
   var moToolbar = document.getElementById('co-replace-toolbar');
   if (moToolbar) {
@@ -13168,7 +13252,12 @@ function coSetMaintenanceDirect() {
    If no UNIT_HISTORY entry exists for the unit, creates one.        */
 
 function coWriteLifespanHistory() {
-  var truckNum = dtDrawerTruckNum || (typeof openTruckNum !== 'undefined' ? openTruckNum : null);
+  var truckNum = null;
+  if (document.body.classList.contains('view-tablet')) {
+    truckNum = (typeof tbDrawerTruck !== 'undefined' && tbDrawerTruck) ? tbDrawerTruck.num : null;
+  } else {
+    truckNum = dtDrawerTruckNum || (typeof openTruckNum !== 'undefined' ? openTruckNum : null);
+  }
   if (!truckNum) return;
 
   var unit = UNITS_DATA.find(function(u) {
@@ -13236,8 +13325,18 @@ function coWriteLifespanHistory() {
 }
 
 function coConfirmOperational() {
-  /* Reset pill to live/green */
-  dtApplyMode('live');
+  var isTablet = document.body.classList.contains('view-tablet');
+
+  /* Reset ignition pill to live/green */
+  if (!isTablet) dtApplyMode('live');
+  else {
+    /* On tablet update the drawer's ign badge */
+    var ignBadge = document.getElementById('tb-drawer-ign-badge');
+    var ignText  = document.getElementById('tb-drawer-ign-text');
+    if (ignBadge) ignBadge.className = 'dt-drawer-ign-badge';
+    if (ignText)  ignText.textContent = 'Ignition on';
+  }
+
   /* Case closed — restore toolbar to Replace Components */
   var moToolbar = document.getElementById('co-replace-toolbar');
   if (moToolbar) {
@@ -13251,6 +13350,15 @@ function coConfirmOperational() {
     dtToolbar.innerHTML = '<button class="co-replace-btn" id="dt-replace-btn" onclick="dtReplaceToggle()" style="margin-left:auto;">'
       + CO_REPLACE_BTN_HTML + '</button>';
   }
+  /* Tablet: restore replace btn and hide replace bar */
+  var tbBtn = document.getElementById('tb-replace-btn');
+  if (tbBtn) { tbBtn.classList.remove('active'); tbBtn.innerHTML = CO_REPLACE_BTN_HTML; }
+  var tbReplaceBar = document.getElementById('tb-replace-bar');
+  if (tbReplaceBar) tbReplaceBar.style.display = 'none';
+  var tbScroll = document.getElementById('tb-drawer-scroll');
+  if (tbScroll) tbScroll.classList.remove('dt-replace-mode');
+  coReplaceActive = false;
+  coSelectedCards.clear();
 
   /* Mark all session-tracked components as confirmed */
   if (!window.dtConfirmedComponents) window.dtConfirmedComponents = {};
@@ -13262,7 +13370,7 @@ function coConfirmOperational() {
     Object.keys(window.dtRemovedComponents).forEach(function(k) { window.dtConfirmedComponents[k] = true; });
     window.dtRemovedComponents = {};
   }
-  /* Also capture hardcoded pending/empty cards — store confirmed data for rendering */
+  /* Also capture hardcoded pending/empty cards */
   var confirmedDefaults = {
     'Water Pump':  { label:'Water Delivery System', value:'2.1', unit:'gal/min', startup:1, err:'0' },
     'Admix Pump':  { label:'Admixture Pump',         value:'0.3', unit:'gal/min', startup:1, err:'0' },
@@ -13274,9 +13382,7 @@ function coConfirmOperational() {
     }
   });
 
-  /* ── CHUNK 7: Write replacement events to UNIT_HISTORY ──────────────
-     Find the unit linked to the active truck and prepend a new history
-     entry for each replaced component so it shows in Life Span tab.   */
+  /* Write replacement events to UNIT_HISTORY */
   coWriteLifespanHistory();
 
   /* Re-render Life Span tab if it's currently open */
@@ -13284,21 +13390,24 @@ function coConfirmOperational() {
     if (typeof dtUdRenderLifespan === 'function') dtUdRenderLifespan();
   }
   if (typeof dtActiveTab !== 'undefined' && dtActiveTab === 'overview') {
-    /* Life Span tab inside truck drawer — rebuild if open */
     var lsScroll = document.getElementById('dt-ls-scroll');
     if (lsScroll && dtDrawerTruckNum) {
       lsScroll.innerHTML = dtBuildLifespanForTruck(dtDrawerTruckNum);
     }
   }
 
-  /* Clear persistent desktop banner */
+  /* Clear all banners */
   var dtBannerClr = document.getElementById('dt-error-banner');
   if (dtBannerClr) { dtBannerClr.style.display = 'none'; dtBannerClr.innerHTML = ''; }
+  var tbBannerClr = document.getElementById('tb-error-banner');
+  if (tbBannerClr) { tbBannerClr.style.display = 'none'; tbBannerClr.innerHTML = ''; }
+
   coSetNavDot(false);
   window.coResetAttemptCount = 0;
   window._dtSessionInstalls = {};
   window.moRemovedCards = {};
   window.moPendingCards = {};
+
   /* Reset CC_TRUCKS components to clean */
   CC_TRUCKS.forEach(function(t) {
     if (!t.components) return;
@@ -13310,18 +13419,29 @@ function coConfirmOperational() {
     });
   });
 
-  /* Reset truck error count */
-  if (dtDrawerTruckNum) {
-    var t = trucks.find(function(tr) { return String(tr.num) === String(dtDrawerTruckNum); });
+  /* Reset truck error count — desktop uses dtDrawerTruckNum, tablet uses tbDrawerTruck */
+  var activeTruckNum = isTablet
+    ? (typeof tbDrawerTruck !== 'undefined' && tbDrawerTruck ? tbDrawerTruck.num : null)
+    : dtDrawerTruckNum;
+  if (activeTruckNum) {
+    var t = trucks.find(function(tr) { return String(tr.num) === String(activeTruckNum); });
     if (t) { t.err = 0; t.wrn = 0; }
   }
 
   renderConditions();
   renderTrucks();
-  if (dtDrawerTruckNum) dtOpenTruck(dtDrawerTruckNum);
 
-  /* Toast fires AFTER the drawer rebuild has settled. Otherwise the rebuild
-     can blow away the toolbar mid-toast and the FST sees the button vanish. */
+  if (isTablet) {
+    /* Re-render tablet overview to show all cards clean */
+    var scroll = document.getElementById('tb-drawer-scroll');
+    if (scroll && typeof tbDrawerTruck !== 'undefined' && tbDrawerTruck) {
+      tbBuildOverview(tbDrawerTruck, scroll);
+    }
+  } else {
+    if (dtDrawerTruckNum) dtOpenTruck(dtDrawerTruckNum);
+  }
+
+  /* Toast fires after the re-render has settled */
   setTimeout(function() {
     dtShowToast({
       title: 'Truck marked operational',
@@ -17051,6 +17171,12 @@ function tbCloseDrawer() {
 }
 
 function tbDrawerTab(tab, el) {
+  /* Cancel replace mode if active when switching tabs */
+  if (coReplaceActive) tbReplaceCancel();
+  /* Close any open install bar */
+  const installBar = document.getElementById('co-install-bar');
+  if (installBar) installBar.remove();
+
   if (el) {
     document.querySelectorAll('.tb-drawer-tab').forEach(x => x.classList.remove('active'));
     el.classList.add('active');
@@ -17214,7 +17340,7 @@ function tbBuildOverview(t, scroll) {
     }
 
     if (card.state === 'empty') {
-      return `<div class="dt-co-card empty">
+      return `<div class="dt-co-card empty" onclick="if(!coReplaceActive) tbInstallOpen('${card.name}','${card.removedDate||''}')">
         <div class="dt-co-card-head">
           <div class="dt-empty-slot-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="rgba(54,50,45,0.3)" stroke-width="1.4" stroke-dasharray="3 2"/></svg></div>
           <span class="dt-co-card-name">${card.name}</span>
@@ -17246,10 +17372,15 @@ function tbBuildOverview(t, scroll) {
     if (card.startup!=null) metaHtml += `<div class="dt-co-card-meta-row"><span class="dt-co-card-meta-label">Startup Count:</span><span>${card.startup}</span></div>`;
     if (card.err!=null)     metaHtml += `<div class="dt-co-card-meta-row"><span class="dt-co-card-meta-label">Error Count:</span><span>${card.err}</span></div>`;
 
-    return `<div class="dt-co-card ${state}${card.name==='TCG' ? ' dt-co-card-tcg' : ''}">
+    const safeName = card.name.replace(/'/g, "\\'");
+    const tcgBtn = card.name === 'TCG'
+      ? `<button class="dt-co-tcg-replace-btn" onclick="event.stopPropagation();coOpenTcgReplace(false);" title="Replace TCG" aria-label="Replace TCG"><svg width="14" height="14" viewBox="0 0 21 21" fill="none"><path d="M12.4513 5.05364C12.2681 5.24057 12.1655 5.49189 12.1655 5.75364C12.1655 6.01539 12.2681 6.26671 12.4513 6.45364L14.0513 8.05364C14.2382 8.23687 14.4896 8.3395 14.7513 8.3395C15.0131 8.3395 15.2644 8.23687 15.4513 8.05364L19.2213 4.28364C19.7242 5.39483 19.8764 6.63288 19.6578 7.83279C19.4392 9.0327 18.86 10.1375 17.9976 10.9999C17.1352 11.8624 16.0304 12.4415 14.8305 12.6601C13.6306 12.8787 12.3925 12.7265 11.2813 12.2236L4.37132 19.1336C3.9735 19.5315 3.43393 19.755 2.87132 19.755C2.30871 19.755 1.76914 19.5315 1.37132 19.1336C0.973496 18.7358 0.75 18.1962 0.75 17.6336C0.75 17.071 0.973496 16.5315 1.37132 16.1336L8.28132 9.22364C7.77848 8.11245 7.62624 6.87441 7.84486 5.6745C8.06349 4.47459 8.64261 3.3698 9.50504 2.50736C10.3675 1.64493 11.4723 1.06581 12.6722 0.847184C13.8721 0.628558 15.1101 0.780807 16.2213 1.28364L12.4613 5.04364L12.4513 5.05364Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`
+      : '';
+    return `<div class="dt-co-card ${state}${card.name==='TCG' ? ' dt-co-card-tcg' : ''}" onclick="tbReplaceCardTap(this,'${safeName}')" style="cursor:pointer;">
       <div class="dt-co-card-head">
         <span class="dt-co-card-dot" style="background:${dotColor};"></span>
         <span class="dt-co-card-name">${card.name}</span>
+        ${tcgBtn}
       </div>
       <div class="dt-co-card-value-row">
         <span class="dt-co-card-value">${card.value||'—'}</span>
@@ -17269,8 +17400,8 @@ function tbBuildOverview(t, scroll) {
     { name:'DRS',           label:'Drum Rotation Speed',      value:'138',  unit:'rpm',    startup:2,  err:'--' },
     { name:'CWR (35.0) temperature', label:'Charge Water Return Temp', value:'91', unit:'°F', startup:2, err:'--', extra:{label:'Tilt Degree', val:'1'} },
     { name:'ICD (1468)',    label:'Input Current Detector',   value:'1468', unit:'mA',     startup:2,  err:'--', greyDot:true },
-    { name:'Water Pump',    state:'empty',   label:'Water Delivery System', value:'--', unit:'', removedDate:'07/23/25 · 2:14 PM' },
-    { name:'Admix Pump',    state:'pending', label:'Admixture Pump', value:'0.3', unit:'gal/min' },
+    { name:'Water Pump',    label:'Water Delivery System', value:'2.1', unit:'gal/min', startup:1, err:'0' },
+    { name:'Admix Pump',    label:'Admixture Pump',        value:'0.3', unit:'gal/min', startup:1, err:'0' },
     { name:'ED (8195)',     label:'Electrical Signal value',  value:'8195', unit:'counts', startup:2,  err:'--' },
   ];
   const fdmCards = [
@@ -17283,7 +17414,7 @@ function tbBuildOverview(t, scroll) {
   scroll.innerHTML = `
     <!-- Replace Components toolbar -->
     <div id="dt-overview-toolbar" style="display:flex;align-items:center;justify-content:flex-end;padding:0 0 16px;">
-      <button class="co-replace-btn" style="margin-left:auto;">
+      <button class="co-replace-btn" id="tb-replace-btn" onclick="tbReplaceToggle()" style="margin-left:auto;">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         Replace Components
       </button>
@@ -17602,6 +17733,122 @@ function tbNavClose() {
   if (!panel) return;
   panel.style.transform = 'translateX(-100%)';
   scrim.style.display   = 'none';
+}
+
+/* ── TABLET REPLACE COMPONENTS ────────────────────────────────────
+   Mirrors the desktop dtReplace* flow but targets tb-drawer-* IDs.
+   Uses the same coReplaceEnter/Exit/UpdateBar machinery.
+────────────────────────────────────────────────────────────────── */
+function tbReplaceToggle() {
+  if (coReplaceActive) { tbReplaceCancel(); return; }
+  coReplaceActive = true;
+  coSelectedCards.clear();
+  const btn = document.getElementById('tb-replace-btn');
+  if (btn) { btn.classList.add('active'); btn.innerHTML = '✕&nbsp; Cancel'; }
+  /* Add dt-replace-mode to the scroll container — this is what the CSS keys off
+     to style cards as selectable (checkboxes, hover states, selected highlight) */
+  const scroll = document.getElementById('tb-drawer-scroll');
+  if (scroll) scroll.classList.add('dt-replace-mode');
+  /* Show save bar */
+  const bar = document.getElementById('tb-replace-bar');
+  if (bar) bar.style.display = '';
+  tbReplaceUpdateBar();
+}
+
+function tbReplaceCancel() {
+  coReplaceActive = false;
+  coSelectedCards.clear();
+  const btn = document.getElementById('tb-replace-btn');
+  if (btn) { btn.classList.remove('active'); btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Replace Components'; }
+  /* Remove replace mode class from scroll */
+  const scroll = document.getElementById('tb-drawer-scroll');
+  if (scroll) scroll.classList.remove('dt-replace-mode');
+  /* Hide save bar */
+  const bar = document.getElementById('tb-replace-bar');
+  if (bar) bar.style.display = 'none';
+  /* Clear selected state from cards */
+  document.querySelectorAll('#tb-drawer-scroll .dt-co-card.co-selected').forEach(card => {
+    card.classList.remove('co-selected');
+  });
+}
+
+function tbReplaceCardTap(el, compName) {
+  if (!coReplaceActive) return;
+  if (compName === 'TCG') return;
+  el.classList.toggle('co-selected');
+  if (el.classList.contains('co-selected')) coSelectedCards.add(compName);
+  else coSelectedCards.delete(compName);
+  tbReplaceUpdateBar();
+}
+
+function tbReplaceUpdateBar() {
+  const n = coSelectedCards.size;
+  const confirmBtn = document.getElementById('tb-replace-confirm');
+  const hint = document.getElementById('tb-replace-hint');
+  if (confirmBtn) { confirmBtn.disabled = n === 0; confirmBtn.style.opacity = n > 0 ? '1' : '0.4'; }
+  if (hint) hint.textContent = n > 0 ? n + ' component' + (n > 1 ? 's' : '') + ' selected' : 'Select components to remove';
+}
+
+function tbReplaceConfirm() {
+  if (coSelectedCards.size === 0) return;
+  const names   = Array.from(coSelectedCards);
+  const bullets = typeof makeBulletList === 'function' ? makeBulletList(names) : names.map(n => '<div>• ' + n + '</div>').join('');
+  const existing = document.getElementById('tb-remove-confirm-overlay');
+  if (existing) existing.remove();
+  const main = document.getElementById('tb-drawer-main');
+  if (!main) return;
+  const overlay = document.createElement('div');
+  overlay.id = 'tb-remove-confirm-overlay';
+  overlay.style.cssText = 'position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--layer-1);border-top:1px solid var(--border);padding:16px 24px 24px;box-shadow:0 -8px 24px rgba(54,50,45,0.1);';
+  overlay.innerHTML = '<div style="font-size:14px;font-weight:500;color:var(--strong);letter-spacing:-0.28px;margin-bottom:4px;">Remove components?</div>'
+    + '<div style="font-size:13px;color:var(--soft);letter-spacing:-0.26px;margin-bottom:8px;">Are these physically off the truck?</div>'
+    + '<div style="border-top:1px solid var(--border);padding-top:6px;margin-bottom:12px;">' + bullets + '</div>'
+    + '<div style="display:flex;gap:8px;">'
+    + '<button onclick="document.getElementById(\'tb-remove-confirm-overlay\').remove()" style="flex:1;background:none;border:1px solid var(--border);border-radius:32px;padding:9px 16px;font-size:13px;font-weight:500;font-family:var(--font);color:var(--strong);cursor:pointer;">Cancel</button>'
+    + '<button onclick="tbReplaceDoRemove()" style="flex:2;background:#d97706;color:white;border:none;border-radius:32px;padding:9px 16px;font-size:13px;font-weight:500;font-family:var(--font);cursor:pointer;">Yes, remove from system</button>'
+    + '</div>';
+  main.appendChild(overlay);
+}
+
+function tbReplaceDoRemove() {
+  const el = document.getElementById('tb-remove-confirm-overlay');
+  if (el) el.remove();
+
+  const now = new Date();
+  const dateStr = (now.getMonth()+1) + '/' + now.getDate() + '/' + String(now.getFullYear()).slice(-2)
+    + ' · ' + now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+
+  /* Capture selected BEFORE tbReplaceCancel clears coSelectedCards */
+  const removed = Array.from(coSelectedCards);
+
+  /* Write to dtRemovedComponents so tbBuildOverview applyOverrides renders empty slots */
+  if (!window.dtRemovedComponents) window.dtRemovedComponents = {};
+  removed.forEach(name => {
+    window.dtRemovedComponents[name] = dateStr;
+    /* Also update CC_TRUCKS for consistency with desktop flow */
+    CC_TRUCKS.forEach(function(t) {
+      if (!t.components) return;
+      const comp = t.components.find(function(c) { return c.name === name; });
+      if (comp) { comp.state = 'empty'; comp.evt = 'Not installed'; comp.dot = 'rgba(54,50,45,0.2)'; comp.removedDate = dateStr; }
+    });
+  });
+
+  /* Exit replace mode */
+  tbReplaceCancel();
+
+  /* Re-render overview to show empty slots */
+  const scroll = document.getElementById('tb-drawer-scroll');
+  if (tbDrawerTruck && scroll) tbBuildOverview(tbDrawerTruck, scroll);
+
+  /* Auto-open install panel for the first removed component */
+  if (removed.length > 0) {
+    setTimeout(() => dtInstallOpen(removed[0], dateStr), 300);
+  }
+}
+
+function tbInstallOpen(compName, removedDate) {
+  /* dtInstallOpen now detects view-tablet and targets tb-drawer-main directly */
+  dtInstallOpen(compName, removedDate);
 }
 
 /* ── TABLET UNITS PAGE ──────────────────────────────────────────────
@@ -20261,8 +20508,8 @@ function dtOpenTruck(truckNum) {
     { name:'DRS',           label:'Drum Rotation Speed',      value:'138',  unit:'rpm',    startup:2,  err:'--', extra:null },
     { name:'CWR (35.0) temperature', label:'Charge Water Return Temp', value:'91', unit:'°F', startup:2, err:'--', extra:{label:'Tilt Degree', val:'1'} },
     { name:'ICD (1468)',    label:'Input Current Detector',   value:'1468', unit:'mA',     startup:2,  err:'--', extra:null, greyDot:true },
-    { name:'Water Pump',    state:'empty',   label:'Water Delivery System', value:'--', unit:'', startup:null, err:null, removedDate:'07/23/25 · 2:14 PM' },
-    { name:'Admix Pump',    state:'pending', label:'Admixture Pump', value:'0.3', unit:'gal/min', startup:null, err:null },
+    { name:'Water Pump',    label:'Water Delivery System', value:'2.1', unit:'gal/min', startup:1, err:'0' },
+    { name:'Admix Pump',    label:'Admixture Pump',        value:'0.3', unit:'gal/min', startup:1, err:'0' },
     { name:'ED (8195)',     label:'Electrical Signal value',  value:'8195', unit:'counts', startup:2,  err:'--', extra:null },
   ];
   const fdmCards = [

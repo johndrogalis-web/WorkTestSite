@@ -634,6 +634,16 @@
     padding: 80px 16px 80px;
     font-family: var(--font);
   }
+  body.view-desktop {
+    padding: 52px 0 0;
+    background: var(--base);
+    display: block;
+    height: 100vh;
+    overflow: hidden;
+  }
+  body.view-desktop #s-desktop {
+    height: calc(100vh - 52px - 16px);
+  }
   /* On narrow screens the top bar wraps to two rows, so body needs more top padding */
   @media (max-width: 640px) {
     body { padding: 110px 0 0 !important; }
@@ -1092,6 +1102,10 @@
     background:var(--base);
     font-family:var(--font);
     overflow:hidden;
+    display:flex;
+  }
+  body.view-desktop #s-desktop {
+    height: calc(100vh - 52px);
   }
 
   /* ── Left Sidebar ── */
@@ -1185,11 +1199,21 @@
 
   /* ── Page Content ── */
   .dt-content {
-    flex:1; min-width:0; height:calc(100vh - 82px);
+    flex:1; min-width:0; height:calc(100vh - 52px);
     display:flex; flex-direction:column;
     background:var(--layer-1);
     overflow:hidden;
     position:relative;
+  }
+  body.view-desktop .dt-content {
+    margin: 8px 8px 8px 0;
+    height: calc(100vh - 52px - 16px);
+    border-radius: 12px;
+    box-shadow: 0 2px 16px rgba(54,50,45,0.10);
+    overflow: hidden;
+  }
+  body.view-desktop .dt-sidebar {
+    border-right: none;
   }
   #dt-page-trucks {
     display:flex; flex-direction:column;
@@ -1341,6 +1365,18 @@
     overflow-x:auto; scrollbar-width:none;
   }
   .dt-drawer-tabs::-webkit-scrollbar { display:none; }
+  /* Ticket drawer — tab underline starts at 20px to align with the tabs */
+  #dt-ticket-drawer .dt-drawer-tabs {
+    border-bottom: none;
+    position: relative;
+  }
+  #dt-ticket-drawer .dt-drawer-tabs::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 20px; right: 0;
+    height: 1px;
+    background: var(--border);
+  }
   .dt-drawer-tab {
     flex-shrink:0; background:none; border:none;
     font-size:14px; font-family:var(--font); letter-spacing:-0.28px;
@@ -3778,18 +3814,18 @@
 
   /* ─── DESKTOP VIEW ──────────────────────────────────────── */
   body.view-desktop {
-    padding: 80px 0 0;
+    padding: 52px 0 0;
     align-items: flex-start;
     justify-content: flex-start;
+    background: var(--base);
   }
   body.view-desktop .phone-wrap::before,
   body.view-desktop .phone-wrap::after { display: none; }
   body.view-desktop .phone-wrap { width: 100%; }
   body.view-desktop .phone {
-    width: 100%; height: calc(100vh - 80px);
-    border-radius: 0;
-    outline: none;
-    box-shadow: none;
+    width: 100%; height: calc(100vh - 52px);
+    border-radius: 0; outline: none; box-shadow: none;
+    background: var(--base);
   }
   body.view-desktop .phone-notch { display: none; }
 
@@ -5710,6 +5746,361 @@ const SENSOR_DATA = [
   .au-input:focus { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(48,105,227,0.15); }
 
 
+
+  /* ═══ TICKETS PAGE ══════════════════════════════════════════════════════════ */
+
+  #dt-page-tickets {
+    display:none; flex-direction:column; flex:1; min-width:0; overflow:hidden;
+  }
+  #dt-page-tickets.active { display:flex; }
+
+  .tk-topbar {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:24px 28px 0; flex-shrink:0; gap:16px;
+  }
+  .tk-title-row { display:flex; flex-direction:column; gap:2px; }
+  .tk-title { font-size:24px; font-weight:700; color:var(--strong); letter-spacing:-0.6px; font-family:var(--font); }
+  .tk-subtitle { font-size:12px; color:var(--soft); letter-spacing:-0.2px; }
+
+  .tk-filterbar {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 28px; gap:12px; flex-shrink:0;
+  }
+  .tk-filters-left { display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
+
+  .tk-seg {
+    display:flex; border:1px solid var(--border); border-radius:32px;
+    overflow:hidden; flex-shrink:0;
+  }
+  .tk-seg-item {
+    display:flex; align-items:center; justify-content:center;
+    padding:9px 20px; font-size:14px; font-family:var(--font);
+    letter-spacing:-0.28px; cursor:pointer; white-space:nowrap;
+    border-right:1px solid var(--border); color:var(--soft);
+    transition:background 0.15s, color 0.15s;
+  }
+  .tk-seg-item:last-child { border-right:none; }
+  .tk-seg-item.active { background:var(--blue); color:#fff; font-weight:500; }
+  body.dark .tk-seg-item.active { background:#e3f200; color:#000; }
+
+  .tk-table-wrap { flex:1; overflow:auto; padding:0 28px 28px; }
+  .tk-table {
+    width:100%; border-collapse:collapse;
+    border:1px solid var(--border); border-radius:8px;
+    overflow:hidden; background:var(--layer-1); min-width:960px;
+  }
+  .tk-table thead th {
+    background:var(--layer-1); border-bottom:1px solid var(--border);
+    padding:9px 10px; font-size:13px; font-weight:500;
+    color:var(--strong); letter-spacing:-0.2px; text-align:left;
+    white-space:nowrap; position:sticky; top:0; z-index:1;
+  }
+  .tk-table tbody tr { border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.1s; }
+  .tk-table tbody tr:last-child { border-bottom:none; }
+  .tk-table tbody tr:nth-child(even) { background:var(--layer-2); }
+  .tk-table tbody tr:hover { background:rgba(48,105,227,0.05); }
+  body.dark .tk-table tbody tr:hover { background:rgba(227,242,0,0.05); }
+  .tk-table tbody td { padding:9px 10px; font-size:14px; color:var(--defined); letter-spacing:-0.28px; white-space:nowrap; }
+  .tk-table tbody td.truck-link { color:var(--blue-link); text-decoration:underline; cursor:pointer; font-size:14px; }
+  body.dark .tk-table tbody td.truck-link { color:#e3f200; }
+
+  /* Phase pill — solid bg, white text, Trinity DS */
+  .tk-phase-pill {
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:4px 10px; border-radius:32px; font-size:12px;
+    font-weight:400; color:#ffffff; letter-spacing:-0.24px;
+    white-space:nowrap; font-family:var(--font); line-height:1.3;
+  }
+
+  /* Ticket drawer — same z-index and position pattern as .dt-drawer */
+  #dt-ticket-scrim {
+    position:absolute; inset:0;
+    background:rgba(54,50,45,0.5);
+    z-index:20; opacity:0; pointer-events:none;
+    transition:opacity 0.35s ease;
+  }
+  #dt-ticket-scrim.open { opacity:1; pointer-events:all; }
+
+  #dt-ticket-drawer {
+    position:absolute; top:0; right:0; bottom:0;
+    width:clamp(860px, calc(100% - 280px), 1400px);
+    background:var(--layer-1);
+    border-left:1px solid var(--border);
+    border-radius:16px 0 0 16px;
+    box-shadow:-4px 0 32px rgba(54,50,45,0.1);
+    display:flex; flex-direction:row;
+    transform:translateX(100%);
+    transition:transform 0.38s cubic-bezier(0.22,1,0.36,1);
+    z-index:30; overflow:hidden; pointer-events:none;
+  }
+  #dt-ticket-drawer.open { transform:translateX(0); pointer-events:all; }
+  body.dark #dt-ticket-drawer { background:#1a1814; }
+
+  /* Header */
+  .tk-drawer-hdr {
+    display:flex; align-items:center; gap:12px;
+    padding:20px 24px 0; flex-shrink:0;
+  }
+  .tk-drawer-hdr-main { flex:1; min-width:0; display:flex; align-items:center; gap:10px; }
+  .tk-drawer-ticket-id { font-size:24px; font-weight:700; color:var(--strong); letter-spacing:-0.6px; white-space:nowrap; }
+  .tk-drawer-nav-btn {
+    width:32px; height:32px; border-radius:50%;
+    border:1px solid var(--border); background:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--defined); transition:background 0.15s; flex-shrink:0;
+  }
+  .tk-drawer-nav-btn:hover { background:var(--layer-2); }
+
+  /* Tabs */
+  .tk-drawer-tabs {
+    display:flex; border-bottom:1px solid var(--border);
+    padding:0 24px; flex-shrink:0; gap:0;
+    overflow-x:auto; margin-top:12px;
+  }
+  .tk-drawer-tabs::-webkit-scrollbar { display:none; }
+  .tk-drawer-tab {
+    padding:11px 8px; font-size:14px; color:var(--soft);
+    letter-spacing:-0.28px; cursor:pointer;
+    border-bottom:2px solid transparent;
+    transition:color 0.15s, border-color 0.15s;
+    font-family:var(--font); white-space:nowrap; flex-shrink:0;
+  }
+  .tk-drawer-tab.active { color:var(--strong); border-bottom-color:var(--strong); font-weight:500; }
+  body.dark .tk-drawer-tab.active { border-bottom-color:#e3f200; color:#e3f200; }
+
+  /* Body — left scroll area + right 400px panel (same row as header) */
+  .tk-drawer-body { flex:1; overflow:hidden; display:flex; }
+  .tk-drawer-left { flex:1; min-width:0; overflow-y:auto; padding:16px 20px; border-right:1px solid var(--border); }
+  .tk-drawer-right { width:400px; flex-shrink:0; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:20px; }
+
+  /* Nav chrome strip (‹ › ✕) — right side of drawer header row */
+  .tk-drawer-chrome {
+    display:flex; align-items:center; gap:6px;
+    padding:20px 20px 0; flex-shrink:0; align-self:flex-start;
+  }
+
+  /* Summary chips — icon + bold label + value, no box */
+  .tk-summary-chips { display:flex; flex-direction:column; gap:8px; }
+  .tk-summary-chips-row { display:flex; gap:8px; }
+  .tk-summary-chip { flex:1; display:flex; flex-direction:column; gap:16px; justify-content:center; padding:8px; min-width:0; height:76px; }
+  .tk-chip-icon { display:flex; align-items:center; color:var(--defined); flex-shrink:0; }
+  .tk-chip-label { font-size:14px; font-weight:600; color:var(--strong); letter-spacing:-0.28px; line-height:1.3; }
+  .tk-chip-value { font-size:14px; font-weight:400; color:var(--strong); letter-spacing:-0.28px; line-height:1.3; }
+  .tk-chip-value.linked { color:var(--strong); text-decoration:underline; cursor:pointer; }
+
+  /* KV table — two plain flex cols, no border box */
+  .tk-kv-table { display:flex; width:100%; }
+  .tk-kv-col { flex:1; display:flex; flex-direction:column; min-width:0; }
+  .tk-kv-key { height:32px; display:flex; align-items:center; padding:0 8px; font-size:14px; font-weight:500; color:var(--defined); letter-spacing:-0.28px; }
+  .tk-kv-val { height:32px; display:flex; align-items:center; padding:0 8px; font-size:14px; color:var(--strong); letter-spacing:-0.28px; }
+
+  /* Alerts card */
+  .tk-alerts-card { border:1px solid var(--border); border-radius:16px; overflow:hidden; background:var(--layer-1); box-shadow:0 1px 0 rgba(0,0,0,0.08); }
+  body.dark .tk-alerts-card { background:#1e1c1a; border-color:rgba(255,255,255,0.08); }
+  .tk-alerts-title { font-size:16px; font-weight:600; color:var(--strong); letter-spacing:-0.3px; padding:14px 16px 10px; }
+  .tk-alert-item { padding:0 16px 14px; }
+  .tk-alert-item + .tk-alert-item { border-top:1px solid var(--border); padding-top:14px; }
+  body.dark .tk-alert-item + .tk-alert-item { border-color:rgba(255,255,255,0.08); }
+  .tk-alert-item-hdr { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .tk-alert-dot-err { width:20px; height:20px; border-radius:4px; flex-shrink:0; background:#d70100; display:flex; align-items:center; justify-content:center; }
+  .tk-alert-dot-wrn { width:20px; height:20px; border-radius:4px; flex-shrink:0; background:rgba(250,30,30,0.2); display:flex; align-items:center; justify-content:center; }
+  .tk-alert-label { font-size:14px; font-weight:600; color:var(--strong); letter-spacing:-0.28px; }
+  .tk-alert-desc { font-size:13px; color:var(--soft); letter-spacing:-0.2px; margin-bottom:10px; line-height:1.4; }
+  .tk-msg-btn { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); border-radius:32px; padding:6px 14px; font-size:13px; font-weight:500; color:var(--strong); background:none; cursor:pointer; font-family:var(--font); transition:background 0.15s; }
+  .tk-msg-btn:hover { background:var(--layer-2); }
+
+  /* Status table */
+  .tk-status-phase-hdr { display:flex; align-items:center; gap:8px; padding:10px 0 8px; position:sticky; top:0; background:var(--layer-1); z-index:1; }
+  body.dark .tk-status-phase-hdr { background:#1a1814; }
+  .tk-status-duration { font-size:13px; color:var(--soft); letter-spacing:-0.2px; }
+  .tk-status-table { width:100%; border-collapse:collapse; font-size:12px; margin-bottom:16px; min-width:640px; }
+  .tk-status-table thead th { background:var(--layer-1); border-bottom:1px solid var(--border); padding:7px 8px; font-weight:500; color:var(--strong); letter-spacing:-0.2px; text-align:left; white-space:nowrap; }
+  body.dark .tk-status-table thead th { background:#1e1c1a; }
+  .tk-status-table tbody tr:nth-child(even) { background:var(--layer-2); }
+  .tk-status-table tbody tr { border-bottom:1px solid var(--border); }
+  .tk-status-table tbody tr:last-child { border-bottom:none; }
+  .tk-status-table tbody td { padding:8px 8px; color:var(--defined); letter-spacing:-0.2px; white-space:nowrap; vertical-align:top; }
+  .tk-status-table .td-date { color:var(--soft); }
+  .tk-slump-err { background:#d70100; color:white; border-radius:3px; padding:1px 5px; display:inline-block; font-weight:500; }
+
+  /* dark mode */
+  body.dark .tk-drawer-hdr { background:#1a1814; }
+  body.dark .tk-drawer-tabs { background:#1a1814; }
+  body.dark .tk-table { background:#1e1c1a; border-color:rgba(255,255,255,0.08); }
+  body.dark .tk-table thead th { background:#1e1c1a; border-color:rgba(255,255,255,0.08); color:#e8e4de; }
+  body.dark .tk-table tbody tr { border-color:rgba(255,255,255,0.06); }
+  body.dark .tk-table tbody tr:nth-child(even) { background:rgba(255,255,255,0.03); }
+  body.dark .tk-table tbody td { color:rgba(232,228,222,0.76); }
+  body.dark .tk-kv-key { color:rgba(255,255,255,0.45); }
+  body.dark .tk-kv-val { color:#e8e4de; }
+  body.dark .tk-chip-label { color:#e8e4de; }
+  body.dark .tk-chip-value { color:#e8e4de; }
+
+  /* Cols popover (reuses .dt-cols-* classes already defined) */
+
+
+  /* Ticket drawer — reuses .dt-drawer-main/.dt-drawer-side from All Trucks */
+  #dt-ticket-drawer {
+    position:absolute; top:0; right:0; bottom:0;
+    width:calc(100% - 380px);
+    display:flex; flex-direction:row;
+    background:var(--layer-1);
+    border-left:1px solid var(--border);
+    border-radius:16px 0 0 16px;
+    box-shadow:-4px 0 32px rgba(54,50,45,0.1);
+    transform:translateX(100%);
+    transition:transform 0.38s cubic-bezier(0.22,1,0.36,1);
+    z-index:30; overflow:hidden; pointer-events:none;
+  }
+  #dt-ticket-drawer.open { transform:translateX(0); pointer-events:all; }
+  body.dark #dt-ticket-drawer { background:#1e1c1a; }
+
+  #dt-ticket-scrim {
+    position:absolute; inset:0; background:rgba(54,50,45,0.5);
+    z-index:20; opacity:0; pointer-events:none; transition:opacity 0.35s ease;
+  }
+  #dt-ticket-scrim.open { opacity:1; pointer-events:all; }
+
+  /* Ticket phase pills */
+  .tk-phase-pill {
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:4px 10px; border-radius:32px; font-size:12px; font-weight:400;
+    color:#fff; letter-spacing:-0.24px; white-space:nowrap;
+    font-family:Helvetica,Arial,sans-serif; line-height:1.3;
+  }
+
+  /* Ticket table */
+  .tk-topbar { display:flex; align-items:center; justify-content:space-between; padding:24px 28px 0; flex-shrink:0; gap:16px; }
+  .tk-title-row { display:flex; flex-direction:column; gap:2px; }
+  .tk-title { font-size:24px; font-weight:700; color:var(--strong); letter-spacing:-0.6px; }
+  .tk-subtitle { font-size:12px; color:var(--soft); letter-spacing:-0.2px; }
+  .tk-filterbar { display:flex; align-items:center; justify-content:space-between; padding:16px 28px; gap:12px; flex-shrink:0; }
+  .tk-filters-left { display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
+  .tk-seg { display:flex; border:1px solid var(--border); border-radius:32px; overflow:hidden; flex-shrink:0; }
+  .tk-seg-item { display:flex; align-items:center; justify-content:center; padding:9px 20px; font-size:14px; letter-spacing:-0.28px; cursor:pointer; white-space:nowrap; border-right:1px solid var(--border); color:var(--soft); transition:background 0.15s,color 0.15s; }
+  .tk-seg-item:last-child { border-right:none; }
+  .tk-seg-item.active { background:var(--blue); color:#fff; font-weight:500; }
+  body.dark .tk-seg-item.active { background:#e3f200; color:#000; }
+  .tk-table-wrap { flex:1; overflow:auto; padding:0 28px 28px; }
+  .tk-table { width:100%; border-collapse:collapse; border:1px solid var(--border); border-radius:8px; overflow:hidden; background:var(--layer-1); min-width:960px; font-family:Helvetica,Arial,sans-serif; }
+  .tk-table thead th { background:var(--layer-1); border-bottom:1px solid var(--border); padding:9px 10px; font-size:13px; font-weight:500; color:var(--strong); letter-spacing:-0.2px; text-align:left; white-space:nowrap; position:sticky; top:0; z-index:1; }
+  .tk-table tbody tr { border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.1s; }
+  .tk-table tbody tr:last-child { border-bottom:none; }
+  .tk-table tbody tr:nth-child(even) { background:var(--layer-2); }
+  .tk-table tbody tr:hover { background:rgba(48,105,227,0.05); }
+  body.dark .tk-table tbody tr:hover { background:rgba(227,242,0,0.05); }
+  .tk-table tbody td { padding:9px 10px; font-size:14px; color:var(--defined); letter-spacing:-0.28px; white-space:nowrap; }
+  .tk-table tbody td.truck-link { color:var(--blue-link); text-decoration:underline; cursor:pointer; }
+  body.dark .tk-table tbody td.truck-link { color:#e3f200; }
+  body.dark .tk-table { background:#1e1c1a; border-color:rgba(255,255,255,0.08); }
+  body.dark .tk-table thead th { background:#1e1c1a; border-color:rgba(255,255,255,0.08); color:#e8e4de; }
+  body.dark .tk-table tbody tr { border-color:rgba(255,255,255,0.06); }
+  body.dark .tk-table tbody tr:nth-child(even) { background:rgba(255,255,255,0.03); }
+  body.dark .tk-table tbody td { color:rgba(232,228,222,0.76); }
+
+  /* Side panel meta table — same as dt-overview-meta-* */
+  .dt-overview-meta-table { display:flex; flex-direction:column; margin-top:16px; }
+  .dt-overview-meta-row { display:flex; border-bottom:1px solid var(--border); min-height:32px; }
+  .dt-overview-meta-row:last-child { border-bottom:none; }
+  .dt-overview-meta-row:nth-child(even) { background:var(--layer-2); }
+  .dt-overview-meta-key { width:140px; flex-shrink:0; padding:8px 10px; font-size:13px; color:var(--soft); letter-spacing:-0.2px; display:flex; align-items:center; }
+  .dt-overview-meta-val { flex:1; padding:8px 10px; font-size:13px; color:var(--strong); letter-spacing:-0.2px; display:flex; align-items:center; }
+  .dt-overview-meta-val.linked { color:var(--blue-link); text-decoration:underline; cursor:pointer; }
+  body.dark .dt-overview-meta-key { color:rgba(255,255,255,0.45); }
+  body.dark .dt-overview-meta-val { color:#e8e4de; }
+
+  #dt-page-tickets { display:none; flex-direction:column; flex:1; min-width:0; overflow:hidden; }
+
+
+  /* ── Text Messaging Tab ───────────────────────────── */
+  .tk-msg-wrap {
+    display:flex; flex-direction:column; height:100%;
+    font-family:Helvetica,Arial,sans-serif;
+  }
+  .tk-msg-scroll {
+    flex:1; overflow-y:auto; padding:20px 24px; display:flex;
+    flex-direction:column; gap:20px;
+  }
+  .tk-msg-date-divider {
+    text-align:center; font-size:13px; color:#8e8e93;
+    letter-spacing:-0.2px; margin:4px 0;
+  }
+  /* User bubble (right, yellow) */
+  .tk-msg-row-user {
+    display:flex; flex-direction:column; align-items:flex-end; gap:4px;
+  }
+  .tk-msg-sender {
+    font-size:13px; color:#8e8e93; letter-spacing:-0.2px;
+  }
+  .tk-msg-bubble-user {
+    background:#e3f200; color:#000; border-radius:16px;
+    padding:10px 16px; font-size:15px; line-height:1.4;
+    max-width:70%; word-wrap:break-word; letter-spacing:-0.3px;
+  }
+  .tk-msg-time {
+    font-size:13px; color:#8e8e93; letter-spacing:-0.2px;
+  }
+  /* Driver bubble (left, blue) */
+  .tk-msg-row-driver {
+    display:flex; flex-direction:column; align-items:flex-start; gap:4px;
+  }
+  .tk-msg-bubble-driver {
+    background:#3069e3; color:#fff; border-radius:16px;
+    padding:10px 16px; font-size:15px; line-height:1.4;
+    max-width:70%; word-wrap:break-word; letter-spacing:-0.3px;
+  }
+  /* Quick reply chips (driver) */
+  .tk-msg-quick-row {
+    display:flex; gap:8px; flex-wrap:wrap; margin-top:4px;
+  }
+  .tk-msg-quick-btn {
+    border:1.5px solid #3069e3; border-radius:32px;
+    padding:6px 16px; font-size:14px; color:#3069e3;
+    background:none; cursor:pointer; font-family:Helvetica,Arial,sans-serif;
+    letter-spacing:-0.28px; transition:background 0.15s, color 0.15s;
+  }
+  .tk-msg-quick-btn:hover { background:#3069e3; color:#fff; }
+  /* Input bar */
+  .tk-msg-input-bar {
+    flex-shrink:0; padding:12px 16px;
+    border-top:1px solid var(--border);
+    background:var(--layer-1);
+  }
+  .tk-msg-input-inner {
+    display:flex; align-items:center; gap:12px;
+    background:var(--base); border:1px solid var(--border);
+    border-radius:32px; padding:10px 16px;
+  }
+  .tk-msg-input-field {
+    flex:1; border:none; background:none; outline:none;
+    font-size:15px; font-family:Helvetica,Arial,sans-serif;
+    color:var(--strong); letter-spacing:-0.3px;
+  }
+  .tk-msg-input-field::placeholder { color:var(--soft); }
+  .tk-msg-send-btn {
+    width:32px; height:32px; border-radius:50%; border:none;
+    background:#3069e3; color:#fff; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; transition:background 0.15s;
+  }
+  .tk-msg-send-btn:hover { background:#2558c9; }
+  .tk-msg-send-btn:disabled { background:var(--border); cursor:default; }
+  /* Typing indicator */
+  .tk-msg-typing {
+    display:flex; align-items:center; gap:4px; padding:10px 14px;
+    background:#3069e3; border-radius:16px; width:fit-content;
+  }
+  .tk-msg-typing span {
+    width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.8);
+    animation:tkMsgDot 1.2s infinite;
+  }
+  .tk-msg-typing span:nth-child(2) { animation-delay:0.2s; }
+  .tk-msg-typing span:nth-child(3) { animation-delay:0.4s; }
+  @keyframes tkMsgDot {
+    0%,60%,100% { transform:translateY(0); opacity:0.6; }
+    30% { transform:translateY(-4px); opacity:1; }
+  }
+
 </style>
 <!-- build:1778170116 -->
 </head>
@@ -5721,7 +6112,7 @@ const SENSOR_DATA = [
     <svg width="72" height="18" viewBox="0 0 96 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="white"/>
     </svg>
-    <span class="vp-version-tag">v4.5.1</span>
+    <span class="vp-version-tag">v5.0.1</span>
   </div>
 
   <!-- Viewport pills — desktop only. Hidden on mobile/tablet viewports since
@@ -7504,6 +7895,49 @@ const SENSOR_DATA = [
   </div><!-- /s-tablet -->
 
   <div id="s-desktop">
+    <!-- Ticket scrim anchored to #s-desktop -->
+    <div id="dt-ticket-scrim" onclick="tkCloseDrawer()"></div>
+
+    <!-- Ticket detail drawer — same structure as .dt-drawer (dt-drawer-main + dt-drawer-side) -->
+    <div id="dt-ticket-drawer">
+      <!-- LEFT: header + tabs + scroll -->
+      <div class="dt-drawer-main">
+        <div style="padding:20px 24px 0;flex-shrink:0;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+            <div id="tk-drawer-id" style="font-size:22px;font-weight:700;color:var(--strong);letter-spacing:-0.55px;font-family:Helvetica,Arial,sans-serif;"></div>
+            <span id="tk-drawer-phase-pill"></span>
+          </div>
+          <div style="font-size:13px;color:var(--soft);letter-spacing:-0.2px;" id="tk-drawer-meta"></div>
+        </div>
+        <!-- Tabs — same class as DC truck drawer -->
+        <div class="dt-drawer-tabs" style="margin-top:12px;padding-left:20px;">
+          <div class="dt-drawer-tab active" data-tab="status"   onclick="tkTab(this,'status')">Status</div>
+          <div class="dt-drawer-tab" data-tab="charts"          onclick="tkTab(this,'charts')">Charts</div>
+          <div class="dt-drawer-tab" data-tab="map"             onclick="tkTab(this,'map')">Map</div>
+          <div class="dt-drawer-tab" data-tab="order"           onclick="tkTab(this,'order')">Order details</div>
+          <div class="dt-drawer-tab" data-tab="manual"          onclick="tkTab(this,'manual')">Manual control</div>
+          <div class="dt-drawer-tab" data-tab="messaging"       onclick="tkTab(this,'messaging')">Text messaging</div>
+          <div class="dt-drawer-tab" data-tab="slump"           onclick="tkTab(this,'slump')">Ticketed Slump override</div>
+        </div>
+        <!-- Scrollable content -->
+        <div class="dt-drawer-scroll" id="tk-drawer-scroll" style="flex:1;overflow-y:auto;"></div>
+      </div>
+      <!-- RIGHT: chrome + side panel -->
+      <div class="dt-drawer-side">
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;padding:20px 20px 0;flex-shrink:0;">
+          <button class="dt-drawer-chrome-btn" onclick="tkNavTicket(-1)" title="Previous">
+            <svg width="10" height="14" viewBox="0 0 10 14" fill="none"><path d="M8 1L2 7l6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="dt-drawer-chrome-btn" onclick="tkNavTicket(1)" title="Next">
+            <svg width="10" height="14" viewBox="0 0 10 14" fill="none"><path d="M2 1l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="dt-drawer-chrome-btn" onclick="tkCloseDrawer()" title="Close">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 1l8 8M9 1L1 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div id="tk-side-body" style="flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:0;"></div>
+      </div>
+    </div>
 
     <!-- Left Sidebar -->
     <div class="dt-sidebar">
@@ -7522,11 +7956,18 @@ const SENSOR_DATA = [
           <span style="flex:1;">Home</span>
         </div>
 
-        <!-- Tickets -->
-        <div class="dt-nav-item">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.00066 7.99988H4.66732C4.49051 7.99988 4.32094 8.07012 4.19592 8.19515C4.07089 8.32017 4.00066 8.48974 4.00066 8.66655C4.00066 8.84336 4.07089 9.01293 4.19592 9.13795C4.32094 9.26298 4.49051 9.33322 4.66732 9.33322H6.00066C6.17747 9.33322 6.34704 9.26298 6.47206 9.13795C6.59708 9.01293 6.66732 8.84336 6.66732 8.66655C6.66732 8.48974 6.59708 8.32017 6.47206 8.19515C6.34704 8.07012 6.17747 7.99988 6.00066 7.99988ZM5.33399 6.66655H8.00066C8.17747 6.66655 8.34704 6.59631 8.47206 6.47129C8.59708 6.34626 8.66732 6.17669 8.66732 5.99988C8.66732 5.82307 8.59708 5.6535 8.47206 5.52848C8.34704 5.40345 8.17747 5.33322 8.00066 5.33322H5.33399C5.15718 5.33322 4.98761 5.40345 4.86259 5.52848C4.73756 5.6535 4.66732 5.82307 4.66732 5.99988C4.66732 6.17669 4.73756 6.34626 4.86259 6.47129C4.98761 6.59631 5.15718 6.66655 5.33399 6.66655ZM6.00066 10.6665H4.66732C4.49051 10.6665 4.32094 10.7368 4.19592 10.8618C4.07089 10.9868 4.00066 11.1564 4.00066 11.3332C4.00066 11.51 4.07089 11.6796 4.19592 11.8046C4.32094 11.9296 4.49051 11.9999 4.66732 11.9999H6.00066C6.17747 11.9999 6.34704 11.9296 6.47206 11.8046C6.59708 11.6796 6.66732 11.51 6.66732 11.3332C6.66732 11.1564 6.59708 10.9868 6.47206 10.8618C6.34704 10.7368 6.17747 10.6665 6.00066 10.6665ZM14.0007 7.99988H12.0007V1.99988C12.0011 1.88241 11.9705 1.7669 11.912 1.66505C11.8535 1.56319 11.7691 1.47862 11.6673 1.41988C11.566 1.36137 11.451 1.33057 11.334 1.33057C11.217 1.33057 11.102 1.36137 11.0007 1.41988L9.00066 2.56655L7.00066 1.41988C6.89931 1.36137 6.78435 1.33057 6.66732 1.33057C6.5503 1.33057 6.43534 1.36137 6.33399 1.41988L4.33399 2.56655L2.33399 1.41988C2.23264 1.36137 2.11768 1.33057 2.00066 1.33057C1.88363 1.33057 1.76867 1.36137 1.66732 1.41988C1.56559 1.47862 1.48118 1.56319 1.42264 1.66505C1.36411 1.7669 1.33352 1.88241 1.33399 1.99988V12.6665C1.33399 13.197 1.5447 13.7057 1.91978 14.0808C2.29485 14.4558 2.80356 14.6665 3.33399 14.6665H12.6673C13.1978 14.6665 13.7065 14.4558 14.0815 14.0808C14.4566 13.7057 14.6673 13.197 14.6673 12.6665V8.66655C14.6673 8.48974 14.5971 8.32017 14.4721 8.19515C14.347 8.07012 14.1775 7.99988 14.0007 7.99988ZM3.33399 13.3332C3.15718 13.3332 2.98761 13.263 2.86259 13.138C2.73756 13.0129 2.66732 12.8434 2.66732 12.6665V3.15322L4.00066 3.91322C4.10355 3.96696 4.21791 3.99502 4.33399 3.99502C4.45007 3.99502 4.56443 3.96696 4.66732 3.91322L6.66732 2.76655L8.66732 3.91322C8.77021 3.96696 8.88457 3.99502 9.00066 3.99502C9.11674 3.99502 9.2311 3.96696 9.33399 3.91322L10.6673 3.15322V12.6665C10.6691 12.894 10.7097 13.1194 10.7873 13.3332H3.33399ZM13.334 12.6665C13.334 12.8434 13.2638 13.0129 13.1387 13.138C13.0137 13.263 12.8441 13.3332 12.6673 13.3332C12.4905 13.3332 12.3209 13.263 12.1959 13.138C12.0709 13.0129 12.0007 12.8434 12.0007 12.6665V9.33322H13.334V12.6665Z" fill="#36322D"/></svg>
-          <span style="flex:1;">Tickets</span>
-          <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style="opacity:0.5;flex-shrink:0;"><path d="M1 1.5l5 5 5-5" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <!-- Tickets — expandable like DC -->
+        <div style="border-radius:8px;overflow:visible;">
+          <div class="dt-nav-item" style="border-radius:8px;">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.00066 7.99988H4.66732C4.49051 7.99988 4.32094 8.07012 4.19592 8.19515C4.07089 8.32017 4.00066 8.48974 4.00066 8.66655C4.00066 8.84336 4.07089 9.01293 4.19592 9.13795C4.32094 9.26298 4.49051 9.33322 4.66732 9.33322H6.00066C6.17747 9.33322 6.34704 9.26298 6.47206 9.13795C6.59708 9.01293 6.66732 8.84336 6.66732 8.66655C6.66732 8.48974 6.59708 8.32017 6.47206 8.19515C6.34704 8.07012 6.17747 7.99988 6.00066 7.99988ZM5.33399 6.66655H8.00066C8.17747 6.66655 8.34704 6.59631 8.47206 6.47129C8.59708 6.34626 8.66732 6.17669 8.66732 5.99988C8.66732 5.82307 8.59708 5.6535 8.47206 5.52848C8.34704 5.40345 8.17747 5.33322 8.00066 5.33322H5.33399C5.15718 5.33322 4.98761 5.40345 4.86259 5.52848C4.73756 5.6535 4.66732 5.82307 4.66732 5.99988C4.66732 6.17669 4.73756 6.34626 4.86259 6.47129C4.98761 6.59631 5.15718 6.66655 5.33399 6.66655ZM6.00066 10.6665H4.66732C4.49051 10.6665 4.32094 10.7368 4.19592 10.8618C4.07089 10.9868 4.00066 11.1564 4.00066 11.3332C4.00066 11.51 4.07089 11.6796 4.19592 11.8046C4.32094 11.9296 4.49051 11.9999 4.66732 11.9999H6.00066C6.17747 11.9999 6.34704 11.9296 6.47206 11.8046C6.59708 11.6796 6.66732 11.51 6.66732 11.3332C6.66732 11.1564 6.59708 10.9868 6.47206 10.8618C6.34704 10.7368 6.17747 10.6665 6.00066 10.6665ZM14.0007 7.99988H12.0007V1.99988C12.0011 1.88241 11.9705 1.7669 11.912 1.66505C11.8535 1.56319 11.7691 1.47862 11.6673 1.41988C11.566 1.36137 11.451 1.33057 11.334 1.33057C11.217 1.33057 11.102 1.36137 11.0007 1.41988L9.00066 2.56655L7.00066 1.41988C6.89931 1.36137 6.78435 1.33057 6.66732 1.33057C6.5503 1.33057 6.43534 1.36137 6.33399 1.41988L4.33399 2.56655L2.33399 1.41988C2.23264 1.36137 2.11768 1.33057 2.00066 1.33057C1.88363 1.33057 1.76867 1.36137 1.66732 1.41988C1.56559 1.47862 1.48118 1.56319 1.42264 1.66505C1.36411 1.7669 1.33352 1.88241 1.33399 1.99988V12.6665C1.33399 13.197 1.5447 13.7057 1.91978 14.0808C2.29485 14.4558 2.80356 14.6665 3.33399 14.6665H12.6673C13.1978 14.6665 13.7065 14.4558 14.0815 14.0808C14.4566 13.7057 14.6673 13.197 14.6673 12.6665V8.66655C14.6673 8.48974 14.5971 8.32017 14.4721 8.19515C14.347 8.07012 14.1775 7.99988 14.0007 7.99988ZM3.33399 13.3332C3.15718 13.3332 2.98761 13.263 2.86259 13.138C2.73756 13.0129 2.66732 12.8434 2.66732 12.6665V3.15322L4.00066 3.91322C4.10355 3.96696 4.21791 3.99502 4.33399 3.99502C4.45007 3.99502 4.56443 3.96696 4.66732 3.91322L6.66732 2.76655L8.66732 3.91322C8.77021 3.96696 8.88457 3.99502 9.00066 3.99502C9.11674 3.99502 9.2311 3.96696 9.33399 3.91322L10.6673 3.15322V12.6665C10.6691 12.894 10.7097 13.1194 10.7873 13.3332H3.33399ZM13.334 12.6665C13.334 12.8434 13.2638 13.0129 13.1387 13.138C13.0137 13.263 12.8441 13.3332 12.6673 13.3332C12.4905 13.3332 12.3209 13.263 12.1959 13.138C12.0709 13.0129 12.0007 12.8434 12.0007 12.6665V9.33322H13.334V12.6665Z" fill="#36322D"/></svg>
+            <span style="flex:1;">Tickets</span>
+            <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style="transform:rotate(180deg);flex-shrink:0;"><path d="M1 1.5l5 5 5-5" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;margin-top:2px;">
+            <div id="dt-nav-tickets" onclick="dtNavGo('tickets')" style="padding:10px 12px 10px 44px;border-radius:32px;cursor:pointer;" onmouseenter="if(!this.dataset.active)this.style.background='rgba(54,50,45,0.04)'" onmouseleave="if(!this.dataset.active)this.style.background=''">
+              <span style="font-size:14px;color:rgba(54,50,45,0.5);letter-spacing:-0.28px;font-family:var(--font);">Ticket List</span>
+            </div>
+          </div>
         </div>
 
         <!-- Diagnostic Center — expanded + active -->
@@ -8541,6 +8982,61 @@ const SENSOR_DATA = [
         </div>
       </div><!-- /dt-at-drawer -->
 
+
+      <!-- TICKETS PAGE -->
+      <div id="dt-page-tickets" style="position:relative;font-family:Helvetica,Arial,sans-serif;">
+        <div class="tk-topbar">
+          <div class="tk-title-row">
+            <div class="tk-title">Tickets</div>
+            <div class="tk-subtitle" id="tk-subtitle">Last updated: Today, 9:42 AM</div>
+          </div>
+          <button class="dt-filter-btn" onclick="">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            New ticket
+          </button>
+        </div>
+
+        <div class="tk-filterbar">
+          <div class="tk-filters-left">
+            <div class="dt-search-wrap" style="position:relative;">
+              <div class="dt-search-field">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="#36322d9e" stroke-width="1.4"/><path d="M11 11l2.5 2.5" stroke="#36322d9e" stroke-width="1.4" stroke-linecap="round"/></svg>
+                <input id="tk-search-input" placeholder="Ticket, truck, order, mix…" oninput="tkRebuildTable()" autocomplete="off"/>
+              </div>
+            </div>
+            <button class="dt-filter-btn">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 3h12M3 7h8M5 11h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              Filters
+            </button>
+            <!-- Columns + popover -->
+            <div style="position:relative;flex-shrink:0;">
+              <button class="dt-filter-btn" id="tk-cols-btn" onclick="tkColsToggle(event)">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="5.5" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="10" y="2" width="3" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
+                Columns
+              </button>
+              <div class="dt-cols-popover" id="tk-cols-popover">
+                <div class="dt-cols-pop-head">
+                  <span>Columns</span>
+                  <button class="dt-cols-pop-reset" onclick="tkColsReset()">Reset</button>
+                </div>
+                <div class="dt-cols-pop-list" id="tk-cols-pop-list"></div>
+              </div>
+            </div>
+          </div>
+          <div class="tk-seg">
+            <div class="tk-seg-item active" onclick="tkSegSelect(this)">All tickets</div>
+            <div class="tk-seg-item" onclick="tkSegSelect(this)">Fleet map</div>
+            <div class="tk-seg-item" onclick="tkSegSelect(this)">Phases</div>
+          </div>
+        </div>
+
+        <div class="tk-table-wrap">
+          <table class="tk-table" id="tk-table" style="font-family:Helvetica,Arial,sans-serif;">
+            <thead><tr id="tk-thead-row"></tr></thead>
+            <tbody id="tk-tbody"></tbody>
+          </table>
+        </div>
+      </div><!-- /dt-page-tickets -->
     </div><!-- /dt-content -->
     <!-- Scrim covers entire desktop layout including sidebar -->
     <div id="dt-drawer-scrim" class="dt-drawer-scrim" onclick="dtScrimClose()"></div>
@@ -9341,6 +9837,593 @@ function canInjectFlipHint(mountEl, openFn) {
   btn.addEventListener('click', function(e) { e.stopPropagation(); fn(); });
   btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 23L3 19L7 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 13V15C21 16.0609 20.5786 17.0783 19.8284 17.8284C19.0783 18.5786 18.0609 19 17 19H3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 1L21 5L17 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 11V9C3 7.93913 3.42143 6.92172 4.17157 6.17157C4.92172 5.42143 5.93913 5 7 5H21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   card.appendChild(btn);
+}
+
+
+/* Close tickets cols popover on outside click */
+document.addEventListener('click', function(e) {
+  const pop = document.getElementById('tk-cols-popover');
+  if (pop && pop.classList.contains('open') && !e.target.closest('#tk-cols-popover') && !e.target.closest('#tk-cols-btn'))
+    pop.classList.remove('open');
+});
+
+/* ============================================================================
+   TICKETS PAGE
+============================================================================ */
+
+const TK_PHASES = {
+  'Waiting to Load': { bg:'#644325', label:'Waiting to load' },
+  'Loading':         { bg:'#9a1f1e', label:'Loading' },
+  'Loaded':          { bg:'#887f13', label:'Loaded' },
+  'In Transit':      { bg:'#1e6252', label:'To job' },
+  'On Site':         { bg:'#872781', label:'On site' },
+  'Pouring':         { bg:'#101010', label:'Pouring' },
+  'Ignition Off':    { bg:'#525252', label:'Ignition off' },
+  'Washing':         { bg:'#126886', label:'Washing' },
+  'Return to Plant': { bg:'#9c0f5a', label:'Return to plant' },
+};
+
+const TK_COL_DEFS = [
+  { id:'truck',    label:'Truck',           hidden:false, locked:true },
+  { id:'phase',    label:'Phase',           hidden:false },
+  { id:'ticket',   label:'Ticket',          hidden:false },
+  { id:'customer', label:'Customer',        hidden:false },
+  { id:'alerts',   label:'Active Alerts',   hidden:false },
+  { id:'order',    label:'Order',           hidden:false },
+  { id:'location', label:'Location',        hidden:false },
+  { id:'date',     label:'Date & Time',     hidden:false },
+  { id:'mix',      label:'Mix Code',        hidden:false },
+  { id:'size',     label:'Size',            hidden:false },
+  { id:'slump',    label:'Ticketed Slump',  hidden:false },
+];
+let tkColState = TK_COL_DEFS.map(c => ({...c}));
+
+const TK_DATA = [
+  { truck:'45689', ticket:'TKT-10482', phase:'Pouring',         customer:'Cemex AZ', order:'ORD-8841', mix:'MC-4000', location:'Phoenix Central', date:'Today, 8:14 AM', size:'8 yd³', alerts:1, plant:'Plant 1', driver:'R. Martinez', slump:'4.5 in', water:'22 gal', temp:'78°F' },
+  { truck:'12457', ticket:'TKT-10481', phase:'On Site',         customer:'Cemex AZ', order:'ORD-8841', mix:'MC-4000', location:'Phoenix Central', date:'Today, 8:02 AM', size:'10 yd³', alerts:2, plant:'Plant 1', driver:'D. Ochoa',    slump:'4.0 in', water:'20 gal', temp:'76°F' },
+  { truck:'33201', ticket:'TKT-10480', phase:'In Transit',      customer:'Cemex AZ', order:'ORD-8839', mix:'MC-3500', location:'Mesa Eastside',   date:'Today, 7:55 AM', size:'9 yd³',  alerts:0, plant:'Plant 2', driver:'J. Torres',   slump:'3.5 in', water:'18 gal', temp:'75°F' },
+  { truck:'77840', ticket:'TKT-10479', phase:'Loaded',          customer:'Vulcan AZ', order:'ORD-8838', mix:'MC-5000', location:'Scottsdale N',  date:'Today, 7:48 AM', size:'7 yd³',  alerts:0, plant:'Plant 3', driver:'A. Reyes',    slump:'5.0 in', water:'24 gal', temp:'74°F' },
+  { truck:'55120', ticket:'TKT-10478', phase:'Loading',         customer:'Vulcan AZ', order:'ORD-8838', mix:'MC-5000', location:'Scottsdale N',  date:'Today, 7:40 AM', size:'10 yd³', alerts:1, plant:'Plant 3', driver:'M. Fuentes',  slump:'—',      water:'—',      temp:'72°F' },
+  { truck:'98302', ticket:'TKT-10477', phase:'Return to Plant', customer:'Cemex AZ', order:'ORD-8835', mix:'MC-3000', location:'Phoenix Central', date:'Today, 7:22 AM', size:'8 yd³',  alerts:0, plant:'Plant 1', driver:'C. Gomez',    slump:'3.0 in', water:'16 gal', temp:'71°F' },
+  { truck:'14520', ticket:'TKT-10476', phase:'Pouring',         customer:'Cemex AZ', order:'ORD-8833', mix:'MC-4500', location:'Tempe South',    date:'Today, 7:10 AM', size:'9 yd³',  alerts:0, plant:'Plant 2', driver:'F. Herrera',  slump:'4.5 in', water:'22 gal', temp:'70°F' },
+  { truck:'66478', ticket:'TKT-10475', phase:'On Site',         customer:'Cemex AZ', order:'ORD-8833', mix:'MC-4500', location:'Tempe South',    date:'Today, 6:58 AM', size:'8 yd³',  alerts:1, plant:'Plant 2', driver:'L. Vargas',   slump:'4.0 in', water:'20 gal', temp:'69°F' },
+  { truck:'22190', ticket:'TKT-10474', phase:'In Transit',      customer:'Vulcan AZ', order:'ORD-8830', mix:'MC-3500', location:'Gilbert SW',    date:'Today, 6:45 AM', size:'10 yd³', alerts:0, plant:'Plant 4', driver:'P. Sanchez',  slump:'3.5 in', water:'18 gal', temp:'68°F' },
+  { truck:'40031', ticket:'TKT-10473', phase:'Return to Plant', customer:'Vulcan AZ', order:'ORD-8828', mix:'MC-3000', location:'Gilbert SW',    date:'Today, 6:30 AM', size:'7 yd³',  alerts:0, plant:'Plant 4', driver:'R. Cruz',     slump:'3.0 in', water:'16 gal', temp:'67°F' },
+  { truck:'51204', ticket:'TKT-10472', phase:'Pouring',         customer:'Cemex AZ', order:'ORD-8825', mix:'MC-4000', location:'Chandler E',     date:'Today, 6:18 AM', size:'9 yd³',  alerts:0, plant:'Plant 1', driver:'B. Lopez',    slump:'4.5 in', water:'22 gal', temp:'66°F' },
+  { truck:'87655', ticket:'TKT-10471', phase:'Loaded',          customer:'Cemex AZ', order:'ORD-8825', mix:'MC-4000', location:'Chandler E',     date:'Today, 6:05 AM', size:'8 yd³',  alerts:1, plant:'Plant 1', driver:'G. Ramos',    slump:'—',      water:'—',      temp:'65°F' },
+];
+
+let tkCurrentIdx = -1;
+let tkCurrentTicket = null;
+
+function tkPhasePill(phase) {
+  const p = TK_PHASES[phase] || { bg:'#525252', label:phase };
+  return '<span class="tk-phase-pill" style="background:' + p.bg + '">' + p.label + '</span>';
+}
+
+function tkAlertBadge(n) {
+  if (!n) return '<span style="color:var(--soft);font-size:13px;">—</span>';
+  return '<span class="badge err"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="white" stroke-width="1"/><path d="M5 3v2.2M5 6.8h.01" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg>' + n + '</span>';
+}
+
+function tkColsToggle(e) {
+  e.stopPropagation();
+  const pop = document.getElementById('tk-cols-popover');
+  const isOpen = pop.classList.contains('open');
+  pop.classList.toggle('open', !isOpen);
+  if (!isOpen) tkColsPopRefresh();
+}
+
+function tkColsPopRefresh() {
+  const list = document.getElementById('tk-cols-pop-list');
+  if (!list) return;
+  list.innerHTML = tkColState.map(col =>
+    '<div class="dt-cols-pop-row">' +
+    '<button class="dt-cols-toggle ' + (col.hidden ? '' : 'on') + '" onclick="tkColToggle(\'' + col.id + '\',this)"' +
+    (col.locked ? ' disabled style="opacity:0.4;cursor:default;"' : '') + '></button>' +
+    '<span class="dt-cols-pop-label ' + (col.hidden ? 'hidden' : '') + '">' + col.label + '</span>' +
+    '</div>'
+  ).join('');
+}
+
+function tkColToggle(colId, btn) {
+  const col = tkColState.find(c => c.id === colId);
+  if (!col || col.locked) return;
+  col.hidden = !col.hidden;
+  btn.classList.toggle('on', !col.hidden);
+  btn.nextElementSibling.classList.toggle('hidden', col.hidden);
+  tkRebuildTable();
+}
+
+function tkColsReset() {
+  tkColState = TK_COL_DEFS.map(c => ({...c}));
+  tkColsPopRefresh();
+  tkRebuildTable();
+}
+
+function tkRebuildTable() {
+  const table = document.getElementById('tk-table');
+  if (!table) return;
+  const visible = tkColState.filter(c => !c.hidden);
+  const thead = document.getElementById('tk-thead-row');
+  if (thead) thead.innerHTML = visible.map(c => '<th>' + c.label + '</th>').join('');
+  const q = (document.getElementById('tk-search-input')?.value || '').toLowerCase();
+  const data = q ? TK_DATA.filter(t =>
+    t.truck.includes(q) || t.ticket.toLowerCase().includes(q) ||
+    t.customer.toLowerCase().includes(q) || t.order.toLowerCase().includes(q) ||
+    t.mix.toLowerCase().includes(q) || t.location.toLowerCase().includes(q) ||
+    t.phase.toLowerCase().includes(q)
+  ) : TK_DATA;
+  const cellMap = {
+    truck:    t => '<td class="truck-link" onclick="event.stopPropagation();tkGoTruck(\'' + t.truck + '\')">' + t.truck + '</td>',
+    ticket:   t => '<td style="color:var(--strong);font-weight:500;">' + t.ticket + '</td>',
+    phase:    t => '<td>' + tkPhasePill(t.phase) + '</td>',
+    customer: t => '<td>' + t.customer + '</td>',
+    alerts:   t => '<td>' + tkAlertBadge(t.alerts) + '</td>',
+    order:    t => '<td>' + t.order + '</td>',
+    location: t => '<td>' + t.location + '</td>',
+    date:     t => '<td style="color:var(--soft);font-size:13px;">' + t.date + '</td>',
+    mix:      t => '<td>' + t.mix + '</td>',
+    size:     t => '<td>' + t.size + '</td>',
+    slump:    t => '<td>' + t.slump + '</td>',
+  };
+  const tbody = document.getElementById('tk-tbody');
+  if (tbody) tbody.innerHTML = data.map((t) => {
+    const idx = TK_DATA.indexOf(t);
+    return '<tr onclick="tkOpenDrawer(' + idx + ')">' + visible.map(c => (cellMap[c.id] || (() => '<td></td>'))(t)).join('') + '</tr>';
+  }).join('');
+}
+
+function tkSegSelect(el) {
+  el.closest('.tk-seg').querySelectorAll('.tk-seg-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function tkOpenDrawer(idx) {
+  const t = TK_DATA[idx];
+  if (!t) return;
+  tkCurrentTicket = t;
+  tkCurrentIdx = idx;
+  document.getElementById('tk-drawer-id').textContent = 'Ticket: ' + t.ticket;
+  const pill = document.getElementById('tk-drawer-phase-pill');
+  if (pill) pill.innerHTML = tkPhasePill(t.phase);
+  /* Build side panel */
+  tkBuildSidePanel(t);
+  /* Open on Status tab */
+  const firstTab = document.querySelector('#dt-ticket-drawer .dt-drawer-tab[data-tab="status"]');
+  if (firstTab) tkTab(firstTab, 'status');
+  document.getElementById('dt-ticket-drawer').classList.add('open');
+  document.getElementById('dt-ticket-scrim').classList.add('open');
+}
+
+function tkNavTicket(dir) {
+  const next = tkCurrentIdx + dir;
+  if (next >= 0 && next < TK_DATA.length) tkOpenDrawer(next);
+}
+
+function tkCloseDrawer() {
+  senStop();
+  document.getElementById('dt-ticket-drawer').classList.remove('open');
+  document.getElementById('dt-ticket-scrim').classList.remove('open');
+  tkCurrentTicket = null;
+  tkCurrentIdx = -1;
+}
+
+function tkBuildSidePanel(t) {
+  const side = document.getElementById('tk-side-body');
+  if (!side) return;
+
+  const chip = (icon, label, value, linked) =>
+    '<div class="tk-summary-chip">' +
+      '<div class="tk-chip-icon">' + icon + '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:8px;">' +
+        '<div class="tk-chip-label">' + label + '</div>' +
+        '<div class="tk-chip-value' + (linked ? ' linked' : '') + '"' + (linked ? ' onclick="' + linked + '"' : '') + '>' + value + '</div>' +
+      '</div>' +
+    '</div>';
+
+  const iconOrder  = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.66675 1.83301H9.33374C9.55464 1.83309 9.7664 1.92094 9.92261 2.07715C10.0788 2.23335 10.1667 2.44512 10.1667 2.66602V3.16602H11.3337C11.7314 3.1661 12.1131 3.32424 12.3943 3.60547C12.6755 3.8867 12.8337 4.26831 12.8337 4.66602V12.666C12.8337 13.0637 12.6754 13.4453 12.3943 13.7266C12.1131 14.0078 11.7314 14.1659 11.3337 14.166H4.66675C4.26892 14.166 3.88751 14.0079 3.6062 13.7266C3.325 13.4453 3.16675 13.0638 3.16675 12.666V4.66602C3.16683 4.26831 3.32497 3.8867 3.6062 3.60547C3.88749 3.32427 4.269 3.16602 4.66675 3.16602H5.83374V2.66602C5.83383 2.44512 5.92168 2.23335 6.07788 2.07715C6.23415 1.92097 6.44581 1.83301 6.66675 1.83301ZM4.66675 3.5C4.35733 3.5 4.06034 3.623 3.84155 3.8418C3.62304 4.06048 3.49984 4.35687 3.49976 4.66602V12.666C3.49976 12.9754 3.62286 13.2724 3.84155 13.4912C4.06035 13.71 4.35733 13.833 4.66675 13.833H11.3337C11.643 13.8329 11.9393 13.7098 12.158 13.4912C12.3768 13.2724 12.4998 12.9754 12.4998 12.666V4.66602C12.4997 4.35671 12.3767 4.06051 12.158 3.8418C11.9392 3.62308 11.643 3.50009 11.3337 3.5H10.1667V4C10.1667 4.2209 10.0788 4.43266 9.92261 4.58887C9.7664 4.74507 9.55464 4.83292 9.33374 4.83301H6.66675C6.44581 4.83301 6.23415 4.74505 6.07788 4.58887C5.92168 4.43266 5.83383 4.2209 5.83374 4V3.5H4.66675ZM6.16675 4.5H9.83374V2.16602H6.16675V4.5Z" stroke="currentColor"/></svg>';
+  const iconMix    = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 2h10v12H3z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
+  const iconTruck  = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1.5 11V9.5c0-.8.7-2 2-2.5l2-1V4c0-.8.8-1.5 2-1.5h1c1.2 0 2 .7 2 1.5v2l2 1c1.3.5 2 1.7 2 2.5V11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="4" cy="12.5" r="1.2" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="12.5" r="1.2" stroke="currentColor" stroke-width="1.3"/></svg>';
+  const iconDriver = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
+
+  const alertItem = (errType, label, desc, truckNum) => {
+    const badge = errType === 'err'
+      ? '<div style="width:20px;height:20px;border-radius:4px;background:#d70100;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="white" stroke-width="1"/><path d="M5 3v2.2M5 6.8h.01" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg></div>'
+      : '<div style="width:20px;height:20px;border-radius:4px;background:rgba(250,30,30,0.23);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1.5L9.5 8.5H.5L5 1.5z" stroke="#d97706" stroke-width="1" stroke-linejoin="round"/><path d="M5 4.5v1.5M5 7.5h.01" stroke="#d97706" stroke-width="1" stroke-linecap="round"/></svg></div>';
+    return '<div class="tk-alert-item">' +
+      '<div class="tk-alert-item-hdr">' + badge + '<span class="tk-alert-label">' + label + '</span></div>' +
+      '<div class="tk-alert-desc">' + desc + '</div>' +
+      '<button class="tk-msg-btn">Message driver</button>' +
+    '</div>';
+  };
+
+  side.innerHTML =
+    /* Summary chips — 2 rows of 2, icon + bold label + underlined value */
+    '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px;">' +
+      '<div style="display:flex;gap:8px;">' +
+        chip(iconOrder,  'Order number', t.order,  false) +
+        chip(iconMix,    'Mix code',     t.mix,    false) +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+        chip(iconTruck,  'Truck number', t.truck,  'tkGoTruck(\'' + t.truck + '\')') +
+        chip(iconDriver, 'Driver',       t.driver, false) +
+      '</div>' +
+    '</div>' +
+
+    /* KV table — two plain flex cols, no border box */
+    '<div style="display:flex;margin-bottom:24px;">' +
+      '<div style="flex:1;display:flex;flex-direction:column;">' +
+        '<div class="tk-kv-key">Load size</div>' +
+        '<div class="tk-kv-key">Mix code instruction</div>' +
+        '<div class="tk-kv-key">Customer</div>' +
+        '<div class="tk-kv-key">Current location</div>' +
+        '<div class="tk-kv-key">Destination</div>' +
+      '</div>' +
+      '<div style="flex:1;display:flex;flex-direction:column;">' +
+        '<div class="tk-kv-val">' + t.size + '</div>' +
+        '<div class="tk-kv-val">Manage to Allowable Water</div>' +
+        '<div class="tk-kv-val">' + t.customer + '</div>' +
+        '<div class="tk-kv-val">' + t.location + '</div>' +
+        '<div class="tk-kv-val">' + t.plant + '</div>' +
+      '</div>' +
+    '</div>' +
+
+    /* Alerts card */
+    '<div class="tk-alerts-card">' +
+      '<div class="tk-alerts-title">Alerts</div>' +
+      (t.alerts > 0
+        ? alertItem('err', 'Slump deviation: Above target', 'Consistent slump deviations above target for certain drivers.', t.truck)
+          + alertItem('wrn', 'Driver exceeding time at plant', 'Truck ' + t.truck + ' has been at Lockhart for over 60 minutes.', t.truck)
+        : '<div style="padding:0 16px 14px;font-size:13px;color:var(--soft);">No active alerts</div>'
+      ) +
+    '</div>';
+}
+
+/* Status tab — phase-grouped data table (Figma node 3121:21674) */
+var tkStatusCollapsed = {};
+
+function tkStatusToggleGroup(phase) {
+  tkStatusCollapsed[phase] = !tkStatusCollapsed[phase];
+  tkRenderStatus(tkCurrentTicket);
+}
+
+function tkSlumpBadge(val, target) {
+  if (!val || val === '-') return '<span style="color:var(--soft);font-size:14px;">-</span>';
+  var num = parseFloat(val);
+  var tgt = parseFloat(target) || 4.0;
+  var bad = Math.abs(num - tgt) > 1.5;
+  if (bad) return '<span style="display:inline-flex;align-items:center;justify-content:center;background:#d70100;color:white;font-size:12px;letter-spacing:-0.24px;padding:2px 6px;border-radius:2px;white-space:nowrap;">' + val + '</span>';
+  return '<span style="font-size:14px;color:var(--defined);">' + val + '</span>';
+}
+
+function tkRenderStatus(t) {
+  const scroll = document.getElementById('tk-drawer-scroll');
+  if (!scroll) return;
+
+  const COLS = [
+    { key:'date',    label:'Date & Time',   w:110 },
+    { key:'status',  label:'Status',        w:90  },
+    { key:'slump',   label:'Actual Slump',  w:110 },
+    { key:'fluid',   label:'Fluid event',   w:90  },
+    { key:'target',  label:'Target Slump',  w:100 },
+    { key:'water',   label:'Water added',   w:100 },
+    { key:'admix',   label:'Admix added',   w:100 },
+    { key:'revs',    label:'Total revs',    w:90  },
+    { key:'temp',    label:'Temp',          w:80  },
+    { key:'size',    label:'Load size',     w:80  },
+  ];
+
+  /* Mock phase groups for this ticket */
+  const PHASE_GROUPS = [
+    { phase:'In Transit', elapsed:'24m 18s', rows:[
+      { date:'1:16 PM', dateD:'07/23/2025', status:'Loading', slump:'9.75 in', fluid:'-', target:'8.00 in', water:'0.5 gal/yd³', admix:'-', revs:'-', temp:'100°F', size:'-' },
+    ]},
+    { phase:'Loaded', elapsed:'', rows:[
+      { date:'1:16 PM', dateD:'07/23/2025', status:'Loading', slump:'9.75 in', fluid:'-', target:'8.00 in', water:'0.5 gal/yd³', admix:'-', revs:'-', temp:'100°F', size:'-' },
+    ]},
+    { phase:'Loading', elapsed:'', rows:[
+      { date:'1:16 PM', dateD:'07/23/2025', status:'Loading', slump:'9.75 in', fluid:'-', target:'8.00 in', water:'0.5 gal/yd³', admix:'-', revs:'-', temp:'100°F', size:'-' },
+      { date:'1:16 PM', dateD:'07/23/2025', status:'Loading', slump:'9.75 in', fluid:'-', target:'8.00 in', water:'0.5 gal/yd³', admix:'-', revs:'-', temp:'100°F', size:'-' },
+    ]},
+    { phase:'Waiting to Load', elapsed:'', rows:[
+      { date:'1:16 PM', dateD:'07/23/2025', status:'Loading', slump:'9.75 in', fluid:'-', target:'8.00 in', water:'0.5 gal/yd³', admix:'-', revs:'-', temp:'100°F', size:'-' },
+      { date:'1:16 PM', dateD:'07/23/2025', status:'Loading', slump:'9.75 in', fluid:'-', target:'8.00 in', water:'0.5 gal/yd³', admix:'-', revs:'-', temp:'100°F', size:'-' },
+      { date:'1:16 PM', dateD:'07/23/2025', status:'Loading', slump:'9.75 in', fluid:'-', target:'8.00 in', water:'0.5 gal/yd³', admix:'-', revs:'-', temp:'100°F', size:'-' },
+      { date:'1:16 PM', dateD:'07/23/2025', status:'Loading', slump:'9.75 in', fluid:'-', target:'8.00 in', water:'0.5 gal/yd³', admix:'-', revs:'-', temp:'100°F', size:'-' },
+    ]},
+  ];
+
+  const cellStyle = 'display:flex;align-items:flex-start;padding:8px;height:46px;box-sizing:border-box;';
+
+  function makeRow(row, alt) {
+    const bg = alt ? 'background:var(--layer-2);' : '';
+    return '<div style="display:flex;align-items:flex-start;padding-left:20px;' + bg + '">' +
+      COLS.map(c => {
+        let val = '';
+        if (c.key === 'date') {
+          val = '<div style="display:flex;flex-direction:column;justify-content:center;height:46px;">' +
+            '<span style="font-size:14px;color:var(--defined);letter-spacing:-0.28px;line-height:1.3;">' + row.date + '</span>' +
+            '<span style="font-size:14px;color:var(--soft);letter-spacing:-0.28px;line-height:1.3;">' + row.dateD + '</span>' +
+          '</div>';
+        } else if (c.key === 'slump') {
+          val = '<div style="display:flex;align-items:center;height:46px;">' + tkSlumpBadge(row.slump, row.target) + '</div>';
+        } else {
+          var v = row[c.key] || '-';
+          val = '<div style="display:flex;align-items:center;height:46px;font-size:14px;color:var(--defined);letter-spacing:-0.28px;">' + v + '</div>';
+        }
+        return '<div style="width:' + c.w + 'px;flex-shrink:0;padding:0 8px;">' + val + '</div>';
+      }).join('') +
+    '</div>';
+  }
+
+  const headerRow =
+    '<div style="display:flex;align-items:center;padding-left:20px;position:sticky;top:0;background:var(--layer-1);z-index:2;border-bottom:1px solid var(--border);">' +
+      COLS.map(c =>
+        '<div style="width:' + c.w + 'px;flex-shrink:0;padding:8px;font-size:14px;font-weight:500;color:var(--strong);letter-spacing:-0.28px;white-space:nowrap;height:41px;display:flex;align-items:center;">' + c.label + '</div>'
+      ).join('') +
+    '</div>';
+
+  const groups = PHASE_GROUPS.map(g => {
+    const collapsed = tkStatusCollapsed[g.phase];
+    const pill = tkPhasePill(g.phase);
+    const phaseRow =
+      '<div style="display:flex;align-items:center;gap:10px;padding:12px 20px;cursor:pointer;" onclick="tkStatusToggleGroup(\'' + g.phase.replace(/'/g,"\\'") + '\')">' +
+        '<svg width="12" height="8" viewBox="0 0 12 8" fill="none" style="transition:transform 0.2s;transform:' + (collapsed ? 'rotate(-90deg)' : 'rotate(0deg)') + ';flex-shrink:0;"><path d="M1 1.5l5 5 5-5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>' +
+        pill +
+      '</div>';
+    const rows = collapsed ? '' : g.rows.map((r, i) => makeRow(r, i % 2 === 1)).join('');
+    return phaseRow + rows;
+  }).join('');
+
+  scroll.style.overflowX = 'auto';
+  scroll.innerHTML =
+    '<div style="min-width:1100px;">' +
+      headerRow +
+      groups +
+    '</div>';
+}
+
+function tkTab(el, tab) {
+  if (!el) return;
+  const tabsEl = el.closest('.dt-drawer-tabs');
+  if (tabsEl) tabsEl.querySelectorAll('.dt-drawer-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const scroll = document.getElementById('tk-drawer-scroll');
+  if (!scroll) return;
+
+  if (tab === 'status') {
+    senStop();
+    tkStatusCollapsed = {};
+    tkRenderStatus(tkCurrentTicket);
+  } else if (tab === 'messaging') {
+    senStop();
+    tkRenderMessaging(scroll);
+  } else if (tab === 'charts') {
+    senStop();
+    senSelected.clear();
+    senSelected.add('slump');
+    senSelected.add('water');
+    scroll.innerHTML = dtBuildSensor();
+    requestAnimationFrame(function() {
+      dtSenRenderCards();
+      if (!senAnimId) setTimeout(function(){ senTick(); }, 300);
+    });
+  } else {
+    senStop();
+    scroll.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:center;height:200px;color:var(--soft);font-size:14px;">' +
+        tab.charAt(0).toUpperCase() + tab.slice(1).replace(/-/g,' ') + ' — coming soon' +
+      '</div>';
+  }
+}
+
+function tkMakeChartData(min, max, points, trend) {
+  /* Generate smooth random time-series data */
+  var data = [];
+  var v = min + (max - min) * 0.5;
+  for (var i = 0; i < points; i++) {
+    v += (Math.random() - 0.48) * (max - min) * 0.08;
+    if (trend) v += trend;
+    v = Math.max(min, Math.min(max, v));
+    data.push(parseFloat(v.toFixed(2)));
+  }
+  return data;
+}
+
+function tkDrawSvgChart(containerId, data, color, min, max, unit, labels) {
+  var W = 800, H = 120;
+  var PAD = { top: 16, right: 16, bottom: 28, left: 44 };
+  var cW = W - PAD.left - PAD.right;
+  var cH = H - PAD.top - PAD.bottom;
+  var n = data.length;
+
+  var toX = function(i) { return PAD.left + (i / (n - 1)) * cW; };
+  var toY = function(v) { return PAD.top + cH - ((v - min) / (max - min)) * cH; };
+
+  /* Grid lines + y-labels */
+  var gridLines = '', yLabels = '';
+  for (var gi = 0; gi <= 3; gi++) {
+    var gy = (PAD.top + cH - (gi / 3) * cH).toFixed(1);
+    var gv = (min + (gi / 3) * (max - min)).toFixed(1);
+    gridLines += '<line x1="' + PAD.left + '" y1="' + gy + '" x2="' + (PAD.left + cW) + '" y2="' + gy + '" stroke="rgba(54,50,45,0.08)" stroke-width="1"/>';
+    yLabels += '<text x="' + (PAD.left - 6) + '" y="' + (parseFloat(gy) + 4) + '" text-anchor="end" font-size="10" font-family="Helvetica,Arial,sans-serif" fill="rgba(54,50,45,0.45)">' + gv + '</text>';
+  }
+
+  /* Smooth path */
+  var pathD = '';
+  for (var pi = 0; pi < n; pi++) {
+    var px = toX(pi), py = toY(data[pi]);
+    if (pi === 0) { pathD += 'M' + px.toFixed(1) + ',' + py.toFixed(1); }
+    else {
+      var ppx = toX(pi - 1), ppy = toY(data[pi - 1]);
+      var cpx = ((ppx + px) / 2).toFixed(1);
+      pathD += ' C' + cpx + ',' + ppy.toFixed(1) + ' ' + cpx + ',' + py.toFixed(1) + ' ' + px.toFixed(1) + ',' + py.toFixed(1);
+    }
+  }
+
+  /* Fill path */
+  var fillD = pathD + ' L' + toX(n - 1).toFixed(1) + ',' + (PAD.top + cH).toFixed(1) + ' L' + PAD.left.toFixed(1) + ',' + (PAD.top + cH).toFixed(1) + ' Z';
+
+  /* Live dot */
+  var lx = toX(n - 1).toFixed(1), ly = toY(data[n - 1]).toFixed(1);
+
+  /* X labels */
+  var xLabelHtml = (labels || []).map(function(lbl, i) {
+    var lx2 = (PAD.left + (i / (labels.length - 1)) * cW).toFixed(1);
+    return '<text x="' + lx2 + '" y="' + (H - 4) + '" text-anchor="middle" font-size="10" font-family="Helvetica,Arial,sans-serif" fill="rgba(54,50,45,0.45)">' + lbl + '</text>';
+  }).join('');
+
+  var gradId = containerId + '-grad';
+
+  return '<svg id="' + containerId + '" width="100%" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" style="display:block;">'
+    + '<defs><linearGradient id="' + gradId + '" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="' + color + '" stop-opacity="0.15"/>'
+    + '<stop offset="100%" stop-color="' + color + '" stop-opacity="0"/>'
+    + '</linearGradient>'
+    + '<clipPath id="' + containerId + '-clip"><rect x="' + PAD.left + '" y="' + PAD.top + '" width="' + cW + '" height="' + cH + '"/></clipPath>'
+    + '</defs>'
+    + gridLines + yLabels
+    + '<g clip-path="url(#' + containerId + '-clip)">'
+    + '<path d="' + fillD + '" fill="url(#' + gradId + ')"/>'
+    + '<path d="' + pathD + '" stroke="' + color + '" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>'
+    + '<circle cx="' + lx + '" cy="' + ly + '" r="3.5" fill="' + color + '"/>'
+    + '<circle cx="' + lx + '" cy="' + ly + '" r="7" fill="' + color + '" opacity="0.2"/>'
+    + '</g>'
+    + xLabelHtml
+    + '</svg>';
+}
+
+
+/* ── Text Messaging Tab ─────────────────────────────── */
+var tkMsgHistory = [
+  { type:'date', text:'November 18, 2026' },
+  { type:'user', sender:'Emily Carter', text:'I need you to come back to the plant.', time:'03:36pm' },
+  { type:'driver', sender:'John D Ramsey', text:'10-4, will do.', time:'03:45pm' },
+  { type:'date', text:'November 21, 2026' },
+  { type:'user', sender:'Emily Carter', text:'When you get back to the plant, can you wash out the truck? Let\'s talk after.', time:'04:02pm' },
+  { type:'driver', sender:'John D Ramsey', text:'10-4, will do.', time:'04:12pm' },
+];
+
+var TK_QUICK_REPLIES = ['10-4', 'K', 'On my way', 'Give me 5 min', 'Almost there'];
+
+function tkNow() {
+  var d = new Date();
+  var h = d.getHours(), m = d.getMinutes();
+  var ampm = h >= 12 ? 'pm' : 'am';
+  h = h % 12 || 12;
+  return h + ':' + (m < 10 ? '0'+m : m) + ampm;
+}
+
+function tkMsgBubble(msg) {
+  if (msg.type === 'date') {
+    return '<div class="tk-msg-date-divider">' + msg.text + '</div>';
+  }
+  if (msg.type === 'user') {
+    return '<div class="tk-msg-row-user">' +
+      '<div class="tk-msg-sender">' + msg.sender + '</div>' +
+      '<div class="tk-msg-bubble-user">' + msg.text + '</div>' +
+      '<div class="tk-msg-time">' + msg.time + '</div>' +
+    '</div>';
+  }
+  if (msg.type === 'driver') {
+    return '<div class="tk-msg-row-driver">' +
+      '<div class="tk-msg-sender">' + msg.sender + '</div>' +
+      '<div class="tk-msg-bubble-driver">' + msg.text + '</div>' +
+      '<div class="tk-msg-time">' + msg.time + '</div>' +
+    '</div>';
+  }
+  return '';
+}
+
+function tkMsgRender() {
+  var scroll = document.getElementById('tk-msg-scroll');
+  if (!scroll) return;
+  scroll.innerHTML = tkMsgHistory.map(tkMsgBubble).join('');
+  scroll.scrollTop = scroll.scrollHeight;
+}
+
+
+function tkMsgSend() {
+  var input = document.getElementById('tk-msg-input');
+  if (!input) return;
+  var text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  /* Add user message */
+  tkMsgHistory.push({ type:'user', sender:'Emily Carter', text:text, time:tkNow() });
+  var scroll = document.getElementById('tk-msg-scroll');
+  if (!scroll) return;
+  /* Remove old quick row if present */
+  var qr = document.getElementById('tk-quick-row');
+  if (qr) qr.remove();
+  var el = document.createElement('div');
+  el.innerHTML = tkMsgBubble(tkMsgHistory[tkMsgHistory.length-1]);
+  scroll.appendChild(el.firstChild);
+  scroll.scrollTop = scroll.scrollHeight;
+
+  /* Show typing indicator then driver auto-replies */
+  var typingEl = document.createElement('div');
+  typingEl.className = 'tk-msg-row-driver';
+  typingEl.id = 'tk-msg-typing';
+  typingEl.innerHTML = '<div class="tk-msg-sender">' + (tkCurrentTicket ? tkCurrentTicket.driver : 'Driver') + '</div>' +
+    '<div class="tk-msg-typing"><span></span><span></span><span></span></div>';
+  scroll.appendChild(typingEl);
+  scroll.scrollTop = scroll.scrollHeight;
+
+  /* After 1.5s auto-send a driver response */
+  setTimeout(function() {
+    var typing = document.getElementById('tk-msg-typing');
+    if (typing) typing.remove();
+    var replies = ['10-4', 'K', 'On my way', 'Give me 5 min', 'Almost there', 'Roger that', 'Copy'];
+    var reply = replies[Math.floor(Math.random() * replies.length)];
+    var driver = tkCurrentTicket ? tkCurrentTicket.driver : 'Driver';
+    tkMsgHistory.push({ type:'driver', sender:driver, text:reply, time:tkNow() });
+    var el = document.createElement('div');
+    el.innerHTML = tkMsgBubble(tkMsgHistory[tkMsgHistory.length-1]);
+    scroll.appendChild(el.firstChild);
+    scroll.scrollTop = scroll.scrollHeight;
+  }, 1500);
+}
+
+function tkRenderMessaging(scroll) {
+  scroll.style.padding = '0';
+  scroll.style.overflow = 'hidden';
+  scroll.style.display = 'flex';
+  scroll.style.flexDirection = 'column';
+  scroll.innerHTML =
+    '<div class="tk-msg-wrap">' +
+      '<div class="tk-msg-scroll" id="tk-msg-scroll"></div>' +
+      '<div class="tk-msg-input-bar">' +
+        '<div class="tk-msg-input-inner">' +
+          '<input class="tk-msg-input-field" id="tk-msg-input" placeholder="Send a message..." ' +
+            'onkeydown="if(event.key===\'Enter\')tkMsgSend()" />' +
+          '<button class="tk-msg-send-btn" onclick="tkMsgSend()" title="Send">' +
+            '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12.5 1.5L6.5 7.5M12.5 1.5L8.5 12.5L6.5 7.5L1.5 5.5L12.5 1.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+          '</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  tkMsgRender();
+}
+
+function tkGoTruck(truckNum) {
+  tkCloseDrawer();
+  setTimeout(() => {
+    if (typeof dtNavGo === 'function') dtNavGo('trucks');
+    if (typeof dtOpenTruck === 'function') setTimeout(() => dtOpenTruck(truckNum), 150);
+  }, 100);
+}
+
+function tkInit() {
+  tkColState = TK_COL_DEFS.map(c => ({...c}));
+  tkRebuildTable();
+  const sub = document.getElementById('tk-subtitle');
+  if (sub) {
+    const now = new Date();
+    sub.textContent = 'Last updated: Today, ' + now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});
+  }
 }
 
 /* Maps component card names → CC_TRUCKS component names */
@@ -12105,12 +13188,48 @@ const SEN_CONFIGS = {
     seed:[8,8,9,8,9,10,9,8,9,10,9,8,9,8,9,8,10,9,8,9,8,9,10,9,8,8,9,8,9,9],
     liveKey:'sv-sat', liveUnit:' sats', liveDecimals:0,
     liveBase:8, liveRange:2,
-    threshold: 4,     /* dashed minimum — below this GPS fix is unreliable */
+    threshold: 4,
     phases: ['LP','AS','BP'],
     phaseIdxs: [4, 15, 26],
     timeLabels: ['01:25','01:30','01:40','02:10','02:15'],
     ySteps: [0, 4, 8, 12, 14],
     tooltipLabel: 'Satellites'
+  },
+  temp: {
+    title:'Temperature', unit:'°F', color:'#d70100',
+    type:'line', min:40, max:120,
+    seed:[78,79,80,80,81,82,83,83,84,85,86,86,87,88,88,89,90,91,91,92,93,94,94,95,96,97,97,98,99,100],
+    liveKey:'sv-temp', liveUnit:'°F', liveDecimals:0,
+    liveBase:91, liveRange:3,
+    phases: ['LP','AS','BP'],
+    phaseIdxs: [4, 15, 26],
+    timeLabels: ['01:25','01:30','01:40','02:10','02:15'],
+    ySteps: [40, 60, 80, 100, 120],
+    tooltipLabel: 'Temp'
+  },
+  admix: {
+    title:'Admix Addition', unit:'oz', color:'#7c3aed',
+    type:'line', min:0, max:200,
+    seed:[0,5,10,18,25,35,48,62,75,88,100,112,122,132,140,148,155,161,166,170,174,177,179,181,183,184,185,186,187,188],
+    liveKey:'sv-admix', liveUnit:' oz', liveDecimals:1,
+    liveBase:130, liveRange:5,
+    phases: ['LP','AS','BP'],
+    phaseIdxs: [4, 15, 26],
+    timeLabels: ['01:25','01:30','01:40','02:10','02:15'],
+    ySteps: [0, 50, 100, 150, 200],
+    tooltipLabel: 'Admix'
+  },
+  revs: {
+    title:'Total Revolutions', unit:'rev', color:'#059669',
+    type:'line', min:0, max:250,
+    seed:[0,10,22,36,52,70,90,112,130,148,163,176,187,196,204,210,215,219,222,224,226,227,228,229,230,231,231,232,232,233],
+    liveKey:'sv-revs', liveUnit:' rev', liveDecimals:0,
+    liveBase:200, liveRange:5,
+    phases: ['LP','AS','BP'],
+    phaseIdxs: [4, 15, 26],
+    timeLabels: ['01:25','01:30','01:40','02:10','02:15'],
+    ySteps: [0, 50, 100, 150, 200, 250],
+    tooltipLabel: 'Revolutions'
   }
 };
 
@@ -17931,39 +19050,33 @@ let dtUnitsSearchQuery = '';
 
 function dtNavGo(page) {
   dtUnitsActivePage = page;
-  const trucks = document.getElementById('dt-page-trucks');
-  const units  = document.getElementById('dt-page-units');
-  if (trucks) trucks.style.display = page === 'trucks' ? '' : 'none';
-  if (units)  units.style.display  = page === 'units'  ? '' : 'none';
+  const trucks  = document.getElementById('dt-page-trucks');
+  const units   = document.getElementById('dt-page-units');
+  const tickets = document.getElementById('dt-page-tickets');
+  if (trucks)  trucks.style.display  = page === 'trucks'  ? '' : 'none';
+  if (units)   units.style.display   = page === 'units'   ? '' : 'none';
+  if (tickets) { tickets.style.display = page === 'tickets' ? 'flex' : 'none'; if (page === 'tickets') tkInit(); }
 
   // Sidenav active state — respects dark mode
-  const navT = document.getElementById('dt-nav-trucks');
-  const navU = document.getElementById('dt-nav-units');
-  if (navT && navU) {
-    const dark = document.body.classList.contains('dark');
-    const activeBg  = dark ? '#e3f200' : '#3069e3';
-    const activeClr = dark ? '#000' : '#ffffff';
-    const inactiveClr = dark ? 'rgba(255,255,255,0.45)' : 'rgba(54,50,45,0.5)';
-    if (page === 'units') {
-      navU.style.background = activeBg;
-      navU.dataset.active = '1';
-      navU.querySelector('span').style.color = activeClr;
-      navU.querySelector('span').style.fontWeight = '500';
-      navT.style.background = '';
-      delete navT.dataset.active;
-      navT.querySelector('span').style.color = inactiveClr;
-      navT.querySelector('span').style.fontWeight = '';
-    } else {
-      navT.style.background = activeBg;
-      navT.dataset.active = '1';
-      navT.querySelector('span').style.color = activeClr;
-      navT.querySelector('span').style.fontWeight = '500';
-      navU.style.background = '';
-      delete navU.dataset.active;
-      navU.querySelector('span').style.color = inactiveClr;
-      navU.querySelector('span').style.fontWeight = '';
-    }
-  }
+  const navT  = document.getElementById('dt-nav-trucks');
+  const navU  = document.getElementById('dt-nav-units');
+  const navTk = document.getElementById('dt-nav-tickets');
+  const dark = document.body.classList.contains('dark');
+  const activeBg   = dark ? '#e3f200' : '#3069e3';
+  const activeClr  = dark ? '#000' : '#ffffff';
+  const inactiveClr = dark ? 'rgba(255,255,255,0.45)' : 'rgba(54,50,45,0.5)';
+
+  [
+    { el: navT,  active: page === 'trucks'  },
+    { el: navU,  active: page === 'units'   },
+    { el: navTk, active: page === 'tickets' },
+  ].forEach(({ el, active }) => {
+    if (!el) return;
+    el.style.background = active ? activeBg : '';
+    if (active) el.dataset.active = '1'; else delete el.dataset.active;
+    const span = el.querySelector('span');
+    if (span) { span.style.color = active ? activeClr : inactiveClr; span.style.fontWeight = active ? '500' : ''; }
+  });
 
   if (page === 'units') dtUnitsRender();
 }
@@ -25049,7 +26162,7 @@ function dtBuildSensor() {
         ${chipsHtml}
       </div>
       <!-- Chart cards — 2-col grid -->
-      <div id="dt-sen-charts" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;"></div>
+      <div id="dt-sen-charts" style="display:grid;grid-template-columns:1fr;gap:12px;"></div>
     </div>`;
 }
 

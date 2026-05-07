@@ -10191,6 +10191,8 @@ function tkTab(el, tab) {
   el.classList.add('active');
   const scroll = document.getElementById('tk-drawer-scroll');
   if (!scroll) return;
+  /* Reset scroll styles — each tab sets what it needs */
+  scroll.style.cssText = 'flex:1;overflow-y:auto;';
 
   if (tab === 'status') {
     senStop();
@@ -10204,7 +10206,8 @@ function tkTab(el, tab) {
     senSelected.clear();
     senSelected.add('slump');
     senSelected.add('water');
-    scroll.innerHTML = dtBuildSensor();
+    scroll.style.padding = '16px';
+    scroll.innerHTML = tkBuildSensor();
     requestAnimationFrame(function() {
       dtSenRenderCards();
       if (!senAnimId) setTimeout(function(){ senTick(); }, 300);
@@ -10406,6 +10409,36 @@ function tkRenderMessaging(scroll) {
       '</div>' +
     '</div>';
   tkMsgRender();
+}
+
+function tkBuildSensor() {
+  const chips = [
+    { key:'slump',    label:'Slump',         },
+    { key:'water',    label:'Water Add.',     },
+    { key:'admix',    label:'Admix',          },
+    { key:'revs',     label:'Total Revs',     },
+    { key:'drum',     label:'Drum Speed',     },
+    { key:'temp',     label:'Temperature',    },
+  ];
+
+  const chipsHtml = chips.map(c => {
+    const isActive = senSelected.has(c.key);
+    const cfg = SEN_CONFIGS[c.key];
+    if (!cfg) return '';
+    const val = `<span class="sen-chip-val" id="dt-sv-${c.key}">${cfg.liveBase.toFixed(cfg.liveDecimals)}<span class="sen-chip-unit"> ${cfg.liveUnit}</span></span>`;
+    return `<div class="sen-chip${isActive ? ' active' : ''}" data-sensor="${c.key}" onclick="dtSenToggle(this)">
+      <div class="sen-chip-label">${c.label}</div>
+      ${val}
+    </div>`;
+  }).join('');
+
+  return `
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div id="dt-sen-chips" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;">
+        ${chipsHtml}
+      </div>
+      <div id="dt-sen-charts" style="display:grid;grid-template-columns:1fr;gap:12px;"></div>
+    </div>`;
 }
 
 function tkGoTruck(truckNum) {
@@ -14202,6 +14235,9 @@ function senTick() {
         senRedrawCell();
       } else if (key === 'sat') {
         senRedrawSat();
+      } else if (key === 'admix' || key === 'revs' || key === 'temp') {
+        const wrap = document.getElementById('dt-' + key + '-svg-wrap');
+        if (wrap) senDrawLineSVG('dt-' + key + '-svg-wrap', false, key);
       } else {
         senDrawChart(key);
         senDrawChart('dt-' + key, key);
@@ -26226,6 +26262,9 @@ function dtSenRenderCards() {
     if (senSelected.has('pressure')) senDrawLineSVG('dt-pressure-svg-wrap', true, 'pressure');
     if (senSelected.has('cell'))     senDrawLineSVG('dt-cell-svg-wrap', true, 'cell');
     if (senSelected.has('sat'))      senDrawLineSVG('dt-sat-svg-wrap', true, 'sat');
+    if (senSelected.has('admix'))    senDrawLineSVG('dt-admix-svg-wrap', true, 'admix');
+    if (senSelected.has('revs'))     senDrawLineSVG('dt-revs-svg-wrap', true, 'revs');
+    if (senSelected.has('temp'))     senDrawLineSVG('dt-temp-svg-wrap', true, 'temp');
   });
 }
 

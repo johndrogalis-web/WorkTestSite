@@ -194,8 +194,40 @@
     box-shadow:0 1px 0 rgba(0,0,0,0.1);
     width:396px;
     box-sizing:border-box;
+    cursor:pointer;
+    position:relative;
+    transition:border-color 0.15s, background 0.15s, box-shadow 0.15s;
   }
+  .swu-truck-card:hover { border-color:var(--border-mid); }
+  .swu-truck-card.selected {
+    border-color:var(--blue);
+    background:#f5f8ff;
+    box-shadow:0 0 0 1px var(--blue), 0 1px 0 rgba(0,0,0,0.1);
+  }
+  body.dark .swu-truck-card.selected {
+    background:rgba(48,105,227,0.12);
+  }
+  .swu-truck-card.locked {
+    opacity:0.55; cursor:not-allowed;
+  }
+  .swu-tc-check {
+    position:absolute; top:12px; right:12px;
+    width:20px; height:20px; border-radius:50%;
+    background:var(--blue); color:#fff;
+    display:none; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .swu-truck-card.selected .swu-tc-check { display:flex; }
+
   .swu-header-card { gap:0; }
+  .swu-header-card { cursor:pointer; }
+  .swu-header-card.all-selected {
+    background:var(--blue);
+  }
+  .swu-header-card.all-selected .swu-hdr-title,
+  .swu-header-card.all-selected .swu-hdr-count {
+    color:#fff;
+  }
   .swu-hdr-row {
     display:flex; align-items:flex-start;
     gap:10px; height:26px;
@@ -315,9 +347,13 @@
     font-family:var(--font); font-size:12px;
     color:var(--defined); letter-spacing:-0.24px;
   }
+  .swu-dd-wrap {
+    position:relative;
+  }
   .swu-dropdown {
     display:flex; align-items:center; justify-content:space-between;
     gap:8px;
+    width:100%;
     padding:12px;
     background:transparent;
     border:1px solid #36322d80;
@@ -325,19 +361,56 @@
     font-family:var(--font); font-size:14px;
     color:var(--strong); letter-spacing:-0.28px;
     cursor:pointer;
+    text-align:left;
   }
   .swu-dropdown:hover { border-color:var(--strong); }
+  .swu-dd-wrap.open .swu-dropdown { border-color:var(--strong); }
+  .swu-dd-wrap.open .swu-dd-chev { transform:rotate(180deg); }
+  .swu-dd-chev { transition:transform 0.15s; flex-shrink:0; }
+  .swu-dd-value { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .swu-dd-value.placeholder { color:var(--soft); }
+
+  .swu-dd-menu {
+    display:none;
+    position:absolute; top:calc(100% + 4px); left:0; right:0;
+    background:var(--layer-1);
+    border:1px solid var(--border);
+    border-radius:8px;
+    box-shadow:0 4px 16px rgba(54,50,45,0.10);
+    padding:4px;
+    z-index:50;
+    max-height:240px; overflow-y:auto;
+  }
+  .swu-dd-wrap.open .swu-dd-menu { display:block; }
+  .swu-dd-opt {
+    padding:10px 12px;
+    border-radius:6px;
+    font-family:var(--font); font-size:14px;
+    color:var(--strong); letter-spacing:-0.28px;
+    cursor:pointer;
+    transition:background 0.12s;
+  }
+  .swu-dd-opt:hover { background:var(--layer-2); }
+  .swu-dd-opt-selected { color:var(--blue); font-weight:500; }
+
   .swu-send-btn {
     display:flex; align-items:center; justify-content:center; gap:8px;
-    height:40px; width:100%;
-    padding:0 16px;
+    height:48px; width:100%;
+    padding:0 20px;
     background:var(--blue); color:#fff;
     border:none; border-radius:32px;
-    font-family:var(--font); font-size:14px; font-weight:500;
-    letter-spacing:-0.28px;
+    font-family:var(--font); font-size:15px; font-weight:500;
+    letter-spacing:-0.3px;
     cursor:pointer;
+    transition:opacity 0.15s, transform 0.15s;
   }
   .swu-send-btn:hover { opacity:0.92; }
+  .swu-send-btn:active { transform:scale(0.98); }
+  .swu-send-btn:disabled {
+    background:#36322d24;
+    cursor:not-allowed;
+    opacity:1;
+  }
   .swu-send-meta {
     font-family:var(--font); font-size:14px;
     color:#36322d5c; /* disabled token */
@@ -432,6 +505,141 @@
     font-family:var(--font); font-size:13px; line-height:1.5;
     color:var(--defined); letter-spacing:-0.13px;
   }
+
+  /* ─── Populated overview table ─── */
+  .swu-overview-pop {
+    display:flex; flex-direction:column;
+    width:100%;
+  }
+  .swu-ovt-thead {
+    display:grid;
+    grid-template-columns: 1fr 1.4fr 1fr 24px;
+    align-items:center;
+    border-bottom:1px solid var(--border);
+    padding-bottom:6px;
+  }
+  .swu-ovt-th {
+    padding:0 8px;
+    font-family:var(--font); font-size:12px; font-weight:500;
+    color:var(--strong); letter-spacing:-0.24px;
+  }
+  .swu-ovt-tbody {
+    display:flex; flex-direction:column;
+  }
+  .swu-ovt-row {
+    display:grid;
+    grid-template-columns: 1fr 1.4fr 1fr 24px;
+    align-items:center;
+    height:36px;
+    transition:background 0.15s;
+  }
+  .swu-ovt-row.alt { background:var(--layer-1); }
+  .swu-ovt-row.alt:first-child { border-radius:4px 4px 0 0; }
+  .swu-ovt-row-cell {
+    padding:0 8px;
+    font-family:var(--font); font-size:14px;
+    color:var(--strong); letter-spacing:-0.28px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .swu-ovt-row-cell.vers {
+    font-family:'Inter', sans-serif; font-size:14px;
+    color:var(--strong);
+  }
+  .swu-ovt-row.expandable { cursor:pointer; }
+  .swu-ovt-row.expandable:hover { background:var(--layer-2); }
+  .swu-ovt-row.expandable.alt:hover { background:var(--border); }
+  .swu-ovt-chev {
+    display:flex; align-items:center; justify-content:center;
+    transition:transform 0.18s;
+    color:var(--soft);
+  }
+  .swu-ovt-row.expanded .swu-ovt-chev { transform:rotate(180deg); }
+
+  /* Status pills */
+  .swu-status {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:2px 10px;
+    border-radius:32px;
+    font-size:12px; font-weight:500; letter-spacing:-0.24px;
+    line-height:1.4;
+  }
+  .swu-status-pending  { background:rgba(54,50,45,0.10); color:var(--defined); }
+  .swu-status-progress { background:#fff4d9; color:#a16207; }
+  body.dark .swu-status-progress { background:rgba(255,186,13,0.18); color:#ffba0d; }
+  .swu-status-complete { background:#dcf5e6; color:#15803d; }
+  body.dark .swu-status-complete { background:rgba(34,197,94,0.18); color:#4ade80; }
+  .swu-status-failed   { background:#fde2e1; color:var(--red); }
+  body.dark .swu-status-failed { background:rgba(215,1,0,0.18); color:#f87171; }
+
+  /* Status spinner for In Progress */
+  .swu-spinner {
+    width:10px; height:10px; border-radius:50%;
+    border:1.5px solid currentColor;
+    border-top-color:transparent;
+    animation:swu-spin 0.7s linear infinite;
+    flex-shrink:0;
+  }
+  @keyframes swu-spin { to { transform:rotate(360deg); } }
+
+  /* Expanded body — per-component breakdown */
+  .swu-ovt-expand {
+    grid-column: 1 / -1;
+    background:var(--layer-2);
+    border-top:1px solid var(--border);
+    padding:12px 16px;
+    display:none;
+  }
+  body.dark .swu-ovt-expand { background:rgba(255,255,255,0.03); }
+  .swu-ovt-row.expanded + .swu-ovt-expand { display:block; }
+  .swu-comp-title {
+    font-family:var(--font); font-size:11px; font-weight:600;
+    color:var(--soft); letter-spacing:0.4px; text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  .swu-comp-grid {
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .swu-comp-row {
+    display:grid;
+    grid-template-columns: 1fr auto auto;
+    gap:12px;
+    align-items:center;
+    padding:6px 8px;
+    border-radius:6px;
+    background:var(--layer-1);
+    border:1px solid var(--border);
+  }
+  .swu-comp-name {
+    font-family:var(--font); font-size:13px; font-weight:500;
+    color:var(--strong); letter-spacing:-0.26px;
+  }
+  .swu-comp-vers {
+    font-family:'Inter', sans-serif; font-size:12px;
+    color:var(--defined); letter-spacing:-0.1px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .swu-comp-vers-arrow { color:var(--soft); }
+  .swu-comp-status {
+    display:inline-flex; align-items:center; gap:5px;
+    padding:1px 8px;
+    border-radius:32px;
+    font-size:11px; font-weight:500; letter-spacing:-0.22px;
+  }
+  .swu-comp-status.complete { background:#dcf5e6; color:#15803d; }
+  .swu-comp-status.failed   { background:#fde2e1; color:var(--red); }
+  .swu-comp-status.skipped  { background:rgba(54,50,45,0.06); color:var(--soft); }
+  body.dark .swu-comp-status.complete { background:rgba(34,197,94,0.18); color:#4ade80; }
+  body.dark .swu-comp-status.failed   { background:rgba(215,1,0,0.18); color:#f87171; }
+  body.dark .swu-comp-status.skipped  { background:rgba(255,255,255,0.06); color:var(--soft); }
+
+  .swu-fail-banner {
+    background:#fef2f2; border:1px solid rgba(215,1,0,0.20);
+    border-radius:6px;
+    padding:8px 12px; margin-bottom:8px;
+    font-family:var(--font); font-size:12px; line-height:1.5;
+    color:var(--red); letter-spacing:-0.24px;
+  }
+  body.dark .swu-fail-banner { background:rgba(215,1,0,0.10); }
 
 </style>
 
@@ -543,11 +751,11 @@
 
               <!-- Left: truck card stack -->
               <div class="swu-left">
-                <!-- Header card -->
-                <div class="swu-truck-card swu-header-card">
+                <!-- Header card — click to toggle select-all -->
+                <div class="swu-truck-card swu-header-card" id="swu-select-all-card" onclick="swuToggleAll()">
                   <div class="swu-hdr-row">
-                    <div class="swu-hdr-title">Select All Trucks</div>
-                    <div class="swu-hdr-count">72 Trucks</div>
+                    <div class="swu-hdr-title" id="swu-select-all-label">Select All Trucks</div>
+                    <div class="swu-hdr-count" id="swu-select-all-count">72 Trucks</div>
                   </div>
                 </div>
                 <!-- Truck cards (populated by swuFigmaInit) -->
@@ -563,26 +771,40 @@
 
                   <div class="swu-field">
                     <div class="swu-field-label">Select Release Version</div>
-                    <div class="swu-dropdown">
-                      <span>Choose your Package</span>
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                    <div class="swu-dd-wrap" data-dd="version">
+                      <button class="swu-dropdown" type="button" onclick="swuDdToggle('version')">
+                        <span class="swu-dd-value" id="swu-dd-val-version" data-placeholder="Choose your Package">Choose your Package</span>
+                        <svg class="swu-dd-chev" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                      </button>
+                      <div class="swu-dd-menu" id="swu-dd-menu-version" role="listbox">
+                        <div class="swu-dd-opt" role="option" onclick="swuDdSelect('version', 'v5.0.1')">v5.0.1</div>
+                        <div class="swu-dd-opt" role="option" onclick="swuDdSelect('version', 'v5.0.0')">v5.0.0</div>
+                        <div class="swu-dd-opt" role="option" onclick="swuDdSelect('version', 'v4.9.8')">v4.9.8</div>
+                        <div class="swu-dd-opt" role="option" onclick="swuDdSelect('version', 'v4.9.7')">v4.9.7</div>
+                      </div>
                     </div>
                   </div>
 
                   <div class="swu-field">
                     <div class="swu-field-label">Select When To Commit Updates</div>
-                    <div class="swu-dropdown">
-                      <span>On Next Startup</span>
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                    <div class="swu-dd-wrap" data-dd="commit">
+                      <button class="swu-dropdown" type="button" onclick="swuDdToggle('commit')">
+                        <span class="swu-dd-value" id="swu-dd-val-commit" data-placeholder="Select timing">On Next Startup</span>
+                        <svg class="swu-dd-chev" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                      </button>
+                      <div class="swu-dd-menu" id="swu-dd-menu-commit" role="listbox">
+                        <div class="swu-dd-opt swu-dd-opt-selected" role="option" onclick="swuDdSelect('commit', 'On Next Startup')">On Next Startup</div>
+                        <div class="swu-dd-opt" role="option" onclick="swuDdSelect('commit', 'Now')">Now</div>
+                      </div>
                     </div>
                   </div>
 
-                  <button class="swu-send-btn">
+                  <button class="swu-send-btn" onclick="swuSendUpdates()">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l10-5-3 12-2.5-4.5L2 7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
                     Send Updates
                   </button>
 
-                  <div class="swu-send-meta">Sending to 1 Trucks</div>
+                  <div class="swu-send-meta" id="swu-send-meta">No trucks selected</div>
                 </div>
               </div>
 
@@ -624,28 +846,16 @@
                     </div>
                   </div>
 
-                  <!-- Populated table (hidden until a selection is made) -->
-                  <div class="swu-overview-table" id="swu-overview-populated" style="display:none;">
-                    <div class="swu-ovt-col">
-                      <div class="swu-ovt-cell swu-ovt-head">Trucks</div>
-                      <div class="swu-ovt-cell">64566</div>
-                      <div class="swu-ovt-cell swu-ovt-alt">24994</div>
-                      <div class="swu-ovt-cell">64566</div>
-                      <div class="swu-ovt-cell swu-ovt-alt">24994</div>
+                  <!-- Populated table (hidden until a selection is made) — built dynamically by swuRenderOverview() -->
+                  <div class="swu-overview-pop" id="swu-overview-populated" style="display:none;">
+                    <div class="swu-ovt-thead">
+                      <div class="swu-ovt-th swu-ovt-th-truck">Trucks</div>
+                      <div class="swu-ovt-th swu-ovt-th-update">Update</div>
+                      <div class="swu-ovt-th swu-ovt-th-vers">Package Version</div>
+                      <div class="swu-ovt-th swu-ovt-th-chev"></div>
                     </div>
-                    <div class="swu-ovt-col">
-                      <div class="swu-ovt-cell swu-ovt-head">Update</div>
-                      <div class="swu-ovt-cell swu-ovt-update">Confirmed</div>
-                      <div class="swu-ovt-cell swu-ovt-alt swu-ovt-update">Failed</div>
-                      <div class="swu-ovt-cell swu-ovt-update">In Progress</div>
-                      <div class="swu-ovt-cell swu-ovt-alt swu-ovt-update">-</div>
-                    </div>
-                    <div class="swu-ovt-col">
-                      <div class="swu-ovt-cell swu-ovt-head">Package Version</div>
-                      <div class="swu-ovt-cell swu-ovt-vers">v2.4.1</div>
-                      <div class="swu-ovt-cell swu-ovt-alt swu-ovt-vers">v2.4.0</div>
-                      <div class="swu-ovt-cell swu-ovt-vers">v2.4.1</div>
-                      <div class="swu-ovt-cell swu-ovt-alt swu-ovt-vers">v2.4.0</div>
+                    <div class="swu-ovt-tbody" id="swu-ovt-tbody">
+                      <!-- Rows injected here -->
                     </div>
                   </div>
 
@@ -696,45 +906,393 @@
    SOFTWARE UPDATE PAGE — Figma node 1:15544 ported as-is
    Generates the truck card stack from the Figma's repeated card.
    ============================================================ */
+
+/* The 5 trucks shown in the visible area. Real product would pull
+   this from fleet data; mocked here for prototype. */
+window.SWU_TRUCKS = [
+  { num: '6371',  driver: 'Chris Jennings',  ign: 'on',  loadedMin: 73,  mode: 'Live',          plant: 'Buckeye',     phase: 'Waiting to load', phaseFor: '12 min', currentVer: 'v2.3.8' },
+  { num: '6428',  driver: 'Marcus Whitley',  ign: 'on',  loadedMin: 41,  mode: 'Live',          plant: 'Buckeye',     phase: 'In transit',      phaseFor: '8 min',  currentVer: 'v2.3.8' },
+  { num: '6502',  driver: 'Daniel Reyes',    ign: 'off', loadedMin: 0,   mode: 'Out of service', plant: 'Phoenix Central', phase: 'At plant',  phaseFor: '24 min', currentVer: 'v2.3.7' },
+  { num: '6611',  driver: 'Aaron Chen',      ign: 'on',  loadedMin: 12,  mode: 'Live',          plant: 'Phoenix Central', phase: 'Discharging', phaseFor: '6 min',  currentVer: 'v2.3.8' },
+  { num: '6745',  driver: 'Tomás Herrera',   ign: 'on',  loadedMin: 88,  mode: 'Live',          plant: 'Glendale',    phase: 'Waiting to load', phaseFor: '3 min',  currentVer: 'v2.3.6' },
+];
+
+/* Master state for the page. Survives multiple swuFigmaInit calls
+   (when shell re-routes to this page). */
+window.swuState = window.swuState || {
+  selected: new Set(),         // truck nums currently selected (Pending in table)
+  inFlight: new Set(),         // truck nums where Send was just hit (In Progress)
+  completed: new Map(),        // truckNum -> { version, components: [...] }
+  failed: new Map(),           // truckNum -> { version, components: [...], failedComponent: 'TCG' }
+  expanded: new Set(),         // truck nums with expanded row in the overview table
+};
+
 function swuFigmaInit() {
   const stack = document.getElementById('swu-truck-stack');
   if (!stack) return;
-  if (stack.dataset.built === '1') return;
-  // Figma shows 5 visually-identical truck cards in the visible area
-  const card =
-    '<div class="swu-truck-card">' +
-      '<div class="swu-tc-block-1">' +
-        '<div class="swu-tc-row">' +
-          '<div class="swu-tc-id">' +
-            '<span>6371</span>' +
-            '<span class="swu-tc-driver">Chris Jennings</span>' +
+  if (stack.dataset.built === '1') {
+    // Already built; just re-render in case state changed while page was hidden
+    swuRenderOverview();
+    swuUpdateSendMeta();
+    return;
+  }
+
+  function renderCard(t) {
+    const ignDot = t.ign === 'on'
+      ? '<span class="swu-tc-ign-dot"></span>'
+      : '<span class="swu-tc-ign-dot off"></span>';
+    const ignText = t.ign === 'on' ? 'Ignition on' : 'Ignition off';
+    const loadedRow = (t.loadedMin > 0)
+      ? '<div class="swu-tc-loaded"><span>Loaded</span><span>' + t.loadedMin + '</span><span>min ago</span></div>'
+      : '<div class="swu-tc-loaded"><span>Not loaded</span></div>';
+    return (
+      '<div class="swu-truck-card" data-truck="' + t.num + '" onclick="swuToggleTruck(\'' + t.num + '\')">' +
+        '<div class="swu-tc-check">' +
+          '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5L9.5 3.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+        '</div>' +
+        '<div class="swu-tc-block-1">' +
+          '<div class="swu-tc-row">' +
+            '<div class="swu-tc-id">' +
+              '<span>' + t.num + '</span>' +
+              '<span class="swu-tc-driver">' + t.driver + '</span>' +
+            '</div>' +
+            '<div class="swu-tc-ign">' + ignDot + '<span>' + ignText + '</span></div>' +
           '</div>' +
-          '<div class="swu-tc-ign">' +
-            '<span class="swu-tc-ign-dot"></span>' +
-            '<span>Ignition on</span>' +
+          loadedRow +
+        '</div>' +
+        '<div class="swu-tc-grid">' +
+          '<span class="swu-tc-grid-k">Truck Mode</span>' +
+          '<span class="swu-tc-grid-v">' + t.mode + '</span>' +
+          '<span class="swu-tc-grid-k">Plant</span>' +
+          '<span class="swu-tc-grid-v">' + t.plant + '</span>' +
+        '</div>' +
+        '<div class="swu-tc-phase-row">' +
+          '<div class="swu-tc-phase-pill">' + t.phase + '</div>' +
+          '<div class="swu-tc-phase-for">' +
+            '<span class="swu-tc-phase-for-lbl">for</span>' +
+            '<span class="swu-tc-phase-for-val">' + t.phaseFor + '</span>' +
           '</div>' +
         '</div>' +
-        '<div class="swu-tc-loaded">' +
-          '<span>Loaded</span><span>73</span><span>min ago</span>' +
-        '</div>' +
-      '</div>' +
-      '<div class="swu-tc-grid">' +
-        '<span class="swu-tc-grid-k">Truck Mode</span>' +
-        '<span class="swu-tc-grid-v">Live</span>' +
-        '<span class="swu-tc-grid-k">Plant</span>' +
-        '<span class="swu-tc-grid-v">Buckeye</span>' +
-      '</div>' +
-      '<div class="swu-tc-phase-row">' +
-        '<div class="swu-tc-phase-pill">Waiting to load</div>' +
-        '<div class="swu-tc-phase-for">' +
-          '<span class="swu-tc-phase-for-lbl">for</span>' +
-          '<span class="swu-tc-phase-for-val">12 min</span>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
-  stack.innerHTML = card.repeat(5);
+      '</div>'
+    );
+  }
+
+  stack.innerHTML = window.SWU_TRUCKS.map(renderCard).join('');
   stack.dataset.built = '1';
+  swuRefreshCardStates();
+  swuUpdateSendMeta();
 }
+
+/* Toggle a single truck's selection. Respects locked state (in-flight). */
+function swuToggleTruck(num) {
+  const s = window.swuState;
+  // If this truck is in-flight or done, ignore clicks
+  if (s.inFlight.has(num) || s.completed.has(num) || s.failed.has(num)) return;
+
+  if (s.selected.has(num)) s.selected.delete(num);
+  else s.selected.add(num);
+
+  swuRefreshCardStates();
+  swuRenderOverview();
+  swuUpdateSendMeta();
+  swuUpdateSendState();
+}
+
+/* Toggle select-all on the header card. Respects locked trucks. */
+function swuToggleAll() {
+  const s = window.swuState;
+  const eligible = window.SWU_TRUCKS
+    .map(t => t.num)
+    .filter(n => !s.inFlight.has(n) && !s.completed.has(n) && !s.failed.has(n));
+  // If everyone eligible is already selected, deselect all. Otherwise select all eligible.
+  const allSelected = eligible.every(n => s.selected.has(n));
+  if (allSelected) {
+    eligible.forEach(n => s.selected.delete(n));
+  } else {
+    eligible.forEach(n => s.selected.add(n));
+  }
+  swuRefreshCardStates();
+  swuRenderOverview();
+  swuUpdateSendMeta();
+  swuUpdateSendState();
+}
+
+/* Sync visual state of every truck card to swuState. */
+function swuRefreshCardStates() {
+  const s = window.swuState;
+  document.querySelectorAll('.swu-truck-card[data-truck]').forEach(card => {
+    const num = card.dataset.truck;
+    card.classList.toggle('selected', s.selected.has(num));
+    const locked = s.inFlight.has(num) || s.completed.has(num) || s.failed.has(num);
+    card.classList.toggle('locked', locked);
+  });
+  // Header card "all-selected" state
+  const hdr = document.getElementById('swu-select-all-card');
+  if (hdr) {
+    const eligible = window.SWU_TRUCKS
+      .map(t => t.num)
+      .filter(n => !s.inFlight.has(n) && !s.completed.has(n) && !s.failed.has(n));
+    const allSel = eligible.length > 0 && eligible.every(n => s.selected.has(n));
+    hdr.classList.toggle('all-selected', allSel);
+    const lbl = document.getElementById('swu-select-all-label');
+    if (lbl) lbl.textContent = allSel ? 'Deselect All Trucks' : 'Select All Trucks';
+  }
+}
+
+/* Update the "Sending to N Trucks" meta below the Send button. */
+function swuUpdateSendMeta() {
+  const meta = document.getElementById('swu-send-meta');
+  if (!meta) return;
+  const n = window.swuState.selected.size;
+  if (n === 0) meta.textContent = 'No trucks selected';
+  else if (n === 1) meta.textContent = 'Sending to 1 truck';
+  else meta.textContent = 'Sending to ' + n + ' trucks';
+}
+
+/* ============================================================
+   PACKAGE OVERVIEW table render
+   Single source of truth: swuState. Rebuild table from state.
+   ============================================================ */
+function swuRenderOverview() {
+  const empty = document.getElementById('swu-overview-empty');
+  const pop   = document.getElementById('swu-overview-populated');
+  const tbody = document.getElementById('swu-ovt-tbody');
+  const footL = document.getElementById('swu-foot-left');
+  const footR = document.getElementById('swu-foot-right');
+  if (!empty || !pop || !tbody) return;
+
+  const s = window.swuState;
+  // Order: completed (newest at top), failed, in-flight, pending
+  // Within each group, preserve truck order from SWU_TRUCKS for stability.
+  const orderedNums = window.SWU_TRUCKS.map(t => t.num);
+  const rows = [];
+  orderedNums.forEach(num => {
+    if (s.completed.has(num)) rows.push({ num, status:'complete', data: s.completed.get(num) });
+    else if (s.failed.has(num)) rows.push({ num, status:'failed', data: s.failed.get(num) });
+    else if (s.inFlight.has(num)) rows.push({ num, status:'progress', data: { version: s.inFlight._pkg } });
+    else if (s.selected.has(num)) {
+      const truck = window.SWU_TRUCKS.find(t => t.num === num);
+      rows.push({ num, status:'pending', data: { version: truck.currentVer } });
+    }
+  });
+
+  if (rows.length === 0) {
+    empty.style.display = '';
+    pop.style.display = 'none';
+    if (footL) footL.textContent = 'Awaiting selection';
+    if (footR) footR.style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none';
+  pop.style.display = 'flex';
+  if (footL) footL.textContent = '';
+  if (footR) {
+    footR.style.display = '';
+    footR.textContent = '1 - ' + rows.length + ' of ' + rows.length + ' Records';
+  }
+
+  function statusPill(status) {
+    if (status === 'pending')   return '<span class="swu-status swu-status-pending">Pending</span>';
+    if (status === 'progress')  return '<span class="swu-status swu-status-progress"><span class="swu-spinner"></span>In Progress</span>';
+    if (status === 'complete')  return '<span class="swu-status swu-status-complete"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Complete</span>';
+    if (status === 'failed')    return '<span class="swu-status swu-status-failed"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 3l4 4M7 3l-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Failed</span>';
+    return '';
+  }
+
+  function expandableChev(status, isExpanded) {
+    if (status !== 'complete' && status !== 'failed') return '';
+    return '<div class="swu-ovt-chev"><svg width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1.5l5 5 5-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></div>';
+  }
+
+  function expandedBody(num, data, status) {
+    const comps = data.components || [];
+    let banner = '';
+    if (status === 'failed' && data.failedComponent) {
+      banner = '<div class="swu-fail-banner">' + data.failedComponent + ' update failed. Remaining components were skipped to prevent partial state. Re-run the update or contact support.</div>';
+    }
+    const compRows = comps.map(c => {
+      const arrow = '<span class="swu-comp-vers-arrow">→</span>';
+      const versHtml = (c.fromVer && c.toVer)
+        ? c.fromVer + ' ' + arrow + ' ' + c.toVer
+        : (c.toVer || '');
+      const statusClass = c.status; // 'complete' | 'failed' | 'skipped'
+      const statusLabel = c.status === 'complete' ? 'Complete' : (c.status === 'failed' ? 'Failed' : 'Skipped');
+      return (
+        '<div class="swu-comp-row">' +
+          '<div class="swu-comp-name">' + c.name + '</div>' +
+          '<div class="swu-comp-vers">' + versHtml + '</div>' +
+          '<div class="swu-comp-status ' + statusClass + '">' + statusLabel + '</div>' +
+        '</div>'
+      );
+    }).join('');
+    return (
+      '<div class="swu-ovt-expand" data-expand-for="' + num + '">' +
+        banner +
+        '<div class="swu-comp-title">Component update results</div>' +
+        '<div class="swu-comp-grid">' + compRows + '</div>' +
+      '</div>'
+    );
+  }
+
+  tbody.innerHTML = rows.map((r, i) => {
+    const isExpandable = r.status === 'complete' || r.status === 'failed';
+    const isExpanded = isExpandable && s.expanded.has(r.num);
+    const altClass = (i % 2 === 1) ? ' alt' : '';
+    const expClass = (isExpandable ? ' expandable' : '') + (isExpanded ? ' expanded' : '');
+    const onClick = isExpandable ? (' onclick="swuToggleExpand(\'' + r.num + '\')"') : '';
+
+    let html = (
+      '<div class="swu-ovt-row' + altClass + expClass + '"' + onClick + '>' +
+        '<div class="swu-ovt-row-cell">' + r.num + '</div>' +
+        '<div class="swu-ovt-row-cell">' + statusPill(r.status) + '</div>' +
+        '<div class="swu-ovt-row-cell vers">' + (r.data.version || '—') + '</div>' +
+        expandableChev(r.status, isExpanded) +
+      '</div>'
+    );
+    if (isExpandable) {
+      html += expandedBody(r.num, r.data, r.status);
+    }
+    return html;
+  }).join('');
+}
+
+/* Expand or collapse a row in the Package Overview. */
+function swuToggleExpand(num) {
+  const s = window.swuState;
+  if (s.expanded.has(num)) s.expanded.delete(num);
+  else s.expanded.add(num);
+  swuRenderOverview();
+}
+
+/* ============================================================
+   SEND UPDATES — the main action.
+   1. Move all selected → inFlight (status=In Progress in table).
+   2. After 2.5s, resolve each truck:
+      - If 3+ trucks, fail one (deterministic: 2nd-to-last selected).
+      - Otherwise all complete.
+   3. Components: 5 per truck, varied old versions, all upgrade to picked version.
+   4. Failed truck: failed component is "TCG" (the brain), rest are skipped.
+   ============================================================ */
+function swuSendUpdates() {
+  const s = window.swuState;
+  if (s.selected.size === 0) return;
+  if (!window.swuDdState || !window.swuDdState.version || !window.swuDdState.commit) return;
+
+  const newVer = window.swuDdState.version;
+  const sending = Array.from(s.selected);
+
+  // Move selected → inFlight
+  sending.forEach(n => s.inFlight.add(n));
+  s.selected.clear();
+  s.inFlight._pkg = newVer; // remember what version was being sent
+
+  swuRefreshCardStates();
+  swuRenderOverview();
+  swuUpdateSendMeta();
+  swuUpdateSendState();
+
+  // After 2.5s, resolve each truck
+  setTimeout(function() {
+    // Pick the failure target: only if 3+ trucks
+    const failTarget = (sending.length >= 3) ? sending[sending.length - 2] : null;
+
+    sending.forEach(num => {
+      const truck = window.SWU_TRUCKS.find(t => t.num === num);
+      const fromVer = truck ? truck.currentVer : 'v2.3.8';
+
+      // Build component results
+      const baseComps = [
+        { name: 'TCG',           fromVer: fromVer,  toVer: newVer },
+        { name: 'Sensor Module', fromVer: 'v1.4.2', toVer: 'v1.5.0' },
+        { name: 'ICD',           fromVer: 'v3.1.0', toVer: 'v3.2.0' },
+        { name: 'ED',            fromVer: 'v2.2.1', toVer: 'v2.2.5' },
+        { name: 'CWR',           fromVer: 'v1.8.4', toVer: 'v1.8.4', skipReason: 'no change' },
+      ];
+
+      if (num === failTarget) {
+        // TCG fails; subsequent components skipped
+        const components = baseComps.map((c, i) => {
+          if (i === 0) return Object.assign({}, c, { status:'failed', toVer: '—' });
+          return Object.assign({}, c, { status:'skipped', toVer: '—' });
+        });
+        s.failed.set(num, { version: newVer, components: components, failedComponent: 'TCG' });
+      } else {
+        const components = baseComps.map(c => Object.assign({}, c, { status:'complete' }));
+        s.completed.set(num, { version: newVer, components: components });
+      }
+
+      s.inFlight.delete(num);
+    });
+
+    // Update truck currentVer in mock data so subsequent re-selection shows the new version
+    s.completed.forEach((data, num) => {
+      const truck = window.SWU_TRUCKS.find(t => t.num === num);
+      if (truck) truck.currentVer = data.version;
+    });
+
+    swuRefreshCardStates();
+    swuRenderOverview();
+    swuUpdateSendMeta();
+  }, 2500);
+}
+
+/* ============================================================
+   Update Software widget — dropdown behavior
+   Two dropdowns:
+     - 'version' — release version (no default)
+     - 'commit'  — commit timing (default: "On Next Startup")
+   ============================================================ */
+window.swuDdState = window.swuDdState || { version: null, commit: 'On Next Startup' };
+
+function swuDdToggle(name) {
+  document.querySelectorAll('.swu-dd-wrap').forEach(w => {
+    if (w.dataset.dd === name) {
+      w.classList.toggle('open');
+    } else {
+      w.classList.remove('open');
+    }
+  });
+}
+
+function swuDdSelect(name, value) {
+  window.swuDdState[name] = value;
+  const valEl = document.getElementById('swu-dd-val-' + name);
+  if (valEl) {
+    valEl.textContent = value;
+    valEl.classList.remove('placeholder');
+  }
+  // Update selected styling in the menu
+  const menu = document.getElementById('swu-dd-menu-' + name);
+  if (menu) {
+    menu.querySelectorAll('.swu-dd-opt').forEach(opt => {
+      opt.classList.toggle('swu-dd-opt-selected', opt.textContent.trim() === value);
+    });
+  }
+  // Close
+  const wrap = document.querySelector('.swu-dd-wrap[data-dd="' + name + '"]');
+  if (wrap) wrap.classList.remove('open');
+  // Update Send button enabled state
+  swuUpdateSendState();
+}
+
+function swuUpdateSendState() {
+  const btn = document.querySelector('.swu-send-btn');
+  if (!btn) return;
+  const hasTrucks = window.swuState && window.swuState.selected && window.swuState.selected.size > 0;
+  const ready = hasTrucks && !!window.swuDdState.version && !!window.swuDdState.commit;
+  btn.disabled = !ready;
+}
+
+/* Close dropdowns when clicking outside */
+document.addEventListener('click', function(e) {
+  if (e.target.closest('.swu-dd-wrap')) return;
+  document.querySelectorAll('.swu-dd-wrap.open').forEach(w => w.classList.remove('open'));
+});
+
+/* Initialize Send button state on first load */
+document.addEventListener('DOMContentLoaded', swuUpdateSendState);
+// Also run immediately in case DOM is already loaded (when shell injects this script)
+if (document.readyState !== 'loading') swuUpdateSendState();
 
 </script>
 

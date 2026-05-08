@@ -6101,6 +6101,134 @@ const SENSOR_DATA = [
     30% { transform:translateY(-4px); opacity:1; }
   }
 
+
+  /* ═══ HOME DASHBOARD ═══════════════════════════════════════════════════════ */
+  #dt-page-home {
+    display:none; flex-direction:column; flex:1; min-width:0;
+    overflow-y:auto; overflow-x:hidden;
+  }
+  #dt-page-home.active { display:flex; }
+
+  .hm-wrap {
+    padding:24px 28px 40px; display:flex; flex-direction:column;
+    gap:24px; min-width:0;
+  }
+
+  /* Greeting row */
+  .hm-greeting { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+  .hm-greeting-text h2 { font-size:24px; font-weight:600; color:var(--strong); letter-spacing:-0.6px; margin:0 0 4px; }
+  .hm-greeting-text p { font-size:14px; color:var(--soft); letter-spacing:-0.28px; margin:0; display:flex; align-items:center; gap:8px; }
+  .hm-setup-btn {
+    display:flex; align-items:center; gap:6px; padding:8px 16px;
+    border:1px solid var(--border); border-radius:32px; background:none;
+    font-size:14px; font-weight:500; color:var(--strong); cursor:pointer;
+    font-family:var(--font); letter-spacing:-0.28px; white-space:nowrap;
+    transition:background 0.15s; flex-shrink:0;
+  }
+  .hm-setup-btn:hover { background:var(--layer-2); }
+
+  /* Section label */
+  .hm-section-label { font-size:14px; font-weight:500; color:var(--soft); letter-spacing:-0.2px; margin-bottom:-12px; }
+
+  /* Widget card base */
+  .hm-card {
+    background:var(--layer-1); border:1px solid var(--border);
+    border-radius:20px; box-shadow:0 1px 0 rgba(0,0,0,0.07);
+    overflow:hidden; display:flex; flex-direction:column;
+  }
+  .hm-card-header {
+    display:flex; align-items:flex-start; justify-content:space-between;
+    padding:20px 20px 0; flex-shrink:0;
+  }
+  .hm-card-title { font-size:16px; font-weight:600; color:var(--strong); letter-spacing:-0.32px; line-height:1.2; }
+  .hm-card-subtitle { font-size:14px; color:var(--soft); letter-spacing:-0.28px; }
+  .hm-card-actions { display:flex; gap:8px; align-items:center; }
+  .hm-icon-btn {
+    width:32px; height:32px; border-radius:50%; border:1px solid var(--border);
+    background:none; cursor:pointer; display:flex; align-items:center;
+    justify-content:center; color:var(--defined); transition:background 0.15s;
+  }
+  .hm-icon-btn:hover { background:var(--layer-2); }
+  .hm-card-footer {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 20px 20px; flex-shrink:0; margin-top:auto;
+  }
+  .hm-footer-updated { font-size:13px; color:rgba(54,50,45,0.36); letter-spacing:-0.2px; }
+  .hm-footer-arrow {
+    width:32px; height:32px; border-radius:50%; border:1px solid var(--border);
+    background:var(--layer-1); cursor:pointer; display:flex; align-items:center;
+    justify-content:center; color:var(--defined); transition:background 0.15s;
+  }
+  .hm-footer-arrow:hover { background:var(--layer-2); }
+
+  /* Top row — 4 small cards */
+  .hm-row-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; min-width:0; }
+
+  /* Map card */
+  .hm-map-card { padding:0; overflow:hidden; position:relative; }
+  #hm-gmap { width:100%; height:100%; min-height:274px; }
+  .hm-map-header {
+    position:absolute; top:0; left:0; right:0; z-index:2;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px; background:linear-gradient(to bottom, rgba(255,255,255,0.97) 55%, rgba(255,255,255,0));
+    pointer-events:none;
+  }
+  .hm-map-header button { pointer-events:all; }
+  .hm-map-title { font-size:16px; font-weight:600; color:var(--strong); letter-spacing:-0.32px; }
+  .hm-map-arrow {
+    width:32px; height:32px; border-radius:50%; background:var(--layer-1);
+    border:1px solid var(--border); cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:background 0.15s;
+  }
+  .hm-map-arrow:hover { background:var(--layer-2); }
+
+  /* Table widget */
+  .hm-table { width:100%; border-collapse:collapse; font-size:14px; }
+  .hm-table thead th { padding:8px 8px; font-weight:600; color:var(--strong); letter-spacing:-0.28px; text-align:left; font-size:14px; }
+  .hm-table thead th:last-child { text-align:right; }
+  .hm-table tbody tr:nth-child(odd) { background:var(--layer-2); }
+  .hm-table tbody td { padding:8px 8px; color:var(--defined); letter-spacing:-0.28px; font-size:14px; white-space:nowrap; }
+  .hm-table tbody td:last-child { text-align:right; }
+  .hm-table .link { color:var(--blue-link); text-decoration:underline; cursor:pointer; }
+  .hm-badge-err { background:#d70100; color:#fff; border-radius:4px; padding:2px 6px; font-size:12px; letter-spacing:-0.24px; display:inline-block; }
+  .hm-badge-wrn { background:rgba(250,30,30,0.2); border-radius:4px; padding:2px 6px; font-size:12px; letter-spacing:-0.24px; color:var(--strong); display:inline-block; }
+  .hm-badge-row { display:flex; gap:4px; justify-content:flex-end; }
+
+  /* KPI card */
+  .hm-kpi-value { font-size:36px; font-weight:700; color:var(--strong); letter-spacing:-1.2px; line-height:1; }
+  .hm-kpi-change { font-size:13px; font-weight:500; letter-spacing:-0.2px; }
+  .hm-kpi-change.up { color:#16a34a; }
+  .hm-kpi-change.down { color:#d70100; }
+
+  /* Line chart SVG */
+  .hm-chart-wrap { padding:0 20px 0; flex:1; display:flex; flex-direction:column; justify-content:flex-end; }
+  .hm-chart-wrap svg { display:block; width:100%; }
+
+  /* Bar chart */
+  .hm-bar-wrap { display:flex; align-items:flex-end; gap:4px; height:60px; padding:0 20px 0; flex:1; }
+  .hm-bar { flex:1; background:var(--blue); border-radius:4px 4px 0 0; opacity:0.7; transition:opacity 0.15s; }
+  .hm-bar:hover { opacity:1; }
+
+  /* Donut chart */
+  .hm-donut-wrap { display:flex; align-items:center; justify-content:center; padding:16px 20px 8px; flex:1; }
+
+  /* Middle row — wide left + 2 right */
+  .hm-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; min-width:0; }
+  .hm-row-3 .hm-card-wide { grid-column:1 / 3; }
+
+  /* Bottom row — 3 equal */
+  .hm-row-bottom { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; min-width:0; }
+
+  /* Scorecard bar */
+  .hm-scorecard-wrap { padding:12px 20px 0; flex:1; }
+  .hm-scorecard-bars { display:flex; align-items:flex-end; gap:2px; height:80px; }
+  .hm-sc-bar-pair { flex:1; display:flex; gap:2px; align-items:flex-end; }
+  .hm-sc-bar-a { flex:1; border-radius:3px 3px 0 0; }
+  .hm-sc-bar-b { flex:1; border-radius:3px 3px 0 0; opacity:0.55; }
+  .hm-scorecard-labels { display:flex; justify-content:space-between; padding:6px 0 0; }
+  .hm-scorecard-labels span { font-size:11px; color:var(--soft); letter-spacing:-0.1px; }
+
 </style>
 <!-- build:1778170116 -->
 </head>
@@ -7951,7 +8079,7 @@ const SENSOR_DATA = [
       <!-- Nav items -->
       <div class="dt-nav-section">
         <!-- Home -->
-        <div class="dt-nav-item">
+        <div id="dt-nav-home" class="dt-nav-item" onclick="dtNavGo('home')" style="cursor:pointer;" onmouseenter="if(!this.dataset.active)this.style.background='rgba(54,50,45,0.04)'" onmouseleave="if(!this.dataset.active)this.style.background=''">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.66699 9.16699H6.66699C6.71108 9.16708 6.753 9.18464 6.78418 9.21582C6.81536 9.247 6.83292 9.28892 6.83301 9.33301V13.333C6.83301 13.3772 6.81544 13.4199 6.78418 13.4512C6.75302 13.4822 6.711 13.4999 6.66699 13.5H2.66699C2.62279 13.5 2.58008 13.4824 2.54883 13.4512C2.51757 13.4199 2.5 13.3772 2.5 13.333V9.33301C2.50009 9.289 2.51775 9.24698 2.54883 9.21582C2.58008 9.18456 2.62279 9.16699 2.66699 9.16699ZM11.333 9.16699C11.3772 9.16699 11.4199 9.18456 11.4512 9.21582C11.4822 9.24698 11.4999 9.289 11.5 9.33301V11.167H13.333C13.3772 11.167 13.4199 11.1846 13.4512 11.2158C13.4822 11.247 13.4999 11.289 13.5 11.333C13.5 11.3772 13.4824 11.4199 13.4512 11.4512C13.4199 11.4824 13.3772 11.5 13.333 11.5H11.5V13.333C11.5 13.3772 11.4824 13.4199 11.4512 13.4512C11.4199 13.4824 11.3772 13.5 11.333 13.5C11.289 13.4999 11.247 13.4822 11.2158 13.4512C11.1846 13.4199 11.167 13.3772 11.167 13.333V11.5H9.33301C9.289 11.4999 9.24698 11.4822 9.21582 11.4512C9.18456 11.4199 9.16699 11.3772 9.16699 11.333C9.16708 11.2889 9.18464 11.247 9.21582 11.2158C9.247 11.1846 9.28892 11.1671 9.33301 11.167H11.167V9.33301C11.1671 9.28892 11.1846 9.247 11.2158 9.21582C11.247 9.18464 11.2889 9.16708 11.333 9.16699ZM2.83301 13.167H6.5V9.5H2.83301V13.167ZM2.66699 2.5H6.66699C6.711 2.50009 6.75302 2.51775 6.78418 2.54883C6.81544 2.58008 6.83301 2.62279 6.83301 2.66699V6.66699C6.83292 6.71108 6.81536 6.753 6.78418 6.78418C6.753 6.81536 6.71108 6.83292 6.66699 6.83301H2.66699C2.62279 6.83301 2.58008 6.81544 2.54883 6.78418C2.51775 6.75302 2.50009 6.711 2.5 6.66699V2.66699C2.5 2.62279 2.51757 2.58008 2.54883 2.54883C2.58008 2.51757 2.62279 2.5 2.66699 2.5ZM9.33301 2.5H13.333C13.3772 2.5 13.4199 2.51757 13.4512 2.54883C13.4824 2.58008 13.5 2.62279 13.5 2.66699V6.66699C13.4999 6.711 13.4822 6.75302 13.4512 6.78418C13.4199 6.81544 13.3772 6.83301 13.333 6.83301H9.33301C9.28892 6.83292 9.247 6.81536 9.21582 6.78418C9.18464 6.753 9.16708 6.71108 9.16699 6.66699V2.66699C9.16699 2.62279 9.18456 2.58008 9.21582 2.54883C9.24698 2.51775 9.289 2.50009 9.33301 2.5ZM2.83301 6.5H6.5V2.83301H2.83301V6.5ZM9.5 6.5H13.167V2.83301H9.5V6.5Z" fill="#36322D" stroke="#111111"/></svg>
           <span style="flex:1;">Home</span>
         </div>
@@ -9037,6 +9165,11 @@ const SENSOR_DATA = [
           </table>
         </div>
       </div><!-- /dt-page-tickets -->
+
+      <!-- HOME DASHBOARD PAGE -->
+      <div id="dt-page-home">
+        <div class="hm-wrap" id="hm-wrap"></div>
+      </div><!-- /dt-page-home -->
     </div><!-- /dt-content -->
     <!-- Scrim covers entire desktop layout including sidebar -->
     <div id="dt-drawer-scrim" class="dt-drawer-scrim" onclick="dtScrimClose()"></div>
@@ -19081,17 +19214,388 @@ if (typeof window !== 'undefined') {
    and Units pages by toggling display on the page wrappers.
 ═══════════════════════════════════════════════════════════ */
 
-let dtUnitsActivePage = 'trucks';
+let dtUnitsActivePage = 'home';
 let dtUnitsSearchQuery = '';
+
+/* ============================================================================
+   HOME DASHBOARD
+============================================================================ */
+
+function hmSvgLine(data, color, W, H, min, max) {
+  var PAD = { t:8, r:8, b:20, l:36 };
+  var cW = W - PAD.l - PAD.r, cH = H - PAD.t - PAD.b;
+  var N = data.length;
+  var toX = function(i){ return PAD.l + (i/(N-1))*cW; };
+  var toY = function(v){ return PAD.t + cH - ((v-min)/(max-min))*cH; };
+  var pathD = data.map(function(v,i){
+    if(i===0) return 'M'+toX(0).toFixed(1)+','+toY(v).toFixed(1);
+    var ppx=toX(i-1), ppy=toY(data[i-1]), px=toX(i), py=toY(v);
+    var cpx=((ppx+px)/2).toFixed(1);
+    return 'C'+cpx+','+ppy.toFixed(1)+' '+cpx+','+py.toFixed(1)+' '+px.toFixed(1)+','+py.toFixed(1);
+  }).join(' ');
+  var fillD = pathD + ' L'+toX(N-1).toFixed(1)+','+(PAD.t+cH)+' L'+PAD.l+','+(PAD.t+cH)+' Z';
+  var gradId = 'hmg-'+color.replace('#','');
+  var ySteps = [min, min+(max-min)*0.5, max];
+  var grid = ySteps.map(function(v){
+    var gy = toY(v).toFixed(1);
+    return '<line x1="'+PAD.l+'" y1="'+gy+'" x2="'+(PAD.l+cW)+'" y2="'+gy+'" stroke="rgba(54,50,45,0.07)" stroke-width="1"/>'
+         + '<text x="'+(PAD.l-5)+'" y="'+(parseFloat(gy)+4)+'" text-anchor="end" font-size="9" font-family="Helvetica,Arial,sans-serif" fill="rgba(54,50,45,0.35)">'+v+'</text>';
+  }).join('');
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul'];
+  var xLbls = months.map(function(m,i){
+    var lx = (PAD.l + (i/(months.length-1))*cW).toFixed(1);
+    return '<text x="'+lx+'" y="'+(H-4)+'" text-anchor="middle" font-size="9" font-family="Helvetica,Arial,sans-serif" fill="rgba(54,50,45,0.35)">'+m+'</text>';
+  }).join('');
+  return '<svg width="100%" height="'+H+'" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="display:block;">'
+    +'<defs><linearGradient id="'+gradId+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+color+'" stop-opacity="0.18"/><stop offset="100%" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'
+    +'<clipPath id="hm-clip-'+gradId+'"><rect x="'+PAD.l+'" y="'+PAD.t+'" width="'+cW+'" height="'+cH+'"/></clipPath>'
+    +grid
+    +'<g clip-path="url(#hm-clip-'+gradId+')">'
+    +'<path d="'+fillD+'" fill="url(#'+gradId+')"/>'
+    +'<path d="'+pathD+'" stroke="'+color+'" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>'
+    +'</g>'
+    +xLbls
+    +'</svg>';
+}
+
+function hmDonut(pct, color, size) {
+  size = size || 120;
+  var r = (size-20)/2, cx = size/2, cy = size/2;
+  var circ = 2*Math.PI*r;
+  var dash = (pct/100)*circ;
+  return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'">'
+    +'<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="rgba(54,50,45,0.08)" stroke-width="14"/>'
+    +'<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="14"'
+    +' stroke-dasharray="'+dash.toFixed(1)+' '+(circ-dash).toFixed(1)+'"'
+    +' stroke-dashoffset="'+(circ*0.25).toFixed(1)+'" stroke-linecap="round" transform="rotate(-90 '+cx+' '+cy+')" style="transition:stroke-dasharray 0.8s ease;"/>'
+    +'<text x="'+cx+'" y="'+(cy+6)+'" text-anchor="middle" font-size="22" font-weight="700" font-family="Helvetica,Arial,sans-serif" fill="#36322d">'+pct+'%</text>'
+    +'</svg>';
+}
+
+function hmArrowIcon() {
+  return '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7h9M7.5 3l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+function hmCalIcon() {
+  return '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="2.5" width="11" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M1.5 6h11M4.5 1v3M9.5 1v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
+}
+function hmSettingsIcon() {
+  return '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 1.5v1.2M7 11.3v1.2M1.5 7h1.2M11.3 7h1.2M3.2 3.2l.85.85M9.95 9.95l.85.85M10.8 3.2l-.85.85M4.05 9.95l-.85.85" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
+}
+function hmEditIcon() {
+  return '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>';
+}
+
+function hmCard(id, content, minH) {
+  return '<div class="hm-card" id="'+id+'" style="min-height:'+(minH||'326')+'px;">'+content+'</div>';
+}
+
+function hmCardHeader(title, subtitle, clickPage) {
+  var navStr = clickPage ? 'style="cursor:pointer;" onclick="dtNavGo(\''+clickPage+'\')"' : '';
+  return '<div class="hm-card-header" '+navStr+'>'
+    +'<div><div class="hm-card-title">'+title+'</div>'+(subtitle?'<div class="hm-card-subtitle">'+subtitle+'</div>':'')+'</div>'
+    +'<div class="hm-card-actions">'
+    +'<button class="hm-icon-btn">'+hmCalIcon()+'</button>'
+    +'<button class="hm-icon-btn">'+hmSettingsIcon()+'</button>'
+    +'</div></div>';
+}
+
+function hmCardFooter(label, clickPage) {
+  var nav = clickPage ? 'onclick="dtNavGo(\''+clickPage+'\')"' : '';
+  return '<div class="hm-card-footer">'
+    +'<span class="hm-footer-updated">'+label+'</span>'
+    +'<button class="hm-footer-arrow" '+nav+'>'+hmArrowIcon()+'</button>'
+    +'</div>';
+}
+
+/* Truck locations for fleet map */
+var HM_TRUCKS = [
+  { lat:33.4480, lng:-112.0740, label:'45689', title:'Truck 45689 — Pouring',     color:'#d70100' },
+  { lat:33.4350, lng:-112.0520, label:'12457', title:'Truck 12457 — On Site',     color:'#d70100' },
+  { lat:33.4680, lng:-111.8850, label:'33201', title:'Truck 33201 — In Transit',  color:'#d97706' },
+  { lat:33.5320, lng:-111.9150, label:'77840', title:'Truck 77840 — Loaded',      color:'#1594ef' },
+  { lat:33.4920, lng:-111.7380, label:'55120', title:'Truck 55120 — Loading',     color:'#1594ef' },
+];
+
+function hmInitMap() {
+  var el = document.getElementById('hm-gmap');
+  if (!el) return;
+
+  /* If Google Maps API is loaded */
+  if (typeof google !== 'undefined' && google.maps) {
+    hmBuildMap(el);
+    return;
+  }
+
+  /* Load Google Maps JS API */
+  window._hmMapCallback = function() { hmBuildMap(el); };
+  var script = document.createElement('script');
+  script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&callback=_hmMapCallback&libraries=marker';
+  script.async = true;
+  script.defer = true;
+  document.head.appendChild(script);
+}
+
+function hmBuildMap(el) {
+  var mapStyle = [
+    { featureType:'all', elementType:'geometry', stylers:[{color:'#f5f3f0'}] },
+    { featureType:'water', elementType:'geometry', stylers:[{color:'#c8dce8'}] },
+    { featureType:'road', elementType:'geometry', stylers:[{color:'#ffffff'}] },
+    { featureType:'road.arterial', elementType:'geometry', stylers:[{color:'#ede9e4'}] },
+    { featureType:'road.highway', elementType:'geometry', stylers:[{color:'#e3ddd8'}] },
+    { featureType:'poi', elementType:'geometry', stylers:[{color:'#ede9e4'}] },
+    { featureType:'transit', elementType:'geometry', stylers:[{color:'#ede9e4'}] },
+    { featureType:'all', elementType:'labels.text.fill', stylers:[{color:'#7a6f64'}] },
+    { featureType:'all', elementType:'labels.text.stroke', stylers:[{color:'#f5f3f0'}] },
+  ];
+
+  var map = new google.maps.Map(el, {
+    center: { lat:33.480, lng:-111.960 },
+    zoom: 10,
+    styles: mapStyle,
+    disableDefaultUI: true,
+    zoomControl: true,
+    zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM },
+    gestureHandling: 'cooperative',
+  });
+
+  HM_TRUCKS.forEach(function(t) {
+    var marker = new google.maps.Marker({
+      position: { lat:t.lat, lng:t.lng },
+      map: map,
+      title: t.title,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 9,
+        fillColor: t.color,
+        fillOpacity: 1,
+        strokeColor: '#ffffff',
+        strokeWeight: 2.5,
+      },
+      label: {
+        text: t.label,
+        color: '#36322d',
+        fontSize: '11px',
+        fontWeight: '600',
+        fontFamily: 'Helvetica,Arial,sans-serif',
+      },
+    });
+    var info = new google.maps.InfoWindow({ content: '<div style="font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#36322d;padding:2px 4px;">'+t.title+'</div>' });
+    marker.addListener('click', function() { info.open(map, marker); });
+  });
+}
+
+function hmInit() {
+  var wrap = document.getElementById('hm-wrap');
+  if (!wrap) return;
+
+  var now = new Date();
+  var hour = now.getHours();
+  var greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  var month = now.toLocaleString('en-US',{month:'long'});
+  var day = now.getDate();
+
+  /* Trend data */
+  var loadsData = [210,195,230,248,220,235,260,245,270,285,268,280,295,310,298];
+  var delivSpecData = [88,85,90,92,87,91,93,89,94,91,88,92,95,93,90];
+
+  /* ── Greeting ── */
+  var greetingHtml = '<div class="hm-greeting">'
+    +'<div class="hm-greeting-text">'
+    +'<h2>'+greeting+' John!</h2>'
+    +'<p><span>It\'s 54°F ☀ and sunny · '+month+' '+day+'</span></p>'
+    +'</div>'
+    +'<button class="hm-setup-btn" onclick="">'+hmEditIcon()+' Setup page</button>'
+    +'</div>';
+
+  /* ── Row 1: 4 small cards ── */
+  /* Fleet map */
+  var mapCard = '<div class="hm-card hm-map-card" style="min-height:326px;">'
+    +'<div class="hm-map-land" style="width:55%;height:60%;top:15%;left:5%;opacity:0.9;"></div>'
+    +'<div class="hm-map-land" style="width:35%;height:40%;top:35%;left:50%;opacity:0.7;transform:rotate(20deg);"></div>'
+    +'<div class="hm-map-land" style="width:20%;height:25%;top:10%;left:55%;opacity:0.6;"></div>'
+    +'<div class="hm-map-dot" style="width:24px;height:24px;bottom:20%;left:35%;"></div>'
+    +'<div class="hm-map-dot" style="width:10px;height:10px;bottom:35%;left:55%;"></div>'
+    +'<div class="hm-map-dot" style="width:8px;height:8px;bottom:25%;left:25%;"></div>'
+    +'<div class="hm-map-overlay"></div>'
+    +'<div class="hm-map-content">'
+    +'<span class="hm-map-title" onclick="dtNavGo(\'trucks\')" style="cursor:pointer;">Fleet map</span>'
+    +'<button class="hm-map-arrow" onclick="dtNavGo(\'trucks\')">'+hmArrowIcon()+'</button>'
+    +'</div></div>';
+
+  /* Component condition */
+  var ccRows = [
+    {truck:'45689', err:2, wrn:0},
+    {truck:'12457', err:1, wrn:3},
+    {truck:'33201', err:0, wrn:5},
+    {truck:'77840', err:0, wrn:2},
+    {truck:'55120', err:1, wrn:1},
+  ];
+  var ccTableBody = ccRows.map(function(r,i){
+    var bg = i%2===0?'':'background:var(--layer-2);';
+    var badges = (r.err?'<span class="hm-badge-err">'+r.err+'</span>':'')
+               + (r.wrn?'<span class="hm-badge-wrn">'+r.wrn+'</span>':'');
+    return '<tr style="'+bg+'"><td style="padding:8px;color:var(--defined);font-size:14px;">'+r.truck+'</td><td style="padding:8px;text-align:right;"><div class="hm-badge-row">'+badges+'</div></td></tr>';
+  }).join('');
+  var ccCard = hmCard('hm-cc', hmCardHeader('Component condition','','trucks')
+    +'<div style="padding:0 20px;flex:1;overflow:hidden;margin-top:12px;">'
+    +'<table class="hm-table"><thead><tr><th>Truck</th><th style="text-align:right;">Found issues</th></tr></thead>'
+    +'<tbody>'+ccTableBody+'</tbody></table></div>'
+    +hmCardFooter('Last updated 1 min ago','trucks'));
+
+  /* Top drivers */
+  var topDrivers = [
+    {rank:1,name:'R. Martinez',truck:'45689'},{rank:2,name:'D. Ochoa',truck:'12457'},
+    {rank:3,name:'J. Torres',truck:'33201'},{rank:4,name:'A. Reyes',truck:'77840'},
+    {rank:5,name:'M. Fuentes',truck:'55120'},
+  ];
+  var tdBody = topDrivers.map(function(d,i){
+    var bg = i%2===0?'':'background:var(--layer-2);';
+    return '<tr style="'+bg+'"><td style="padding:8px;color:var(--soft);font-size:13px;width:24px;">'+d.rank+'</td>'
+      +'<td style="padding:8px;color:var(--blue-link);text-decoration:underline;cursor:pointer;font-size:14px;">'+d.name+'</td>'
+      +'<td style="padding:8px;text-align:right;color:var(--blue-link);text-decoration:underline;cursor:pointer;font-size:14px;">'+d.truck+'</td></tr>';
+  }).join('');
+  var topCard = hmCard('hm-top', hmCardHeader('Top drivers','Today')
+    +'<div style="padding:0 20px;flex:1;overflow:hidden;margin-top:12px;">'
+    +'<table class="hm-table"><thead><tr><th></th><th>Driver</th><th style="text-align:right;">Truck</th></tr></thead>'
+    +'<tbody>'+tdBody+'</tbody></table></div>'
+    +hmCardFooter('Last updated 1 min ago'));
+
+  /* Bottom drivers */
+  var botDrivers = [
+    {rank:19,name:'C. Gomez',truck:'98302'},{rank:20,name:'F. Herrera',truck:'14520'},
+    {rank:21,name:'L. Vargas',truck:'66478'},{rank:22,name:'P. Sanchez',truck:'22190'},
+    {rank:23,name:'R. Cruz',truck:'40031'},
+  ];
+  var bdBody = botDrivers.map(function(d,i){
+    var bg = i%2===0?'':'background:var(--layer-2);';
+    return '<tr style="'+bg+'"><td style="padding:8px;color:var(--soft);font-size:13px;width:24px;">'+d.rank+'</td>'
+      +'<td style="padding:8px;color:var(--blue-link);text-decoration:underline;cursor:pointer;font-size:14px;">'+d.name+'</td>'
+      +'<td style="padding:8px;text-align:right;color:var(--blue-link);text-decoration:underline;cursor:pointer;font-size:14px;">'+d.truck+'</td></tr>';
+  }).join('');
+  var botCard = hmCard('hm-bot', hmCardHeader('Bottom drivers','Today')
+    +'<div style="padding:0 20px;flex:1;overflow:hidden;margin-top:12px;">'
+    +'<table class="hm-table"><thead><tr><th></th><th>Driver</th><th style="text-align:right;">Truck</th></tr></thead>'
+    +'<tbody>'+bdBody+'</tbody></table></div>'
+    +hmCardFooter('Last updated 1 min ago'));
+
+  var row1 = '<div class="hm-row-4">'+mapCard+ccCard+topCard+botCard+'</div>';
+
+  /* ── Row 2: Total loads (wide) + Delivered on spec + Fleet uptime ── */
+  var loadsChart = hmSvgLine(loadsData,'#3069e3',700,100,150,350);
+  var loadsCard = '<div class="hm-card hm-card-wide" style="min-height:326px;">'
+    +hmCardHeader('Total loads','')
+    +'<div style="padding:16px 20px 0;display:flex;align-items:baseline;gap:12px;">'
+    +'<span class="hm-kpi-value">15,249</span>'
+    +'<span class="hm-kpi-change up">+4%</span>'
+    +'</div>'
+    +'<div class="hm-chart-wrap" style="padding:12px 8px 0;flex:1;">'+loadsChart+'</div>'
+    +'<div style="display:flex;justify-content:space-between;padding:4px 20px 0;">'
+    +'<span style="font-size:11px;color:var(--soft);">Jan</span>'
+    +'<span style="font-size:11px;color:var(--soft);">Apr</span>'
+    +'<span style="font-size:11px;color:var(--soft);">Jul</span>'
+    +'</div>'
+    +hmCardFooter('Last updated 5 min ago')+'</div>';
+
+  var specBars = [3,11,25,34,46,25,23,32,13,6,3];
+  var specMax = Math.max.apply(null,specBars);
+  var specBarsHtml = specBars.map(function(v){
+    return '<div class="hm-bar" style="height:'+(v/specMax*100)+'%;background:var(--blue);"></div>';
+  }).join('');
+  var specCard = hmCard('hm-spec', hmCardHeader('Delivered on spec','')
+    +'<div style="padding:16px 20px 0;display:flex;align-items:baseline;gap:12px;">'
+    +'<span class="hm-kpi-value">91%</span>'
+    +'<span class="hm-kpi-change up">+2%</span>'
+    +'</div>'
+    +'<div class="hm-bar-wrap">'+specBarsHtml+'</div>'
+    +hmCardFooter('Last updated 5 min ago'));
+
+  var uptimeCard = hmCard('hm-uptime', hmCardHeader('Fleet uptime','')
+    +'<div style="display:flex;flex-direction:column;align-items:center;padding:16px 20px 0;flex:1;justify-content:center;">'
+    +hmDonut(94,'#3069e3',130)
+    +'<div style="display:flex;align-items:baseline;gap:8px;margin-top:4px;">'
+    +'<span class="hm-kpi-change up" style="font-size:14px;">+1.2%</span>'
+    +'<span style="font-size:13px;color:var(--soft);">vs last week</span>'
+    +'</div></div>'
+    +hmCardFooter('Last updated 5 min ago'));
+
+  var row2 = '<div class="hm-row-3">'+loadsCard+specCard+uptimeCard+'</div>';
+
+  /* ── Row 3: Batch scorecard (full width) ── */
+  var scData = [
+    {h:208,s:200},{h:150,s:115},{h:121,s:104},{h:97,s:63},{h:81,s:50},
+    {h:66,s:38},{h:50,s:26},{h:36,s:13},{h:16,s:6},{h:20,s:8},{h:10,s:5}
+  ];
+  var scMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov'];
+  var scMax = 220;
+  var scBarsHtml = scData.map(function(d,i){
+    return '<div class="hm-sc-bar-pair">'
+      +'<div class="hm-sc-bar-a" style="height:'+(d.h/scMax*100)+'%;background:#3069e3;"></div>'
+      +'<div class="hm-sc-bar-b" style="height:'+(d.s/scMax*100)+'%;background:#e3f200;"></div>'
+      +'</div>';
+  }).join('');
+  var scLabels = scMonths.map(function(m){ return '<span>'+m+'</span>'; }).join('');
+  var scCard = '<div class="hm-card" style="min-height:200px;">'
+    +hmCardHeader('Batch scorecard','')
+    +'<div class="hm-scorecard-wrap">'
+    +'<div style="display:flex;gap:16px;margin-bottom:10px;">'
+    +'<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--defined);">'
+    +'<span style="width:10px;height:10px;border-radius:2px;background:#3069e3;display:inline-block;"></span>On spec</div>'
+    +'<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--defined);">'
+    +'<span style="width:10px;height:10px;border-radius:2px;background:#e3f200;display:inline-block;"></span>Off spec</div>'
+    +'</div>'
+    +'<div class="hm-scorecard-bars">'+scBarsHtml+'</div>'
+    +'<div class="hm-scorecard-labels">'+scLabels+'</div>'
+    +'</div>'
+    +hmCardFooter('Last updated 5 min ago')+'</div>';
+
+  var row3 = scCard;
+
+  /* ── Row 4: 3 KPI cards ── */
+  var ttdCard = hmCard('hm-ttd', hmCardHeader('Time to discharge','')
+    +'<div style="display:flex;flex-direction:column;align-items:center;padding:16px 20px 0;flex:1;justify-content:center;">'
+    +hmDonut(78,'#059669',130)
+    +'<div style="display:flex;align-items:baseline;gap:8px;margin-top:4px;">'
+    +'<span class="hm-kpi-change down" style="font-size:14px;">-0.8%</span>'
+    +'<span style="font-size:13px;color:var(--soft);">vs last week</span>'
+    +'</div></div>'
+    +hmCardFooter('Last updated 5 min ago'));
+
+  var eltlCard = hmCard('hm-eltl', hmCardHeader('End load to leave','')
+    +'<div style="display:flex;flex-direction:column;align-items:center;padding:16px 20px 0;flex:1;justify-content:center;">'
+    +hmDonut(85,'#d97706',130)
+    +'<div style="display:flex;align-items:baseline;gap:8px;margin-top:4px;">'
+    +'<span class="hm-kpi-change up" style="font-size:14px;">+1.5%</span>'
+    +'<span style="font-size:13px;color:var(--soft);">vs last week</span>'
+    +'</div></div>'
+    +hmCardFooter('Last updated 5 min ago'));
+
+  var plantData = [72,68,74,78,76,80,82,79,83,85,84,88,90,87,91];
+  var plantChart = hmSvgLine(plantData,'#7c3aed',400,100,50,100);
+  var plantCard = hmCard('hm-plant', hmCardHeader('Plant efficiency','')
+    +'<div style="padding:16px 20px 0;display:flex;align-items:baseline;gap:12px;">'
+    +'<span class="hm-kpi-value">88%</span>'
+    +'<span class="hm-kpi-change up">+3%</span>'
+    +'</div>'
+    +'<div class="hm-chart-wrap" style="padding:12px 8px 0;flex:1;">'+plantChart+'</div>'
+    +hmCardFooter('Last updated 5 min ago'));
+
+  var row4 = '<div class="hm-row-bottom">'+ttdCard+eltlCard+plantCard+'</div>';
+
+  wrap.innerHTML = greetingHtml + row1 + row2 + row3 + row4;
+  /* Init Google Map after DOM is ready */
+  requestAnimationFrame(function() { hmInitMap(); });
+}
 
 function dtNavGo(page) {
   dtUnitsActivePage = page;
   const trucks  = document.getElementById('dt-page-trucks');
   const units   = document.getElementById('dt-page-units');
   const tickets = document.getElementById('dt-page-tickets');
+  const home    = document.getElementById('dt-page-home');
   if (trucks)  trucks.style.display  = page === 'trucks'  ? '' : 'none';
   if (units)   units.style.display   = page === 'units'   ? '' : 'none';
   if (tickets) { tickets.style.display = page === 'tickets' ? 'flex' : 'none'; if (page === 'tickets') tkInit(); }
+  if (home)    { home.classList.toggle('active', page === 'home'); if (page === 'home') hmInit(); }
 
   // Sidenav active state — respects dark mode
   const navT  = document.getElementById('dt-nav-trucks');
@@ -19102,7 +19606,9 @@ function dtNavGo(page) {
   const activeClr  = dark ? '#000' : '#ffffff';
   const inactiveClr = dark ? 'rgba(255,255,255,0.45)' : 'rgba(54,50,45,0.5)';
 
+  const navH = document.getElementById('dt-nav-home');
   [
+    { el: navH,  active: page === 'home'    },
     { el: navT,  active: page === 'trucks'  },
     { el: navU,  active: page === 'units'   },
     { el: navTk, active: page === 'tickets' },
@@ -23721,7 +24227,7 @@ function dtOpenTruck(truckNum) {
     /* Reset the active tab indicator to Components overview */
     document.querySelectorAll('.dt-drawer-tab').forEach((b, i) => b.classList.toggle('active', i === 0));
     /* Clear logs-mode if the drawer was last left on the Logs tab */
-    const sidePanel = document.querySelector('.dt-drawer-side');
+    const sidePanel = document.querySelector('#dt-drawer .dt-drawer-side');
     if (sidePanel) sidePanel.classList.remove('logs-mode');
     /* Stop sensor ticker if it was running */
     if (typeof senStop === 'function') senStop();
@@ -26281,7 +26787,7 @@ function dtDrawerTab(tab, el) {
   senStop();
 
   /* Toggle side panel between default (overview/timeline) and logs-mode (Event Details) */
-  const sidePanel = document.querySelector('.dt-drawer-side');
+  const sidePanel = document.querySelector('#dt-drawer .dt-drawer-side');
   if (sidePanel) sidePanel.classList.toggle('logs-mode', tab === 'logs');
 
   const scroll = document.getElementById('dt-drawer-scroll');

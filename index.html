@@ -1221,7 +1221,7 @@
   }
   #dt-page-units {
     display:flex; flex-direction:column;
-    flex:1; min-width:0; overflow:hidden;
+    flex:1; min-width:0; min-height:0; overflow:hidden;
   }
   .dt-units-tab {
     font-size:13px; font-weight:500; font-family:var(--font);
@@ -7900,7 +7900,7 @@ const SENSOR_DATA = [
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="#36322d" stroke-width="1.5" stroke-linecap="round"/></svg>
         </button>
       </div>
-      <!-- Scrollable form — reuses all dt-au-* IDs since desktop drawer is hidden -->
+      <!-- Scrollable form — uses tb-au-* IDs to avoid clashing with the desktop drawer (both forms exist in DOM at all times). -->
       <div class="dt-au-body" style="flex:1;overflow-y:auto;">
         <div class="dt-au-section-label">Account &amp; contract</div>
         <div class="dt-au-field">
@@ -7913,34 +7913,34 @@ const SENSOR_DATA = [
         </div>
         <div class="dt-au-field">
           <label class="dt-au-label">Contract <span class="dt-au-req">*</span></label>
-          <div class="dt-au-dd-wrap" id="dt-au-contract-wrap">
-            <button class="dt-au-dd-btn" id="dt-au-contract-btn" onclick="dtAuToggleDd('contract')">
-              <span id="dt-au-contract-val" class="placeholder">Select a contract type</span>
-              <svg class="dt-au-chev" id="dt-au-contract-chev" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div class="dt-au-dd-wrap" id="tb-au-contract-wrap">
+            <button class="dt-au-dd-btn" id="tb-au-contract-btn" onclick="dtAuToggleDd('contract')">
+              <span id="tb-au-contract-val" class="placeholder">Select a contract type</span>
+              <svg class="dt-au-chev" id="tb-au-contract-chev" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
-            <div class="dt-au-dd-menu" id="dt-au-contract-menu"></div>
+            <div class="dt-au-dd-menu" id="tb-au-contract-menu"></div>
           </div>
         </div>
         <div class="dt-au-section-label">Unit identity</div>
         <div class="dt-au-field">
           <label class="dt-au-label">Unit ID <span class="dt-au-req">*</span></label>
-          <input class="dt-au-input" id="dt-au-unit-id" type="text" placeholder="Enter unit ID" autocomplete="off" oninput="dtAuValidate()" />
-          <div class="dt-au-error" id="dt-au-unit-id-err"></div>
+          <input class="dt-au-input" id="tb-au-unit-id" type="text" placeholder="Enter unit ID" autocomplete="off" oninput="dtAuValidate()" />
+          <div class="dt-au-error" id="tb-au-unit-id-err"></div>
         </div>
         <div class="dt-au-field">
           <label class="dt-au-label">TCG ID</label>
-          <input class="dt-au-input dt-au-input-mono" id="dt-au-tgw" type="text" placeholder="e.g. 210000095269" autocomplete="off" />
+          <input class="dt-au-input dt-au-input-mono" id="tb-au-tgw" type="text" placeholder="e.g. 210000095269" autocomplete="off" />
           <div class="dt-au-hint">Optional. Can be added later.</div>
         </div>
         <div class="dt-au-section-label">System &amp; configuration</div>
         <div class="dt-au-field">
           <label class="dt-au-label">System Type <span class="dt-au-req">*</span></label>
-          <div class="dt-au-dd-wrap" id="dt-au-sysType-wrap">
-            <button class="dt-au-dd-btn" id="dt-au-sysType-btn" onclick="dtAuToggleDd('sysType')">
-              <span id="dt-au-sysType-val" class="placeholder">Select type</span>
-              <svg class="dt-au-chev" id="dt-au-sysType-chev" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div class="dt-au-dd-wrap" id="tb-au-sysType-wrap">
+            <button class="dt-au-dd-btn" id="tb-au-sysType-btn" onclick="dtAuToggleDd('sysType')">
+              <span id="tb-au-sysType-val" class="placeholder">Select type</span>
+              <svg class="dt-au-chev" id="tb-au-sysType-chev" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
-            <div class="dt-au-dd-menu" id="dt-au-sysType-menu">
+            <div class="dt-au-dd-menu" id="tb-au-sysType-menu">
               <div class="dt-au-dd-item" onclick="dtAuSelectDd('sysType','V3')">V3</div>
               <div class="dt-au-dd-item" onclick="dtAuSelectDd('sysType','V4')">V4</div>
               <div class="dt-au-dd-item" onclick="dtAuSelectDd('sysType','V5')">V5</div>
@@ -7951,12 +7951,12 @@ const SENSOR_DATA = [
         </div>
         <div class="dt-au-field">
           <label class="dt-au-label">Configuration <span class="dt-au-req">*</span></label>
-          <div class="dt-au-dd-wrap" id="dt-au-config-wrap">
-            <button class="dt-au-dd-btn" id="dt-au-config-btn" onclick="dtAuToggleDd('config')">
-              <span id="dt-au-config-val" class="placeholder">Select config</span>
-              <svg class="dt-au-chev" id="dt-au-config-chev" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div class="dt-au-dd-wrap" id="tb-au-config-wrap">
+            <button class="dt-au-dd-btn" id="tb-au-config-btn" onclick="dtAuToggleDd('config')">
+              <span id="tb-au-config-val" class="placeholder">Select config</span>
+              <svg class="dt-au-chev" id="tb-au-config-chev" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
-            <div class="dt-au-dd-menu" id="dt-au-config-menu">
+            <div class="dt-au-dd-menu" id="tb-au-config-menu">
               <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measure')">Measure</div>
               <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measure Water')">Measure Water</div>
               <div class="dt-au-dd-item" onclick="dtAuSelectDd('config','Measure Water Admix')">Measure Water Admix</div>
@@ -7972,10 +7972,10 @@ const SENSOR_DATA = [
       </div>
       <!-- Footer -->
       <div class="dt-au-foot">
-        <span class="dt-au-foot-hint" id="dt-au-foot-hint">Fill required fields to add</span>
+        <span class="dt-au-foot-hint" id="tb-au-foot-hint">Fill required fields to add</span>
         <div class="dt-au-foot-btns">
           <button class="dt-au-cancel" onclick="tbAuClose()">Cancel</button>
-          <button class="dt-au-submit" id="dt-au-submit" onclick="dtAuSubmit()" disabled>Add Unit</button>
+          <button class="dt-au-submit" id="tb-au-submit" onclick="dtAuSubmit()" disabled>Add Unit</button>
         </div>
       </div>
     </div>
@@ -8852,7 +8852,7 @@ const SENSOR_DATA = [
         </div>
 
         <!-- Units tab content -->
-        <div id="dt-units-tab-content-units">
+        <div id="dt-units-tab-content-units" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;">
           <div class="dt-table-wrap" style="margin-top:0;">
             <table class="dt-table" id="dt-units-table">
               <thead id="dt-units-thead"></thead>
@@ -16862,7 +16862,7 @@ function dtUnitsTabSwitch(tab) {
   document.getElementById('dt-units-tab-pending').classList.toggle('active', tab === 'pending');
   var uc = document.getElementById('dt-units-tab-content-units');
   var pc = document.getElementById('dt-units-tab-content-pending');
-  if (uc) uc.style.display = tab === 'units' ? '' : 'none';
+  if (uc) uc.style.display = tab === 'units' ? 'flex' : 'none';
   if (pc) { pc.style.display = tab === 'pending' ? 'flex' : 'none'; pc.style.flexDirection='column'; pc.style.flex='1'; pc.style.minWidth='0'; pc.style.overflow='hidden'; }
   /* Hide Return Units button on Pending Return tab */
   var editBtn = document.getElementById('dt-units-select-btn');
@@ -20155,17 +20155,26 @@ function dtAuClose() {
   });
 }
 
+// Prefix helper: tablet overlay and desktop drawer both exist in the DOM at all
+// times, with conflicting IDs (`dt-au-*` on desktop, `tb-au-*` on tablet).
+// `getElementById` returns the first match in DOM order, so without this helper
+// every desktop call would silently operate on the hidden tablet form.
+function dtAuPrefix() {
+  return document.body.classList.contains('view-tablet') ? 'tb-au-' : 'dt-au-';
+}
+
 function dtAuToggleDd(key) {
-  const btn  = document.getElementById('dt-au-' + key + '-btn');
-  const menu = document.getElementById('dt-au-' + key + '-menu');
-  const chev = document.getElementById('dt-au-' + key + '-chev');
+  const p    = dtAuPrefix();
+  const btn  = document.getElementById(p + key + '-btn');
+  const menu = document.getElementById(p + key + '-menu');
+  const chev = document.getElementById(p + key + '-chev');
   if (!menu || btn.disabled) return;
   const open = menu.classList.contains('open');
   // Close all other dropdowns first
   ['contract','sysType','config'].forEach(k => {
-    document.getElementById('dt-au-' + k + '-menu')?.classList.remove('open');
-    document.getElementById('dt-au-' + k + '-chev')?.classList.remove('open');
-    document.getElementById('dt-au-' + k + '-btn')?.classList.remove('open');
+    document.getElementById(p + k + '-menu')?.classList.remove('open');
+    document.getElementById(p + k + '-chev')?.classList.remove('open');
+    document.getElementById(p + k + '-btn')?.classList.remove('open');
   });
   if (!open) {
     menu.classList.add('open');
@@ -20176,10 +20185,11 @@ function dtAuToggleDd(key) {
 
 function dtAuSelectDd(key, value) {
   dtAuValues[key] = value;
-  const valEl  = document.getElementById('dt-au-' + key + '-val');
-  const menuEl = document.getElementById('dt-au-' + key + '-menu');
-  const chevEl = document.getElementById('dt-au-' + key + '-chev');
-  const btnEl  = document.getElementById('dt-au-' + key + '-btn');
+  const p      = dtAuPrefix();
+  const valEl  = document.getElementById(p + key + '-val');
+  const menuEl = document.getElementById(p + key + '-menu');
+  const chevEl = document.getElementById(p + key + '-chev');
+  const btnEl  = document.getElementById(p + key + '-btn');
   if (valEl) {
     valEl.textContent = value;
     valEl.className = '';  // remove placeholder class so it gets strong color
@@ -20196,46 +20206,50 @@ function dtAuSelectDd(key, value) {
 }
 
 function dtAuValidate() {
-  const unitId = (document.getElementById('dt-au-unit-id').value || '').trim();
+  const p      = dtAuPrefix();
+  const unitId = (document.getElementById(p + 'unit-id').value || '').trim();
   const valid  = unitId && dtAuValues.contract && dtAuValues.sysType && dtAuValues.config;
-  const submit = document.getElementById('dt-au-submit');
-  const hint   = document.getElementById('dt-au-foot-hint');
-  submit.disabled = !valid;
-  if (valid) {
-    hint.textContent = 'Ready to add';
-    hint.classList.add('valid');
-  } else {
-    // Tell the user exactly what's missing
-    const missing = [];
-    if (!unitId)               missing.push('Unit ID');
-    if (!dtAuValues.contract)  missing.push('Contract');
-    if (!dtAuValues.sysType)   missing.push('System Type');
-    if (!dtAuValues.config)    missing.push('Configuration');
-    hint.textContent = missing.length === 4
-      ? 'Fill required fields to add'
-      : `Still need: ${missing.join(', ')}`;
-    hint.classList.remove('valid');
+  const submit = document.getElementById(p + 'submit');
+  const hint   = document.getElementById(p + 'foot-hint');
+  if (submit) submit.disabled = !valid;
+  if (hint) {
+    if (valid) {
+      hint.textContent = 'Ready to add';
+      hint.classList.add('valid');
+    } else {
+      // Tell the user exactly what's missing
+      const missing = [];
+      if (!unitId)               missing.push('Unit ID');
+      if (!dtAuValues.contract)  missing.push('Contract');
+      if (!dtAuValues.sysType)   missing.push('System Type');
+      if (!dtAuValues.config)    missing.push('Configuration');
+      hint.textContent = missing.length === 4
+        ? 'Fill required fields to add'
+        : `Still need: ${missing.join(', ')}`;
+      hint.classList.remove('valid');
+    }
   }
   // Clear duplicate error if user has changed the value
-  const idInput = document.getElementById('dt-au-unit-id');
-  const idErr   = document.getElementById('dt-au-unit-id-err');
-  if (idInput.classList.contains('error') && idInput.value !== '') {
+  const idInput = document.getElementById(p + 'unit-id');
+  const idErr   = document.getElementById(p + 'unit-id-err');
+  if (idInput && idInput.classList.contains('error') && idInput.value !== '') {
     idInput.classList.remove('error');
-    idErr.classList.remove('show');
+    if (idErr) idErr.classList.remove('show');
   }
 }
 
 function dtAuSubmit() {
-  const unitId  = (document.getElementById('dt-au-unit-id').value || '').trim();
-  const tgw     = (document.getElementById('dt-au-tgw').value || '').trim();
+  const p       = dtAuPrefix();
+  const unitId  = (document.getElementById(p + 'unit-id').value || '').trim();
+  const tgw     = (document.getElementById(p + 'tgw').value || '').trim();
   const account = dtAuValues.account;
   const { contract, sysType, config } = dtAuValues;
   if (!unitId || !contract || !sysType || !config) return;
 
   // Duplicate check
   if (UNITS_DATA.find(u => u.id === unitId)) {
-    const idInput = document.getElementById('dt-au-unit-id');
-    const idErr   = document.getElementById('dt-au-unit-id-err');
+    const idInput = document.getElementById(p + 'unit-id');
+    const idErr   = document.getElementById(p + 'unit-id-err');
     idInput.classList.add('error');
     idErr.textContent = `Unit ${unitId} already exists. Pick a different ID.`;
     idErr.classList.add('show');
@@ -22106,7 +22120,7 @@ function tbUdRenderSidePanelSection() {
 ────────────────────────────────────────────────────────────────── */
 
 function tbAuOpen() {
-  /* Reset form via desktop logic (same IDs) */
+  /* Reset form state */
   if (typeof dtAuValues !== 'undefined') {
     dtAuValues.contract = 'Cemex AZ';
     dtAuValues.sysType  = '';
@@ -22115,21 +22129,21 @@ function tbAuOpen() {
   /* Populate contract dropdown */
   const contracts = (typeof DT_AU_CONTRACTS_BY_ACCOUNT !== 'undefined' && typeof dtAuValues !== 'undefined')
     ? (DT_AU_CONTRACTS_BY_ACCOUNT[dtAuValues.account] || []) : ['Cemex AZ'];
-  const contractMenu = document.getElementById('dt-au-contract-menu');
+  const contractMenu = document.getElementById('tb-au-contract-menu');
   if (contractMenu) contractMenu.innerHTML = contracts.map(c => {
     const sel  = c === 'Cemex AZ' ? ' selected' : '';
     const safe = c.replace(/'/g, "\\'");
     return `<div class="dt-au-dd-item${sel}" onclick="dtAuSelectDd('contract','${safe}')">${c}</div>`;
   }).join('');
-  const contractVal = document.getElementById('dt-au-contract-val');
+  const contractVal = document.getElementById('tb-au-contract-val');
   if (contractVal) { contractVal.textContent = 'Cemex AZ'; contractVal.className = ''; }
 
   /* Reset sysType and config */
   ['sysType','config'].forEach(key => {
-    const valEl = document.getElementById('dt-au-' + key + '-val');
-    const menuEl = document.getElementById('dt-au-' + key + '-menu');
-    const chevEl = document.getElementById('dt-au-' + key + '-chev');
-    const btnEl  = document.getElementById('dt-au-' + key + '-btn');
+    const valEl = document.getElementById('tb-au-' + key + '-val');
+    const menuEl = document.getElementById('tb-au-' + key + '-menu');
+    const chevEl = document.getElementById('tb-au-' + key + '-chev');
+    const btnEl  = document.getElementById('tb-au-' + key + '-btn');
     if (valEl)  { valEl.textContent = key === 'sysType' ? 'Select type' : 'Select config'; valEl.className = 'placeholder'; }
     if (menuEl) { menuEl.classList.remove('open'); menuEl.querySelectorAll('.dt-au-dd-item').forEach(el => el.classList.remove('selected')); }
     if (chevEl) chevEl.classList.remove('open');
@@ -22137,11 +22151,11 @@ function tbAuOpen() {
   });
 
   /* Reset inputs */
-  ['dt-au-unit-id','dt-au-tgw'].forEach(id => {
+  ['tb-au-unit-id','tb-au-tgw'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.value = ''; el.classList.remove('error'); }
   });
-  const idErr = document.getElementById('dt-au-unit-id-err');
+  const idErr = document.getElementById('tb-au-unit-id-err');
   if (idErr) idErr.classList.remove('show');
 
   if (typeof dtAuValidate === 'function') dtAuValidate();
@@ -22150,7 +22164,7 @@ function tbAuOpen() {
   const overlay = document.getElementById('tb-au-overlay');
   if (overlay) overlay.style.display = 'flex';
 
-  setTimeout(() => document.getElementById('dt-au-unit-id')?.focus(), 200);
+  setTimeout(() => document.getElementById('tb-au-unit-id')?.focus(), 200);
 }
 
 function tbAuClose() {
@@ -22158,9 +22172,9 @@ function tbAuClose() {
   if (overlay) overlay.style.display = 'none';
   /* Close any open dropdown */
   ['contract','sysType','config'].forEach(key => {
-    document.getElementById('dt-au-' + key + '-menu')?.classList.remove('open');
-    document.getElementById('dt-au-' + key + '-chev')?.classList.remove('open');
-    document.getElementById('dt-au-' + key + '-btn')?.classList.remove('open');
+    document.getElementById('tb-au-' + key + '-menu')?.classList.remove('open');
+    document.getElementById('tb-au-' + key + '-chev')?.classList.remove('open');
+    document.getElementById('tb-au-' + key + '-btn')?.classList.remove('open');
   });
 }
 
@@ -22469,17 +22483,21 @@ function dtShowToast({ title, body, variant }) {
   setTimeout(() => { toast.classList.add('out'); setTimeout(() => toast.remove(), 250); }, 3200);
 }
 
-// Click outside any open dropdown inside the drawer closes it
+// Click outside any open dropdown inside the drawer/overlay closes it
 document.addEventListener('click', (e) => {
-  const drawer = document.getElementById('dt-au-drawer');
-  if (!drawer || !drawer.classList.contains('open')) return;
+  const drawer  = document.getElementById('dt-au-drawer');
+  const overlay = document.getElementById('tb-au-overlay');
+  const desktopOpen = drawer  && drawer.classList.contains('open');
+  const tabletOpen  = overlay && overlay.style.display !== 'none' && overlay.style.display !== '';
+  if (!desktopOpen && !tabletOpen) return;
+  const p = desktopOpen ? 'dt-au-' : 'tb-au-';
   ['contract','sysType','config'].forEach(key => {
-    const wrap = document.getElementById('dt-au-' + key + '-wrap');
-    const menu = document.getElementById('dt-au-' + key + '-menu');
+    const wrap = document.getElementById(p + key + '-wrap');
+    const menu = document.getElementById(p + key + '-menu');
     if (wrap && menu && menu.classList.contains('open') && !wrap.contains(e.target)) {
       menu.classList.remove('open');
-      document.getElementById('dt-au-' + key + '-chev')?.classList.remove('open');
-      document.getElementById('dt-au-' + key + '-btn')?.classList.remove('open');
+      document.getElementById(p + key + '-chev')?.classList.remove('open');
+      document.getElementById(p + key + '-btn')?.classList.remove('open');
     }
   });
 });
@@ -23522,23 +23540,30 @@ function dtUdGpsPlaceholder() {
   alert('GPS Location — coming soon');
 }
 
-// Esc closes drawer (or just the open dropdown if one is open)
+// Esc closes drawer/overlay (or just the open dropdown if one is open)
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
-  const drawer = document.getElementById('dt-au-drawer');
-  if (!drawer || !drawer.classList.contains('open')) return;
+  const drawer  = document.getElementById('dt-au-drawer');
+  const overlay = document.getElementById('tb-au-overlay');
+  const desktopOpen = drawer  && drawer.classList.contains('open');
+  const tabletOpen  = overlay && overlay.style.display !== 'none' && overlay.style.display !== '';
+  if (!desktopOpen && !tabletOpen) return;
+  const p = desktopOpen ? 'dt-au-' : 'tb-au-';
   // First close any open dropdown
   let closedDd = false;
   ['contract','sysType','config'].forEach(key => {
-    const menu = document.getElementById('dt-au-' + key + '-menu');
+    const menu = document.getElementById(p + key + '-menu');
     if (menu && menu.classList.contains('open')) {
       menu.classList.remove('open');
-      document.getElementById('dt-au-' + key + '-chev')?.classList.remove('open');
-      document.getElementById('dt-au-' + key + '-btn')?.classList.remove('open');
+      document.getElementById(p + key + '-chev')?.classList.remove('open');
+      document.getElementById(p + key + '-btn')?.classList.remove('open');
       closedDd = true;
     }
   });
-  if (!closedDd) dtAuClose();
+  if (!closedDd) {
+    if (desktopOpen) dtAuClose();
+    else tbAuClose();
+  }
 });
 
 // Esc on the unit drawer — close the confirm overlay first if open, else the drawer

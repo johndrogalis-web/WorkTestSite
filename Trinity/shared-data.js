@@ -113,6 +113,88 @@ const truckGroups = [
 
 /* flat list for row iteration */
 const trucks = truckGroups.flatMap(g => g.trucks);
+
+/* ─────────────────────────────────────────────────────────────
+   MAPS FLEET ENRICHMENT
+   Maps shows the same trucks as All Trucks / Units / Software
+   Update — just through a different lens. Rather than maintaining
+   a parallel array, we layer on Maps-specific fields here:
+   lat, lng, driver, phase, phaseDur, loadedMinAgo, mapMode.
+
+   Only the first 15 trucks get a position (the same number of
+   markers we want on the map). Selection is index-based so it's
+   stable across reloads. Hash-seeded values mean a given truck#
+   always gets the same fabricated readings.
+   ───────────────────────────────────────────────────────────── */
+(function enrichTrucksForMaps() {
+  /* SF Bay Area lat/lng grid — 15 distinct points scattered around
+     so markers cluster believably. Index N → trucks[N]. */
+  var POSITIONS = [
+    [37.8044, -122.2712], [37.7565, -122.1908], [37.8197, -121.9858],
+    [37.7898, -121.9750], [37.6624, -121.8746], [37.5630, -122.3255],
+    [37.6688, -122.0808], [37.6138, -122.4869], [37.7249, -122.1561],
+    [37.8716, -122.2727], [37.6879, -122.4702], [37.8044, -122.2300],
+    [37.5489, -122.3138], [37.8527, -122.2607], [37.6938, -121.9285]
+  ];
+  var DRIVERS = [
+    'Chris Jennings', 'Marcus Whitley', 'Daniel Reyes', 'Aaron Chen',
+    'Tomás Herrera', 'Jamal Brooks', 'Luis Vega', 'Sam O\u2019Connor',
+    'Nadia Petrov', 'Owen Russo', 'Devon Park', 'Ravi Krishnan',
+    'Theo Marchetti', 'Ben Carter', 'Diego Núñez'
+  ];
+  /* Phase keys must match .dc-tc-phase-chip + .dc-map-marker classes */
+  var PHASES = [
+    'loaded', 'to-job', 'on-site', 'loaded', 'on-site',
+    'to-job', 'on-site', 'waiting-to-load', 'to-job', 'loading',
+    'pouring', 'washing', 'ignition-off', 'return-to-plant', 'waiting-to-load'
+  ];
+  var PHASE_DURS = ['12 min','8 min','18 min','6 min','24 min','4 min','9 min','14 min','7 min','3 min','21 min','5 min','47 min','15 min','9 min'];
+  var LOADED_MIN = [73, 42, 28, 55, 11, 18, 36, 0, 22, 49, 8, 62, 91, 34, 17];
+  var MODES      = ['Live','Live','Live','Live','Live','Live','Live','Live','Live','Live','Live','Live','Idle','Live','Live'];
+
+  for (var i = 0; i < Math.min(POSITIONS.length, trucks.length); i++) {
+    var t = trucks[i];
+    if (t.lat == null) {
+      t.lat = POSITIONS[i][0];
+      t.lng = POSITIONS[i][1];
+    }
+    if (!t.driver)        t.driver       = DRIVERS[i];
+    if (!t.phase)         t.phase        = PHASES[i];
+    if (!t.phaseDur)      t.phaseDur     = PHASE_DURS[i];
+    if (t.loadedMinAgo == null) t.loadedMinAgo = LOADED_MIN[i];
+    if (!t.mapMode)       t.mapMode      = MODES[i];   /* "Live" | "Idle" — distinct from t.truckMode */
+  }
+})();
+
+/* Maps-eligible trucks — the subset of trucks[] with positions.
+   Defined as a function so callers always see the live data; if
+   anything mutates trucks[] later (attach/unlink, etc.) the next
+   call returns up-to-date results. */
+window.dcMapTrucks = function() {
+  return trucks.filter(function(t) { return t.lat != null && t.lng != null; });
+};
+
+/* Field-name shim for Maps: legacy Maps code reads `t.ignition`
+   (lowercase) and `t.mode` ("Live"|"Idle"). The canonical fields
+   on trucks[] are `t.ign` ("On"|"Off") and `t.mapMode`. Define
+   getter properties so both APIs work without copying. Skipped
+   when the truck isn't Maps-eligible (no lat). */
+trucks.forEach(function(t) {
+  if (t.lat == null) return;
+  if (!('ignition' in t)) {
+    Object.defineProperty(t, 'ignition', {
+      get: function() { return (this.ign || 'On').toLowerCase(); },
+      enumerable: false, configurable: true
+    });
+  }
+  if (!('mode' in t)) {
+    Object.defineProperty(t, 'mode', {
+      get: function() { return this.mapMode || 'Live'; },
+      enumerable: false, configurable: true
+    });
+  }
+});
+
 var tbUnitsSelected   = new Set();
 var dtUnitsSelected   = new Set(); // unit IDs currently checked
 const UNLINKED_TRUCKS = [

@@ -8,7 +8,7 @@
    ============================================================ */
 
 /* ── DATA ───────────────────────────────────────── */
-const truckGroups = [
+var truckGroups = [
   {
     account: 'Cemex AZ',
     label: 'Phoenix Central',
@@ -112,7 +112,7 @@ const truckGroups = [
 ];
 
 /* flat list for row iteration */
-const trucks = truckGroups.flatMap(g => g.trucks);
+var trucks = truckGroups.flatMap(g => g.trucks);
 
 /* ─────────────────────────────────────────────────────────────
    MAPS FLEET ENRICHMENT
@@ -197,7 +197,7 @@ trucks.forEach(function(t) {
 
 var tbUnitsSelected   = new Set();
 var dtUnitsSelected   = new Set(); // unit IDs currently checked
-const UNLINKED_TRUCKS = [
+var UNLINKED_TRUCKS = [
   { number:'AV17 ZXW (3427)', type:'Front',  drum:'8 yd',  water:'Pump',        mixer:'McNeilus' },
   { number:'BK19 YTR (2891)', type:'Rear',   drum:'9 yd',  water:'Pressure',    mixer:'Schwing'  },
   { number:'CL21 MNP (5503)', type:'Front',  drum:'10 yd', water:'Flow',        mixer:'McNeilus' },
@@ -207,7 +207,7 @@ const UNLINKED_TRUCKS = [
   { number:'HJ23 GHI (7782)', type:'Front',  drum:'10 yd', water:'Flow',        mixer:'Schwing'  },
   { number:'KL24 JKL (8891)', type:'Rear',   drum:'11 yd', water:'Temperature', mixer:'London'   },
 ];
-const UNITS_DATA = [
+var UNITS_DATA = [
   { id:'U-836510', status:'Unlinked Unit', truck:'--',    tgw:'210000222277', contract:'Cemex AZ', sysType:'V5',    config:'Temp+ Admix',  firstCommissioned:null, assignedToTruck:null, decommissioned:null },
   { id:'U-184759', status:'Unlinked Unit', truck:'--',    tgw:'210000608331', contract:'Cemex AZ', sysType:'Spark', config:'Measured Only',firstCommissioned:null, assignedToTruck:null, decommissioned:null },
   { id:'U-348610', status:'Maintenance',   truck:'--',    tgw:'210000819204', contract:'Cemex AZ', sysType:'Pulse', config:'Measured Only',firstCommissioned:null, assignedToTruck:null, decommissioned:'01/10/2025' },
@@ -251,8 +251,8 @@ const UNITS_DATA = [
   { id:'U-149469', status:'Linked Unit', truck:'66778', tgw:'210000393003', contract:'Cemex AZ', sysType:'Spark', config:'Measured Only', firstCommissioned:'07/22/2022', assignedToTruck:'07/01/2025', decommissioned:null },
   { id:'U-150806', status:'Linked Unit', truck:'77889', tgw:'210000400922', contract:'Cemex AZ', sysType:'V5', config:'Measured Only', firstCommissioned:'03/18/2021', assignedToTruck:'07/01/2025', decommissioned:null },
 ];
-const senSelected = new Set(['slump','water']);
-const MC_CARD_DEFS = [
+var senSelected = new Set(['slump','water']);
+var MC_CARD_DEFS = [
   { id:'ping', title:'Ping Truck', hasInput:false, idleMetric:'2', idleUnit:'min ago', idleMetricSub:'Last Ping', idleStatusKey:'Status:', idleStatusVal:'Online', idleBtnLabel:'Ping Truck', mountId:'mc-unit-ping',
     scenarios:[
       { id:'success', label:'Responded', progressTo:100, progressDuration:1200, resolve:()=>({ dotClass:'dot-green', cardClass:'state-success', badge:{label:'Responded',cls:'badge-ok'}, inputContent:{type:'pill',label:'Responded',cls:'pill-success'}, metric:'just now', unit:'', metricSub:'Last Ping', statusKey:'Status:', statusVal:'Online', btn:{label:'Ping Again',cls:'btn-primary',disabled:false} }) },
@@ -344,7 +344,7 @@ const MC_CARD_DEFS = [
     ]
   }
 ];
-const CC_TRUCKS = [
+var CC_TRUCKS = [
   { num:'45689', ver:'v5.01.008', ign:'On',  ignOff:false, err:1,  wrn:0, ignDetail:'3 min',  plant:'Phoenix Central', lastConn:'1:16 PM 07/23/25',
     components:[
       { name:'TCG',         dot:'#2ecf1d', state:'clean', evt:'No Events' },

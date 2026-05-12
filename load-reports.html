@@ -1,0 +1,1307 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1920" />
+  <title>Verifi — Load Reports</title>
+
+  <!-- Fonts: Inter for everything per the Figma spec -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Icons are inlined as an SVG sprite at the top of <body> so they
+       render even when external CDNs are blocked. -->
+
+  <style>
+    /* =======================================================================
+       Tokens (mapped from Figma — Grey Concrete, Grey Steel, Black Concrete,
+       Grey Cloud, etc. The active-tab accent is the blue underline #0965a3.)
+       ======================================================================= */
+    :root {
+      --bg-page:           #26282b;     /* page background (matches sidebar) */
+      --bg-sidebar:        #26282b;     /* sidebar */
+      --bg-table:          #26282b;     /* table surface (matches page) */
+      --row-even:          #26282b;     /* odd rows (1st, 3rd, ...) */
+      --row-odd:           #1c1c1e;     /* even rows (2nd, 4th, ...) */
+      --border-steel:      #a8aeb5;     /* table grid + group lines */
+      --text-strong:       #ffffff;     /* primary text */
+      --text-muted:        #a8aeb5;     /* secondary / labels */
+      --text-cell:         #ededed;     /* row cell text */
+      --accent-blue:       #0965a3;     /* active tab underline */
+      --nav-hover:         rgba(255, 255, 255, 0.04);
+
+      --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: var(--bg-page);
+      color: var(--text-strong);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-width: 1280px;
+    }
+
+    /* =======================================================================
+       App shell — sidebar on the left, everything else stacks to the right.
+       ======================================================================= */
+    .app {
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      min-height: 100vh;
+    }
+
+    /* ---------------- Sidebar ---------------- */
+    .sidebar {
+      background: var(--bg-sidebar);
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      padding: 24px 0 16px;
+      gap: 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      width: 96px;
+    }
+    .logo {
+      width: 64px;
+      height: auto;
+      margin: 0 auto 24px;
+      color: var(--text-strong);
+      display: block;
+    }
+    .logo path { fill: currentColor; }
+
+    /* Region header (Ozinga South Florida) — non-interactive, pin + label,
+       with a divider underneath separating it from the nav items. */
+    .region-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 6px 16px;
+      color: var(--text-strong);
+      border-bottom: 1px solid rgba(168, 174, 181, 0.18);
+      margin-bottom: 12px;
+    }
+    .region-header .icon {
+      width: 22px;
+      height: 22px;
+      color: var(--text-strong);
+      display: block;
+    }
+    .region-header .label {
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.25;
+      color: var(--text-strong);
+    }
+
+    .nav-item {
+      width: 100%;
+      padding: 12px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      position: relative;
+      text-align: center;
+      line-height: 1.25;
+      transition: color 120ms ease, background 120ms ease;
+    }
+    .nav-item .icon {
+      width: 22px;
+      height: 22px;
+      color: currentColor;
+      display: block;
+    }
+    /* Path-level fills inherit current color so monochrome filled icons
+       follow the muted → white state change. */
+    .nav-item .icon path,
+    .nav-item .icon rect,
+    .nav-item .icon circle { fill: currentColor; }
+
+    .nav-item:hover { color: var(--text-strong); background: var(--nav-hover); }
+    .nav-item.active { color: var(--text-strong); font-weight: 700; }
+    .nav-item.active::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 8px;
+      bottom: 8px;
+      width: 3px;
+      background: var(--text-strong);
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* ---------------- Main column ----------------
+       min-width:0 is critical: without it, a grid item sizes to its widest
+       child (the table). With it, the column respects the viewport width
+       and only the table-wrap inside scrolls horizontally. */
+    .main {
+      padding: 32px 40px 24px;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    /* Tabs row */
+    .tabs {
+      display: flex;
+      align-items: flex-end;
+      gap: 40px;
+      border-bottom: 1px solid transparent; /* underline lives on .tab.active */
+      padding-bottom: 0;
+      margin-bottom: 28px;
+      position: relative;
+    }
+    .tab {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text-muted);
+      padding-bottom: 14px;
+      cursor: pointer;
+      position: relative;
+      transition: color 120ms ease;
+      white-space: nowrap;
+    }
+    .tab:hover { color: var(--text-strong); }
+    .tab.active {
+      color: var(--text-strong);
+      font-weight: 700;
+    }
+    .tab.active::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -1px;
+      height: 3px;
+      background: var(--accent-blue);
+      border-radius: 2px;
+    }
+
+    /* Toolbar */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      border: 1px solid rgba(168, 174, 181, 0.25);
+      border-radius: 6px;
+      padding: 6px 12px;
+      width: 240px;
+      color: var(--text-muted);
+    }
+    .search .icon {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+    .search input {
+      background: transparent;
+      border: 0;
+      outline: none;
+      color: var(--text-strong);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      flex: 1;
+      min-width: 0;
+    }
+    .search input::placeholder { color: var(--text-muted); }
+    .toolbar .item-count {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .toolbar .spacer { flex: 1; }
+
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      background: transparent;
+      border: 0;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background 120ms ease, color 120ms ease;
+    }
+    .icon-btn:hover { background: var(--nav-hover); color: var(--text-strong); }
+    .icon-btn .icon {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .pager .icon-btn .icon { width: 16px; height: 16px; }
+
+    .preset-wrap { position: relative; }
+    .preset-select {
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-width: 200px;
+      padding: 8px 12px;
+      background: transparent;
+      border: 1px solid rgba(168, 174, 181, 0.25);
+      border-radius: 6px;
+      color: var(--text-strong);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .preset-select .icon {
+      width: 16px;
+      height: 16px;
+      stroke: var(--text-muted);
+      fill: none;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 160ms ease;
+    }
+    .preset-wrap.open .preset-select .icon { transform: rotate(180deg); }
+
+    .preset-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      min-width: 260px;
+      background: #b0b3b8;
+      border-radius: 4px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      padding: 0;
+      display: none;
+      z-index: 100;
+      overflow: hidden;
+    }
+    .preset-wrap.open .preset-menu { display: block; }
+    .preset-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: 0;
+      padding: 14px 18px;
+      color: #1c1c1e;
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .preset-option:hover { background: rgba(0, 0, 0, 0.06); }
+    .preset-option .check {
+      width: 18px;
+      height: 18px;
+      stroke: #e91e63;
+      stroke-width: 2.5;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0;
+    }
+    .preset-option.active .check { opacity: 1; }
+
+    /* =======================================================================
+       Table.
+
+       Note: the Figma is built as a fixed 1760px-wide table with hand-set
+       column widths. I'm matching those widths so the column groupings
+       (Batch Information / At Plant / At Arrival / Discharge / Customer)
+       line up cleanly. The container scrolls horizontally on smaller viewports.
+       ======================================================================= */
+    .table-wrap {
+      background: var(--bg-table);
+      border-radius: 6px;
+      overflow-x: auto;
+      overflow-y: auto;
+      max-height: calc(100vh - 280px);
+    }
+    table.report {
+      /* `separate` (not `collapse`) is required for borders on position:sticky
+         cells to render reliably. With collapse, the border belongs to the
+         table grid and gets dropped when sticky cells detach during scroll. */
+      border-collapse: separate;
+      border-spacing: 0;
+      table-layout: fixed;
+      font-family: var(--font-sans);
+    }
+    /* QC view: width = sum of col widths, scrolls horizontally if needed. */
+    table.report.preset-qc { width: max-content; min-width: 100%; }
+    /* Default view: fill the page. The last col has width:auto, so it stretches. */
+    table.report.preset-default { width: 100%; }
+
+    /* =======================================================================
+       Default-view cell formats
+       ======================================================================= */
+
+    /* Default/Dispatch/Production views: non-uppercase, lighter weight cells. */
+    table.report.preset-default tbody td {
+      text-transform: none;
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+
+    /* Stacked time: 08:33 AM (white, bold) + GMT badge + 05/12/2026 (muted) */
+    .cell-time { line-height: 1.3; }
+    .cell-time .row1 { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .cell-time .time { color: var(--text-strong); font-weight: 700; font-size: 13px; }
+    .cell-time .tz   { color: var(--text-muted);  font-size: 10px; font-weight: 500; letter-spacing: 0.04em; }
+    .cell-time .date { color: var(--text-muted);  font-size: 12px; margin-top: 2px; }
+
+    /* Location: bold white */
+    td.cell-location { color: var(--text-strong); font-weight: 700; }
+
+    /* Customer / order / mix code: muted */
+    td.cell-muted { color: var(--text-muted); }
+
+    /* Size with yd³ superscript */
+    td.cell-size { color: var(--text-strong); font-weight: 700; }
+    td.cell-size sup { font-size: 9px; vertical-align: super; line-height: 1; }
+
+    /* Status pills */
+    .status-pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+    .status-pill.to-job { background: #2f8d6e; }
+    .status-pill.loaded { background: #d4a017; color: #1c1c1e; }
+    .status-pill.onsite { background: #7c5cc4; }
+
+    /* Stacked slump: 0.75 in (white) / 5.00 in (muted) */
+    .cell-slump { line-height: 1.3; }
+    .cell-slump .current { color: var(--text-strong); font-weight: 700; font-size: 13px; }
+    .cell-slump .current.dash { color: var(--text-muted); }
+    .cell-slump .ticketed { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
+
+    /* Group header row spans (Batch Information / At Plant / etc.).
+       border-bottom now renders correctly because table uses border-collapse:separate. */
+    .group-row th {
+      text-align: left;
+      vertical-align: middle;
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 1.33;
+      padding: 10px;
+      border-bottom: 1px solid var(--border-steel);
+      border-right: 1px solid var(--border-steel);
+      background: var(--bg-table);
+      position: sticky;
+      top: 0;
+      z-index: 3;
+    }
+    .group-row th:last-child { border-right: 0; }
+
+    /* Clickable group headers (the ones with a chevron). */
+    .group-row th.expandable {
+      cursor: pointer;
+      user-select: none;
+      transition: color 120ms ease, background 120ms ease;
+    }
+    .group-row th.expandable:hover {
+      color: var(--text-strong);
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .group-row th.expandable:focus-visible {
+      outline: 2px solid var(--accent-blue);
+      outline-offset: -2px;
+    }
+
+    /* Chevron — inline SVG from Figma (9×15, fill #A8AEB5).
+       Rotates 90° on expand. */
+    .group-row .chev {
+      float: right;
+      width: 9px;
+      height: 15px;
+      margin-top: 4px;
+      transition: transform 160ms ease;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .group-row .chev path { fill: var(--text-muted); }
+    .group-row th.expandable:hover .chev path { fill: var(--text-strong); }
+    .group-row th.expanded .chev { transform: rotate(90deg); }
+
+    /* Column header row (DATE / TIME / TICKETS / ...) */
+    .col-row th {
+      text-align: left;
+      vertical-align: bottom;
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 12px;
+      line-height: 14px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      padding: 14px 10px 10px;
+      border-bottom: 0;
+      background: var(--bg-table);
+      position: sticky;
+      z-index: 2;
+    }
+    /* QC: col row sticks right under the group row. No overlap needed because
+       border-collapse:separate keeps the group row's border-bottom in place. */
+    .preset-qc .col-row th { top: 44px; }
+    .preset-default .col-row th { top: 0; }
+    .col-row th.divider-right { border-right: 1px solid var(--border-steel); }
+    .col-row th sup {
+      font-size: 7.74px;
+      vertical-align: super;
+      line-height: 1;
+    }
+    .col-row th .two-line {
+      display: block;
+      line-height: 14px;
+      white-space: nowrap;
+    }
+
+    /* Body rows */
+    tbody td {
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 14px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--text-cell);
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    tbody td.divider-right { border-right: 1px solid var(--border-steel); }
+
+    /* Zebra striping. */
+    tbody tr:nth-child(odd)  { background-color: var(--row-even); }
+    tbody tr:nth-child(even) { background-color: var(--row-odd); }
+    tbody tr:hover { background-color: rgba(255, 255, 255, 0.04); }
+
+    /* Customer name now carries a tooltip with the address. */
+    .customer-cell {
+      position: relative;
+      cursor: help;
+    }
+    .customer-cell .addr-tooltip {
+      position: absolute;
+      left: 0;
+      top: calc(100% + 4px);
+      background: #1c1c1e;
+      border: 1px solid rgba(168, 174, 181, 0.25);
+      border-radius: 4px;
+      padding: 8px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1.4;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--text-strong);
+      white-space: pre-line;
+      min-width: 180px;
+      max-width: 260px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-2px);
+      transition: opacity 120ms ease, transform 120ms ease, visibility 120ms;
+      pointer-events: none;
+      z-index: 20;
+    }
+    .customer-cell .addr-tooltip::before {
+      content: "ADDRESS";
+      display: block;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .customer-cell:hover .addr-tooltip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    /* Column widths are applied inline by JS from the GROUPS config so the
+       widths follow the active (collapsed vs expanded) column set. */
+
+    /* =======================================================================
+       Footer / pagination
+       ======================================================================= */
+    .table-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 24px;
+      padding-top: 14px;
+    }
+    .records-label {
+      font-size: 14px;
+      letter-spacing: -0.28px;
+      color: #a4a5a6;
+      line-height: 1.3;
+    }
+    .pager { display: inline-flex; gap: 8px; }
+    .pager .icon-btn { width: 32px; height: 32px; }
+    .pager .icon-btn.disabled { opacity: 0.4; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       SVG icon sprite. Defined once, referenced via <use href="#id"/>.
+       All icons are 24x24 viewBox, Lucide-style line icons that match
+       the visual weight of the Remix icons used in the Figma.
+       ============================================================ -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <!-- Sidebar (filled-style icons to match Figma) -->
+      <!-- Region header pin -->
+      <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z" fill="currentColor"/></symbol>
+      <!-- Dashboards: house outline -->
+      <symbol id="i-dashboards" viewBox="0 0 24 24"><path d="M21 19.9998C21 20.265 20.8946 20.5194 20.7071 20.7069C20.5196 20.8944 20.2652 20.9998 20 20.9998H4C3.73478 20.9998 3.48043 20.8944 3.29289 20.7069C3.10536 20.5194 3 20.265 3 19.9998V9.48978C2.99989 9.3374 3.03462 9.187 3.10152 9.05008C3.16841 8.91317 3.26572 8.79335 3.386 8.69978L11.386 2.47778C11.5615 2.34123 11.7776 2.26709 12 2.26709C12.2224 2.26709 12.4385 2.34123 12.614 2.47778L20.614 8.69978C20.7343 8.79335 20.8316 8.91317 20.8985 9.05008C20.9654 9.187 21.0001 9.3374 21 9.48978V19.9998ZM19 18.9998V9.97778L12 4.53378L5 9.97778V18.9998H19Z" fill="currentColor"/></symbol>
+      <!-- My Fleet: map with pin -->
+      <symbol id="i-fleet" viewBox="0 0 24 24"><path d="M2 5l6-2 8 2 6-2v16l-6 2-8-2-6 2V5zm6 0v14l8 2V7L8 5zm-2 .35L4 6v13.5l2-.66V5.35zm14 13.3V5.15l-2 .66v13.34l2-.5z" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/></symbol>
+      <!-- Production: bar chart in rounded square -->
+      <symbol id="i-production" viewBox="0 0 24 24"><path d="M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm1 2v14h14V5H5zm3 8h2v4H8v-4zm4-4h2v8h-2V9zm4 2h2v6h-2v-6z" fill="currentColor"/></symbol>
+      <!-- Mixtures: wrench in circle -->
+      <symbol id="i-mixtures" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm3.5-12.5a3 3 0 0 0-4.24 4.24l-3.06 3.06 1.41 1.41 3.06-3.06a3 3 0 0 0 4.24-4.24l-1.42 1.42-1.41-1.41 1.42-1.42Z" fill="currentColor"/></symbol>
+      <!-- Tickets: ID/list card -->
+      <symbol id="i-tickets" viewBox="0 0 24 24"><path d="M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm1 2v12h14V6H5zm2 2h2v2H7V8zm4 0h6v2h-6V8zm-4 4h2v2H7v-2zm4 0h6v2h-6v-2zm-4 4h2v2H7v-2zm4 0h6v2h-6v-2z" fill="currentColor"/></symbol>
+      <!-- Diagnostic Center: signal/heartbeat in magnifier -->
+      <symbol id="i-diagnostic" viewBox="0 0 24 24"><path d="M11 4a7 7 0 1 0 4.18 12.61l4.1 4.1 1.42-1.42-4.1-4.1A7 7 0 0 0 11 4Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm-3 5h1.5l1-2 2 4 1-2H14" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <!-- Data Insights: sparkles/trend -->
+      <symbol id="i-insights" viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 8-8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 8h4v4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 3l.6 1.4L20 5l-1.4.6L18 7l-.6-1.4L16 5l1.4-.6L18 3z" fill="currentColor"/></symbol>
+
+      <!-- Toolbar -->
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></symbol>
+      <symbol id="i-filter" viewBox="0 0 24 24"><path d="M3 5h18M6 12h12M10 19h4"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></symbol>
+      <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></symbol>
+
+      <!-- Pagination -->
+      <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+      <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+      <symbol id="i-chevrons-left" viewBox="0 0 24 24"><path d="m11 18-6-6 6-6M18 18l-6-6 6-6"/></symbol>
+      <symbol id="i-chevrons-right" viewBox="0 0 24 24"><path d="m6 18 6-6-6-6M13 18l6-6-6-6"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="app">
+
+    <!-- ============================== SIDEBAR ============================== -->
+    <aside class="sidebar" aria-label="Primary">
+      <svg class="logo" viewBox="0 0 96 24" xmlns="http://www.w3.org/2000/svg" aria-label="verifi">
+        <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z"/>
+      </svg>
+
+      <div class="region-header">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-pin"/></svg>
+        <div class="label">Ozinga<br>South<br>Florida</div>
+      </div>
+
+      <a class="nav-item" href="#"><svg class="icon"><use href="#i-dashboards"/></svg><span>Dashboards</span></a>
+      <a class="nav-item" href="#"><svg class="icon"><use href="#i-fleet"/></svg><span>My Fleet</span></a>
+      <a class="nav-item active" href="#"><svg class="icon"><use href="#i-production"/></svg><span>Production</span></a>
+      <a class="nav-item" href="#"><svg class="icon"><use href="#i-mixtures"/></svg><span>Mixtures</span></a>
+      <a class="nav-item" href="#"><svg class="icon"><use href="#i-tickets"/></svg><span>Tickets</span></a>
+      <a class="nav-item" href="#"><svg class="icon"><use href="#i-diagnostic"/></svg><span>Diagnostic<br>Center</span></a>
+      <a class="nav-item" href="#"><svg class="icon"><use href="#i-insights"/></svg><span>Data Insights</span></a>
+    </aside>
+
+    <!-- ============================== MAIN ============================== -->
+    <main class="main">
+
+      <!-- Tabs -->
+      <nav class="tabs" role="tablist" aria-label="Report views">
+        <div class="tab active" role="tab" aria-selected="true">Load Reports</div>
+        <div class="tab" role="tab">Truck phase</div>
+        <div class="tab" role="tab">Slump Test report</div>
+        <div class="tab" role="tab">Admix Report</div>
+      </nav>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <label class="search">
+          <svg class="icon"><use href="#i-search"/></svg>
+          <input type="text" placeholder="Search" />
+        </label>
+        <div class="spacer"></div>
+        <button class="icon-btn" title="Refresh"><svg class="icon"><use href="#i-refresh"/></svg></button>
+        <button class="icon-btn" title="Filter"><svg class="icon"><use href="#i-filter"/></svg></button>
+        <button class="icon-btn" title="Download"><svg class="icon"><use href="#i-download"/></svg></button>
+        <div class="preset-wrap" id="preset-wrap">
+          <button class="preset-select" id="preset-trigger" title="View preset">
+            <span id="preset-label">Default</span>
+            <svg class="icon"><use href="#i-chevron-down"/></svg>
+          </button>
+          <div class="preset-menu" role="menu">
+            <button class="preset-option active" data-preset="default" role="menuitem">
+              <span>Default</span>
+              <svg class="check"><use href="#i-check"/></svg>
+            </button>
+            <button class="preset-option" data-preset="dispatch" role="menuitem">
+              <span>Dispatch View</span>
+              <svg class="check"><use href="#i-check"/></svg>
+            </button>
+            <button class="preset-option" data-preset="production" role="menuitem">
+              <span>Production View</span>
+              <svg class="check"><use href="#i-check"/></svg>
+            </button>
+            <button class="preset-option" data-preset="qc" role="menuitem">
+              <span>Quality Control View</span>
+              <svg class="check"><use href="#i-check"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table — rendered by JS from the GROUPS config below so expand/collapse
+           just toggles a flag and re-renders. Keeps the markup single-source. -->
+      <div class="table-wrap">
+        <table class="report" role="table" id="report-table">
+          <colgroup id="report-colgroup"></colgroup>
+          <thead id="report-thead"></thead>
+          <tbody id="report-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Pagination footer -->
+      <div class="table-footer">
+        <span class="records-label">1 - 100 of 250 Records</span>
+        <div class="pager">
+          <button class="icon-btn disabled" title="First page"><svg class="icon"><use href="#i-chevrons-left"/></svg></button>
+          <button class="icon-btn disabled" title="Previous page"><svg class="icon"><use href="#i-chevron-left"/></svg></button>
+          <button class="icon-btn" title="Next page"><svg class="icon"><use href="#i-chevron-right"/></svg></button>
+          <button class="icon-btn" title="Last page"><svg class="icon"><use href="#i-chevrons-right"/></svg></button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    // ===================================================================
+    // Table config
+    // -------------------------------------------------------------------
+    // Each group has TWO column sets: `collapsed` (what shows by default,
+    // matching the Figma) and `expanded` (the detail view shown when the
+    // user clicks the chevron). Groups without an `expanded` set are not
+    // clickable. Today only Batch Information has expanded columns wired
+    // up; the others can be filled in the same way.
+    //
+    // Each column: { key, label, w, twoLine?, dividerRight? }
+    //   key          → property on the row data object
+    //   label        → header text (string or [line1, line2] for two-line)
+    //   w            → width in px
+    //   dividerRight → adds the vertical group divider after this column
+    // ===================================================================
+
+    const GROUPS = [
+      {
+        id: "batch",
+        title: "Batch Information",
+        expandable: true,
+        expanded: false,
+        collapsed: [
+          { key: "date",          label: "Date",                              w: 95  },
+          { key: "time",          label: "Time",                              w: 77  },
+          { key: "tickets",       label: "Tickets",                           w: 79  },
+          { key: "driver",        label: "Driver",                            w: 101 },
+          { key: "mixId",         label: "Mix Id",                            w: 72  },
+          { key: "ticketedSlump", label: ["Ticketed", "Slump (in)"],          w: 100, twoLine: true },
+          { key: "size",          label: ["Size (yd³)"],                      w: 82, dividerRight: true }
+        ],
+        expanded_columns: [
+          { key: "time",          label: "Time",                              w: 80  },
+          { key: "tickets",       label: "Ticket",                            w: 90  },
+          { key: "truck",         label: "Truck",                             w: 80  },
+          { key: "driver",        label: "Driver",                            w: 110 },
+          { key: "location",      label: "Location",                          w: 130 },
+          { key: "order",         label: "Order",                             w: 90  },
+          { key: "size",          label: ["Size (yd³)"],                      w: 80  },
+          { key: "mixCode",       label: ["Mix", "Code"],                     w: 80, twoLine: true },
+          { key: "currentSlump",  label: ["Current /", "Ticketed Slump"],     w: 120, twoLine: true },
+          { key: "instruction",   label: "Instruction",                       w: 120 },
+          { key: "allowableWater",label: ["Allowable", "Water"],              w: 100, twoLine: true },
+          { key: "stealthWater",  label: ["Total Stealth", "Water"],          w: 120, twoLine: true, dividerRight: true }
+        ]
+      },
+      {
+        id: "atPlant",
+        title: "At Plant",
+        expandable: true,
+        expanded: false,
+        collapsed: [
+          { key: "initialSlump", label: ["Initial", "Slump (in)"],           w: 77,  twoLine: true },
+          { key: "initialVs",    label: "Slump vs Target", w: 131 },
+          { key: "leavePlant",   label: ["Leave Plant", "Slump (in)"],       w: 115, twoLine: true, dividerRight: true }
+        ],
+        expanded_columns: [
+          { key: "initialSlump",   label: "Initial Slump",     w: 130 },
+          { key: "slumpVsTarget",  label: "Slump vs Target",   w: 140 },
+          { key: "leftPlantSlump", label: "Left Plant Slump",  w: 150 },
+          { key: "waterAdded",     label: "Water Added",       w: 120 },
+          { key: "admixAdded",     label: "Admix Added",       w: 120 },
+          { key: "totalRevs",      label: "Total Revs",        w: 110 },
+          { key: "temp",           label: "Temp",              w: 90  },
+          { key: "ageMn",          label: "Age (mn)",          w: 100, dividerRight: true }
+        ]
+      },
+      {
+        id: "atArrival",
+        title: "At Arrival",
+        expandable: true,
+        expanded: false,
+        collapsed: [
+          { key: "arrivalSlump", label: "Slump (in)",                         w: 70  },
+          { key: "arrivalVs",    label: "Slump vs Target", w: 156, dividerRight: true }
+        ],
+        expanded_columns: [
+          { key: "arrivalSlump",       label: "Slump",            w: 100 },
+          { key: "arrivalSlumpVs",     label: "Slump vs Target",  w: 140 },
+          { key: "arrivalTotalWater",  label: "Total Water",      w: 120 },
+          { key: "arrivalTotalAdmix",  label: "Total Admix",      w: 120 },
+          { key: "arrivalTotalRevs",   label: "Total Revs",       w: 110 },
+          { key: "arrivalTemp",        label: "Temp",             w: 90  },
+          { key: "arrivalAgeMn",       label: "Age (mn)",         w: 100, dividerRight: true }
+        ]
+      },
+      {
+        id: "discharge",
+        title: "Discharge",
+        expandable: true,
+        expanded: false,
+        collapsed: [
+          { key: "dischargeSlump", label: "Slump (in)",                       w: 87  },
+          { key: "dischargeVs",    label: "Slump vs Target", w: 156, dividerRight: true }
+        ],
+        expanded_columns: [
+          { key: "dischargeSlump",       label: "Slump",            w: 100 },
+          { key: "dischargeSlumpVs",     label: "Slump vs Target",  w: 140 },
+          { key: "dischargeTotalWater",  label: "Total Water",      w: 120 },
+          { key: "dischargeTotalAdmix",  label: "Total Admix",      w: 120 },
+          { key: "dischargeTotalRevs",   label: "Total Revs",       w: 110 },
+          { key: "dischargeTemp",        label: "Temp",             w: 90  },
+          { key: "dischargeAgeMn",       label: "Age (mn)",         w: 100, dividerRight: true }
+        ]
+      },
+      {
+        id: "customer",
+        title: "Customer",
+        expandable: false,
+        collapsed: [
+          { key: "customerName", label: "Customer Name", w: null } // fills remaining
+        ]
+      }
+    ];
+
+    // ===================================================================
+    // Sample data — every row identical in the Figma. Added fields for the
+    // expanded Batch Information columns with plausible placeholder values.
+    // ===================================================================
+    const sampleRow = {
+      // Batch Information (collapsed)
+      date:    "04-06-2026",
+      time:    "03:35 PM",
+      tickets: "41127364",
+      driver:  "Jones, Zach",
+      mixId:   "1561043",
+      ticketedSlump: "5.00",
+      size:    "10.0",
+      // Batch Information (expanded — placeholder values; replace with real)
+      truck:          "T-204",
+      location:       "Plant 03",
+      order:          "ORD-88421",
+      mixCode:        "4500-A",
+      currentSlump:   "5.00 / 5.00",
+      instruction:    "Standard",
+      allowableWater: "2.5 gal",
+      stealthWater:   "0.0 gal",
+      status:         "Complete",
+      // At Plant (collapsed)
+      initialSlump:  "3.25",
+      initialVs:     "-1.75",
+      leavePlant:    "6.50",
+      // At Plant (expanded — placeholder values; replace with real)
+      slumpVsTarget:  "-1.75",
+      leftPlantSlump: "6.50",
+      waterAdded:     "1.5 gal",
+      admixAdded:     "0.3 oz",
+      totalRevs:      "240",
+      temp:           "72°F",
+      ageMn:          "12",
+      // At Arrival (collapsed)
+      arrivalSlump:  "6.00",
+      arrivalVs:     "-1.25",
+      // At Arrival (expanded)
+      arrivalSlumpVs:    "-1.25",
+      arrivalTotalWater: "28 gal",
+      arrivalTotalAdmix: "12 oz",
+      arrivalTotalRevs:  "315",
+      arrivalTemp:       "74°F",
+      arrivalAgeMn:      "42",
+      // Discharge (collapsed)
+      dischargeSlump:"5.25",
+      dischargeVs:   "-0.25",
+      // Discharge (expanded)
+      dischargeSlumpVs:    "-0.25",
+      dischargeTotalWater: "32 gal",
+      dischargeTotalAdmix: "14 oz",
+      dischargeTotalRevs:  "385",
+      dischargeTemp:       "76°F",
+      dischargeAgeMn:      "58",
+      // Customer
+      customerName:  "Titan Structural InC",
+      customerAddr:  "6261 NW 6th way,\nFort, Lauderadal,E"
+    };
+
+    const ROW_COUNT = 50;
+
+    // QC rows: start from sampleRow, then randomize the fields that vary
+    // (date, time, tickets, driver, mix id, customer name) per row so the
+    // table doesn't read as 50 copies of the same load.
+    const QC_DRIVERS = [
+      "Jones, Zach", "ULLOA ROYLIS", "Olivera, Gilberto Borges", "ELLIS JEROME",
+      "Fiallo, Lazaro", "OLIVERA SAMUEL", "Lopez, Alexei", "MARTINEZ, JUAN",
+      "Smith, Daniel", "RIVERA, CARLOS", "Garcia, Marco", "PEREZ, ANTONIO",
+      "Hernandez, Luis", "GONZALEZ, RAFAEL", "Diaz, Manuel", "TORRES, RICARDO",
+      "Vasquez, Eddie", "FERNANDEZ, JOSE", "Ramirez, Carlos", "Cruz, Hector"
+    ];
+    const QC_MIX_IDS = [
+      "1085F", "1050FEC", "1080FG", "2408LP55", "2407LR50R2", "06-1892",
+      "1055FEC", "2508LP45H", "1092FH", "290FMA31", "DW1308LP", "1060F",
+      "2608LP40H", "1050FFMG", "1100FACG"
+    ];
+    const QC_CUSTOMERS = [
+      "TITAN STRUCTURAL INC", "MCM", "JGR CONSTRUCTION INC", "HOMESTEAD PAVING CO",
+      "WOODLAND TILT-UP", "COASTAL CONSTRUCTORS", "CECO CONCRETE CONSTRUCTION LLC",
+      "MODRN DEVELOPMENT GROUP", "REBOLIZ CONSTRUCTION", "INTERNATIONAL CONCRETE",
+      "BALTUS CONSTRUCTION", "MIAMI READY MIX", "ATLANTIC FOUNDATIONS",
+      "GULFSTREAM BUILDERS", "PALMETTO CONCRETE"
+    ];
+
+    function pick(arr, i) { return arr[i % arr.length]; }
+    function pad2(n) { return String(n).padStart(2, "0"); }
+
+    const qcRows = Array.from({ length: ROW_COUNT }, (_, i) => {
+      // Time rolls back 4-7 mins per row from a 03:35 PM start.
+      const startMin = 15*60 + 35; // 03:35 PM in minutes since midnight
+      const offset = i * 5 + (i * 7) % 4;
+      const total = startMin - offset;
+      const hours24 = Math.floor((total + 24*60) / 60) % 24;
+      const mins    = ((total % 60) + 60) % 60;
+      const ampm    = hours24 >= 12 ? "PM" : "AM";
+      const hh12    = ((hours24 + 11) % 12) + 1;
+
+      // Date rolls back by 1 day every ~12 rows to give a few days of variety.
+      const baseDate = new Date(2026, 3, 6); // 04-06-2026
+      baseDate.setDate(baseDate.getDate() - Math.floor(i / 12));
+      const dateStr = `${pad2(baseDate.getMonth()+1)}-${pad2(baseDate.getDate())}-${baseDate.getFullYear()}`;
+
+      // Ticket: monotonically decrementing so the order looks like a log.
+      const ticket = (41127364 - i * 23).toString();
+
+      return Object.assign({}, sampleRow, {
+        date:         dateStr,
+        time:         `${pad2(hh12)}:${pad2(mins)} ${ampm}`,
+        tickets:      ticket,
+        driver:       pick(QC_DRIVERS, i * 3 + 1),
+        mixId:        pick(QC_MIX_IDS, i * 2 + 5),
+        customerName: pick(QC_CUSTOMERS, i * 5 + 2)
+      });
+    });
+
+    // Default view rows — patterned after real Ozinga data (mix codes,
+    // truck numbers, slump value formats including special states like
+    // "No Trigger", "Build Up", "Small Load"). Customer/driver names are
+    // fictional.
+    const defaultRows = [
+      { time:"08:33 AM", tz:"GMT-4", date:"05/12/2026", tickets:"528845", truck:"2117", driver:"ULLOA ROYLIS",            location:"Doral (416)",          customerName:"MCM",                  order:"75274", mixCode:"1085F",     size:"10.0", status:"to-job", statusLabel:"TO JOB", currentSlump:"-",       ticketedSlump:"5.00 in", prodInitialSlump:"4.5 in",     leavePlantSlump:"7.75 in" },
+      { time:"08:31 AM", tz:"GMT-4", date:"05/12/2026", tickets:"302052", truck:"1780", driver:"Olivera, Gilberto Borges", location:"Sole Mia (Plant 1)",   customerName:"JGR CONSTRUCTION INC", order:"75218", mixCode:"1085F",     size:"10.0", status:"loaded", statusLabel:"LOADED", currentSlump:"0.75 in", ticketedSlump:"5.00 in", prodInitialSlump:"2.75 in",    leavePlantSlump:"7.25 in" },
+      { time:"08:29 AM", tz:"GMT-4", date:"05/12/2026", tickets:"528808", truck:"1815", driver:"ELLIS JEROME",            location:"Golden Glades (411)",  customerName:"HOMESTEAD PAVING CO",  order:"77713", mixCode:"1055FEC",   size:"10.0", status:"to-job", statusLabel:"TO JOB", currentSlump:"-",       ticketedSlump:"5.00 in", prodInitialSlump:"3.0 in",     leavePlantSlump:"6.0 in"  },
+      { time:"08:28 AM", tz:"GMT-4", date:"05/12/2026", tickets:"151172", truck:"1764", driver:"Fiallo, Lazaro",          location:"Riviera (440)",        customerName:"HOMESTEAD PAVING CO",  order:"76750", mixCode:"2408LP55",  size:"10.0", status:"loaded", statusLabel:"LOADED", currentSlump:"-",       ticketedSlump:"5.00 in", prodInitialSlump:"5.0 in",     leavePlantSlump:"8.0 in"  },
+      { time:"08:28 AM", tz:"GMT-4", date:"05/12/2026", tickets:"732847", truck:"2564", driver:"OLIVERA SAMUEL",          location:"Doral (416)",          customerName:"WOODLAND TILT-UP",     order:"75506", mixCode:"2407LR50R2",size:"10.0", status:"loaded", statusLabel:"LOADED", currentSlump:"6.75 in", ticketedSlump:"5.00 in", prodInitialSlump:"2.0 in",     leavePlantSlump:"6.5 in"  },
+      { time:"08:27 AM", tz:"GMT-4", date:"05/12/2026", tickets:"809173", truck:"1805", driver:"Lopez, Alexei",           location:"Davie (430)",          customerName:"JGR CONSTRUCTION INC", order:"75218", mixCode:"1085F",     size:"10.0", status:"loaded", statusLabel:"LOADED", currentSlump:"-",       ticketedSlump:"5.00 in", prodInitialSlump:"3.0 in",     leavePlantSlump:"7.0 in"  },
+      { time:"08:25 AM", tz:"GMT-4", date:"05/12/2026", tickets:"528772", truck:"1771", driver:"MARTINEZ, JUAN",          location:"Hialeah (422)",        customerName:"COASTAL CONSTRUCTORS",  order:"75218", mixCode:"1050FFMG",  size:"1.0",  status:"loaded", statusLabel:"LOADED", currentSlump:"Small Load", ticketedSlump:"9.50 in", prodInitialSlump:"Small Load", leavePlantSlump:"Small Load" },
+      { time:"08:22 AM", tz:"GMT-4", date:"05/12/2026", tickets:"445201", truck:"1761", driver:"Smith, Daniel",           location:"Miami Beach (408)",    customerName:"TITAN STRUCTURAL INC", order:"74998", mixCode:"1080FG",    size:"10.0", status:"onsite", statusLabel:"ONSITE", currentSlump:"5.25 in", ticketedSlump:"5.00 in", prodInitialSlump:"2.25 in",    leavePlantSlump:"-"       },
+      { time:"08:19 AM", tz:"GMT-4", date:"05/12/2026", tickets:"918374", truck:"1762", driver:"RIVERA, CARLOS",          location:"Kendall (433)",        customerName:"MCM",                  order:"75301", mixCode:"06-1892",   size:"10.0", status:"to-job", statusLabel:"TO JOB", currentSlump:"-",       ticketedSlump:"4.00 in", prodInitialSlump:">10 in",     leavePlantSlump:"-"       },
+      { time:"08:16 AM", tz:"GMT-4", date:"05/12/2026", tickets:"203847", truck:"1768", driver:"Garcia, Marco",           location:"Doral (416)",          customerName:"WOODLAND TILT-UP",     order:"75512", mixCode:"2407LR50R2",size:"10.0", status:"loaded", statusLabel:"LOADED", currentSlump:"6.0 in",  ticketedSlump:"5.00 in", prodInitialSlump:"Build Up",   leavePlantSlump:"8.0 in"  },
+      { time:"08:14 AM", tz:"GMT-4", date:"05/12/2026", tickets:"711029", truck:"1767", driver:"PEREZ, ANTONIO",          location:"Sole Mia (Plant 1)",   customerName:"JGR CONSTRUCTION INC", order:"75219", mixCode:"1085F",     size:"9.5",  status:"onsite", statusLabel:"ONSITE", currentSlump:"No Trigger", ticketedSlump:"5.00 in", prodInitialSlump:"4.75 in",    leavePlantSlump:"6.25 in" },
+      { time:"08:11 AM", tz:"GMT-4", date:"05/12/2026", tickets:"560482", truck:"1812", driver:"Hernandez, Luis",         location:"Riviera (440)",        customerName:"HOMESTEAD PAVING CO",  order:"76755", mixCode:"2408LP55",  size:"10.0", status:"to-job", statusLabel:"TO JOB", currentSlump:"-",       ticketedSlump:"6.00 in", prodInitialSlump:"1.5 in",     leavePlantSlump:"-"       },
+      { time:"08:08 AM", tz:"GMT-4", date:"05/12/2026", tickets:"334917", truck:"2298", driver:"GONZALEZ, RAFAEL",        location:"Hialeah (422)",        customerName:"COASTAL CONSTRUCTORS",  order:"76120", mixCode:"2508LP45H", size:"10.0", status:"loaded", statusLabel:"LOADED", currentSlump:"5.50 in", ticketedSlump:"5.00 in", prodInitialSlump:"3.25 in",    leavePlantSlump:"7.5 in"  }
+    ];
+
+    // Pad defaultRows out to ROW_COUNT by cycling through the base set and
+    // adjusting time + ticket so the rows look distinct when scrolling.
+    (function padDefaultRows() {
+      const base = defaultRows.slice();
+      let minuteOffset = 3; // start subtracting time from row[base.length-1]
+      while (defaultRows.length < ROW_COUNT) {
+        const src = base[defaultRows.length % base.length];
+        // Roll the time backwards by a few minutes each cycle.
+        const totalMinutes = minuteOffset + Math.floor(defaultRows.length / base.length) * 47;
+        const baseDate = new Date(2026, 4, 12, 8, 8); // last row's clock
+        baseDate.setMinutes(baseDate.getMinutes() - totalMinutes);
+        const hh = baseDate.getHours();
+        const mm = baseDate.getMinutes();
+        const ampm = hh >= 12 ? "PM" : "AM";
+        const hh12 = ((hh + 11) % 12) + 1;
+        const timeStr = `${String(hh12).padStart(2,"0")}:${String(mm).padStart(2,"0")} ${ampm}`;
+        defaultRows.push(Object.assign({}, src, {
+          time: timeStr,
+          tickets: String(parseInt(src.tickets, 10) - (defaultRows.length * 17))
+        }));
+        minuteOffset += 3;
+      }
+    })();
+
+    // ===================================================================
+    // Presets
+    // -------------------------------------------------------------------
+    // "qc" preset = the grouped Quality Control View (Batch Information,
+    //   At Plant, At Arrival, Discharge, Customer) with expandable groups.
+    // "default" preset = a flat 10-column list with no group headers.
+    // ===================================================================
+
+    const DEFAULT_COLUMNS = [
+      { key: "time",          label: "Time",                    w: 140 },
+      { key: "tickets",       label: "Ticket Number",           w: 130 },
+      { key: "truck",         label: "Truck",                   w: 90  },
+      { key: "location",      label: "Location",                w: 160 },
+      { key: "customerName",  label: "Customer",                w: 220 },
+      { key: "order",         label: "Order",                   w: 90  },
+      { key: "mixCode",       label: "Mix Code",                w: 120 },
+      { key: "size",          label: "Size",                    w: 100 },
+      { key: "status",        label: "Status",                  w: 120 },
+      { key: "currentSlump",  label: "Current / Ticketed Slump", w: 200 } // explicit min so header never clips
+    ];
+
+    const DISPATCH_COLUMNS = [
+      { key: "time",          label: "Time",          w: 160 },
+      { key: "tickets",       label: "Ticket",        w: 140 },
+      { key: "truck",         label: "Truck",         w: 130 },
+      { key: "location",      label: "Location",      w: 200 },
+      { key: "order",         label: "Order",         w: 130 },
+      { key: "size",          label: "Size",          w: 130 },
+      { key: "mixCode",       label: "Mix Code",      w: 150 },
+      { key: "status",        label: "Status",        w: 130 },
+      { key: "ticketedSlump", label: "Ticketed Slump", w: null }
+    ];
+
+    const PRODUCTION_COLUMNS = [
+      { key: "time",            label: "Time",              w: 160 },
+      { key: "tickets",         label: "Ticket",            w: 130 },
+      { key: "truck",           label: "Truck",             w: 110 },
+      { key: "driver",          label: "Driver",            w: 220 },
+      { key: "location",        label: "Location",          w: 180 },
+      { key: "mixCode",         label: "Mix Code",          w: 140 },
+      { key: "ticketedSlump",   label: "Ticketed Slump",    w: 150 },
+      { key: "prodInitialSlump",label: "Initial Slump",     w: 140 },
+      { key: "leavePlantSlump", label: "Leave Plant Slump", w: null }
+    ];
+
+    let currentPreset = "default"; // start in Default view
+
+    // ===================================================================
+    // Render
+    // ===================================================================
+    const colgroupEl = document.getElementById("report-colgroup");
+    const theadEl    = document.getElementById("report-thead");
+    const bodyEl     = document.getElementById("report-body");
+
+    function activeColumns(group) {
+      return (group.expandable && group.expanded && group.expanded_columns)
+        ? group.expanded_columns
+        : group.collapsed;
+    }
+
+    function renderHeaderLabel(label) {
+      if (Array.isArray(label)) {
+        return label.map(l => `<span class="two-line">${l}</span>`).join("");
+      }
+      return label;
+    }
+
+    const tableEl    = document.getElementById("report-table");
+
+    function render() {
+      tableEl.classList.toggle("preset-default", currentPreset !== "qc");
+      tableEl.classList.toggle("preset-qc",      currentPreset === "qc");
+      if (currentPreset === "qc") {
+        renderGrouped();
+      } else if (currentPreset === "dispatch") {
+        renderDispatch();
+      } else if (currentPreset === "production") {
+        renderProduction();
+      } else {
+        renderFlat();
+      }
+    }
+
+    // ----------- QC View: grouped headers with expandable groups -----------
+    function renderGrouped() {
+      // Flatten all currently-visible columns across groups (in order)
+      const flatCols = [];
+      GROUPS.forEach(g => {
+        activeColumns(g).forEach(c => flatCols.push({ group: g, col: c }));
+      });
+
+      // 1. <colgroup> — sets the width for each visible column
+      colgroupEl.innerHTML = flatCols.map(({ col }) =>
+        col.w == null ? `<col />` : `<col style="width:${col.w}px" />`
+      ).join("");
+
+      // 2. <thead> — group row + column row
+      const groupRow = GROUPS.map(g => {
+        const span = activeColumns(g).length;
+        const isExpandable = g.expandable && g.expanded_columns; // only if we actually have an expanded set
+        const cls = [
+          isExpandable ? "expandable" : "",
+          g.expanded   ? "expanded"   : ""
+        ].filter(Boolean).join(" ");
+        const chev = g.expandable
+          ? `<svg class="chev" viewBox="0 0 9 15" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+               <path d="M7.71094 6.30469C8.11719 6.67969 8.11719 7.33594 7.71094 7.71094L1.71094 13.7109C1.33594 14.1172 0.679688 14.1172 0.304688 13.7109C-0.101562 13.3359 -0.101562 12.6797 0.304688 12.3047L5.58594 6.99219L0.304688 1.71094C-0.101562 1.33594 -0.101562 0.679688 0.304688 0.304688C0.679688 -0.101562 1.33594 -0.101562 1.71094 0.304688L7.71094 6.30469Z"/>
+             </svg>`
+          : "";
+        const attrs = isExpandable
+          ? `role="button" tabindex="0" aria-expanded="${g.expanded}" data-group="${g.id}"`
+          : "";
+        return `<th colspan="${span}" class="${cls}" ${attrs}>${g.title} ${chev}</th>`;
+      }).join("");
+
+      const colRow = flatCols.map(({ col }) => {
+        const divider = col.dividerRight ? " divider-right" : "";
+        return `<th class="${divider.trim()}">${renderHeaderLabel(col.label)}</th>`;
+      }).join("");
+
+      theadEl.innerHTML = `
+        <tr class="group-row">${groupRow}</tr>
+        <tr class="col-row">${colRow}</tr>
+      `;
+
+      // 3. <tbody>
+      bodyEl.innerHTML = qcRows.map(r => {
+        const cells = flatCols.map(({ col }) => {
+          const divider = col.dividerRight ? " divider-right" : "";
+          const raw     = r[col.key] ?? "";
+          // Customer name gets a hover tooltip showing the address.
+          if (col.key === "customerName") {
+            const addrHtml = (r.customerAddr || "").replace(/\n/g, "<br>");
+            return `<td class="${divider.trim()}">
+              <span class="customer-cell">
+                ${raw}
+                <span class="addr-tooltip">${addrHtml}</span>
+              </span>
+            </td>`;
+          }
+          return `<td class="${divider.trim()}">${raw}</td>`;
+        }).join("");
+        return `<tr>${cells}</tr>`;
+      }).join("");
+
+      // 4. Hook up clicks/keyboard on expandable group headers
+      theadEl.querySelectorAll("th.expandable").forEach(th => {
+        th.addEventListener("click", onToggle);
+        th.addEventListener("keydown", e => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onToggle.call(th);
+          }
+        });
+      });
+    }
+
+    // ----------- Production View: Time, Ticket, Truck, Driver, Location, Mix Code, slumps -----------
+    function renderProduction() {
+      colgroupEl.innerHTML = PRODUCTION_COLUMNS.map(col =>
+        col.w == null ? `<col />` : `<col style="width:${col.w}px" />`
+      ).join("");
+
+      const colRow = PRODUCTION_COLUMNS.map(col =>
+        `<th>${renderHeaderLabel(col.label)}</th>`
+      ).join("");
+
+      theadEl.innerHTML = `<tr class="col-row">${colRow}</tr>`;
+
+      bodyEl.innerHTML = defaultRows.map(r => `
+        <tr>
+          <td>
+            <div class="cell-time">
+              <div class="row1">
+                <span class="time">${r.time}</span>
+                <span class="tz">${r.tz}</span>
+              </div>
+              <div class="date">${r.date}</div>
+            </div>
+          </td>
+          <td class="cell-muted">${r.tickets}</td>
+          <td class="cell-muted">${r.truck}</td>
+          <td class="cell-muted">${r.driver}</td>
+          <td class="cell-location">${r.location}</td>
+          <td class="cell-muted">${r.mixCode}</td>
+          <td class="cell-location">${r.ticketedSlump}</td>
+          <td class="cell-location">${r.prodInitialSlump}</td>
+          <td class="cell-location">${r.leavePlantSlump}</td>
+        </tr>
+      `).join("");
+    }
+
+    // ----------- Dispatch View: flat columns, no Customer, single slump -----------
+    function renderDispatch() {
+      colgroupEl.innerHTML = DISPATCH_COLUMNS.map(col =>
+        col.w == null ? `<col />` : `<col style="width:${col.w}px" />`
+      ).join("");
+
+      const colRow = DISPATCH_COLUMNS.map(col =>
+        `<th>${renderHeaderLabel(col.label)}</th>`
+      ).join("");
+
+      theadEl.innerHTML = `<tr class="col-row">${colRow}</tr>`;
+
+      bodyEl.innerHTML = defaultRows.map(r => `
+        <tr>
+          <td>
+            <div class="cell-time">
+              <div class="row1">
+                <span class="time">${r.time}</span>
+                <span class="tz">${r.tz}</span>
+              </div>
+              <div class="date">${r.date}</div>
+            </div>
+          </td>
+          <td class="cell-location">${r.tickets}</td>
+          <td class="cell-muted">${r.truck}</td>
+          <td class="cell-location">${r.location}</td>
+          <td class="cell-muted">${r.order}</td>
+          <td class="cell-size">${r.size} yd<sup>3</sup></td>
+          <td class="cell-muted">${r.mixCode}</td>
+          <td><span class="status-pill ${r.status}">${r.statusLabel}</span></td>
+          <td class="cell-location">${r.ticketedSlump}</td>
+        </tr>
+      `).join("");
+    }
+
+    // ----------- Default View: flat columns, no group row -----------
+    function renderFlat() {
+      colgroupEl.innerHTML = DEFAULT_COLUMNS.map(col =>
+        col.w == null ? `<col />` : `<col style="width:${col.w}px" />`
+      ).join("");
+
+      const colRow = DEFAULT_COLUMNS.map(col =>
+        `<th>${renderHeaderLabel(col.label)}</th>`
+      ).join("");
+
+      theadEl.innerHTML = `<tr class="col-row">${colRow}</tr>`;
+
+      bodyEl.innerHTML = defaultRows.map(r => `
+        <tr>
+          <td>
+            <div class="cell-time">
+              <div class="row1">
+                <span class="time">${r.time}</span>
+                <span class="tz">${r.tz}</span>
+              </div>
+              <div class="date">${r.date}</div>
+            </div>
+          </td>
+          <td>${r.tickets}</td>
+          <td>${r.truck}</td>
+          <td class="cell-location">${r.location}</td>
+          <td class="cell-muted">${r.customerName}</td>
+          <td class="cell-muted">${r.order}</td>
+          <td class="cell-muted">${r.mixCode}</td>
+          <td class="cell-size">${r.size} yd<sup>3</sup></td>
+          <td><span class="status-pill ${r.status}">${r.statusLabel}</span></td>
+          <td>
+            <div class="cell-slump">
+              <div class="current${r.currentSlump === '-' ? ' dash' : ''}">${r.currentSlump}</div>
+              <div class="ticketed">${r.ticketedSlump}</div>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function onToggle() {
+      const id = this.dataset.group;
+      const group = GROUPS.find(g => g.id === id);
+      if (!group || !group.expanded_columns) return; // no expanded set yet
+      group.expanded = !group.expanded;
+      render();
+    }
+
+    // ===================================================================
+    // Preset dropdown wiring
+    // ===================================================================
+    const presetWrap    = document.getElementById("preset-wrap");
+    const presetTrigger = document.getElementById("preset-trigger");
+    const presetLabel   = document.getElementById("preset-label");
+    const presetLabels  = {
+      "default":    "Default",
+      "dispatch":   "Dispatch View",
+      "production": "Production View",
+      "qc":         "Quality Control View"
+    };
+
+    presetTrigger.addEventListener("click", e => {
+      e.stopPropagation();
+      presetWrap.classList.toggle("open");
+    });
+
+    presetWrap.querySelectorAll(".preset-option").forEach(opt => {
+      opt.addEventListener("click", e => {
+        e.stopPropagation();
+        currentPreset = opt.dataset.preset;
+        presetLabel.textContent = presetLabels[currentPreset];
+        presetWrap.querySelectorAll(".preset-option").forEach(o =>
+          o.classList.toggle("active", o.dataset.preset === currentPreset)
+        );
+        presetWrap.classList.remove("open");
+        render();
+      });
+    });
+
+    // Close menu on outside click
+    document.addEventListener("click", () => presetWrap.classList.remove("open"));
+
+    render();
+  </script>
+</body>
+</html>

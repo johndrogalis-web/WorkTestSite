@@ -443,7 +443,30 @@
   /* Component cards — AA-compliant dark state colors */
   body.dark .dt-co-card { background: var(--layer-2); border-color: var(--border); }
   body.dark .dt-co-card.clean  { background: var(--layer-1); border-color: var(--border); }
-  body.dark .dt-co-card.warn   { background: var(--layer-2); border-color: rgba(255,186,13,0.3); }
+  /* Warning card — dark mode.
+     The previous treatment used --layer-2 as bg with a 30%-opacity
+     amber border, which read as "tinted grey" rather than "warning."
+     The amber needs to come forward. New scheme:
+       - dark-amber bg (#3d2f08) — yellow-family, not brown
+       - full-saturation amber border (#ffba0d) — clearly a warning edge
+       - amber header text so the card announces its state */
+  body.dark .dt-co-card.warn {
+    background:#3d2f08;
+    border-color:#ffba0d;
+  }
+  body.dark .dt-co-card.warn .dt-co-card-head span,
+  body.dark .dt-co-card.warn .co-card-head span { color:#ffba0d; }
+  body.dark .dt-co-card.warn .co-value { color:#ffe9a8; }
+  body.dark .dt-co-card.warn .co-desc  { color:rgba(255,233,168,0.85); }
+
+  /* Same treatment for the alt class name used elsewhere in CO */
+  body.dark .co-card--warn {
+    background:#3d2f08;
+    border-color:#ffba0d;
+  }
+  body.dark .co-card--warn .co-card-head span { color:#ffba0d; }
+  body.dark .co-card--warn .co-value { color:#ffe9a8; }
+  body.dark .co-card--warn .co-desc  { color:rgba(255,233,168,0.85); }
   body.dark .dt-co-card.alarm  { background: #d70100; border-color: #9a1f1e; }
   body.dark .dt-co-card.grey   {
     background:
@@ -1250,7 +1273,15 @@
      the target slide-in is the only motion the user sees. */
   .dt-drawer.no-anim { transition:none; }
   .dt-drawer.open {
-    width:clamp(860px, calc(100% - 280px), 1400px);
+    /* clamp anchors:
+         min 860px — never narrower than the drawer's authored design
+         ideal calc(100vw - 280px) — cover the page content area but
+           leave the 280px sidebar visible/accessible. This used to be
+           `100% - 280px` which double-subtracted the sidebar (.dt-content
+           is already sidebar-less) and left ~280px of empty page on the
+           left while squishing the drawer's main pane.
+         max 1400px — keep things sane on ultrawide monitors. */
+    width:clamp(860px, calc(100vw - 280px), 1400px);
     pointer-events:all;
   }
   .dt-drawer-main {

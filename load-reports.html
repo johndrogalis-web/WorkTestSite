@@ -10,33 +10,191 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
+  <!-- Apply saved theme before paint to avoid a flash of the wrong theme. -->
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem("load-reports-theme") === "dark") {
+          document.documentElement.classList.add("theme-dark");
+        }
+      } catch {}
+    })();
+  </script>
+
   <!-- Icons are inlined as an SVG sprite at the top of <body> so they
        render even when external CDNs are blocked. -->
 
   <style>
     /* =======================================================================
-       Tokens (mapped from Figma — Grey Concrete, Grey Steel, Black Concrete,
-       Grey Cloud, etc. The active-tab accent is the blue underline #0965a3.)
+       Prototype top bar (vp-) — copied from Trinity shell so this page can
+       sit under the same dark control strip as the other prototypes.
+       Carries the viewport pills (decorative here, desktop-only) and the
+       Options menu with the dark-mode toggle.
        ======================================================================= */
     :root {
-      --bg-page:           #26282b;     /* page background (matches sidebar) */
-      --bg-sidebar:        #26282b;     /* sidebar */
-      --bg-table:          #26282b;     /* table surface (matches page) */
-      --row-even:          #26282b;     /* odd rows (1st, 3rd, ...) */
-      --row-odd:           #1c1c1e;     /* even rows (2nd, 4th, ...) */
-      --border-steel:      #a8aeb5;     /* table grid + group lines */
-      --text-strong:       #ffffff;     /* primary text */
-      --text-muted:        #a8aeb5;     /* secondary / labels */
-      --text-cell:         #ededed;     /* row cell text */
-      --accent-blue:       #0965a3;     /* active tab underline */
-      --nav-hover:         rgba(255, 255, 255, 0.04);
+      --vp-bar-h: 44px;
+    }
+    .vp-bar {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: var(--vp-bar-h);
+      background: rgba(20,18,16,0.97);
+      color: #fff;
+      display: flex; align-items: center;
+      padding: 0 16px;
+      z-index: 1000;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      box-shadow: var(--vp-bar-shadow);
+      font-family: var(--font-sans);
+    }
+    .vp-brand { display: flex; align-items: center; gap: 10px; }
+    .vp-tag {
+      font-size: 10px; font-weight: 500;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.4px; text-transform: uppercase;
+      padding: 2px 6px;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px;
+    }
+    .vp-right-cluster { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .vp-pills {
+      display: flex; gap: 2px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 2px;
+    }
+    .vp-pill {
+      font-size: 12px; font-weight: 500;
+      letter-spacing: -0.24px;
+      color: rgba(255,255,255,0.6);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 0; background: transparent;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      font-family: inherit;
+    }
+    .vp-pill:hover { color: #fff; }
+    .vp-pill.active { background: rgba(255,255,255,0.15); color: #fff; }
+    .vp-opts-wrap { position: relative; }
+    .vp-opts-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 10px;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      border-radius: 8px;
+      border: 0; cursor: pointer;
+      font-size: 12px; font-weight: 500;
+      letter-spacing: -0.24px;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .vp-opts-btn:hover { background: rgba(255,255,255,0.14); }
+    .vp-opts-dd {
+      position: absolute;
+      top: calc(100% + 6px); right: 0;
+      min-width: 200px;
+      background: #1a1917;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      padding: 6px;
+      display: none;
+      z-index: 1100;
+    }
+    .vp-opts-dd.open { display: block; }
+    .vp-opts-section-label {
+      font-size: 10px; font-weight: 600;
+      color: rgba(255,255,255,0.35);
+      text-transform: uppercase; letter-spacing: 0.4px;
+      padding: 8px 10px 4px;
+    }
+    .vp-opts-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 10px;
+      font-size: 13px;
+      border-radius: 8px;
+      color: rgba(255,255,255,0.8);
+      cursor: pointer;
+    }
+    .vp-opts-row:hover { background: rgba(255,255,255,0.06); }
+    .vp-dark-toggle {
+      width: 32px; height: 18px;
+      border-radius: 9px;
+      background: rgba(255,255,255,0.15);
+      position: relative;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .vp-dark-toggle-knob {
+      position: absolute; top: 2px; left: 2px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.2s;
+    }
+    body.dark .vp-dark-toggle { background: #3069e3; }
+    body.dark .vp-dark-toggle-knob { transform: translateX(14px); }
+
+    /* ===================================================================
+       Color tokens — light is the DEFAULT, dark overrides via body.dark.
+       Values for light match the existing production app screenshots; dark
+       preserves the dark theme we've been building.
+       =================================================================== */
+    :root {
+      /* LIGHT MODE (default) */
+      --bg-page:           #ffffff;     /* main work area background (white) */
+      --bg-sidebar:        #ecf1f3;     /* sidebar background (matches product chrome) */
+      --bg-table:          #ffffff;     /* table surface */
+      --row-even:          #ffffff;     /* odd rows (1st, 3rd...) — white stripe */
+      --row-even-hover:    #f2f5f7;     /* odd row on hover */
+      --row-odd:           #b2bfc8;     /* even rows (2nd, 4th...) — darker stripe */
+      --row-odd-hover:     #c9d2d9;     /* even row on hover */
+      --toolbar-btn-bg:    #b8c5d6;     /* toolbar icon button circle background */
+      --toolbar-btn-fg:    #1a1a1a;     /* toolbar icon button foreground */
+      --toolbar-btn-hover: #a8b6c8;     /* toolbar icon button hover bg */
+      --preset-border:     #6b7178;     /* preset selector border (medium grey) */
+      --border-steel:      #d1d5db;     /* table grid + group lines */
+      --border-soft:       rgba(0, 0, 0, 0.10); /* subtle dividers (sidebar, search) */
+      --bg-popover:        #ffffff;     /* tooltips, overlay surfaces */
+      --text-strong:       #1a1a1a;     /* primary text */
+      --text-muted:        #6b7178;     /* secondary / labels */
+      --text-cell:         #1a1a1a;     /* row cell text */
+      --accent-blue:       #0965a3;     /* active tab underline (unchanged) */
+      --nav-hover:         rgba(0, 0, 0, 0.04);
+      --vp-bar-shadow:     0 2px 8px rgba(0, 0, 0, 0.10);
 
       --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
     }
 
+    body.dark,
+    html.theme-dark body {
+      /* DARK MODE overrides */
+      --bg-page:           #26282b;
+      --bg-sidebar:        #26282b;
+      --bg-table:          #26282b;
+      --row-even:          #26282b;
+      --row-even-hover:    #34373b;
+      --row-odd:           #1c1c1e;
+      --row-odd-hover:     #2a2a2d;
+      --toolbar-btn-bg:    rgba(255,255,255,0.10);
+      --toolbar-btn-fg:    var(--text-strong);
+      --toolbar-btn-hover: rgba(255,255,255,0.18);
+      --preset-border:     var(--border-soft);
+      --border-steel:      #a8aeb5;
+      --border-soft:       rgba(168, 174, 181, 0.20);
+      --bg-popover:        #1c1c1e;
+      --text-strong:       #ffffff;
+      --text-muted:        #a8aeb5;
+      --text-cell:         #ededed;
+      --nav-hover:         rgba(255, 255, 255, 0.04);
+      --vp-bar-shadow:     0 6px 16px rgba(0, 0, 0, 0.45);
+    }
+
     * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; }
+    html, body { margin: 0; }
+    html { padding: 0; }
     body {
+      padding: var(--vp-bar-h) 0 0; /* top padding leaves room for the fixed vp-bar */
       background: var(--bg-page);
       color: var(--text-strong);
       font-family: var(--font-sans);
@@ -64,8 +222,8 @@
       padding: 24px 0 16px;
       gap: 0;
       position: sticky;
-      top: 0;
-      height: 100vh;
+      top: var(--vp-bar-h);
+      height: calc(100vh - var(--vp-bar-h));
       width: 96px;
     }
     .logo {
@@ -86,7 +244,7 @@
       gap: 6px;
       padding: 4px 6px 16px;
       color: var(--text-strong);
-      border-bottom: 1px solid rgba(168, 174, 181, 0.18);
+      border-bottom: 1px solid var(--border-soft);
       margin-bottom: 12px;
     }
     .region-header .icon {
@@ -153,7 +311,7 @@
       padding: 32px 40px 24px;
       min-width: 0;
       overflow: hidden;
-      height: 100vh;
+      height: calc(100vh - var(--vp-bar-h));
       display: flex;
       flex-direction: column;
     }
@@ -206,7 +364,7 @@
       align-items: center;
       gap: 8px;
       background: transparent;
-      border: 1px solid rgba(168, 174, 181, 0.25);
+      border: 1px solid var(--border-soft);
       border-radius: 6px;
       padding: 6px 12px;
       width: 240px;
@@ -245,14 +403,14 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      border-radius: 6px;
-      background: transparent;
+      border-radius: 50%;
+      background: var(--toolbar-btn-bg);
       border: 0;
-      color: var(--text-muted);
+      color: var(--toolbar-btn-fg);
       cursor: pointer;
       transition: background 120ms ease, color 120ms ease;
     }
-    .icon-btn:hover { background: var(--nav-hover); color: var(--text-strong); }
+    .icon-btn:hover { background: var(--toolbar-btn-hover); color: var(--toolbar-btn-fg); }
     .icon-btn .icon {
       width: 18px;
       height: 18px;
@@ -262,6 +420,14 @@
       stroke-linecap: round;
       stroke-linejoin: round;
     }
+    /* Pager buttons stay un-filled (the bottom-right page controls). */
+    .pager .icon-btn {
+      width: 32px;
+      height: 32px;
+      background: transparent;
+      color: var(--text-muted);
+    }
+    .pager .icon-btn:hover { background: var(--nav-hover); color: var(--text-strong); }
     .pager .icon-btn .icon { width: 16px; height: 16px; }
 
     .preset-wrap { position: relative; }
@@ -269,23 +435,23 @@
       display: inline-flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
-      min-width: 200px;
-      padding: 8px 12px;
+      gap: 12px;
+      min-width: 220px;
+      padding: 10px 14px;
       background: transparent;
-      border: 1px solid rgba(168, 174, 181, 0.25);
+      border: 1px solid var(--preset-border);
       border-radius: 6px;
       color: var(--text-strong);
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 500;
       cursor: pointer;
     }
     .preset-select .icon {
-      width: 16px;
-      height: 16px;
-      stroke: var(--text-muted);
+      width: 18px;
+      height: 18px;
+      stroke: var(--text-strong);
       fill: none;
-      stroke-width: 1.75;
+      stroke-width: 2;
       stroke-linecap: round;
       stroke-linejoin: round;
       transition: transform 160ms ease;
@@ -297,9 +463,10 @@
       top: calc(100% + 6px);
       right: 0;
       min-width: 260px;
-      background: #b0b3b8;
+      background: var(--bg-popover);
+      border: 1px solid var(--border-soft);
       border-radius: 4px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
       padding: 0;
       display: none;
       z-index: 100;
@@ -315,13 +482,13 @@
       background: transparent;
       border: 0;
       padding: 14px 18px;
-      color: #1c1c1e;
+      color: var(--text-strong);
       font-family: var(--font-sans);
       font-size: 15px;
       font-weight: 500;
       cursor: pointer;
     }
-    .preset-option:hover { background: rgba(0, 0, 0, 0.06); }
+    .preset-option:hover { background: var(--nav-hover); }
     .preset-option .check {
       width: 18px;
       height: 18px;
@@ -509,10 +676,12 @@
     }
     tbody td.divider-right { border-right: 1px solid var(--border-steel); }
 
-    /* Zebra striping. */
-    tbody tr:nth-child(odd)  { background-color: var(--row-even); }
-    tbody tr:nth-child(even) { background-color: var(--row-odd); }
-    tbody tr:hover { background-color: rgba(255, 255, 255, 0.04); }
+    /* Zebra striping with per-stripe hover so each row hovers to its own
+       brighter shade rather than collapsing to one hover color. */
+    tbody tr:nth-child(odd)        { background-color: var(--row-even); }
+    tbody tr:nth-child(even)       { background-color: var(--row-odd); }
+    tbody tr:nth-child(odd):hover  { background-color: var(--row-even-hover); }
+    tbody tr:nth-child(even):hover { background-color: var(--row-odd-hover); }
 
     /* Customer name now carries a tooltip with the address. */
     .customer-cell {
@@ -523,8 +692,8 @@
       position: absolute;
       left: 0;
       top: calc(100% + 4px);
-      background: #1c1c1e;
-      border: 1px solid rgba(168, 174, 181, 0.25);
+      background: var(--bg-popover);
+      border: 1px solid var(--border-soft);
       border-radius: 4px;
       padding: 8px 10px;
       font-size: 11px;
@@ -576,15 +745,47 @@
     .records-label {
       font-size: 14px;
       letter-spacing: -0.28px;
-      color: #a4a5a6;
+      color: var(--text-muted);
       line-height: 1.3;
     }
     .pager { display: inline-flex; gap: 8px; }
-    .pager .icon-btn { width: 32px; height: 32px; }
     .pager .icon-btn.disabled { opacity: 0.4; cursor: not-allowed; }
   </style>
 </head>
 <body>
+
+  <!-- ============================================================
+       Prototype top bar — gives this page the same dark control strip
+       used across the other Verifi prototypes. Carries viewport pills
+       (decorative, desktop-only here) and the Options menu with the
+       dark-mode toggle.
+       ============================================================ -->
+  <div class="vp-bar">
+    <div class="vp-brand">
+      <svg width="64" height="16" viewBox="0 0 96 24" style="color:#fff">
+        <path fill="currentColor" d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z"/>
+      </svg>
+      <span class="vp-tag">Load Reports Prototype</span>
+    </div>
+
+    <div class="vp-right-cluster">
+      <div class="vp-opts-wrap" id="vp-opts-wrap">
+        <button class="vp-opts-btn" onclick="vpOptsToggle()">Options</button>
+        <div class="vp-opts-dd" id="vp-opts-dd" onclick="event.stopPropagation()">
+          <div class="vp-opts-section-label">Appearance</div>
+          <div class="vp-opts-row" onclick="toggleDarkMode()">
+            <span style="display:flex;align-items:center;gap:8px;flex:1;">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <path d="M8 1v1M8 14v1M1 8h1M14 8h1M3.05 3.05l.7.7M12.25 12.25l.7.7M3.05 12.95l.7-.7M12.25 3.75l.7-.7M11 8a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              Dark Mode
+            </span>
+            <div class="vp-dark-toggle"><div class="vp-dark-toggle-knob"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ============================================================
        SVG icon sprite. Defined once, referenced via <use href="#id"/>.
@@ -1307,6 +1508,38 @@
     document.addEventListener("click", () => presetWrap.classList.remove("open"));
 
     render();
+
+    // ===================================================================
+    // Prototype top bar wiring: dark-mode toggle + Options dropdown.
+    // Dark mode is the default state for this prototype.
+    // ===================================================================
+    // Theme handling: default = light, remember choice in localStorage so
+    // returning users get the mode they last selected. An inline script at
+    // the top of <head> sets html.theme-dark before paint to avoid a flash;
+    // here we sync that to body.dark which the rest of the styles use.
+    // ===================================================================
+    const THEME_KEY = "load-reports-theme";
+    if (document.documentElement.classList.contains("theme-dark")) {
+      document.body.classList.add("dark");
+    }
+
+    function toggleDarkMode() {
+      const willBeDark = !document.body.classList.contains("dark");
+      document.body.classList.toggle("dark", willBeDark);
+      document.documentElement.classList.toggle("theme-dark", willBeDark);
+      try { localStorage.setItem(THEME_KEY, willBeDark ? "dark" : "light"); } catch {}
+    }
+
+    function vpOptsToggle() {
+      document.getElementById("vp-opts-dd").classList.toggle("open");
+    }
+
+    document.addEventListener("click", function(e) {
+      const wrap = document.getElementById("vp-opts-wrap");
+      if (wrap && !wrap.contains(e.target)) {
+        document.getElementById("vp-opts-dd").classList.remove("open");
+      }
+    });
   </script>
 </body>
 </html>

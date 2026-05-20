@@ -30875,8 +30875,41 @@ function dtBuildConfig(isNewUnit) {
             </button>
           </div>
         </div>
+        ${isNewUnit ? `
+        <!-- Clone Settings — only during initial unit setup -->
+        <div style="position:relative;flex-shrink:0;">
+          <button id="dt-cfg-clone-btn" onclick="dtCfgCloneToggle()" style="display:flex;align-items:center;gap:6px;background:var(--layer-1);border:1px solid var(--border);border-radius:20px;padding:8px 14px;font-size:13px;font-weight:500;color:var(--strong);font-family:var(--font);letter-spacing:-0.26px;cursor:pointer;">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M5 4.5V3a1.5 1.5 0 011.5-1.5h5A1.5 1.5 0 0113 3v5a1.5 1.5 0 01-1.5 1.5H10M2.5 5h5A1.5 1.5 0 019 6.5v5A1.5 1.5 0 017.5 13h-5A1.5 1.5 0 011 11.5v-5A1.5 1.5 0 012.5 5z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Clone Settings
+          </button>
+          <div id="dt-cfg-clone-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:320px;background:var(--layer-1);border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,0.12),0 2px 6px rgba(0,0,0,0.06);z-index:30;overflow:hidden;animation:dtInlineConfirmIn 0.18s cubic-bezier(0.4,0,0.2,1);">
+            <div style="padding:14px 16px 8px;">
+              <div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;margin-bottom:2px;">Clone from another truck</div>
+              <div style="font-size:11px;color:var(--soft);letter-spacing:-0.22px;">Copies everything below Information</div>
+            </div>
+            <div style="padding:0 12px 10px;">
+              <div style="display:flex;align-items:center;gap:8px;background:var(--layer-2);border:1px solid var(--border);border-radius:18px;padding:7px 12px;">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;"><circle cx="6.5" cy="6.5" r="4" stroke="#36322d9e" stroke-width="1.3"/><path d="M10.5 10.5l3 3" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
+                <input id="dt-cfg-clone-search" type="text" placeholder="Search truck number…" autocomplete="off" oninput="dtCfgCloneSearch(this.value)" onkeydown="dtCfgCloneSearchKey(event)" style="flex:1;border:none;outline:none;font-size:13px;color:var(--strong);background:none;letter-spacing:-0.26px;font-family:var(--font);">
+              </div>
+            </div>
+            <div id="dt-cfg-clone-list" style="max-height:280px;overflow-y:auto;border-top:1px solid var(--border);"></div>
+          </div>
+        </div>` : ''}
         <!-- Edit button -->
         <button onclick="dtCfgStartEdit()" style="flex-shrink:0;background:var(--layer-1);border:1px solid var(--border);border-radius:20px;padding:8px 16px;font-size:13px;font-weight:500;color:var(--strong);font-family:var(--font);letter-spacing:-0.26px;cursor:pointer;">Update</button>
+      </div>
+
+      <!-- Cloned banner — hidden until a clone happens -->
+      <div id="dt-cfg-cloned-banner" style="display:none;align-items:center;gap:10px;padding:10px 14px;margin-bottom:12px;background:rgba(48,105,227,0.06);border:1px solid rgba(48,105,227,0.18);border-radius:10px;">
+        <div style="width:24px;height:24px;border-radius:50%;background:rgba(48,105,227,0.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M5 4.5V3a1.5 1.5 0 011.5-1.5h5A1.5 1.5 0 0113 3v5a1.5 1.5 0 01-1.5 1.5H10M2.5 5h5A1.5 1.5 0 019 6.5v5A1.5 1.5 0 017.5 13h-5A1.5 1.5 0 011 11.5v-5A1.5 1.5 0 012.5 5z" stroke="#3069e3" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div style="flex:1;min-width:0;font-size:12px;color:var(--strong);letter-spacing:-0.24px;line-height:1.4;">
+          <span style="font-weight:500;">Settings cloned from Truck <span id="dt-cfg-cloned-source">—</span></span>
+          <span style="color:var(--soft);"> · Review before saving</span>
+        </div>
+        <button onclick="dtCfgCloneUndo()" style="flex-shrink:0;background:none;border:none;padding:4px 8px;font-size:12px;font-weight:500;color:var(--blue-link);font-family:var(--font);letter-spacing:-0.24px;cursor:pointer;">Undo</button>
       </div>
 
       <!-- Accordions -->
@@ -30893,6 +30926,285 @@ function dtBuildConfig(isNewUnit) {
       </div>
 
     </div>`;
+}
+
+/* ── CLONE SETTINGS (post-attach config setup) ─────────────────
+   FSTs commissioning a new unit can clone Equipment / Mixing / Workability /
+   Adjustment Manager / Tilt / Hose / In-Cab / Location settings from any
+   existing truck. Information stays untouched (TCG ID, VIN, etc. are unit
+   identity, not behavioral config). Per Martin: "the difference between
+   commissioning at scale being feasible vs. infeasible." */
+
+/* Open / close the picker panel */
+function dtCfgCloneToggle() {
+  var panel = document.getElementById('dt-cfg-clone-panel');
+  if (!panel) return;
+  var isOpen = panel.style.display === 'block';
+  if (isOpen) { panel.style.display = 'none'; return; }
+  /* Render the full list, focus search, attach outside-click handler */
+  dtCfgCloneRenderList('');
+  panel.style.display = 'block';
+  setTimeout(function() {
+    var inp = document.getElementById('dt-cfg-clone-search');
+    if (inp) { inp.value = ''; inp.focus(); }
+  }, 60);
+  setTimeout(function() {
+    document.addEventListener('click', dtCfgCloneOutsideClick, { once:false });
+  }, 100);
+}
+
+function dtCfgCloneOutsideClick(e) {
+  var panel = document.getElementById('dt-cfg-clone-panel');
+  var btn = document.getElementById('dt-cfg-clone-btn');
+  if (!panel || panel.style.display !== 'block') {
+    document.removeEventListener('click', dtCfgCloneOutsideClick);
+    return;
+  }
+  if (panel.contains(e.target) || (btn && btn.contains(e.target))) return;
+  panel.style.display = 'none';
+  document.removeEventListener('click', dtCfgCloneOutsideClick);
+}
+
+/* Search handler — filters the truck list as user types */
+function dtCfgCloneSearch(query) {
+  dtCfgCloneRenderList((query || '').trim().toLowerCase());
+}
+
+/* Enter selects the first visible result; Escape closes */
+function dtCfgCloneSearchKey(e) {
+  if (e.key === 'Escape') {
+    var panel = document.getElementById('dt-cfg-clone-panel');
+    if (panel) panel.style.display = 'none';
+    document.removeEventListener('click', dtCfgCloneOutsideClick);
+    return;
+  }
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    var first = document.querySelector('#dt-cfg-clone-list .dt-cfg-clone-row');
+    if (first) first.click();
+  }
+}
+
+/* Build the filtered truck list. Each row = number (mono) + plant · account.
+   Source list: linked, non-unlinked trucks in the prototype. */
+function dtCfgCloneRenderList(q) {
+  var list = document.getElementById('dt-cfg-clone-list');
+  if (!list) return;
+  var pool = (typeof trucks !== 'undefined' && trucks) ? trucks : [];
+  /* Exclude unlinked trucks and the current truck being configured */
+  var currentTruck = (typeof dtDrawerTruckNum !== 'undefined') ? String(dtDrawerTruckNum) : null;
+  var rows = pool.filter(function(t) {
+    if (!t || !t.num) return false;
+    if (t.unlinked) return false;
+    if (currentTruck && String(t.num) === currentTruck) return false;
+    if (!q) return true;
+    return String(t.num).toLowerCase().indexOf(q) >= 0
+        || (t.plant && t.plant.toLowerCase().indexOf(q) >= 0);
+  });
+
+  if (rows.length === 0) {
+    list.innerHTML = '<div style="padding:24px 16px;text-align:center;font-size:12px;color:var(--soft);letter-spacing:-0.24px;">No trucks match "' + (q || '') + '"</div>';
+    return;
+  }
+
+  list.innerHTML = rows.map(function(t) {
+    var sub = [t.plant, t.account].filter(Boolean).join(' · ');
+    return '<div class="dt-cfg-clone-row" onclick="dtCfgCloneSelect(\'' + String(t.num).replace(/'/g,"\\'") + '\')" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.12s;" onmouseover="this.style.background=\'var(--layer-2)\'" onmouseout="this.style.background=\'\'">'
+      +   '<div style="flex:1;min-width:0;">'
+      +     '<div style="font-size:13px;font-weight:500;color:var(--strong);font-family:\'DM Mono\',monospace;letter-spacing:0.2px;">Truck ' + t.num + '</div>'
+      +     '<div style="font-size:11px;color:var(--soft);letter-spacing:-0.22px;margin-top:1px;">' + sub + '</div>'
+      +   '</div>'
+      +   '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="flex-shrink:0;color:var(--soft);"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      + '</div>';
+  }).join('');
+}
+
+/* Snapshot current Information values before any clone so undo works fully
+   even if the user has typed something in Information that should NOT be wiped */
+function dtCfgCloneSnapshotInformation() {
+  var snap = {};
+  var infoAcc = document.querySelector('#dt-cfg-accs .cfg-acc:first-child');
+  if (!infoAcc) return snap;
+  /* Information is never touched by clone — we don't actually need to snapshot
+     it, but capture the post-clone state of the OTHER fields so undo works */
+  return snap;
+}
+
+/* Apply the clone: prefill every field below Information with deterministic
+   prototype values seeded by the source truck number, then show the cloned
+   banner with an undo affordance. */
+function dtCfgCloneSelect(srcTruckNum) {
+  var panel = document.getElementById('dt-cfg-clone-panel');
+  if (panel) panel.style.display = 'none';
+  document.removeEventListener('click', dtCfgCloneOutsideClick);
+
+  /* Stash original (empty/default) values for undo before overwriting */
+  if (!window._dtCfgCloneUndoSnap) {
+    window._dtCfgCloneUndoSnap = dtCfgCaptureFieldState();
+  }
+
+  /* Build prototype config values seeded off the source truck so two different
+     source trucks produce visibly different (but plausible) numbers. */
+  var seed = dtCfgCloneSeed(srcTruckNum);
+  var values = dtCfgCloneBuildValues(seed);
+
+  dtCfgCloneApplyValues(values);
+
+  /* Show the banner */
+  var banner = document.getElementById('dt-cfg-cloned-banner');
+  var srcLbl = document.getElementById('dt-cfg-cloned-source');
+  if (srcLbl) srcLbl.textContent = srcTruckNum;
+  if (banner) banner.style.display = 'flex';
+
+  /* Subtle scroll cue — bring the Equipment Settings accordion into view */
+  var equip = document.querySelectorAll('#dt-cfg-accs .cfg-acc')[1];
+  if (equip) {
+    /* Open it so the FST sees the prefilled values immediately */
+    equip.classList.add('open');
+    var body = equip.querySelector('.cfg-acc-body');
+    if (body) body.style.display = '';
+  }
+}
+
+/* Capture every editable field's current state so undo restores them. */
+function dtCfgCaptureFieldState() {
+  var snap = { texts: {}, dropdowns: {}, toggles: {} };
+  /* Skip the first accordion (Information) */
+  var accs = document.querySelectorAll('#dt-cfg-accs .cfg-acc');
+  accs.forEach(function(acc, accIdx) {
+    if (accIdx === 0) return;
+    acc.querySelectorAll('.cfg-field').forEach(function(field) {
+      var id = field.getAttribute('data-field-id');
+      if (!id) return;
+      var ro = field.querySelector('.cfg-ro-val');
+      if (ro) snap.texts[id] = ro.textContent;
+      var ed = field.querySelector('input.cfg-edit-input, .cfg-select.cfg-edit-input');
+      if (ed && ed.tagName === 'INPUT') snap.texts[id + '_input'] = ed.value;
+      var tog = field.querySelector('.cfg-edit-toggle, .cfg-toggle');
+      if (tog) snap.toggles[id] = tog.classList.contains('on');
+    });
+  });
+  return snap;
+}
+
+/* Deterministic seed (0-9) derived from a truck number string */
+function dtCfgCloneSeed(num) {
+  var s = String(num);
+  var sum = 0;
+  for (var i = 0; i < s.length; i++) sum += s.charCodeAt(i);
+  return sum % 10;
+}
+
+/* Build a value map for every known field id below Information.
+   Field IDs come from dtBuildConfig's fi/fd/ft calls. Unknown ids are ignored. */
+function dtCfgCloneBuildValues(seed) {
+  /* Plausible prototype values — seeded so two different source trucks
+     produce different (but realistic) numbers */
+  return {
+    /* Equipment Settings — text fields */
+    'magnets':    '4',
+    'drumsize':   String(8 + (seed % 3)),       // 8, 9, or 10 yd³
+    /* Equipment Settings — toggles */
+    'frontdisc':  true,
+    'cwr':        true,
+    'bluewtr':    true,
+    'blueadmix':  true,
+    'dispunits':  true,
+    'metrics':    true,
+    'noflow':     false,
+    /* Mixing Settings */
+    'minbatch':   '70',
+    'minagit':    '2',
+    'minmix':     '8',
+    'maxmix':     String(16 + (seed % 3)),      // 16, 17, 18
+    'minsleave':  '4',
+    'slumprev':   '6',
+    'slumpsec':   '30',
+    /* Slump tolerance + step — the "fantastic" cloning Martin called out */
+    'slumpmin':   String(6 + (seed % 2)),
+    'slumpmax':   String(12 + (seed % 2)),
+    'slumptol':   '0.5',
+    'slumpstep':  '0.25',
+    'maxslump':   String(10 + (seed % 2)),
+    /* Workability */
+    'minliters':  '15',
+    /* Hose */
+    'wtrqc':      '12',
+    'wtrfdm':     '6',
+    'admixhose':  '8',
+    /* Tilt */
+    'tiltangle':  '0.0',
+    /* Adjustment Manager — the other "fantastic" target */
+    'initwtr':    String(2 + (seed % 2)),
+    'initadmix':  String(1 + (seed % 2)),
+    'minwtr':     '1',
+    'maxwtr':     String(8 + (seed % 3)),
+    'minadmix':   '0.5',
+    'maxadmix':   String(4 + (seed % 2)),
+    /* Location Monitor */
+    'awaydist':   String(75 + (seed % 25))
+  };
+}
+
+/* Write values into the rendered fields. Walks every accordion except the
+   first (Information). For each cfg-field, looks up the field-id in the
+   values map and updates both the read-only display and the edit input. */
+function dtCfgCloneApplyValues(values) {
+  var accs = document.querySelectorAll('#dt-cfg-accs .cfg-acc');
+  accs.forEach(function(acc, accIdx) {
+    if (accIdx === 0) return; // skip Information
+    acc.querySelectorAll('.cfg-field').forEach(function(field) {
+      var id = field.getAttribute('data-field-id');
+      if (!id || !(id in values)) return;
+      var v = values[id];
+
+      /* Toggle field */
+      var tog = field.querySelector('.cfg-edit-toggle');
+      if (tog && typeof v === 'boolean') {
+        if (v) tog.classList.add('on'); else tog.classList.remove('on');
+        return;
+      }
+
+      /* Text / dropdown */
+      var ro = field.querySelector('.cfg-ro-val');
+      if (ro) ro.textContent = v;
+      var input = field.querySelector('input.cfg-edit-input');
+      if (input) input.value = v;
+      var ddVal = field.querySelector('.cfg-select.cfg-edit-input');
+      if (ddVal) {
+        /* Keep the chevron — replace only the leading text node */
+        var first = ddVal.firstChild;
+        if (first && first.nodeType === Node.TEXT_NODE) first.nodeValue = v + ' ';
+        else ddVal.textContent = v + ' ';
+      }
+    });
+  });
+}
+
+/* Undo — restore the snapshot we captured before clone */
+function dtCfgCloneUndo() {
+  var snap = window._dtCfgCloneUndoSnap;
+  var banner = document.getElementById('dt-cfg-cloned-banner');
+  if (banner) banner.style.display = 'none';
+  if (!snap) return;
+
+  var accs = document.querySelectorAll('#dt-cfg-accs .cfg-acc');
+  accs.forEach(function(acc, accIdx) {
+    if (accIdx === 0) return;
+    acc.querySelectorAll('.cfg-field').forEach(function(field) {
+      var id = field.getAttribute('data-field-id');
+      if (!id) return;
+      var ro = field.querySelector('.cfg-ro-val');
+      if (ro && id in snap.texts) ro.textContent = snap.texts[id];
+      var inp = field.querySelector('input.cfg-edit-input');
+      if (inp && (id + '_input') in snap.texts) inp.value = snap.texts[id + '_input'];
+      var tog = field.querySelector('.cfg-edit-toggle');
+      if (tog && id in snap.toggles) {
+        if (snap.toggles[id]) tog.classList.add('on'); else tog.classList.remove('on');
+      }
+    });
+  });
+  window._dtCfgCloneUndoSnap = null;
 }
 
 let dtCfgMatches = [];

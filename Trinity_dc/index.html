@@ -7710,7 +7710,7 @@ const SENSOR_DATA = [
     <svg width="72" height="18" viewBox="0 0 96 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="white"/>
     </svg>
-    <span class="vp-version-tag">v6.5.5</span>
+    <span class="vp-version-tag">v6.5.6</span>
   </div>
 
   <!-- Viewport pills — desktop only. Hidden on mobile/tablet viewports since
@@ -27259,7 +27259,13 @@ function dtUdRenderConfig() {
   if (!u) return;
   const scroll = document.getElementById('dt-ud-scroll');
   const isNewUnit = u.status === 'Pending' || !u.firstCommissioned;
-  scroll.innerHTML = dtBuildConfig(isNewUnit);
+
+  /* Build the Clone Settings header (only when unit is in setup state).
+     Sits above the accordions, styled per Figma node 3544-32000. */
+  const showCloneHeader = (u.status === 'Pending' || u.status === 'Unlinked Unit');
+  const cloneHeaderHtml = showCloneHeader ? dtUdCfgBuildCloneHeader() : '';
+
+  scroll.innerHTML = cloneHeaderHtml + dtBuildConfig(isNewUnit);
   const topbar = scroll.querySelector('#dt-cfg-topbar');
   if (topbar) topbar.style.display = 'none';
 
@@ -27335,6 +27341,337 @@ function dtUdRenderConfig() {
       });
     });
   }
+}
+
+/* ── CLONE SETTINGS HEADER (desktop unit-detail Configuration tab) ──
+   Renders the Figma-styled blue-tinted header card above the accordions.
+   Per Martin's interview, cloning Adjustment Manager + slump tolerances
+   from a similar truck is the difference between commissioning at scale
+   being feasible vs. infeasible. Information stays untouched. */
+
+function dtUdCfgBuildCloneHeader() {
+  return `
+    <div id="dt-ud-cfg-clone-header" style="position:relative;background:#eef9ff;border:1px solid #0975c3;border-radius:8px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:var(--font);font-size:18px;font-weight:400;color:var(--strong);letter-spacing:-0.36px;line-height:1.3;">Configure this unit</div>
+        <div style="font-size:13px;color:rgba(54,50,45,0.55);letter-spacing:-0.2px;line-height:1.4;margin-top:3px;">Save time by cloning settings from another truck — Information stays for you to fill in.</div>
+      </div>
+      <div style="position:relative;flex-shrink:0;">
+        <button id="dt-ud-cfg-clone-btn" onclick="dtUdCfgCloneToggle(event)" style="display:flex;align-items:center;gap:8px;background:#0975c3;color:white;border:none;border-radius:32px;padding:10px 18px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;white-space:nowrap;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 4.5V3a1.5 1.5 0 011.5-1.5h5A1.5 1.5 0 0113 3v5a1.5 1.5 0 01-1.5 1.5H10M2.5 5h5A1.5 1.5 0 019 6.5v5A1.5 1.5 0 017.5 13h-5A1.5 1.5 0 011 11.5v-5A1.5 1.5 0 012.5 5z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Clone Settings
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div id="dt-ud-cfg-clone-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:320px;background:var(--layer-1);border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,0.12),0 2px 6px rgba(0,0,0,0.06);z-index:30;overflow:hidden;animation:dtInlineConfirmIn 0.18s cubic-bezier(0.4,0,0.2,1);">
+          <div style="padding:14px 16px 8px;">
+            <div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;margin-bottom:2px;">Clone from another truck</div>
+            <div style="font-size:11px;color:var(--soft);letter-spacing:-0.22px;">Copies everything below Information</div>
+          </div>
+          <div style="padding:0 12px 10px;">
+            <div style="display:flex;align-items:center;gap:8px;background:var(--layer-2);border:1px solid var(--border);border-radius:18px;padding:7px 12px;">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;"><circle cx="6.5" cy="6.5" r="4" stroke="#36322d9e" stroke-width="1.3"/><path d="M10.5 10.5l3 3" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
+              <input id="dt-ud-cfg-clone-search" type="text" placeholder="Search truck number…" autocomplete="off" oninput="dtUdCfgCloneSearch(this.value)" onkeydown="dtUdCfgCloneSearchKey(event)" style="flex:1;border:none;outline:none;font-size:13px;color:var(--strong);background:none;letter-spacing:-0.26px;font-family:var(--font);">
+            </div>
+          </div>
+          <div id="dt-ud-cfg-clone-list" style="max-height:280px;overflow-y:auto;border-top:1px solid var(--border);"></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function dtUdCfgAccordionRoot() {
+  return document.querySelector('#dt-ud-scroll #dt-cfg-accs') || document.querySelector('#dt-ud-scroll');
+}
+
+function dtUdCfgCloneToggle(e) {
+  if (e && e.stopPropagation) e.stopPropagation();
+  var panel = document.getElementById('dt-ud-cfg-clone-panel');
+  if (!panel) return;
+  var isOpen = panel.style.display === 'block';
+  if (isOpen) { panel.style.display = 'none'; return; }
+  dtUdCfgCloneRenderList('');
+  panel.style.display = 'block';
+  setTimeout(function() {
+    var inp = document.getElementById('dt-ud-cfg-clone-search');
+    if (inp) { inp.value = ''; inp.focus(); }
+  }, 60);
+  setTimeout(function() {
+    document.addEventListener('click', dtUdCfgCloneOutsideClick, { once:false });
+  }, 100);
+}
+
+function dtUdCfgCloneOutsideClick(e) {
+  var panel = document.getElementById('dt-ud-cfg-clone-panel');
+  var btn   = document.getElementById('dt-ud-cfg-clone-btn');
+  if (!panel || panel.style.display !== 'block') {
+    document.removeEventListener('click', dtUdCfgCloneOutsideClick);
+    return;
+  }
+  if (panel.contains(e.target) || (btn && btn.contains(e.target))) return;
+  panel.style.display = 'none';
+  document.removeEventListener('click', dtUdCfgCloneOutsideClick);
+}
+
+function dtUdCfgCloneSearch(query) {
+  dtUdCfgCloneRenderList((query || '').trim().toLowerCase());
+}
+
+function dtUdCfgCloneSearchKey(e) {
+  if (e.key === 'Escape') {
+    var panel = document.getElementById('dt-ud-cfg-clone-panel');
+    if (panel) panel.style.display = 'none';
+    document.removeEventListener('click', dtUdCfgCloneOutsideClick);
+    return;
+  }
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    var first = document.querySelector('#dt-ud-cfg-clone-list .dt-ud-cfg-clone-row');
+    if (first) first.click();
+  }
+}
+
+function dtUdCfgCloneRenderList(q) {
+  var list = document.getElementById('dt-ud-cfg-clone-list');
+  if (!list) return;
+  var pool = (typeof trucks !== 'undefined' && trucks) ? trucks : [];
+  var u = UNITS_DATA.find(function(x){ return x.id === dtUdCurrentUnitId; });
+  var currentTruck = (u && u.truck && u.truck !== '--') ? String(u.truck) : null;
+  var rows = pool.filter(function(t) {
+    if (!t || !t.num) return false;
+    if (t.unlinked) return false;
+    if (currentTruck && String(t.num) === currentTruck) return false;
+    if (!q) return true;
+    return String(t.num).toLowerCase().indexOf(q) >= 0
+        || (t.plant && t.plant.toLowerCase().indexOf(q) >= 0);
+  });
+
+  if (rows.length === 0) {
+    list.innerHTML = '<div style="padding:24px 16px;text-align:center;font-size:12px;color:var(--soft);letter-spacing:-0.24px;">No trucks match "' + (q || '') + '"</div>';
+    return;
+  }
+
+  list.innerHTML = rows.map(function(t) {
+    var sub = [t.plant, t.account].filter(Boolean).join(' · ');
+    return '<div class="dt-ud-cfg-clone-row" onclick="dtUdCfgCloneSelect(\'' + String(t.num).replace(/'/g,"\\'") + '\')" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.12s;" onmouseover="this.style.background=\'var(--layer-2)\'" onmouseout="this.style.background=\'\'">'
+      +   '<div style="flex:1;min-width:0;">'
+      +     '<div style="font-size:13px;font-weight:500;color:var(--strong);font-family:\'DM Mono\',monospace;letter-spacing:0.2px;">Truck ' + t.num + '</div>'
+      +     '<div style="font-size:11px;color:var(--soft);letter-spacing:-0.22px;margin-top:1px;">' + sub + '</div>'
+      +   '</div>'
+      +   '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="flex-shrink:0;color:var(--soft);"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      + '</div>';
+  }).join('');
+}
+
+function dtUdCfgCloneSelect(srcTruckNum) {
+  var panel = document.getElementById('dt-ud-cfg-clone-panel');
+  if (panel) panel.style.display = 'none';
+  document.removeEventListener('click', dtUdCfgCloneOutsideClick);
+
+  if (!window._dtUdCfgCloneUndoSnap) {
+    window._dtUdCfgCloneUndoSnap = dtUdCfgCaptureFieldState();
+  }
+
+  var seed = dtUdCfgCloneSeed(srcTruckNum);
+  var values = dtUdCfgCloneBuildValues(seed);
+  dtUdCfgCloneApplyValues(values);
+
+  /* Morph the header into the cloned state — same surface, new content */
+  var header = document.getElementById('dt-ud-cfg-clone-header');
+  if (header) {
+    header.style.background = 'rgba(48,105,227,0.06)';
+    header.style.border = '1px solid rgba(48,105,227,0.28)';
+    header.innerHTML =
+      '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">'
+      +   '<div style="width:28px;height:28px;border-radius:50%;background:rgba(48,105,227,0.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+      +     '<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-7" stroke="#0975c3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      +   '</div>'
+      +   '<div style="flex:1;min-width:0;">'
+      +     '<div style="font-family:var(--font);font-size:15px;font-weight:500;color:var(--strong);letter-spacing:-0.3px;line-height:1.3;">Settings cloned from Truck ' + srcTruckNum + '</div>'
+      +     '<div style="font-size:12px;color:rgba(54,50,45,0.55);letter-spacing:-0.2px;line-height:1.4;margin-top:2px;">Review the values below and fill in Information before saving.</div>'
+      +   '</div>'
+      + '</div>'
+      + '<button onclick="dtUdCfgCloneUndo()" style="flex-shrink:0;background:none;border:none;padding:6px 10px;font-size:13px;font-weight:500;color:#0975c3;font-family:var(--font);letter-spacing:-0.26px;cursor:pointer;">Undo</button>';
+  }
+
+  /* Open Equipment Settings (index 1) so the FST immediately sees the prefill */
+  var root = dtUdCfgAccordionRoot();
+  if (root) {
+    var accs = root.querySelectorAll('.cfg-acc');
+    if (accs[1]) {
+      accs[1].classList.add('open');
+      var body = accs[1].querySelector('.cfg-acc-body');
+      if (body) body.style.display = '';
+    }
+  }
+}
+
+function dtUdCfgCaptureFieldState() {
+  var snap = { byId: {} };
+  var root = dtUdCfgAccordionRoot();
+  if (!root) return snap;
+  var accs = root.querySelectorAll('.cfg-acc');
+  accs.forEach(function(acc, idx) {
+    if (idx === 0) return; // skip Information
+    acc.querySelectorAll('.cfg-field').forEach(function(field) {
+      var id = field.getAttribute('data-field-id');
+      if (!id) return;
+      var ro = field.querySelector('.cfg-ro-val');
+      var inp = field.querySelector('input.cfg-edit-input');
+      var sel = field.querySelector('.cfg-select.cfg-edit-input');
+      var tog = field.querySelector('.cfg-edit-toggle');
+      snap.byId[id] = {
+        ro:  ro  ? ro.textContent : null,
+        inp: inp ? inp.value      : null,
+        sel: sel ? sel.textContent.trim() : null,
+        tog: tog ? tog.classList.contains('on') : null
+      };
+    });
+  });
+  return snap;
+}
+
+function dtUdCfgCloneSeed(num) {
+  var s = String(num);
+  var sum = 0;
+  for (var i = 0; i < s.length; i++) sum += s.charCodeAt(i);
+  return sum % 10;
+}
+
+/* Field-ID map for dtBuildConfig — these IDs come from the fi/fd/ft calls
+   in that function. Information is excluded. */
+function dtUdCfgCloneBuildValues(seed) {
+  return {
+    /* Equipment Settings */
+    'magnets':    '4',
+    'drumsize':   String(8 + (seed % 3)),
+    'frontdisc':  true,
+    'cwr':        true,
+    'bluewtr':    true,
+    'blueadmix':  true,
+    'dispunits':  true,
+    'metrics':    true,
+    'noflow':     false,
+    /* Mixing Settings */
+    'minbatch':   '70',
+    'minagit':    '2',
+    'minmix':     '8',
+    'maxmix':     String(16 + (seed % 3)),
+    'minsleave':  '4',
+    'slumprev':   '6',
+    'slumpsec':   '30',
+    'slumpmin':   String(6 + (seed % 2)),
+    'slumpmax':   String(12 + (seed % 2)),
+    'slumptol':   '0.5',
+    'slumpstep':  '0.25',
+    'maxslump':   String(10 + (seed % 2)),
+    /* Workability */
+    'minliters':  '15',
+    /* Hose */
+    'wtrqc':      '12',
+    'wtrfdm':     '6',
+    'admixhose':  '8',
+    /* Tilt */
+    'tiltangle':  '0.0',
+    /* Adjustment Manager */
+    'initwtr':    String(2 + (seed % 2)),
+    'initadmix':  String(1 + (seed % 2)),
+    'minwtr':     '1',
+    'maxwtr':     String(8 + (seed % 3)),
+    'minadmix':   '0.5',
+    'maxadmix':   String(4 + (seed % 2)),
+    /* Location Monitor */
+    'awaydist':   String(75 + (seed % 25))
+  };
+}
+
+function dtUdCfgCloneApplyValues(values) {
+  var root = dtUdCfgAccordionRoot();
+  if (!root) return;
+  var accs = root.querySelectorAll('.cfg-acc');
+  accs.forEach(function(acc, idx) {
+    if (idx === 0) return; // skip Information
+    acc.querySelectorAll('.cfg-field').forEach(function(field) {
+      var id = field.getAttribute('data-field-id');
+      if (!id || !(id in values)) return;
+      var v = values[id];
+
+      /* Toggle */
+      var tog = field.querySelector('.cfg-edit-toggle');
+      if (tog && typeof v === 'boolean') {
+        if (v) tog.classList.add('on'); else tog.classList.remove('on');
+        return;
+      }
+
+      /* Read-only display + edit input */
+      var ro = field.querySelector('.cfg-ro-val');
+      if (ro) ro.textContent = v;
+      var inp = field.querySelector('input.cfg-edit-input');
+      if (inp) inp.value = v;
+      var sel = field.querySelector('.cfg-select.cfg-edit-input');
+      if (sel) {
+        var first = sel.firstChild;
+        if (first && first.nodeType === Node.TEXT_NODE) first.nodeValue = v + ' ';
+        else sel.textContent = v + ' ';
+      }
+      /* Also populate plain <input> if no .cfg-edit-input variant exists yet */
+      var plainInp = field.querySelector('input');
+      if (plainInp && plainInp !== inp) plainInp.value = v;
+    });
+  });
+}
+
+function dtUdCfgCloneUndo() {
+  var snap = window._dtUdCfgCloneUndoSnap;
+
+  /* Morph header back to its original "Configure this unit" state.
+     Re-render the header by replacing the wrapper's contents — extract just
+     the inner markup from dtUdCfgBuildCloneHeader's template. */
+  var header = document.getElementById('dt-ud-cfg-clone-header');
+  if (header) {
+    header.style.background = '#eef9ff';
+    header.style.border = '1px solid #0975c3';
+    /* Re-render full wrapper to restore the dropdown/button cleanly */
+    var temp = document.createElement('div');
+    temp.innerHTML = dtUdCfgBuildCloneHeader().trim();
+    var fresh = temp.firstChild;
+    if (fresh) header.outerHTML = fresh.outerHTML;
+  }
+
+  if (!snap || !snap.byId) { window._dtUdCfgCloneUndoSnap = null; return; }
+
+  var root = dtUdCfgAccordionRoot();
+  if (!root) return;
+  var accs = root.querySelectorAll('.cfg-acc');
+  accs.forEach(function(acc, idx) {
+    if (idx === 0) return;
+    acc.querySelectorAll('.cfg-field').forEach(function(field) {
+      var id = field.getAttribute('data-field-id');
+      if (!id) return;
+      var saved = snap.byId[id];
+      if (!saved) return;
+
+      if (saved.tog !== null) {
+        var tog = field.querySelector('.cfg-edit-toggle');
+        if (tog) {
+          if (saved.tog) tog.classList.add('on'); else tog.classList.remove('on');
+        }
+        return;
+      }
+      var ro = field.querySelector('.cfg-ro-val');
+      if (ro && saved.ro !== null) ro.textContent = saved.ro;
+      var inp = field.querySelector('input.cfg-edit-input');
+      if (inp && saved.inp !== null) inp.value = saved.inp;
+      var sel = field.querySelector('.cfg-select.cfg-edit-input');
+      if (sel && saved.sel !== null) {
+        var first = sel.firstChild;
+        if (first && first.nodeType === Node.TEXT_NODE) first.nodeValue = saved.sel + ' ';
+        else sel.textContent = saved.sel + ' ';
+      }
+      var plainInp = field.querySelector('input');
+      if (plainInp && plainInp !== inp && saved.inp !== null) plainInp.value = saved.inp;
+    });
+  });
+  window._dtUdCfgCloneUndoSnap = null;
 }
 
 /* When user saves config during Pending state — finalize the link */

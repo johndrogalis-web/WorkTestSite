@@ -782,6 +782,17 @@
     background:var(--layer-1); overflow:hidden;
     padding:12px 24px 0;
   }
+  /* On the Map page, drop side+bottom padding so the map can bleed
+     edge-to-edge of the tablet frame, matching mobile. Title/header
+     and search row inside .tb-page need their own padding back — see
+     body.tb-on-map .tb-page-header / .tb-pill-search-row below. */
+  body.tb-on-map .tb-page {
+    padding:12px 0 0;
+  }
+  body.tb-on-map .tb-page-header,
+  body.tb-on-map .tb-pill-search-row {
+    padding-left:24px; padding-right:24px;
+  }
 
   /* Page header */
   .tb-page-header {
@@ -7806,16 +7817,19 @@ const SENSOR_DATA = [
      ALSO attach the corresponding dc-* class on each element
      so the existing dc-* rules style them.
   ═══════════════════════════════════════════════════════════ */
+  /* Map page shell — no side padding so the map can run edge-to-edge.
+     Children that need padding (title, metrics, filter) supply their own. */
   .tb-map-shell {
     flex:1; min-height:0; min-width:0;
     display:flex; flex-direction:column; gap:16px;
-    padding:20px 24px;
+    padding:20px 0 0;
     overflow:hidden;
     box-sizing:border-box;
   }
   .tb-map-title-row {
     display:flex; align-items:center; justify-content:space-between;
     gap:16px; flex-shrink:0;
+    padding:0 24px;
   }
   .tb-map-title {
     font-family:var(--font); font-size:22px; font-weight:500;
@@ -7838,6 +7852,7 @@ const SENSOR_DATA = [
     border-radius:20px;
     overflow:hidden; flex-shrink:0;
     box-shadow:0 1px 0 rgba(0,0,0,0.06);
+    margin:0 24px;
   }
   .tb-map-metric {
     flex:1 1 0; min-width:0;
@@ -7864,6 +7879,7 @@ const SENSOR_DATA = [
   .tb-map-filterbar {
     display:flex; align-items:center; gap:12px;
     flex-shrink:0; height:40px;
+    padding:0 24px;
   }
   .tb-map-filterbar-left {
     display:flex; align-items:center; gap:10px;
@@ -7920,13 +7936,14 @@ const SENSOR_DATA = [
   }
 
   /* Body — just the map; cards overlay it at the bottom.
-     Negative side+bottom margins pull the body out of the shell's padding
-     so the map runs edge-to-edge of the tablet viewport, matching mobile. */
+     No side padding on the shell + the negative bottom margin on this body
+     lets the map run edge-to-edge of the .tb-page container. Side bleed past
+     .tb-page's 24px padding is handled separately by body.tb-on-map. */
   .tb-map-body {
     flex:1; min-height:0;
     display:flex;
     overflow:hidden;
-    margin:0 -24px -20px;
+    margin:0 -24px 0;
   }
   .tb-map-area {
     flex:1; min-width:0; min-height:0;

@@ -7710,7 +7710,7 @@ const SENSOR_DATA = [
     <svg width="72" height="18" viewBox="0 0 96 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="white"/>
     </svg>
-    <span class="vp-version-tag">v6.5.6</span>
+    <span class="vp-version-tag">v6.5.8</span>
   </div>
 
   <!-- Viewport pills — desktop only. Hidden on mobile/tablet viewports since
@@ -18194,28 +18194,208 @@ function coTcgConfirmInstall(serial, isDesktop) {
           dot.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="position:absolute;inset:1px;"><path d="M2 5l2 2 4-5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         }
         if (status) { status.textContent = 'Connected'; status.style.color = '#16a34a'; }
-        /* If this is the last one, enable the Done button */
+        /* If this is the last one, kick off the software compliance check.
+           Per Lewis + the May 6 call: after reconnect is a natural time to
+           verify every component on the unit is on the right firmware. */
         if (i === comps.length - 1) {
-          var btn = document.getElementById('co-tcg-done-btn');
-          if (btn) {
-            btn.disabled = false;
-            btn.style.opacity = '1';
-            btn.textContent = 'Done';
-          }
+          setTimeout(function() {
+            coTcgRunSoftwareCheck(comps, isDesktop);
+          }, 400);
         }
       }, 700);
     }, 350 + i * 600);
   });
 
-  /* Edge case: no components — enable Done immediately */
+  /* Edge case: no components — skip reconnect and run SW check on the TCG only */
   if (comps.length === 0) {
-    var btn = document.getElementById('co-tcg-done-btn');
-    if (btn) {
-      btn.disabled = false;
-      btn.style.opacity = '1';
-      btn.textContent = 'Done';
-    }
+    setTimeout(function() { coTcgRunSoftwareCheck([], isDesktop); }, 300);
   }
+}
+
+/* TCG flow — Phase 2: software compliance check.
+   Runs after all components have finished reconnecting. Reuses the same row
+   list visual language as the reconnect phase, but cycles each row through
+   Checking → Up to date / Update needed states. For the prototype, the TCG
+   itself plus one randomly-picked component are out of compliance, so the
+   FST sees the update path get exercised. */
+function coTcgRunSoftwareCheck(comps, isDesktop) {
+  /* Build the unit-wide list: TCG always first, then the reconnect comps */
+  var unitList = ['TCG'];
+  comps.forEach(function(n){ if (unitList.indexOf(n) === -1) unitList.push(n); });
+
+  /* Pick which components are stale. For the prototype: the TCG (just-installed)
+     and one other component near the end of the list. */
+  var staleNames = { 'TCG': 1 };
+  for (var k = unitList.length - 1; k >= 0; k--) {
+    if (unitList[k] !== 'TCG') { staleNames[unitList[k]] = 1; break; }
+  }
+
+  /* Build the compliance records and stash on window so the update phase
+     can drive the same list */
+  window.coTcgSwList = unitList.map(function(name) {
+    var compType = coResolveSwType(name);
+    var target = CO_SW_TARGETS[compType] || '001';
+    var stale = !!staleNames[name];
+    return {
+      name: name,
+      compType: compType,
+      current: stale ? coDecrementVer(target) : target,
+      target: target,
+      compliant: !stale,
+      isNew: name === 'TCG'
+    };
+  });
+
+  /* Replace the heading + list with the SW check phase. Same structure as
+     reconnect so the visual continues feeling like one workflow. */
+  var bar = document.getElementById('co-install-bar');
+  if (!bar) return;
+
+  /* Update the subhead under "New TCG installed" */
+  var subhead = bar.querySelector('div:nth-child(2)');
+  if (subhead) subhead.textContent = 'Checking software compliance across the unit…';
+
+  /* Rebuild the row list with one row per unit-component */
+  var listEl = document.getElementById('co-tcg-reconnect-list');
+  if (listEl) {
+    listEl.innerHTML = window.coTcgSwList.map(function(c, i) {
+      return '<div class="co-tcg-sw-row" data-comp="' + c.name + '" data-idx="' + i + '" style="display:flex;align-items:center;gap:10px;padding:6px 0;">'
+        +   '<div class="co-tcg-sw-dot" style="width:14px;height:14px;border-radius:50%;background:var(--layer-2);border:1.5px solid var(--border-mid);flex-shrink:0;position:relative;"></div>'
+        +   '<span style="flex:1;font-size:13px;color:var(--strong);letter-spacing:-0.26px;">' + c.compType + (c.isNew ? ' <span style="font-size:10px;color:var(--soft);font-weight:500;letter-spacing:0;background:var(--layer-2);padding:1px 6px;border-radius:8px;margin-left:4px;">NEW</span>' : '') + '</span>'
+        +   '<span class="co-tcg-sw-status" style="font-size:11px;font-weight:500;color:var(--soft);letter-spacing:-0.22px;">Waiting</span>'
+        + '</div>';
+    }).join('');
+  }
+
+  /* Reset the bottom button to checking state */
+  var btn = document.getElementById('co-tcg-done-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.style.opacity = '0.4';
+    btn.textContent = 'Checking firmware…';
+  }
+
+  /* Animate each row checking */
+  window.coTcgSwList.forEach(function(c, i) {
+    setTimeout(function() {
+      var row = document.querySelector('.co-tcg-sw-row[data-idx="' + i + '"]');
+      if (!row) return;
+      var dot = row.querySelector('.co-tcg-sw-dot');
+      var statusEl = row.querySelector('.co-tcg-sw-status');
+      /* Checking spinner */
+      if (dot) {
+        dot.style.background = 'rgba(48,105,227,0.15)';
+        dot.style.borderColor = '#3069e3';
+        dot.innerHTML = '<div style="position:absolute;inset:1px;border-radius:50%;border:1.5px solid #3069e3;border-top-color:transparent;animation:tcgSpin 0.7s linear infinite;"></div>';
+      }
+      if (statusEl) { statusEl.textContent = 'Checking'; statusEl.style.color = '#3069e3'; }
+
+      /* Resolve ~500ms later */
+      setTimeout(function() {
+        if (!row) return;
+        if (c.compliant) {
+          if (dot) {
+            dot.style.background = '#16a34a';
+            dot.style.borderColor = '#16a34a';
+            dot.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="position:absolute;inset:1px;"><path d="M2 5l2 2 4-5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+          }
+          if (statusEl) { statusEl.textContent = 'v' + c.target; statusEl.style.color = '#16a34a'; }
+        } else {
+          if (dot) {
+            dot.style.background = 'rgba(217,119,6,0.15)';
+            dot.style.borderColor = '#d97706';
+            dot.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="position:absolute;inset:1px;"><path d="M5 2v3.5M5 7h.01" stroke="#d97706" stroke-width="1.4" stroke-linecap="round"/></svg>';
+          }
+          if (statusEl) { statusEl.textContent = 'v' + c.current + ' → v' + c.target; statusEl.style.color = '#d97706'; }
+        }
+
+        /* Last row done — decide next button state */
+        if (i === window.coTcgSwList.length - 1) {
+          var anyBad = window.coTcgSwList.some(function(x){ return !x.compliant; });
+          var btn2 = document.getElementById('co-tcg-done-btn');
+          if (btn2) {
+            btn2.disabled = false;
+            btn2.style.opacity = '1';
+            if (anyBad) {
+              btn2.textContent = 'Push Software Update';
+              btn2.onclick = function() { coTcgRunSoftwareUpdate(isDesktop); };
+            } else {
+              btn2.textContent = 'Done';
+              btn2.onclick = function() { coTcgFinish(isDesktop); };
+            }
+          }
+        }
+      }, 500);
+    }, 200 + i * 400);
+  });
+}
+
+/* TCG flow — Phase 3 (only if anything was out of compliance):
+   push the update. Each non-compliant row cycles through Updating → Up to date,
+   then the Done button enables. */
+function coTcgRunSoftwareUpdate(isDesktop) {
+  var bar = document.getElementById('co-install-bar');
+  if (!bar) return;
+
+  /* Update the subhead */
+  var subhead = bar.querySelector('div:nth-child(2)');
+  if (subhead) subhead.textContent = 'Pushing software updates…';
+
+  /* Disable button while updating */
+  var btn = document.getElementById('co-tcg-done-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.style.opacity = '0.4';
+    btn.textContent = 'Updating…';
+    btn.onclick = null;
+  }
+
+  /* Find rows that need update */
+  var staleIdxs = [];
+  window.coTcgSwList.forEach(function(c, i) { if (!c.compliant) staleIdxs.push(i); });
+
+  /* Animate each stale row updating in sequence */
+  staleIdxs.forEach(function(idx, n) {
+    setTimeout(function() {
+      var row = document.querySelector('.co-tcg-sw-row[data-idx="' + idx + '"]');
+      if (!row) return;
+      var dot = row.querySelector('.co-tcg-sw-dot');
+      var statusEl = row.querySelector('.co-tcg-sw-status');
+      /* Updating spinner */
+      if (dot) {
+        dot.style.background = 'rgba(48,105,227,0.15)';
+        dot.style.borderColor = '#3069e3';
+        dot.innerHTML = '<div style="position:absolute;inset:1px;border-radius:50%;border:1.5px solid #3069e3;border-top-color:transparent;animation:tcgSpin 0.7s linear infinite;"></div>';
+      }
+      if (statusEl) { statusEl.textContent = 'Updating'; statusEl.style.color = '#3069e3'; }
+
+      /* Resolve to green after ~900ms */
+      setTimeout(function() {
+        if (!row) return;
+        var c = window.coTcgSwList[idx];
+        if (c) { c.current = c.target; c.compliant = true; }
+        if (dot) {
+          dot.style.background = '#16a34a';
+          dot.style.borderColor = '#16a34a';
+          dot.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="position:absolute;inset:1px;"><path d="M2 5l2 2 4-5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        }
+        if (statusEl) { statusEl.textContent = 'v' + (c ? c.target : ''); statusEl.style.color = '#16a34a'; }
+
+        /* Last stale row done — flip subhead + enable Done */
+        if (n === staleIdxs.length - 1) {
+          var subh2 = bar.querySelector('div:nth-child(2)');
+          if (subh2) subh2.textContent = 'Unit on general release';
+          var btn2 = document.getElementById('co-tcg-done-btn');
+          if (btn2) {
+            btn2.disabled = false;
+            btn2.style.opacity = '1';
+            btn2.textContent = 'Done';
+            btn2.onclick = function() { coTcgFinish(isDesktop); };
+          }
+        }
+      }, 900);
+    }, 200 + n * 700);
+  });
 }
 
 /* Stage C completion — close the panel, refresh views */
@@ -18306,41 +18486,83 @@ var CO_SW_TARGETS = {
   'Sensor Module PCB':'055'
 };
 
-/* Build the list of components that were touched in this replace session.
-   Returns array of { name, current, target, compliant }. */
+/* Build the list of components for the software compliance check.
+   The check is UNIT-WIDE: it enumerates every component on the unit, not
+   just the ones touched in this replace session. The first newly-installed
+   component is marked stale (to demo the "newly installed needs update"
+   path), and one OTHER existing component is also marked stale (to make
+   the unit-wide nature of the check visible). Per Lewis: "If one device
+   is not on the correct version, then this is not in compliance with
+   software." Returns array of { name, compType, current, target, compliant,
+   isNew, isUnitMember }. */
 function coBuildSwCheckList() {
+  /* Collect the just-touched names so we can flag them as newly installed */
   var touched = {};
   if (window.dtPendingComponents) Object.keys(window.dtPendingComponents).forEach(function(k){ touched[k]=1; });
   if (window.moPendingCards)      Object.keys(window.moPendingCards).forEach(function(k){ touched[k]=1; });
   if (window.dtRemovedComponents) Object.keys(window.dtRemovedComponents).forEach(function(k){ touched[k]=1; });
   if (window.moRemovedCards)      Object.keys(window.moRemovedCards).forEach(function(k){ touched[k]=1; });
-
-  /* Also pick up any pending/empty cards from the canonical card list */
   var allCards = (window._dtMcsCards || []).concat(window._dtFdmCards || []);
   allCards.forEach(function(card) {
     if (card && (card.state === 'pending' || card.state === 'empty')) touched[card.name] = 1;
   });
 
-  /* If nothing tracked (edge case — direct error reset path), seed a minimal
-     list so the prototype still shows the check meaningfully */
-  var names = Object.keys(touched);
-  if (names.length === 0) names = ['WDS','DRS'];
+  /* Enumerate the unit's full component set. Start from canonical card list
+     so we get the truck's actual configuration; fall back to a reasonable
+     default for the prototype if nothing's loaded. */
+  var unitComps = [];
+  if (allCards.length > 0) {
+    allCards.forEach(function(card) {
+      if (card && card.name) unitComps.push(card.name);
+    });
+  }
+  /* Always include the unit-core components — these don't show up as
+     replaceable cards but are part of the software-compliance picture */
+  ['TCG','CWR'].forEach(function(core) {
+    if (unitComps.indexOf(core) === -1) unitComps.unshift(core);
+  });
+  if (unitComps.length === 0) {
+    unitComps = ['TCG','CWR','WDS','DRS','External Display'];
+  }
 
-  /* Build records — for the prototype, the FIRST component is set to an old
-     version so the out-of-compliance branch is reachable */
+  /* Build records. Find the first newly-installed component and mark it
+     stale. Then pick the second-furthest component (existing, not touched)
+     and mark it stale too — this is what makes the "unit-wide" check land
+     visually. Prototype data only. */
+  var touchedNames = Object.keys(touched);
+  var firstNewName = touchedNames.length > 0 ? touchedNames[0] : null;
+
+  /* Pick an existing-component target: prefer something near the end of
+     the unit list that the FST did NOT just install. For demo realism,
+     use TCG if it wasn't touched, else CWR, else the last item. */
+  var existingStaleName = null;
+  var pref = ['TCG','CWR','External Display','WDS','DRS'];
+  for (var p = 0; p < pref.length; p++) {
+    if (unitComps.indexOf(pref[p]) >= 0 && !touched[pref[p]]) {
+      existingStaleName = pref[p]; break;
+    }
+  }
+  if (!existingStaleName) {
+    for (var k = unitComps.length - 1; k >= 0; k--) {
+      if (!touched[unitComps[k]]) { existingStaleName = unitComps[k]; break; }
+    }
+  }
+
   var out = [];
-  names.forEach(function(name, idx) {
+  unitComps.forEach(function(name) {
     var compType = coResolveSwType(name);
     var target = CO_SW_TARGETS[compType] || '001';
-    var current = (idx === 0)
-      ? coDecrementVer(target)   /* first one is stale — drives the update path */
-      : target;
+    var isNew = !!touched[name];
+    var stale = (name === firstNewName) || (name === existingStaleName);
+    var current = stale ? coDecrementVer(target) : target;
     out.push({
       name: name,
       compType: compType,
       current: current,
       target: target,
-      compliant: current === target
+      compliant: current === target,
+      isNew: isNew,
+      isUnitMember: true
     });
   });
   return out;
@@ -18434,13 +18656,13 @@ function coSwBannerInner(state, isMobile) {
     iconBg = 'rgba(48,105,227,0.12)'; iconColor = '#3069e3';
     iconSvg = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="animation:tcgSpin 0.9s linear infinite;"><path d="M7 1.5a5.5 5.5 0 1 1-5.5 5.5" stroke="'+iconColor+'" stroke-width="1.5" stroke-linecap="round"/></svg>';
     title = 'Verifying software compliance';
-    sub = 'Checking firmware on ' + nTotal + ' new component' + (nTotal !== 1 ? 's' : '') + '…';
+    sub = 'Checking firmware across all ' + nTotal + ' component' + (nTotal !== 1 ? 's' : '') + ' on this unit…';
     subColor = darkMode ? '#ffffff' : '#1e40af';
   } else if (state === 'compliant') {
     iconBg = 'rgba(22,163,74,0.12)'; iconColor = '#16a34a';
     iconSvg = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-7" stroke="'+iconColor+'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-    title = 'Software compliant';
-    sub = 'All ' + nTotal + ' component' + (nTotal !== 1 ? 's' : '') + ' on general release · proceeding to Error Reset';
+    title = 'Unit on general release';
+    sub = 'All ' + nTotal + ' component' + (nTotal !== 1 ? 's' : '') + ' compliant · proceeding to Error Reset';
     subColor = darkMode ? '#ffffff' : '#166534';
   } else if (state === 'updating') {
     iconBg = 'rgba(48,105,227,0.12)'; iconColor = '#3069e3';
@@ -18452,9 +18674,14 @@ function coSwBannerInner(state, isMobile) {
     iconBg = 'rgba(217,119,6,0.12)'; iconColor = '#d97706';
     iconSvg = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v5M8 10h.01" stroke="'+iconColor+'" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="8" r="6.5" stroke="'+iconColor+'" stroke-width="1.2"/></svg>';
     title = nBad + ' component' + (nBad !== 1 ? 's' : '') + ' out of compliance';
-    /* Build a short list like "WDS (v215 → v218)" — first 2 to keep it tight */
+    /* Build a short list like "WDS (v215 → v218, new install)" — first 2 to keep it tight.
+       Mark newly-installed ones explicitly so the FST understands the gap is
+       not only from the just-replaced parts — the check is unit-wide. */
     var bad = list.filter(function(c){ return !c.compliant; }).slice(0, 2);
-    var detail = bad.map(function(c){ return c.compType + ' (v' + c.current + ' → v' + c.target + ')'; }).join(', ');
+    var detail = bad.map(function(c){
+      var tag = c.isNew ? ' new install' : '';
+      return c.compType + ' (v' + c.current + ' → v' + c.target + (tag ? ',' + tag : '') + ')';
+    }).join(', ');
     if (nBad > 2) detail += ' +' + (nBad - 2) + ' more';
     sub = detail;
     subColor = darkMode ? '#ffffff' : '#92400e';

@@ -7710,7 +7710,7 @@ const SENSOR_DATA = [
     <svg width="72" height="18" viewBox="0 0 96 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="white"/>
     </svg>
-    <span class="vp-version-tag">v6.5.8</span>
+    <span class="vp-version-tag">v6.5.9</span>
   </div>
 
   <!-- Viewport pills — desktop only. Hidden on mobile/tablet viewports since
@@ -18598,152 +18598,69 @@ function coDecrementVer(v) {
 
 function coStartSoftwareCheck(view) {
   window.coSwCheckList = coBuildSwCheckList();
-  /* Render the "Checking firmware…" state in the appropriate slot */
-  coRenderSwBanner(view, 'checking');
-  /* Simulate the check — 1.4s */
-  setTimeout(function() {
-    var anyBad = window.coSwCheckList.some(function(c){ return !c.compliant; });
-    if (anyBad) {
-      coRenderSwBanner(view, 'noncompliant');
-    } else {
-      coRenderSwBanner(view, 'compliant');
-      /* Auto-advance to Error Reset banner after a moment */
-      setTimeout(function() {
-        window.coSwCheckDone = true;
-        coCheckShowErrorResetPrompt(view);
-      }, 1200);
-    }
-  }, 1400);
+  /* Render the full TCG-style component list in the banner slot, then
+     animate each row through Checking → green-version / amber-update.
+     Same visual language as coTcgRunSoftwareCheck so FSTs build muscle
+     memory across both workflows. */
+  coRenderSwListShell(view);
+  coAnimateSwCheck(view);
 }
 
-/* Called by the "Push Software Update" button */
-function coRunSoftwareUpdate() {
-  var view = document.body.classList.contains('view-tablet') ? 'tablet'
-           : document.body.classList.contains('view-mobile') ? 'mobile' : 'desktop';
-  coRenderSwBanner(view, 'updating');
-  /* Simulate update — 2.0s, then mark everything compliant */
-  setTimeout(function() {
-    if (window.coSwCheckList) {
-      window.coSwCheckList.forEach(function(c) { c.current = c.target; c.compliant = true; });
-    }
-    coRenderSwBanner(view, 'compliant');
-    setTimeout(function() {
-      window.coSwCheckDone = true;
-      coCheckShowErrorResetPrompt(view);
-    }, 1200);
-  }, 2000);
-}
-
-/* ── Software-check banner palette helpers (info-blue for in-progress) ── */
-function coInfoBannerBg() {
-  return document.body.classList.contains('dark') ? '#0d1f2b' : '#eff6ff';
-}
-function coInfoBannerBorder() {
-  return document.body.classList.contains('dark') ? 'rgba(48,105,227,0.25)' : 'rgba(48,105,227,0.2)';
-}
-
-/* Build the inner HTML for the software-check banner.
-   state ∈ { 'checking', 'compliant', 'noncompliant', 'updating' } */
-function coSwBannerInner(state, isMobile) {
-  var list   = window.coSwCheckList || [];
-  var nBad   = list.filter(function(c){ return !c.compliant; }).length;
-  var nTotal = list.length;
-  var darkMode = document.body.classList.contains('dark');
-
-  var iconBg, iconColor, iconSvg, title, sub, subColor, actions = '';
-
-  if (state === 'checking') {
-    iconBg = 'rgba(48,105,227,0.12)'; iconColor = '#3069e3';
-    iconSvg = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="animation:tcgSpin 0.9s linear infinite;"><path d="M7 1.5a5.5 5.5 0 1 1-5.5 5.5" stroke="'+iconColor+'" stroke-width="1.5" stroke-linecap="round"/></svg>';
-    title = 'Verifying software compliance';
-    sub = 'Checking firmware across all ' + nTotal + ' component' + (nTotal !== 1 ? 's' : '') + ' on this unit…';
-    subColor = darkMode ? '#ffffff' : '#1e40af';
-  } else if (state === 'compliant') {
-    iconBg = 'rgba(22,163,74,0.12)'; iconColor = '#16a34a';
-    iconSvg = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-7" stroke="'+iconColor+'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-    title = 'Unit on general release';
-    sub = 'All ' + nTotal + ' component' + (nTotal !== 1 ? 's' : '') + ' compliant · proceeding to Error Reset';
-    subColor = darkMode ? '#ffffff' : '#166534';
-  } else if (state === 'updating') {
-    iconBg = 'rgba(48,105,227,0.12)'; iconColor = '#3069e3';
-    iconSvg = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="animation:tcgSpin 0.9s linear infinite;"><path d="M7 1.5a5.5 5.5 0 1 1-5.5 5.5" stroke="'+iconColor+'" stroke-width="1.5" stroke-linecap="round"/></svg>';
-    title = 'Pushing software update';
-    sub = 'Updating ' + nBad + ' component' + (nBad !== 1 ? 's' : '') + ' to general release…';
-    subColor = darkMode ? '#ffffff' : '#1e40af';
-  } else { /* noncompliant */
-    iconBg = 'rgba(217,119,6,0.12)'; iconColor = '#d97706';
-    iconSvg = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v5M8 10h.01" stroke="'+iconColor+'" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="8" r="6.5" stroke="'+iconColor+'" stroke-width="1.2"/></svg>';
-    title = nBad + ' component' + (nBad !== 1 ? 's' : '') + ' out of compliance';
-    /* Build a short list like "WDS (v215 → v218, new install)" — first 2 to keep it tight.
-       Mark newly-installed ones explicitly so the FST understands the gap is
-       not only from the just-replaced parts — the check is unit-wide. */
-    var bad = list.filter(function(c){ return !c.compliant; }).slice(0, 2);
-    var detail = bad.map(function(c){
-      var tag = c.isNew ? ' new install' : '';
-      return c.compType + ' (v' + c.current + ' → v' + c.target + (tag ? ',' + tag : '') + ')';
-    }).join(', ');
-    if (nBad > 2) detail += ' +' + (nBad - 2) + ' more';
-    sub = detail;
-    subColor = darkMode ? '#ffffff' : '#92400e';
-    var btnPad = isMobile ? '7px 10px' : '7px 14px';
-    if (isMobile) {
-      actions = '<div style="display:flex;gap:6px;margin-top:10px;">'
-        + '<button onclick="coRunSoftwareUpdate()" id="co-sw-run-btn" style="flex:1;background:#3069e3;color:white;border:none;border-radius:20px;padding:' + btnPad + ';font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;cursor:pointer;">Push Software Update</button>'
-        + '<button onclick="coSwSkipToErrorReset()" style="background:none;border:1px solid var(--border-mid);border-radius:20px;padding:' + btnPad + ';font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;color:var(--strong);cursor:pointer;white-space:nowrap;">Skip</button>'
-        + '</div>';
-    } else {
-      actions = '<div style="display:flex;gap:6px;flex-shrink:0;align-items:center;">'
-        + '<button onclick="coRunSoftwareUpdate()" id="co-sw-run-btn" style="background:#3069e3;color:white;border:none;border-radius:20px;padding:' + btnPad + ';font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;cursor:pointer;white-space:nowrap;">Push Software Update</button>'
-        + '<button onclick="coSwSkipToErrorReset()" style="background:none;border:1px solid var(--border-mid);border-radius:20px;padding:' + btnPad + ';font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;color:var(--strong);cursor:pointer;white-space:nowrap;">Skip</button>'
-        + '</div>';
-    }
-  }
-
-  var iconBlock = '<div style="width:28px;height:28px;border-radius:50%;background:'+iconBg+';display:flex;align-items:center;justify-content:center;flex-shrink:0;' + (isMobile ? 'margin-top:2px;' : '') + '">' + iconSvg + '</div>';
-
-  if (isMobile) {
-    /* Mobile: stacked — icon + (title/sub/actions) */
-    return iconBlock
-      + '<div style="flex:1;min-width:0;">'
-      + '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;margin-bottom:2px;">' + title + '</div>'
-      + '<div style="font-size:12px;color:'+subColor+';letter-spacing:-0.24px;">' + sub + '</div>'
-      + actions
-      + '</div>';
-  }
-  /* Desktop/Tablet: single row */
-  return iconBlock
-    + '<div style="flex:1;min-width:0;">'
-    + '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">' + title + '</div>'
-    + '<div style="font-size:12px;color:'+subColor+';letter-spacing:-0.24px;">' + sub + '</div>'
+/* Build the shell — header + rows + bottom button — and inject into the
+   active viewport's banner slot. Each row starts in "Waiting" state. */
+function coRenderSwListShell(view) {
+  var list = window.coSwCheckList || [];
+  var html =
+    '<div style="padding:14px 16px 14px;background:var(--layer-1);border:1px solid var(--border);border-radius:14px;width:100%;box-sizing:border-box;">'
+    + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">'
+    +   '<div id="co-sw-icon" style="width:32px;height:32px;border-radius:50%;background:rgba(48,105,227,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+    +     '<svg width="16" height="16" viewBox="0 0 14 14" fill="none" style="animation:tcgSpin 0.9s linear infinite;"><path d="M7 1.5a5.5 5.5 0 1 1-5.5 5.5" stroke="#3069e3" stroke-width="1.5" stroke-linecap="round"/></svg>'
+    +   '</div>'
+    +   '<div style="flex:1;min-width:0;">'
+    +     '<div style="font-size:14px;font-weight:600;color:var(--strong);letter-spacing:-0.28px;">Verifying software compliance</div>'
+    +     '<div id="co-sw-sub" style="font-size:12px;color:var(--soft);letter-spacing:-0.24px;margin-top:1px;">Checking firmware across all ' + list.length + ' component' + (list.length !== 1 ? 's' : '') + ' on this unit…</div>'
+    +   '</div>'
     + '</div>'
-    + actions;
-}
+    + '<div id="co-sw-list" style="border-top:1px solid var(--border);padding-top:6px;margin-top:10px;margin-bottom:12px;">'
+    +   list.map(function(c, i) {
+          var newPill = c.isNew ? ' <span style="font-size:10px;color:var(--soft);font-weight:500;letter-spacing:0;background:var(--layer-2);padding:1px 6px;border-radius:8px;margin-left:4px;">NEW</span>' : '';
+          return '<div class="co-sw-row" data-comp="' + c.name + '" data-idx="' + i + '" style="display:flex;align-items:center;gap:10px;padding:6px 0;">'
+            +   '<div class="co-sw-dot" style="width:14px;height:14px;border-radius:50%;background:var(--layer-2);border:1.5px solid var(--border-mid);flex-shrink:0;position:relative;"></div>'
+            +   '<span style="flex:1;font-size:13px;color:var(--strong);letter-spacing:-0.26px;">' + c.compType + newPill + '</span>'
+            +   '<span class="co-sw-status" style="font-size:11px;font-weight:500;color:var(--soft);letter-spacing:-0.22px;">Waiting</span>'
+            + '</div>';
+        }).join('')
+    + '</div>'
+    + '<button id="co-sw-action-btn" disabled style="width:100%;background:'+coPrimaryBtnBg()+';color:'+coPrimaryBtnColor()+';border:none;border-radius:32px;padding:12px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;opacity:0.4;transition:opacity 0.2s;">Checking firmware…</button>'
+    + '</div>';
 
-function coRenderSwBanner(view, state) {
-  var bg, border;
-  if (state === 'compliant') {
-    bg = coSuccessBannerBg(); border = coSuccessBannerBorder();
-  } else if (state === 'noncompliant') {
-    bg = coBannerBg(); border = coBannerBorder();
-  } else { /* checking or updating — info blue */
-    bg = coInfoBannerBg(); border = coInfoBannerBorder();
+  /* Inject into all three viewport slots — only the visible one matters,
+     but the others get the same content for consistency on viewport switch. */
+  var slots = [
+    document.getElementById('co-replace-toolbar'),
+    document.getElementById('dt-error-banner'),
+    document.getElementById('tb-error-banner')
+  ];
+  slots.forEach(function(slot) {
+    if (!slot) return;
+    /* Reset slot to a transparent flex container that just hosts the card */
+    slot.style.cssText = 'flex-shrink:0;background:transparent;border:none;padding:12px 16px;display:block;animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);';
+    slot.innerHTML = html;
+    slot.dataset.bannerActive = '1';
+  });
+
+  /* Tablet: also clear the replace save bar and restore the replace button —
+     mirrors the previous banner's housekeeping */
+  if (view === 'tablet') {
+    var replaceBar = document.getElementById('tb-replace-bar');
+    if (replaceBar) replaceBar.style.display = 'none';
+    var btn = document.getElementById('tb-replace-btn');
+    if (btn) { btn.classList.remove('active'); btn.innerHTML = CO_REPLACE_BTN_HTML; }
+    if (typeof coReplaceActive !== 'undefined') coReplaceActive = false;
+    if (typeof coSelectedCards !== 'undefined' && coSelectedCards.clear) coSelectedCards.clear();
   }
-
-  var moToolbar = document.getElementById('co-replace-toolbar');
-  var dtBanner  = document.getElementById('dt-error-banner');
-  var tbBanner  = document.getElementById('tb-error-banner');
-
-  /* Mobile */
-  if (moToolbar) {
-    moToolbar.style.cssText = 'background:'+bg+';border-bottom:1px solid '+border+';padding:12px 16px;display:flex;align-items:flex-start;gap:10px;flex-shrink:0;';
-    moToolbar.innerHTML = coSwBannerInner(state, true);
-    moToolbar.dataset.bannerActive = '1';
-  }
-  /* Desktop */
-  if (dtBanner) {
-    dtBanner.style.cssText = 'flex-shrink:0;background:'+bg+';border-top:1px solid '+border+';padding:12px 24px;display:flex;align-items:center;gap:10px;animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);';
-    dtBanner.innerHTML = coSwBannerInner(state, false);
-    /* Restore the overview toolbar button — same pattern as error-reset banner */
+  /* Desktop: same housekeeping */
+  if (view === 'desktop') {
     var dtToolbar = document.getElementById('dt-overview-toolbar');
     if (dtToolbar) {
       dtToolbar.style.cssText = 'display:flex;align-items:center;justify-content:flex-end;padding:0 0 16px;';
@@ -18751,27 +18668,163 @@ function coRenderSwBanner(view, state) {
         + CO_REPLACE_BTN_HTML + '</button>';
     }
   }
-  /* Tablet */
-  if (tbBanner) {
-    tbBanner.style.cssText = 'flex-shrink:0;background:'+bg+';border-top:1px solid '+border+';padding:12px 20px;display:flex;align-items:center;gap:10px;animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);';
-    tbBanner.innerHTML = coSwBannerInner(state, false);
-    /* Hide replace save bar and restore replace button (same as error-reset banner) */
-    var replaceBar = document.getElementById('tb-replace-bar');
-    if (replaceBar) replaceBar.style.display = 'none';
-    var btn = document.getElementById('tb-replace-btn');
-    if (btn) { btn.classList.remove('active'); btn.innerHTML = CO_REPLACE_BTN_HTML; }
-    coReplaceActive = false;
-    coSelectedCards.clear();
+}
+
+/* Per-row helpers — work across all three slot copies via querySelectorAll */
+function coSwSetRowChecking(idx) {
+  document.querySelectorAll('.co-sw-row[data-idx="' + idx + '"]').forEach(function(row) {
+    var dot = row.querySelector('.co-sw-dot');
+    var statusEl = row.querySelector('.co-sw-status');
+    if (dot) {
+      dot.style.background = 'rgba(48,105,227,0.15)';
+      dot.style.borderColor = '#3069e3';
+      dot.innerHTML = '<div style="position:absolute;inset:1px;border-radius:50%;border:1.5px solid #3069e3;border-top-color:transparent;animation:tcgSpin 0.7s linear infinite;"></div>';
+    }
+    if (statusEl) { statusEl.textContent = 'Checking'; statusEl.style.color = '#3069e3'; }
+  });
+}
+function coSwSetRowCompliant(idx, version) {
+  document.querySelectorAll('.co-sw-row[data-idx="' + idx + '"]').forEach(function(row) {
+    var dot = row.querySelector('.co-sw-dot');
+    var statusEl = row.querySelector('.co-sw-status');
+    if (dot) {
+      dot.style.background = '#16a34a';
+      dot.style.borderColor = '#16a34a';
+      dot.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="position:absolute;inset:1px;"><path d="M2 5l2 2 4-5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    }
+    if (statusEl) { statusEl.textContent = 'v' + version; statusEl.style.color = '#16a34a'; }
+  });
+}
+function coSwSetRowNeedsUpdate(idx, fromVer, toVer) {
+  document.querySelectorAll('.co-sw-row[data-idx="' + idx + '"]').forEach(function(row) {
+    var dot = row.querySelector('.co-sw-dot');
+    var statusEl = row.querySelector('.co-sw-status');
+    if (dot) {
+      dot.style.background = 'rgba(217,119,6,0.15)';
+      dot.style.borderColor = '#d97706';
+      dot.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="position:absolute;inset:1px;"><path d="M5 2v3.5M5 7h.01" stroke="#d97706" stroke-width="1.4" stroke-linecap="round"/></svg>';
+    }
+    if (statusEl) { statusEl.textContent = 'v' + fromVer + ' → v' + toVer; statusEl.style.color = '#d97706'; }
+  });
+}
+function coSwSetRowUpdating(idx) {
+  document.querySelectorAll('.co-sw-row[data-idx="' + idx + '"]').forEach(function(row) {
+    var dot = row.querySelector('.co-sw-dot');
+    var statusEl = row.querySelector('.co-sw-status');
+    if (dot) {
+      dot.style.background = 'rgba(48,105,227,0.15)';
+      dot.style.borderColor = '#3069e3';
+      dot.innerHTML = '<div style="position:absolute;inset:1px;border-radius:50%;border:1.5px solid #3069e3;border-top-color:transparent;animation:tcgSpin 0.7s linear infinite;"></div>';
+    }
+    if (statusEl) { statusEl.textContent = 'Updating'; statusEl.style.color = '#3069e3'; }
+  });
+}
+function coSwSetHeader(state) {
+  /* state ∈ { 'checking', 'updating', 'compliant' } */
+  document.querySelectorAll('#co-sw-icon').forEach(function(iconEl) {
+    if (state === 'compliant') {
+      iconEl.style.background = 'rgba(22,163,74,0.12)';
+      iconEl.innerHTML = '<svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-7" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    } else {
+      iconEl.style.background = 'rgba(48,105,227,0.12)';
+      iconEl.innerHTML = '<svg width="16" height="16" viewBox="0 0 14 14" fill="none" style="animation:tcgSpin 0.9s linear infinite;"><path d="M7 1.5a5.5 5.5 0 1 1-5.5 5.5" stroke="#3069e3" stroke-width="1.5" stroke-linecap="round"/></svg>';
+    }
+  });
+  var sub = document.getElementById('co-sw-sub');
+  var list = window.coSwCheckList || [];
+  if (sub) {
+    if (state === 'compliant') sub.textContent = 'Unit on general release · ' + list.length + ' component' + (list.length !== 1 ? 's' : '') + ' verified';
+    else if (state === 'updating') sub.textContent = 'Pushing software updates…';
+    else sub.textContent = 'Checking firmware across all ' + list.length + ' component' + (list.length !== 1 ? 's' : '') + ' on this unit…';
+  }
+}
+function coSwSetActionBtn(label, enabled, onClick) {
+  document.querySelectorAll('#co-sw-action-btn').forEach(function(btn) {
+    btn.textContent = label;
+    btn.disabled = !enabled;
+    btn.style.opacity = enabled ? '1' : '0.4';
+    btn.onclick = enabled && onClick ? onClick : null;
+  });
+}
+
+/* Animate each row checking in sequence. When the last row resolves,
+   set the action button based on whether anything was out of compliance. */
+function coAnimateSwCheck(view) {
+  var list = window.coSwCheckList || [];
+  list.forEach(function(c, i) {
+    setTimeout(function() {
+      coSwSetRowChecking(i);
+      setTimeout(function() {
+        if (c.compliant) coSwSetRowCompliant(i, c.target);
+        else coSwSetRowNeedsUpdate(i, c.current, c.target);
+
+        /* Last row resolved — decide next action */
+        if (i === list.length - 1) {
+          var anyBad = list.some(function(x){ return !x.compliant; });
+          if (anyBad) {
+            coSwSetActionBtn('Push Software Update', true, function() { coRunSoftwareUpdate(view); });
+          } else {
+            coSwSetHeader('compliant');
+            coSwSetActionBtn('Continue to Error Reset', true, function() {
+              window.coSwCheckDone = true;
+              coCheckShowErrorResetPrompt(view);
+            });
+            /* Also auto-advance after a brief pause */
+            setTimeout(function() {
+              window.coSwCheckDone = true;
+              coCheckShowErrorResetPrompt(view);
+            }, 1500);
+          }
+        }
+      }, 500);
+    }, 200 + i * 380);
+  });
+
+  /* Edge case: empty list — proceed straight to Error Reset */
+  if (list.length === 0) {
+    setTimeout(function() {
+      window.coSwCheckDone = true;
+      coCheckShowErrorResetPrompt(view);
+    }, 800);
   }
 }
 
-/* "Skip" — proceed to error reset without pushing the update.
-   Useful for FSTs who want to investigate first or push it from Software Updates page. */
-function coSwSkipToErrorReset() {
-  window.coSwCheckDone = true;
-  var view = document.body.classList.contains('view-tablet') ? 'tablet'
-           : document.body.classList.contains('view-mobile') ? 'mobile' : 'desktop';
-  coCheckShowErrorResetPrompt(view);
+/* Called by the "Push Software Update" button — animate stale rows updating */
+function coRunSoftwareUpdate(view) {
+  if (typeof view === 'undefined' || !view) {
+    view = document.body.classList.contains('view-tablet') ? 'tablet'
+         : document.body.classList.contains('view-mobile') ? 'mobile' : 'desktop';
+  }
+  coSwSetHeader('updating');
+  coSwSetActionBtn('Updating…', false, null);
+
+  var list = window.coSwCheckList || [];
+  var staleIdxs = [];
+  list.forEach(function(c, i) { if (!c.compliant) staleIdxs.push(i); });
+
+  staleIdxs.forEach(function(idx, n) {
+    setTimeout(function() {
+      coSwSetRowUpdating(idx);
+      setTimeout(function() {
+        var c = list[idx];
+        if (c) { c.current = c.target; c.compliant = true; }
+        coSwSetRowCompliant(idx, c ? c.target : '');
+
+        /* Last stale row finished updating — flip to compliant + advance */
+        if (n === staleIdxs.length - 1) {
+          coSwSetHeader('compliant');
+          coSwSetActionBtn('Continue to Error Reset', true, function() {
+            window.coSwCheckDone = true;
+            coCheckShowErrorResetPrompt(view);
+          });
+          setTimeout(function() {
+            window.coSwCheckDone = true;
+            coCheckShowErrorResetPrompt(view);
+          }, 1500);
+        }
+      }, 900);
+    }, 200 + n * 700);
+  });
 }
 
 function coPrimaryBtnBg()    { return document.body.classList.contains('dark') ? '#e3f200' : '#3069e3'; }

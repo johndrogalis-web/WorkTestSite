@@ -20,7 +20,7 @@
     <svg width="72" height="18" viewBox="0 0 96 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="white"/>
     </svg>
-    <span class="vp-version-tag">v6.7.14</span>
+    <span class="vp-version-tag">v6.7.21</span>
   </div>
 
   <!-- Viewport pills — desktop only. Hidden on mobile/tablet viewports since
@@ -1800,6 +1800,65 @@
       </div>
 
       <!-- Search + Add Truck on same row -->
+      <!-- Metric strip — Variant A informational ribbon. Mirrors desktop's
+           All Trucks metric strip. Numbers + labels hydrated alongside
+           desktop's #dt-stat-* IDs via shared .js-stat-* classes.
+           Sits ABOVE the search row to match desktop's stacking order. -->
+      <div class="tb-stat-row" id="tb-stat-row">
+        <div class="tb-stat-card">
+          <div class="tb-stat-label">Trucks commissioned</div>
+          <div class="tb-stat-value js-stat-commissioned">—</div>
+        </div>
+        <div class="tb-stat-card">
+          <div class="tb-stat-label">Unlinked Units</div>
+          <div class="tb-stat-value js-stat-unlinked">3</div>
+        </div>
+        <div class="tb-stat-card">
+          <div class="tb-stat-label">Maintenance required</div>
+          <div class="tb-stat-value js-stat-maint">3</div>
+        </div>
+        <div class="tb-stat-card">
+          <div class="tb-stat-label">Scheduled for maintenance</div>
+          <div class="tb-stat-value">20</div>
+        </div>
+        <div class="tb-stat-card">
+          <div class="tb-stat-label">Out of service</div>
+          <div class="tb-stat-value">2</div>
+        </div>
+        <div class="tb-stat-card">
+          <div class="tb-stat-label">In maintenance</div>
+          <div class="tb-stat-value">5</div>
+        </div>
+      </div>
+
+      <!-- Units metric strip — sibling of the All Trucks strip. Hidden by
+           default; tbNavUnits shows it, every other tbNav* function hides
+           it. Same Variant A treatment, five metrics matching desktop's
+           #dt-units-stat-row. Hydrated by tbUnitsRender via shared
+           .js-units-stat-* classes. -->
+      <div class="tb-stat-row" id="tb-units-stat-row" style="display:none;">
+        <div class="tb-stat-card">
+          <div class="tb-stat-label">Units Active</div>
+          <div class="tb-stat-value js-units-stat-commissioned">—</div>
+        </div>
+        <div class="tb-stat-card">
+          <div class="tb-stat-label">Total Units</div>
+          <div class="tb-stat-value js-units-stat-total">—</div>
+        </div>
+        <div class="tb-stat-card">
+          <div class="tb-stat-label">Unlinked Units</div>
+          <div class="tb-stat-value js-units-stat-unlinked">—</div>
+        </div>
+        <div class="tb-stat-card">
+          <div class="tb-stat-label">Maintenance Mode</div>
+          <div class="tb-stat-value js-units-stat-maintreq">—</div>
+        </div>
+        <div class="tb-stat-card">
+          <div class="tb-stat-label">Pending Return</div>
+          <div class="tb-stat-value js-units-stat-pending">—</div>
+        </div>
+      </div>
+
       <div class="tb-pill-search-row" id="tb-page-search-row" style="padding-top:0;">
         <div class="tb-search2-wrap" style="flex:1;margin-bottom:0;position:relative;">
           <div class="tb-search2" id="tb-search2-field">
@@ -2073,14 +2132,6 @@
       <!-- MAP PAGE (tablet) — placeholder, full feature coming later -->
       <div id="tb-page-map" style="display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden;">
         <div class="tb-map-shell">
-
-          <!-- Title row -->
-          <div class="tb-map-title-row">
-            <div class="tb-map-title">Diagnostic Center</div>
-            <div class="tb-map-title-meta">
-              <span class="tb-map-last-updated">Last updated: Today, 9:42 AM</span>
-            </div>
-          </div>
 
           <!-- Metric strip — 5 cards, separated by left borders -->
           <div class="tb-map-metric-strip">
@@ -3032,15 +3083,15 @@
         <div class="dt-stat-row" id="dt-stat-row">
           <div class="dt-stat-card">
             <div class="dt-stat-label">Trucks commissioned</div>
-            <div class="dt-stat-value" id="dt-stat-commissioned">—</div>
+            <div class="dt-stat-value js-stat-commissioned" id="dt-stat-commissioned">—</div>
           </div>
           <div class="dt-stat-card">
             <div class="dt-stat-label">Unlinked Units</div>
-            <div class="dt-stat-value" id="dt-stat-unlinked">3</div>
+            <div class="dt-stat-value js-stat-unlinked" id="dt-stat-unlinked">3</div>
           </div>
           <div class="dt-stat-card">
             <div class="dt-stat-label">Maintenance required</div>
-            <div class="dt-stat-value" id="dt-stat-maint">3</div>
+            <div class="dt-stat-value js-stat-maint" id="dt-stat-maint">3</div>
           </div>
           <div class="dt-stat-card">
             <div class="dt-stat-label">Scheduled for maintenance</div>
@@ -3174,11 +3225,6 @@
             </button>
           </div>
           <div class="dt-spacer"></div>
-
-          <button class="dt-add-btn" onclick="dtAtOpen()">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
-            Add Truck
-          </button>
         </div>
 
         <!-- Tab bar -->
@@ -3277,23 +3323,23 @@
           <div class="dt-stat-row" id="dt-units-stat-row">
             <div class="dt-stat-card">
               <div class="dt-stat-label">Units Active</div>
-              <div class="dt-stat-value" id="dt-units-stat-commissioned">—</div>
+              <div class="dt-stat-value js-units-stat-commissioned" id="dt-units-stat-commissioned">—</div>
             </div>
             <div class="dt-stat-card">
               <div class="dt-stat-label">Total Units</div>
-              <div class="dt-stat-value" id="dt-units-stat-total">—</div>
+              <div class="dt-stat-value js-units-stat-total" id="dt-units-stat-total">—</div>
             </div>
             <div class="dt-stat-card">
               <div class="dt-stat-label">Unlinked Units</div>
-              <div class="dt-stat-value" id="dt-units-stat-unlinked">—</div>
+              <div class="dt-stat-value js-units-stat-unlinked" id="dt-units-stat-unlinked">—</div>
             </div>
             <div class="dt-stat-card">
               <div class="dt-stat-label">Maintenance Mode</div>
-              <div class="dt-stat-value" id="dt-units-stat-maintreq">—</div>
+              <div class="dt-stat-value js-units-stat-maintreq" id="dt-units-stat-maintreq">—</div>
             </div>
             <div class="dt-stat-card">
               <div class="dt-stat-label">Pending Return</div>
-              <div class="dt-stat-value" id="dt-units-stat-pending">—</div>
+              <div class="dt-stat-value js-units-stat-pending" id="dt-units-stat-pending">—</div>
             </div>
           </div>
 
@@ -14869,15 +14915,12 @@ if (typeof window !== 'undefined') {
   requestAnimationFrame(() => {
     dtFilterUpdateBadge();
     dtFilterUpdateStrip();
-    // Live count Unlinked Units from the shared UNITS_DATA so trucks header stays in sync with units page
-    const unlinkedEl = document.getElementById('dt-stat-unlinked');
-    if (unlinkedEl && typeof UNITS_DATA !== 'undefined') {
-      unlinkedEl.textContent = UNITS_DATA.filter(u => u.status === 'Unlinked Unit').length;
-    }
-    // Units Active — units currently linked to a truck
-    const activeEl = document.getElementById('dt-stat-commissioned');
-    if (activeEl && typeof UNITS_DATA !== 'undefined') {
-      activeEl.textContent = '250';
+    // Live count Unlinked Units from the shared UNITS_DATA so trucks header stays in sync with units page.
+    // Update via .js-stat-unlinked class so both desktop and tablet strips stay in sync.
+    if (typeof UNITS_DATA !== 'undefined') {
+      const unlinkedCount = UNITS_DATA.filter(u => u.status === 'Unlinked Unit').length;
+      document.querySelectorAll('.js-stat-unlinked').forEach(el => { el.textContent = unlinkedCount; });
+      document.querySelectorAll('.js-stat-commissioned').forEach(el => { el.textContent = '250'; });
     }
     // Total Units — all units in the system for this account
     const totalEl = document.getElementById('dt-stat-total');
@@ -18562,12 +18605,17 @@ function dtUnitsRender() {
   const maintCount    = UNITS_DATA.filter(u => u.status === 'Maintenance').length;
   const pendingCount  = UNITS_DATA.filter(u => u.status === 'Pending Return').length;
 
-  const setStat = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  setStat('dt-units-stat-commissioned', linkedCount);
-  setStat('dt-units-stat-total',        UNITS_DATA.length);
-  setStat('dt-units-stat-unlinked',     unlinkedCount);
-  setStat('dt-units-stat-maintreq',     maintCount);
-  setStat('dt-units-stat-pending',      pendingCount);
+  /* Update via shared .js-units-stat-* classes so the desktop strip
+     (#dt-units-stat-row) AND the tablet strip (#tb-units-stat-row) both
+     reflect the same numbers from a single render call. */
+  const setStat = (cls, val) => {
+    document.querySelectorAll('.' + cls).forEach(el => { el.textContent = val; });
+  };
+  setStat('js-units-stat-commissioned', linkedCount);
+  setStat('js-units-stat-total',        UNITS_DATA.length);
+  setStat('js-units-stat-unlinked',     unlinkedCount);
+  setStat('js-units-stat-maintreq',     maintCount);
+  setStat('js-units-stat-pending',      pendingCount);
 
   // Make sure headers exist & match visible cols
   dtUnitsBuildHeaders();
@@ -19182,9 +19230,9 @@ function dtAuSubmit() {
   // Close modal first, then re-render and toast
   dtAuClose();
   dtUnitsRender();
-  // Trucks header has an Unlinked Units stat — keep it in sync
-  const unlinkedEl = document.getElementById('dt-stat-unlinked');
-  if (unlinkedEl) unlinkedEl.textContent = UNITS_DATA.filter(u => u.status === 'Unlinked Unit').length;
+  // Trucks header has an Unlinked Units stat — keep desktop + tablet strips in sync
+  const unlinkedCount = UNITS_DATA.filter(u => u.status === 'Unlinked Unit').length;
+  document.querySelectorAll('.js-stat-unlinked').forEach(el => { el.textContent = unlinkedCount; });
 
   // Top-right Trinity Success toast
   dtShowToast({
@@ -20559,6 +20607,12 @@ function tbNavUnits() {
   /* Hide page tabs — not relevant on Units */
   const pageTabs = document.getElementById('tb-page-tabs');
   if (pageTabs) pageTabs.style.display = 'none';
+  /* Hide the All Trucks metric strip — Units has its own */
+  const statRowUn = document.getElementById('tb-stat-row');
+  if (statRowUn) statRowUn.style.display = 'none';
+  /* Show the Units metric strip */
+  const unitsStatRow = document.getElementById('tb-units-stat-row');
+  if (unitsStatRow) unitsStatRow.style.display = '';
   /* Make sure the page-level search row is visible — Units uses it
      to filter unit IDs / truck numbers. Other pages hide it. */
   const searchRowUn = document.getElementById('tb-page-search-row');
@@ -20597,6 +20651,12 @@ function tbNavUpdate() {
   /* Hide page tabs — not relevant here */
   const pageTabsU = document.getElementById('tb-page-tabs');
   if (pageTabsU) pageTabsU.style.display = 'none';
+  /* Hide the All Trucks metric strip — SWU has its own */
+  const statRowU = document.getElementById('tb-stat-row');
+  if (statRowU) statRowU.style.display = 'none';
+  /* Hide the Units metric strip */
+  const unitsStatRowU = document.getElementById('tb-units-stat-row');
+  if (unitsStatRowU) unitsStatRowU.style.display = 'none';
   /* Hide page title sub — only used on Units */
   const subU = document.getElementById('tb-page-title-sub');
   if (subU) subU.style.display = 'none';
@@ -20622,7 +20682,7 @@ function tbNavMap() {
   if (tbCsM) tbCsM.style.display = 'none';
   /* Update page header */
   const titleEl = document.querySelector('#tb-page .tb-page-title');
-  if (titleEl) titleEl.textContent = 'Map';
+  if (titleEl) titleEl.textContent = 'Diagnostic Center';
   /* Clear search — not relevant on this page */
   const searchInput = document.getElementById('tb-search-input');
   if (searchInput) { searchInput.placeholder = 'Search\u2026'; searchInput.value = ''; }
@@ -20635,6 +20695,12 @@ function tbNavMap() {
   /* Hide page tabs — not relevant here */
   const pageTabsM = document.getElementById('tb-page-tabs');
   if (pageTabsM) pageTabsM.style.display = 'none';
+  /* Hide the All Trucks metric strip — Map has its own */
+  const statRowM = document.getElementById('tb-stat-row');
+  if (statRowM) statRowM.style.display = 'none';
+  /* Hide the Units metric strip */
+  const unitsStatRowM = document.getElementById('tb-units-stat-row');
+  if (unitsStatRowM) unitsStatRowM.style.display = 'none';
   /* Hide page title sub — only used on Units */
   const subM = document.getElementById('tb-page-title-sub');
   if (subM) subM.style.display = 'none';
@@ -20644,6 +20710,10 @@ function tbNavMap() {
   if (searchRowM) searchRowM.style.display = 'none';
   /* Init the Leaflet map + render the card strip */
   document.body.classList.add('tb-on-map');
+  /* Set the right-side last-updated indicator since this is the Map's
+     primary header context (no truck-count metric here). */
+  const countElM = document.getElementById('tb-truck-count');
+  if (countElM) countElM.textContent = 'Last updated: 20 seconds ago';
   if (typeof tbMapInit === 'function') tbMapInit();
 }
 
@@ -20683,6 +20753,12 @@ function tbNavComingSoon(which) {
   /* Hide the page-level search row — Coming Soon has no content to search. */
   const searchRowCs = document.getElementById('tb-page-search-row');
   if (searchRowCs) searchRowCs.style.display = 'none';
+  /* Hide the All Trucks metric strip */
+  const statRowCs = document.getElementById('tb-stat-row');
+  if (statRowCs) statRowCs.style.display = 'none';
+  /* Hide the Units metric strip */
+  const unitsStatRowCs = document.getElementById('tb-units-stat-row');
+  if (unitsStatRowCs) unitsStatRowCs.style.display = 'none';
 
   /* Populate CS content */
   const csTitle = document.getElementById('tb-cs-title');
@@ -20735,6 +20811,12 @@ function tbNavTrucks() {
   /* Re-show the page-level search row */
   const searchRowT = document.getElementById('tb-page-search-row');
   if (searchRowT) searchRowT.style.display = '';
+  /* Re-show the All Trucks metric strip */
+  const statRowT = document.getElementById('tb-stat-row');
+  if (statRowT) statRowT.style.display = '';
+  /* Hide the Units metric strip */
+  const unitsStatRowT = document.getElementById('tb-units-stat-row');
+  if (unitsStatRowT) unitsStatRowT.style.display = 'none';
   /* Hide page title sub — only used on Units */
   const subT = document.getElementById('tb-page-title-sub');
   if (subT) subT.style.display = 'none';
@@ -21315,6 +21397,17 @@ function tbUnitsRender() {
   const unlinked = UNITS_DATA.filter(u => u.status === 'Unlinked Unit').length;
   const maint    = UNITS_DATA.filter(u => u.status === 'Maintenance').length;
   const pending  = UNITS_DATA.filter(u => u.status === 'Pending Return').length;
+
+  /* Update the Units metric strip — same shared classes as desktop's
+     #dt-units-stat-row so the values stay consistent across viewports. */
+  const setStat = (cls, val) => {
+    document.querySelectorAll('.' + cls).forEach(el => { el.textContent = val; });
+  };
+  setStat('js-units-stat-commissioned', linked);
+  setStat('js-units-stat-total',        UNITS_DATA.length);
+  setStat('js-units-stat-unlinked',     unlinked);
+  setStat('js-units-stat-maintreq',     maint);
+  setStat('js-units-stat-pending',      pending);
 
   /* Update sub-label (lives in the top page header now) */
   const subEl = document.getElementById('tb-page-title-sub');
@@ -22861,9 +22954,9 @@ function dtUdCfgSaveAndLink() {
     }, 1300);
     if (typeof dtUnitsRender === 'function') dtUnitsRender();
     if (typeof dtRefreshTable === 'function' && typeof dtActiveTab !== 'undefined') dtRefreshTable(dtActiveTab);
-    const unlinkedEl = document.getElementById('dt-stat-unlinked');
-    if (unlinkedEl && typeof UNITS_DATA !== 'undefined') {
-      unlinkedEl.textContent = UNITS_DATA.filter(x => x.status === 'Unlinked Unit').length;
+    if (typeof UNITS_DATA !== 'undefined') {
+      const unlinkedCount = UNITS_DATA.filter(x => x.status === 'Unlinked Unit').length;
+      document.querySelectorAll('.js-stat-unlinked').forEach(el => { el.textContent = unlinkedCount; });
     }
   }
 }
@@ -24757,10 +24850,11 @@ function dtTruckDrawerUnlinkDo() {
   }
 
   // 4. Update Trucks-page Unlinked Units stat live so the header counter
-  //    reflects the change immediately.
-  const unlinkedEl = document.getElementById('dt-stat-unlinked');
-  if (unlinkedEl && typeof UNITS_DATA !== 'undefined') {
-    unlinkedEl.textContent = UNITS_DATA.filter(x => x.status === 'Unlinked Unit').length;
+  //    reflects the change immediately. Updates desktop + tablet strips
+  //    via shared class.
+  if (typeof UNITS_DATA !== 'undefined') {
+    const unlinkedCount = UNITS_DATA.filter(x => x.status === 'Unlinked Unit').length;
+    document.querySelectorAll('.js-stat-unlinked').forEach(el => { el.textContent = unlinkedCount; });
   }
 
   // 5. Re-render any visible tables so the change shows immediately.

@@ -275,6 +275,7 @@
       height: calc(100vh - var(--vp-bar-h));
       display: flex;
       flex-direction: column;
+      position: relative;
     }
 
     /* Tab bar — matches load-reports .tabs / .tab */
@@ -1007,6 +1008,114 @@
 
       </div>
 
+      <!-- Detail overlay -->
+      <div id="detail-page" style="display:none;">
+
+        <!-- Detail title bar -->
+        <div class="detail-title-bar">
+          <button class="detail-back-btn" id="detail-back">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+            <span>BACK TO LIST</span>
+          </button>
+          <div class="detail-title-actions">
+            <button class="drawer-btn-close" id="detail-cancel-edit" style="display:none;" title="Cancel">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <button class="drawer-btn-save-icon" id="detail-save-edit" style="display:none;" title="Save">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            </button>
+            <button class="detail-edit-btn" id="detail-edit-btn" title="Edit">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Detail page header -->
+        <div class="detail-page-header">
+          <div class="detail-page-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="3" width="18" height="18" rx="3" stroke="white" stroke-width="1.75"/>
+              <path d="M8 12h8M8 8h8M8 16h5" stroke="white" stroke-width="1.75" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h1 class="detail-page-title" id="detail-page-title">Override Slump Curve : —</h1>
+        </div>
+
+        <!-- Detail tabs -->
+        <div class="detail-tabs">
+          <div class="detail-tab active">Information</div>
+          <div class="detail-tab muted">Override Location</div>
+          <div class="detail-tab muted">Override Mix Code</div>
+        </div>
+
+        <!-- Detail body -->
+        <div class="detail-body">
+
+          <!-- Section header -->
+          <div class="detail-section-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span>Information</span>
+          </div>
+
+          <!-- Read-only view -->
+          <div id="detail-view" class="detail-fields-grid">
+            <div class="detail-field">
+              <div class="detail-field-label">Order Number</div>
+              <div class="detail-field-value" id="dv-order">—</div>
+            </div>
+            <div class="detail-field">
+              <div class="detail-field-label">Override Date</div>
+              <div class="detail-field-value" id="dv-date">—</div>
+            </div>
+            <div class="detail-field">
+              <div class="detail-field-label">Old Id</div>
+              <div class="detail-field-value" id="dv-old-id">—</div>
+            </div>
+            <div class="detail-field">
+              <div class="detail-field-label">Status</div>
+              <div class="detail-field-value" id="dv-status">—</div>
+            </div>
+            <div class="detail-field">
+              <div class="detail-field-label">Slump Display</div>
+              <div class="detail-field-value" id="dv-slump">—</div>
+            </div>
+          </div>
+
+          <!-- Edit view -->
+          <div id="detail-edit" style="display:none;" class="detail-fields-grid">
+            <div class="detail-field">
+              <label class="detail-field-label">Order Number</label>
+              <input type="text" class="field-input" id="de-order" placeholder="Order Number">
+            </div>
+            <div class="detail-field">
+              <label class="detail-field-label">Override Date</label>
+              <input type="date" class="field-input field-date" id="de-date">
+            </div>
+            <div class="detail-field">
+              <div class="detail-field-label">Old Id</div>
+              <div class="detail-field-value" id="de-old-id">—</div>
+            </div>
+            <div class="detail-field">
+              <label class="detail-field-label">Status</label>
+              <div class="toggle-wrap">
+                <div class="toggle-track" id="de-status-track">
+                  <div class="toggle-knob"></div>
+                </div>
+                <span class="toggle-state" id="de-status-state">Inactive</span>
+              </div>
+            </div>
+            <div class="detail-field">
+              <label class="detail-field-label">Slump Display</label>
+              <div class="radio-group">
+                <label class="radio-opt"><input type="radio" name="de-slump" value="show"> Show Slump</label>
+                <label class="radio-opt"><input type="radio" name="de-slump" value="hide"> Hide Slump</label>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </main>
   </div>
 
@@ -1334,16 +1443,15 @@
     .drawer-btn-save-icon {
       width: 32px; height: 32px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.12);
+      background: #3069e3;
       border: none;
-      color: var(--text-strong);
+      color: #fff;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer;
       transition: background 0.15s;
       flex-shrink: 0;
     }
-    body:not(.dark) .drawer-btn-save-icon { background: rgba(0,0,0,0.1); }
-    .drawer-btn-save-icon:hover { background: rgba(255,255,255,0.2); }
+    .drawer-btn-save-icon:hover { background: #1d4fc4; }
 
     .drawer-persistent-header {
       display: flex;
@@ -1422,7 +1530,7 @@
     .toggle-track {
       width: 40px; height: 22px;
       border-radius: 11px;
-      background: rgba(255,255,255,0.15);
+      background: #DADDDF;
       position: relative;
       cursor: pointer;
       transition: background 0.2s;
@@ -1432,10 +1540,34 @@
       position: absolute; top: 3px; left: 3px;
       width: 16px; height: 16px;
       border-radius: 50%;
-      background: #fff;
+      background: #1F2023;
+      border: 0.5px solid #DADDDF;
       transition: transform 0.2s;
+      display: flex; align-items: center; justify-content: center;
     }
-    .toggle-track.on .toggle-knob { transform: translateX(18px); }
+    .toggle-track.on .toggle-knob {
+      background: #fff;
+      border-color: transparent;
+      transform: translateX(18px);
+    }
+    /* Checkmark on active knob */
+    .toggle-track.on .toggle-knob::after {
+      content: "";
+      display: block;
+      width: 5px; height: 8px;
+      border: 2px solid #3069e3;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg) translate(-1px, -1px);
+    }
+    /* Dash on inactive knob */
+    .toggle-track:not(.on) .toggle-knob::after {
+      content: "";
+      display: block;
+      width: 8px; height: 2px;
+      background: #DADDDF;
+      border-radius: 1px;
+    }
     .toggle-state {
       font-size: 13px; font-weight: 500;
       color: var(--text-muted);
@@ -1571,6 +1703,112 @@
       background: #fff;
       border-color: rgba(0,0,0,0.12);
     }
+    /* Detail overlay page */
+    #detail-page { display: none; }
+    .detail-title-bar {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 12px 32px;
+      flex-shrink: 0;
+    }
+    .detail-back-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: transparent; border: none;
+      color: var(--text-muted);
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: color 0.12s;
+      font-family: var(--font-sans);
+    }
+    .detail-back-btn:hover { color: var(--text-strong); }
+    .detail-title-actions { display: flex; align-items: center; gap: 8px; }
+    .detail-edit-btn {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: #3069e3;
+      border: none; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .detail-edit-btn:hover { background: #1d4fc4; }
+    .detail-page-header {
+      display: flex; align-items: center; gap: 16px;
+      padding: 8px 32px 20px;
+      flex-shrink: 0;
+    }
+    .detail-page-icon {
+      width: 52px; height: 52px;
+      border-radius: 10px;
+      background: #3069e3;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .detail-page-title {
+      font-size: 28px; font-weight: 700;
+      color: var(--text-strong);
+      letter-spacing: -0.5px;
+      margin: 0;
+    }
+    .detail-tabs {
+      display: flex; align-items: flex-end;
+      gap: 0;
+      border-bottom: 1px solid var(--border-soft);
+      padding: 0 32px;
+      flex-shrink: 0;
+    }
+    .detail-tab {
+      font-size: 14px; font-weight: 600;
+      color: var(--text-muted);
+      padding: 12px 20px 12px;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.12s;
+      white-space: nowrap;
+    }
+    .detail-tab.active {
+      color: var(--text-strong);
+    }
+    .detail-tab.active::after {
+      content: "";
+      position: absolute;
+      left: 20px; right: 20px; bottom: -1px;
+      height: 2px;
+      background: #3069e3;
+      border-radius: 2px 2px 0 0;
+    }
+    .detail-tab.muted { opacity: 0.4; cursor: default; }
+    .detail-body {
+      flex: 1;
+      padding: 24px 32px;
+      overflow-y: auto;
+    }
+    .detail-section-header {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 14px; font-weight: 700;
+      color: var(--text-strong);
+      margin-bottom: 20px;
+    }
+    .detail-section-header svg { color: var(--text-muted); flex-shrink: 0; }
+    .detail-fields-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px 40px;
+    }
+    .detail-field { display: flex; flex-direction: column; gap: 4px; }
+    .detail-field-label {
+      font-size: 11px; font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .detail-field-value {
+      font-size: 14px; font-weight: 500;
+      color: var(--text-strong);
+    }
+
     /* V4 full page takeover */
     #v4-page {
       flex: 1;
@@ -1936,6 +2174,169 @@
       actDd.addEventListener('click', function(e) { e.stopPropagation(); });
 
       document.addEventListener('click', closeAll);
+
+      // ── Detail overlay ──────────────────────────────────────
+      var detailPage     = document.getElementById('detail-page');
+      var mainEl         = document.querySelector('.main');
+      var currentRowData = {};
+
+      function openDetail(data) {
+        currentRowData = data;
+        // Set title
+        document.getElementById('detail-page-title').textContent = 'Override Slump Curve : ' + (data.order || '—');
+        // Fill read-only fields
+        document.getElementById('dv-order').textContent  = data.order  || '—';
+        document.getElementById('dv-date').textContent   = data.date   || '—';
+        document.getElementById('dv-old-id').textContent = data.oldId  || '—';
+        document.getElementById('dv-status').textContent = data.status || '—';
+        document.getElementById('dv-slump').textContent  = data.slump  || '—';
+        // Show read-only, hide edit
+        document.getElementById('detail-view').style.display = 'grid';
+        document.getElementById('detail-edit').style.display = 'none';
+        document.getElementById('detail-edit-btn').style.display = 'flex';
+        document.getElementById('detail-cancel-edit').style.display = 'none';
+        document.getElementById('detail-save-edit').style.display = 'none';
+        // Show detail, hide main content
+        mainTabBar.style.display  = 'none';
+        mainContent.style.display = 'none';
+        detailPage.style.display        = 'flex';
+        detailPage.style.flexDirection  = 'column';
+        detailPage.style.flex           = '1';
+        detailPage.style.overflow       = 'hidden';
+        detailPage.style.background     = 'var(--bg-page)';
+        detailPage.style.position       = 'absolute';
+        detailPage.style.inset          = '0';
+        detailPage.style.zIndex         = '300';
+      }
+
+      function closeDetail() {
+        detailPage.style.display = 'none';
+        mainTabBar.style.display  = '';
+        mainContent.style.display = '';
+      }
+
+      // Back button
+      document.getElementById('detail-back').addEventListener('click', closeDetail);
+
+      // Edit button — switch to edit mode
+      document.getElementById('detail-edit-btn').addEventListener('click', function() {
+        // Populate edit fields
+        document.getElementById('de-order').value = currentRowData.order || '';
+        document.getElementById('de-date').value  = currentRowData.date  || '';
+        document.getElementById('de-old-id').textContent = currentRowData.oldId || '—';
+        var track = document.getElementById('de-status-track');
+        var isActive = currentRowData.status === 'Active';
+        track.classList.toggle('on', isActive);
+        document.getElementById('de-status-state').textContent = isActive ? 'Active' : 'Inactive';
+        // Set slump radio
+        var slumpVal = currentRowData.slump === 'Shown' ? 'show' : 'hide';
+        document.querySelectorAll('input[name="de-slump"]').forEach(function(r) {
+          r.checked = r.value === slumpVal;
+        });
+        // Switch views
+        document.getElementById('detail-view').style.display = 'none';
+        document.getElementById('detail-edit').style.display = 'grid';
+        document.getElementById('detail-edit-btn').style.display = 'none';
+        document.getElementById('detail-cancel-edit').style.display = 'flex';
+        document.getElementById('detail-save-edit').style.display = 'flex';
+      });
+
+      // Cancel edit
+      document.getElementById('detail-cancel-edit').addEventListener('click', function() {
+        document.getElementById('detail-view').style.display = 'grid';
+        document.getElementById('detail-edit').style.display = 'none';
+        document.getElementById('detail-edit-btn').style.display = 'flex';
+        document.getElementById('detail-cancel-edit').style.display = 'none';
+        document.getElementById('detail-save-edit').style.display = 'none';
+      });
+
+      // Save edit — update row data and read-only view
+      document.getElementById('detail-save-edit').addEventListener('click', function() {
+        var newOrder  = document.getElementById('de-order').value || '—';
+        var newDate   = document.getElementById('de-date').value  || '—';
+        var isActive  = document.getElementById('de-status-track').classList.contains('on');
+        var slumpChecked = document.querySelector('input[name="de-slump"]:checked');
+        var newSlump  = slumpChecked && slumpChecked.value === 'show' ? 'Shown' : 'Hidden';
+        var newStatus = isActive ? 'Active' : 'Inactive';
+
+        // Update stored data
+        currentRowData.order  = newOrder;
+        currentRowData.date   = newDate;
+        currentRowData.status = newStatus;
+        currentRowData.slump  = newSlump;
+
+        // Update read-only view
+        document.getElementById('dv-order').textContent  = newOrder;
+        document.getElementById('dv-date').textContent   = newDate;
+        document.getElementById('dv-status').textContent = newStatus;
+        document.getElementById('dv-slump').textContent  = newSlump;
+        document.getElementById('detail-page-title').textContent = 'Override Slump Curve : ' + newOrder;
+
+        // Update table row
+        if (currentRowData.tr) {
+          currentRowData.tr.cells[0].textContent = newOrder === '—' ? '' : newOrder;
+          var statusDot = currentRowData.tr.querySelector('.status-dot');
+          if (statusDot) {
+            statusDot.className = 'status-dot ' + (isActive ? 'active' : 'inactive');
+          }
+          var slumpBadge = currentRowData.tr.querySelector('.slump-badge');
+          if (slumpBadge) {
+            slumpBadge.className = 'slump-badge ' + (newSlump === 'Shown' ? 'slump-shown' : 'slump-hidden');
+            slumpBadge.textContent = newSlump;
+          }
+        }
+
+        // Back to read-only
+        document.getElementById('detail-view').style.display = 'grid';
+        document.getElementById('detail-edit').style.display = 'none';
+        document.getElementById('detail-edit-btn').style.display = 'flex';
+        document.getElementById('detail-cancel-edit').style.display = 'none';
+        document.getElementById('detail-save-edit').style.display = 'none';
+      });
+
+      // Status toggle in edit mode
+      document.getElementById('de-status-track').addEventListener('click', function() {
+        var on = this.classList.toggle('on');
+        document.getElementById('de-status-state').textContent = on ? 'Active' : 'Inactive';
+      });
+
+      // Wire row clicks — delegate from tbody
+      document.getElementById('override-tbody').addEventListener('click', function(e) {
+        var row = e.target.closest('tr');
+        if (!row) return;
+        // Ignore edit button clicks
+        if (e.target.closest('.row-action')) return;
+        var cells = row.cells;
+        var statusDot  = row.querySelector('.status-dot');
+        var slumpBadge = row.querySelector('.slump-badge');
+        openDetail({
+          tr:     row,
+          order:  cells[0] ? cells[0].textContent.trim() : '—',
+          date:   cells[1] ? cells[1].textContent.trim() : '—',
+          oldId:  '—',
+          status: statusDot && statusDot.classList.contains('active') ? 'Active' : 'Inactive',
+          slump:  slumpBadge ? slumpBadge.textContent.trim() : '—',
+        });
+      });
+
+      // Wire existing edit icon buttons to open detail too
+      document.getElementById('override-tbody').addEventListener('click', function(e) {
+        var btn = e.target.closest('.row-action');
+        if (!btn) return;
+        var row = btn.closest('tr');
+        if (!row) return;
+        var cells = row.cells;
+        var statusDot  = row.querySelector('.status-dot');
+        var slumpBadge = row.querySelector('.slump-badge');
+        openDetail({
+          tr:     row,
+          order:  cells[0] ? cells[0].textContent.trim() : '—',
+          date:   cells[1] ? cells[1].textContent.trim() : '—',
+          oldId:  '—',
+          status: statusDot && statusDot.classList.contains('active') ? 'Active' : 'Inactive',
+          slump:  slumpBadge ? slumpBadge.textContent.trim() : '—',
+        });
+      });
 
       // ── V4 full page ─────────────────────────────────────────
       var v4Page      = document.getElementById('v4-page');

@@ -1,0 +1,2705 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1920" />
+  <title>Verifi — Ticketed Slump Override</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* =======================================================================
+       Prototype top bar (vp-)
+       ======================================================================= */
+    :root {
+      --vp-bar-h: 44px;
+    }
+    .vp-bar {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: var(--vp-bar-h);
+      background: rgba(20,18,16,0.97);
+      color: #fff;
+      display: flex; align-items: center;
+      padding: 0 16px;
+      z-index: 1000;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      box-shadow: var(--vp-bar-shadow);
+      font-family: var(--font-sans);
+    }
+    .vp-brand { display: flex; align-items: center; gap: 10px; }
+    .vp-tag {
+      font-size: 10px; font-weight: 500;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.4px; text-transform: uppercase;
+      padding: 2px 6px;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px;
+    }
+    .vp-right-cluster { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .vp-opts-wrap { position: relative; }
+    .vp-opts-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 10px;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      border-radius: 8px;
+      border: 0; cursor: pointer;
+      font-size: 12px; font-weight: 500;
+      letter-spacing: -0.24px;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .vp-opts-btn:hover { background: rgba(255,255,255,0.14); }
+    .vp-opts-dd {
+      position: absolute;
+      top: calc(100% + 6px); right: 0;
+      min-width: 200px;
+      background: #1a1917;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      padding: 6px;
+      display: none;
+      z-index: 1100;
+    }
+    .vp-opts-dd.open { display: block; }
+    .vp-opts-section-label {
+      font-size: 10px; font-weight: 600;
+      color: rgba(255,255,255,0.35);
+      text-transform: uppercase; letter-spacing: 0.4px;
+      padding: 8px 10px 4px;
+    }
+    .vp-opts-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 10px;
+      font-size: 13px;
+      border-radius: 8px;
+      color: rgba(255,255,255,0.8);
+      cursor: pointer;
+    }
+    .vp-opts-row:hover { background: rgba(255,255,255,0.06); }
+    .vp-dark-toggle {
+      width: 32px; height: 18px;
+      border-radius: 9px;
+      background: rgba(255,255,255,0.15);
+      position: relative;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .vp-dark-toggle-knob {
+      position: absolute; top: 2px; left: 2px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.2s;
+    }
+
+    /* Toggle active when dark mode is ON */
+    body.dark .vp-dark-toggle { background: #3069e3; }
+    body.dark .vp-dark-toggle-knob { transform: translateX(14px); }
+
+    :root {
+      --bg-page:       #ffffff;
+      --bg-sidebar:    #ecf1f3;
+      --bg-table:      #ffffff;
+      --row-even:      #ffffff;
+      --row-even-hover:#f2f5f7;
+      --row-odd:       #b2bfc8;
+      --border-steel:  #d1d5db;
+      --border-soft:   rgba(0,0,0,0.10);
+      --bg-popover:    #ffffff;
+      --text-strong:   #1a1a1a;
+      --text-muted:    #6b7178;
+      --text-cell:     #1a1a1a;
+      --accent-blue:   #0965a3;
+      --nav-hover:     rgba(0,0,0,0.04);
+      --vp-bar-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    body.dark {
+      --bg-page:       #26282b;
+      --bg-sidebar:    #26282b;
+      --bg-table:      #26282b;
+      --row-even:      #26282b;
+      --row-even-hover:#34373b;
+      --row-odd:       #1c1c1e;
+      --border-steel:  #a8aeb5;
+      --border-soft:   rgba(168,174,181,0.20);
+      --bg-popover:    #1c1c1e;
+      --text-strong:   #ffffff;
+      --text-muted:    #a8aeb5;
+      --text-cell:     #ededed;
+      --accent-blue:   #0965a3;
+      --nav-hover:     rgba(255,255,255,0.04);
+      --vp-bar-shadow: 0 6px 16px rgba(0,0,0,0.45);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      padding-top: var(--vp-bar-h);
+      background: var(--bg-page);
+      color: var(--text-strong);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+      min-width: 1280px;
+    }
+    /* =======================================================================
+       App shell
+       ======================================================================= */
+    .app {
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      min-height: calc(100vh - var(--vp-bar-h));
+    }
+
+    /* ---------------- Sidebar — matches load-reports exactly ---------------- */
+    .sidebar {
+      background: var(--bg-sidebar);
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      padding: 24px 0 16px;
+      gap: 0;
+      position: sticky;
+      top: var(--vp-bar-h);
+      height: calc(100vh - var(--vp-bar-h));
+      width: 96px;
+    }
+
+    .logo {
+      width: 64px;
+      height: auto;
+      margin: 0 auto 24px;
+      color: var(--text-strong);
+      display: block;
+    }
+    .logo path { fill: currentColor; }
+
+    .region-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 6px 16px;
+      color: var(--text-strong);
+      border-bottom: 1px solid var(--border-soft);
+      margin-bottom: 12px;
+    }
+    .region-header .icon {
+      width: 22px; height: 22px;
+      color: var(--text-strong);
+      display: block;
+    }
+    .region-header .label {
+      font-size: 12px; font-weight: 700;
+      text-align: center;
+      line-height: 1.25;
+      color: var(--text-strong);
+    }
+
+    .nav-item {
+      width: 100%;
+      padding: 12px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      position: relative;
+      text-align: center;
+      line-height: 1.25;
+      transition: color 120ms ease, background 120ms ease;
+      border: none;
+      background: transparent;
+    }
+    .nav-item .icon {
+      width: 22px; height: 22px;
+      color: currentColor;
+      display: block;
+    }
+    .nav-item .icon path,
+    .nav-item .icon rect,
+    .nav-item .icon circle { fill: currentColor; }
+    .nav-item:hover { color: var(--text-strong); background: var(--nav-hover); }
+    .nav-item.active { color: var(--text-strong); font-weight: 700; }
+    .nav-item.active::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 8px; bottom: 8px;
+      width: 3px;
+      background: var(--text-strong);
+      border-radius: 0 2px 2px 0;
+    }
+
+    .sidebar-spacer { flex: 1; }
+
+    .sidebar-bottom {
+      border-top: 1px solid var(--border-soft);
+      padding: 12px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--accent-blue);
+      color: #fff;
+      font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+
+    .sidebar-version {
+      font-size: 9px;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.4;
+      padding: 4px 6px 8px;
+    }
+
+    /* ---------------- Main column — matches load-reports ---------------- */
+    .main {
+      padding: 32px 40px 24px;
+      min-width: 0;
+      overflow: hidden;
+      height: calc(100vh - var(--vp-bar-h));
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Tab bar — matches load-reports .tabs / .tab */
+    .tab-bar {
+      display: flex;
+      align-items: flex-end;
+      gap: 40px;
+      border-bottom: 1px solid transparent;
+      padding-bottom: 0;
+      margin-bottom: 28px;
+      position: relative;
+    }
+    .tab-item {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text-muted);
+      padding-bottom: 14px;
+      cursor: pointer;
+      position: relative;
+      transition: color 120ms ease;
+      white-space: nowrap;
+    }
+    .tab-item:hover { color: var(--text-strong); }
+    .tab-item.active {
+      color: var(--text-strong);
+      font-weight: 700;
+    }
+    .tab-item.active::after {
+      content: "";
+      position: absolute;
+      left: 0; right: 0;
+      bottom: -1px;
+      height: 3px;
+      background: var(--accent-blue);
+      border-radius: 2px;
+    }
+
+    /* Page content area */
+    .page-content {
+      padding: 28px 32px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    /* Page header row */
+    .page-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .page-icon {
+      width: 48px; height: 48px;
+      border-radius: 10px;
+      background: #3069e3;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .page-icon svg { width: 24px; height: 24px; color: #fff; }
+
+    .page-title-block { flex: 1; }
+    .page-title {
+      font-size: 24px; font-weight: 700;
+      color: var(--text-strong);
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+    }
+    .page-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .page-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Search input */
+    .search-input {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-table);
+      border: 1px solid var(--border-steel);
+      border-radius: 8px;
+      padding: 7px 12px;
+      width: 220px;
+      color: var(--text-muted);
+      transition: border-color 0.15s;
+    }
+    .search-input:focus-within {
+      border-color: var(--accent-blue);
+      color: var(--text-strong);
+    }
+    .search-input svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .search-input input {
+      background: transparent;
+      border: 0; outline: none;
+      color: var(--text-strong);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      flex: 1; min-width: 0;
+    }
+    .search-input input::placeholder { color: var(--text-muted); }
+
+    /* Actions button + dropdown */
+    .actions-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 14px;
+      background: var(--accent-blue);
+      color: #fff;
+      border: none; border-radius: 8px;
+      font-size: 13px; font-weight: 600;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .actions-btn:hover { background: #1d4fc4; }
+    .actions-btn svg { width: 14px; height: 14px; }
+
+    .actions-dd {
+      position: absolute;
+      top: calc(100% + 6px); right: 0;
+      min-width: 190px;
+      background: #9EA0A2;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      padding: 6px;
+      display: none;
+      z-index: 500;
+    }
+    .actions-dd.open { display: block; }
+    body:not(.dark) .actions-dd {
+      background: #ffffff;
+      border-color: rgba(0,0,0,0.12);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    .actions-wrap { position: relative; display: inline-block; }
+    .dd-label {
+      font-size: 10px; font-weight: 600;
+      color: rgba(0,0,0,0.4);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 6px 10px 4px;
+    }
+    body:not(.dark) .dd-label { color: rgba(0,0,0,0.35); }
+    .dd-item {
+      display: block; width: 100%;
+      text-align: left;
+      padding: 9px 10px;
+      font-size: 13px; font-weight: 500;
+      color: #1a1a1a;
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      transition: background 0.12s;
+    }
+    body:not(.dark) .dd-item { color: #1a1a1a; }
+    .dd-item:hover { background: rgba(0,0,0,0.07); }
+    body:not(.dark) .dd-item:hover { background: rgba(0,0,0,0.05); }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .filter-select {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 10px;
+      background: #1C1C1E;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 6px;
+      font-size: 12px; font-weight: 500;
+      color: var(--text-strong);
+      cursor: pointer;
+      font-family: var(--font-sans);
+      transition: border-color 0.15s;
+    }
+    .filter-select:hover { border-color: var(--accent-blue); }
+    .filter-select svg { width: 12px; height: 12px; color: var(--text-muted); }
+    body:not(.dark) .filter-select {
+      background: #ffffff;
+      border-color: rgba(0,0,0,0.18);
+    }
+
+    .filter-date {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 10px;
+      background: #1C1C1E;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 6px;
+      font-size: 12px; font-weight: 500;
+      color: var(--accent-blue);
+    }
+    body:not(.dark) .filter-date {
+      background: #ffffff;
+      border-color: rgba(0,0,0,0.18);
+    }
+    .filter-date-x {
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: var(--accent-blue);
+      font-size: 14px;
+      line-height: 1;
+      transition: opacity 0.12s;
+    }
+    .filter-date-x:hover { opacity: 0.7; }
+
+    .filter-refresh {
+      margin-left: auto;
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 6px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: color 0.12s, background 0.12s;
+    }
+    .filter-refresh:hover { color: var(--text-strong); background: var(--nav-hover); }
+    .filter-refresh svg { width: 16px; height: 16px; }
+
+    /* Table */
+    .table-wrap {
+      background: var(--bg-table);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border-soft);
+    }
+
+    table.override-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-sans);
+    }
+
+    table.override-table thead th {
+      background: var(--bg-table);
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border-steel);
+      white-space: nowrap;
+    }
+
+    table.override-table tbody tr {
+      border-bottom: 1px solid var(--border-soft);
+      transition: background 0.1s;
+    }
+    table.override-table tbody tr:last-child { border-bottom: none; }
+    table.override-table tbody tr:nth-child(odd)  { background: var(--row-even); }
+    table.override-table tbody tr:nth-child(even) { background: var(--row-odd); }
+    table.override-table tbody tr:hover { background: var(--row-even-hover); }
+
+    table.override-table tbody td {
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--text-strong);
+      vertical-align: middle;
+    }
+
+    td.cell-muted { color: var(--text-muted); }
+
+    .slump-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .slump-shown {
+      background: rgba(46,204,113,0.12);
+      color: #2ecc71;
+      border: 1px solid rgba(46,204,113,0.25);
+    }
+    .slump-hidden {
+      background: rgba(231,76,60,0.12);
+      color: #e74c3c;
+      border: 1px solid rgba(231,76,60,0.25);
+    }
+
+    /* Status dot */
+    .status-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .status-dot.active   { background: #2ecc71; box-shadow: 0 0 0 3px rgba(46,204,113,0.15); }
+    .status-dot.inactive { background: #e74c3c; box-shadow: 0 0 0 3px rgba(231,76,60,0.15); }
+
+    /* Row action icon */
+    .row-action {
+      width: 28px; height: 28px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 6px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: color 0.12s, background 0.12s;
+    }
+    .row-action:hover { color: var(--text-strong); background: var(--nav-hover); }
+    .row-action svg { width: 16px; height: 16px; }
+
+    /* Pagination footer */
+    .table-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 16px;
+      padding: 14px 16px;
+      border-top: 1px solid var(--border-soft);
+      background: var(--bg-table);
+      border-radius: 0 0 10px 10px;
+    }
+    .footer-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .per-page-select {
+      background: var(--bg-table);
+      border: 1px solid var(--border-steel);
+      border-radius: 4px;
+      color: var(--text-strong);
+      font-size: 12px;
+      padding: 2px 6px;
+      font-family: var(--font-sans);
+      cursor: pointer;
+    }
+    .pager-label {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Prototype top bar -->
+  <div class="vp-bar">
+    <div class="vp-brand">
+      <svg width="64" height="16" viewBox="0 0 96 24" style="color:#fff">
+        <path fill="currentColor" d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z"/>
+      </svg>
+      <span class="vp-tag" id="vp-version-tag">Slump Override — Step by Step</span>
+    </div>
+    <div class="vp-right-cluster">
+      <div class="vp-opts-wrap" id="vp-opts-wrap">
+        <button class="vp-opts-btn" id="vp-opts-btn">Options</button>
+        <div class="vp-opts-dd" id="vp-opts-dd">
+          <div class="vp-opts-section-label">Appearance</div>
+          <div class="vp-opts-row" id="theme-toggle-row">
+            <span style="display:flex;align-items:center;gap:8px;flex:1;">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <path d="M8 1v1M8 14v1M1 8h1M14 8h1M3.05 3.05l.7.7M12.25 12.25l.7.7M3.05 12.95l.7-.7M12.25 3.75l.7-.7M11 8a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              Light Mode
+            </span>
+            <div class="vp-dark-toggle"><div class="vp-dark-toggle-knob"></div></div>
+          </div>
+          <div class="vp-opts-section-label" style="margin-top:6px;">Version</div>
+          <div class="vp-opts-row version-opt active-version" data-version="1">
+            <span style="display:flex;align-items:center;gap:8px;flex:1;">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M5 8h6M8 5v6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              Step by Step
+            </span>
+            <svg id="v1-check" width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8l3.5 3.5L13 4" stroke="#3069e3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="vp-opts-row version-opt" data-version="2">
+            <span style="display:flex;align-items:center;gap:8px;flex:1;">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M5 8h6M8 5v6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              All at Once
+            </span>
+            <svg id="v2-check" width="14" height="14" viewBox="0 0 16 16" fill="none" style="opacity:0;">
+              <path d="M3 8l3.5 3.5L13 4" stroke="#3069e3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="vp-opts-row version-opt" data-version="3">
+            <span style="display:flex;align-items:center;gap:8px;flex:1;">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M5 8h6M8 5v6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              Step by Step + Review
+            </span>
+            <svg id="v3-check" width="14" height="14" viewBox="0 0 16 16" fill="none" style="opacity:0;">
+              <path d="M3 8l3.5 3.5L13 4" stroke="#3069e3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="vp-opts-row version-opt" data-version="4">
+            <span style="display:flex;align-items:center;gap:8px;flex:1;">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M5 8h6M8 5v6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              Full Page
+            </span>
+            <svg id="v4-check" width="14" height="14" viewBox="0 0 16 16" fill="none" style="opacity:0;">
+              <path d="M3 8l3.5 3.5L13 4" stroke="#3069e3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SVG sprite -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z" fill="currentColor"/></symbol>
+      <symbol id="i-dashboards" viewBox="0 0 24 24"><path d="M21 20C21 20.265 20.8946 20.5194 20.7071 20.7069C20.5196 20.8944 20.2652 21 20 21H4C3.73478 21 3.48043 20.8944 3.29289 20.7069C3.10536 20.5194 3 20.265 3 20V9.49C3 9.337 3.035 9.187 3.102 9.05C3.168 8.913 3.266 8.793 3.386 8.7L11.386 2.478C11.562 2.341 11.778 2.267 12 2.267C12.222 2.267 12.438 2.341 12.614 2.478L20.614 8.7C20.734 8.793 20.832 8.913 20.898 9.05C20.965 9.187 21 9.337 21 9.49V20ZM19 19V9.978L12 4.534L5 9.978V19H19Z" fill="currentColor"/></symbol>
+      <symbol id="i-fleet" viewBox="0 0 24 24"><path d="M2 5l6-2 8 2 6-2v16l-6 2-8-2-6 2V5zm6 0v14l8 2V7L8 5zm-2 .35L4 6v13.5l2-.66V5.35zm14 13.3V5.15l-2 .66v13.34l2-.5z" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/></symbol>
+      <symbol id="i-production" viewBox="0 0 24 24"><path d="M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm1 2v14h14V5H5zm3 8h2v4H8v-4zm4-4h2v8h-2V9zm4 2h2v6h-2v-6z" fill="currentColor"/></symbol>
+      <symbol id="i-mixtures" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm3.5-12.5a3 3 0 0 0-4.24 4.24l-3.06 3.06 1.41 1.41 3.06-3.06a3 3 0 0 0 4.24-4.24l-1.42 1.42-1.41-1.41 1.42-1.42Z" fill="currentColor"/></symbol>
+      <symbol id="i-tickets" viewBox="0 0 24 24"><path d="M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm1 2v12h14V6H5zm2 2h2v2H7V8zm4 0h6v2h-6V8zm-4 4h2v2H7v-2zm4 0h6v2h-6v-2zm-4 4h2v2H7v-2zm4 0h6v2h-6v-2z" fill="currentColor"/></symbol>
+      <symbol id="i-diagnostic" viewBox="0 0 24 24"><path d="M11 4a7 7 0 1 0 4.18 12.61l4.1 4.1 1.42-1.42-4.1-4.1A7 7 0 0 0 11 4Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm-3 5h1.5l1-2 2 4 1-2H14" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-insights" viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 8-8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 8h4v4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke="currentColor" stroke-width="1.75" fill="none"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" stroke-width="1.75" fill="none"/></symbol>
+      <symbol id="i-support" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.75" fill="none"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" stroke="currentColor" stroke-width="1.75" fill="none" stroke-linecap="round"/><circle cx="12" cy="17" r="0.5" fill="currentColor" stroke="currentColor" stroke-width="1.5"/></symbol>
+      <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.75" fill="none"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15-6.7L21 8" stroke="currentColor" stroke-width="1.75" fill="none" stroke-linecap="round"/><path d="M21 3v5h-5" stroke="currentColor" stroke-width="1.75" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16" stroke="currentColor" stroke-width="1.75" fill="none" stroke-linecap="round"/><path d="M3 21v-5h5" stroke="currentColor" stroke-width="1.75" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-edit" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="1.75" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.75" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <svg class="logo" viewBox="0 0 96 24" xmlns="http://www.w3.org/2000/svg" aria-label="verifi">
+        <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z"/>
+      </svg>
+
+      <div class="region-header">
+        <svg class="icon" viewBox="0 0 24 24"><use href="#i-pin"/></svg>
+        <div class="label">Verifi<br>R&D</div>
+      </div>
+
+      <a class="nav-item" href="#"><svg class="icon" viewBox="0 0 24 24"><use href="#i-dashboards"/></svg><span>Dashboards</span></a>
+      <a class="nav-item" href="#"><svg class="icon" viewBox="0 0 24 24"><use href="#i-fleet"/></svg><span>My Fleet</span></a>
+      <a class="nav-item" href="#"><svg class="icon" viewBox="0 0 24 24"><use href="#i-production"/></svg><span>Production</span></a>
+      <a class="nav-item" href="#"><svg class="icon" viewBox="0 0 24 24"><use href="#i-mixtures"/></svg><span>Mixtures</span></a>
+      <a class="nav-item active" href="#"><svg class="icon" viewBox="0 0 24 24"><use href="#i-tickets"/></svg><span>Tickets</span></a>
+      <a class="nav-item" href="#"><svg class="icon" viewBox="0 0 24 24"><use href="#i-diagnostic"/></svg><span>Diagnostic Center</span></a>
+      <a class="nav-item" href="#"><svg class="icon" viewBox="0 0 24 24"><use href="#i-insights"/></svg><span>Data Insights</span></a>
+
+      <div class="sidebar-spacer"></div>
+
+      <div class="sidebar-bottom">
+        <a class="nav-item" href="#"><svg class="icon" viewBox="0 0 24 24"><use href="#i-settings"/></svg><span>Settings</span></a>
+        <a class="nav-item" href="#"><svg class="icon" viewBox="0 0 24 24"><use href="#i-support"/></svg><span>Support</span></a>
+        <div class="avatar" title="John Drogalis">JD</div>
+        <div class="sidebar-version">Saint-Gobain<br>2026 v1.2.0<br>4296F27F</div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- Tab bar -->
+      <nav class="tab-bar">
+        <div class="tab-item">Batch Assistant</div>
+        <div class="tab-item active">Ticketed Slump Override</div>
+        <div class="tab-item">Ticketing</div>
+      </nav>
+
+      <!-- Page content -->
+      <div class="page-content">
+
+        <!-- Page header -->
+        <div class="page-header">
+          <div class="page-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="3" width="18" height="18" rx="3" stroke="white" stroke-width="1.75"/>
+              <path d="M8 12h8M8 8h8M8 16h5" stroke="white" stroke-width="1.75" stroke-linecap="round"/>
+              <path d="M17 15l2 2-2 2" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="page-title-block">
+            <div class="page-title">Ticketed Slump Override</div>
+            <div class="page-subtitle">2 elements</div>
+          </div>
+          <div class="page-actions">
+            <label class="search-input">
+              <svg viewBox="0 0 24 24"><use href="#i-search"/></svg>
+              <input type="text" placeholder="Search..." />
+            </label>
+            <div class="actions-wrap" id="actions-wrap">
+              <button class="actions-btn" id="actions-btn">
+                Actions
+                <svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg>
+              </button>
+              <div class="actions-dd" id="actions-dd">
+                <div class="dd-label">Global Actions</div>
+                <button class="dd-item">Add New Slump Override</button>
+                <button class="dd-item">Export the list</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="filter-bar">
+          <button class="filter-select">
+            Order Number
+            <svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg>
+          </button>
+          <div class="filter-date">
+            6/3/2026 &nbsp;–&nbsp; 6/3/2026
+            <span class="filter-date-x">✕</span>
+          </div>
+          <button class="filter-select">
+            Status
+            <svg viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg>
+          </button>
+          <button class="filter-refresh" title="Refresh">
+            <svg viewBox="0 0 24 24"><use href="#i-refresh"/></svg>
+          </button>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrap">
+          <table class="override-table">
+            <thead>
+              <tr>
+                <th>Order Number</th>
+                <th>Override Date</th>
+                <th>Number Override Location</th>
+                <th>Created By</th>
+                <th>Status</th>
+                <th>Slump Display</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="override-tbody">
+              <tr>
+                <td>989</td>
+                <td class="cell-muted">—</td>
+                <td style="max-width:420px; white-space:normal; line-height:1.5;">
+                  Weathersfield, TestChange, Kingston, Agecroft, Bredbury, Cleburne (Ratliff), Cambridge Lab, Trafford Park, Oremus, Georgia Tech, Worcester, Wilmington, San Antonio (Alamo), Gholson, AU Concrite Liverpool, Gardner, AU Concrite Smeaton Grange
+                </td>
+                <td class="cell-muted">—</td>
+                <td><span class="status-dot inactive" title="Inactive"></span></td>
+                <td><span class="slump-badge slump-hidden">Hidden</span></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>96</td>
+                <td class="cell-muted">—</td>
+                <td>Apple Park</td>
+                <td>rstx803@gmail.com</td>
+                <td><span class="status-dot active" title="Active"></span></td>
+                <td><span class="slump-badge slump-shown">Shown</span></td>
+                <td>
+                  <button class="row-action" title="Edit">
+                    <svg viewBox="0 0 24 24"><use href="#i-edit"/></svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="table-footer">
+            <span class="footer-label">
+              Items per page:
+              <select class="per-page-select">
+                <option>100</option>
+                <option>50</option>
+                <option>25</option>
+              </select>
+            </span>
+            <span class="pager-label">1 – 2 of 2</span>
+          </div>
+        </div>
+
+      </div>
+      <!-- V4 Full page takeover -->
+      <div id="v4-page" style="display:none;">
+
+        <!-- V4 title bar -->
+        <div class="v4-title-bar">
+          <button class="v4-back-btn" id="v4-close">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          </button>
+          <span class="v4-title-text">Add Slump Override</span>
+        </div>
+
+        <!-- V4 Step indicator -->
+        <div class="v4-steps">
+          <div class="v4-step-item active" data-vstep="1">
+            <span class="v4-step-num">1</span>
+            <span class="v4-step-label">Slump Override</span>
+          </div>
+          <div class="v4-step-item" data-vstep="2">
+            <span class="v4-step-num">2</span>
+            <span class="v4-step-label">Override Location</span>
+          </div>
+          <div class="v4-step-item" data-vstep="3">
+            <span class="v4-step-num">3</span>
+            <span class="v4-step-label">Override Mix Code</span>
+          </div>
+          <div class="v4-step-item" data-vstep="4">
+            <span class="v4-step-num">4</span>
+            <span class="v4-step-label">Rule Settings</span>
+          </div>
+        </div>
+
+        <!-- V4 Step content -->
+        <div class="v4-body">
+
+          <!-- Step 1 -->
+          <div class="v4-step-content active" id="v4-step-1">
+            <div class="form-field">
+              <label class="field-label">Order Number</label>
+              <input type="text" class="field-input" id="v4-order" placeholder="Order Number">
+            </div>
+            <div class="form-field">
+              <label class="field-label">Override Date (US/Eastern)</label>
+              <input type="date" class="field-input field-date" id="v4-date">
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="v4-step-content" id="v4-step-2">
+            <div class="form-field">
+              <label class="field-label">Customer Location <span style="color:#e74c3c;">*</span></label>
+              <div class="field-select-wrap">
+                <select class="field-input field-select" id="v4-location-select">
+                  <option value="" disabled selected>Select a plant location</option>
+                  <option value="Phoenix Central Plant — Phoenix, AZ">Phoenix Central Plant — Phoenix, AZ</option>
+                  <option value="Tucson South Batch Plant — Tucson, AZ">Tucson South Batch Plant — Tucson, AZ</option>
+                  <option value="Dallas North Ready Mix — Dallas, TX">Dallas North Ready Mix — Dallas, TX</option>
+                  <option value="Atlanta West Concrete — Atlanta, GA">Atlanta West Concrete — Atlanta, GA</option>
+                  <option value="Chicago Midway Plant — Chicago, IL">Chicago Midway Plant — Chicago, IL</option>
+                  <option value="Denver East Batch Facility — Denver, CO">Denver East Batch Facility — Denver, CO</option>
+                  <option value="AU Concrite Liverpool — Sydney, AU">AU Concrite Liverpool — Sydney, AU</option>
+                </select>
+              </div>
+              <div class="location-pills" id="v4-location-pills"></div>
+              <span class="field-error-msg" id="v4-loc-error">This field is required</span>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="v4-step-content" id="v4-step-3">
+            <div class="form-field">
+              <label class="field-label">Override Mix Code <span style="color:#e74c3c;">*</span></label>
+    <div class="field-select-wrap">
+                <select class="field-input field-select" id="v4-mix-code" required>
+                  <option value="" disabled selected>Select a mix code</option>
+                  <option value="3000-STD">3000-STD — Standard 3000 PSI</option>
+                  <option value="4000-HE">4000-HE — High Early Strength</option>
+                  <option value="4500-AE">4500-AE — Air Entrained 4500 PSI</option>
+                  <option value="5000-HS">5000-HS — High Strength</option>
+                  <option value="3500-FLY">3500-FLY — Fly Ash Blend</option>
+                  <option value="6000-SF">6000-SF — Silica Fume Mix</option>
+                  <option value="2500-LW">2500-LW — Lightweight Aggregate</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 4 — Rule Settings -->
+          <div class="v4-step-content" id="v4-step-4">
+            <div class="form-field">
+              <label class="field-label">Status</label>
+              <div class="toggle-wrap">
+                <div class="toggle-track on" id="v4-status-track">
+                  <div class="toggle-knob"></div>
+                </div>
+                <span class="toggle-state" id="v4-status-state">Active</span>
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="field-label">Override Type <span style="color:#e74c3c;">*</span></label>
+              <div class="field-select-wrap">
+                <select class="field-input field-select" id="v4-override-type">
+                  <option value="" disabled selected>Pick Type</option>
+                  <option value="add">Add or subtract</option>
+                  <option value="measure">Do not measure</option>
+                  <option value="target">New target</option>
+                </select>
+              </div>
+              <span class="field-error-msg" id="v4-type-error">This field is required</span>
+            </div>
+            <div class="form-field" id="v4-extra-field" style="display:none;">
+              <label class="field-label" id="v4-extra-label">Extra Field</label>
+              <input type="text" class="field-input" id="v4-extra-input" placeholder="">
+            </div>
+            <div class="form-field">
+              <label class="field-label">External Slump Display</label>
+              <div class="radio-group">
+                <label class="radio-opt"><input type="radio" name="v4-slump" value="show" checked> Show Slump</label>
+                <label class="radio-opt"><input type="radio" name="v4-slump" value="hide"> Hide Slump</label>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- V4 Footer -->
+        <div class="v4-footer">
+          <button class="btn-back" id="v4-back" style="display:none;">Back</button>
+          <div style="flex:1"></div>
+          <button class="btn-next" id="v4-next">Next</button>
+          <button class="btn-save" id="v4-save" style="display:none;" disabled>Save</button>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ============================================================
+       DRAWER OVERLAY
+       ============================================================ -->
+  <div class="drawer-overlay" id="drawer-overlay"></div>
+  <div class="drawer" id="drawer">
+
+    <!-- Title bar -->
+    <div class="drawer-title-bar">
+      <span class="drawer-title-text">Add Slump Override</span>
+      <div class="drawer-title-actions">
+        <button class="drawer-btn-save-icon" id="drawer-save-icon" title="Save">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+          </svg>
+        </button>
+        <button class="drawer-btn-close" id="drawer-close" title="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Persistent header — affects whole rule -->
+    <div class="drawer-persistent-header">
+      <span class="drawer-persistent-title">Rule Settings</span>
+    </div>
+    <div class="drawer-persistent">
+      <!-- Row 1: Status + External Slump Display -->
+      <div class="persist-row">
+        <div class="persist-field">
+          <label class="persist-label">Status</label>
+          <div class="toggle-wrap" id="status-toggle-wrap">
+            <div class="toggle-track" id="status-track">
+              <div class="toggle-knob" id="status-knob"></div>
+            </div>
+            <span class="toggle-state" id="status-state">Active</span>
+          </div>
+        </div>
+        <div class="persist-divider-v"></div>
+        <div class="persist-field">
+          <label class="persist-label">External Slump Display</label>
+          <div class="radio-group">
+            <label class="radio-opt">
+              <input type="radio" name="slump-display" value="show" checked> Show Slump
+            </label>
+            <label class="radio-opt">
+              <input type="radio" name="slump-display" value="hide"> Hide Slump
+            </label>
+          </div>
+        </div>
+      </div>
+      <!-- Row 2: Override Type + conditional field -->
+      <div class="persist-row">
+        <div class="persist-subfield">
+          <label class="persist-label">Override Type <span style="color:#e74c3c;">*</span></label>
+          <div class="persist-select-wrap">
+            <select class="persist-select" id="override-type-select" onchange="window._updateOverrideType && window._updateOverrideType(this.value)">
+              <option value="" disabled selected>Pick Type</option>
+              <option value="add">Add or subtract</option>
+              <option value="measure">Do not measure</option>
+              <option value="target">New target</option>
+            </select>
+          </div>
+        </div>
+        <div class="persist-subfield" id="extra-field" style="display:none;">
+          <label class="persist-label" id="extra-label">Extra Field</label>
+          <input type="text" class="persist-select" id="extra-input" placeholder="" style="min-width:160px;">
+        </div>
+      </div>
+    </div>
+
+    <div class="drawer-divider"></div>
+
+    <!-- Step section header -->
+    <div class="drawer-persistent-header" style="padding-top: 16px;">
+      <span class="drawer-persistent-title">Slump Override Rule</span>
+    </div>
+
+    <!-- Step indicator -->
+    <div class="drawer-steps">
+      <div class="step-item active" data-step="1">
+        <span class="step-num">1</span>
+        <span class="step-label">Slump Override</span>
+      </div>
+      <div class="step-item" data-step="2">
+        <span class="step-num">2</span>
+        <span class="step-label">Override Location</span>
+      </div>
+      <div class="step-item" data-step="3">
+        <span class="step-num">3</span>
+        <span class="step-label">Override Mix Code</span>
+      </div>
+      <div class="step-item" id="step-4-indicator" style="display:none;" data-step="4">
+        <span class="step-num">4</span>
+        <span class="step-label">Review</span>
+      </div>
+    </div>
+
+    <!-- Step content -->
+    <div class="drawer-body">
+
+      <!-- Step 1 -->
+      <div class="step-content active" id="step-1">
+        <div class="form-field">
+          <label class="field-label">Order Number</label>
+          <input type="text" class="field-input" placeholder="Order Number">
+        </div>
+        <div class="form-field">
+          <label class="field-label">Override Date (US/Eastern)</label>
+          <input type="date" class="field-input field-date" placeholder="Override Date">
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step-content" id="step-2">
+        <div class="form-field">
+          <label class="field-label">Customer Location <span style="color:#e74c3c;">*</span></label>
+          <div class="field-select-wrap">
+            <select class="field-input field-select" id="location-select">
+              <option value="" disabled selected>Select a plant location</option>
+              <option value="Phoenix Central Plant — Phoenix, AZ">Phoenix Central Plant — Phoenix, AZ</option>
+              <option value="Tucson South Batch Plant — Tucson, AZ">Tucson South Batch Plant — Tucson, AZ</option>
+              <option value="Dallas North Ready Mix — Dallas, TX">Dallas North Ready Mix — Dallas, TX</option>
+              <option value="Atlanta West Concrete — Atlanta, GA">Atlanta West Concrete — Atlanta, GA</option>
+              <option value="Chicago Midway Plant — Chicago, IL">Chicago Midway Plant — Chicago, IL</option>
+              <option value="Denver East Batch Facility — Denver, CO">Denver East Batch Facility — Denver, CO</option>
+              <option value="AU Concrite Liverpool — Sydney, AU">AU Concrite Liverpool — Sydney, AU</option>
+            </select>
+          </div>
+          <div class="location-pills" id="location-pills"></div>
+          <span class="field-error-msg" id="loc-error">This field is required</span>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step-content" id="step-3">
+        <div class="form-field">
+          <label class="field-label">Override Mix Code <span style="color:#e74c3c;">*</span></label>
+<div class="field-select-wrap">
+                <select class="field-input field-select" id="step3-mix-code" required>
+                  <option value="" disabled selected>Select a mix code</option>
+                  <option value="3000-STD">3000-STD — Standard 3000 PSI</option>
+                  <option value="4000-HE">4000-HE — High Early Strength</option>
+                  <option value="4500-AE">4500-AE — Air Entrained 4500 PSI</option>
+                  <option value="5000-HS">5000-HS — High Strength</option>
+                  <option value="3500-FLY">3500-FLY — Fly Ash Blend</option>
+                  <option value="6000-SF">6000-SF — Silica Fume Mix</option>
+                  <option value="2500-LW">2500-LW — Lightweight Aggregate</option>
+                </select>
+              </div>
+          <span class="field-error-msg" id="mix-error">This field is required</span>
+        </div>
+        <!-- Dynamic extra field -->
+
+      </div>
+
+      <!-- Step 4 — Review -->
+      <div class="step-content" id="step-4">
+        <div class="review-intro">Review your override rule before saving. Go back to make any changes.</div>
+        <div class="review-grid">
+          <div class="review-section">
+            <div class="review-section-title">Rule Settings</div>
+            <div class="review-row"><span class="review-label">Status</span><span class="review-value" id="rv-status">—</span></div>
+            <div class="review-row"><span class="review-label">Override Type</span><span class="review-value" id="rv-type">—</span></div>
+            <div class="review-row" id="rv-extra-row" style="display:none;"><span class="review-label" id="rv-extra-label">—</span><span class="review-value" id="rv-extra-val">—</span></div>
+            <div class="review-row"><span class="review-label">External Slump Display</span><span class="review-value" id="rv-slump">—</span></div>
+          </div>
+          <div class="review-section">
+            <div class="review-section-title">Slump Override</div>
+            <div class="review-row"><span class="review-label">Order Number</span><span class="review-value" id="rv-order">—</span></div>
+            <div class="review-row"><span class="review-label">Override Date</span><span class="review-value" id="rv-date">—</span></div>
+          </div>
+          <div class="review-section">
+            <div class="review-section-title">Override Location</div>
+            <div class="review-value" id="rv-locations">—</div>
+          </div>
+          <div class="review-section">
+            <div class="review-section-title">Override Mix Code</div>
+            <div class="review-row"><span class="review-label">Mix Code</span><span class="review-value" id="rv-mix">—</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- V2 single-page form -->
+    <div class="drawer-body" id="drawer-body-v2" style="display:none;">
+
+      <div class="v2-section">
+        <div class="v2-section-title">Slump Override</div>
+        <div class="v2-section-body">
+          <div class="v2-row">
+            <div class="form-field">
+              <label class="field-label">Order Number</label>
+              <input type="text" class="field-input" placeholder="Order Number">
+            </div>
+            <div class="form-field">
+              <label class="field-label">Override Date (US/Eastern)</label>
+              <input type="date" class="field-input field-date">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="v2-section">
+        <div class="v2-section-title">Override Location <span style="color:#e74c3c;">*</span></div>
+        <div class="v2-section-body">
+          <div class="form-field">
+            <div class="field-select-wrap">
+              <select class="field-input field-select" id="v2-location-select" required>
+                <option value="" disabled selected>Select a plant location</option>
+                <option value="Phoenix Central Plant — Phoenix, AZ">Phoenix Central Plant — Phoenix, AZ</option>
+                <option value="Tucson South Batch Plant — Tucson, AZ">Tucson South Batch Plant — Tucson, AZ</option>
+                <option value="Dallas North Ready Mix — Dallas, TX">Dallas North Ready Mix — Dallas, TX</option>
+                <option value="Atlanta West Concrete — Atlanta, GA">Atlanta West Concrete — Atlanta, GA</option>
+                <option value="Chicago Midway Plant — Chicago, IL">Chicago Midway Plant — Chicago, IL</option>
+                <option value="Denver East Batch Facility — Denver, CO">Denver East Batch Facility — Denver, CO</option>
+                <option value="AU Concrite Liverpool — Sydney, AU">AU Concrite Liverpool — Sydney, AU</option>
+              </select>
+            </div>
+            <div class="location-pills" id="v2-location-pills"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="v2-section">
+        <div class="v2-section-title">Override Mix Code <span style="color:#e74c3c;">*</span></div>
+        <div class="v2-section-body">
+          <div class="form-field">
+<div class="field-select-wrap">
+                <select class="field-input field-select" id="v2-mix-code" required>
+                  <option value="" disabled selected>Select a mix code</option>
+                  <option value="3000-STD">3000-STD — Standard 3000 PSI</option>
+                  <option value="4000-HE">4000-HE — High Early Strength</option>
+                  <option value="4500-AE">4500-AE — Air Entrained 4500 PSI</option>
+                  <option value="5000-HS">5000-HS — High Strength</option>
+                  <option value="3500-FLY">3500-FLY — Fly Ash Blend</option>
+                  <option value="6000-SF">6000-SF — Silica Fume Mix</option>
+                  <option value="2500-LW">2500-LW — Lightweight Aggregate</option>
+                </select>
+              </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="drawer-footer" id="drawer-footer-v2" style="display:none;">
+      <div style="flex:1"></div>
+      <button class="btn-save" id="v2-save-btn" disabled>Save</button>
+    </div>
+
+    <!-- Footer -->
+    <div class="drawer-footer" id="drawer-footer-v1">
+      <button class="btn-back" id="step-back" style="display:none;">Back</button>
+      <div style="flex:1"></div>
+      <button class="btn-next" id="step-next">Next</button>
+      <button class="btn-save" id="step-save" style="display:none;" disabled>Save</button>
+    </div>
+
+  </div>
+
+  <style>
+    /* Drawer overlay */
+    .drawer-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 600;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .drawer-overlay.open { display: block; opacity: 1; }
+
+    /* Drawer panel */
+    .drawer {
+      position: fixed;
+      top: var(--vp-bar-h); right: 0; bottom: 0;
+      width: 820px;
+      background: #2a2c30;
+      z-index: 700;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: -8px 0 32px rgba(0,0,0,0.4);
+    }
+    body:not(.dark) .drawer { background: #f5f7f9; }
+    .drawer.open { transform: translateX(0); }
+
+    /* Title bar */
+    .drawer-title-bar {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      flex-shrink: 0;
+    }
+    body:not(.dark) .drawer-title-bar { border-bottom-color: rgba(0,0,0,0.1); }
+    .drawer-title-text {
+      font-size: 16px; font-weight: 700;
+      color: var(--text-strong);
+      letter-spacing: -0.2px;
+    }
+    .drawer-title-actions {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .drawer-btn-close {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: #3069e3;
+      border: none;
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .drawer-btn-close:hover { background: #1d4fc4; }
+    .drawer-btn-save-icon {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      border: none;
+      color: var(--text-strong);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    body:not(.dark) .drawer-btn-save-icon { background: rgba(0,0,0,0.1); }
+    .drawer-btn-save-icon:hover { background: rgba(255,255,255,0.2); }
+
+    .drawer-persistent-header {
+      display: flex;
+      align-items: center;
+      padding: 12px 24px 0;
+      flex-shrink: 0;
+    }
+    .drawer-persistent-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Persistent header */
+    .drawer-persistent {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px 24px;
+      flex-shrink: 0;
+    }
+    .persist-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .persist-field {
+      display: flex; flex-direction: column; gap: 8px;
+      flex-shrink: 0;
+    }
+    .persist-divider-v {
+      width: 1px;
+      height: 36px;
+      background: rgba(255,255,255,0.1);
+      flex-shrink: 0;
+    }
+    body:not(.dark) .persist-divider-v { background: rgba(0,0,0,0.1); }
+    .persist-label {
+      font-size: 11px; font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    /* Persistent header vertical dividers */
+    .persist-divider {
+      width: 1px;
+      align-self: stretch;
+      background: rgba(255,255,255,0.1);
+      margin: 0 4px;
+      flex-shrink: 0;
+    }
+    body:not(.dark) .persist-divider { background: rgba(0,0,0,0.1); }
+
+    /* Group: Override Type + conditional field sit side by side */
+    .persist-field--group { flex-shrink: 0; }
+    .persist-group-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 0;
+    }
+    .persist-subfield { display: flex; flex-direction: column; gap: 8px; }
+    .persist-subfield + .persist-subfield {
+      border-left: 2px solid rgba(255,255,255,0.12);
+      padding-left: 12px;
+      margin-left: 12px;
+    }
+    body:not(.dark) .persist-subfield + .persist-subfield {
+      border-left-color: rgba(0,0,0,0.1);
+    }
+
+    /* Status toggle */
+    .toggle-wrap { display: flex; align-items: center; gap: 8px; }
+    .toggle-track {
+      width: 40px; height: 22px;
+      border-radius: 11px;
+      background: rgba(255,255,255,0.15);
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle-track.on { background: #3069e3; }
+    .toggle-knob {
+      position: absolute; top: 3px; left: 3px;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.2s;
+    }
+    .toggle-track.on .toggle-knob { transform: translateX(18px); }
+    .toggle-state {
+      font-size: 13px; font-weight: 500;
+      color: var(--text-muted);
+    }
+    .toggle-track.on + .toggle-state { color: var(--text-strong); }
+
+    /* Persistent select */
+    .persist-select-wrap { position: relative; display: inline-block; }
+    .persist-select-wrap::after {
+      content: "";
+      pointer-events: none;
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0; height: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 5px solid var(--text-muted);
+    }
+    .persist-select {
+      appearance: none;
+      -webkit-appearance: none;
+      background: #1C1C1E;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 6px;
+      color: var(--text-strong);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      padding: 7px 32px 7px 10px;
+      min-width: 180px;
+      cursor: pointer;
+    }
+    body:not(.dark) .persist-select {
+      background: #fff;
+      border-color: rgba(0,0,0,0.15);
+    }
+
+    /* Radio group */
+    .radio-group { display: flex; gap: 20px; align-items: center; padding-top: 4px; }
+    .radio-opt {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 500;
+      color: var(--text-strong);
+      cursor: pointer;
+    }
+    .radio-opt input[type=radio] {
+      accent-color: #3069e3;
+      width: 14px; height: 14px;
+      cursor: pointer;
+    }
+
+    .drawer-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.08);
+      margin: 0 24px;
+      flex-shrink: 0;
+    }
+    body:not(.dark) .drawer-divider { background: rgba(0,0,0,0.08); }
+
+    /* Step indicator */
+    .drawer-steps {
+      display: flex;
+      align-items: center;
+      padding: 20px 24px 0;
+      gap: 0;
+      flex-shrink: 0;
+    }
+    .step-item {
+      display: flex; align-items: center; gap: 8px;
+      flex: 1;
+      color: var(--text-muted);
+      font-size: 13px; font-weight: 500;
+      cursor: pointer;
+      transition: color 0.12s;
+    }
+    .step-item:hover { color: var(--text-strong); }
+    .step-item:not(:last-child)::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.1);
+      margin: 0 12px;
+    }
+    body:not(.dark) .step-item:not(:last-child)::after { background: rgba(0,0,0,0.1); }
+    .step-num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+    }
+    .step-item.active { color: #3069e3; }
+    .step-item.active .step-num { background: #3069e3; color: #fff; }
+    .step-item.done { color: var(--text-muted); }
+    .step-item.done .step-num {
+      background: rgba(255,255,255,0.08);
+      color: var(--text-muted);
+    }
+
+    /* Step content */
+    .drawer-body {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+    }
+    .step-content { display: none; }
+    .step-content.active { display: block; }
+
+    .form-field { margin-bottom: 18px; }
+    .field-label {
+      display: block;
+      font-size: 12px; font-weight: 600;
+      color: var(--text-strong);
+      margin-bottom: 6px;
+    }
+    .field-input {
+      width: 380px;
+      background: #1C1C1E;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      color: var(--text-strong);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      padding: 9px 12px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .field-input--full { width: 100%; }
+    .field-input:focus { border-color: #3069e3; }
+    .field-input::placeholder { color: var(--text-muted); }
+    body:not(.dark) .field-input {
+      background: #fff;
+      border-color: rgba(0,0,0,0.12);
+    }
+    /* V4 full page takeover */
+    #v4-page {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg-page);
+    }
+    #v4-page.active {
+      display: flex;
+    }
+    .v4-title-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 20px 40px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+    body:not(.dark) .v4-title-bar { border-bottom-color: rgba(0,0,0,0.08); }
+    .v4-back-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      background: transparent;
+      border: none;
+      color: var(--text-strong);
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .v4-back-btn:hover { background: var(--nav-hover); }
+    .v4-title-text {
+      font-size: 16px; font-weight: 700;
+      color: var(--text-strong);
+      letter-spacing: -0.2px;
+    }
+    .v4-steps {
+      display: flex;
+      align-items: center;
+      padding: 24px 40px 0;
+      flex-shrink: 0;
+    }
+    .v4-step-item {
+      display: flex; align-items: center; gap: 8px;
+      flex: 1;
+      color: var(--text-muted);
+      font-size: 13px; font-weight: 500;
+      cursor: pointer;
+      transition: color 0.12s;
+    }
+    .v4-step-item:hover { color: var(--text-strong); }
+    .v4-step-item:not(:last-child)::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.1);
+      margin: 0 12px;
+    }
+    body:not(.dark) .v4-step-item:not(:last-child)::after { background: rgba(0,0,0,0.1); }
+    .v4-step-num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .v4-step-item.active { color: #3069e3; }
+    .v4-step-item.active .v4-step-num { background: #3069e3; color: #fff; }
+    .v4-step-item.done { color: var(--text-muted); }
+    .v4-step-item.done .v4-step-num { background: rgba(255,255,255,0.08); color: var(--text-muted); }
+    .v4-body {
+      flex: 1;
+      padding: 32px 40px;
+      overflow-y: auto;
+    }
+    .v4-step-content { display: none; }
+    .v4-step-content.active { display: block; }
+    .v4-footer {
+      display: flex; align-items: center;
+      padding: 16px 40px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+      gap: 8px;
+    }
+    body:not(.dark) .v4-footer { border-top-color: rgba(0,0,0,0.08); }
+
+    /* V2 single-page sections */
+    .v2-section {
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    body:not(.dark) .v2-section { border-color: rgba(0,0,0,0.08); }
+    .v2-section-title {
+      font-size: 12px; font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    body:not(.dark) .v2-section-title {
+      background: rgba(0,0,0,0.02);
+      border-bottom-color: rgba(0,0,0,0.06);
+    }
+    .v2-section-body { padding: 16px; }
+    .v2-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: flex-end;
+    }
+    .v2-row .form-field { margin-bottom: 0; }
+
+    /* Review step */
+    .review-intro {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .review-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .review-section {
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    body:not(.dark) .review-section { border-color: rgba(0,0,0,0.08); }
+    .review-section-title {
+      font-size: 11px; font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 8px 14px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    body:not(.dark) .review-section-title {
+      background: rgba(0,0,0,0.02);
+      border-bottom-color: rgba(0,0,0,0.06);
+    }
+    .review-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .review-row:last-child { border-bottom: none; }
+    body:not(.dark) .review-row { border-bottom-color: rgba(0,0,0,0.04); }
+    .review-label {
+      font-size: 12px; font-weight: 500;
+      color: var(--text-muted);
+    }
+    .review-value {
+      font-size: 13px; font-weight: 600;
+      color: var(--text-strong);
+      padding: 0 14px 10px;
+    }
+    .review-row .review-value {
+      padding: 0;
+      text-align: right;
+    }
+    .review-pills {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      padding: 10px 14px;
+    }
+    .review-pill {
+      padding: 3px 10px;
+      background: rgba(48,105,227,0.12);
+      border: 1px solid rgba(48,105,227,0.25);
+      border-radius: 20px;
+      font-size: 11px; font-weight: 500;
+      color: var(--text-strong);
+    }
+
+    /* Field error state */
+    .field-error-msg {
+      display: none;
+      font-size: 11px;
+      font-weight: 500;
+      color: #e74c3c;
+      margin-top: 5px;
+    }
+    .field-input.error {
+      border-color: #e74c3c !important;
+    }
+    .field-select-wrap.error select {
+      border-color: #e74c3c !important;
+    }
+    .location-pills-wrap.error .field-select-wrap select {
+      border-color: #e74c3c !important;
+    }
+
+    .location-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .location-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      background: rgba(48,105,227,0.15);
+      border: 1px solid rgba(48,105,227,0.35);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-strong);
+      white-space: nowrap;
+    }
+    .location-pill-x {
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1;
+      transition: color 0.12s;
+    }
+    .location-pill-x:hover { color: #e74c3c; }
+
+    .field-select-wrap {
+      position: relative;
+      display: inline-block;
+      width: 380px;
+    }
+    .field-select-wrap select {
+      width: 100%;
+    }
+    .field-select-wrap::after {
+      content: "";
+      pointer-events: none;
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0; height: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 5px solid var(--text-muted);
+    }
+
+    .field-date {
+      color-scheme: dark;
+      cursor: pointer;
+    }
+    body:not(.dark) .field-date {
+      color-scheme: light;
+    }
+
+    .field-select {
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      background: #1C1C1E;
+    }
+    body:not(.dark) .field-select { background: #ffffff; }
+
+
+
+    .associate-row {
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .btn-associate {
+      padding: 8px 16px;
+      background: #3069e3;
+      color: #fff;
+      border: none; border-radius: 6px;
+      font-size: 13px; font-weight: 600;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-associate:hover { background: #1d4fc4; }
+
+    /* Footer */
+    .drawer-footer {
+      display: flex; align-items: center;
+      padding: 16px 24px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+      gap: 8px;
+    }
+    body:not(.dark) .drawer-footer { border-top-color: rgba(0,0,0,0.08); }
+    .btn-back {
+      padding: 8px 16px;
+      background: #3069e3;
+      color: #fff;
+      border: none; border-radius: 6px;
+      font-size: 13px; font-weight: 600;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-back:hover { background: #1d4fc4; }
+    .btn-next {
+      padding: 8px 16px;
+      background: #3069e3;
+      color: #fff;
+      border: none; border-radius: 6px;
+      font-size: 13px; font-weight: 600;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-next:hover { background: #1d4fc4; }
+    .btn-save {
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.1);
+      color: var(--text-muted);
+      border: none; border-radius: 6px;
+      font-size: 13px; font-weight: 600;
+      font-family: var(--font-sans);
+      cursor: not-allowed;
+    }
+    .btn-save:not([disabled]) {
+      background: #3069e3;
+      color: #fff;
+      cursor: pointer;
+    }
+  </style>
+
+  <script>
+    (function() {
+      // Dark is default — only go light if explicitly saved
+      try {
+        if (localStorage.getItem('slump-override-theme') !== 'light') {
+          document.body.classList.add('dark');
+        }
+      } catch { document.body.classList.add('dark'); }
+
+      var vpBtn   = document.getElementById('vp-opts-btn');
+      var vpDd    = document.getElementById('vp-opts-dd');
+      var actBtn  = document.getElementById('actions-btn');
+      var actDd   = document.getElementById('actions-dd');
+
+      function closeAll() {
+        vpDd.classList.remove('open');
+        actDd.classList.remove('open');
+      }
+
+      vpBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var isOpen = vpDd.classList.contains('open');
+        closeAll();
+        if (!isOpen) vpDd.classList.add('open');
+      });
+      vpDd.addEventListener('click', function(e) { e.stopPropagation(); });
+
+      actBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var isOpen = actDd.classList.contains('open');
+        closeAll();
+        if (!isOpen) actDd.classList.add('open');
+      });
+      actDd.addEventListener('click', function(e) { e.stopPropagation(); });
+
+      document.addEventListener('click', closeAll);
+
+      // ── V4 full page ─────────────────────────────────────────
+      var v4Page      = document.getElementById('v4-page');
+      var mainTabBar  = document.querySelector('.tab-bar');
+      var mainContent = document.querySelector('.page-content');
+      var v4CurrentStep = 1;
+
+      function v4GoToStep(n) {
+        v4CurrentStep = n;
+        document.querySelectorAll('.v4-step-content').forEach(function(el) { el.classList.remove('active'); });
+        document.getElementById('v4-step-' + n).classList.add('active');
+        document.querySelectorAll('.v4-step-item').forEach(function(el) {
+          var s = parseInt(el.dataset.vstep);
+          el.classList.remove('active', 'done');
+          if (s === n) el.classList.add('active');
+          else if (s < n) el.classList.add('done');
+        });
+        var back = document.getElementById('v4-back');
+        var next = document.getElementById('v4-next');
+        var save = document.getElementById('v4-save');
+        back.style.display = n > 1 ? 'inline-flex' : 'none';
+        next.style.display = n < 4 ? 'inline-flex' : 'none';
+        save.style.display = n === 4 ? 'inline-flex' : 'none';
+      }
+
+      document.getElementById('v4-next').addEventListener('click', function() {
+        if (v4CurrentStep < 4) v4GoToStep(v4CurrentStep + 1);
+      });
+      document.getElementById('v4-back').addEventListener('click', function() {
+        if (v4CurrentStep > 1) v4GoToStep(v4CurrentStep - 1);
+      });
+
+      function validateV4StepForward(from) {
+        var ok = true;
+        if (from === 2) {
+          if (v4SelectedLocs.length === 0) { showError('v4-loc-error'); ok = false; }
+          else hideError('v4-loc-error');
+        }
+        if (from === 3) {
+          var mix = document.getElementById('v4-mix-code');
+          if (!mix || mix.value === '') { showError('mix-error'); ok = false; }
+          else hideError('mix-error');
+        }
+        if (from === 4) {
+          var type = document.getElementById('v4-override-type');
+          if (!type || type.value === '') { showError('v4-type-error'); ok = false; }
+          else hideError('v4-type-error');
+        }
+        return ok;
+      }
+
+      // Clear V4 errors on change
+      document.addEventListener('change', function(e) {
+        if (e.target && e.target.id === 'v4-mix-code' && e.target.value !== '') hideError('mix-error');
+        if (e.target && e.target.id === 'v4-location-select') hideError('v4-loc-error');
+        if (e.target && e.target.id === 'v4-override-type' && e.target.value !== '') hideError('v4-type-error');
+      });
+
+      // Override V4 Next to validate
+      document.getElementById('v4-next').removeEventListener('click', null);
+      document.getElementById('v4-next').addEventListener('click', function() {
+        if (v4CurrentStep < 4) {
+          if (validateV4StepForward(v4CurrentStep)) v4GoToStep(v4CurrentStep + 1);
+        }
+      }, true);
+
+      // Click V4 step indicator to jump
+      document.querySelectorAll('.v4-step-item').forEach(function(el) {
+        el.addEventListener('click', function() {
+          var s = parseInt(this.dataset.vstep);
+          if (s < v4CurrentStep) {
+            v4GoToStep(s);
+          } else if (s === v4CurrentStep + 1) {
+            if (validateV4StepForward(v4CurrentStep)) v4GoToStep(s);
+          } else if (s <= v4CurrentStep) {
+            v4GoToStep(s);
+          }
+        });
+      });
+      document.getElementById('v4-close').addEventListener('click', function() {
+        v4Page.style.display = 'none';
+        mainTabBar.style.display  = '';
+        mainContent.style.display = '';
+        // Reset version check back to V1
+        currentVersion = 1;
+        document.querySelectorAll('.version-opt').forEach(function(r) {
+          r.querySelector('svg:last-child').style.opacity = '0';
+        });
+        var v1opt = document.querySelector('.version-opt[data-version="1"] svg:last-child');
+        if (v1opt) v1opt.style.opacity = '1';
+      });
+
+      // V4 status toggle
+      var v4StatusTrack = document.getElementById('v4-status-track');
+      var v4StatusState = document.getElementById('v4-status-state');
+      var v4StatusOn = true;
+      if (v4StatusTrack) {
+        v4StatusTrack.addEventListener('click', function() {
+          v4StatusOn = !v4StatusOn;
+          v4StatusTrack.classList.toggle('on', v4StatusOn);
+          v4StatusState.textContent = v4StatusOn ? 'Active' : 'Inactive';
+        });
+      }
+
+      // V4 override type dynamic field
+      var v4TypeSelect = document.getElementById('v4-override-type');
+      var v4ExtraField = document.getElementById('v4-extra-field');
+      var v4ExtraLabel = document.getElementById('v4-extra-label');
+      var v4ExtraInput = document.getElementById('v4-extra-input');
+      function v4UpdateExtra(val) {
+        if (!v4ExtraField) return;
+        if (val === 'add') {
+          v4ExtraField.style.display = 'block';
+          v4ExtraLabel.textContent = 'Add Sub To Target Slump';
+          v4ExtraInput.placeholder = 'Add Sub To Target Slump';
+        } else if (val === 'target') {
+          v4ExtraField.style.display = 'block';
+          v4ExtraLabel.textContent = 'New Target Slump (in)';
+          v4ExtraInput.placeholder = 'New Target Slump';
+        } else {
+          v4ExtraField.style.display = 'none';
+        }
+      }
+      if (v4TypeSelect) v4TypeSelect.addEventListener('change', function() { v4UpdateExtra(this.value); });
+
+      // V4 location pills
+      var v4LocSelect  = document.getElementById('v4-location-select');
+      var v4LocPills   = document.getElementById('v4-location-pills');
+      var v4SelectedLocs = [];
+      function v4RenderPills() {
+        if (!v4LocPills) return;
+        v4LocPills.innerHTML = '';
+        v4SelectedLocs.forEach(function(loc) {
+          var pill = document.createElement('div');
+          pill.className = 'location-pill';
+          pill.innerHTML = loc + '<span class="location-pill-x" data-loc="' + loc + '">✕</span>';
+          pill.querySelector('.location-pill-x').addEventListener('click', function() {
+            var l = this.getAttribute('data-loc');
+            v4SelectedLocs = v4SelectedLocs.filter(function(x) { return x !== l; });
+            v4RenderPills();
+          });
+          v4LocPills.appendChild(pill);
+        });
+      }
+      if (v4LocSelect) {
+        v4LocSelect.addEventListener('change', function() {
+          var val = this.value;
+          if (!val || v4SelectedLocs.indexOf(val) !== -1) { this.value = ''; return; }
+          v4SelectedLocs.push(val);
+          v4RenderPills();
+          this.value = '';
+        });
+      }
+
+      // V4 save validation
+      var v4SaveBtn = document.getElementById('v4-save');
+      var v4MixCode = document.getElementById('v4-mix-code');
+      function v4ValidateSave() {
+        var typeOk = v4TypeSelect && v4TypeSelect.value !== '';
+        var locOk  = v4SelectedLocs.length > 0;
+        var mixOk  = v4MixCode && v4MixCode.value.trim() !== '';
+        if (v4SaveBtn) {
+          if (typeOk && locOk && mixOk) { v4SaveBtn.removeAttribute('disabled'); }
+          else { v4SaveBtn.setAttribute('disabled', ''); }
+        }
+      }
+      if (v4MixCode) { v4MixCode.addEventListener('change', v4ValidateSave); v4MixCode.addEventListener('input', v4ValidateSave); }
+      if (v4TypeSelect) v4TypeSelect.addEventListener('change', v4ValidateSave);
+
+      // V4 save handler
+      if (v4SaveBtn) {
+        v4SaveBtn.addEventListener('click', function() {
+          if (v4SaveBtn.hasAttribute('disabled')) return;
+          var orderVal  = document.getElementById('v4-order') && document.getElementById('v4-order').value || '—';
+          var locList   = v4SelectedLocs.length > 0 ? v4SelectedLocs.join(', ') : '—';
+          var statusActive = document.getElementById('v4-status-track').classList.contains('on');
+          var slumpChecked = document.querySelector('input[name="v4-slump"]:checked');
+          var slumpVal  = slumpChecked ? slumpChecked.value : 'show';
+          addRowToTable(orderVal, locList, statusActive, slumpVal);
+          // Reset
+          v4Page.style.display = 'none';
+          mainTabBar.style.display = '';
+          mainContent.style.display = '';
+          v4SelectedLocs = [];
+          v4RenderPills();
+          if (v4TypeSelect) v4TypeSelect.value = '';
+          if (v4MixCode) v4MixCode.value = '';
+          var v4Order = document.getElementById('v4-order');
+          if (v4Order) v4Order.value = '';
+          v4GoToStep(1);
+          currentVersion = 1;
+        });
+      }
+
+      // Version switcher
+      var v1Body    = document.querySelector('.drawer-body:not(#drawer-body-v2)');
+      var v2Body    = document.getElementById('drawer-body-v2');
+      var v1Steps   = document.querySelector('.drawer-steps');
+      var v1Footer  = document.getElementById('drawer-footer-v1');
+      var v2Footer  = document.getElementById('drawer-footer-v2');
+      var v1PersistHeader = document.querySelector('.drawer-persistent-header:last-of-type');
+      var currentVersion = 1;
+
+      var step4Indicator = document.getElementById('step-4-indicator');
+
+      function showDrawer() {
+        var overlay = document.getElementById('drawer-overlay');
+        var drawer  = document.getElementById('drawer');
+        overlay.classList.add('open');
+        drawer.classList.add('open');
+      }
+
+      function hideDrawer() {
+        var overlay = document.getElementById('drawer-overlay');
+        var drawer  = document.getElementById('drawer');
+        overlay.classList.remove('open');
+        drawer.classList.remove('open');
+      }
+
+      var versionNames = {
+        1: 'Step by Step',
+        2: 'All at Once',
+        3: 'Step by Step + Review',
+        4: 'Full Page'
+      };
+      var vpTag = document.getElementById('vp-version-tag');
+
+      function switchVersion(v) {
+        currentVersion = v;
+        if (vpTag) vpTag.textContent = 'Slump Override — ' + (versionNames[v] || 'v' + v);
+
+        // Always hide v4 first
+        if (v4Page) v4Page.style.display = 'none';
+        if (mainTabBar) mainTabBar.style.display = '';
+        if (mainContent) mainContent.style.display = '';
+
+        if (v === 1) {
+          maxStep = 3;
+          v1Body.style.display   = 'block';
+          v2Body.style.display   = 'none';
+          v1Steps.style.display  = 'flex';
+          v1Footer.style.display = 'flex';
+          v2Footer.style.display = 'none';
+          if (step4Indicator) step4Indicator.style.display = 'none';
+          goToStep(1);
+        } else if (v === 2) {
+          maxStep = 3;
+          v1Body.style.display   = 'none';
+          v2Body.style.display   = 'block';
+          v1Steps.style.display  = 'none';
+          v1Footer.style.display = 'none';
+          v2Footer.style.display = 'flex';
+          if (step4Indicator) step4Indicator.style.display = 'none';
+        } else if (v === 3) {
+          maxStep = 4;
+          v1Body.style.display   = 'block';
+          v2Body.style.display   = 'none';
+          v1Steps.style.display  = 'flex';
+          v1Footer.style.display = 'flex';
+          v2Footer.style.display = 'none';
+          if (step4Indicator) step4Indicator.style.display = 'flex';
+          goToStep(1);
+        } else if (v === 4) {
+          // Just set the version — takeover happens when Actions is clicked
+          hideDrawer();
+        }
+      }
+
+      document.querySelectorAll('.version-opt').forEach(function(row) {
+        row.addEventListener('click', function() {
+          var v = parseInt(this.getAttribute('data-version'));
+          document.querySelectorAll('.version-opt').forEach(function(r) {
+            r.querySelector('svg:last-child').style.opacity = '0';
+          });
+          this.querySelector('svg:last-child').style.opacity = '1';
+          switchVersion(v);
+          closeAll();
+        });
+      });
+
+      // V2 Status toggle
+      var v2Track = document.getElementById('v2-status-track');
+      var v2State = document.getElementById('v2-status-state');
+      var v2StatusOn = true;
+      if (v2Track) {
+        v2Track.addEventListener('click', function() {
+          v2StatusOn = !v2StatusOn;
+          v2Track.classList.toggle('on', v2StatusOn);
+          v2State.textContent = v2StatusOn ? 'Active' : 'Inactive';
+        });
+      }
+
+      // V2 Override Type dynamic field
+      var v2TypeSelect  = document.getElementById('v2-override-type');
+      var v2ExtraField  = document.getElementById('v2-extra-field');
+      var v2ExtraLabel  = document.getElementById('v2-extra-label');
+      var v2ExtraInput  = document.getElementById('v2-extra-input');
+
+      function updateV2ExtraField(val) {
+        if (!v2ExtraField) return;
+        if (val === 'add') {
+          v2ExtraField.style.display = 'block';
+          v2ExtraLabel.textContent = 'Add Sub To Target Slump';
+          v2ExtraInput.placeholder = 'Add Sub To Target Slump';
+        } else if (val === 'target') {
+          v2ExtraField.style.display = 'block';
+          v2ExtraLabel.textContent = 'New Target Slump (in)';
+          v2ExtraInput.placeholder = 'New Target Slump';
+        } else {
+          v2ExtraField.style.display = 'none';
+        }
+        validateV2();
+      }
+
+      if (v2TypeSelect) {
+        v2TypeSelect.addEventListener('change', function() { updateV2ExtraField(this.value); validateV2(); });
+      }
+
+      // V2 location pills
+      var v2LocationSelect = document.getElementById('v2-location-select');
+      var v2LocationPills  = document.getElementById('v2-location-pills');
+      var v2SelectedLocs   = [];
+
+      function renderV2Pills() {
+        if (!v2LocationPills) return;
+        v2LocationPills.innerHTML = '';
+        v2SelectedLocs.forEach(function(loc) {
+          var pill = document.createElement('div');
+          pill.className = 'location-pill';
+          pill.innerHTML = loc + '<span class="location-pill-x" data-loc="' + loc + '">✕</span>';
+          pill.querySelector('.location-pill-x').addEventListener('click', function() {
+            var l = this.getAttribute('data-loc');
+            v2SelectedLocs = v2SelectedLocs.filter(function(x) { return x !== l; });
+            renderV2Pills();
+            validateV2();
+          });
+          v2LocationPills.appendChild(pill);
+        });
+        validateV2();
+      }
+
+      if (v2LocationSelect) {
+        v2LocationSelect.addEventListener('change', function() {
+          var val = this.value;
+          if (!val || v2SelectedLocs.indexOf(val) !== -1) { this.value = ''; return; }
+          v2SelectedLocs.push(val);
+          renderV2Pills();
+          validateV2();
+          this.value = '';
+        });
+      }
+
+      // V2 Save validation
+      var v2SaveBtn  = document.getElementById('v2-save-btn');
+      var v2MixCode  = document.getElementById('v2-mix-code');
+
+      function validateV2() {
+        var typeEl = document.getElementById('override-type-select'); // shared persistent header
+        var mixEl  = document.getElementById('v2-mix-code');
+        var typeOk = typeEl && typeEl.value !== '';
+        var locOk  = v2SelectedLocs.length > 0;
+        var mixOk  = mixEl && mixEl.value !== '';
+        var btn    = document.getElementById('v2-save-btn');
+        if (btn) {
+          if (typeOk && locOk && mixOk) { btn.removeAttribute('disabled'); }
+          else { btn.setAttribute('disabled', ''); }
+        }
+      }
+
+      // V2 mix code event delegation
+      document.addEventListener('change', function(e) {
+        if (e.target && e.target.id === 'v2-mix-code') validateV2();
+      });
+
+      // V2 save handler
+      if (v2SaveBtn) {
+        v2SaveBtn.addEventListener('click', function() {
+          if (v2SaveBtn.hasAttribute('disabled')) return;
+          var orderVal  = document.querySelector('#drawer-body-v2 input[placeholder="Order Number"]');
+          var orderText = orderVal && orderVal.value ? orderVal.value : '—';
+          var locList   = v2SelectedLocs.length > 0 ? v2SelectedLocs.join(', ') : '—';
+          var statusActive = document.getElementById('v2-status-track') && document.getElementById('v2-status-track').classList.contains('on');
+          var slumpChecked = document.querySelector('input[name="v2-slump"]:checked');
+          var slumpVal  = slumpChecked ? slumpChecked.value : 'show';
+          addRowToTable(orderText, locList, statusActive, slumpVal);
+          // Reset
+          if (orderVal) orderVal.value = '';
+          v2SelectedLocs = [];
+          renderV2Pills();
+          if (v2TypeSelect) v2TypeSelect.value = '';
+          if (v2MixCode) v2MixCode.value = '';
+          closeDrawer();
+        });
+      }
+
+      // Theme toggle
+      document.getElementById('theme-toggle-row').addEventListener('click', function() {
+        var isDark = document.body.classList.toggle('dark');
+        try { localStorage.setItem('slump-override-theme', isDark ? 'dark' : 'light'); } catch {}
+      });
+
+      // ── Drawer ──────────────────────────────────────────────
+      var overlay = document.getElementById('drawer-overlay');
+      var drawer  = document.getElementById('drawer');
+      var currentStep = 1;
+
+      function openDrawer() {
+        overlay.classList.add('open');
+        drawer.classList.add('open');
+        goToStep(1);
+      }
+
+      function closeDrawer() {
+        overlay.classList.remove('open');
+        drawer.classList.remove('open');
+      }
+
+      // Open via Actions > Add New Slump Override
+      document.querySelectorAll('.dd-item').forEach(function(item) {
+        if (item.textContent.trim() === 'Add New Slump Override') {
+          item.addEventListener('click', function() {
+            closeAll();
+            if (currentVersion === 4) {
+              mainTabBar.style.display   = 'none';
+              mainContent.style.display  = 'none';
+              v4Page.style.display       = 'flex';
+              v4Page.style.flexDirection = 'column';
+              v4Page.style.flex          = '1';
+              v4Page.style.overflow      = 'hidden';
+              v4GoToStep(1);
+            } else {
+              openDrawer();
+            }
+          });
+        }
+      });
+
+      overlay.addEventListener('click', closeDrawer);
+      document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+      drawer.addEventListener('click', function(e) { e.stopPropagation(); });
+
+      // ── Location pills ───────────────────────────────────────
+      var locationSelect = document.getElementById('location-select');
+      var locationPills  = document.getElementById('location-pills');
+      var selectedLocations = [];
+
+      if (locationSelect) {
+        locationSelect.addEventListener('change', function() {
+          var val = this.value;
+          if (!val || selectedLocations.indexOf(val) !== -1) {
+            this.value = '';
+            return;
+          }
+          selectedLocations.push(val);
+          renderPills();
+          this.value = '';
+        });
+      }
+
+      function renderPills() {
+        locationPills.innerHTML = '';
+        selectedLocations.forEach(function(loc) {
+          var pill = document.createElement('div');
+          pill.className = 'location-pill';
+          pill.innerHTML = loc + '<span class="location-pill-x" data-loc="' + loc + '">✕</span>';
+          pill.querySelector('.location-pill-x').addEventListener('click', function() {
+            var l = this.getAttribute('data-loc');
+            selectedLocations = selectedLocations.filter(function(x) { return x !== l; });
+            renderPills();
+          });
+          locationPills.appendChild(pill);
+        });
+      }
+
+      // ── Step navigation ──────────────────────────────────────
+      var maxStep = 3; // 3 for V1/V2, 4 for V3
+
+      function populateReview() {
+        // Status
+        var statusEl = document.getElementById('rv-status');
+        if (statusEl) statusEl.textContent = document.getElementById('status-state').textContent;
+
+        // Override Type
+        var typeEl = document.getElementById('rv-type');
+        var typeSelect = document.getElementById('override-type-select');
+        var typeText = typeSelect && typeSelect.value ? typeSelect.options[typeSelect.selectedIndex].text : 'Not set';
+        if (typeEl) typeEl.textContent = typeText;
+
+        // Extra field
+        var extraField = document.getElementById('extra-field');
+        var rvExtraRow = document.getElementById('rv-extra-row');
+        if (extraField && extraField.style.display !== 'none') {
+          rvExtraRow.style.display = 'flex';
+          document.getElementById('rv-extra-label').textContent = document.getElementById('extra-label').textContent;
+          document.getElementById('rv-extra-val').textContent = document.getElementById('extra-input').value || '—';
+        } else {
+          if (rvExtraRow) rvExtraRow.style.display = 'none';
+        }
+
+        // Slump display
+        var slumpEl = document.getElementById('rv-slump');
+        var slumpChecked = document.querySelector('input[name="slump-display"]:checked');
+        if (slumpEl) slumpEl.textContent = slumpChecked ? (slumpChecked.value === 'show' ? 'Shown' : 'Hidden') : '—';
+
+        // Order number
+        var orderEl = document.getElementById('rv-order');
+        var orderInput = document.querySelector('#step-1 input[placeholder="Order Number"]');
+        if (orderEl) orderEl.textContent = orderInput && orderInput.value ? orderInput.value : '—';
+
+        // Date
+        var dateEl = document.getElementById('rv-date');
+        var dateInput = document.querySelector('#step-1 input[type="date"]');
+        if (dateEl) dateEl.textContent = dateInput && dateInput.value ? dateInput.value : '—';
+
+        // Locations
+        var locsEl = document.getElementById('rv-locations');
+        if (locsEl) {
+          if (selectedLocations.length === 0) {
+            locsEl.innerHTML = '<span style="padding:10px 14px;display:block;">—</span>';
+          } else {
+            var pillsHtml = '<div class="review-pills">';
+            selectedLocations.forEach(function(l) {
+              pillsHtml += '<span class="review-pill">' + l + '</span>';
+            });
+            pillsHtml += '</div>';
+            locsEl.innerHTML = pillsHtml;
+          }
+        }
+
+        // Mix code
+        var mixEl = document.getElementById('rv-mix');
+        var mixInput = document.getElementById('step3-mix-code');
+        if (mixEl) mixEl.textContent = mixInput && mixInput.value ? mixInput.value : '—';
+      }
+
+      function goToStep(n) {
+        currentStep = n;
+
+        // Populate review when entering step 4
+        if (n === 4) populateReview();
+        // Re-validate save when reaching final step
+        if (n === maxStep) validateSave();
+
+        // Update step content
+        document.querySelectorAll('.step-content').forEach(function(el) {
+          el.classList.remove('active');
+        });
+        document.getElementById('step-' + n).classList.add('active');
+
+        // Update step indicators
+        document.querySelectorAll('.step-item').forEach(function(el) {
+          var s = parseInt(el.dataset.step);
+          el.classList.remove('active', 'done');
+          if (s === n) el.classList.add('active');
+          else if (s < n) el.classList.add('done');
+        });
+
+        // Footer buttons
+        var back = document.getElementById('step-back');
+        var next = document.getElementById('step-next');
+        var save = document.getElementById('step-save');
+
+        back.style.display = n > 1 ? 'inline-flex' : 'none';
+        next.style.display = n < maxStep ? 'inline-flex' : 'none';
+        save.style.display = n === maxStep ? 'inline-flex' : 'none';
+      }
+
+      document.getElementById('step-next').addEventListener('click', function() {
+        if (currentStep < maxStep) goToStep(currentStep + 1);
+      });
+      document.getElementById('step-back').addEventListener('click', function() {
+        if (currentStep > 1) goToStep(currentStep - 1);
+      });
+
+      function showError(id) {
+        var el = document.getElementById(id);
+        if (el) el.style.display = 'block';
+      }
+      function hideError(id) {
+        var el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      }
+
+      function validateStepForward(from) {
+        var ok = true;
+        if (from === 2) {
+          if (selectedLocations.length === 0) { showError('loc-error'); ok = false; }
+          else hideError('loc-error');
+        }
+        if (from === 3) {
+          var mix = document.getElementById('step3-mix-code');
+          if (!mix || mix.value === '') { showError('mix-error'); ok = false; }
+          else hideError('mix-error');
+        }
+        return ok;
+      }
+
+      // Clear errors when fields are filled
+      document.addEventListener('change', function(e) {
+        if (e.target && e.target.id === 'step3-mix-code' && e.target.value !== '') hideError('mix-error');
+        if (e.target && e.target.id === 'location-select') hideError('loc-error');
+      });
+
+      // Override Next to validate before proceeding
+      document.getElementById('step-next').removeEventListener('click', null);
+      document.getElementById('step-next').addEventListener('click', function() {
+        if (currentStep < maxStep) {
+          if (validateStepForward(currentStep)) goToStep(currentStep + 1);
+        }
+      }, true);
+
+      // Click step indicator to jump — validate if going forward
+      document.querySelectorAll('.step-item').forEach(function(el) {
+        el.addEventListener('click', function() {
+          var s = parseInt(this.dataset.step);
+          if (s < currentStep) {
+            goToStep(s);
+          } else if (s === currentStep + 1) {
+            if (validateStepForward(currentStep)) goToStep(s);
+          } else if (s <= currentStep) {
+            goToStep(s);
+          }
+        });
+      });
+
+      // ── Save button validation (V1) ─────────────────────────
+      var saveBtn = document.getElementById('step-save');
+      var mixCodeInput = document.getElementById('step3-mix-code');
+
+      function validateSave() {
+        var typeOk = persistSelect && persistSelect.value !== '' && persistSelect.value !== null;
+        var mixOk  = mixCodeInput && mixCodeInput.value !== '' && mixCodeInput.value !== null;
+
+        if (saveBtn) {
+          if (typeOk && mixOk) {
+            saveBtn.removeAttribute('disabled');
+          } else {
+            saveBtn.setAttribute('disabled', '');
+          }
+        }
+      }
+
+      if (persistSelect) {
+        persistSelect.addEventListener('change', validateSave);
+        persistSelect.addEventListener('input', validateSave);
+      }
+      // Use event delegation for mix code select since it may be hidden on load
+      document.addEventListener('change', function(e) {
+        if (e.target && e.target.id === 'step3-mix-code') {
+          validateSave();
+        }
+      });
+
+
+      function addRowToTable(orderVal, locList, statusActive, slumpVal) {
+        var tbody = document.getElementById('override-tbody');
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td>' + (orderVal || '—') + '</td>' +
+          '<td class="cell-muted">—</td>' +
+          '<td style="max-width:420px;white-space:normal;line-height:1.5;">' + (locList || '—') + '</td>' +
+          '<td class="cell-muted">—</td>' +
+          '<td><span class="status-dot ' + (statusActive ? 'active' : 'inactive') + '"></span></td>' +
+          '<td><span class="slump-badge ' + (slumpVal === 'show' ? 'slump-shown' : 'slump-hidden') + '">' + (slumpVal === 'show' ? 'Shown' : 'Hidden') + '</span></td>' +
+          '<td><button class="row-action" title="Edit"><svg viewBox="0 0 24 24"><use href="#i-edit"/></svg></button></td>';
+        tbody.appendChild(tr);
+        var subtitle = document.querySelector('.page-subtitle');
+        if (subtitle) {
+          var count = tbody.querySelectorAll('tr').length;
+          subtitle.textContent = count + ' element' + (count !== 1 ? 's' : '');
+        }
+      }
+
+      // ── Save — close drawer and add row to table ────────────
+      if (saveBtn) {
+        saveBtn.addEventListener('click', function() {
+          if (saveBtn.hasAttribute('disabled')) return;
+
+          // Collect values
+          var orderInput = document.querySelector('#step-1 input[placeholder="Order Number"]');
+          var orderVal   = orderInput && orderInput.value ? orderInput.value : '—';
+          var typeSelect = document.getElementById('override-type-select');
+          var typeText   = typeSelect && typeSelect.value ? typeSelect.options[typeSelect.selectedIndex].text : '—';
+          var mixSelect  = document.getElementById('step3-mix-code');
+          var mixVal     = mixSelect && mixSelect.value ? mixSelect.value : '—';
+          var locList    = selectedLocations.length > 0 ? selectedLocations.join(', ') : '—';
+          var slumpChecked = document.querySelector('input[name="slump-display"]:checked');
+          var slumpVal   = slumpChecked && slumpChecked.value === 'hide' ? 'hidden' : 'shown';
+          var statusOn_  = document.getElementById('status-track').classList.contains('on');
+
+          // Add row to table
+          addRowToTable(orderVal, locList, statusOn_, slumpVal === 'hide' ? 'hide' : 'show');
+
+          // Reset form fields
+          if (orderInput) orderInput.value = '';
+          if (mixSelect) mixSelect.value = '';
+          selectedLocations = [];
+          renderPills();
+          if (typeSelect) typeSelect.value = '';
+          updateExtraField('');
+          goToStep(1);
+
+          closeDrawer();
+        });
+      }
+
+      // ── Status toggle ────────────────────────────────────────
+      var track = document.getElementById('status-track');
+      var stateLabel = document.getElementById('status-state');
+      var statusOn = true;
+      track.classList.add('on');
+
+      track.addEventListener('click', function() {
+        statusOn = !statusOn;
+        track.classList.toggle('on', statusOn);
+        stateLabel.textContent = statusOn ? 'Active' : 'Inactive';
+      });
+
+      // ── Override Type dynamic field ──────────────────────────
+      var persistSelect = document.getElementById('override-type-select');
+      var mirrorSelect  = null; // removed from step 3
+      var extraField    = document.getElementById('extra-field');
+      var extraLabel    = document.getElementById('extra-label');
+      var extraInput    = document.getElementById('extra-input');
+
+      function updateExtraField(val) {
+        if (!extraField) return;
+        if (val === 'add') {
+          extraField.style.display = 'flex';
+          extraLabel.textContent = 'Add Sub To Target Slump';
+          extraInput.placeholder = 'Add Sub To Target Slump';
+        } else if (val === 'target') {
+          extraField.style.display = 'flex';
+          extraLabel.textContent = 'New Target Slump (in)';
+          extraInput.placeholder = 'New Target Slump';
+        } else {
+          extraField.style.display = 'none';
+        }
+      }
+
+      // Expose globally so inline onchange fallback works
+      window._updateOverrideType = function(val) {
+        if (mirrorSelect) mirrorSelect.value = val;
+        updateExtraField(val);
+        // Also revalidate V2 if active
+        if (currentVersion === 2) validateV2();
+      };
+
+      // Set initial state based on default selected value
+      updateExtraField(persistSelect.value);
+
+      // Keep persistent select in sync (mirror removed)
+      persistSelect.addEventListener('change', function() {
+        if (mirrorSelect) mirrorSelect.value = this.value;
+        updateExtraField(this.value);
+      });
+      persistSelect.addEventListener('input', function() {
+        if (mirrorSelect) mirrorSelect.value = this.value;
+        updateExtraField(this.value);
+      });
+
+
+    })();
+  </script>
+
+</body>
+</html>

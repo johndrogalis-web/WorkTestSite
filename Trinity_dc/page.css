@@ -416,11 +416,13 @@
   body.dark .dt-drawer-ign-badge { background: rgba(46,207,29,0.15); color: #2ecf1d; }
   body.dark .dt-drawer-ign-badge.off { background: rgba(255,255,255,0.06); color: var(--soft); }
 
-  /* Component cards — AA-compliant dark state colors */
+  /* Component cards — dark mode. Card body stays neutral, the strip
+     keeps its tinted background (opacity-based, so it layers over the
+     dark card colour). Text colours get lightened so they read on dark. */
   body.dark .dt-co-card { background: var(--layer-2); border-color: var(--border); }
   body.dark .dt-co-card.clean  { background: var(--layer-1); border-color: var(--border); }
-  body.dark .dt-co-card.warn   { background: var(--layer-2); border-color: rgba(255,186,13,0.3); }
-  body.dark .dt-co-card.alarm  { background: #d70100; border-color: #9a1f1e; }
+  body.dark .dt-co-card.warn   { background: var(--layer-1); border-color: var(--border); }
+  body.dark .dt-co-card.alarm  { background: var(--layer-1); border-color: var(--border); }
   body.dark .dt-co-card.grey   {
     background:
       repeating-linear-gradient(
@@ -432,20 +434,38 @@
       ),
       var(--layer-1);
   }
-  body.dark .dt-co-card.empty  { background: #1a1815; border-color: rgba(255,255,255,0.08); border-style: dashed; }
-  body.dark .dt-co-card.pending { background: #2b1f08; border-color: rgba(255,186,13,0.35) !important; }
-  body.dark .dt-co-card.pending .dt-pending-badge { color: #ffffff; }
-  body.dark .dt-co-card.pending .dt-pending-label { color: #ffffff; }
-  body.dark .dt-co-card.pending .dt-pending-dot { background: #ffba0d; }
+  body.dark .dt-co-card.empty   { background: var(--layer-1); border-color: var(--border); }
+  body.dark .dt-co-card.pending { background: var(--layer-1); border-color: var(--border) !important; }
+  body.dark .dt-co-card.pending .dt-pending-badge { color: #fbbf24; }
+  body.dark .dt-co-card.pending .dt-pending-label { color: #fbbf24; }
+  body.dark .dt-co-card.pending .dt-pending-dot   { background: #fbbf24; }
   body.dark .dt-co-card-name  { color: var(--defined); }
   body.dark .dt-co-card-value { color: var(--strong); }
   body.dark .dt-co-card-unit  { color: var(--soft); }
   body.dark .dt-co-card-desc  { color: var(--soft); }
   body.dark .dt-co-card-meta-label { color: var(--soft); }
-  body.dark .dt-co-card.alarm .dt-co-card-dot { background: #ff4444 !important; }
+  /* Strip text — lighter variants for legibility on dark card */
+  body.dark .dt-co-card.clean   .dt-co-strip { color: #4ade80; }
+  body.dark .dt-co-card.warn    .dt-co-strip { color: #fbbf24; }
+  body.dark .dt-co-card.warn    .dt-co-card-value,
+  body.dark .dt-co-card.warn    .dt-co-card-unit { color: #fbbf24; }
+  body.dark .dt-co-card.alarm   .dt-co-strip { color: #f87171; }
+  body.dark .dt-co-card.alarm   .dt-co-card-value,
+  body.dark .dt-co-card.alarm   .dt-co-card-unit { color: #f87171; }
+  body.dark .dt-co-card.alarm   .dt-co-card-dot { background: #ff4444 !important; }
+  body.dark .dt-co-card.pending .dt-co-strip { color: #fbbf24; }
+  body.dark .dt-co-card.empty   .dt-co-strip { color: var(--soft); }
   body.dark .dt-empty-label { color: var(--soft); }
   body.dark .dt-empty-date  { color: var(--subtle); }
   body.dark .dt-empty-action { color: var(--blue); }
+  /* TCG chip — slightly lighter blue on dark to keep contrast */
+  body.dark .dt-co-tcg-chip {
+    background: rgba(154, 184, 247, 0.16);
+    color: #9ab8f7;
+  }
+  body.dark .dt-co-tcg-chip:hover {
+    background: rgba(154, 184, 247, 0.24);
+  }
 
   /* Replace Components */
   body.dark .co-replace-btn { color: var(--defined); border-color: var(--border); }
@@ -602,7 +622,7 @@
     overflow: hidden;
   }
   body.view-desktop #s-desktop {
-    height: calc(100vh - 52px - 16px);
+    height: calc(100vh - 52px);
   }
   /* On narrow screens the top bar wraps to two rows, so body needs more top padding */
   @media (max-width: 640px) {
@@ -1080,11 +1100,13 @@
   }
 
   /* ── Left Sidebar ── */
+  /* Lives on the page background (var(--base)). No card chrome, no right
+     border — the visual weight should land on the floating content card,
+     not on the sidebar itself. Matches the Trinity shell pattern. */
   .dt-sidebar {
     width:280px; min-width:280px; height:100%;
-    background:#f0ede9;
+    background:var(--base);
     display:flex; flex-direction:column;
-    border-right:1px solid var(--border);
     overflow:hidden; flex-shrink:0;
   }
   .dt-sidebar-brand {
@@ -1187,10 +1209,10 @@
     position:relative;
   }
   body.view-desktop .dt-content {
-    margin: 8px 8px 8px 0;
-    height: calc(100vh - 52px - 16px);
-    border-radius: 12px;
-    box-shadow: 0 2px 16px rgba(54,50,45,0.10);
+    margin: 16px 16px 16px 0;
+    height: calc(100vh - 52px - 32px);
+    border-radius: 8px;
+    border: 1px solid var(--border);
     overflow: hidden;
   }
   body.view-desktop .dt-sidebar {
@@ -1431,15 +1453,118 @@
     0%   { background-position:200% 0; }
     100% { background-position:-200% 0; }
   }
-  .dt-co-card.alarm { background:#d70100; border-color:#9a1f1e; }
-  .dt-co-card.warn  { background:#ffba0d; border-color:#887f13; }
-  .dt-co-card.grey  { background:var(--layer-2); }
-  /* Empty slot */
-  .dt-co-card.empty {
-    background:var(--layer-1);
-    border:1.5px dashed rgba(54,50,45,0.22) !important;
+  /* ── Component Overview cards (desktop / tablet) ─────────────────
+     Card body stays neutral in every state. The state colour lives in
+     three small surfaces: the head dot, the value text, and a bottom
+     status strip that's tinted with opacity (works in dark mode without
+     needing per-mode hex swaps). Inspired by the FST-validated reference
+     where Alarm/Warning don't dominate the dashboard. */
+
+  /* Card needs overflow:hidden so the strip's negative margin clips
+     to the rounded corners. Padding kept at 24 so existing layout math
+     doesn't break — the strip uses margin to escape and re-pads itself. */
+  .dt-co-card { overflow:hidden; }
+
+  /* Status strip — last child of the card, breaks out of card padding */
+  .dt-co-strip {
+    margin: 0 -24px -24px;
+    padding: 12px 24px;
+    font-size: 13px; font-weight: 500;
+    letter-spacing: -0.26px; line-height: 1.3;
+    display: flex; align-items: center; gap: 8px;
+    flex-wrap: wrap;
   }
-  .dt-co-card.empty .dt-co-card-name { color:var(--soft); }
+  .dt-co-strip-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dt-co-strip-link {
+    background: none; border: none; padding: 0;
+    margin-left: auto;
+    font: inherit; font-weight: 500;
+    color: var(--blue); cursor: pointer;
+    text-decoration: none; letter-spacing: -0.24px;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .dt-co-strip-link:hover { text-decoration: underline; }
+
+  /* Normal / clean — card already at default, strip is green-tinted */
+  .dt-co-card.clean .dt-co-strip {
+    background: rgba(22,163,74,0.08);
+    color: #166534;
+    border-top: 1px solid rgba(22,163,74,0.18);
+  }
+  .dt-co-card.clean .dt-co-strip-dot { background: #16a34a; }
+
+  /* Warning — neutral card, amber accents */
+  .dt-co-card.warn {
+    background: var(--layer-1);
+    border-color: var(--border);
+  }
+  .dt-co-card.warn .dt-co-card-name  { color: var(--strong); }
+  .dt-co-card.warn .dt-co-card-value { color: #b45309; }
+  .dt-co-card.warn .dt-co-card-unit  { color: #b45309; }
+  .dt-co-card.warn .dt-co-card-desc  { color: var(--soft); }
+  .dt-co-card.warn .dt-co-card-dot   { background: #d97706 !important; }
+  .dt-co-card.warn .dt-co-strip {
+    background: rgba(217,119,6,0.10);
+    color: #92400e;
+    border-top: 1px solid rgba(217,119,6,0.22);
+  }
+  .dt-co-card.warn .dt-co-strip-dot { background: #d97706; }
+
+  /* Alarm — neutral card, red accents only on dot/value/strip */
+  .dt-co-card.alarm {
+    background: var(--layer-1);
+    border-color: var(--border);
+  }
+  .dt-co-card.alarm .dt-co-card-name  { color: var(--strong); }
+  .dt-co-card.alarm .dt-co-card-value { color: #bc302f; }
+  .dt-co-card.alarm .dt-co-card-unit  { color: #bc302f; }
+  .dt-co-card.alarm .dt-co-card-desc  { color: var(--soft); }
+  .dt-co-card.alarm .dt-co-card-dot   { background: #d70100 !important; }
+  .dt-co-card.alarm .dt-co-strip {
+    background: rgba(215,1,0,0.10);
+    color: #9a1f1e;
+    border-top: 1px solid rgba(215,1,0,0.22);
+  }
+  .dt-co-card.alarm .dt-co-strip-dot { background: #d70100; }
+
+  /* Pending verification — neutral card, amber dot + amber strip with link */
+  .dt-co-card.pending {
+    background: var(--layer-1);
+    border-color: var(--border) !important;
+  }
+  .dt-co-card.pending .dt-co-card-name  { color: var(--strong); }
+  .dt-co-card.pending .dt-co-card-value { color: var(--strong); }
+  .dt-co-card.pending .dt-co-card-unit  { color: var(--soft); }
+  .dt-co-card.pending .dt-co-card-dot   { background: #d97706 !important; }
+  .dt-co-card.pending .dt-co-strip {
+    background: rgba(217,119,6,0.10);
+    color: #92400e;
+    border-top: 1px solid rgba(217,119,6,0.22);
+  }
+  .dt-co-card.pending .dt-co-strip-dot { background: #d97706; }
+
+  /* Not Installed — neutral card with solid border + grey-tinted strip */
+  .dt-co-card.empty {
+    background: var(--layer-1);
+    border: 1px solid var(--border) !important;
+  }
+  .dt-co-card.empty .dt-co-card-name  { color: var(--soft); }
+  .dt-co-card.empty .dt-co-card-value { color: var(--soft); }
+  .dt-co-card.empty .dt-co-strip {
+    background: rgba(54,50,45,0.05);
+    color: var(--soft);
+    border-top: 1px solid rgba(54,50,45,0.10);
+  }
+  .dt-co-card.empty .dt-co-strip-dot {
+    background: transparent;
+    border: 1.5px dashed rgba(54,50,45,0.45);
+    width: 9px; height: 9px;
+  }
+  .dt-co-card.grey  { background:var(--layer-2); }
+  /* Empty slot icon kept for legacy markup — unused once new strip rolls out */
   .dt-empty-slot-icon {
     width:36px; height:36px; border-radius:50%;
     background:rgba(54,50,45,0.06);
@@ -1448,18 +1573,33 @@
   .dt-empty-label { font-size:13px; color:var(--soft); letter-spacing:-0.26px; }
   .dt-empty-date  { font-size:11px; color:rgba(54,50,45,0.38); letter-spacing:-0.22px; }
   .dt-empty-action { font-size:12px; font-weight:500; color:var(--blue); letter-spacing:-0.24px; cursor:pointer; }
-  /* Pending verification */
-  .dt-co-card.pending {
-    background:#fffbeb;
-    border-color:rgba(180,130,0,0.3) !important;
-  }
-  .dt-co-card.pending .dt-co-card-name { color:var(--strong); }
+  /* Legacy pending badge / label / dot — kept so old markup doesn't blow
+     up during transition. The new strip is the source of truth. */
   .dt-pending-badge {
     display:inline-flex; align-items:center; gap:5px;
     font-size:11px; font-weight:500; color:#92400e; letter-spacing:-0.22px;
   }
   .dt-pending-dot { width:7px; height:7px; border-radius:50%; background:#d97706; flex-shrink:0; }
   .dt-pending-label { font-size:12px; color:#92400e; letter-spacing:-0.24px; }
+
+  /* TCG persistent "Replace separately" chip — sits next to the version
+     pill in the card head. Always visible (not just in replace mode) to
+     teach the FST that TCG has a dedicated flow without needing to enter
+     replace mode first. */
+  .dt-co-tcg-chip {
+    display:inline-flex; align-items:center; gap:4px;
+    background: rgba(48,105,227,0.10);
+    color: var(--blue);
+    padding: 3px 8px; border-radius: 32px;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.3px; text-transform: uppercase;
+    cursor: pointer;
+    border: none; font-family: var(--font);
+    white-space: nowrap;
+  }
+  .dt-co-tcg-chip:hover {
+    background: rgba(48,105,227,0.16);
+  }
 
   /* Desktop replace mode */
   .dt-replace-mode .dt-drawer-cards .dt-co-card,
@@ -5409,23 +5549,85 @@
   }
   .ping-btn:active { opacity:0.85; }
   .co-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:8px; }
-  .co-card { background:var(--layer-1); border:1px solid var(--border); border-radius:16px; padding:16px; display:flex; flex-direction:column; gap:10px; height:200px; overflow:hidden; box-sizing:border-box; }
-  .co-card--fault { background:#bc302f; border-color:#bc302f; }
-  .co-card--warn { background:#fffbeb; border-color:rgba(180,130,0,0.3); }
+  .co-card { background:var(--layer-1); border:1px solid var(--border); border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:8px; min-height:208px; overflow:hidden; box-sizing:border-box; position:relative; }
   .co-card-head { display:flex; align-items:center; gap:8px; }
   .co-card-head span { font-size:14px; font-weight:500; color:var(--strong); letter-spacing:-0.28px; }
-  .co-card--fault .co-card-head span { color:white; }
   .co-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
   .co-dot--green { background:#16a34a; }
+  .co-dot--amber { background:#d97706; }
+  .co-dot--red   { background:#d70100; }
   .co-dot--grey  { background:#36322d4d; }
   .co-dot--white { background:white; }
-  .co-value { font-size:36px; font-weight:500; color:var(--strong); line-height:1; letter-spacing:-1px; }
-  .co-card--fault .co-value { color:white; }
+  .co-value { font-size:32px; font-weight:500; color:var(--strong); line-height:1; letter-spacing:-1px; }
   .co-unit { font-size:14px; font-weight:500; color:var(--strong); letter-spacing:-0.3px; }
-  .co-card--fault .co-unit { color:white; }
-  .co-fault-msg { font-size:13px; color:white; letter-spacing:-0.2px; line-height:1.3; }
+  .co-desc { font-size:12px; color:var(--soft); letter-spacing:-0.2px; line-height:1.35; }
+  .co-meta { font-size:11px; color:var(--soft); letter-spacing:-0.2px; line-height:1.4; margin-top:auto; }
+  .co-meta-row { display:flex; justify-content:space-between; gap:8px; }
+
+  /* ── Bottom status strip (mobile) ── */
+  .co-strip {
+    margin: 0 -14px -14px;
+    padding: 9px 14px;
+    font-size: 12px; font-weight: 500;
+    letter-spacing: -0.24px; line-height: 1.3;
+    display: flex; align-items: center; gap: 7px;
+    flex-wrap: wrap;
+    margin-top: auto;
+  }
+  .co-strip-dot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  }
+  .co-strip-link {
+    background: none; border: none; padding: 0;
+    margin-left: auto;
+    font: inherit; font-weight: 500;
+    color: var(--blue); cursor: pointer;
+    letter-spacing: -0.24px;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+
+  /* Normal */
+  .co-card--clean .co-strip {
+    background: rgba(22,163,74,0.08);
+    color: #166534;
+    border-top: 1px solid rgba(22,163,74,0.18);
+  }
+  .co-card--clean .co-strip-dot { background: #16a34a; }
+
+  /* Warning — neutral body, amber accents */
+  .co-card--warn {
+    background: var(--layer-1);
+    border-color: var(--border);
+  }
+  .co-card--warn .co-card-head span { color: var(--strong); }
+  .co-card--warn .co-value { color: #b45309; }
+  .co-card--warn .co-unit  { color: #b45309; }
+  .co-card--warn .co-strip {
+    background: rgba(217,119,6,0.10);
+    color: #92400e;
+    border-top: 1px solid rgba(217,119,6,0.22);
+  }
+  .co-card--warn .co-strip-dot { background: #d97706; }
+
+  /* Alarm — neutral body, red accents only */
+  .co-card--fault {
+    background: var(--layer-1);
+    border-color: var(--border);
+  }
+  .co-card--fault .co-card-head span { color: var(--strong); }
+  .co-card--fault .co-value { color: #bc302f; }
+  .co-card--fault .co-unit  { color: #bc302f; }
+  .co-card--fault .co-strip {
+    background: rgba(215,1,0,0.10);
+    color: #9a1f1e;
+    border-top: 1px solid rgba(215,1,0,0.22);
+  }
+  .co-card--fault .co-strip-dot { background: #d70100; }
+  /* Legacy white fault-msg killed by neutral palette */
+  .co-card--fault .co-fault-msg { color: #9a1f1e; }
+
   /* flip card */
-  .co-card-flip { perspective:600px; cursor:pointer; position:relative; border-radius:16px; overflow:visible; height:200px; }
+  .co-card-flip { perspective:600px; cursor:pointer; position:relative; border-radius:16px; overflow:visible; min-height:208px; }
   .co-card-flip-inner { height:100%; }
   .co-card-flip .co-card-front { height:100%; box-sizing:border-box; overflow:hidden; }
   .co-card-flip-inner { position:relative; transform-style:preserve-3d; transition:transform 0.45s ease; }
@@ -5433,17 +5635,26 @@
   .co-card-front, .co-card-back { backface-visibility:hidden; -webkit-backface-visibility:hidden; }
   .co-card-back { position:absolute; top:0; left:0; right:0; bottom:0; transform:rotateY(180deg); border-radius:16px; overflow:hidden; }
 
-  .co-card--warn { background:#ffba0d; border-color:#887f13; }
-  .co-card--warn .co-card-head span { color:var(--strong); }
-  .co-card--warn .co-value { color:var(--strong); }
-  .co-card--warn .co-unit { color:var(--strong); }
-  /* Empty slot — component physically removed */
+  /* Not Installed — solid border, grey strip */
   .co-card--empty {
-    background:var(--layer-1); border:1.5px dashed rgba(54,50,45,0.25);
-    border-radius:16px; padding:16px;
-    display:flex; flex-direction:column; gap:10px;
+    background:var(--layer-1); border:1px solid var(--border);
+    border-radius:16px; padding:14px;
+    display:flex; flex-direction:column; gap:8px;
+    min-height: 208px;
+    overflow: hidden;
   }
   .co-card--empty .co-card-head span { color:var(--soft); }
+  .co-card--empty .co-value { color: var(--soft); }
+  .co-card--empty .co-strip {
+    background: rgba(54,50,45,0.05);
+    color: var(--soft);
+    border-top: 1px solid rgba(54,50,45,0.10);
+  }
+  .co-card--empty .co-strip-dot {
+    background: transparent;
+    border: 1.5px dashed rgba(54,50,45,0.45);
+    width: 9px; height: 9px;
+  }
   .co-empty-slot-icon {
     width:32px; height:32px; border-radius:50%;
     background:rgba(54,50,45,0.06);
@@ -5456,13 +5667,21 @@
     font-size:12px; font-weight:500; color:var(--blue);
     letter-spacing:-0.24px; margin-top:2px; cursor:pointer;
   }
-  /* Pending verification — replacement recorded, awaiting Error Reset */
+  /* Pending verification — neutral body, amber strip */
   .co-card--pending {
-    background:#fffbeb; border:1px solid rgba(180,130,0,0.3);
-    border-radius:16px; padding:16px;
-    display:flex; flex-direction:column; gap:10px;
+    background:var(--layer-1); border:1px solid var(--border);
+    border-radius:16px; padding:14px;
+    display:flex; flex-direction:column; gap:8px;
+    min-height: 208px;
+    overflow: hidden;
   }
   .co-card--pending .co-card-head span { color:var(--strong); }
+  .co-card--pending .co-strip {
+    background: rgba(217,119,6,0.10);
+    color: #92400e;
+    border-top: 1px solid rgba(217,119,6,0.22);
+  }
+  .co-card--pending .co-strip-dot { background: #d97706; }
   .co-pending-badge {
     display:inline-flex; align-items:center; gap:5px;
     font-size:11px; font-weight:500; color:#92400e;
@@ -5473,6 +5692,18 @@
     background:#d97706; flex-shrink:0;
   }
   .co-pending-label { font-size:12px; color:#92400e; letter-spacing:-0.24px; }
+
+  /* TCG persistent chip (mobile) */
+  .co-tcg-chip {
+    display:inline-flex; align-items:center; gap:3px;
+    background: rgba(48,105,227,0.10);
+    color: var(--blue);
+    padding: 2px 7px; border-radius: 32px;
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 0.3px; text-transform: uppercase;
+    cursor: pointer; border: none; font-family: var(--font);
+    white-space: nowrap;
+  }
 
   /* ── Chunk 2: Replace Components mode ── */
   /* Mobile replace toolbar */
@@ -5514,14 +5745,12 @@
     transition:all 0.2s cubic-bezier(0.34,1.56,0.64,1);
     transform:scale(1); opacity:1;
   }
-  /* Alarm cards — white hollow circle on red */
-  .co-replace-mode .co-card--fault::before {
-    border-color:rgba(255,255,255,0.5); background:rgba(255,255,255,0.15);
-  }
-  /* Selected: amber fill + white check */
+  /* Cards are neutral now — no special ring needed for fault state */
+  /* Selected: amber fill + white check (works on any state since cards are neutral) */
   .co-replace-mode .co-card.co-selected::before,
   .co-replace-mode .co-card--empty.co-selected::before,
-  .co-replace-mode .co-card--pending.co-selected::before {
+  .co-replace-mode .co-card--pending.co-selected::before,
+  .co-replace-mode .co-card--fault.co-selected::before {
     background:#d97706; border-color:#d97706;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8' fill='none'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     background-repeat:no-repeat; background-position:center; background-size:10px 8px;
@@ -5529,29 +5758,21 @@
   }
   .co-replace-mode .co-card.co-selected,
   .co-replace-mode .co-card--empty.co-selected,
-  .co-replace-mode .co-card--pending.co-selected {
+  .co-replace-mode .co-card--pending.co-selected,
+  .co-replace-mode .co-card--fault.co-selected {
     transform:scale(1.03);
     box-shadow:0 0 0 2px #d97706, 0 4px 12px rgba(217,119,6,0.2);
   }
-  /* WDS flip card selected — no amber outline, dark overlay on inner fault card */
+  /* WDS flip card selected — same amber outline now that inner card is neutral */
   .co-replace-mode .co-card-flip.co-selected {
     transform:scale(1.03);
-  }
-  .co-replace-mode .co-card-flip.co-selected .co-card--fault {
-    box-shadow:inset 0 0 0 1000px rgba(0,0,0,0.22), 0 0 0 2px #9a1f1e;
-    overflow:hidden;
+    box-shadow:0 0 0 2px #d97706, 0 4px 12px rgba(217,119,6,0.2);
+    border-radius:16px;
   }
   /* Amber check on WDS flip when selected */
   .co-replace-mode .co-card-flip.co-selected::before {
     background:#d97706; border-color:#d97706;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8' fill='none'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-repeat:no-repeat; background-position:center; background-size:10px 8px;
-    transform:scale(1.15);
-  }
-  /* Fault card selected — white circle, red check */
-  .co-replace-mode .co-card--fault.co-selected::before {
-    background:white; border-color:white;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8' fill='none'%3E%3Cpath d='M1 4l3 3 5-6' stroke='%23bc302f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     background-repeat:no-repeat; background-position:center; background-size:10px 8px;
     transform:scale(1.15);
   }

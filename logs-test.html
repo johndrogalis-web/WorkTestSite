@@ -1,0 +1,3011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verifi — Truck Logs</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!--
+  VERIFI TICKETS — PROTOTYPE SHELL
+  ─────────────────────────────────────────────────────────────────────
+  Template for the seven Verifi prototypes. Single-file. No build.
+
+  RESPONSIVE
+    desktop · persistent 280px sidebar
+    tablet  · iPad bezel, slide-out sidebar from left, scrim overlay
+    mobile  · iPhone bezel, same slide-out pattern as tablet
+
+  STRUCTURE (top to bottom)
+    [1] SHELL CSS · tokens, control bar, sidebar, frame, tablet+mobile
+    [2] FEATURE CSS · empty, tk- prefix
+    [3] SHELL HTML · control bar, top strip, sidebar, content, drawer
+    [4] FEATURE HTML · feature-mount, swap for real content
+    [5] SHELL JS · render config, hash router, view+dark+drawer+sidebar
+    [6] FEATURE JS · empty
+
+  TO REUSE
+    · Update <title> and SHELL_CONFIG.projectKey
+    · Build feature with a 2-letter CSS/JS prefix (tk-, dc-, mx-, etc.)
+─────────────────────────────────────────────────────────────────────
+-->
+
+<style>
+/* [1] SHELL CSS */
+
+/* 1.1 Trinity Design Tokens */
+:root {
+  --base:        #f6f4f2;
+  --layer-1:     #ffffff;
+  --layer-2:     #f6f4f2;
+  --strong:      #36322d;
+  --defined:     #36322dc2;
+  --soft:        #36322d9e;
+  --subtle:      #36322d80;
+  --border:      #36322d24;
+  --border-mid:  rgba(54,50,45,0.30);
+  --blue:        #3069e3;
+  --blue-link:   #295ccc;
+  --red:         #d70100;
+  --amber:       #ffba0d;
+
+  --radius-sm:   4px;
+  --radius-md:   16px;
+  --radius-lg:   20px;
+  --radius-pill: 32px;
+
+  --font:        'ABC Repro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-mono:   'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --vp-bar-h:    44px;
+  --sidebar-w:   280px;
+}
+
+body.dark {
+  --base:       #171614;
+  --layer-1:    #211f1c;
+  --layer-2:    #2f2d28;
+  --strong:     #ffffff;
+  --defined:    #e5e5e5de;
+  --soft:       #e5e5e5bf;
+  --subtle:     #e5e5e566;
+  --border:     #e5e5e51f;
+  --border-mid: rgba(229,229,229,0.25);
+  --blue:       #6492f1;
+  --blue-link:  #6492f1;
+}
+
+/* 1.2 Reset + Base */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+body {
+  font-family: var(--font);
+  background: var(--base);
+  color: var(--strong);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+}
+body.dark { background: #1a1917; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; padding: 0; color: inherit; }
+input  { font-family: inherit; }
+
+/* 1.3 Dark Control Bar (vp-) */
+/* Persists across every prototype. Logo + project tag on the left,
+   viewport pills + options on the right. */
+.vp-bar {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--vp-bar-h);
+  background: rgba(20,18,16,0.97);
+  color: #fff;
+  display: flex; align-items: center;
+  padding: 0 16px;
+  z-index: 1000;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+body.dark .vp-bar {
+  background: rgba(10,9,8,0.97);
+  border-bottom-color: rgba(255,255,255,0.08);
+}
+.vp-brand { display: flex; align-items: center; gap: 10px; }
+.vp-tag {
+  font-size: 10px; font-weight: 500;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.4px; text-transform: uppercase;
+  padding: 2px 6px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 4px;
+}
+
+.vp-right-cluster {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 12px;
+}
+
+.vp-pills {
+  display: flex; gap: 2px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 2px;
+}
+.vp-pill {
+  font-size: 12px; font-weight: 500;
+  letter-spacing: -0.24px;
+  color: rgba(255,255,255,0.6);
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+.vp-pill:hover { color: #fff; }
+.vp-pill.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+
+/* Options dropdown */
+.vp-opts-wrap { position: relative; }
+.vp-opts-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 10px;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  border-radius: 8px;
+  font-size: 12px; font-weight: 500;
+  letter-spacing: -0.24px;
+  transition: background 0.15s;
+}
+.vp-opts-btn:hover { background: rgba(255,255,255,0.14); }
+.vp-opts-dd {
+  position: absolute;
+  top: calc(100% + 6px); right: 0;
+  min-width: 200px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  padding: 6px;
+  display: none;
+  z-index: 1100;
+}
+.vp-opts-dd.open { display: block; }
+body.dark .vp-opts-dd {
+  background: #1a1917;
+  border-color: rgba(255,255,255,0.1);
+}
+.vp-opts-section-label {
+  font-size: 10px; font-weight: 600;
+  color: var(--soft);
+  text-transform: uppercase; letter-spacing: 0.4px;
+  padding: 8px 10px 4px;
+}
+body.dark .vp-opts-section-label { color: rgba(255,255,255,0.35); }
+.vp-opts-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  border-radius: 8px;
+  color: var(--strong);
+  cursor: pointer;
+}
+.vp-opts-row:hover { background: var(--layer-2); }
+body.dark .vp-opts-row { color: rgba(255,255,255,0.8); }
+body.dark .vp-opts-row:hover { background: rgba(255,255,255,0.06); }
+.vp-dark-toggle {
+  width: 32px; height: 18px;
+  border-radius: 9px;
+  background: rgba(54,50,45,0.25);
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.vp-dark-toggle-knob {
+  position: absolute; top: 2px; left: 2px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+}
+body.dark .vp-dark-toggle { background: var(--blue); }
+body.dark .vp-dark-toggle-knob { transform: translateX(14px); }
+
+/* 1.4 App Frame */
+/* The .app contains the sidebar + content. Positioning is supplied by the
+   parent .frame so the same .app block can render full-bleed on desktop
+   or inside a tablet bezel without structural changes. */
+.app {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  background: var(--base);
+  overflow: hidden;
+  position: relative;
+}
+
+/* 1.5 Sidebar */
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  background: var(--base);
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 32px;
+  overflow: hidden;
+}
+
+.sidebar-brand {
+  padding: 8px;
+  display: flex; align-items: center;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.sidebar-nav {
+  flex: 1;
+  min-height: 0; /* required for overflow-y:auto to work in a flex column */
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  /* Hide the scrollbar by default; show it only when the user is interacting
+     with the sidebar. Matches the Figma's at-rest appearance. */
+  scrollbar-width: none;
+}
+.sidebar-nav::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+.sidebar:hover .sidebar-nav {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.sidebar:hover .sidebar-nav::-webkit-scrollbar { width: 6px; }
+.sidebar:hover .sidebar-nav::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+/* Flat nav link (Home, Return Concrete, footer items) */
+.nav-link {
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  letter-spacing: -0.28px;
+  color: var(--strong);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  text-decoration: none;
+  user-select: none;
+}
+.nav-link:hover { background: rgba(54,50,45,0.04); }
+body.dark .nav-link { color: rgba(255,255,255,0.82); }
+body.dark .nav-link:hover { background: rgba(255,255,255,0.06); }
+
+.nav-icon {
+  width: 16px; height: 16px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--strong);
+}
+.nav-icon svg { width: 100%; height: 100%; }
+body.dark .nav-icon { color: rgba(255,255,255,0.85); }
+
+/* Flat link active (Home, Return Concrete) */
+.nav-link.active {
+  background: var(--blue);
+  color: #fff;
+}
+.nav-link.active:hover { background: var(--blue); }
+.nav-link.active .nav-icon { color: #fff; }
+body.dark .nav-link.active,
+body.dark .nav-link.active:hover {
+  background: #e3f200;
+  color: #000;
+}
+body.dark .nav-link.active .nav-icon { color: #000; }
+
+/* Nav group (Tickets, DC, Mix, Insights) */
+.nav-group { display: flex; flex-direction: column; }
+.nav-group-header {
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  letter-spacing: -0.28px;
+  color: var(--strong);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s;
+}
+.nav-group-header:hover { background: rgba(54,50,45,0.04); }
+body.dark .nav-group-header { color: rgba(255,255,255,0.82); }
+body.dark .nav-group-header:hover { background: rgba(255,255,255,0.06); }
+
+.nav-chev {
+  width: 16px; height: 16px;
+  flex-shrink: 0;
+  transition: transform 0.18s;
+  color: var(--strong);
+  opacity: 0.6;
+}
+.nav-group.collapsed .nav-chev { transform: rotate(-90deg); }
+.nav-group.collapsed .nav-children {
+  max-height: 0;
+  overflow: hidden;
+}
+.nav-children {
+  display: flex; flex-direction: column;
+  max-height: 800px;
+  overflow: hidden;
+  transition: max-height 0.22s ease;
+}
+
+/* Parent header doesn't change weight when a child is active —
+   the active state lives entirely on the child pill. */
+
+/* Child sub-page link */
+.nav-child {
+  padding: 12px 12px 12px 44px;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  letter-spacing: -0.28px;
+  color: var(--subtle);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  text-decoration: none;
+  user-select: none;
+}
+.nav-child:hover { background: rgba(54,50,45,0.04); color: var(--defined); }
+body.dark .nav-child { color: rgba(255,255,255,0.45); }
+body.dark .nav-child:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); }
+
+/* Active child — strong blue pill (lime yellow in dark mode) */
+.nav-child.active {
+  background: var(--blue);
+  color: #fff;
+}
+.nav-child.active:hover { background: var(--blue); color: #fff; }
+body.dark .nav-child.active,
+body.dark .nav-child.active:hover {
+  background: #e3f200;
+  color: #000;
+}
+
+/* "New" badge for Returned Concrete */
+.nav-badge {
+  margin-left: auto;
+  font-size: 12px; font-weight: 500;
+  color: var(--blue-link);
+  border: 2px solid var(--blue-link);
+  border-radius: 16px;
+  padding: 2px 8px;
+  letter-spacing: -0.24px;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+body.dark .nav-badge { color: var(--blue); border-color: var(--blue); }
+
+/* Account picker (sits above the footer) */
+.acct-picker {
+  display: flex; align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--layer-1);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.12s;
+}
+.acct-picker:hover { background: var(--layer-2); }
+body.dark .acct-picker {
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(255,255,255,0.1);
+}
+body.dark .acct-picker:hover { background: rgba(255,255,255,0.06); }
+.acct-label {
+  font-size: 10px; font-weight: 600;
+  color: var(--soft);
+  letter-spacing: 0.4px; text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.acct-current {
+  font-size: 14px; font-weight: 500;
+  color: var(--strong);
+  letter-spacing: -0.28px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.acct-chev-inline {
+  width: 14px; height: 14px;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+  opacity: 0.6;
+}
+.acct-picker.open .acct-chev-inline { transform: rotate(180deg); }
+.acct-dd {
+  display: none;
+  position: absolute;
+  left: 0; right: 0;
+  bottom: calc(100% + 6px);
+  background: var(--layer-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 -4px 16px rgba(54,50,45,0.12);
+  padding: 6px;
+  z-index: 200;
+}
+.acct-picker.open .acct-dd { display: block; }
+body.dark .acct-dd {
+  background: #1a1917;
+  border-color: rgba(255,255,255,0.1);
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.4);
+}
+.acct-dd-label {
+  font-size: 10px; font-weight: 600;
+  color: var(--soft);
+  letter-spacing: 0.4px; text-transform: uppercase;
+  padding: 6px 10px 8px;
+}
+.acct-option {
+  display: flex; align-items: center;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: var(--strong);
+  cursor: pointer;
+}
+.acct-option:hover { background: var(--layer-2); }
+body.dark .acct-option { color: rgba(255,255,255,0.85); }
+body.dark .acct-option:hover { background: rgba(255,255,255,0.06); }
+.acct-option.selected { font-weight: 500; color: var(--blue); }
+.acct-option-check {
+  width: 14px; height: 14px;
+  margin-left: auto;
+  opacity: 0;
+  color: var(--blue);
+}
+.acct-option.selected .acct-option-check { opacity: 1; }
+
+/* Sidebar footer (Profile, Support, Settings) */
+.sidebar-footer {
+  display: flex; flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* 1.6 Content Area */
+.content {
+  flex: 1;
+  min-width: 0;
+  padding: 16px 16px 16px 0;
+  display: flex;
+}
+
+.content-card {
+  flex: 1;
+  background: var(--layer-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+body.dark .content-card {
+  background: var(--layer-1);
+  border-color: rgba(255,255,255,0.08);
+}
+
+.content-header {
+  padding: 32px 32px 16px;
+  flex-shrink: 0;
+}
+.page-title {
+  font-family: var(--font);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--strong);
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.content-body {
+  flex: 1;
+  overflow: auto;
+  padding: 8px 32px 32px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Feature mount placeholder */
+.feature-mount {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  padding: 40px;
+  color: var(--soft);
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+}
+.feature-mount-tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border: 1px dashed var(--blue);
+  border-radius: 6px;
+  background: rgba(48,105,227,0.06);
+}
+.feature-mount-title {
+  font-size: 18px; font-weight: 500;
+  letter-spacing: -0.36px;
+  color: var(--strong);
+}
+.feature-mount-sub {
+  font-size: 13px;
+  color: var(--soft);
+  letter-spacing: -0.13px;
+  max-width: 380px;
+  line-height: 1.55;
+}
+
+/* 1.7 Drawer Scaffold */
+.drawer-scrim {
+  position: fixed; inset: 0;
+  background: rgba(20,18,16,0.42);
+  z-index: 1500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+.drawer-scrim.open { opacity: 1; pointer-events: auto; }
+
+.drawer {
+  position: fixed;
+  top: var(--vp-bar-h);
+  bottom: 0;
+  right: 0;
+  /* Heavy panel — large enough to hold maps, charts, two-column forms,
+     and message threads. clamp() keeps it sane across viewport sizes:
+     65% of viewport, floor 880px on smaller windows, ceiling 1240px on
+     ultrawides so it never feels endless. */
+  width: clamp(880px, 65vw, 1240px);
+  max-width: calc(100vw - 80px);
+  background: var(--layer-1);
+  border-left: 1px solid var(--border);
+  border-radius: 20px 0 0 20px;
+  box-shadow: -12px 0 32px rgba(20,18,16,0.08);
+  z-index: 1600;
+  transform: translateX(100%);
+  transition: transform 0.26s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.drawer.open { transform: translateX(0); }
+body.dark .drawer {
+  border-left-color: rgba(255,255,255,0.1);
+  box-shadow: -12px 0 32px rgba(0,0,0,0.4);
+}
+.drawer-chrome {
+  display: flex; align-items: center;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+  flex-shrink: 0;
+}
+body.dark .drawer-chrome { border-bottom-color: rgba(255,255,255,0.08); }
+
+/* Title — sits on the left, button cluster pushed right via margin-left:auto */
+.drawer-chrome-title {
+  font-size: 13px; font-weight: 500;
+  color: var(--strong);
+  letter-spacing: -0.13px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
+}
+
+/* Button cluster — ‹ › grouped tight, ✕ separated by 8px */
+.drawer-chrome-actions {
+  margin-left: auto;
+  display: flex; align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.drawer-chrome-nav {
+  display: flex; align-items: center;
+  gap: 8px;
+}
+
+/* Base button — 32×32 pill */
+.drawer-chrome-btn {
+  width: 32px; height: 32px;
+  border-radius: 32px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+/* Outlined ‹ › buttons — white bg, discrete border, strong icon */
+.drawer-chrome-btn--nav {
+  background: var(--layer-1);
+  border: 1px solid var(--border);
+  color: var(--strong);
+}
+.drawer-chrome-btn--nav:hover {
+  background: var(--layer-2);
+  border-color: rgba(54,50,45,0.24);
+}
+.drawer-chrome-btn--nav:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.drawer-chrome-btn--nav:disabled:hover {
+  background: var(--layer-1);
+  border-color: var(--border);
+}
+body.dark .drawer-chrome-btn--nav {
+  background: transparent;
+  border-color: rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.9);
+}
+body.dark .drawer-chrome-btn--nav:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.3);
+}
+
+/* Solid ✕ button — strong dark bg, white icon */
+.drawer-chrome-btn--close {
+  background: var(--strong);
+  color: var(--layer-1);
+}
+.drawer-chrome-btn--close:hover {
+  background: #1f1c18;
+}
+body.dark .drawer-chrome-btn--close {
+  background: rgba(255,255,255,0.92);
+  color: var(--strong);
+}
+body.dark .drawer-chrome-btn--close:hover {
+  background: rgba(255,255,255,1);
+}
+
+.drawer-body { flex: 1; overflow-y: auto; padding: 20px; }
+
+/* ─── 1.8 Tablet + Mobile Overrides ─────────────────────────────────────
+   Both tablet and mobile share the same structural pattern:
+   • a warm-grey top strip (hamburger + centered logo + reserved cluster)
+   • a slide-in sidebar that overlays the content with a scrim
+   • a full-takeover drawer (not a side panel like desktop)
+   • the whole UI wrapped in a device bezel
+
+   Only the dimensions differ — tablet uses the iPad ratio, mobile uses
+   the iPhone ratio. Shared rules use :is(.view-tablet, .view-mobile) so
+   adding more device sizes later is a one-line change.
+─────────────────────────────────────────────────────────────────────── */
+
+/* Shared "desk" background and centering for any device view */
+
+/* Shared frame styling — outline bezel, drop shadow, ratio-driven width.
+   Each device sets its own aspect-ratio + height clamp below. */
+body:is(.view-tablet, .view-mobile) .frame {
+  position: relative;
+  top: auto; left: auto; right: auto; bottom: auto;
+  transform: none;
+  outline: 12px solid #2a2a2a;
+  outline-offset: 0;
+  background: var(--base);
+  flex-shrink: 0;
+  box-shadow: 0 24px 60px rgba(20,18,16,0.18);
+}
+
+/* Tablet — iPad portrait, 834:1194 (≈0.698), 24px corner radius */
+
+/* Mobile — iPhone portrait, 393:852 (≈0.461), 40px corner radius */
+
+/* Speaker bar inside the top of the bezel — shared shape, slightly smaller
+   on mobile to look proportional. */
+body:is(.view-tablet, .view-mobile) .frame::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a1a;
+  z-index: 9;
+}
+body.view-tablet .frame::before {
+  top: 14px;
+  width: 120px;
+  height: 8px;
+  border-radius: 4px;
+}
+body.view-mobile .frame::before {
+  top: 10px;
+  width: 70px;
+  height: 5px;
+  border-radius: 3px;
+}
+
+/* Top strip (hamburger + centered π + reserved cluster) */
+body:is(.view-tablet, .view-mobile) .tb-strip { display: flex; }
+
+/* Circular hamburger / X button on the left */
+
+
+/* Centered π/wordmark */
+
+/* Right cluster — search + bell, reserved but invisible */
+
+/* App fills the frame below the strip, sidebar overlays. */
+body:is(.view-tablet, .view-mobile) .app {
+  position: static;
+  flex: 1;
+  flex-direction: column;
+  background: transparent;
+  overflow: hidden;
+}
+body:is(.view-tablet, .view-mobile) .sidebar {
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  z-index: 1450;
+  transform: translateX(-100%);
+  transition: transform 0.24s ease;
+  box-shadow: 4px 0 16px rgba(20,18,16,0.08);
+  border-radius: 14px 0 0 14px;
+}
+body.view-tablet .sidebar { width: 320px; }
+/* Mobile sidebar fills more of the screen since the screen is narrower */
+body.view-mobile .sidebar { width: 85%; max-width: 320px; }
+body:is(.view-tablet, .view-mobile).sidebar-open .sidebar {
+  transform: translateX(0);
+}
+body:is(.view-tablet, .view-mobile) .sidebar-brand {
+  /* Tablet/mobile sidebars use their own X + logo header (tb-sidebar-header) */
+  display: none;
+}
+
+body:is(.view-tablet, .view-mobile) .tb-sidebar-header { display: flex; }
+
+
+/* Scrim sits inside the .frame, darkens only the device content */
+body:is(.view-tablet, .view-mobile) .sidebar-scrim { display: block; }
+body:is(.view-tablet, .view-mobile).sidebar-open .sidebar-scrim { opacity: 1; }
+body:is(.view-tablet, .view-mobile):not(.sidebar-open) .sidebar-scrim { pointer-events: none; }
+
+/* Content padding inside device views */
+body:is(.view-tablet, .view-mobile) .content {
+  padding: 0 16px 16px;
+  width: 100%;
+}
+/* Mobile content gets slightly tighter padding because the screen is narrow */
+body.view-mobile .content {
+  padding: 0 8px 8px;
+}
+body.view-mobile .content-header { padding: 16px 16px 8px; }
+body.view-mobile .content-body { padding: 8px 16px 16px; }
+
+/* ── Device drawer takeover ──
+   Tablet and mobile both replace the desktop side-drawer with a full
+   takeover that slides in from the right inside the bezel. */
+body:is(.view-tablet, .view-mobile) .drawer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  border-left: none;
+  box-shadow: none;
+  transform: translateX(100%);
+  border-radius: inherit;
+}
+body:is(.view-tablet, .view-mobile) .drawer.open {
+  transform: translateX(0);
+}
+body:is(.view-tablet, .view-mobile) .drawer-scrim {
+  /* Takeover is opaque — no scrim needed. */
+  display: none;
+}
+.frame {
+  position: fixed;
+  top: var(--vp-bar-h);
+  left: 0; right: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--base);
+}
+
+/* [2] FEATURE CSS */
+
+/* ── Truck drawer layout ── */
+.drawer-body {
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  height: 100%;
+  padding: 0;
+}
+.tl-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+}
+.tl-side {
+  width: 400px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--layer-1);
+}
+
+/* ── Truck header ── */
+.tl-hdr {
+  padding: 20px 24px 0;
+  flex-shrink: 0;
+  background: var(--layer-1);
+}
+.tl-hdr-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+.tl-truck-label {
+  font-size: 22px;
+  letter-spacing: -0.66px;
+  color: var(--strong);
+}
+.tl-truck-label strong { font-weight: 500; }
+.tl-unit-sub {
+  font-size: 11px;
+  color: var(--soft);
+  letter-spacing: 0.2px;
+  margin-bottom: 12px;
+}
+.tl-ign-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #d5f1d2;
+  border-radius: 16px;
+  padding: 5px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1e6252;
+  letter-spacing: -0.26px;
+  cursor: pointer;
+}
+.tl-ign-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #2ecf1d;
+  flex-shrink: 0;
+}
+.tl-share-btn {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; cursor: pointer;
+}
+.tl-share-btn:hover { background: var(--layer-2); }
+.tl-unit-pill {
+  display: flex; align-items: center; gap: 7px;
+  height: 30px; padding: 0 12px;
+  background: rgba(48,105,227,0.08);
+  border: 1px solid rgba(48,105,227,0.22);
+  border-radius: 32px;
+  color: var(--blue-link);
+  font-size: 13px; font-weight: 500; letter-spacing: -0.26px;
+  cursor: pointer; margin-left: auto;
+}
+.tl-unit-pill:hover { background: rgba(48,105,227,0.14); }
+
+/* ── Drawer tabs ── */
+.tl-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0 24px;
+  flex-shrink: 0;
+}
+.tl-tabs::-webkit-scrollbar { display: none; }
+.tl-tab {
+  flex-shrink: 0;
+  background: none; border: none;
+  font-size: 14px;
+  font-family: var(--font);
+  letter-spacing: -0.28px;
+  color: var(--soft);
+  cursor: pointer;
+  padding: 12px 8px;
+  margin-bottom: -1px;
+}
+.tl-tab:hover { color: var(--strong); }
+.tl-tab.active {
+  color: var(--strong);
+  box-shadow: inset 0 -2px 0 #211f1c;
+}
+
+/* ── Logs filter bar ── */
+.tl-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 12px;
+  align-items: flex-start;
+  padding: 14px 24px 0;
+  flex-shrink: 0;
+}
+.tl-field { display: flex; flex-direction: column; gap: 4px; }
+.tl-field-label {
+  font-size: 12px;
+  color: var(--defined);
+  letter-spacing: -0.24px;
+}
+.tl-date-row { display: flex; align-items: stretch; }
+.tl-date-input {
+  flex: 1; min-width: 100px;
+  border: 1px solid var(--border);
+  background: var(--layer-1);
+  padding: 9px 12px;
+  font-size: 13px; font-family: var(--font);
+  letter-spacing: -0.26px;
+  color: var(--strong); height: 38px;
+}
+.tl-date-input.from { border-radius: 100px 0 0 100px; }
+.tl-date-input.to   { border-radius: 0 100px 100px 0; margin-left: -1px; }
+.tl-date-input::placeholder { color: rgba(54,50,45,0.45); }
+.tl-date-input:focus { outline: none; border-color: var(--strong); position: relative; z-index: 1; }
+.tl-select {
+  appearance: none; -webkit-appearance: none;
+  border: 1px solid rgba(54,50,45,0.5);
+  background: var(--layer-1);
+  border-radius: 4px;
+  padding: 8px 26px 8px 10px;
+  font-size: 13px; font-family: var(--font);
+  letter-spacing: -0.26px;
+  color: var(--strong); height: 38px; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 14 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 5l4 4 4-4' stroke='%2336322d' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center;
+  min-width: 120px;
+}
+.tl-select:focus { outline: none; border-color: var(--strong); }
+.tl-select:disabled { opacity: 0.5; cursor: not-allowed; background-color: rgba(54,50,45,0.03); }
+.tl-sub-helper {
+  font-size: 10px; color: rgba(54,50,45,0.45);
+  letter-spacing: -0.2px; height: 14px; padding: 2px 0 0;
+}
+
+/* ── Search + refresh ── */
+.tl-search-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 24px 0;
+  flex-shrink: 0;
+}
+.tl-search {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--layer-2);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 7px 12px; height: 36px; flex: 1;
+}
+.tl-search:focus-within { border-color: var(--strong); background: var(--layer-1); }
+.tl-search input {
+  flex: 1; border: none; outline: none; background: transparent;
+  font-size: 13px; font-family: var(--font);
+  letter-spacing: -0.26px; color: var(--strong);
+}
+.tl-search input::placeholder { color: var(--soft); }
+.tl-refresh-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 36px; padding: 0 14px; flex-shrink: 0;
+  background: var(--layer-1); border: 1px solid var(--border);
+  border-radius: 24px; cursor: pointer;
+  font-family: var(--font); font-size: 13px; font-weight: 500;
+  color: var(--defined); letter-spacing: -0.26px;
+}
+.tl-refresh-btn:hover { border-color: var(--border-mid); color: var(--strong); }
+.tl-refresh-btn.refreshing { color: var(--blue); border-color: rgba(48,105,227,0.3); pointer-events: none; }
+.tl-refresh-btn.refreshing svg { animation: tl-spin 0.8s linear infinite; }
+.tl-refresh-btn.refreshed { color: #16a34a; border-color: rgba(22,163,74,0.3); pointer-events: none; }
+@keyframes tl-spin { to { transform: rotate(360deg); } }
+
+/* ── Log table ── */
+.tl-table-wrap {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  scrollbar-width: thin;
+  margin-top: 10px;
+}
+table.tl-table {
+  width: 100%; border-collapse: collapse;
+  font-family: var(--font);
+}
+.tl-table thead th {
+  text-align: left; padding: 8px 10px;
+  font-size: 13px; font-weight: 500;
+  color: var(--strong); letter-spacing: -0.26px;
+  border-bottom: 1px solid var(--border);
+  background: var(--layer-1);
+  position: sticky; top: 0; z-index: 1;
+  white-space: nowrap;
+}
+.tl-table thead th + th { border-left: 1px solid var(--border); }
+.tl-table thead th:first-child { padding-left: 24px; }
+.tl-table tbody tr { cursor: pointer; }
+.tl-table tbody tr:nth-child(even) { background: var(--layer-2); }
+.tl-table tbody tr:hover { background: rgba(48,105,227,0.05); }
+.tl-table tbody tr.active { background: rgba(48,105,227,0.10); }
+.tl-table tbody tr.active td:first-child { box-shadow: inset 3px 0 0 var(--blue); }
+.tl-table tbody td {
+  padding: 8px 10px; height: 36px;
+  font-size: 13px; color: var(--defined);
+  letter-spacing: -0.26px; line-height: 1.3;
+  vertical-align: middle; white-space: nowrap;
+}
+.tl-table tbody td:first-child { padding-left: 24px; }
+.tl-empty {
+  text-align: center; padding: 32px 24px;
+  font-size: 13px; color: var(--soft); letter-spacing: -0.26px;
+}
+.tl-th-menu {
+  margin-left: auto; opacity: 0.5; cursor: pointer;
+  width: 16px; height: 16px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.tl-th-inner { display: flex; align-items: center; gap: 6px; }
+
+/* ── Side panel (Event Details) ── */
+.tl-side-hdr {
+  padding: 20px 24px 0;
+  flex-shrink: 0;
+  background: var(--layer-2);
+}
+.tl-side-title {
+  font-size: 20px; font-weight: 500;
+  letter-spacing: -0.4px; color: var(--strong);
+  margin-bottom: 4px; line-height: 1.2;
+}
+.tl-side-sub {
+  font-size: 16px; color: var(--strong);
+  letter-spacing: -0.32px; line-height: 1.2;
+}
+.tl-side-tabs {
+  display: flex; gap: 0;
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px; flex-shrink: 0;
+  margin-top: 12px;
+  background: var(--layer-2);
+}
+.tl-side-tab {
+  background: none; border: none; cursor: pointer;
+  padding: 12px 8px; margin-bottom: -1px;
+  font-size: 14px; font-family: var(--font);
+  letter-spacing: -0.28px; color: var(--soft);
+}
+.tl-side-tab:hover { color: var(--strong); }
+.tl-side-tab.active {
+  color: var(--strong);
+  box-shadow: inset 0 -2px 0 #211f1c;
+}
+/* Body — layer-2 bg, 24px padding, 20px gap between sections */
+.tl-side-body {
+  flex: 1; min-height: 0;
+  overflow-y: auto; scrollbar-width: thin;
+  padding: 20px 24px 24px;
+  display: flex; flex-direction: column; gap: 20px;
+  background: var(--layer-2);
+}
+/* Content div rendered by JS — flex column, 20px gap */
+#tl-side-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+/* Groups section label + card stack */
+.tl-section-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tl-side-empty {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px;
+  color: var(--soft); background: var(--layer-2);
+}
+.tl-side-empty p { font-size: 14px; letter-spacing: -0.28px; }
+/* Footer — disabled color */
+.tl-side-foot {
+  font-size: 14px; color: rgba(54,50,45,0.36);
+  letter-spacing: -0.28px;
+  padding: 10px 24px 14px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--layer-2);
+}
+
+/* ── Structured view — matches Figma node 3472:20202 ── */
+/* Event chip: white card, 8px radius, 10px padding */
+.tl-chip {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  background: var(--layer-1);
+  border: 1px solid rgba(54,50,45,0.14);
+  border-radius: 8px; padding: 10px;
+  flex-shrink: 0;
+}
+.tl-chip-left { display: flex; align-items: center; gap: 10px; }
+.tl-chip-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.tl-chip-label { font-size: 16px; font-weight: 500; letter-spacing: -0.32px; color: var(--strong); }
+.tl-chip-time  { font-size: 16px; color: rgba(54,50,45,0.5); letter-spacing: -0.32px; white-space: nowrap; }
+
+/* Section label: "Online (7)" — 16px regular, no bold */
+.tl-section-hdr {
+  font-size: 14px; font-weight: 500; color: var(--soft);
+  letter-spacing: 0.3px; text-transform: uppercase; line-height: 1.2;
+}
+
+/* Card stack: 10px gap between cards */
+.tl-card-stack { display: flex; flex-direction: column; gap: 10px; }
+
+/* Individual card: white, 8px radius, border rgba(54,50,45,0.14) */
+.tl-card {
+  background: var(--layer-1);
+  border: 1px solid rgba(54,50,45,0.14);
+  border-radius: 8px; overflow: hidden;
+  transition: border-color 0.12s;
+}
+.tl-card.open { border-color: rgba(54,50,45,0.28); }
+
+/* Card row: 8px horizontal padding, 16px vertical — matches Figma px-[8px] py-[16px] */
+.tl-card-row {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px; width: 100%;
+  background: none; border: none; cursor: default;
+  font-family: var(--font); text-align: left; gap: 8px;
+  min-height: 44px;
+}
+.tl-card-row.xp { cursor: pointer; }
+.tl-card-row.xp:hover { background: rgba(54,50,45,0.02); }
+.tl-card-left  { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.tl-card-right { display: flex; align-items: center; gap: 9px; flex-shrink: 0; }
+.tl-card-dot   { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.tl-card-label { font-size: 14px; font-weight: 500; color: var(--strong); letter-spacing: -0.28px; }
+.tl-card-value { font-size: 14px; font-weight: 500; color: var(--strong); letter-spacing: -0.28px; text-align: right; }
+.tl-card-value.val-warn  { color: #7a5200; }
+.tl-card-value.val-alarm { color: var(--red); }
+.tl-card-value.val-muted { color: var(--subtle); }
+/* Chevron SVG replaced by a unicode down arrow for reliability */
+.tl-card-chev { transition: transform 0.2s; flex-shrink: 0; color: var(--soft); font-size: 10px; }
+.tl-card.open .tl-card-chev { transform: rotate(180deg); }
+.tl-card-body {
+  display: none; flex-direction: column;
+  border-top: 1px solid rgba(54,50,45,0.14);
+  padding: 0;
+}
+.tl-card.open .tl-card-body { display: flex; }
+
+/* Expand detail rows: 8px padding matching Figma */
+.tl-detail-row {
+  display: flex; justify-content: space-between;
+  align-items: baseline; padding: 8px 16px;
+  gap: 12px; font-size: 14px; letter-spacing: -0.28px;
+  border-bottom: 1px solid rgba(54,50,45,0.08);
+  line-height: 1.3;
+}
+.tl-detail-row:last-child { border-bottom: none; }
+.tl-detail-k { color: rgba(54,50,45,0.62); flex-shrink: 0; }
+.tl-detail-v { color: var(--strong); text-align: right; word-break: break-word; }
+.tl-detail-v.val-warn  { color: #7a5200; font-weight: 500; }
+.tl-detail-v.val-alarm { color: var(--red); font-weight: 500; }
+.tl-detail-v.val-muted { color: var(--subtle); }
+
+/* Unified component status table (Online + Offline) */
+.tl-comp-table {
+  display: flex;
+  flex-direction: column;
+  background: var(--layer-1);
+  border: 1px solid rgba(54,50,45,0.14);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.tl-comp-thead {
+  display: flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-bottom: 1px solid rgba(54,50,45,0.14);
+  background: var(--layer-2);
+  gap: 8px;
+}
+.tl-comp-thead span {
+  font-size: 11px; font-weight: 500;
+  color: var(--soft); letter-spacing: 0.3px;
+  text-transform: uppercase; white-space: nowrap;
+}
+.tl-comp-row {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  min-height: 44px;
+  gap: 8px;
+  border-bottom: 1px solid rgba(54,50,45,0.07);
+  font-size: 14px; letter-spacing: -0.28px;
+}
+.tl-comp-row:last-child { border-bottom: none; }
+.tl-comp-row.alt { background: rgba(54,50,45,0.02); }
+/* Name gets all remaining space */
+.tl-comp-name {
+  display: flex; align-items: center; gap: 8px;
+  flex: 1; min-width: 0;
+  font-weight: 500; color: var(--strong);
+}
+/* Fixed-width right columns so they never collide */
+.tl-comp-seen {
+  width: 68px; flex-shrink: 0; text-align: right;
+  color: var(--soft); font-family: var(--font-mono);
+  font-size: 12px; white-space: nowrap;
+}
+.tl-comp-errors {
+  width: 44px; flex-shrink: 0; text-align: center;
+  font-size: 14px; font-weight: 500;
+}
+.tl-comp-errors.has-errors { color: var(--red); }
+.tl-comp-errors.no-errors  { color: rgba(54,50,45,0.3); }
+/* Clickable error count — touch-friendly badge */
+.tl-err-link {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 28px; min-height: 28px;
+  padding: 0 8px;
+  background: rgba(215,1,0,0.10);
+  border: 1px solid rgba(215,1,0,0.25);
+  border-radius: 100px;
+  font-family: var(--font); font-size: 13px; font-weight: 600;
+  color: var(--red); cursor: pointer;
+  /* Expand the tap zone without changing visual size */
+  position: relative;
+}
+.tl-err-link::after {
+  content: ''; position: absolute;
+  inset: -8px;
+}
+.tl-err-link:hover { background: rgba(215,1,0,0.16); }
+.tl-comp-status {
+  width: 80px; flex-shrink: 0; text-align: right;
+  color: var(--soft); font-size: 13px; white-space: nowrap;
+}
+.tl-comp-status.no-contact { color: rgba(54,50,45,0.3); }
+
+/* Flag banners */
+.tl-flag {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 11px 14px; border-radius: 10px;
+  font-size: 14px; letter-spacing: -0.28px;
+  font-weight: 500; line-height: 1.4; flex-shrink: 0;
+}
+.tl-flag.alarm { background: rgba(215,1,0,0.08); color: #a80000; border: 1px solid rgba(215,1,0,0.2); }
+.tl-flag.warn  { background: rgba(255,186,13,0.12); color: #7a5200; border: 1px solid rgba(255,186,13,0.3); }
+.tl-flag.info  { background: rgba(48,105,227,0.08); color: #2355c4; border: 1px solid rgba(48,105,227,0.2); }
+
+
+/* ── Raw JSON ── */
+.tl-raw-wrap { display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; }
+.tl-raw-search {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--layer-1); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; flex-shrink: 0;
+}
+.tl-raw-search:focus-within { border-color: var(--strong); }
+.tl-raw-search input {
+  flex: 1; border: none; outline: none; background: transparent;
+  font-size: 13px; font-family: var(--font);
+  letter-spacing: -0.26px; color: var(--strong);
+}
+.tl-raw-search input::placeholder { color: var(--soft); }
+.tl-raw-count { font-size: 11px; color: var(--soft); font-family: var(--font-mono); white-space: nowrap; flex-shrink: 0; }
+.tl-raw-nav {
+  width: 22px; height: 22px; padding: 0;
+  background: transparent; border: none; border-radius: 4px;
+  color: var(--strong); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.tl-raw-nav:hover { background: rgba(54,50,45,0.06); }
+.tl-raw-block {
+  background: #1c1a17; border-radius: 8px;
+  padding: 12px 14px;
+  font-family: var(--font-mono); font-size: 11.5px;
+  color: #e9e6df; line-height: 1.6; white-space: pre;
+  overflow: auto; flex: 1; min-height: 0; scrollbar-width: thin;
+}
+.tl-raw-block .jk  { color: #9ecbff; }
+.tl-raw-block .js  { color: #a5d6a7; }
+.tl-raw-block .jn  { color: #ffcb6b; }
+.tl-raw-block .jb  { color: #f78c6c; }
+.tl-raw-block mark.tl-hi {
+  background: rgba(255,200,80,0.3); color: inherit;
+  border-radius: 2px; padding: 0 1px;
+  box-shadow: 0 0 0 1px rgba(255,200,80,0.45);
+}
+.tl-raw-block mark.tl-hi.active {
+  background: rgba(255,200,80,0.85); color: #1c1a17;
+  box-shadow: 0 0 0 1px rgba(255,200,80,1);
+}
+/* Override shell drawer to be full-height two-column */
+.drawer { display: flex; flex-direction: column; }
+.drawer-chrome { flex-shrink: 0; }
+.drawer-body { flex: 1; min-height: 0; padding: 0 !important; }
+.tl-raw-block mark.hi {
+  background: rgba(255,200,80,0.3); color: inherit;
+  border-radius: 2px; padding: 0 1px;
+  box-shadow: 0 0 0 1px rgba(255,200,80,0.45);
+}
+.tl-raw-block mark.hi.active {
+  background: rgba(255,200,80,0.85); color: #1c1a17;
+  box-shadow: 0 0 0 1px rgba(255,200,80,1);
+}
+
+</style>
+</head>
+<body class="view-desktop">
+
+<!-- SVG sprite: define reusable symbols once, reference everywhere via <use> -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-verifi" viewBox="0 0 96 24"><path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="currentColor"/></symbol>
+</svg>
+
+<!-- [3] SHELL HTML -->
+
+<!-- 3.1 Dark Control Bar -->
+<div class="vp-bar">
+  <div class="vp-brand">
+    <svg width="64" height="16" viewBox="0 0 96 24" style="color:white"><use href="#i-verifi"/></svg>
+    <span class="vp-tag">Logs Test</span>
+  </div>
+
+  <div class="vp-right-cluster">
+    <div class="vp-pills" style="display:none;">
+      <button class="vp-pill" onclick="setView('mobile')">Mobile</button>
+      <button class="vp-pill" onclick="setView('tablet')">Tablet</button>
+      <button class="vp-pill active" onclick="setView('desktop')">Desktop</button>
+    </div>
+
+    <div class="vp-opts-wrap" id="vp-opts-wrap">
+      <button class="vp-opts-btn" onclick="vpOptsToggle()">Options</button>
+      <div class="vp-opts-dd" id="vp-opts-dd" onclick="event.stopPropagation()">
+        <div class="vp-opts-section-label">Appearance</div>
+        <div class="vp-opts-row" onclick="toggleDarkMode()">
+          <span style="display:flex;align-items:center;gap:8px;flex:1;">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M8 1v1M8 14v1M1 8h1M14 8h1M3.05 3.05l.7.7M12.25 12.25l.7.7M3.05 12.95l.7-.7M12.25 3.75l.7-.7M11 8a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            Dark Mode
+          </span>
+          <div class="vp-dark-toggle"><div class="vp-dark-toggle-knob"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── 3.2 Frame ──────────────────────────────────────────────────────
+     The frame wraps the tablet top strip, app, and sidebar scrim. On
+     desktop it's a full-bleed container; on tablet it becomes the iPad
+     bezel so the slide-out sidebar and scrim stay inside the device. -->
+<div class="frame">
+
+    <div class="tb-right" aria-hidden="true">
+      <span class="tb-right-btn"></span>
+      <span class="tb-right-btn"></span>
+    </div>
+  </div>
+
+
+  <!-- 3.3 App Frame -->
+  <div class="app">
+
+  <!-- 3.4 Sidebar -->
+  <aside class="sidebar">
+
+    <div class="sidebar-brand">
+      <svg width="64" height="16" viewBox="0 0 96 24"><use href="#i-verifi"/></svg>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+
+    <div class="acct-picker" id="acct-picker" onclick="toggleAcctDropdown(event)">
+      <div style="flex:1;min-width:0;">
+        <div class="acct-label">Account</div>
+        <div class="acct-current" id="acct-current">Cemex AZ</div>
+      </div>
+      <svg class="acct-chev-inline" viewBox="0 0 14 14" fill="none">
+        <path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="acct-dd" id="acct-dd" onclick="event.stopPropagation()">
+        <div class="acct-dd-label">Switch account</div>
+        <div id="acct-options"></div>
+      </div>
+    </div>
+
+    <div class="sidebar-footer" id="sidebar-footer"></div>
+  </aside>
+
+  <!-- 3.4 Content Area -->
+  <main class="content">
+    <div class="content-card">
+      <div class="content-header">
+        <h1 class="page-title" id="page-title">Ticket list</h1>
+      </div>
+      <div class="content-body" id="content-body">
+
+        <!-- [4] FEATURE HTML — DC Logs test -->
+        <div style="padding:24px;">
+          <div style="font-size:24px;font-weight:500;letter-spacing:-0.72px;color:var(--strong);margin-bottom:4px;">Diagnostic Center</div>
+          <div style="font-size:13px;color:var(--soft);letter-spacing:-0.26px;margin-bottom:24px;">All Trucks · 14 trucks</div>
+          <button onclick="tlOpen()" style="display:inline-flex;align-items:center;gap:8px;background:var(--blue);color:white;border:none;border-radius:32px;padding:10px 20px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">
+            Open Truck 45689 →
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </main>
+  </div><!-- /.app -->
+
+  <!-- ─── 3.5 Drawer ─────────────────────────────────────────────────
+       Lives inside .frame so on tablet it's bounded by the bezel.
+       On desktop, .drawer / .drawer-scrim use position: fixed and
+       break out of .frame to overlay the whole viewport. -->
+  <div class="drawer-scrim" id="drawer-scrim" onclick="closeDrawer()"></div>
+  <div class="drawer" id="drawer" role="dialog" aria-modal="true">
+    <div class="drawer-chrome">
+      <div class="drawer-chrome-title" id="drawer-title">Drawer</div>
+      <div class="drawer-chrome-actions">
+        <div class="drawer-chrome-nav">
+          <button class="drawer-chrome-btn drawer-chrome-btn--nav" id="drawer-prev" onclick="navDrawer(-1)" aria-label="Previous">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 2.5l-4 4.5 4 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="drawer-chrome-btn drawer-chrome-btn--nav" id="drawer-next" onclick="navDrawer(1)" aria-label="Next">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5.5 2.5l4 4.5-4 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <button class="drawer-chrome-btn drawer-chrome-btn--close" onclick="closeDrawer()" aria-label="Close">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="drawer-body" id="drawer-body"></div>
+  </div>
+</div><!-- /.frame -->
+
+<script>
+/* [5] SHELL JS */
+
+/* 5.1 Nav icons (sourced from the existing DC sidenav) */
+const NAV_ICONS = {
+  /* Home — Unicons "create-dashboard" */
+  home: '<svg viewBox="0 0 12 12" fill="none"><path d="M0.666992 7.16699H4.66699C4.71108 7.16708 4.753 7.18464 4.78418 7.21582C4.81536 7.247 4.83292 7.28892 4.83301 7.33301V11.333C4.83301 11.3772 4.81544 11.4199 4.78418 11.4512C4.75302 11.4822 4.711 11.4999 4.66699 11.5H0.666992C0.622788 11.5 0.580083 11.4824 0.548828 11.4512C0.517572 11.4199 0.5 11.3772 0.5 11.333V7.33301C0.500086 7.289 0.517751 7.24698 0.548828 7.21582C0.580085 7.18456 0.62279 7.16699 0.666992 7.16699ZM9.33301 7.16699C9.37721 7.16699 9.41991 7.18456 9.45117 7.21582C9.48225 7.24698 9.49991 7.289 9.5 7.33301V9.16699H11.333C11.3772 9.16699 11.4199 9.18456 11.4512 9.21582C11.4822 9.24698 11.4999 9.289 11.5 9.33301C11.5 9.37721 11.4824 9.41992 11.4512 9.45117C11.4199 9.48243 11.3772 9.5 11.333 9.5H9.5V11.333C9.5 11.3772 9.48243 11.4199 9.45117 11.4512C9.41992 11.4824 9.37721 11.5 9.33301 11.5C9.289 11.4999 9.24698 11.4822 9.21582 11.4512C9.18456 11.4199 9.16699 11.3772 9.16699 11.333V9.5H7.33301C7.289 9.49991 7.24698 9.48225 7.21582 9.45117C7.18456 9.41991 7.16699 9.37721 7.16699 9.33301C7.16708 9.28892 7.18464 9.247 7.21582 9.21582C7.247 9.18464 7.28892 9.16708 7.33301 9.16699H9.16699V7.33301C9.16708 7.28892 9.18464 7.247 9.21582 7.21582C9.247 7.18464 9.28892 7.16708 9.33301 7.16699ZM0.833008 11.167H4.5V7.5H0.833008V11.167ZM0.666992 0.5H4.66699C4.711 0.500086 4.75302 0.51775 4.78418 0.548828C4.81544 0.580084 4.83301 0.62279 4.83301 0.666992V4.66699C4.83292 4.71108 4.81536 4.753 4.78418 4.78418C4.753 4.81536 4.71108 4.83292 4.66699 4.83301H0.666992C0.62279 4.83301 0.580084 4.81544 0.548828 4.78418C0.51775 4.75302 0.500086 4.711 0.5 4.66699V0.666992C0.5 0.622789 0.517572 0.580084 0.548828 0.548828C0.580084 0.517572 0.622789 0.5 0.666992 0.5ZM7.33301 0.5H11.333C11.3772 0.5 11.4199 0.517572 11.4512 0.548828C11.4824 0.580083 11.5 0.622788 11.5 0.666992V4.66699C11.4999 4.711 11.4822 4.75302 11.4512 4.78418C11.4199 4.81544 11.3772 4.83301 11.333 4.83301H7.33301C7.28892 4.83292 7.247 4.81536 7.21582 4.78418C7.18464 4.753 7.16708 4.71108 7.16699 4.66699V0.666992C7.16699 0.62279 7.18456 0.580085 7.21582 0.548828C7.24698 0.517751 7.289 0.500086 7.33301 0.5ZM0.833008 4.5H4.5V0.833008H0.833008V4.5ZM7.5 4.5H11.167V0.833008H7.5V4.5Z" stroke="currentColor"/></svg>',
+
+  /* Tickets — Unicons "receipt" */
+  tickets: '<svg viewBox="0 0 14 14" fill="none"><path d="M4.66667 6.66932H3.33334C3.15653 6.66932 2.98696 6.73955 2.86193 6.86458C2.73691 6.9896 2.66667 7.15917 2.66667 7.33598C2.66667 7.51279 2.73691 7.68236 2.86193 7.80739C2.98696 7.93241 3.15653 8.00265 3.33334 8.00265H4.66667C4.84348 8.00265 5.01305 7.93241 5.13808 7.80739C5.2631 7.68236 5.33334 7.51279 5.33334 7.33598C5.33334 7.15917 5.2631 6.9896 5.13808 6.86458C5.01305 6.73955 4.84348 6.66932 4.66667 6.66932ZM4.00001 5.33598H6.66667C6.84348 5.33598 7.01305 5.26575 7.13808 5.14072C7.2631 5.0157 7.33334 4.84613 7.33334 4.66932C7.33334 4.49251 7.2631 4.32294 7.13808 4.19791C7.01305 4.07289 6.84348 4.00265 6.66667 4.00265H4.00001C3.82319 4.00265 3.65363 4.07289 3.5286 4.19791C3.40358 4.32294 3.33334 4.49251 3.33334 4.66932C3.33334 4.84613 3.40358 5.0157 3.5286 5.14072C3.65363 5.26575 3.82319 5.33598 4.00001 5.33598ZM4.66667 9.33598H3.33334C3.15653 9.33598 2.98696 9.40622 2.86193 9.53125C2.73691 9.65627 2.66667 9.82584 2.66667 10.0027C2.66667 10.1795 2.73691 10.349 2.86193 10.4741C2.98696 10.5991 3.15653 10.6693 3.33334 10.6693H4.66667C4.84348 10.6693 5.01305 10.5991 5.13808 10.4741C5.2631 10.349 5.33334 10.1795 5.33334 10.0027C5.33334 9.82584 5.2631 9.65627 5.13808 9.53125C5.01305 9.40622 4.84348 9.33598 4.66667 9.33598ZM12.6667 6.66932H10.6667V0.669316C10.6671 0.551843 10.6366 0.436332 10.578 0.33448C10.5195 0.232629 10.4351 0.148053 10.3333 0.0893165C10.232 0.0308042 10.117 0 10 0C9.88298 0 9.76802 0.0308042 9.66667 0.0893165L7.66667 1.23598L5.66667 0.0893165C5.56533 0.0308042 5.45036 0 5.33334 0C5.21631 0 5.10135 0.0308042 5.00001 0.0893165L3.00001 1.23598L1.00001 0.0893165C0.898659 0.0308042 0.783696 0 0.666672 0C0.549647 0 0.434685 0.0308042 0.333339 0.0893165C0.231602 0.148053 0.147193 0.232629 0.0886574 0.33448C0.0301219 0.436332 -0.000461123 0.551843 5.25525e-06 0.669316V11.336C5.25525e-06 11.8664 0.210719 12.3751 0.585792 12.7502C0.960865 13.1253 1.46957 13.336 2.00001 13.336H11.3333C11.8638 13.336 12.3725 13.1253 12.7476 12.7502C13.1226 12.3751 13.3333 11.8664 13.3333 11.336V7.33598C13.3333 7.15917 13.2631 6.9896 13.1381 6.86458C13.0131 6.73955 12.8435 6.66932 12.6667 6.66932ZM2.00001 12.0027C1.82319 12.0027 1.65363 11.9324 1.5286 11.8074C1.40358 11.6824 1.33334 11.5128 1.33334 11.336V1.82265L2.66667 2.58265C2.76956 2.63639 2.88392 2.66446 3.00001 2.66446C3.11609 2.66446 3.23045 2.63639 3.33334 2.58265L5.33334 1.43598L7.33334 2.58265C7.43623 2.63639 7.55059 2.66446 7.66667 2.66446C7.78275 2.66446 7.89711 2.63639 8.00001 2.58265L9.33334 1.82265V11.336C9.33514 11.5634 9.37572 11.7889 9.45334 12.0027H2.00001ZM12 11.336C12 11.5128 11.9298 11.6824 11.8047 11.8074C11.6797 11.9324 11.5101 12.0027 11.3333 12.0027C11.1565 12.0027 10.987 11.9324 10.8619 11.8074C10.7369 11.6824 10.6667 11.5128 10.6667 11.336V8.00265H12V11.336ZM7.70667 9.44932C7.66951 9.42409 7.62915 9.40391 7.58667 9.38932C7.54697 9.36902 7.50416 9.3555 7.46001 9.34932C7.3529 9.32787 7.24217 9.33307 7.13755 9.36446C7.03292 9.39584 6.93762 9.45246 6.86001 9.52932C6.73818 9.65707 6.66913 9.82614 6.66667 10.0027C6.66561 10.0893 6.68146 10.1754 6.71334 10.256C6.74958 10.337 6.79915 10.4114 6.86001 10.476C6.92481 10.5349 6.99922 10.5822 7.08001 10.616C7.15981 10.6513 7.24609 10.6695 7.33334 10.6695C7.42059 10.6695 7.50687 10.6513 7.58667 10.616C7.66746 10.5822 7.74187 10.5349 7.80667 10.476C7.86846 10.4137 7.91734 10.3398 7.95052 10.2586C7.9837 10.1774 8.00051 10.0904 8.00001 10.0027C7.99755 9.82614 7.92849 9.65707 7.80667 9.52932C7.77499 9.50065 7.7416 9.47393 7.70667 9.44932V9.44932ZM7.80001 6.86265C7.72216 6.78684 7.62697 6.73121 7.52271 6.7006C7.41845 6.66998 7.30829 6.66532 7.20182 6.68701C7.09535 6.7087 6.99579 6.75608 6.91182 6.82504C6.82784 6.89399 6.76199 6.98243 6.72001 7.08265C6.67851 7.18365 6.66246 7.29329 6.67326 7.40195C6.68407 7.5106 6.72139 7.61494 6.78196 7.70579C6.84253 7.79664 6.92448 7.87123 7.02062 7.92299C7.11677 7.97475 7.22415 8.00211 7.33334 8.00265C7.51015 8.00265 7.67972 7.93241 7.80474 7.80739C7.92977 7.68236 8.00001 7.51279 8.00001 7.33598C7.99895 7.24887 7.98083 7.1628 7.94667 7.08265C7.91455 6.99943 7.86447 6.92431 7.80001 6.86265V6.86265Z" fill="currentColor"/></svg>',
+
+  /* Diagnostic Center — outlined square with EKG line */
+  dc: '<svg viewBox="0 0 16 16" fill="none"><path d="M12.6667 2H3.33333C2.59695 2 2 2.59695 2 3.33333V12.6667C2 13.403 2.59695 14 3.33333 14H12.6667C13.403 14 14 13.403 14 12.6667V3.33333C14 2.59695 13.403 2 12.6667 2Z" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 8.00001H5.5L6.5 6.50131L8 10.5013L9.66667 5.33334L10.6667 8.00001H12.3333" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+
+  /* Mix Design — Unicons "channel" */
+  mix: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.333 10.667a2 2 0 00-1.154.373l-1.633-.966c.077-.24.117-.49.12-.74a2.668 2.668 0 00-2-2.573V5.213a2 2 0 10-1.333 0v1.547a2.668 2.668 0 00-2 2.573c.003.252.044.501.12.74l-1.633.967a2 2 0 102 1.626c-.003-.18-.03-.36-.08-.533l1.533-.914a2.667 2.667 0 003.76 0l1.534.914a2 2 0 102.7-1.093c-.135-.397-.39-.74-.732-.983a2 2 0 00-1.202-.39z"/></svg>',
+
+  /* Insights — Unicons "chart-pie" */
+  insight: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.999 1.333a6.667 6.667 0 102.953 12.66h.034a.667.667 0 00.033 0 6.667 6.667 0 00-2.987-12.66h-.033zm.667 1.38a5.334 5.334 0 014.62 4.62h-4.62v-4.62zM7.999 13.333a5.333 5.333 0 01-.667-10.62V8c.003.08.019.16.047.234v.054L10.046 12.913a5.32 5.32 0 01-2.047.42zm3.22-1.093L9.152 8.667h4.134a5.34 5.34 0 01-2.067 3.573z"/></svg>',
+
+  /* Returned Concrete — Feather "truck" */
+  return: '<svg viewBox="0 0 16 16" fill="none"><path d="M6 6.5V12c0 .552.448 1 1 1h3.5" stroke="currentColor" stroke-width="1.2"/><path d="M2.5 13c-.552 0-1-.448-1-1V9.803c0-.197.058-.39.168-.555l1.535-2.302C3.389 6.667 3.7 6.5 4.035 6.5H6V12c0 .552.448 1 1 1h4" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><circle cx="4" cy="13" r="1.4" stroke="currentColor" stroke-width="1.2"/><circle cx="12" cy="13" r="1.4" stroke="currentColor" stroke-width="1.2"/><path d="M12.224 5.155L8.652 6.066c-2.11.538-3.033 3.018-1.788 4.804l5.126-.013 2.092-3.035a.376.376 0 00.001-.59l-1.306-1.875a.378.378 0 00-.553-.202z" stroke="currentColor" stroke-width="1.2"/><path d="M9.33 2.669H6.27l.533-.527a.667.667 0 00-.943-.943L4.19 2.863a.667.667 0 000 .943l1.667 1.667a.667.667 0 00.943-.943l-.533-.527H9.33a.667.667 0 100-1.334z" fill="currentColor"/></svg>',
+
+  /* Profile — user circle */
+  profile: '<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5.5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 13.5c0-2.5 2.2-4.5 5-4.5s5 2 5 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
+
+  /* Support — info circle */
+  support: '<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M6.3 6.2c.1-.7.7-1.3 1.7-1.3s1.6.6 1.6 1.4c0 .7-.4 1-.9 1.3-.5.3-.7.6-.7 1.1V9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="11" r=".7" fill="currentColor"/></svg>',
+
+  /* Settings — cog */
+  settings: '<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M8 1.5v1.3M8 13.2v1.3M3.75 3.75l.95.95M11.3 11.3l.95.95M14.5 8h-1.3M2.8 8H1.5M12.25 3.75l-.95.95M4.7 11.3l-.95.95" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
+};
+
+const CHEV_DOWN  = '<svg viewBox="0 0 16 16" fill="none"><path d="M3.5 6l4.5 4.5L12.5 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const CHEV_RIGHT = '<svg viewBox="0 0 16 16" fill="none"><path d="M6 3.5L10.5 8 6 12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+/* 5.2 Shell Config */
+const SHELL_CONFIG = {
+  projectKey: 'dc',
+
+  nav: [
+    { key:'home', kind:'link', label:'Home', icon:'home',
+      to:null, todo:'trinity_home' },
+
+    { key:'tickets', kind:'group', label:'Tickets', icon:'tickets',
+      children:[
+        { key:'ticket-list', label:'Ticket list', to:'#desktop/ticket-list' },
+        { key:'fleet-map',   label:'Fleet map',   to:'#desktop/fleet-map' },
+        { key:'phases',      label:'Phases',      to:'#desktop/phases' },
+      ] },
+
+    { key:'dc', kind:'group', label:'Diagnostic Center', icon:'dc',
+      children:[
+        { key:'dc-trucks', label:'All trucks',      to:'https://johndrogalis-web.github.io/WorkTestSite/Trinity_dc/#desktop/trucks' },
+        { key:'dc-map',    label:'Map',             to:'https://johndrogalis-web.github.io/WorkTestSite/Trinity_dc/#desktop/map' },
+        { key:'dc-units',  label:'Units',           to:'https://johndrogalis-web.github.io/WorkTestSite/Trinity_dc/#desktop/units' },
+        { key:'dc-update', label:'Software Update', to:'https://johndrogalis-web.github.io/WorkTestSite/Trinity_dc/#desktop/update' },
+      ] },
+
+    { key:'mix', kind:'group', label:'Mix Design', icon:'mix',
+      children:[
+        { key:'mix-mix',         label:'Mix',          to:null, todo:'trinity_mix' },
+        { key:'mix-instruction', label:'Instructions', to:null, todo:'trinity_mix' },
+        { key:'mix-admixture',   label:'Admixture',    to:null, todo:'trinity_mix' },
+        { key:'mix-slumpcurve',  label:'Slump curve',  to:null, todo:'trinity_mix' },
+      ] },
+
+    { key:'insight', kind:'group', label:'Insights', icon:'insight',
+      children:[
+        { key:'in-reports',  label:'All Reports',                to:null, todo:'trinity_insight' },
+        { key:'in-admix',    label:'Admix Report',               to:null, todo:'trinity_insight' },
+        { key:'in-slump',    label:'Initial Slump Reports',      to:null, todo:'trinity_insight' },
+        { key:'in-air',      label:'Air and Volume Test Reports',to:null, todo:'trinity_insight' },
+        { key:'in-driver',   label:'Driver Scorecards',          to:null, todo:'trinity_insight' },
+        { key:'in-buildup',  label:'Estimated Buildup by Truck', to:null, todo:'trinity_insight' },
+        { key:'in-strength', label:'Strength Test',              to:null, todo:'trinity_insight' },
+        { key:'in-override', label:'Ticketed Slump Override',    to:null, todo:'trinity_insight' },
+      ] },
+
+    { key:'return', kind:'link', label:'Returned Concrete', icon:'return',
+      to:null, todo:'trinity_return', badge:'New' },
+  ],
+
+  footer: [
+    { key:'profile',  label:'Profile',  icon:'profile',  to:null, todo:'trinity_profile' },
+    { key:'settings', label:'Settings', icon:'settings', to:null, todo:'trinity_settings', chev:true },
+    { key:'support',  label:'Support',  icon:'support',  to:null, todo:'trinity_support' },
+  ],
+
+  accounts: ['Cemex AZ', 'Vulcan AZ'],
+  defaultAccount: 'Cemex AZ',
+};
+
+/* 5.3 Render sidenav + footer */
+function renderSidenav() {
+  const root = document.getElementById('sidebar-nav');
+  if (!root) return;
+  root.innerHTML = SHELL_CONFIG.nav.map(item => {
+    if (item.kind === 'link') {
+      const todo  = item.todo ? `data-todo="${item.todo}"` : '';
+      const href  = item.to || '#';
+      const badge = item.badge ? `<span class="nav-badge">${item.badge}</span>` : '';
+      return `
+        <a class="nav-link" data-key="${item.key}" href="${href}" ${todo}
+           onclick="return navLinkClick(event,'${item.key}')">
+          <span class="nav-icon">${NAV_ICONS[item.icon] || ''}</span>
+          <span style="flex:1;">${item.label}</span>
+          ${badge}
+        </a>`;
+    }
+    const children = item.children.map(c => {
+      const todo = c.todo ? `data-todo="${c.todo}"` : '';
+      const href = c.to || '#';
+      return `<a class="nav-child" data-key="${c.key}" href="${href}" ${todo}
+                 onclick="return navChildClick(event,'${item.key}','${c.key}')">${c.label}</a>`;
+    }).join('');
+    return `
+      <div class="nav-group" data-key="${item.key}">
+        <div class="nav-group-header" onclick="navGroupHeaderClick('${item.key}')">
+          <span class="nav-icon">${NAV_ICONS[item.icon] || ''}</span>
+          <span style="flex:1;">${item.label}</span>
+          <span class="nav-chev">${CHEV_DOWN}</span>
+        </div>
+        <div class="nav-children">${children}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderFooter() {
+  const root = document.getElementById('sidebar-footer');
+  if (!root) return;
+  root.innerHTML = SHELL_CONFIG.footer.map(item => {
+    const todo = item.todo ? `data-todo="${item.todo}"` : '';
+    const href = item.to || '#';
+    const chev = item.chev ? `<span class="nav-chev" style="opacity:0.5;">${CHEV_RIGHT}</span>` : '';
+    return `
+      <a class="nav-link" data-key="${item.key}" href="${href}" ${todo}
+         onclick="return navLinkClick(event,'${item.key}')">
+        <span class="nav-icon">${NAV_ICONS[item.icon] || ''}</span>
+        <span style="flex:1;">${item.label}</span>
+        ${chev}
+      </a>`;
+  }).join('');
+}
+
+/* 5.4 Nav interaction */
+function navGroupHeaderClick(groupKey) {
+  /* Click on group header: navigate to first internal child if present,
+     otherwise toggle the accordion. */
+  const item = SHELL_CONFIG.nav.find(n => n.key === groupKey);
+  if (item && item.children && item.children.length) {
+    const first = item.children[0];
+    if (first.to && first.to.startsWith('#')) {
+      navigateTo(first.to);
+      return;
+    }
+    if (first.to && first.to.startsWith('http')) {
+      window.open(first.to, '_blank');
+      return;
+    }
+  }
+  const group = document.querySelector(`.nav-group[data-key="${groupKey}"]`);
+  if (group) group.classList.toggle('collapsed');
+}
+
+function navLinkClick(e, key) {
+  const all = [...SHELL_CONFIG.nav, ...SHELL_CONFIG.footer];
+  const item = all.find(n => n.key === key);
+  if (!item) return false;
+  if (!item.to) {
+    e.preventDefault();
+    console.log(`[shell] "${item.label}" not built yet (todo: ${item.todo || 'unknown'}).`);
+    return false;
+  }
+  if (item.to.startsWith('#')) {
+    e.preventDefault();
+    navigateTo(item.to);
+    return false;
+  }
+  return true;
+}
+
+function navChildClick(e, groupKey, childKey) {
+  const item = SHELL_CONFIG.nav.find(n => n.key === groupKey);
+  const child = item && item.children.find(c => c.key === childKey);
+  if (!child) return false;
+  if (!child.to) {
+    e.preventDefault();
+    console.log(`[shell] "${child.label}" not built yet.`);
+    return false;
+  }
+  if (child.to.startsWith('#')) {
+    e.preventDefault();
+    navigateTo(child.to);
+    return false;
+  }
+  /* External — open in new tab so prototype context isn't lost */
+  e.preventDefault();
+  window.open(child.to, '_blank');
+  return false;
+}
+
+/* 5.5 Active state + page title */
+function setActiveNav(childKey, groupKey) {
+  document.querySelectorAll('.nav-link.active, .nav-child.active')
+    .forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-group.contains-active')
+    .forEach(el => el.classList.remove('contains-active'));
+
+  if (groupKey) {
+    const child = document.querySelector(`.nav-child[data-key="${childKey}"]`);
+    if (child) child.classList.add('active');
+    const group = document.querySelector(`.nav-group[data-key="${groupKey}"]`);
+    if (group) {
+      group.classList.add('contains-active');
+      group.classList.remove('collapsed');
+    }
+  } else {
+    const link = document.querySelector(`.nav-link[data-key="${childKey}"]`);
+    if (link) link.classList.add('active');
+  }
+}
+
+function setPageTitle(text) {
+  const el = document.getElementById('page-title');
+  if (el) el.textContent = text;
+}
+
+/* 5.6 Hash router */
+/* Hash format: #<view>/<page>  e.g. #desktop/ticket-list */
+function parseHash(h) {
+  h = (h || location.hash || '').replace(/^#/, '');
+  if (!h) return { view:null, page:null };
+  const parts = h.split('/').filter(Boolean);
+  const viewWords = ['mobile','tablet','desktop'];
+  if (parts.length === 1) {
+    if (viewWords.includes(parts[0])) return { view:parts[0], page:null };
+    return { view:null, page:parts[0] };
+  }
+  if (viewWords.includes(parts[0])) return { view:parts[0], page:parts[1] };
+  return { view:null, page:parts[0] };
+}
+
+function navigateTo(to) {
+  location.hash = to.replace(/^#/, '');
+  applyRoute();
+  /* On tablet, navigating from the open sidebar closes it. No-op on desktop. */
+  closeSidebar();
+}
+
+function applyRoute() {
+  const { view, page } = parseHash();
+  if (view) setView(view, /*skipHashWrite*/true);
+
+  if (page) {
+    for (const item of SHELL_CONFIG.nav) {
+      if (item.kind === 'group') {
+        for (const c of item.children) {
+          if (c.to && c.to.endsWith('/' + page)) {
+            setActiveNav(c.key, item.key);
+            setPageTitle(c.label);
+            return;
+          }
+        }
+      } else if (item.to && item.to.endsWith('/' + page)) {
+        setActiveNav(item.key, null);
+        setPageTitle(item.label);
+        return;
+      }
+    }
+  }
+
+  defaultLand();
+}
+
+function defaultLand() {
+  /* dc prototype — no page routing needed */
+}
+
+/* 5.7 View-mode switcher */
+function setView(view, skipHashWrite) {
+  const valid = ['mobile','tablet','desktop'];
+  if (!valid.includes(view)) return;
+  const isDark = document.body.classList.contains('dark');
+  /* Switching view modes resets the sidebar-open state — the persistent
+     sidebar on desktop doesn't have an "open" concept. */
+  document.body.className = 'view-' + view + (isDark ? ' dark' : '');
+  document.querySelectorAll('.vp-pill').forEach(p => p.classList.remove('active'));
+  const sel = document.querySelector(`.vp-pill[onclick="setView('${view}')"]`);
+  if (sel) sel.classList.add('active');
+  if (!skipHashWrite) {
+    const { page } = parseHash();
+    if (page) location.hash = view + '/' + page;
+  }
+}
+
+/* Sidebar slide-out (tablet) — no-op on desktop since the sidebar is
+   always visible there. */
+function toggleSidebar() {
+  document.body.classList.toggle('sidebar-open');
+}
+function closeSidebar() {
+  document.body.classList.remove('sidebar-open');
+}
+
+/* 5.8 Dark mode */
+function toggleDarkMode() {
+  document.body.classList.toggle('dark');
+}
+
+/* 5.9 Options dropdown */
+function vpOptsToggle() {
+  document.getElementById('vp-opts-dd').classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('vp-opts-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('vp-opts-dd').classList.remove('open');
+  }
+});
+
+/* 5.10 Account picker */
+let CURRENT_ACCOUNT = SHELL_CONFIG.defaultAccount;
+
+function renderAccountOptions() {
+  const root = document.getElementById('acct-options');
+  if (!root) return;
+  root.innerHTML = SHELL_CONFIG.accounts.map(a => `
+    <div class="acct-option ${a === CURRENT_ACCOUNT ? 'selected' : ''}"
+         onclick="selectAccount('${a}')">
+      <span>${a}</span>
+      <svg class="acct-option-check" viewBox="0 0 14 14" fill="none">
+        <path d="M2 7l3.5 3.5L12 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>`).join('');
+}
+
+function selectAccount(a) {
+  CURRENT_ACCOUNT = a;
+  document.getElementById('acct-current').textContent = a;
+  renderAccountOptions();
+  closeAcctDropdown();
+}
+
+function toggleAcctDropdown(e) {
+  if (e) e.stopPropagation();
+  document.getElementById('acct-picker').classList.toggle('open');
+}
+function closeAcctDropdown() {
+  document.getElementById('acct-picker').classList.remove('open');
+}
+document.addEventListener('click', function(e) {
+  const p = document.getElementById('acct-picker');
+  if (p && !p.contains(e.target)) closeAcctDropdown();
+});
+
+/* 5.11 Drawer */
+let DRAWER_CTX = { idx:0, list:[], render:null };
+
+function openDrawer(opts) {
+  opts = opts || {};
+  DRAWER_CTX.idx    = typeof opts.idx === 'number' ? opts.idx : 0;
+  DRAWER_CTX.list   = Array.isArray(opts.list) ? opts.list : [];
+  DRAWER_CTX.render = typeof opts.render === 'function' ? opts.render : null;
+  document.getElementById('drawer-title').textContent = opts.title || 'Drawer';
+  document.getElementById('drawer-body').innerHTML = DRAWER_CTX.render
+    ? DRAWER_CTX.render(DRAWER_CTX.idx)
+    : `<div style="color:var(--soft);font-size:14px;line-height:1.55;">
+         Drawer scaffolding is wired up. The feature owns the body content.
+       </div>`;
+  updateDrawerArrows();
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawer-scrim').classList.add('open');
+}
+
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer-scrim').classList.remove('open');
+}
+
+function navDrawer(dir) {
+  const len = DRAWER_CTX.list.length;
+  if (!len) return;
+  const next = DRAWER_CTX.idx + dir;
+  if (next < 0 || next >= len) return;
+  DRAWER_CTX.idx = next;
+  if (DRAWER_CTX.render) {
+    document.getElementById('drawer-body').innerHTML = DRAWER_CTX.render(next);
+  }
+  document.getElementById('drawer-title').textContent = `Item ${next + 1} of ${len}`;
+  updateDrawerArrows();
+}
+
+function updateDrawerArrows() {
+  const len = DRAWER_CTX.list.length;
+  document.getElementById('drawer-prev').disabled = (DRAWER_CTX.idx <= 0 || len === 0);
+  document.getElementById('drawer-next').disabled = (DRAWER_CTX.idx >= len - 1 || len === 0);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeDrawer();
+    closeSidebar();
+    document.getElementById('vp-opts-dd').classList.remove('open');
+    closeAcctDropdown();
+  }
+});
+
+/* 5.12 Init */
+renderSidenav();
+renderFooter();
+renderAccountOptions();
+applyRoute();
+window.addEventListener('hashchange', applyRoute);
+
+/* [6] FEATURE JS — Logs test */
+
+/* Override the shell drawer to be a two-column truck drawer */
+var _origOpenDrawer = openDrawer;
+function tlOpen() {
+  /* Inject truck drawer HTML into the shell drawer body */
+  document.getElementById('drawer-title').textContent = '';
+  document.getElementById('drawer-body').innerHTML = tlBuildDrawer();
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawer-scrim').classList.add('open');
+  /* Hide the chrome title — we have our own header */
+  document.querySelector('.drawer-chrome-title').style.display = 'none';
+  tlLogsRender();
+}
+
+function tlBuildDrawer() {
+  return [
+    /* Left column */
+    '<div class="tl-main">',
+      /* Truck header */
+      '<div class="tl-hdr">',
+        '<div class="tl-hdr-row">',
+          '<span class="tl-truck-label">Truck: <strong>45689</strong></span>',
+          '<span class="tl-ign-badge"><span class="tl-ign-dot"></span>Ignition on</span>',
+          '<button class="tl-share-btn">',
+            '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="12" cy="3" r="1.5" stroke="#36322d" stroke-width="1.3"/><circle cx="12" cy="13" r="1.5" stroke="#36322d" stroke-width="1.3"/><circle cx="3" cy="8" r="1.5" stroke="#36322d" stroke-width="1.3"/><path d="M10.5 3.87L4.5 7.13M4.5 8.87l6 3.26" stroke="#36322d" stroke-width="1.3" stroke-linecap="round"/></svg>',
+          '</button>',
+          '<button class="tl-unit-pill">',
+            '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M9.5 6h-7M5.5 2.5L2 6l3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+            'Unit <strong style="margin-left:3px;">U-100000</strong>',
+          '</button>',
+        '</div>',
+        '<div class="tl-unit-sub">Unit U-100000</div>',
+      '</div>',
+      /* Tabs */
+      '<div class="tl-tabs">',
+        '<button class="tl-tab">Components overview</button>',
+        '<button class="tl-tab">Component timeline</button>',
+        '<button class="tl-tab active">Trucks Logs</button>',
+        '<button class="tl-tab">Manual Control</button>',
+        '<button class="tl-tab">Sensor</button>',
+        '<button class="tl-tab">Configuration</button>',
+      '</div>',
+      /* Filters */
+      '<div class="tl-filters">',
+        '<div class="tl-field">',
+          '<div class="tl-field-label">Custom time period</div>',
+          '<div class="tl-date-row">',
+            '<input class="tl-date-input from" type="text" placeholder="From: dd/mm/yy" onfocus="this.type=\'date\'" onblur="if(!this.value)this.type=\'text\'" oninput="tlFilters.from=this.value;tlLogsRender();">',
+            '<input class="tl-date-input to"   type="text" placeholder="To: dd/mm/yy"   onfocus="this.type=\'date\'" onblur="if(!this.value)this.type=\'text\'" oninput="tlFilters.to=this.value;tlLogsRender();">',
+          '</div>',
+        '</div>',
+        '<div class="tl-field">',
+          '<div class="tl-field-label">Source</div>',
+          '<select class="tl-select" id="tl-source" onchange="tlFilters.source=this.value;tlLogsRender();">',
+            '<option value="all">All</option><option value="TRUCK">TRUCK</option><option value="BACKEND">BACKEND</option>',
+          '</select>',
+        '</div>',
+        '<div class="tl-field">',
+          '<div class="tl-field-label">Message Type</div>',
+          '<select class="tl-select" id="tl-msgtype" onchange="tlOnTypeChange(this.value)">',
+            '<option value="all">All</option>',
+            '<option value="BackendRequest">BackendRequest</option>',
+            '<option value="DeviceBinding">DeviceBinding</option>',
+            '<option value="Event">Event</option>',
+            '<option value="Identity">Identity</option>',
+            '<option value="WirelessDrumBinding">WirelessDrumBinding</option>',
+          '</select>',
+        '</div>',
+        '<div class="tl-field">',
+          '<div class="tl-field-label">Sub Message Type</div>',
+          '<select class="tl-select" id="tl-subtype" disabled onchange="tlFilters.subType=this.value;tlLogsRender();">',
+            '<option value="all">All</option>',
+          '</select>',
+          '<div class="tl-sub-helper" id="tl-sub-helper">Select a message type first</div>',
+        '</div>',
+      '</div>',
+      /* Search */
+      '<div class="tl-search-row">',
+        '<div class="tl-search">',
+          '<svg viewBox="0 0 20 20" fill="none" width="16" height="16"><rect x="4" y="2.5" width="12" height="15" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10.5h6M7 14h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
+          '<input type="text" placeholder="Search" id="tl-search-input" oninput="tlFilters.search=this.value;tlLogsRender();">',
+        '</div>',
+        '<button class="tl-refresh-btn" id="tl-refresh-btn" onclick="tlRefresh()">',
+          '<svg id="tl-refresh-icon" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M13.5 8A5.5 5.5 0 1 1 8 2.5c1.8 0 3.4.87 4.4 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 2v3h-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+          '<span id="tl-refresh-label">Refresh</span>',
+        '</button>',
+      '</div>',
+      /* Table */
+      '<div class="tl-table-wrap">',
+        '<table class="tl-table">',
+          '<thead><tr>',
+            '<th><div class="tl-th-inner">Message Time <span class="tl-th-menu"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="3" r="1" fill="currentColor"/><circle cx="7" cy="7" r="1" fill="currentColor"/><circle cx="7" cy="11" r="1" fill="currentColor"/></svg></span></div></th>',
+            '<th><div class="tl-th-inner">Sent Time <span class="tl-th-menu"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="3" r="1" fill="currentColor"/><circle cx="7" cy="7" r="1" fill="currentColor"/><circle cx="7" cy="11" r="1" fill="currentColor"/></svg></span></div></th>',
+            '<th><div class="tl-th-inner">Source <span class="tl-th-menu"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="3" r="1" fill="currentColor"/><circle cx="7" cy="7" r="1" fill="currentColor"/><circle cx="7" cy="11" r="1" fill="currentColor"/></svg></span></div></th>',
+            '<th><div class="tl-th-inner">Message Type <span class="tl-th-menu"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="3" r="1" fill="currentColor"/><circle cx="7" cy="7" r="1" fill="currentColor"/><circle cx="7" cy="11" r="1" fill="currentColor"/></svg></span></div></th>',
+            '<th><div class="tl-th-inner">Message Sub Type <span class="tl-th-menu"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="3" r="1" fill="currentColor"/><circle cx="7" cy="7" r="1" fill="currentColor"/><circle cx="7" cy="11" r="1" fill="currentColor"/></svg></span></div></th>',
+          '</tr></thead>',
+          '<tbody id="tl-logs-tbody"></tbody>',
+        '</table>',
+      '</div>',
+    '</div>',
+
+    /* Right column — Event Details */
+    '<div class="tl-side">',
+      '<div class="tl-side-hdr">',
+        '<div class="tl-side-title">Event Details</div>',
+        '<div class="tl-side-sub" id="tl-side-sub">Select a row to inspect</div>',
+      '</div>',
+      '<div class="tl-side-tabs" id="tl-side-tabs" style="display:none;">',
+        '<button class="tl-side-tab active" onclick="tlSetTab(\'structured\',this)">Structured</button>',
+        '<button class="tl-side-tab"        onclick="tlSetTab(\'raw\',this)">Raw JSON</button>',
+      '</div>',
+      '<div class="tl-side-body" id="tl-side-body">',
+        '<div class="tl-side-empty" id="tl-side-empty">',
+          '<svg width="44" height="44" viewBox="0 0 48 48" fill="none" opacity="0.25"><rect x="8" y="10" width="32" height="28" rx="4" stroke="currentColor" stroke-width="2"/><line x1="15" y1="18" x2="33" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="15" y1="24" x2="28" y2="24" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="15" y1="30" x2="24" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+          '<p>Select a row to inspect</p>',
+        '</div>',
+        '<div id="tl-side-content" style="display:none;flex-direction:column;gap:8px;"></div>',
+      '</div>',
+      '<div class="tl-side-foot" id="tl-side-foot" style="display:none;">Last updated <span id="tl-side-foot-time">—</span></div>',
+    '</div>',
+  ].join('');
+}
+
+/* ── Data ── */
+var TL_ROWS = [
+  { id:0,  date:'02/17/2026', time:'04:14 PM', sentTime:'00:00', source:'TRUCK', type:'Event',             sub:'StartUp',               sev:'info'  },
+  { id:1,  date:'02/17/2026', time:'03:49 PM', sentTime:'00:01', source:'TRUCK', type:'Event',             sub:'TicketReceived',         sev:'info'  },
+  { id:2,  date:'02/18/2026', time:'09:30 AM', sentTime:'00:00', source:'TRUCK', type:'Identity',          sub:'Identity',               sev:'info'  },
+  { id:3,  date:'02/18/2026', time:'11:00 AM', sentTime:'00:01', source:'TRUCK', type:'Event',             sub:'TruckHealth',            sev:'warn'  },
+  { id:4,  date:'02/19/2026', time:'02:15 PM', sentTime:'00:00', source:'TRUCK', type:'Event',             sub:'FluidError',             sev:'warn'  },
+  { id:5,  date:'02/19/2026', time:'03:00 PM', sentTime:'00:01', source:'TRUCK', type:'Event',             sub:'IgnitionChange',         sev:'info'  },
+  { id:6,  date:'02/20/2026', time:'10:00 AM', sentTime:'00:00', source:'TRUCK', type:'Event',             sub:'GPSLocation',            sev:'info'  },
+  { id:7,  date:'02/20/2026', time:'01:45 PM', sentTime:'00:01', source:'TRUCK', type:'Event',             sub:'FluidAdd',               sev:'warn'  },
+  { id:8,  date:'02/21/2026', time:'04:30 PM', sentTime:'00:00', source:'TRUCK', type:'Event',             sub:'ConcreteStatus',         sev:'info'  },
+  { id:9,  date:'02/21/2026', time:'05:15 PM', sentTime:'00:01', source:'TRUCK', type:'Event',             sub:'DriverAction',           sev:'info'  },
+  { id:10, date:'02/22/2026', time:'09:00 AM', sentTime:'00:00', source:'TRUCK', type:'Event',             sub:'OperatingMode',          sev:'info'  },
+  { id:11, date:'02/22/2026', time:'12:00 PM', sentTime:'00:01', source:'TRUCK', type:'BackendRequest',    sub:'ALL_PLANTS_GEOFENCES',   sev:'info'  },
+  { id:12, date:'02/23/2026', time:'08:30 AM', sentTime:'00:00', source:'TRUCK', type:'DeviceBinding',     sub:'DeviceBinding',          sev:'info'  },
+  { id:13, date:'02/23/2026', time:'02:30 PM', sentTime:'00:01', source:'TRUCK', type:'Event',             sub:'CalculatedArriveSite',   sev:'info'  },
+  { id:14, date:'02/24/2026', time:'03:00 PM', sentTime:'00:00', source:'TRUCK', type:'Event',             sub:'TruckHealth',            sev:'info'  },
+  { id:15, date:'03/23/2026', time:'08:24 AM', sentTime:'00:01', source:'TRUCK', type:'Event',             sub:'TruckHealth',            sev:'alarm' },
+  { id:16, date:'03/23/2026', time:'10:42 AM', sentTime:'00:00', source:'TRUCK', type:'Event',             sub:'FluidDoseSummary',       sev:'info'  },
+  { id:17, date:'03/23/2026', time:'11:30 AM', sentTime:'00:01', source:'TRUCK', type:'Event',             sub:'SpeedChangeData',        sev:'info'  },
+  { id:18, date:'03/24/2026', time:'08:40 AM', sentTime:'00:00', source:'TRUCK', type:'Event',             sub:'Shutdown',               sev:'info'  },
+  { id:19, date:'03/24/2026', time:'09:12 AM', sentTime:'00:00', source:'TRUCK', type:'BackendRequest',    sub:'ALL_PLANTS_GEOFENCES',   sev:'info'  },
+  { id:20, date:'03/24/2026', time:'09:45 AM', sentTime:'00:00', source:'TRUCK', type:'DeviceBinding',     sub:'DrumSensor',             sev:'info'  },
+  { id:21, date:'03/24/2026', time:'10:03 AM', sentTime:'00:00', source:'TRUCK', type:'WirelessDrumBinding', sub:'UnboundTC3Notification', sev:'warn' },
+  { id:23, date:'03/25/2026', time:'07:15 AM', sentTime:'00:00', source:'TRUCK', type:'DeviceBinding',     sub:'WaterModule',            sev:'info'  },
+  { id:24, date:'03/25/2026', time:'08:00 AM', sentTime:'00:01', source:'TRUCK', type:'BackendRequest',    sub:'WEATHER',                sev:'info'  },
+  { id:22, date:'03/24/2026', time:'10:31 AM', sentTime:'00:00', source:'TRUCK', type:'Event',             sub:'ConcreteStatus',         sev:'info'  },
+];
+
+var TL_SUB_TYPES = {
+  Event:              ['AllPlants','CalculatedArriveSite','ConcreteStatus','DriverAction','FluidAdd','FluidDoseSummary','FluidError','GPSLocation','IgnitionChange','NetworkChange','OperatingMode','Shutdown','SpeedChangeData','StartUp','SystemStatus','TicketReceived','TruckHealth'],
+  BackendRequest:     ['ALL_PLANTS_GEOFENCES','WEATHER','ConfigurationSync','SoftwareUpdate'],
+  DeviceBinding:      ['DrumSensor','WaterModule','WDS','IOX'],
+  WirelessDrumBinding:['UnboundTC3Notification','BoundNotification'],
+  Identity:           ['Identity'],
+};
+
+var TL_PAYLOADS = {
+  23: { message_type:'DeviceBinding', time:{seconds:1781010299,microseconds:725705}, sender_mac_id:'125765210720', accountId:'24', truckId:'11531', truckName:'1838', pbversion:4, device_binding:{ bindingType:'Seen', deviceType:'WaterModule', signalStrength:'-62', macId:'141704516048573' } },
+  25: { message_type:'Event', time:{seconds:1781010492,microseconds:231872}, sender_mac_id:'125765273411', accountId:'24', truckId:'13024', truckName:'2550', pbversion:4, event:{ event_type:'SystemStatus', lastLoadingTime:{seconds:1781008749,microseconds:707052}, location:{status:'VALID',latitude:25.79684033,longitude:-80.36183233}, lastLoadingLocationId:'625', locationStatus:{status:'PLANT_OUTSIDE_FENCE',locationId:'625',locationName:''}, system_status:{ timeBootSeconds:1780983404.03, ignitionOnEventCount:1, sensorPowerOnCount:1, wifiSNR:0, pressureCharge:{alive:true,lastContactSeconds:1781010492.04}, pressureDischarge:{alive:true,lastContactSeconds:1781010492.04}, iox:{alive:false}, wiredDrum:{alive:false}, externalDisplay:{alive:true,lastContactSeconds:1781010491.24,startupMessageCount:1,version:8195}, powerModule:{alive:false}, wirelessDrum:{alive:true,lastContactSeconds:1781010490.63,batteryVoltage:3.51,temperatureCelsius:32.74}, inCabDisplay:{alive:true,lastContactSeconds:1781010490.49,startupMessageCount:1,version:1468}, cwr:{alive:true,lastContactSeconds:1781010490.55,startupMessageCount:1,temperatureCelsius:0,microS08:{versionMajor:44,versionMinor:0}}, jacketHeater:{alive:false}, fdmHeater:{alive:false}, ignition:true, sensorPower:true, ghostMode:false, offMode:false, operatingMode:{mode:'LIVE',localMode:'DRIVER_ON',coldWeatherMode:'COLD_WEATHER_OFF',fdmMode:'FDM_VNEXT'}, vnextSensorBoard:{alive:true,lastContactSeconds:1781010491.65,version:44,hardwareVersion:129}, vnextSensorBoardDevices:{pressureCharge:{pressurePascal:6560800.5},pressureDischarge:{pressurePascal:1801910},can1:{voltageV:11.95},can2:{voltageV:11.86},battPowerVoltage:{voltageV:13.37}}, vnextAdmixBoard:{alive:false}, vnextWaterBoard:{alive:true,lastContactSeconds:1781010491.78,version:23,hardwareVersion:6}, vnextWaterBoardDevices:{flowMeter:{pulseCount:30849},ambientTemp:{temperatureCelsius:53.9},battPowerVoltage:{voltageV:1.02}}, kzValveVnextAir:{alive:true,lastContactSeconds:1781010491.44,valveRequiredPositionDegrees:180,valveReportedPositionDegrees:179}, kzValveVnextTemperateWaterMain:{alive:true,lastContactSeconds:1781010491.30,valveRequiredPositionDegrees:0,valveReportedPositionDegrees:0} } } },
+  14: { message_type:'Event', time:{seconds:1781009702,microseconds:167380}, sender_mac_id:'125765276177', accountId:'83', truckId:'10258', truckName:'75523', pbversion:4, event:{ event_type:'TruckHealth', lastLoadingTime:{seconds:1781005150,microseconds:537372}, location:{status:'VALID',latitude:29.103703,longitude:-82.19526467}, lastLoadingLocationId:'1137', locationStatus:{status:'PLANT_OUTSIDE_FENCE',locationId:'1137',locationName:''}, truck_health:{ eventType:'RPM_DECREASE_SLUMP_INCREASE' } } },
+  4:  { message_type:'Event', time:{seconds:1781009416,microseconds:933583}, sender_mac_id:'125765146235', accountId:'83', truckId:'10187', truckName:'70147', pbversion:4, event:{ event_type:'FluidError', lastLoadingTime:{seconds:1781003259,microseconds:277103}, location:{status:'VALID',latitude:28.66199783,longitude:-81.53805617}, lastLoadingLocationId:'1133', locationStatus:{status:'PLANT_OUTSIDE_FENCE',locationId:'1133',locationName:''}, fluid_error:{ error:'FDM_ERROR', fluid:'WATER' } } },
+  2:  { message_type:'Identity', time:{seconds:1781009455,microseconds:340280}, sender_mac_id:'125765292552', accountId:'83', truckId:'10090', truckName:'67038', pbversion:4, identity:{ macId:'125765292552', imsi:'310170877383180', serialNo:'220000519631', version:'26.2.3', commissioned:true, truckId:'67038', wirelessDrumSensorBound:true, wirelessDrumSensorMacId:'141704507334621', bspVersion:'1.01', deviceType:'TCG4', deviceVariant:'104400' } },
+  0:  { message_type:'Event', time:{seconds:1781009405,microseconds:444636}, sender_mac_id:'125765292552', accountId:'83', truckId:'10090', truckName:'67038', pbversion:4, event:{ event_type:'Startup', lastLoadingTime:{seconds:0,microseconds:0}, location:{status:'INVALID'}, lastLoadingLocationId:'-1', locationStatus:{}, startup:{ previousShutdownType:'DIRTY' } } },
+  18: { message_type:'Event', time:{seconds:1780988400,microseconds:0}, sender_mac_id:'125765292552', accountId:'83', truckId:'10090', truckName:'67038', pbversion:4, event:{ event_type:'Shutdown', lastLoadingTime:{seconds:1780985000}, location:{status:'VALID',latitude:29.175,longitude:-82.143}, lastLoadingLocationId:'1139', locationStatus:{status:'PLANT_OUTSIDE_FENCE'}, shutdown:{ shutdownType:'CLEAN' } } },
+  1:  { message_type:'Event', time:{seconds:1781009629,microseconds:941719}, sender_mac_id:'125765259653', accountId:'83', truckId:'10163', truckName:'75527', pbversion:4, event:{ event_type:'TicketReceived', lastLoadingTime:{seconds:1781009473,microseconds:298053}, location:{status:'VALID',latitude:29.17227683,longitude:-82.14356583}, lastLoadingLocationId:'1139', locationStatus:{status:'UNKNOWN'}, ticket_received:{ receivedTicket:{ loadSizeCubicMeters:7.646, dischargeSlumpMillimeters:127, batchSlumpMillimeters:127, transitSlumpMillimeters:127, minDischargeSlumpMillimeters:6.350013, maxDischargeSlumpMillimeters:254.0005, autoAddWater:true, maxWaterLitersPerCubicMeter:5.598, allowWaterBeyondMax:false, autoAddAdmix:false, admixName:'', mixRevsAfterLoading:70, postBatchAdditions:false, ticketType:'NORMAL', maxMinutesInPlant:12, displayTicketNumber:'41233410', verifiInstructionName:'Manage to Allowable Water', verifiInstructionId:'1030', batchAdjustmentFluids:'WATER_ONLY', allowDriverWaterAddsOnSite:true, doNotManageLoad:false, customerName:'MAXTER ENTERPRISES', customerAddress:'3171 NW 44TH AVE', driverId:'70724', driverCode:'Perez, Jonathan', plantId:'1277', plantName:'Dry', locationName:'Ocala', locationId:'1139', jobId:'976033', jobName:'LOADINGDOCK/WALL', orderNumber:'402', mixCodeName:'1595570', mixCodeId:'236232', accountName:'Cemex Orlando', azureTicketId:'45986252', slumpCurveName:'cis_wc50-55' } } } },
+  9:  { message_type:'Event', time:{seconds:1780937807,microseconds:606967}, sender_mac_id:'125765259860', accountId:'83', truckId:'10153', truckName:'69703', pbversion:4, event:{ event_type:'DriverAction', lastLoadingTime:{seconds:1780924028,microseconds:933127}, location:{status:'VALID',latitude:29.20740583,longitude:-82.14746033}, lastLoadingLocationId:'1139', locationStatus:{status:'PLANT_OUTSIDE_FENCE',locationId:'1139',locationName:''}, driver_action:{ action:'DRIVER_REQUESTED_WATER', parameterRaw:3975 } } },
+  8:  { message_type:'Event', time:{seconds:1780927836,microseconds:439050}, sender_mac_id:'125765259863', accountId:'83', truckId:'10113', truckName:'45689', pbversion:4, event:{ event_type:'ConcreteStatus', lastLoadingTime:{seconds:1780919183}, location:{status:'VALID',latitude:29.02696233,longitude:-82.23808433}, lastLoadingLocationId:'1137', locationStatus:{status:'PLANT_OUTSIDE_FENCE',locationId:'1137',locationName:''}, concrete_status:{ concreteStatus:'VALUE_CHANGED', targetSlumpMillimeters:127, slumpMillimeters:-1, targetMinDrumSpeedRpm:2, targetMaxDrumSpeedRpm:6, drumSpeedRpm:-1, cumulativeRevolutionsSinceLoad:0, remainingWaterLiters:0, slumpReason:'SLUMP_NOT_YET_VALID', estimatedWaterToSlumpLiters:-1, estimatedAdmixToSlumpMilliliters:-1, mixingRevolutionsSinceLoad:-1, agitationRevolutionsSinceLoad:-1, revolutionsDischargingMaterial:0, loadSizeCubicMeters:-1, chargePressurePascals:8980983, dischargePressurePascals:1419466, truckTiltDegrees:0.286, slumpIsStable:false, standardSlumpMm:-1, threeStageSlumpMm:-1, continuousSlumpMm:-1, ambientTempCelsius:59.78, probBuildup:0, loadedTriggeredFromBackend:true, probBadChargeSensor:0, probBadMagnet:0, chargePressureMax:9390000, chargePressureMin:8650000, dischargePressureMax:1450000, dischargePressureMin:1380000, instantaneousSlumpMm:-1, estimatedBuildupPounds:1037.19, deliveryState:'LOADED_STATE', deliveryPhase:'PHASE_ON_SITE', locationId:'1137', loadedTriggerStatus:'POST_TICKET_TIMEOUT_NOT_MANAGED', slumpDisplay:'NO_DISPLAY_SMALL_LOAD', totalWaterAddedLiters:83.12256, totalAdmixAddedMilliliters:0, totalWaterAddedLitersPerCubicMeter:10.871, active_load:true, azureTicketId:'45970263', ticketId:'-1', drumWaterAddedLiters:0 } } },
+  22: { message_type:'Event', time:{seconds:1780927836,microseconds:818790}, sender_mac_id:'125765292548', accountId:'83', truckId:'10135', truckName:'45689', pbversion:4, event:{ event_type:'ConcreteStatus', lastLoadingTime:{seconds:1780918798}, location:{status:'VALID',latitude:28.615418,longitude:-80.8080995}, lastLoadingLocationId:'1480', locationStatus:{status:'PLANT_OUTSIDE_FENCE',locationId:'1480',locationName:''}, concrete_status:{ concreteStatus:'VALUE_CHANGED', targetSlumpMillimeters:-1, slumpMillimeters:448.01205, targetMinDrumSpeedRpm:2, targetMaxDrumSpeedRpm:6, drumSpeedRpm:2.3, cumulativeRevolutionsSinceLoad:988.93, remainingWaterLiters:0, concreteTempCelsius:31.32, slumpReason:'DRUM_NOT_IN_CHARGE', estimatedWaterToSlumpLiters:0, estimatedAdmixToSlumpMilliliters:0, mixingRevolutionsSinceLoad:798.68, agitationRevolutionsSinceLoad:189.83, revolutionsDischargingMaterial:16.67, loadSizeCubicMeters:0, chargePressurePascals:1795100, dischargePressurePascals:1526816, truckTiltDegrees:-2.364, slumpIsStable:false, standardSlumpMm:444.16, threeStageSlumpMm:469.37, continuousSlumpMm:472.43, ambientTempCelsius:56.47, probSlumpIncrease:1, probSlumpDecrease:0, probRpmIncrease:1, probRpmDecrease:0, probBuildup:0, loadedTriggeredFromBackend:false, probBadChargeSensor:0, probBadMagnet:1, chargePressureMax:2980000, chargePressureMin:1370000, dischargePressureMax:2740000, dischargePressureMin:1290000, instantaneousSlumpMm:619.54, estimatedBuildupPounds:1731.95, slumpNormPressurePascals:556000, slumpDrumSpeedRpm:13.3, cumulativeRevolutionsSinceLoaded:941.16, deliveryState:'IDLE', deliveryPhase:'PHASE_RETURN_TO_PLANT', locationId:'1480', loadedTriggerStatus:'SENSORS_MANAGED', slumpDisplay:'NO_DISPLAY_SMALL_LOAD', totalWaterAddedLiters:109.73, totalAdmixAddedMilliliters:0, totalWaterAddedLitersPerCubicMeter:13.67, active_load:false, azureTicketId:'45968508', ticketId:'-1', drumWaterAddedLiters:0, underAgitationRevolutionsSinceLoad:0.087, overMixingRevolutionsSinceLoad:0 } } },
+  11: { message_type:'BackendRequest', time:{seconds:1780927500,microseconds:117652}, sender_mac_id:'125765276178', accountId:'83', truckId:'10206', truckName:'45689', pbversion:4, backend_request:{ requestType:'ALL_PLANTS_GEOFENCES', location:{status:'VALID',latitude:28.61317667,longitude:-81.43043633} } },
+  19: { message_type:'BackendRequest', time:{seconds:1780927500,microseconds:117652}, sender_mac_id:'125765276178', accountId:'83', truckId:'10206', truckName:'45689', pbversion:4, backend_request:{ requestType:'ALL_PLANTS_GEOFENCES', location:{status:'VALID',latitude:28.61317667,longitude:-81.43043633} } },
+  12: { message_type:'DeviceBinding', time:{seconds:1780927799,microseconds:247769}, sender_mac_id:'125765199888', accountId:'83', truckId:'10049', truckName:'45689', pbversion:4, device_binding:{ bindingType:'Seen', deviceType:'DrumSensor', signalStrength:'-84', macId:'141704494042636' } },
+  20: { message_type:'DeviceBinding', time:{seconds:1780927799,microseconds:247769}, sender_mac_id:'125765199888', accountId:'83', truckId:'10049', truckName:'45689', pbversion:4, device_binding:{ bindingType:'Seen', deviceType:'DrumSensor', signalStrength:'-84', macId:'141704494042636' } },
+  21: { message_type:'WirelessDrumBinding', time:{seconds:1780927346,microseconds:622410}, sender_mac_id:'125765370241', accountId:'83', truckId:'10257', truckName:'45689', wireless_drum_binding:{ wirelessDrumBindingType:'UnboundTC3Notification' } },
+  7:  { message_type:'Event', time:{seconds:1777316790,microseconds:271117}, sender_mac_id:'125765200636', accountId:'83', truckId:'9171', truckName:'45689', pbversion:4, event:{ event_type:'FluidAdd', lastLoadingTime:{seconds:1777314613}, location:{status:'VALID',latitude:32.91751967,longitude:-111.51281633}, lastLoadingLocationId:'578', locationStatus:{status:'PLANT_OUTSIDE_FENCE',locationId:'578',locationName:''}, fluid_add:{ fluidAddEvent:'STEALTH_WATER_DETECTED', maxFluidReached:false, waterAddedLiters:67.247, admixAddedMilliliters:0, fluidFlowRateMillilitersPerSecond:-1, fluidRequestedLiters:0, waterAdaptationPercent:-1, admixAdaptationPercent:-1, startTime:{seconds:1777316697}, waterAddedLitersPerCubicMeter:8.795, admixAddedMillilitersPerCubicMeter:0 } } },
+};
+
+/* ── State ── */
+var tlFilters = { from:'', to:'', source:'all', msgType:'all', subType:'all', search:'' };
+var tlSelId = null;
+var tlTab = 'structured';
+
+/* ── Helpers ── */
+function tlEsc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function tlFmtDT(sec) { return new Date(sec*1000).toLocaleString('en-US',{month:'2-digit',day:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+function tlKpa(pa) { return (pa/1000).toFixed(1)+' kPa'; }
+function tlIn(mm)  { return (mm/25.4).toFixed(1)+'"'; }
+function tlOk(v)   { return v !== -1 && v !== null && v !== undefined && String(v) !== 'NaN' && !Number.isNaN(v); }
+
+var TL_PHASES = {PHASE_WAITING_TO_LOAD:'Waiting to load',PHASE_LOADING:'Loading',PHASE_LOADED:'Loaded',PHASE_TO_JOB:'In transit to job',PHASE_ON_SITE:'On site',PHASE_POURING:'Pouring',PHASE_WASHING:'Washing',PHASE_RETURN_TO_PLANT:'Returning to plant',PHASE_IGNITION_OFF:'Ignition off'};
+var TL_STATES = {LOADED_STATE:'Loaded',IDLE:'Idle',LOADING_STATE:'Loading',DISCHARGING_STATE:'Discharging'};
+var TL_SLUMP = {SLUMP_NOT_YET_VALID:'Drum not spinning long enough yet',DRUM_NOT_IN_CHARGE:'Drum not in charge position',SLUMP_IS_VALID:'Valid reading',LOAD_TOO_SMALL:'Load too small',NO_LOAD:'No active load'};
+var TL_FLUID = {STEALTH_WATER_DETECTED:'Stealth water detected',NORMAL_ADD:'Normal addition',MAX_FLUID_REACHED:'Max fluid limit reached',ADMIX_ONLY:'Admix only'};
+
+function tlSigQ(dbm) { var v=parseInt(dbm); return v>=-70?{l:'Strong',c:''}:v>=-85?{l:'Moderate',c:'val-warn'}:{l:'Weak',c:'val-alarm'}; }
+function tlChev(cls) { return '<svg class="'+cls+'" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
+
+function tlCard(opts) {
+  var label=opts.label, value=opts.value, vcls=opts.vcls||'', dot=opts.dot||'', detail=opts.detail||[], mono=opts.mono||false;
+  var cid='tlc'+Math.random().toString(36).slice(2);
+  var dotH=dot?'<span class="tl-card-dot" style="background:'+dot+';"></span>':'';
+  var hasD=detail.length>0;
+  var valStyle=mono?' style="font-family:var(--font-mono);font-size:12px;"':'';
+  var detH=detail.map(function(d){var k=d[0],v=d[1],c=d[2]||'';return '<div class="tl-detail-row"><span class="tl-detail-k">'+tlEsc(k)+'</span><span class="tl-detail-v '+c+'">'+tlEsc(String(v))+'</span></div>';}).join('');
+  var chevH=hasD?'<svg class="tl-card-chev" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>':'';
+  var onclickAttr=hasD?'onclick="tlToggleCard(\'' +cid+ '\')"':'disabled';
+  return '<div class="tl-card'+(hasD?' open':'') +'" id="'+cid+'">'+
+    '<button class="tl-card-row'+(hasD?' xp':'')+'" '+onclickAttr+'>'+
+    '<span class="tl-card-left">'+dotH+'<span class="tl-card-label">'+tlEsc(label)+'</span></span>'+
+    '<span class="tl-card-right"><span class="tl-card-value '+vcls+'"'+valStyle+'>'+tlEsc(String(value))+'</span>'+chevH+'</span>'+
+    '</button>'+(hasD?'<div class="tl-card-body">'+detH+'</div>':'')+
+    '</div>';
+}
+function tlFlag(msg, type) {
+  return '<div class="tl-flag '+type+'">'+msg+'</div>';
+}
+
+function tlToggleFD(id){var b=document.getElementById(id);var t=b.previousElementSibling;b.classList.toggle('open');t.classList.toggle('open');}
+
+function tlGetPayload(row) {
+  return TL_PAYLOADS[row.id]||{message_type:row.type,time:{seconds:1780927000},sender_mac_id:'n/a',accountId:'83',truckId:'10000',truckName:'45689',pbversion:4,_note:'No payload for '+row.type+' \u003e '+row.sub};
+}
+
+/* ── Structured templates ── */
+function tlRenderConcreteStatus(row, p) {
+  if(!p.event||!p.event.concrete_status) return tlRenderGeneric(row);
+  var cs=p.event.concrete_status, ts=tlFmtDT(p.time.seconds);
+  var phase=TL_PHASES[cs.deliveryPhase]||cs.deliveryPhase, state=TL_STATES[cs.deliveryState]||cs.deliveryState;
+  var sOk=tlOk(cs.slumpMillimeters)&&cs.slumpMillimeters>0;
+  var sDisp=sOk?cs.slumpMillimeters.toFixed(0)+' mm ('+tlIn(cs.slumpMillimeters)+')':'—';
+  var rOk=tlOk(cs.drumSpeedRpm)&&cs.drumSpeedRpm>0;
+  var rDisp=rOk?cs.drumSpeedRpm.toFixed(1)+' RPM':'—';
+  var rInR=rOk&&cs.drumSpeedRpm>=cs.targetMinDrumSpeedRpm&&cs.drumSpeedRpm<=cs.targetMaxDrumSpeedRpm;
+  var cpOk=cs.chargePressurePascals>=cs.chargePressureMin&&cs.chargePressurePascals<=cs.chargePressureMax;
+  var dpOk=cs.dischargePressurePascals>=cs.dischargePressureMin&&cs.dischargePressurePascals<=cs.dischargePressureMax;
+  var flags=[];
+  if(cs.probBadMagnet===1) flags.push(tlFlag('Bad magnet probability high — drum speed may be unreliable','warn'));
+  if(!cpOk) flags.push(tlFlag('Charge pressure out of range ('+tlKpa(cs.chargePressureMin)+' – '+tlKpa(cs.chargePressureMax)+')','alarm'));
+  if(!dpOk) flags.push(tlFlag('Discharge pressure out of range ('+tlKpa(cs.dischargePressureMin)+' – '+tlKpa(cs.dischargePressureMax)+')','alarm'));
+  if(cs.estimatedBuildupPounds>1500) flags.push(tlFlag('Estimated buildup: '+cs.estimatedBuildupPounds.toFixed(0)+' lbs','warn'));
+  var h='<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:#3069e3;"></span><span class="tl-chip-label">Concrete Status</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+  h+=flags.join('');
+  h+='<div class="tl-section-group"><div class="tl-section-hdr">Key signals</div><div class="tl-card-stack">';
+  h+=tlCard({label:'Delivery phase',value:phase,dot:cs.deliveryPhase==='PHASE_ON_SITE'?'#2ecf1d':'#3069e3'});
+  h+=tlCard({label:'Delivery state',value:state,dot:cs.active_load?'#2ecf1d':'#3069e3'});
+  h+=tlCard({label:'Slump reading',value:sDisp,vcls:sOk?'':'val-muted',dot:sOk?'#2ecf1d':'#ffba0d',detail:sOk?[['Target',tlOk(cs.targetSlumpMillimeters)?cs.targetSlumpMillimeters+' mm':'—'],['Standard',tlOk(cs.standardSlumpMm)&&cs.standardSlumpMm>0?cs.standardSlumpMm.toFixed(0)+' mm':'—'],['3-stage',tlOk(cs.threeStageSlumpMm)&&cs.threeStageSlumpMm>0?cs.threeStageSlumpMm.toFixed(0)+' mm':'—'],['Stable',cs.slumpIsStable?'Yes':'No']]:[['Reason',TL_SLUMP[cs.slumpReason]||cs.slumpReason]]});
+  h+=tlCard({label:'Drum speed',value:rDisp,vcls:rOk?(!rInR?'val-warn':''):'',dot:rOk?(rInR?'#2ecf1d':'#ffba0d'):'',detail:rOk?[['Target range',cs.targetMinDrumSpeedRpm+' – '+cs.targetMaxDrumSpeedRpm+' RPM'],['In range',rInR?'Yes':'No',rInR?'':'val-warn']]:[['Target',cs.targetMinDrumSpeedRpm+' – '+cs.targetMaxDrumSpeedRpm+' RPM']]});
+  h+=tlCard({label:'Charge pressure',value:tlKpa(cs.chargePressurePascals),vcls:cpOk?'':'val-alarm',dot:cpOk?'#2ecf1d':'#d70100',detail:[['Expected',tlKpa(cs.chargePressureMin)+' – '+tlKpa(cs.chargePressureMax)],['In range',cpOk?'Yes':'No',cpOk?'':'val-alarm']]});
+  h+=tlCard({label:'Discharge pressure',value:tlKpa(cs.dischargePressurePascals),vcls:dpOk?'':'val-alarm',dot:dpOk?'#2ecf1d':'#d70100',detail:[['Expected',tlKpa(cs.dischargePressureMin)+' – '+tlKpa(cs.dischargePressureMax)],['In range',dpOk?'Yes':'No',dpOk?'':'val-alarm']]});
+  h+=tlCard({label:'Total water added',dot:'#3069e3',value:cs.totalWaterAddedLiters.toFixed(1)+' L',detail:[['Per m³',cs.totalWaterAddedLitersPerCubicMeter.toFixed(2)+' L/m³'],['Admix',cs.totalAdmixAddedMilliliters>0?cs.totalAdmixAddedMilliliters.toFixed(0)+' mL':'None']]});
+  h+='</div></div>';
+  return h;
+}
+
+function tlRenderFluidAdd(row, p) {
+  if(!p.event||!p.event.fluid_add) return tlRenderGeneric(row);
+  var fa=p.event.fluid_add, ts=tlFmtDT(p.time.seconds);
+  var isS=fa.fluidAddEvent==='STEALTH_WATER_DETECTED';
+  var flowOk=tlOk(fa.fluidFlowRateMillilitersPerSecond)&&fa.fluidFlowRateMillilitersPerSecond>0;
+  var h='<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:'+(isS?'#d70100':'#3069e3')+';"></span><span class="tl-chip-label">Fluid Add</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+  if(isS) h+=tlFlag('Stealth water detected — water added without being requested','alarm');
+  if(fa.maxFluidReached) h+=tlFlag('Maximum fluid limit was reached','warn');
+  h+='<div class="tl-section-group"><div class="tl-section-hdr">Key signals</div><div class="tl-card-stack">';
+  h+=tlCard({label:'Event type',value:TL_FLUID[fa.fluidAddEvent]||fa.fluidAddEvent,vcls:isS?'val-alarm':'',dot:isS?'#d70100':'#2ecf1d'});
+  h+=tlCard({label:'Water added',value:fa.waterAddedLiters.toFixed(2)+' L',detail:[['Per m³',fa.waterAddedLitersPerCubicMeter.toFixed(3)+' L/m³']]});
+  h+=tlCard({label:'Admix added',value:fa.admixAddedMilliliters>0?fa.admixAddedMilliliters.toFixed(0)+' mL':'None'});
+  h+=tlCard({label:'Flow rate',value:flowOk?fa.fluidFlowRateMillilitersPerSecond.toFixed(1)+' mL/s':'—',vcls:flowOk?'':'val-muted',dot:flowOk?'#2ecf1d':''});
+  h+='</div></div>';
+  return h;
+}
+
+function tlRenderBackend(row, p) {
+  if(!p.backend_request) return tlRenderGeneric(row);
+  var br=p.backend_request, ts=tlFmtDT(p.time.seconds);
+  var locOk=br.location&&br.location.status==='VALID';
+  var h='<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:#3069e3;"></span><span class="tl-chip-label">Backend Request</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+  h+=tlFlag('System housekeeping message. No action required.','info');
+  h+='<div class="tl-section-group"><div class="tl-section-hdr">Key signals</div><div class="tl-card-stack">';
+  h+=tlCard({label:'Request type',value:br.requestType.replace(/_/g,' ').toLowerCase().replace(/\b\w/g,function(c){return c.toUpperCase();}),dot:'#3069e3'});
+  h+=tlCard({label:'GPS at request',value:locOk?'Valid fix':'No fix',vcls:locOk?'':'val-warn',dot:locOk?'#2ecf1d':'#ffba0d',detail:locOk?[['Lat',br.location.latitude.toFixed(6)],['Lng',br.location.longitude.toFixed(6)]]:[]});
+  h+='</div></div>';
+  return h;
+}
+
+function tlRenderDeviceBinding(row, p) {
+  if(!p.device_binding) return tlRenderGeneric(row);
+  var db=p.device_binding, ts=tlFmtDT(p.time.seconds);
+  var sq=tlSigQ(db.signalStrength), isBound=db.bindingType==='Bound';
+  var h='<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:#3069e3;"></span><span class="tl-chip-label">Device Binding</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+  if(!isBound) h+=tlFlag(db.deviceType+' detected nearby but not yet bound to this truck','info');
+  h+='<div class="tl-section-group"><div class="tl-section-hdr">Key signals</div><div class="tl-card-stack">';
+  h+=tlCard({label:'Device',value:db.deviceType,dot:'#3069e3'});
+  h+=tlCard({label:'Binding status',value:isBound?'Bound':'Detected nearby (not bound)',vcls:isBound?'':'val-warn',dot:isBound?'#2ecf1d':'#ffba0d'});
+  h+=tlCard({label:'Signal strength',value:sq.l+' ('+db.signalStrength+' dBm)',vcls:sq.c,detail:[['Raw dBm',db.signalStrength],['Quality',sq.l,sq.c]]});
+  h+=tlCard({label:'MAC ID',value:db.macId,mono:true});
+  h+='</div></div>';
+  return h;
+}
+
+function tlRenderWireless(row, p) {
+  if(!p.wireless_drum_binding) return tlRenderGeneric(row);
+  var wb=p.wireless_drum_binding, ts=tlFmtDT(p.time.seconds);
+  var isU=wb.wirelessDrumBindingType==='UnboundTC3Notification';
+  var h='<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:'+(isU?'#ffba0d':'#2ecf1d')+';"></span><span class="tl-chip-label">Wireless Drum Binding</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+  h+=isU?tlFlag('Wireless drum not bound to TCG. Physical inspection may be required.','warn'):tlFlag('Wireless drum successfully bound to TCG.','info');
+  h+='<div class="tl-section-group"><div class="tl-section-hdr">Key signals</div><div class="tl-card-stack">';
+  h+=tlCard({label:'Binding status',value:isU?'Unbound from TCG':'Bound to TCG',vcls:isU?'val-warn':'',dot:isU?'#ffba0d':'#2ecf1d'});
+  if(isU) h+=tlCard({label:'Action needed',value:'Check drum sensor and TCG pairing',vcls:'val-warn'});
+  h+='</div></div>';
+  return h;
+}
+
+function tlRenderTicketReceived(row, p) {
+  if(!p.event||!p.event.ticket_received) return tlRenderGeneric(row);
+  var ts  = tlFmtDT(p.time.seconds);
+  var tr  = p.event.ticket_received.receivedTicket;
+
+  // Slump conversion helpers
+  function mmToIn(mm) { return (mm / 25.4).toFixed(1); }
+  function slumpDisp(mm) {
+    if(!tlOk(mm)||mm<0) return '—';
+    return mm + ' mm / ' + mmToIn(mm) + '"';
+  }
+
+  var targetSlump  = slumpDisp(tr.dischargeSlumpMillimeters);
+  var slumpOk      = tlOk(tr.dischargeSlumpMillimeters) && tr.dischargeSlumpMillimeters > 0;
+  var loadSize     = tlOk(tr.loadSizeCubicMeters) ? tr.loadSizeCubicMeters.toFixed(2) + ' m³' : '—';
+  var maxWater     = tlOk(tr.maxWaterLitersPerCubicMeter) ? tr.maxWaterLitersPerCubicMeter.toFixed(2) + ' L/m³' : '—';
+  var autoWater    = tr.autoAddWater ? 'Enabled' : 'Disabled';
+  var autoWaterDot = tr.autoAddWater ? '#2ecf1d' : '#ffba0d';
+  var job          = tr.jobName || '—';
+  var customer     = tr.customerName || '—';
+  var ticketNum    = tr.displayTicketNumber || '—';
+  var instruction  = tr.verifiInstructionName || '—';
+
+  var h = '';
+  h += '<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:#2ecf1d;"></span><span class="tl-chip-label">Ticket Received</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+
+  h += '<div class="tl-section-group"><div class="tl-section-hdr">Key signals</div><div class="tl-card-stack">';
+
+  h += tlCard({
+    label:'Ticket',
+    value:ticketNum,
+    dot:'#3069e3',
+    mono:true,
+    detail:[
+      ['Order',        tr.orderNumber||'—'],
+      ['Account',      tr.accountName||'—'],
+      ['Plant',        tr.plantName+' — '+tr.locationName],
+      ['Driver',       tr.driverCode||'—'],
+    ]
+  });
+
+  h += tlCard({
+    label:'Job',
+    value:job,
+    dot:'#3069e3',
+    detail:[
+      ['Customer',     customer],
+      ['Address',      tr.customerAddress||'—'],
+      ['Mix code',     tr.mixCodeName||'—'],
+    ]
+  });
+
+  h += tlCard({
+    label:'Load size',
+    value:loadSize,
+    dot:'#2ecf1d',
+    detail:[
+      ['Target slump', targetSlump],
+      ['Min discharge',slumpDisp(tr.minDischargeSlumpMillimeters)],
+      ['Max discharge',slumpDisp(tr.maxDischargeSlumpMillimeters)],
+      ['Mix revs after load', tr.mixRevsAfterLoading||'—'],
+    ]
+  });
+
+  h += tlCard({
+    label:'Auto-add water',
+    value:autoWater,
+    dot:autoWaterDot,
+    detail:[
+      ['Max water',      maxWater],
+      ['Beyond max',     tr.allowWaterBeyondMax?'Allowed':'Not allowed'],
+      ['Driver adds on site', tr.allowDriverWaterAddsOnSite?'Allowed':'Not allowed'],
+      ['Instruction',    instruction],
+    ]
+  });
+
+  h += '</div></div>';
+  return h;
+}
+
+function tlRenderDriverAction(row, p) {
+  if(!p.event||!p.event.driver_action) return tlRenderGeneric(row);
+  var da=p.event.driver_action, ts=tlFmtDT(p.time.seconds);
+  var locOk=p.event.location&&p.event.location.status==='VALID';
+
+  // Translate action enum to plain English
+  var TL_DRIVER_ACTIONS = {
+    'DRIVER_REQUESTED_WATER':  'Driver requested water',
+    'DRIVER_REQUESTED_ADMIX':  'Driver requested admix',
+    'DRIVER_CANCEL_WATER':     'Driver cancelled water request',
+    'DRIVER_CANCEL_ADMIX':     'Driver cancelled admix request',
+    'DRIVER_CONFIRMED_EMPTY':  'Driver confirmed truck empty',
+    'DRIVER_STARTED_DISCHARGE':'Driver started discharge',
+  };
+  var actionLabel = TL_DRIVER_ACTIONS[da.action] || da.action.replace(/_/g,' ').toLowerCase().replace(/\b\w/g,function(c){return c.toUpperCase();});
+
+  // parameterRaw is likely mL of water requested — convert to L
+  var paramLabel = '';
+  if(da.action.indexOf('WATER') !== -1 && da.parameterRaw > 0) {
+    paramLabel = (da.parameterRaw / 1000).toFixed(2) + ' L requested';
+  } else if(da.parameterRaw > 0) {
+    paramLabel = da.parameterRaw + ' (raw)';
+  }
+
+  var isWater = da.action.indexOf('WATER') !== -1;
+  var chipDot  = isWater ? '#3069e3' : '#3069e3';
+
+  var h = '';
+  h += '<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:'+chipDot+';"></span><span class="tl-chip-label">Driver Action</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+
+  h += '<div class="tl-section-group"><div class="tl-section-hdr">Key signals</div><div class="tl-card-stack">';
+  h += tlCard({label:'Action', value:actionLabel, dot:'#3069e3'});
+  if(paramLabel) {
+    h += tlCard({label:'Amount', value:paramLabel, dot:'#3069e3'});
+  }
+  h += tlCard({
+    label:'Truck location',
+    value: locOk ? 'Valid fix' : 'No fix',
+    dot:   locOk ? '#2ecf1d' : '#ffba0d',
+    vcls:  locOk ? '' : 'val-warn',
+    detail: locOk ? [
+      ['Lat', p.event.location.latitude.toFixed(6)],
+      ['Lng', p.event.location.longitude.toFixed(6)],
+    ] : []
+  });
+  h += '</div></div>';
+  return h;
+}
+
+function tlRenderSystemStatusReal(row, p) {
+  if(!p.event||!p.event.system_status) return tlRenderGeneric(row);
+  var ss = p.event.system_status;
+  var ts = tlFmtDT(p.time.seconds);
+
+  // Map of component key → display name + how to get a reading value
+  var COMP_MAP = [
+    { key:'wirelessDrum',     label:'Wireless Drum',      reading: function(c){ return c.batteryVoltage ? c.batteryVoltage.toFixed(2)+'V' : 'Active'; } },
+    { key:'iox',              label:'IOX',                reading: function(){ return 'Active'; } },
+    { key:'inCabDisplay',     label:'In-Cab Display',     reading: function(c){ return c.version ? 'v'+c.version : 'Active'; } },
+    { key:'externalDisplay',  label:'External Display',   reading: function(c){ return c.version ? 'v'+c.version : 'Active'; } },
+    { key:'vnextSensorBoard', label:'Sensor Board',       reading: function(c){ return c.version ? 'v'+c.version : 'Active'; } },
+    { key:'vnextWaterBoard',  label:'Water Board',        reading: function(c){ return c.version ? 'v'+c.version : 'Active'; } },
+    { key:'pressureCharge',   label:'Charge Pressure',    reading: function(){ var d=ss.vnextSensorBoardDevices; return d&&d.pressureCharge ? tlKpa(d.pressureCharge.pressurePascal) : 'Connected'; } },
+    { key:'pressureDischarge',label:'Discharge Pressure', reading: function(){ var d=ss.vnextSensorBoardDevices; return d&&d.pressureDischarge ? tlKpa(d.pressureDischarge.pressurePascal) : 'Connected'; } },
+    { key:'cwr',              label:'CWR',                reading: function(c){ return c.temperatureCelsius !== undefined ? c.temperatureCelsius+'° C' : 'Active'; } },
+    { key:'kzValveVnextAir',  label:'Air Valve',          reading: function(c){ return c.valveReportedPositionDegrees !== undefined ? c.valveReportedPositionDegrees+'°' : 'Active'; } },
+    { key:'kzValveVnextTemperateWaterMain', label:'Water Valve', reading: function(c){ return c.valveReportedPositionDegrees !== undefined ? c.valveReportedPositionDegrees+'°' : 'Active'; } },
+    { key:'wiredDrum',        label:'Wired Drum',         reading: function(){ return '—'; } },
+    { key:'powerModule',      label:'Power Module',       reading: function(){ return '—'; } },
+    { key:'jacketHeater',     label:'Jacket Heater',      reading: function(){ return '—'; } },
+    { key:'fdmHeater',        label:'FDM Heater',         reading: function(){ return '—'; } },
+    { key:'vnextAdmixBoard',  label:'Admix Board',        reading: function(){ return '—'; } },
+    { key:'roboteq',          label:'Roboteq',            reading: function(){ return '—'; } },
+  ];
+
+  var online = [], offline = [];
+  COMP_MAP.forEach(function(cm) {
+    var comp = ss[cm.key];
+    if(!comp) return;
+    if(comp.alive) {
+      online.push({ label: cm.label, reading: cm.reading(comp), lastSeen: comp.lastContactSeconds ? new Date(comp.lastContactSeconds*1000).toISOString().substr(11,8) : '—' });
+    } else {
+      offline.push(cm.label);
+    }
+  });
+
+  // Status flags
+  var flags = [];
+  if(!ss.ignition)    flags.push('Ignition off');
+  if(!ss.sensorPower) flags.push('Sensor power off');
+  if(ss.ghostMode)    flags.push('Ghost mode active');
+  if(ss.offMode)      flags.push('Off mode active');
+
+  var flagType = flags.length ? 'warn' : 'info';
+  var summaryMsg = flags.length
+    ? flags.join(' — ')
+    : online.length + ' of ' + (online.length+offline.length) + ' components online — '
+      + (ss.operatingMode ? ss.operatingMode.mode : '') + ' / ' + (ss.operatingMode ? ss.operatingMode.localMode : '');
+
+  var h = '';
+  h += '<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:#3069e3;"></span><span class="tl-chip-label">System Status</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+  h += tlFlag(summaryMsg, flagType);
+
+  // Unified component table
+  h += '<div class="tl-section-group">';
+  h += '<div class="tl-section-hdr">Components ('+online.length+' online, '+offline.length+' no contact)</div>';
+  h += '<div class="tl-comp-table">';
+  h += '<div class="tl-comp-thead"><span style="flex:1;">Component</span><span style="width:68px;flex-shrink:0;text-align:right;">Last seen</span><span style="width:44px;flex-shrink:0;text-align:center;">—</span><span style="width:80px;flex-shrink:0;text-align:right;">Reading</span></div>';
+
+  online.forEach(function(c, i) {
+    h += '<div class="tl-comp-row'+(i%2===1?' alt':'')+'">';
+    h += '<span class="tl-comp-name"><span class="tl-card-dot" style="background:#2ecf1d;flex-shrink:0;"></span>'+tlEsc(c.label)+'</span>';
+    h += '<span class="tl-comp-seen">'+tlEsc(c.lastSeen)+'</span>';
+    h += '<span class="tl-comp-errors no-errors" style="color:rgba(54,50,45,0.25);">—</span>';
+    h += '<span class="tl-comp-status" style="color:var(--strong);font-weight:500;">'+tlEsc(c.reading)+'</span>';
+    h += '</div>';
+  });
+  offline.forEach(function(name, i) {
+    var alt = (online.length + i) % 2 === 1;
+    h += '<div class="tl-comp-row'+(alt?' alt':'')+'">';
+    h += '<span class="tl-comp-name"><span class="tl-card-dot" style="background:rgba(54,50,45,0.18);flex-shrink:0;"></span>'+tlEsc(name)+'</span>';
+    h += '<span class="tl-comp-seen" style="color:rgba(54,50,45,0.25);">—</span>';
+    h += '<span class="tl-comp-errors no-errors" style="color:rgba(54,50,45,0.25);">—</span>';
+    h += '<span class="tl-comp-status no-contact">No Contact</span>';
+    h += '</div>';
+  });
+  h += '</div></div>';
+  return h;
+}
+
+function tlRenderTruckHealth(row, p) {
+  if(!p.event||!p.event.truck_health) return tlRenderGeneric(row);
+  var th = p.event.truck_health;
+  var ts = tlFmtDT(p.time.seconds);
+  var locOk = p.event.location && p.event.location.status === 'VALID';
+
+  // TruckHealth events are behavioral pattern detections, not hardware faults.
+  // Translate eventType to plain English + explain what it means for the FST.
+  var TL_TRUCK_HEALTH_EVENTS = {
+    'RPM_DECREASE_SLUMP_INCREASE': {
+      label:   'RPM decrease, slump increase',
+      meaning: 'Drum slowed while slump rose — possible buildup, over-wet mix, or sensor issue.',
+      sev:     'warn',
+    },
+    'RPM_INCREASE_SLUMP_DECREASE': {
+      label:   'RPM increase, slump decrease',
+      meaning: 'Drum sped up while slump dropped — mix may be stiffening faster than expected.',
+      sev:     'warn',
+    },
+    'SLUMP_OUT_OF_RANGE': {
+      label:   'Slump out of range',
+      meaning: 'Slump reading outside acceptable limits for this load.',
+      sev:     'alarm',
+    },
+    'DRUM_NOT_RESPONDING': {
+      label:   'Drum not responding',
+      meaning: 'No drum speed signal detected. Check WDS connection and magnet alignment.',
+      sev:     'alarm',
+    },
+    'PRESSURE_ANOMALY': {
+      label:   'Pressure anomaly',
+      meaning: 'Charge or discharge pressure reading outside expected range.',
+      sev:     'warn',
+    },
+    'CAN_BUS_ERROR': {
+      label:   'CAN bus error',
+      meaning: 'Communication error on the CAN bus. May affect multiple components.',
+      sev:     'alarm',
+    },
+  };
+
+  var def    = TL_TRUCK_HEALTH_EVENTS[th.eventType] || {
+    label:   th.eventType.replace(/_/g,' ').toLowerCase().replace(/\w/g,function(c){return c.toUpperCase();}),
+    meaning: 'Behavioral pattern detected. Review recent ConcreteStatus and sensor readings.',
+    sev:     'warn',
+  };
+  var isAlarm = def.sev === 'alarm';
+  var chipDot = isAlarm ? '#d70100' : '#ffba0d';
+
+  var h = '';
+  h += '<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:'+chipDot+';"></span><span class="tl-chip-label">Truck Health</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+  h += tlFlag(def.meaning, def.sev === 'alarm' ? 'alarm' : 'warn');
+
+  h += '<div class="tl-section-group"><div class="tl-section-hdr">Key signals</div><div class="tl-card-stack">';
+
+  h += tlCard({
+    label: 'Pattern detected',
+    value: def.label,
+    dot:   chipDot,
+    vcls:  isAlarm ? 'val-alarm' : 'val-warn',
+  });
+
+  h += tlCard({
+    label: 'Truck location',
+    value: locOk ? 'Valid fix' : 'No fix',
+    dot:   locOk ? '#2ecf1d' : '#ffba0d',
+    vcls:  locOk ? '' : 'val-warn',
+    detail: locOk ? [
+      ['Lat', p.event.location.latitude.toFixed(6)],
+      ['Lng', p.event.location.longitude.toFixed(6)],
+    ] : []
+  });
+
+  h += '</div></div>';
+  return h;
+}
+
+function tlRenderFluidError(row, p) {
+  if(!p.event||!p.event.fluid_error) return tlRenderGeneric(row);
+  var fe = p.event.fluid_error;
+  var ts = tlFmtDT(p.time.seconds);
+  var locOk = p.event.location && p.event.location.status === 'VALID';
+
+  // Translate error codes to plain English
+  var TL_FLUID_ERRORS = {
+    'FDM_ERROR':          'FDM hardware failure',
+    'FLOW_TOO_LOW':       'Flow rate too low',
+    'FLOW_TOO_HIGH':      'Flow rate too high',
+    'VALVE_STUCK_OPEN':   'Valve stuck open',
+    'VALVE_STUCK_CLOSED': 'Valve stuck closed',
+    'TIMEOUT':            'Fluid add timed out',
+    'TANK_EMPTY':         'Tank empty',
+  };
+  var TL_FLUID_NAMES = {
+    'WATER': 'Water', 'ADMIX': 'Admix', 'AIR': 'Air',
+  };
+
+  var errorLabel = TL_FLUID_ERRORS[fe.error] || fe.error.replace(/_/g,' ').toLowerCase().replace(/\w/g,function(c){return c.toUpperCase();});
+  var fluidLabel = TL_FLUID_NAMES[fe.fluid] || fe.fluid;
+
+  var h = '';
+  h += '<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:#d70100;"></span><span class="tl-chip-label">Fluid Error</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+  h += tlFlag(fluidLabel+' add failed — '+errorLabel+'. Check FDM wiring and valve.', 'alarm');
+
+  h += '<div class="tl-section-group"><div class="tl-section-hdr">Key signals</div><div class="tl-card-stack">';
+
+  h += tlCard({
+    label: 'Error',
+    value: errorLabel,
+    dot:   '#d70100',
+    vcls:  'val-alarm',
+  });
+
+  h += tlCard({
+    label: 'Fluid affected',
+    value: fluidLabel,
+    dot:   '#d70100',
+  });
+
+  h += tlCard({
+    label: 'Truck location',
+    value: locOk ? 'Valid fix' : 'No fix',
+    dot:   locOk ? '#2ecf1d' : '#ffba0d',
+    vcls:  locOk ? '' : 'val-warn',
+    detail: locOk ? [
+      ['Lat', p.event.location.latitude.toFixed(6)],
+      ['Lng', p.event.location.longitude.toFixed(6)],
+    ] : []
+  });
+
+  h += '</div></div>';
+  return h;
+}
+
+function tlRenderIdentity(row, p) {
+  if(!p.identity) return tlRenderGeneric(row);
+  var id = p.identity;
+  var ts = tlFmtDT(p.time.seconds);
+
+  var commissioned   = id.commissioned === true;
+  var drumBound      = id.wirelessDrumSensorBound === true;
+  var commDot        = commissioned ? '#2ecf1d' : '#d70100';
+  var commVal        = commissioned ? 'Yes' : 'No';
+  var commVcls       = commissioned ? '' : 'val-alarm';
+  var drumDot        = drumBound ? '#2ecf1d' : '#ffba0d';
+  var drumVal        = drumBound ? 'Bound' : 'Not bound';
+  var drumVcls       = drumBound ? '' : 'val-warn';
+
+  var h = '';
+  h += '<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:#3069e3;"></span><span class="tl-chip-label">Identity</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+
+  if (!commissioned) {
+    h += tlFlag('TCG is not commissioned — unit will not report data until commissioned.', 'warn');
+  }
+
+  h += '<div class="tl-section-group"><div class="tl-section-hdr">Key signals</div><div class="tl-card-stack">';
+
+  h += tlCard({
+    label: 'Device',
+    value: (id.deviceType||'—'),
+    dot: '#3069e3',
+    detail: [
+      ['Serial',        id.serialNo||'—'],
+      ['MAC ID',        id.macId||'—'],
+      ['Variant',       id.deviceVariant||'—'],
+    ]
+  });
+
+  h += tlCard({
+    label: 'Software version',
+    value: (id.version||'—'),
+    dot: '#3069e3',
+    mono: true,
+    detail: [
+      ['BSP version',   id.bspVersion||'—'],
+      ['Protocol',      'v'+p.pbversion],
+    ]
+  });
+
+  h += tlCard({
+    label: 'Commissioned',
+    value: commVal,
+    dot: commDot,
+    vcls: commVcls,
+  });
+
+  h += tlCard({
+    label: 'Wireless drum sensor',
+    value: drumVal,
+    dot: drumDot,
+    vcls: drumVcls,
+    detail: drumBound ? [
+      ['Drum MAC ID', id.wirelessDrumSensorMacId||'—'],
+    ] : []
+  });
+
+  h += '</div></div>';
+  return h;
+}
+
+function tlRenderGeneric(row) {
+  var p   = tlGetPayload(row);
+  var ts  = tlFmtDT(p.time ? p.time.seconds : 0);
+
+  // Extract top-level keys from the payload to give devs a field list to work from
+  var payloadKeys = Object.keys(p).filter(function(k) {
+    return ['message_type','time','sender_mac_id','accountId','truckId','truckName','pbversion','_note'].indexOf(k) === -1;
+  });
+  // Drill into the event sub-object if present
+  var eventKeys = [];
+  if (p.event) {
+    eventKeys = Object.keys(p.event).filter(function(k) { return k !== 'event_type'; });
+    // If there's a typed sub-object (driver_action, fluid_add, etc.) drill one more level
+    eventKeys.forEach(function(k) {
+      if (typeof p.event[k] === 'object' && p.event[k] !== null && !Array.isArray(p.event[k])) {
+        Object.keys(p.event[k]).forEach(function(sub) {
+          eventKeys.push(k + '.' + sub);
+        });
+      }
+    });
+  }
+  var allKeys = payloadKeys.concat(eventKeys);
+
+  var h = '';
+
+  // Chip — same as every other template
+  h += '<div class="tl-chip">';
+  h += '<div class="tl-chip-left"><span class="tl-chip-dot" style="background:#3069e3;"></span><span class="tl-chip-label">'+tlEsc(row.sub)+'</span></div>';
+  h += '<span class="tl-chip-time">'+tlEsc(ts)+'</span>';
+  h += '</div>';
+
+  // Dev contract notice — styled differently from a warning, more like a spec annotation
+  h += '<div style="background:rgba(48,105,227,0.06);border:1px dashed rgba(48,105,227,0.3);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;">';
+  h += '<div style="font-size:12px;font-weight:600;color:#2355c4;letter-spacing:0.3px;text-transform:uppercase;">Template needed — '+tlEsc(row.type)+' › '+tlEsc(row.sub)+'</div>';
+  h += '<div style="font-size:13px;color:var(--defined);letter-spacing:-0.26px;line-height:1.5;">Pick 2–4 key signals from the fields below. Each becomes a card with a label, value, status dot, and optional expand rows.</div>';
+  h += '</div>';
+
+  // Field list — shows devs exactly what's available in the payload
+  if(allKeys.length > 0) {
+    h += '<div class="tl-section-group">';
+    h += '<div class="tl-section-hdr">Available fields</div>';
+    h += '<div class="tl-comp-table">';
+    h += '<div class="tl-comp-thead"><span style="flex:1;">Field</span><span style="flex:1;text-align:right;">Sample value</span></div>';
+    allKeys.forEach(function(key, i) {
+      // Resolve nested value
+      var val = p;
+      key.split('.').forEach(function(part) {
+        val = val && typeof val === 'object' ? (val[part] !== undefined ? val[part] : val.event ? val.event[part] : '—') : '—';
+      });
+      if (typeof val === 'object') val = JSON.stringify(val);
+      var muted = !tlOk(val) || val === '—' || val === null;
+      h += '<div class="tl-comp-row'+(i%2===1?' alt':'')+'" style="min-height:36px;">';
+      h += '<span style="flex:1;font-family:var(--font-mono);font-size:12px;color:var(--soft);">'+tlEsc(key)+'</span>';
+      h += '<span style="flex:1;text-align:right;font-size:13px;'+(muted?'color:var(--subtle);font-style:italic;':'color:var(--strong);font-weight:500;')+'">'+tlEsc(muted?'—':String(val))+'</span>';
+      h += '</div>';
+    });
+    h += '</div></div>';
+  } else {
+    // No payload captured yet — show the skeleton with question marks
+    h += '<div class="tl-section-group">';
+    h += '<div class="tl-section-hdr">Key signals — to be defined</div>';
+    h += '<div class="tl-card-stack">';
+    h += tlCard({label:'Signal 1', value:'?', dot:'rgba(54,50,45,0.2)'});
+    h += tlCard({label:'Signal 2', value:'?', dot:'rgba(54,50,45,0.2)'});
+    h += tlCard({label:'Signal 3', value:'?', dot:'rgba(54,50,45,0.2)'});
+    h += '</div></div>';
+  }
+
+  return h;
+}
+
+/* ── SystemStatus template — matches Figma node 3472:20202 ── */
+var TL_ONLINE_COMPONENTS = [
+  { name:'Wireless Drum',     value:'3.54V',    dot:'#2ecf1d', detail:[['Last Seen:','13:49:59'],['Start Up Count:','1'],['Error Count:','0']] },
+  { name:'IOX',               value:'12.92 V',  dot:'#2ecf1d', detail:[['Last Seen:','13:49:58'],['Start Up Count:','1'],['Error Count:','0']] },
+  { name:'In-Cab Display',    value:'Active',   dot:'#2ecf1d', detail:[['Last Seen:','13:49:57'],['Start Up Count:','1'],['Error Count:','0']] },
+  { name:'External Display',  value:'Active',   dot:'#2ecf1d', detail:[['Last Seen:','13:49:57'],['Start Up Count:','1'],['Error Count:','0']] },
+  { name:'Bus Power',         value:'12.76V',   dot:'#2ecf1d', detail:[['Last Seen:','13:49:59'],['Start Up Count:','1'],['Error Count:','0']] },
+  { name:'Discharge Pressure',value:'Connected',dot:'#2ecf1d', detail:[['Last Seen:','13:49:56'],['Start Up Count:','1'],['Error Count:','0']] },
+  { name:'Charge Pressure',   value:'Connected',dot:'#2ecf1d', detail:[['Last Seen:','13:49:56'],['Start Up Count:','1'],['Error Count:','0']] },
+  { name:'CWR',               value:'45° C',    dot:'#2ecf1d', detail:[['Last Seen:','13:49:55'],['Start Up Count:','1'],['Error Count:','2']] },
+];
+var TL_OFFLINE_COMPONENTS = [
+  'Wired Drum','Roboteq','Power Module','FDM Heater','Jacket Heater',
+  'Admix Board','Sensor Board','Water Board','AWAS','Air V4','Air vNext','Water Main',
+];
+
+function tlRenderSystemStatus(row, ts, shutdownType) {
+  var online  = TL_ONLINE_COMPONENTS.length;
+  var offline = TL_OFFLINE_COMPONENTS.length;
+  var total   = online + offline;
+  var errored = TL_ONLINE_COMPONENTS.filter(function(c){ return c.detail && parseInt(c.detail[2][1]) > 0; }).length;
+  var isShutdown = row.sub === 'Shutdown';
+
+  // Shutdown type flag — only meaningful on StartUp (tells us how last session ended)
+  var shutdownFlagH = '';
+  if (!isShutdown && shutdownType) {
+    if (shutdownType === 'DIRTY') {
+      shutdownFlagH = tlFlag('Previous shutdown was unclean — power may have been cut unexpectedly. Previous session data may be incomplete.', 'warn');
+    } else if (shutdownType === 'CLEAN') {
+      shutdownFlagH = tlFlag('Previous shutdown was clean.', 'info');
+    }
+  }
+
+  // Component summary flag
+  var flagType, flagMsg;
+  if (errored > 0) {
+    flagType = 'warn';
+    flagMsg  = errored + ' component' + (errored > 1 ? 's' : '') + ' reporting errors — ' + online + ' of ' + total + ' online at ' + (isShutdown ? 'shutdown' : 'startup');
+  } else if (offline > 0) {
+    flagType = 'info';
+    flagMsg  = online + ' of ' + total + ' components online at ' + (isShutdown ? 'shutdown' : 'startup') + ' — ' + offline + ' no contact';
+  } else {
+    flagType = 'info';
+    flagMsg  = 'All ' + total + ' components online at ' + (isShutdown ? 'shutdown' : 'startup') + ' — no errors';
+  }
+
+  var h = '';
+  h += '<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:#3069e3;"></span><span class="tl-chip-label">'+(isShutdown ? 'Shutdown' : 'StartUp')+' Event</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+  h += shutdownFlagH;
+  h += tlFlag(flagMsg, flagType);
+
+  h += '<div class="tl-section-group">';
+  h += '<div class="tl-section-hdr">Components ('+TL_ONLINE_COMPONENTS.length+' online, '+TL_OFFLINE_COMPONENTS.length+' no contact)</div>';
+  h += '<div class="tl-comp-table">';
+
+  // Header
+  h += '<div class="tl-comp-thead">';
+  h += '<span style="flex:1;">Component</span>';
+  h += '<span style="width:68px;flex-shrink:0;text-align:right;">Last seen</span>';
+  h += '<span style="width:44px;flex-shrink:0;text-align:center;">Errors</span>';
+  h += '<span style="width:80px;flex-shrink:0;text-align:right;">Reading</span>';
+  h += '</div>';
+
+  // Online rows
+  TL_ONLINE_COMPONENTS.forEach(function(c, i) {
+    var lastSeen = c.detail ? c.detail[0][1] : '—';
+    var errors   = c.detail ? parseInt(c.detail[2][1]) : 0;
+    var errCls   = errors > 0 ? 'has-errors' : 'no-errors';
+    h += '<div class="tl-comp-row'+(i%2===1?' alt':'')+'">';
+    h += '<span class="tl-comp-name"><span class="tl-card-dot" style="background:'+c.dot+';flex-shrink:0;"></span>'+tlEsc(c.name)+'</span>';
+    h += '<span class="tl-comp-seen">'+tlEsc(lastSeen)+'</span>';
+    h += '<span class="tl-comp-errors '+errCls+'">';
+    if (errors > 0) {
+      h += '<button class="tl-err-link" onclick="tlDrillErrors(\''+tlEsc(c.name)+'\')">'+errors+'</button>';
+    } else {
+      h += '0';
+    }
+    h += '</span>';
+    h += '<span class="tl-comp-status" style="color:var(--strong);font-weight:500;">'+tlEsc(c.value)+'</span>';
+    h += '</div>';
+  });
+
+  // Offline rows
+  TL_OFFLINE_COMPONENTS.forEach(function(name, i) {
+    var alt = (TL_ONLINE_COMPONENTS.length + i) % 2 === 1;
+    h += '<div class="tl-comp-row'+(alt?' alt':'')+'">';
+    h += '<span class="tl-comp-name"><span class="tl-card-dot" style="background:rgba(54,50,45,0.18);flex-shrink:0;"></span>'+tlEsc(name)+'</span>';
+    h += '<span class="tl-comp-seen" style="color:rgba(54,50,45,0.25);">—</span>';
+    h += '<span class="tl-comp-errors no-errors" style="color:rgba(54,50,45,0.25);">—</span>';
+    h += '<span class="tl-comp-status no-contact">No Contact</span>';
+    h += '</div>';
+  });
+
+  h += '</div></div>';
+  return h;
+}
+
+function tlRenderStructured(row) {
+  var p = tlGetPayload(row);
+  if (row.type==='Event' && row.sub==='SystemStatus' && p.event && p.event.system_status) {
+    return tlRenderSystemStatusReal(row, p);
+  }
+  if (row.type==='Event' && (row.sub==='StartUp'||row.sub==='Shutdown'||row.sub==='SystemStatus')) {
+    var shutdownType = p.event && p.event.startup ? p.event.startup.previousShutdownType
+                     : p.event && p.event.shutdown ? p.event.shutdown.shutdownType
+                     : null;
+    return tlRenderSystemStatus(row, tlFmtDT(p.time.seconds), shutdownType);
+  }
+  if (row.type==='Event' && row.sub==='TruckHealth')      return tlRenderTruckHealth(row, p);
+  if (row.type==='Event' && row.sub==='FluidError')       return tlRenderFluidError(row, p);
+  if (row.type==='Identity')                              return tlRenderIdentity(row, p);
+  if (row.type==='Event' && row.sub==='TicketReceived')  return tlRenderTicketReceived(row, p);
+  if (row.type==='Event' && row.sub==='DriverAction')    return tlRenderDriverAction(row, p);
+  if (row.type==='Event' && row.sub==='ConcreteStatus') return tlRenderConcreteStatus(row, p);
+  if (row.type==='Event' && row.sub==='FluidAdd')       return tlRenderFluidAdd(row, p);
+  if (row.type==='BackendRequest')                      return tlRenderBackend(row, p);
+  if (row.type==='DeviceBinding')                       return tlRenderDeviceBinding(row, p);
+  if (row.type==='WirelessDrumBinding')                 return tlRenderWireless(row, p);
+  return tlRenderGeneric(row);
+}
+
+/* ── Raw JSON ── */
+var tlRS={q:'',m:[],a:0};
+function tlHlJson(j){var e=j.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');return e.replace(/(\"(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\\"])*\"(\s*:)?|\b(true|false|null)\b|-?[\d.]+([eE][+-]?\d+)?)/g,function(m){var c='jn';if(/^"/.test(m))c=/:$/.test(m)?'jk':'js';else if(/true|false/.test(m))c='jb';else if(/null/.test(m))c='jnu';return'<span class="'+c+'">'+m+'</span>';});}
+function tlRenderRaw(row){tlRS={q:'',m:[],a:0};var j=JSON.stringify(tlGetPayload(row),null,2);return '<div class="tl-raw-wrap"><div class="tl-raw-search"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="rgba(54,50,45,0.5)" stroke-width="1.3"/><line x1="8.5" y1="8.5" x2="11.5" y2="11.5" stroke="rgba(54,50,45,0.5)" stroke-width="1.3" stroke-linecap="round"/></svg><input type="text" placeholder="Search JSON" autocomplete="off" oninput="tlRSUpdate(this.value)" onkeydown="tlRSKey(event)"><span class="tl-raw-count" id="tl-rc"></span><button class="tl-raw-nav" onclick="tlRSStep(-1)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 7.5L6 4.5L9 7.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="tl-raw-nav" onclick="tlRSStep(1)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div><div class="tl-raw-block" id="tl-rb">'+tlHlJson(j)+'</div></div>';}
+function tlRSUpdate(q){tlRS.q=q;tlRS.a=0;tlRSApply();}
+function tlRSApply(){var b=document.getElementById('tl-rb'),c=document.getElementById('tl-rc');if(!b||!c)return;b.querySelectorAll('mark.tl-hi').forEach(function(m){m.replaceWith(document.createTextNode(m.textContent));});b.normalize();var q=tlRS.q.toLowerCase();if(!q){tlRS.m=[];c.textContent='';return;}var w=document.createTreeWalker(b,NodeFilter.SHOW_TEXT);var ns=[];var n;while((n=w.nextNode()))ns.push(n);var ms=[];ns.forEach(function(tn){var t=tn.nodeValue,l=t.toLowerCase(),i=0,f,e=0,fr=document.createDocumentFragment();while((f=l.indexOf(q,i))!==-1){if(f>e)fr.appendChild(document.createTextNode(t.slice(e,f)));var m=document.createElement('mark');m.className='tl-hi';m.textContent=t.slice(f,f+q.length);fr.appendChild(m);ms.push(m);e=f+q.length;i=e;}if(e>0){if(e<t.length)fr.appendChild(document.createTextNode(t.slice(e)));tn.parentNode.replaceChild(fr,tn);}});tlRS.m=ms;if(!ms.length){c.textContent='No results';return;}if(tlRS.a>=ms.length)tlRS.a=0;tlRSHL();}
+function tlRSHL(){var ms=tlRS.m,a=tlRS.a,c=document.getElementById('tl-rc');ms.forEach(function(m,i){m.classList.toggle('active',i===a);});if(ms.length){c.textContent=(a+1)+' of '+ms.length;ms[a].scrollIntoView({block:'nearest',behavior:'smooth'});}}
+function tlRSStep(d){if(!tlRS.m.length)return;tlRS.a=(tlRS.a+d+tlRS.m.length)%tlRS.m.length;tlRSHL();}
+function tlRSKey(e){if(e.key==='Enter'){e.preventDefault();tlRSStep(e.shiftKey?-1:1);}else if(e.key==='Escape'){e.target.value='';tlRSUpdate('');}}
+
+/* ── Tab switch ── */
+function tlSetTab(which, btn) {
+  tlTab=which;
+  document.querySelectorAll('.tl-side-tab').forEach(function(t){t.classList.remove('active');});
+  if(btn)btn.classList.add('active');
+  if(tlSelId!==null)tlRenderBody(TL_ROWS.find(function(r){return r.id===tlSelId;}));
+}
+
+function tlRenderBody(row) {
+  var content=document.getElementById('tl-side-content');
+  if(!content)return;
+  var body=document.getElementById('tl-side-body');
+  if(body)body.scrollTop=0;
+  content.innerHTML=tlTab==='structured'?tlRenderStructured(row):tlRenderRaw(row);
+}
+
+/* ── Row selection ── */
+function tlSelectRow(id) {
+  tlSelId=id; tlTab='structured';
+  document.querySelectorAll('.tl-side-tab').forEach(function(t,i){t.classList.toggle('active',i===0);});
+  tlLogsRender();
+  var row=TL_ROWS.find(function(r){return r.id===id;});
+  var empty=document.getElementById('tl-side-empty');
+  var content=document.getElementById('tl-side-content');
+  var sub=document.getElementById('tl-side-sub');
+  var tabs=document.getElementById('tl-side-tabs');
+  var foot=document.getElementById('tl-side-foot');
+  var footT=document.getElementById('tl-side-foot-time');
+  if(empty)empty.style.display='none';
+  if(content){content.style.display='flex';content.innerHTML=tlRenderStructured(row);}
+  if(sub)sub.textContent=row.sub+' — '+row.type;
+  if(tabs)tabs.style.display='flex';
+  if(foot)foot.style.display='block';
+  if(footT)footT.textContent='1 min ago';
+}
+
+/* ── Filter dropdown ── */
+function tlOnTypeChange(val) {
+  tlFilters.msgType=val; tlFilters.subType='all';
+  var sub=document.getElementById('tl-subtype');
+  var helper=document.getElementById('tl-sub-helper');
+  if(val==='all'){sub.disabled=true;sub.innerHTML='<option value="all">All</option>';if(helper)helper.textContent='Select a message type first';}
+  else{sub.disabled=false;var opts=TL_SUB_TYPES[val]||[];sub.innerHTML='<option value="all">All</option>'+opts.map(function(o){return'<option value="'+o+'">'+o+'</option>';}).join('');if(helper)helper.textContent='';}
+  tlLogsRender();
+}
+
+/* ── Refresh ── */
+function tlRefresh() {
+  var btn=document.getElementById('tl-refresh-btn');
+  var icon=document.getElementById('tl-refresh-icon');
+  var label=document.getElementById('tl-refresh-label');
+  if(!btn)return;
+  btn.classList.add('refreshing');
+  if(label)label.textContent='Refreshing\u2026';
+  setTimeout(function(){
+    tlLogsRender();
+    btn.classList.remove('refreshing');btn.classList.add('refreshed');
+    if(icon)icon.innerHTML='<path d="M3 8l3.5 3.5L13 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>';
+    if(label)label.textContent='Updated';
+    setTimeout(function(){
+      btn.classList.remove('refreshed');
+      if(icon)icon.innerHTML='<path d="M13.5 8A5.5 5.5 0 1 1 8 2.5c1.8 0 3.4.87 4.4 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 2v3h-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>';
+      if(label)label.textContent='Refresh';
+    },1800);
+  },900);
+}
+
+/* ── Render table ── */
+/* ── Error drill-in ──
+   Called when an FST taps an error count in the component table.
+   Filters the log list to the most likely related event types for
+   that component, selects the first match, and scrolls it into view.
+   Note: in production this would filter by component name + timestamp
+   proximity. For this prototype we match by most likely sub-types. */
+var TL_ERROR_SUBTYPES = {
+  'CWR':               ['TruckHealth'],
+  'Wireless Drum':     ['TruckHealth','WirelessDrumBinding'],
+  'Discharge Pressure':['TruckHealth','FluidError'],
+  'Charge Pressure':   ['TruckHealth','FluidError'],
+  'Bus Power':         ['TruckHealth'],
+  'IOX':               ['TruckHealth'],
+};
+
+var TL_ERR_BANNER_ID = 'tl-err-banner';
+
+function tlDrillErrors(componentName) {
+  // Clear any existing drill banner
+  var existing = document.getElementById(TL_ERR_BANNER_ID);
+  if (existing) existing.remove();
+
+  var subtypes = TL_ERROR_SUBTYPES[componentName] || ['TruckHealth','FluidError'];
+
+  // Find matching rows
+  var matches = TL_ROWS.filter(function(r) {
+    return subtypes.indexOf(r.sub) !== -1;
+  });
+
+  if (!matches.length) return;
+
+  // Apply a search filter so only these rows show
+  // We highlight via the search field using the component name context
+  // Reset filters first, then set search to match subtypes
+  tlFilters.msgType = 'all';
+  tlFilters.subType = 'all';
+  tlFilters.search  = '';
+
+  // Directly filter to matching IDs by setting a special drill mode
+  tlDrillIds = matches.map(function(r){ return r.id; });
+  tlLogsRender();
+
+  // Show a contextual banner above the table explaining the filter
+  var tableWrap = document.querySelector('.tl-table-wrap');
+  if (tableWrap) {
+    var banner = document.createElement('div');
+    banner.id = TL_ERR_BANNER_ID;
+    banner.style.cssText = 'margin:8px 24px;padding:11px 14px;background:rgba(215,1,0,0.06);border:1px solid rgba(215,1,0,0.15);border-radius:8px;font-size:13px;color:#a80000;letter-spacing:-0.26px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:12px;';
+    banner.innerHTML = '<span>Showing likely error events for <strong>'+componentName+'</strong> — prototype best guess</span>'
+      + '<button onclick="tlClearDrill()" style="background:none;border:none;font-family:var(--font);font-size:12px;color:#a80000;cursor:pointer;text-decoration:underline;text-decoration-style:dotted;padding:0;">Clear</button>';
+    tableWrap.parentNode.insertBefore(banner, tableWrap);
+  }
+
+  // Select and open the first match
+  tlSelectRow(matches[0].id);
+
+  // Scroll table wrap to top so FST sees the filtered results
+  if (tableWrap) tableWrap.scrollTop = 0;
+}
+
+function tlClearDrill() {
+  tlDrillIds = null;
+  var banner = document.getElementById(TL_ERR_BANNER_ID);
+  if (banner) banner.remove();
+  tlLogsRender();
+}
+
+var tlDrillIds = null;
+
+function tlLogsRender() {
+  var tbody=document.getElementById('tl-logs-tbody');
+  if(!tbody)return;
+  var f=tlFilters, search=(f.search||'').trim().toLowerCase();
+  function toDate(str){var m=str.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);return m?new Date(+m[3],+m[1]-1,+m[2]):null;}
+  var fromD=f.from?new Date(f.from):null, toD=f.to?new Date(f.to):null;
+  var rows=TL_ROWS.filter(function(r){
+    if(tlDrillIds&&tlDrillIds.indexOf(r.id)===-1)return false;
+    if(f.source!=='all'&&r.source!==f.source)return false;
+    if(f.msgType!=='all'&&r.type!==f.msgType)return false;
+    if(f.subType!=='all'&&r.sub!==f.subType)return false;
+    var d=toDate(r.date);
+    if(fromD&&d&&d<fromD)return false;
+    if(toD&&d&&d>toD)return false;
+    if(search){var hay=(r.date+' '+r.time+' '+r.sentTime+' '+r.source+' '+r.type+' '+r.sub).toLowerCase();if(!hay.includes(search))return false;}
+    return true;
+  });
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="5" class="tl-empty">No logs match the current filters</td></tr>';return;}
+  tbody.innerHTML=rows.map(function(r){
+    return '<tr class="'+(r.id===tlSelId?'active':'')+'" onclick="tlSelectRow('+r.id+')">'+
+      '<td>'+r.date+' '+r.time+'</td><td>'+r.sentTime+'</td><td>'+r.source+'</td><td>'+r.type+'</td><td>'+r.sub+'</td>'+
+      '</tr>';
+  }).join('');
+}
+
+/* Open drawer immediately on load */
+window.addEventListener('DOMContentLoaded', function() {
+  tlOpen();
+});
+
+</script>
+</body>
+</html>

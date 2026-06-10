@@ -28326,15 +28326,19 @@ function dtTruckDrawerUnlinkUnit() {
       </div>
       <div class="dt-inline-confirm-text">
         <div class="dt-inline-confirm-title">Confirm unlink</div>
-        <div class="dt-inline-confirm-body">
-          Is this unit being returned to Verify?
+        <div class="dt-inline-confirm-body" id="dt-drawer-unlink-body">
+          The unit becomes inactive and will need to be reattached before it can collect data again.
         </div>
       </div>
     </div>
+    <label style="display:flex; align-items:center; gap:8px; margin:10px 0 12px; cursor:pointer; font-size:13px; color:var(--strong); user-select:none;">
+      <input type="checkbox" class="dt-units-cb" id="dt-drawer-unlink-return-cb"
+             onchange="dtTruckDrawerUnlinkToggleReturn(this)">
+      Return to Verify
+    </label>
     <div class="dt-inline-confirm-btns">
       <button class="dt-inline-confirm-btn cancel" onclick="dtTruckDrawerUnlinkCancel()">Cancel</button>
-      <button class="dt-inline-confirm-btn cancel" onclick="dtTruckDrawerUnlinkDo(false)">Unlink only</button>
-      <button class="dt-inline-confirm-btn primary" onclick="dtTruckDrawerUnlinkDo(true)">Return to Verify</button>
+      <button class="dt-inline-confirm-btn danger" onclick="dtTruckDrawerUnlinkDo(document.getElementById('dt-drawer-unlink-return-cb').checked)">Confirm Unlink</button>
     </div>`;
   panel.style.display = 'block';
 
@@ -28349,6 +28353,18 @@ function dtTruckDrawerUnlinkCancel() {
   if (panel) { panel.style.display = 'none'; panel.innerHTML = ''; }
   const btn = document.getElementById('dt-drawer-unlink-btn');
   if (btn) btn.removeAttribute('aria-pressed');
+}
+
+/* Body copy swaps based on the Return to Verify checkbox. The two states
+   describe genuinely different end states — unchecked leaves the unit in
+   the customer's Unlinked pool (reattachable), checked routes it to
+   Pending Return (ships back, stays visible until Verify confirms receipt). */
+function dtTruckDrawerUnlinkToggleReturn(cb) {
+  const body = document.getElementById('dt-drawer-unlink-body');
+  if (!body) return;
+  body.textContent = cb.checked
+    ? 'The unit will be marked Pending Return and stay visible until Verify confirms receipt.'
+    : 'The unit becomes inactive and will need to be reattached before it can collect data again.';
 }
 
 function dtTruckDrawerUnlinkDo(andReturn) {

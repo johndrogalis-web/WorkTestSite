@@ -1,0 +1,4068 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1920" />
+  <title>Verifi — Insights</title>
+
+  <!-- Fonts: Inter for everything per the Figma spec -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Apply saved theme before paint to avoid a flash of the wrong theme. -->
+  <script>
+    (function () {
+      document.documentElement.classList.add("theme-dark");
+      try { localStorage.setItem("load-reports-theme", "dark"); } catch {}
+    })();
+  </script>
+
+  <!-- Icons are inlined as an SVG sprite at the top of <body> so they
+       render even when external CDNs are blocked. -->
+
+  <style>
+    /* =======================================================================
+       Prototype top bar (vp-) — copied from Trinity shell so this page can
+       sit under the same dark control strip as the other prototypes.
+       Carries the viewport pills (decorative here, desktop-only) and the
+       Options menu with the dark-mode toggle.
+       ======================================================================= */
+    :root {
+      --vp-bar-h: 44px;
+    }
+    .vp-bar {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: var(--vp-bar-h);
+      background: rgba(20,18,16,0.97);
+      color: #fff;
+      display: flex; align-items: center;
+      padding: 0 16px;
+      z-index: 1000;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      box-shadow: var(--vp-bar-shadow);
+      font-family: var(--font-sans);
+    }
+    .vp-brand { display: flex; align-items: center; gap: 10px; }
+    .vp-tag {
+      font-size: 10px; font-weight: 500;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.4px; text-transform: uppercase;
+      padding: 2px 6px;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px;
+    }
+    .vp-right-cluster { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .vp-pills {
+      display: flex; gap: 2px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 2px;
+    }
+    .vp-pill {
+      font-size: 12px; font-weight: 500;
+      letter-spacing: -0.24px;
+      color: rgba(255,255,255,0.6);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 0; background: transparent;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      font-family: inherit;
+    }
+    .vp-pill:hover { color: #fff; }
+    .vp-pill.active { background: rgba(255,255,255,0.15); color: #fff; }
+    .vp-opts-wrap { position: relative; }
+    .vp-opts-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 10px;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      border-radius: 8px;
+      border: 0; cursor: pointer;
+      font-size: 12px; font-weight: 500;
+      letter-spacing: -0.24px;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .vp-opts-btn:hover { background: rgba(255,255,255,0.14); }
+    .vp-opts-dd {
+      position: absolute;
+      top: calc(100% + 6px); right: 0;
+      min-width: 200px;
+      background: #1a1917;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      padding: 6px;
+      display: none;
+      z-index: 1100;
+    }
+    .vp-opts-dd.open { display: block; }
+    .vp-opts-section-label {
+      font-size: 10px; font-weight: 600;
+      color: rgba(255,255,255,0.35);
+      text-transform: uppercase; letter-spacing: 0.4px;
+      padding: 8px 10px 4px;
+    }
+    .vp-opts-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 10px;
+      font-size: 13px;
+      border-radius: 8px;
+      color: rgba(255,255,255,0.8);
+      cursor: pointer;
+    }
+    .vp-opts-row:hover { background: rgba(255,255,255,0.06); }
+    .vp-dark-toggle {
+      width: 32px; height: 18px;
+      border-radius: 9px;
+      background: rgba(255,255,255,0.15);
+      position: relative;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .vp-dark-toggle-knob {
+      position: absolute; top: 2px; left: 2px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.2s;
+    }
+    body.dark .vp-dark-toggle { background: #3069e3; }
+    body.dark .vp-dark-toggle-knob { transform: translateX(14px); }
+
+    /* ===================================================================
+       Color tokens — light is the DEFAULT, dark overrides via body.dark.
+       Values for light match the existing production app screenshots; dark
+       preserves the dark theme we've been building.
+       =================================================================== */
+    :root {
+      /* LIGHT MODE (default) */
+      --bg-page:           #ffffff;     /* main work area background (white) */
+      --bg-sidebar:        #ecf1f3;     /* sidebar background (matches product chrome) */
+      --bg-table:          #ffffff;     /* table surface */
+      --row-even:          #ffffff;     /* odd rows (1st, 3rd...) — white stripe */
+      --row-even-hover:    #f2f5f7;     /* odd row on hover */
+      --row-odd:           #b2bfc8;     /* even rows (2nd, 4th...) — darker stripe */
+      --row-odd-hover:     #c9d2d9;     /* even row on hover */
+      --toolbar-btn-bg:    #b8c5d6;     /* toolbar icon button circle background */
+      --toolbar-btn-fg:    #1a1a1a;     /* toolbar icon button foreground */
+      --toolbar-btn-hover: #a8b6c8;     /* toolbar icon button hover bg */
+      --preset-border:     #6b7178;     /* preset selector border (medium grey) */
+      --border-steel:      #d1d5db;     /* table grid + group lines */
+      --border-soft:       rgba(0, 0, 0, 0.10); /* subtle dividers (sidebar, search) */
+      --bg-popover:        #ffffff;     /* tooltips, overlay surfaces */
+      --text-strong:       #1a1a1a;     /* primary text */
+      --text-muted:        #6b7178;     /* secondary / labels */
+      --text-cell:         #1a1a1a;     /* row cell text */
+      --accent-blue:       #0965a3;     /* active tab underline (unchanged) */
+      --nav-hover:         rgba(0, 0, 0, 0.04);
+      --vp-bar-shadow:     0 2px 8px rgba(0, 0, 0, 0.10);
+
+      --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    body.dark,
+    html.theme-dark body {
+      /* DARK MODE overrides */
+      --bg-page:           #26282b;
+      --bg-sidebar:        #26282b;
+      --bg-table:          #26282b;
+      --row-even:          #26282b;
+      --row-even-hover:    #34373b;
+      --row-odd:           #1c1c1e;
+      --row-odd-hover:     #2a2a2d;
+      --toolbar-btn-bg:    rgba(255,255,255,0.10);
+      --toolbar-btn-fg:    var(--text-strong);
+      --toolbar-btn-hover: rgba(255,255,255,0.18);
+      --preset-border:     var(--border-soft);
+      --border-steel:      #a8aeb5;
+      --border-soft:       rgba(168, 174, 181, 0.20);
+      --bg-popover:        #1c1c1e;
+      --text-strong:       #ffffff;
+      --text-muted:        #a8aeb5;
+      --text-cell:         #ededed;
+      --nav-hover:         rgba(255, 255, 255, 0.04);
+      --vp-bar-shadow:     0 6px 16px rgba(0, 0, 0, 0.45);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    html { padding: 0; }
+    body {
+      padding: var(--vp-bar-h) 0 0; /* top padding leaves room for the fixed vp-bar */
+      background: var(--bg-page);
+      color: var(--text-strong);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-width: 1280px;
+    }
+
+    /* =======================================================================
+       App shell — sidebar on the left, everything else stacks to the right.
+       ======================================================================= */
+    .app {
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      min-height: 100vh;
+    }
+
+    /* ---------------- Sidebar ---------------- */
+    .sidebar {
+      background: var(--bg-sidebar);
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      padding: 24px 0 16px;
+      gap: 0;
+      position: sticky;
+      top: var(--vp-bar-h);
+      height: calc(100vh - var(--vp-bar-h));
+      width: 96px;
+    }
+    .logo {
+      width: 64px;
+      height: auto;
+      margin: 0 auto 24px;
+      color: var(--text-strong);
+      display: block;
+    }
+    .logo path { fill: currentColor; }
+
+    /* Region header (Ozinga South Florida) — non-interactive, pin + label,
+       with a divider underneath separating it from the nav items. */
+    .region-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 6px 16px;
+      color: var(--text-strong);
+      border-bottom: 1px solid var(--border-soft);
+      margin-bottom: 12px;
+    }
+    .region-header .icon {
+      width: 22px;
+      height: 22px;
+      color: var(--text-strong);
+      display: block;
+    }
+    .region-header .label {
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.25;
+      color: var(--text-strong);
+    }
+
+    .nav-item {
+      width: 100%;
+      padding: 12px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      position: relative;
+      text-align: center;
+      line-height: 1.25;
+      transition: color 120ms ease, background 120ms ease;
+    }
+    .nav-item .icon {
+      width: 22px;
+      height: 22px;
+      color: currentColor;
+      display: block;
+    }
+    /* Path-level fills inherit current color so monochrome filled icons
+       follow the muted → white state change. */
+    .nav-item .icon path,
+    .nav-item .icon rect,
+    .nav-item .icon circle { fill: currentColor; }
+
+    .nav-item:hover { color: var(--text-strong); background: var(--nav-hover); }
+    .nav-item.active { color: var(--text-strong); font-weight: 700; }
+    .nav-item.active::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 8px;
+      bottom: 8px;
+      width: 3px;
+      background: var(--text-strong);
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* ---------------- Main column ----------------
+       min-width:0 is critical: without it, a grid item sizes to its widest
+       child (the table). With it, the column respects the viewport width
+       and only the table-wrap inside scrolls horizontally. */
+    .main {
+      padding: 32px 40px 24px;
+      min-width: 0;
+      overflow: hidden;
+      height: calc(100vh - var(--vp-bar-h));
+      display: flex;
+      flex-direction: column;
+    }
+    #report-view {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: visible;
+    }
+
+    /* Tabs row */
+    .tabs {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 40px;
+      border-bottom: 1px solid transparent;
+      padding-bottom: 0;
+      margin-bottom: 28px;
+      position: relative;
+    }
+    .tabs-left {
+      display: flex;
+      align-items: flex-end;
+      gap: 40px;
+    }
+    .tabs-right {
+      display: flex;
+      align-items: center;
+      padding-bottom: 14px;
+    }
+    .tab {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text-muted);
+      padding-bottom: 14px;
+      cursor: pointer;
+      position: relative;
+      transition: color 120ms ease;
+      white-space: nowrap;
+    }
+    .tab:hover { color: var(--text-strong); }
+    .tab.active {
+      color: var(--text-strong);
+      font-weight: 700;
+    }
+    .tab.active::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -1px;
+      height: 3px;
+      background: var(--accent-blue);
+      border-radius: 2px;
+    }
+
+    /* Toolbar */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      border: 1px solid var(--border-soft);
+      border-radius: 6px;
+      padding: 6px 12px;
+      width: 240px;
+      color: var(--text-muted);
+    }
+    .search .icon {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+    .search input {
+      background: transparent;
+      border: 0;
+      outline: none;
+      color: var(--text-strong);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      flex: 1;
+      min-width: 0;
+    }
+    .search input::placeholder { color: var(--text-muted); }
+    .toolbar .item-count {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .toolbar .spacer { flex: 1; }
+
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: var(--toolbar-btn-bg);
+      border: 0;
+      color: var(--toolbar-btn-fg);
+      cursor: pointer;
+      transition: background 120ms ease, color 120ms ease;
+    }
+    .icon-btn:hover { background: var(--toolbar-btn-hover); color: var(--toolbar-btn-fg); }
+    .icon-btn .icon {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    /* Pager buttons stay un-filled (the bottom-right page controls). */
+    .pager .icon-btn {
+      width: 32px;
+      height: 32px;
+      background: transparent;
+      color: var(--text-muted);
+    }
+    .pager .icon-btn:hover { background: var(--nav-hover); color: var(--text-strong); }
+    .pager .icon-btn .icon { width: 16px; height: 16px; }
+
+    .preset-wrap { position: relative; }
+    .preset-select {
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-width: 220px;
+      padding: 10px 14px;
+      background: transparent;
+      border: 1px solid var(--preset-border);
+      border-radius: 6px;
+      color: var(--text-strong);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .preset-select .icon {
+      width: 18px;
+      height: 18px;
+      stroke: var(--text-strong);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 160ms ease;
+    }
+    .preset-wrap.open .preset-select .icon { transform: rotate(180deg); }
+
+    .preset-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      min-width: 260px;
+      background: var(--bg-popover);
+      border: 1px solid var(--border-soft);
+      border-radius: 4px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      padding: 0;
+      display: none;
+      z-index: 100;
+      overflow: hidden;
+    }
+    .preset-wrap.open .preset-menu { display: block; }
+    .preset-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: 0;
+      padding: 14px 18px;
+      color: var(--text-strong);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .preset-option:hover { background: var(--nav-hover); }
+    .preset-option .check {
+      width: 18px;
+      height: 18px;
+      stroke: #e91e63;
+      stroke-width: 2.5;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0;
+    }
+    .preset-option.active .check { opacity: 1; }
+
+    /* =======================================================================
+       Table.
+
+       Note: the Figma is built as a fixed 1760px-wide table with hand-set
+       column widths. I'm matching those widths so the column groupings
+       (Batch Information / At Plant / At Arrival / Discharge / Customer)
+       line up cleanly. The container scrolls horizontally on smaller viewports.
+       ======================================================================= */
+    .table-wrap {
+      background: var(--bg-table);
+      border-radius: 6px;
+      overflow-x: auto;
+      overflow-y: auto;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+    table.report {
+      /* `separate` (not `collapse`) is required for borders on position:sticky
+         cells to render reliably. With collapse, the border belongs to the
+         table grid and gets dropped when sticky cells detach during scroll. */
+      border-collapse: separate;
+      border-spacing: 0;
+      table-layout: fixed;
+      font-family: var(--font-sans);
+    }
+    /* QC view: width = sum of col widths, scrolls horizontally if needed. */
+    table.report.preset-qc { width: max-content; min-width: 100%; }
+    /* Default view: fill the page. The last col has width:auto, so it stretches. */
+    table.report.preset-default { width: 100%; }
+
+    /* =======================================================================
+       Default-view cell formats
+       ======================================================================= */
+
+    /* Default/Dispatch/Production views: non-uppercase, lighter weight cells. */
+    table.report.preset-default tbody td {
+      text-transform: none;
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+
+    /* Stacked time: 08:33 AM (white, bold) + GMT badge + 05/12/2026 (muted) */
+    .cell-time { line-height: 1.3; }
+    .cell-time .row1 { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .cell-time .time { color: var(--text-strong); font-weight: 700; font-size: 13px; }
+    .cell-time .tz   { color: var(--text-muted);  font-size: 10px; font-weight: 500; letter-spacing: 0.04em; }
+    .cell-time .date { color: var(--text-muted);  font-size: 12px; margin-top: 2px; }
+
+    /* Location: bold white */
+    td.cell-location { color: var(--text-strong); font-weight: 700; }
+
+    /* Customer / order / mix code: muted */
+    td.cell-muted { color: var(--text-muted); }
+
+    /* Size with yd³ superscript */
+    td.cell-size { color: var(--text-strong); font-weight: 700; }
+    td.cell-size sup { font-size: 9px; vertical-align: super; line-height: 1; }
+
+    /* Status pills */
+    .status-pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+    .status-pill.to-job { background: #2f8d6e; }
+    .status-pill.loaded { background: #d4a017; color: #1c1c1e; }
+    .status-pill.onsite { background: #7c5cc4; }
+
+    /* Stacked slump: 0.75 in (white) / 5.00 in (muted) */
+    .cell-slump { line-height: 1.3; }
+    .cell-slump .current { color: var(--text-strong); font-weight: 700; font-size: 13px; }
+    .cell-slump .current.dash { color: var(--text-muted); }
+    .cell-slump .ticketed { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
+
+    /* Group header row spans (Batch Information / At Plant / etc.).
+       border-bottom now renders correctly because table uses border-collapse:separate. */
+    .group-row th {
+      text-align: left;
+      vertical-align: middle;
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 1.33;
+      padding: 10px;
+      border-bottom: 1px solid var(--border-steel);
+      border-right: 1px solid var(--border-steel);
+      background: var(--bg-table);
+      position: sticky;
+      top: 0;
+      z-index: 3;
+    }
+    .group-row th:last-child { border-right: 0; }
+
+    /* Clickable group headers (the ones with a chevron). */
+    .group-row th.expandable {
+      cursor: pointer;
+      user-select: none;
+      transition: color 120ms ease, background 120ms ease;
+    }
+    .group-row th.expandable:hover {
+      color: var(--text-strong);
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .group-row th.expandable:focus-visible {
+      outline: 2px solid var(--accent-blue);
+      outline-offset: -2px;
+    }
+
+    /* Chevron — inline SVG from Figma (9×15, fill #A8AEB5).
+       Rotates 90° on expand. */
+    .group-row .chev {
+      float: right;
+      width: 9px;
+      height: 15px;
+      margin-top: 4px;
+      transition: transform 160ms ease;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .group-row .chev path { fill: var(--text-muted); }
+    .group-row th.expandable:hover .chev path { fill: var(--text-strong); }
+    .group-row th.expanded .chev { transform: rotate(90deg); }
+
+    /* Column header row (DATE / TIME / TICKETS / ...) */
+    .col-row th {
+      text-align: left;
+      vertical-align: bottom;
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 12px;
+      line-height: 14px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      padding: 14px 10px 10px;
+      border-bottom: 0;
+      background: var(--bg-table);
+      position: sticky;
+      z-index: 2;
+    }
+    /* QC: col row sticks right under the group row. No overlap needed because
+       border-collapse:separate keeps the group row's border-bottom in place. */
+    .preset-qc .col-row th { top: 44px; }
+    .preset-default .col-row th { top: 0; }
+    .col-row th.divider-right { border-right: 1px solid var(--border-steel); }
+    .col-row th sup {
+      font-size: 7.74px;
+      vertical-align: super;
+      line-height: 1;
+    }
+    .col-row th .two-line {
+      display: block;
+      line-height: 14px;
+      white-space: nowrap;
+    }
+
+    /* Body rows */
+    tbody td {
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 14px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--text-cell);
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    tbody td.divider-right { border-right: 1px solid var(--border-steel); }
+
+    /* Zebra striping with per-stripe hover so each row hovers to its own
+       brighter shade rather than collapsing to one hover color. */
+    tbody tr:nth-child(odd)        { background-color: var(--row-even); }
+    tbody tr:nth-child(even)       { background-color: var(--row-odd); }
+    tbody tr:nth-child(odd):hover  { background-color: var(--row-even-hover); }
+    tbody tr:nth-child(even):hover { background-color: var(--row-odd-hover); }
+    tbody tr[data-row-idx]         { cursor: pointer; }
+
+    /* Customer name now carries a tooltip with the address. */
+    .customer-cell {
+      position: relative;
+      cursor: help;
+    }
+    .customer-cell .addr-tooltip {
+      position: absolute;
+      left: 0;
+      top: calc(100% + 4px);
+      background: var(--bg-popover);
+      border: 1px solid var(--border-soft);
+      border-radius: 4px;
+      padding: 8px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1.4;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--text-strong);
+      white-space: pre-line;
+      min-width: 180px;
+      max-width: 260px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-2px);
+      transition: opacity 120ms ease, transform 120ms ease, visibility 120ms;
+      pointer-events: none;
+      z-index: 20;
+    }
+    .customer-cell .addr-tooltip::before {
+      content: "ADDRESS";
+      display: block;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .customer-cell:hover .addr-tooltip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    /* Column widths are applied inline by JS from the GROUPS config so the
+       widths follow the active (collapsed vs expanded) column set. */
+
+    /* =======================================================================
+       Footer / pagination
+       ======================================================================= */
+    .table-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 24px;
+      padding-top: 14px;
+      flex: 0 0 auto;
+    }
+    .records-label {
+      font-size: 14px;
+      letter-spacing: -0.28px;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+    .pager { display: inline-flex; gap: 8px; }
+    .pager .icon-btn.disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ===================================================================
+       SLUMP TRIAGE BADGE — sits inline in the slump cell
+       =================================================================== */
+    /* Continuous gentle pulse — slow enough to not be annoying */
+    @keyframes badge-breathe {
+      0%,100% { 
+        box-shadow: 0 0 0 0 rgba(255, 59, 48, 0);
+        border-color: rgba(255, 59, 48, 0.35);
+      }
+      50% { 
+        box-shadow: 0 0 0 4px rgba(255, 59, 48, 0.12);
+        border-color: rgba(255, 59, 48, 0.7);
+      }
+    }
+    @keyframes row-settle {
+      0%   { background-color: rgba(255, 59, 48, 0.10); }
+      100% { background-color: rgba(255, 59, 48, 0.04); }
+    }
+
+    .slump-triage-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255, 59, 48, 0.15);
+      border: 1px solid rgba(255, 59, 48, 0.35);
+      color: #ff3b30;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-top: 3px;
+      cursor: pointer;
+      white-space: nowrap;
+      animation: badge-breathe 2.8s ease-in-out infinite;
+    }
+    .slump-triage-badge:hover {
+      animation: none;
+      background: rgba(255, 59, 48, 0.28);
+      box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.15);
+      border-color: rgba(255, 59, 48, 0.7);
+    }
+    .slump-triage-badge svg {
+      flex-shrink: 0;
+    }
+
+    /* Flagged rows — left border + very subtle tint that settles */
+    tr.slump-flagged td:first-child {
+      border-left: 2px solid rgba(255, 59, 48, 0.7) !important;
+    }
+    tr.slump-flagged td {
+      animation: row-settle 1.8s ease-out 0.3s both;
+      background-color: rgba(255, 59, 48, 0.04);
+    }
+    tr.slump-flagged:hover td {
+      background-color: rgba(255, 59, 48, 0.08) !important;
+    }
+
+    /* row highlight when its drawer is open */
+    tr.triage-active td {
+      background: rgba(255, 59, 48, 0.08) !important;
+    }
+    tr.triage-active td:first-child {
+      border-left: 2px solid #ff3b30 !important;
+    }
+    /* ===================================================================
+       BELL + NOTIFICATION PANEL
+       =================================================================== */
+    .vp-bell-wrap { position: relative; }
+
+    .vp-bell-btn {
+      position: relative;
+      width: 32px; height: 32px;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: color 0.15s, background 0.15s;
+    }
+    .vp-bell-btn:hover { color: var(--text-strong); background: var(--nav-hover); }
+    .vp-bell-btn.has-alerts { color: #ff3b30; }
+
+    .vp-bell-count {
+      position: absolute;
+      top: -4px; right: -4px;
+      min-width: 16px; height: 16px;
+      background: #ff3b30;
+      color: #fff;
+      font-size: 10px; font-weight: 700;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 3px;
+      border: 1.5px solid rgba(20,18,16,0.97);
+      pointer-events: none;
+    }
+
+
+    /* ===================================================================
+       TOAST STACK
+       =================================================================== */
+    .toast-stack {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      display: flex; flex-direction: column-reverse; gap: 10px;
+      z-index: 700;
+      pointer-events: none;
+    }
+    .toast-card {
+      width: 320px;
+      background: #1c1a18;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-top: 3px solid #ff3b30;
+      border-radius: 14px;
+      box-shadow: 0 14px 28px rgba(0,0,0,0.5);
+      padding: 14px 14px 14px 16px;
+      display: flex; align-items: flex-start; gap: 10px;
+      pointer-events: all;
+      transform: translateX(calc(100% + 32px));
+      opacity: 0;
+      transition: transform 0.3s cubic-bezier(0.32,0,0.15,1), opacity 0.3s;
+    }
+    .toast-card.warn { border-top-color: #ffba0d; }
+    .toast-card.visible {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    .toast-card.dismissing {
+      transform: translateX(calc(100% + 32px));
+      opacity: 0;
+    }
+    .toast-body { flex: 1; min-width: 0; }
+    .toast-eyebrow {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 1px; text-transform: uppercase;
+      color: #ff3b30; margin-bottom: 4px;
+    }
+    .toast-card.warn .toast-eyebrow { color: #ffba0d; }
+    .toast-title {
+      font-size: 13px; font-weight: 700; color: #fff;
+      line-height: 1.3; margin-bottom: 3px;
+    }
+    .toast-sub {
+      font-size: 12px; color: rgba(255,255,255,0.5);
+      line-height: 1.4;
+    }
+    .toast-dismiss {
+      width: 24px; height: 24px; flex-shrink: 0;
+      background: rgba(255,255,255,0.08);
+      border: none; border-radius: 50%;
+      color: rgba(255,255,255,0.5);
+      cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      transition: background 0.12s;
+    }
+    .toast-dismiss:hover { background: rgba(255,255,255,0.16); color: #fff; }
+    .toast-progress {
+      height: 2px;
+      background: rgba(255,59,48,0.3);
+      border-radius: 1px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+    .toast-card.warn .toast-progress { background: rgba(255,186,13,0.3); }
+    .toast-progress-fill {
+      height: 100%;
+      background: #ff3b30;
+      border-radius: 1px;
+      width: 100%;
+      transition: width linear;
+    }
+    .toast-card.warn .toast-progress-fill { background: #ffba0d; }
+
+    .triage-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .triage-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .triage-drawer {
+      position: fixed;
+      top: 44px; /* below vp-bar */
+      right: 0;
+      bottom: 0;
+      width: 680px;
+      background: #211f1c;
+      border-left: 1px solid rgba(229,229,229,0.12);
+      z-index: 501;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.32,0,0.15,1);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .triage-drawer.open {
+      transform: translateX(0);
+    }
+
+    /* --- Drawer Header --- */
+    .td-header {
+      position: sticky;
+      top: 0;
+      background: #211f1c;
+      border-bottom: 1px solid rgba(229,229,229,0.12);
+      padding: 20px 24px 16px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      z-index: 10;
+    }
+    .td-header-left { display: flex; gap: 12px; align-items: flex-start; }
+    .td-severity-icon {
+      width: 36px; height: 36px;
+      background: #ff3b30;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .td-severity-icon svg { color: #fff; }
+    .td-title-block {}
+    .td-eyebrow {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(229,229,229,0.5);
+      margin-bottom: 4px;
+    }
+    .td-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .td-subtitle {
+      font-size: 14px;
+      color: rgba(229,229,229,0.65);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+    .td-close-btn {
+      width: 32px; height: 32px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      border-radius: 50%;
+      color: #fff;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .td-close-btn:hover { background: rgba(255,255,255,0.18); }
+
+    /* --- Drawer Body --- */
+    .td-body { padding: 24px; display: flex; flex-direction: column; gap: 24px; }
+
+    /* Progress bar */
+    .td-progress-wrap {
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .td-progress-labels {
+      display: flex; justify-content: space-between;
+      font-size: 12px; color: rgba(229,229,229,0.6);
+    }
+    .td-progress-labels .td-current-val {
+      font-weight: 700; font-size: 14px; color: #ff3b30;
+    }
+    /* Two-zone track: relative container so target line can be absolutely placed */
+    .td-progress-track {
+      position: relative;
+      height: 8px;
+      background: rgba(229,229,229,0.12);
+      border-radius: 4px;
+      overflow: visible; /* allow target line pip to poke out */
+    }
+    /* Zone 1: neutral fill from 0 → target */
+    .td-progress-zone-ok {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      background: rgba(229,229,229,0.35);
+      border-radius: 4px 0 0 4px;
+      transition: width 0.4s ease;
+    }
+    /* Zone 2: red fill from target → current */
+    .td-progress-zone-over {
+      position: absolute;
+      top: 0; bottom: 0;
+      background: #ff3b30;
+      border-radius: 0 4px 4px 0;
+      transition: left 0.4s ease, width 0.4s ease;
+    }
+    /* Target line — a vertical tick that marks the standard */
+    .td-progress-target-line {
+      position: absolute;
+      top: -3px; bottom: -3px;
+      width: 2px;
+      background: #fff;
+      border-radius: 1px;
+      transition: left 0.4s ease;
+      box-shadow: 0 0 4px rgba(0,0,0,0.6);
+    }
+    .td-target-line-label {
+      position: absolute;
+      top: 12px;
+      transform: translateX(-50%);
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(229,229,229,0.5);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* Stat cards row */
+    .td-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .td-card {
+      background: #2f2d28;
+      border: 1px solid rgba(229,229,229,0.1);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .td-card-label {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.4px; text-transform: uppercase;
+      color: rgba(229,229,229,0.5);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .td-card-label .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(229,229,229,0.35);
+      flex-shrink: 0;
+    }
+    .td-card-value {
+      font-size: 32px; font-weight: 700;
+      color: #fff; line-height: 1;
+    }
+    .td-card-value.alert { color: #ff3b30; }
+    .td-card-value.warn  { color: #ffba0d; }
+    .td-card-meta {
+      font-size: 12px; color: rgba(229,229,229,0.5); line-height: 1.4;
+    }
+
+    /* Root cause strip */
+    .td-root-cause {
+      background: #2f2d28;
+      border: 1px solid rgba(229,229,229,0.1);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .td-root-cause-label {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: rgba(229,229,229,0.45);
+      padding: 14px 16px 10px;
+    }
+    .td-root-cause-cells {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .td-rc-cell {
+      padding: 12px 16px;
+      border-top: 1px solid rgba(229,229,229,0.08);
+      border-right: 1px solid rgba(229,229,229,0.08);
+    }
+    .td-rc-cell:last-child { border-right: none; }
+    .td-rc-cell-title {
+      font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 4px;
+    }
+    .td-rc-cell-body {
+      font-size: 12px; color: rgba(229,229,229,0.6); line-height: 1.4;
+    }
+
+    /* Recommendation cards */
+    .td-rec-cards { display: flex; flex-direction: column; gap: 12px; }
+    .td-rec-card {
+      background: linear-gradient(135deg, rgba(48,105,227,0.18) 0%, rgba(255,255,255,0.04) 50%, rgba(48,105,227,0.18) 100%);
+      border: 1px solid rgba(48,105,227,0.35);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .td-rec-card-title { font-size: 14px; font-weight: 700; color: #fff; }
+    .td-rec-card-body  { font-size: 13px; color: rgba(229,229,229,0.75); line-height: 1.5; }
+    .td-rec-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .td-btn-primary {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(229,229,229,0.9);
+      color: #111;
+      font-size: 13px; font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 100px;
+      border: none; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .td-btn-primary:hover { background: #fff; }
+    .td-btn-ghost {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: transparent;
+      color: rgba(229,229,229,0.8);
+      font-size: 13px; font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 100px;
+      border: 1px solid rgba(229,229,229,0.2);
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .td-btn-ghost:hover { border-color: rgba(229,229,229,0.5); color: #fff; }
+
+    /* Supporting data table */
+    .td-support { display: flex; flex-direction: column; gap: 10px; }
+    .td-support-header {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .td-support-title {
+      font-size: 14px; font-weight: 600; color: rgba(229,229,229,0.7);
+    }
+    .td-support-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .td-support-table th {
+      text-align: left;
+      padding: 8px 10px;
+      color: rgba(229,229,229,0.45);
+      font-weight: 600;
+      font-size: 11px;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(229,229,229,0.1);
+    }
+    .td-support-table td {
+      padding: 8px 10px;
+      color: rgba(229,229,229,0.8);
+      border-bottom: 1px solid rgba(229,229,229,0.06);
+    }
+    .td-support-table tr:nth-child(even) td {
+      background: rgba(229,229,229,0.03);
+    }
+    .td-support-table .val-alert { color: #ff3b30; font-weight: 700; }
+    .td-support-table .val-warn  { color: #ffba0d; font-weight: 600; }
+    .td-support-table .val-ok    { color: rgba(229,229,229,0.6); }
+
+    /* Alert counter + prev/next in drawer */
+    .td-alert-nav {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .td-alert-counter {
+      font-size: 11px; font-weight: 600;
+      color: rgba(229,229,229,0.4);
+      letter-spacing: 0.4px;
+      white-space: nowrap;
+    }
+    .td-nav-btn {
+      width: 26px; height: 26px;
+      background: rgba(255,255,255,0.08);
+      border: none; border-radius: 6px;
+      color: rgba(229,229,229,0.6);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s, color 0.12s;
+    }
+    .td-nav-btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
+    .td-nav-btn:disabled { opacity: 0.25; cursor: default; }
+
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: rgba(229,229,229,0.4);
+      padding-bottom: 2px;
+    }
+
+    /* Divider */
+    .td-divider {
+      height: 1px; background: rgba(229,229,229,0.08);
+    }
+
+    /* ===================================================================
+       TICKET PAGE
+       =================================================================== */
+    #ticket-view { background: var(--bg-page); }
+
+    /* Back link */
+    .tk-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 1px; text-transform: uppercase;
+      color: var(--text-muted);
+      cursor: pointer; margin-bottom: 20px;
+      background: none; border: none; padding: 0;
+      transition: color 0.12s;
+    }
+    .tk-back:hover { color: var(--text-strong); }
+
+    /* Header */
+    .tk-header { margin-bottom: 28px; }
+    .tk-ticket-num {
+      font-size: 36px; font-weight: 700;
+      color: var(--text-strong); line-height: 1.1;
+      margin-bottom: 14px;
+    }
+    .tk-meta-row {
+      display: flex; gap: 40px; flex-wrap: wrap;
+    }
+    .tk-meta-item { display: flex; flex-direction: column; gap: 3px; }
+    .tk-meta-label {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 1px; text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .tk-meta-value {
+      font-size: 14px; font-weight: 600;
+      color: var(--text-strong);
+    }
+    .tk-phase-pill {
+      display: inline-flex; align-items: center;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.4px; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 4px;
+    }
+    .tk-phase-pill.transit  { background: rgba(48,105,227,0.2);  color: #6b9eff; }
+    .tk-phase-pill.onsite   { background: rgba(52,199,89,0.15);  color: #34c759; }
+    .tk-phase-pill.complete { background: rgba(229,229,229,0.1); color: var(--text-muted); }
+    .tk-phase-pill.loading  { background: rgba(255,186,13,0.15); color: #ffba0d; }
+
+    /* Two-column page layout */
+    .tk-two-col {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    .tk-left-col  { display: flex; flex-direction: column; }
+    .tk-right-col { display: flex; flex-direction: column; gap: 20px; }
+
+    /* Map card */
+    .tk-map-card {
+      background: var(--bg-table);
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .tk-map-dest-bar {
+      display: flex; align-items: baseline; gap: 10px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .tk-map-dest-label {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.8px; text-transform: uppercase;
+      color: var(--text-muted); flex-shrink: 0;
+    }
+    .tk-map-dest-addr {
+      font-size: 12px; font-weight: 600; color: var(--text-strong);
+    }
+    .tk-map-frame {
+      height: 260px;
+      background: #1a2535;
+      position: relative;
+      overflow: hidden;
+    }
+    .tk-loading-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px;
+      border-top: 1px solid var(--border-soft);
+    }
+    .tk-loading-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: rgba(229,229,229,0.08);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted); flex-shrink: 0;
+    }
+    .tk-loading-label {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.8px; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 2px;
+    }
+    .tk-loading-time {
+      font-size: 14px; font-weight: 700; color: var(--text-strong);
+    }
+
+    /* Chart grid — 3 columns inside right col */
+    .tk-chart-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .tk-chart-card {
+      background: var(--bg-table);
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      padding: 14px 16px 14px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .tk-chart-header {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .tk-chart-title {
+      font-size: 12px; font-weight: 700;
+      color: var(--text-strong);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .tk-chart-title svg { color: var(--text-muted); flex-shrink: 0; }
+    .tk-chart-canvas {
+      width: 100%; height: 80px;
+    }
+    .tk-chart-stats {
+      display: flex; gap: 20px; flex-wrap: wrap;
+    }
+    .tk-stat { display: flex; flex-direction: column; gap: 2px; }
+    .tk-stat-label {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.6px; text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .tk-stat-value {
+      font-size: 15px; font-weight: 700; color: var(--text-strong);
+    }
+    .tk-stat-value .unit {
+      font-size: 11px; font-weight: 500; color: var(--text-muted);
+    }
+
+    /* Mix code bar */
+    .tk-mixcode-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0 16px;
+      border-bottom: 1px solid var(--border-soft);
+      margin-bottom: 24px;
+    }
+    .tk-mixcode-left { display: flex; align-items: baseline; gap: 8px; }
+    .tk-mixcode-label {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 1px; text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .tk-mixcode-val {
+      font-size: 20px; font-weight: 700; color: var(--text-strong);
+    }
+    .tk-mixcode-instruction {
+      font-size: 12px; color: var(--text-muted);
+    }
+
+    /* Status section */
+    .tk-section-title {
+      font-size: 20px; font-weight: 700;
+      color: var(--text-strong); margin-bottom: 16px;
+    }
+    .tk-phase-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px; margin-bottom: 24px;
+    }
+    .tk-phase-card {
+      background: var(--bg-table);
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .tk-phase-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .tk-phase-card-name {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 1px; text-transform: uppercase;
+      color: var(--text-muted);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .tk-phase-card-time {
+      font-size: 16px; font-weight: 700; color: var(--text-strong);
+    }
+    .tk-phase-card-slump-label {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.6px; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 2px;
+    }
+    .tk-phase-card-slump-val {
+      font-size: 22px; font-weight: 700; color: var(--text-strong);
+    }
+
+    /* Event log table */
+    .tk-event-table {
+      width: 100%; border-collapse: collapse;
+      font-size: 12px;
+    }
+    .tk-event-table th {
+      text-align: left; padding: 8px 12px;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.4px; text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-soft);
+      white-space: nowrap;
+    }
+    .tk-event-table td {
+      padding: 8px 12px;
+      color: var(--text-cell);
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+      white-space: nowrap;
+    }
+    body.dark .tk-event-table td {
+      border-bottom-color: rgba(255,255,255,0.04);
+    }
+    .tk-event-table tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
+    body.dark .tk-event-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+    .tk-phase-group-row td {
+      background: #3069e3 !important;
+      color: #fff !important;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.6px; text-transform: uppercase;
+      padding: 5px 12px;
+    }
+    .tk-event-table td.muted { color: var(--text-muted); }
+
+
+    /* ===================================================================
+       VERIFI INSIGHTS — contextual trigger + drawer
+       =================================================================== */
+
+    /* Order cell: show insights button on row hover */
+
+    /* Contextual drawer — same slide-in pattern as triage */
+    .vi-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 500;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .vi-overlay.open { opacity: 1; pointer-events: all; }
+
+    .vi-drawer {
+      position: fixed;
+      top: 44px; right: 0; bottom: 0;
+      width: 720px;
+      background: #1e1c1a;
+      border-left: 1px solid rgba(229,229,229,0.1);
+      box-shadow: -8px 0 32px rgba(0,0,0,0.35);
+      z-index: 501;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.32,0,0.15,1);
+      overflow-y: auto;
+      display: flex; flex-direction: column;
+    }
+    .vi-drawer.open { transform: translateX(0); }
+
+    /* Drawer header */
+    .vi-header {
+      position: sticky; top: 0;
+      background: #1e1c1a;
+      border-bottom: 1px solid rgba(229,229,229,0.1);
+      padding: 18px 24px 14px;
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 16px; z-index: 10;
+    }
+    .vi-header-left { display: flex; gap: 12px; align-items: flex-start; }
+    .vi-eyebrow {
+      font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
+      text-transform: uppercase; color: #3069e3; margin-bottom: 4px;
+    }
+    .vi-title { font-size: 20px; font-weight: 700; color: #fff; line-height: 1.2; }
+    .vi-subtitle { font-size: 13px; color: rgba(229,229,229,0.5); margin-top: 4px; }
+    .vi-close-btn {
+      width: 32px; height: 32px; flex-shrink: 0;
+      background: rgba(255,255,255,0.08); border: none; border-radius: 50%;
+      color: #fff; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s;
+    }
+    .vi-close-btn:hover { background: rgba(255,255,255,0.16); }
+
+    /* Body */
+    .vi-body { padding: 24px; display: flex; flex-direction: column; gap: 24px; }
+
+    /* Section label */
+    .vi-section-label {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: rgba(229,229,229,0.4); margin-bottom: 2px;
+    }
+
+    /* Summary stat cards */
+    .vi-stat-row {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    }
+    .vi-stat-card {
+      background: #2a2825;
+      border: 1px solid rgba(229,229,229,0.08);
+      border-radius: 14px; padding: 14px;
+    }
+    .vi-stat-card-label {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.4px; text-transform: uppercase;
+      color: rgba(229,229,229,0.45); margin-bottom: 8px;
+    }
+    .vi-stat-card-value {
+      font-size: 28px; font-weight: 700; color: #fff; line-height: 1;
+    }
+    .vi-stat-card-value.warn  { color: #ffba0d; }
+    .vi-stat-card-value.alert { color: #ff3b30; }
+    .vi-stat-card-value.good  { color: #34c759; }
+    .vi-stat-card-sub {
+      font-size: 11px; color: rgba(229,229,229,0.4); margin-top: 4px;
+    }
+
+    /* Interpretation card — the "what this means" layer */
+    .vi-interpretation {
+      background: linear-gradient(135deg, rgba(48,105,227,0.15) 0%, rgba(255,255,255,0.03) 60%, rgba(48,105,227,0.1) 100%);
+      border: 1px solid rgba(48,105,227,0.3);
+      border-radius: 14px; padding: 18px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .vi-interp-title { font-size: 14px; font-weight: 700; color: #fff; }
+    .vi-interp-body  { font-size: 13px; color: rgba(229,229,229,0.75); line-height: 1.6; }
+
+    /* Pattern strip */
+    .vi-pattern-strip {
+      background: #2a2825;
+      border: 1px solid rgba(229,229,229,0.08);
+      border-radius: 14px; overflow: hidden;
+    }
+    .vi-pattern-cells {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+    }
+    .vi-pattern-cell {
+      padding: 14px 16px;
+      border-right: 1px solid rgba(229,229,229,0.06);
+    }
+    .vi-pattern-cell:last-child { border-right: none; }
+    .vi-pattern-cell-title { font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .vi-pattern-cell-body  { font-size: 12px; color: rgba(229,229,229,0.55); line-height: 1.4; }
+
+    /* Slump chart */
+    .vi-chart-wrap {
+      background: #2a2825;
+      border: 1px solid rgba(229,229,229,0.08);
+      border-radius: 14px; padding: 16px;
+    }
+    .vi-chart-title {
+      font-size: 13px; font-weight: 600; color: rgba(229,229,229,0.7); margin-bottom: 12px;
+    }
+    .vi-chart-canvas { width: 100%; height: 100px; display: block; }
+
+    /* Load table */
+    .vi-load-table {
+      width: 100%; border-collapse: collapse; font-size: 12px;
+    }
+    .vi-load-table th {
+      text-align: left; padding: 7px 10px;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.5px; text-transform: uppercase;
+      color: rgba(229,229,229,0.4);
+      border-bottom: 1px solid rgba(229,229,229,0.08);
+    }
+    .vi-load-table td {
+      padding: 8px 10px;
+      color: rgba(229,229,229,0.75);
+      border-bottom: 1px solid rgba(229,229,229,0.05);
+    }
+    .vi-load-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+    .vi-load-table td.hi   { color: #ffba0d; font-weight: 600; }
+    .vi-load-table td.ok   { color: #34c759; }
+    .vi-load-table td.muted { color: rgba(229,229,229,0.35); }
+    .vi-dm-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 9px; font-weight: 700; letter-spacing: 0.3px;
+      text-transform: uppercase; color: #ffba0d;
+      background: rgba(255,186,13,0.12);
+      border: 1px solid rgba(255,186,13,0.25);
+      border-radius: 3px; padding: 1px 5px;
+    }
+    .vi-divider { height: 1px; background: rgba(229,229,229,0.07); }
+
+
+    /* ===================================================================
+       VERIFI INSIGHTS PANEL — sits between toolbar and table
+       =================================================================== */
+    .vi-panel {
+      flex-shrink: 0;
+      margin-bottom: 16px;
+    }
+
+    /* Panel header row */
+    .vi-panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .vi-panel-heading {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .vi-panel-logo {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 1.2px; text-transform: uppercase;
+      color: #3069e3;
+    }
+    .vi-panel-logo svg { flex-shrink: 0; }
+    .vi-panel-timestamp {
+      font-size: 10px; color: rgba(var(--text-muted-rgb, 107,113,120), 0.8);
+      color: var(--text-muted);
+    }
+    .vi-panel-collapse {
+      background: none; border: none; cursor: pointer;
+      font-size: 11px; font-weight: 600;
+      color: var(--text-muted);
+      padding: 0; transition: color 0.12s;
+    }
+    .vi-panel-collapse:hover { color: var(--text-strong); }
+
+    /* Section labels */
+    .vi-panel-section-label {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 1px; text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px; margin-top: 4px;
+    }
+
+    /* Order cards grid — full width, equal columns */
+    .vi-order-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    /* Attention card — wide and shallow */
+    .vi-order-card {
+      width: 100%;
+      border-radius: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: transform 0.12s, box-shadow 0.12s;
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 220px 1fr auto;
+      align-items: center;
+      gap: 0 16px;
+    }
+    .vi-order-card:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+
+    /* Dark mode cards */
+    body.dark .vi-order-card.attention               { background: linear-gradient(135deg, rgba(48,105,227,0.18) 0%, rgba(255,255,255,0.04) 60%, rgba(48,105,227,0.12) 100%); border: 1px solid rgba(48,105,227,0.35); }
+    body.dark .vi-order-card.attention.risk-high     { background: linear-gradient(135deg, rgba(255,59,48,0.14) 0%, rgba(255,255,255,0.03) 60%, rgba(255,59,48,0.08) 100%); border: 1px solid rgba(255,59,48,0.3); }
+    body.dark .vi-order-card.attention.risk-medium   { background: linear-gradient(135deg, rgba(255,186,13,0.14) 0%, rgba(255,255,255,0.03) 60%, rgba(255,186,13,0.08) 100%); border: 1px solid rgba(255,186,13,0.28); }
+    body.dark .vi-order-card.normal                  { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); }
+
+    /* Light mode cards */
+    body:not(.dark) .vi-order-card.attention             { background: #fff; border: 1.5px solid rgba(48,105,227,0.4); box-shadow: 0 1px 4px rgba(48,105,227,0.06); }
+    body:not(.dark) .vi-order-card.attention.risk-high   { background: #fff; border: 1.5px solid rgba(255,59,48,0.4); border-left: 3px solid #ff3b30; box-shadow: 0 1px 4px rgba(255,59,48,0.06); }
+    body:not(.dark) .vi-order-card.attention.risk-medium { background: #fff; border: 1.5px solid rgba(255,186,13,0.5); border-left: 3px solid #f59e0b; box-shadow: 0 1px 4px rgba(255,186,13,0.06); }
+    body:not(.dark) .vi-order-card.normal                { background: #fff; border: 1px solid rgba(0,0,0,0.1); }
+
+    /* Risk pill */
+    .vi-risk-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 9px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+      padding: 2px 7px; border-radius: 3px; margin-bottom: 8px;
+    }
+    .vi-risk-pill.high   { background: rgba(255,59,48,0.1);  color: #c0392b; border: 1px solid rgba(255,59,48,0.2); }
+    .vi-risk-pill.medium { background: rgba(255,186,13,0.1); color: #92650a; border: 1px solid rgba(255,186,13,0.25); }
+    body.dark .vi-risk-pill.high   { color: #ff3b30; }
+    body.dark .vi-risk-pill.medium { color: #ffba0d; }
+    .vi-risk-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+    @keyframes risk-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .vi-risk-pill.high .vi-risk-dot { animation: risk-pulse 2s ease-in-out infinite; }
+
+    .vi-card-order-num { font-size: 15px; font-weight: 700; color: var(--text-strong); }
+    .vi-card-job       { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .vi-card-signals   { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .vi-card-signal    { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+    .vi-card-signal strong { color: var(--text-strong); }
+    .vi-card-footer    { display: flex; align-items: center; flex-shrink: 0; }
+    .vi-card-loads     { font-size: 10px; color: var(--text-muted); white-space: nowrap; }
+    .vi-card-cta {
+      font-size: 11px; font-weight: 700; color: #3069e3;
+      display: flex; align-items: center; gap: 3px; white-space: nowrap;
+      padding: 5px 12px; border-radius: 20px;
+      background: rgba(48,105,227,0.1); border: 1px solid rgba(48,105,227,0.3);
+    }
+    .vi-card-cta.red    { color: #c0392b; background: rgba(255,59,48,0.08); border-color: rgba(255,59,48,0.2); }
+    .vi-card-cta.yellow { color: #7a5200; background: rgba(255,186,13,0.12); border-color: rgba(255,186,13,0.4); font-weight: 700; }
+    body.dark .vi-card-cta.red    { color: #ff3b30; }
+    body.dark .vi-card-cta.yellow { color: #ffba0d; }
+
+    /* Normal section */
+    .vi-normal-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .vi-normal-card {
+      border-radius: 10px; padding: 10px 14px;
+      display: flex; align-items: center; gap: 14px;
+      cursor: pointer; transition: background 0.12s;
+    }
+    body.dark .vi-normal-card        { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); }
+    body.dark .vi-normal-card:hover  { background: rgba(255,255,255,0.07); }
+    body:not(.dark) .vi-normal-card       { background: #fff; border: 1px solid rgba(0,0,0,0.1); }
+    body:not(.dark) .vi-normal-card:hover { background: #f5f7fa; }
+    .vi-normal-left  { flex: 1; min-width: 0; }
+    .vi-normal-order { font-size: 13px; font-weight: 700; color: var(--text-strong); }
+    .vi-normal-meta  { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .vi-normal-right { flex-shrink: 0; text-align: right; }
+    .vi-normal-stat  { font-size: 11px; color: var(--text-muted); }
+    .vi-normal-ok    { display: flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: #1a8a3c; justify-content: flex-end; }
+    body.dark .vi-normal-ok { color: #34c759; }
+
+    /* Divider */
+    .vi-panel-divider { height: 1px; background: var(--border-soft); margin: 12px 0; }
+
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       Prototype top bar — gives this page the same dark control strip
+       used across the other Verifi prototypes. Carries viewport pills
+       (decorative, desktop-only here) and the Options menu with the
+       dark-mode toggle.
+       ============================================================ -->
+  <div class="vp-bar">
+    <div class="vp-brand">
+      <svg width="64" height="16" viewBox="0 0 96 24" style="color:#fff">
+        <path fill="currentColor" d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z"/>
+      </svg>
+      <span class="vp-tag">Verifi Insights</span>
+    </div>
+
+    <div class="vp-right-cluster">
+      <div class="vp-opts-wrap" id="vp-opts-wrap">
+        <button class="vp-opts-btn" onclick="vpOptsToggle()">Options</button>
+        <div class="vp-opts-dd" id="vp-opts-dd" onclick="event.stopPropagation()">
+          <div class="vp-opts-section-label">Appearance</div>
+          <div class="vp-opts-row" onclick="toggleDarkMode()">
+            <span style="display:flex;align-items:center;gap:8px;flex:1;">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <path d="M8 1v1M8 14v1M1 8h1M14 8h1M3.05 3.05l.7.7M12.25 12.25l.7.7M3.05 12.95l.7-.7M12.25 3.75l.7-.7M11 8a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              Dark Mode
+            </span>
+            <div class="vp-dark-toggle"><div class="vp-dark-toggle-knob"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SVG icon sprite. Defined once, referenced via <use href="#id"/>.
+       All icons are 24x24 viewBox, Lucide-style line icons that match
+       the visual weight of the Remix icons used in the Figma.
+       ============================================================ -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <!-- Sidebar (filled-style icons to match Figma) -->
+      <!-- Region header pin -->
+      <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z" fill="currentColor"/></symbol>
+      <!-- Dashboards: house outline -->
+      <symbol id="i-dashboards" viewBox="0 0 24 24"><path d="M21 19.9998C21 20.265 20.8946 20.5194 20.7071 20.7069C20.5196 20.8944 20.2652 20.9998 20 20.9998H4C3.73478 20.9998 3.48043 20.8944 3.29289 20.7069C3.10536 20.5194 3 20.265 3 19.9998V9.48978C2.99989 9.3374 3.03462 9.187 3.10152 9.05008C3.16841 8.91317 3.26572 8.79335 3.386 8.69978L11.386 2.47778C11.5615 2.34123 11.7776 2.26709 12 2.26709C12.2224 2.26709 12.4385 2.34123 12.614 2.47778L20.614 8.69978C20.7343 8.79335 20.8316 8.91317 20.8985 9.05008C20.9654 9.187 21.0001 9.3374 21 9.48978V19.9998ZM19 18.9998V9.97778L12 4.53378L5 9.97778V18.9998H19Z" fill="currentColor"/></symbol>
+      <!-- My Fleet: map with pin -->
+      <symbol id="i-fleet" viewBox="0 0 24 24"><path d="M2 5l6-2 8 2 6-2v16l-6 2-8-2-6 2V5zm6 0v14l8 2V7L8 5zm-2 .35L4 6v13.5l2-.66V5.35zm14 13.3V5.15l-2 .66v13.34l2-.5z" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/></symbol>
+      <!-- Production: bar chart in rounded square -->
+      <symbol id="i-production" viewBox="0 0 24 24"><path d="M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm1 2v14h14V5H5zm3 8h2v4H8v-4zm4-4h2v8h-2V9zm4 2h2v6h-2v-6z" fill="currentColor"/></symbol>
+      <!-- Mixtures: wrench in circle -->
+      <symbol id="i-mixtures" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm3.5-12.5a3 3 0 0 0-4.24 4.24l-3.06 3.06 1.41 1.41 3.06-3.06a3 3 0 0 0 4.24-4.24l-1.42 1.42-1.41-1.41 1.42-1.42Z" fill="currentColor"/></symbol>
+      <!-- Tickets: ID/list card -->
+      <symbol id="i-tickets" viewBox="0 0 24 24"><path d="M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm1 2v12h14V6H5zm2 2h2v2H7V8zm4 0h6v2h-6V8zm-4 4h2v2H7v-2zm4 0h6v2h-6v-2zm-4 4h2v2H7v-2zm4 0h6v2h-6v-2z" fill="currentColor"/></symbol>
+      <!-- Diagnostic Center: signal/heartbeat in magnifier -->
+      <symbol id="i-diagnostic" viewBox="0 0 24 24"><path d="M11 4a7 7 0 1 0 4.18 12.61l4.1 4.1 1.42-1.42-4.1-4.1A7 7 0 0 0 11 4Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm-3 5h1.5l1-2 2 4 1-2H14" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <!-- Data Insights: sparkles/trend -->
+      <symbol id="i-insights" viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 8-8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 8h4v4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 3l.6 1.4L20 5l-1.4.6L18 7l-.6-1.4L16 5l1.4-.6L18 3z" fill="currentColor"/></symbol>
+
+      <!-- Toolbar -->
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></symbol>
+      <symbol id="i-filter" viewBox="0 0 24 24"><path d="M3 5h18M6 12h12M10 19h4"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></symbol>
+      <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></symbol>
+
+      <!-- Pagination -->
+      <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+      <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+      <symbol id="i-chevrons-left" viewBox="0 0 24 24"><path d="m11 18-6-6 6-6M18 18l-6-6 6-6"/></symbol>
+      <symbol id="i-chevrons-right" viewBox="0 0 24 24"><path d="m6 18 6-6-6-6M13 18l6-6-6-6"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="app">
+
+    <!-- ============================== SIDEBAR ============================== -->
+    <aside class="sidebar" aria-label="Primary">
+      <svg class="logo" viewBox="0 0 96 24" xmlns="http://www.w3.org/2000/svg" aria-label="verifi">
+        <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z"/>
+      </svg>
+
+      <div class="region-header">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-pin"/></svg>
+        <div class="label">Ozinga<br>South<br>Florida</div>
+      </div>
+
+      <a class="nav-item" href="#"><svg class="icon"><use href="#i-dashboards"/></svg><span>Dashboards</span></a>
+      <a class="nav-item" href="#"><svg class="icon"><use href="#i-fleet"/></svg><span>My Fleet</span></a>
+      <a class="nav-item active" href="#"><svg class="icon"><use href="#i-production"/></svg><span>Production</span></a>
+      <a class="nav-item" href="#"><svg class="icon"><use href="#i-mixtures"/></svg><span>Mixtures</span></a>
+      <a class="nav-item" href="#"><svg class="icon"><use href="#i-tickets"/></svg><span>Tickets</span></a>
+      <a class="nav-item" href="#"><svg class="icon"><use href="#i-diagnostic"/></svg><span>Diagnostic<br>Center</span></a>
+      <a class="nav-item" href="#"><svg class="icon"><use href="#i-insights"/></svg><span>Data Insights</span></a>
+    </aside>
+
+    <!-- ============================== MAIN ============================== -->
+    <main class="main">
+      <div id="report-view">
+
+      <!-- Tabs -->
+      <nav class="tabs" role="tablist" aria-label="Report views">
+        <div class="tabs-left">
+          <div class="tab active" role="tab" aria-selected="true">Load Reports</div>
+          <div class="tab" role="tab">Truck phase</div>
+          <div class="tab" role="tab">Slump Test report</div>
+          <div class="tab" role="tab">Admix Report</div>
+        </div>
+        <div class="tabs-right">
+          <div class="vp-bell-wrap" id="vp-bell-wrap">
+            <button class="vp-bell-btn" id="vp-bell-btn" aria-label="Alerts">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 1.5a4.5 4.5 0 0 0-4.5 4.5v2.25L2 9.75v.75h12v-.75l-1.5-1.5V6A4.5 4.5 0 0 0 8 1.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                <path d="M6.5 11a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.4"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <label class="search">
+          <svg class="icon"><use href="#i-search"/></svg>
+          <input type="text" placeholder="Search" />
+        </label>
+        <div class="spacer"></div>
+        <button class="icon-btn" title="Refresh"><svg class="icon"><use href="#i-refresh"/></svg></button>
+        <button class="icon-btn" title="Filter"><svg class="icon"><use href="#i-filter"/></svg></button>
+        <button class="icon-btn" title="Download"><svg class="icon"><use href="#i-download"/></svg></button>
+        <div class="preset-wrap" id="preset-wrap">
+          <button class="preset-select" id="preset-trigger" title="View preset">
+            <span id="preset-label">Default</span>
+            <svg class="icon"><use href="#i-chevron-down"/></svg>
+          </button>
+          <div class="preset-menu" role="menu">
+            <button class="preset-option active" data-preset="default" role="menuitem">
+              <span>Default</span>
+              <svg class="check"><use href="#i-check"/></svg>
+            </button>
+            <button class="preset-option" data-preset="dispatch" role="menuitem">
+              <span>Dispatch View</span>
+              <svg class="check"><use href="#i-check"/></svg>
+            </button>
+            <button class="preset-option" data-preset="production" role="menuitem">
+              <span>Production View</span>
+              <svg class="check"><use href="#i-check"/></svg>
+            </button>
+            <button class="preset-option" data-preset="qc" role="menuitem">
+              <span>Quality Control View</span>
+              <svg class="check"><use href="#i-check"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VERIFI INSIGHTS PANEL -->
+      <div class="vi-panel" id="vi-panel">
+        <div class="vi-panel-header">
+          <div class="vi-panel-heading">
+            <div class="vi-panel-logo">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <path d="M8 1l1.8 3.6L14 5.6l-3 2.9.7 4.1L8 10.5l-3.7 2.1.7-4.1-3-2.9 4.2-.9z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+              </svg>
+              Verifi Insights
+            </div>
+            <span class="vi-panel-timestamp" id="vi-panel-timestamp">Today · Updated just now</span>
+          </div>
+          <button class="vi-panel-collapse" id="vi-panel-collapse">Hide</button>
+        </div>
+        <div id="vi-panel-body"></div>
+      </div>
+
+      <!-- Table — rendered by JS from the GROUPS config below so expand/collapse
+           just toggles a flag and re-renders. Keeps the markup single-source. -->
+      <div class="table-wrap">
+        <table class="report" role="table" id="report-table">
+          <colgroup id="report-colgroup"></colgroup>
+          <thead id="report-thead"></thead>
+          <tbody id="report-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Pagination footer -->
+      <div class="table-footer">
+        <span class="records-label">1 - 100 of 250 Records</span>
+        <div class="pager">
+          <button class="icon-btn disabled" title="First page"><svg class="icon"><use href="#i-chevrons-left"/></svg></button>
+          <button class="icon-btn disabled" title="Previous page"><svg class="icon"><use href="#i-chevron-left"/></svg></button>
+          <button class="icon-btn" title="Next page"><svg class="icon"><use href="#i-chevron-right"/></svg></button>
+          <button class="icon-btn" title="Last page"><svg class="icon"><use href="#i-chevrons-right"/></svg></button>
+        </div>
+      </div>
+
+    </div><!-- /report-view -->
+
+      <!-- ================================================================
+           TICKET VIEW — full main area takeover, hidden by default
+           ================================================================ -->
+      <div id="ticket-view" style="display:none; flex:1; overflow-y:auto; margin: -32px -40px -24px; padding: 32px 40px 48px;">
+      </div><!-- /ticket-view -->
+
+    </main>
+  </div>
+
+  <script>
+    // ===================================================================
+    // Table config
+    // -------------------------------------------------------------------
+    // Each group has TWO column sets: `collapsed` (what shows by default,
+    // matching the Figma) and `expanded` (the detail view shown when the
+    // user clicks the chevron). Groups without an `expanded` set are not
+    // clickable. Today only Batch Information has expanded columns wired
+    // up; the others can be filled in the same way.
+    //
+    // Each column: { key, label, w, twoLine?, dividerRight? }
+    //   key          → property on the row data object
+    //   label        → header text (string or [line1, line2] for two-line)
+    //   w            → width in px
+    //   dividerRight → adds the vertical group divider after this column
+    // ===================================================================
+
+    const GROUPS = [
+      {
+        id: "batch",
+        title: "Batch Information",
+        expandable: true,
+        expanded: false,
+        collapsed: [
+          { key: "date",          label: "Date",                              w: 95  },
+          { key: "time",          label: "Time",                              w: 77  },
+          { key: "tickets",       label: "Tickets",                           w: 79  },
+          { key: "driver",        label: "Driver",                            w: 101 },
+          { key: "mixId",         label: "Mix Id",                            w: 72  },
+          { key: "ticketedSlump", label: ["Ticketed", "Slump (in)"],          w: 100, twoLine: true },
+          { key: "size",          label: ["Size (yd³)"],                      w: 82, dividerRight: true }
+        ],
+        expanded_columns: [
+          { key: "time",          label: "Time",                              w: 80  },
+          { key: "tickets",       label: "Ticket",                            w: 90  },
+          { key: "truck",         label: "Truck",                             w: 80  },
+          { key: "driver",        label: "Driver",                            w: 110 },
+          { key: "location",      label: "Location",                          w: 130 },
+          { key: "order",         label: "Order",                             w: 90  },
+          { key: "size",          label: ["Size (yd³)"],                      w: 80  },
+          { key: "mixCode",       label: ["Mix", "Code"],                     w: 80, twoLine: true },
+          { key: "currentSlump",  label: ["Current /", "Ticketed Slump"],     w: 120, twoLine: true },
+          { key: "instruction",   label: "Instruction",                       w: 120 },
+          { key: "allowableWater",label: ["Allowable", "Water"],              w: 100, twoLine: true },
+          { key: "stealthWater",  label: ["Total Stealth", "Water"],          w: 120, twoLine: true, dividerRight: true }
+        ]
+      },
+      {
+        id: "atPlant",
+        title: "At Plant",
+        expandable: true,
+        expanded: false,
+        collapsed: [
+          { key: "initialSlump", label: ["Initial", "Slump (in)"],           w: 77,  twoLine: true },
+          { key: "initialVs",    label: "Slump vs Target", w: 131 },
+          { key: "leavePlant",   label: ["Leave Plant", "Slump (in)"],       w: 115, twoLine: true, dividerRight: true }
+        ],
+        expanded_columns: [
+          { key: "initialSlump",   label: "Initial Slump",     w: 130 },
+          { key: "slumpVsTarget",  label: "Slump vs Target",   w: 140 },
+          { key: "leftPlantSlump", label: "Left Plant Slump",  w: 150 },
+          { key: "waterAdded",     label: "Water Added",       w: 120 },
+          { key: "admixAdded",     label: "Admix Added",       w: 120 },
+          { key: "totalRevs",      label: "Total Revs",        w: 110 },
+          { key: "temp",           label: "Temp",              w: 90  },
+          { key: "ageMn",          label: "Age (mn)",          w: 100, dividerRight: true }
+        ]
+      },
+      {
+        id: "atArrival",
+        title: "At Arrival",
+        expandable: true,
+        expanded: false,
+        collapsed: [
+          { key: "arrivalSlump", label: "Slump (in)",                         w: 70  },
+          { key: "arrivalVs",    label: "Slump vs Target", w: 156, dividerRight: true }
+        ],
+        expanded_columns: [
+          { key: "arrivalSlump",       label: "Slump",            w: 100 },
+          { key: "arrivalSlumpVs",     label: "Slump vs Target",  w: 140 },
+          { key: "arrivalTotalWater",  label: "Total Water",      w: 120 },
+          { key: "arrivalTotalAdmix",  label: "Total Admix",      w: 120 },
+          { key: "arrivalTotalRevs",   label: "Total Revs",       w: 110 },
+          { key: "arrivalTemp",        label: "Temp",             w: 90  },
+          { key: "arrivalAgeMn",       label: "Age (mn)",         w: 100, dividerRight: true }
+        ]
+      },
+      {
+        id: "discharge",
+        title: "Discharge",
+        expandable: true,
+        expanded: false,
+        collapsed: [
+          { key: "dischargeSlump", label: "Slump (in)",                       w: 87  },
+          { key: "dischargeVs",    label: "Slump vs Target", w: 156, dividerRight: true }
+        ],
+        expanded_columns: [
+          { key: "dischargeSlump",       label: "Slump",            w: 100 },
+          { key: "dischargeSlumpVs",     label: "Slump vs Target",  w: 140 },
+          { key: "dischargeTotalWater",  label: "Total Water",      w: 120 },
+          { key: "dischargeTotalAdmix",  label: "Total Admix",      w: 120 },
+          { key: "dischargeTotalRevs",   label: "Total Revs",       w: 110 },
+          { key: "dischargeTemp",        label: "Temp",             w: 90  },
+          { key: "dischargeAgeMn",       label: "Age (mn)",         w: 100, dividerRight: true }
+        ]
+      },
+      {
+        id: "customer",
+        title: "Customer",
+        expandable: false,
+        collapsed: [
+          { key: "customerName", label: "Customer Name", w: null } // fills remaining
+        ]
+      }
+    ];
+
+    // ===================================================================
+    // Sample data — every row identical in the Figma. Added fields for the
+    // expanded Batch Information columns with plausible placeholder values.
+    // ===================================================================
+    const sampleRow = {
+      // Batch Information (collapsed)
+      date:    "04-06-2026",
+      time:    "03:35 PM",
+      tickets: "41127364",
+      driver:  "Jones, Zach",
+      mixId:   "1561043",
+      ticketedSlump: "5.00",
+      size:    "10.0",
+      // Batch Information (expanded — placeholder values; replace with real)
+      truck:          "T-204",
+      location:       "Plant 03",
+      order:          "ORD-88421",
+      mixCode:        "4500-A",
+      currentSlump:   "5.00 / 5.00",
+      instruction:    "Standard",
+      allowableWater: "2.5 gal",
+      stealthWater:   "0.0 gal",
+      status:         "Complete",
+      // At Plant (collapsed)
+      initialSlump:  "3.25",
+      initialVs:     "-1.75",
+      leavePlant:    "6.50",
+      // At Plant (expanded — placeholder values; replace with real)
+      slumpVsTarget:  "-1.75",
+      leftPlantSlump: "6.50",
+      waterAdded:     "1.5 gal",
+      admixAdded:     "0.3 oz",
+      totalRevs:      "240",
+      temp:           "72°F",
+      ageMn:          "12",
+      // At Arrival (collapsed)
+      arrivalSlump:  "6.00",
+      arrivalVs:     "-1.25",
+      // At Arrival (expanded)
+      arrivalSlumpVs:    "-1.25",
+      arrivalTotalWater: "28 gal",
+      arrivalTotalAdmix: "12 oz",
+      arrivalTotalRevs:  "315",
+      arrivalTemp:       "74°F",
+      arrivalAgeMn:      "42",
+      // Discharge (collapsed)
+      dischargeSlump:"5.25",
+      dischargeVs:   "-0.25",
+      // Discharge (expanded)
+      dischargeSlumpVs:    "-0.25",
+      dischargeTotalWater: "32 gal",
+      dischargeTotalAdmix: "14 oz",
+      dischargeTotalRevs:  "385",
+      dischargeTemp:       "76°F",
+      dischargeAgeMn:      "58",
+      // Customer
+      customerName:  "Titan Structural InC",
+      customerAddr:  "6261 NW 6th way,\nFort, Lauderadal,E"
+    };
+
+    const ROW_COUNT = 50;
+
+    // QC rows: start from sampleRow, then randomize the fields that vary
+    // (date, time, tickets, driver, mix id, customer name) per row so the
+    // table doesn't read as 50 copies of the same load.
+    const QC_DRIVERS = [
+      "Jones, Zach", "ULLOA ROYLIS", "Olivera, Gilberto Borges", "ELLIS JEROME",
+      "Fiallo, Lazaro", "OLIVERA SAMUEL", "Lopez, Alexei", "MARTINEZ, JUAN",
+      "Smith, Daniel", "RIVERA, CARLOS", "Garcia, Marco", "PEREZ, ANTONIO",
+      "Hernandez, Luis", "GONZALEZ, RAFAEL", "Diaz, Manuel", "TORRES, RICARDO",
+      "Vasquez, Eddie", "FERNANDEZ, JOSE", "Ramirez, Carlos", "Cruz, Hector"
+    ];
+    const QC_MIX_IDS = [
+      "1085F", "1050FEC", "1080FG", "2408LP55", "2407LR50R2", "06-1892",
+      "1055FEC", "2508LP45H", "1092FH", "290FMA31", "DW1308LP", "1060F",
+      "2608LP40H", "1050FFMG", "1100FACG"
+    ];
+    const QC_CUSTOMERS = [
+      "TITAN STRUCTURAL INC", "MCM", "JGR CONSTRUCTION INC", "HOMESTEAD PAVING CO",
+      "WOODLAND TILT-UP", "COASTAL CONSTRUCTORS", "CECO CONCRETE CONSTRUCTION LLC",
+      "MODRN DEVELOPMENT GROUP", "REBOLIZ CONSTRUCTION", "INTERNATIONAL CONCRETE",
+      "BALTUS CONSTRUCTION", "MIAMI READY MIX", "ATLANTIC FOUNDATIONS",
+      "GULFSTREAM BUILDERS", "PALMETTO CONCRETE"
+    ];
+
+    function pick(arr, i) { return arr[i % arr.length]; }
+    function pad2(n) { return String(n).padStart(2, "0"); }
+
+    const qcRows = window.qcRows = Array.from({ length: ROW_COUNT }, (_, i) => {
+      // Time rolls back 4-7 mins per row from a 03:35 PM start.
+      const startMin = 15*60 + 35; // 03:35 PM in minutes since midnight
+      const offset = i * 5 + (i * 7) % 4;
+      const total = startMin - offset;
+      const hours24 = Math.floor((total + 24*60) / 60) % 24;
+      const mins    = ((total % 60) + 60) % 60;
+      const ampm    = hours24 >= 12 ? "PM" : "AM";
+      const hh12    = ((hours24 + 11) % 12) + 1;
+
+      // Date rolls back by 1 day every ~12 rows to give a few days of variety.
+      const baseDate = new Date(2026, 3, 6); // 04-06-2026
+      baseDate.setDate(baseDate.getDate() - Math.floor(i / 12));
+      const dateStr = `${pad2(baseDate.getMonth()+1)}-${pad2(baseDate.getDate())}-${baseDate.getFullYear()}`;
+
+      // Ticket: monotonically decrementing so the order looks like a log.
+      const ticket = (41127364 - i * 23).toString();
+
+      return Object.assign({}, sampleRow, {
+        date:         dateStr,
+        time:         `${pad2(hh12)}:${pad2(mins)} ${ampm}`,
+        tickets:      ticket,
+        driver:       pick(QC_DRIVERS, i * 3 + 1),
+        mixId:        pick(QC_MIX_IDS, i * 2 + 5),
+        customerName: pick(QC_CUSTOMERS, i * 5 + 2)
+      });
+    });
+
+    // Inject realistic out-of-spec slump values into a few QC rows
+    // so the triage badge fires on the QC view too
+    Object.assign(qcRows[2],  { currentSlump: "7.25", ticketedSlump: "5.00", waterAtPlant: "0.0", waterAtArrival: "0.5", waterAtDischarge: "1.3", stealthWaterVal: "2.4", leaveAge: "9" });
+    Object.assign(qcRows[7],  { currentSlump: "6.50", ticketedSlump: "5.00", waterAtPlant: "1.3", waterAtArrival: "1.4", waterAtDischarge: "2.1", stealthWaterVal: "0.0", leaveAge: "11" });
+    Object.assign(qcRows[15], { currentSlump: "8.00", ticketedSlump: "5.00", waterAtPlant: "0.4", waterAtArrival: "0.4", waterAtDischarge: "0.4", stealthWaterVal: "3.5", leaveAge: "15" });
+
+
+    // truck numbers, slump value formats including special states like
+    // "No Trigger", "Build Up", "Small Load"). Customer/driver names are
+    // fictional.
+    window.defaultRows = [];
+    const defaultRows = window.defaultRows;
+    defaultRows.push(...[
+      { time:"08:33 AM", tz:"GMT-4", date:"05/12/2026", tickets:"528845", truck:"2117", driver:"ULLOA ROYLIS",            location:"Doral (416)",          customerName:"MCM",                  order:"75274", mixCode:"1085F",     size:"10.0", status:"to-job", statusLabel:"TO JOB", currentSlump:"-",       ticketedSlump:"5.00 in", prodInitialSlump:"4.5 in",     leavePlantSlump:"7.75 in" },
+      { time:"08:31 AM", tz:"GMT-4", date:"05/12/2026", tickets:"302052", truck:"1780", driver:"Olivera, Gilberto Borges", location:"Sole Mia (Plant 1)",   customerName:"JGR CONSTRUCTION INC", order:"75218", mixCode:"1085F",     size:"10.0", status:"loaded", statusLabel:"LOADED", currentSlump:"0.75 in", ticketedSlump:"5.00 in", prodInitialSlump:"2.75 in",    leavePlantSlump:"7.25 in" },
+      { time:"08:29 AM", tz:"GMT-4", date:"05/12/2026", tickets:"528808", truck:"1815", driver:"ELLIS JEROME",            location:"Golden Glades (411)",  customerName:"HOMESTEAD PAVING CO",  order:"77713", mixCode:"1055FEC",   size:"10.0", status:"to-job", statusLabel:"TO JOB", currentSlump:"-",       ticketedSlump:"5.00 in", prodInitialSlump:"3.0 in",     leavePlantSlump:"6.0 in"  },
+      { time:"08:28 AM", tz:"GMT-4", date:"05/12/2026", tickets:"151172", truck:"1764", driver:"Fiallo, Lazaro",          location:"Riviera (440)",        customerName:"HOMESTEAD PAVING CO",  order:"76750", mixCode:"2408LP55",  size:"10.0", status:"loaded", statusLabel:"LOADED", currentSlump:"-",       ticketedSlump:"5.00 in", prodInitialSlump:"5.0 in",     leavePlantSlump:"8.0 in"  },
+      { time:"08:28 AM", tz:"GMT-4", date:"05/12/2026", tickets:"732847", truck:"2564", driver:"OLIVERA SAMUEL",          location:"Doral (416)",          customerName:"WOODLAND TILT-UP",     order:"75506", mixCode:"2407LR50R2",size:"10.0", status:"loaded", statusLabel:"LOADED", currentSlump:"6.75 in", ticketedSlump:"5.00 in", prodInitialSlump:"2.0 in",     leavePlantSlump:"6.5 in",  waterAtPlant:"0.0", waterAtArrival:"0.5", waterAtDischarge:"1.3", stealthWaterVal:"2.6", leaveAge:"7"  },
+      { time:"08:27 AM", tz:"GMT-4", date:"05/12/2026", tickets:"809173", truck:"1805", driver:"Lopez, Alexei",           location:"Davie (430)",          customerName:"JGR CONSTRUCTION INC", order:"75218", mixCode:"1085F",     size:"10.0", status:"loaded", statusLabel:"LOADED", currentSlump:"-",       ticketedSlump:"5.00 in", prodInitialSlump:"3.0 in",     leavePlantSlump:"7.0 in"  },
+      { time:"08:25 AM", tz:"GMT-4", date:"05/12/2026", tickets:"528772", truck:"1771", driver:"MARTINEZ, JUAN",          location:"Hialeah (422)",        customerName:"COASTAL CONSTRUCTORS",  order:"75218", mixCode:"1050FFMG",  size:"1.0",  status:"loaded", statusLabel:"LOADED", currentSlump:"Small Load", ticketedSlump:"9.50 in", prodInitialSlump:"Small Load", leavePlantSlump:"Small Load" },
+      { time:"08:22 AM", tz:"GMT-4", date:"05/12/2026", tickets:"445201", truck:"1761", driver:"Smith, Daniel",           location:"Miami Beach (408)",    customerName:"TITAN STRUCTURAL INC", order:"74998", mixCode:"1080FG",    size:"10.0", status:"onsite", statusLabel:"ONSITE", currentSlump:"5.25 in", ticketedSlump:"5.00 in", prodInitialSlump:"2.25 in",    leavePlantSlump:"-"       },
+      { time:"08:19 AM", tz:"GMT-4", date:"05/12/2026", tickets:"918374", truck:"1762", driver:"RIVERA, CARLOS",          location:"Kendall (433)",        customerName:"MCM",                  order:"75301", mixCode:"06-1892",   size:"10.0", status:"to-job", statusLabel:"TO JOB", currentSlump:"-",       ticketedSlump:"4.00 in", prodInitialSlump:">10 in",     leavePlantSlump:"-"       },
+      { time:"08:16 AM", tz:"GMT-4", date:"05/12/2026", tickets:"203847", truck:"1768", driver:"Garcia, Marco",           location:"Doral (416)",          customerName:"WOODLAND TILT-UP",     order:"75512", mixCode:"2407LR50R2",size:"10.0", status:"loaded", statusLabel:"LOADED", currentSlump:"6.0 in",  ticketedSlump:"5.00 in", prodInitialSlump:"Build Up",   leavePlantSlump:"8.0 in",  waterAtPlant:"1.3", waterAtArrival:"1.4", waterAtDischarge:"2.1", stealthWaterVal:"0.0", leaveAge:"11"  },
+      { time:"08:14 AM", tz:"GMT-4", date:"05/12/2026", tickets:"711029", truck:"1767", driver:"PEREZ, ANTONIO",          location:"Sole Mia (Plant 1)",   customerName:"JGR CONSTRUCTION INC", order:"75219", mixCode:"1085F",     size:"9.5",  status:"onsite", statusLabel:"ONSITE", currentSlump:"No Trigger", ticketedSlump:"5.00 in", prodInitialSlump:"4.75 in",    leavePlantSlump:"6.25 in" },
+      { time:"08:11 AM", tz:"GMT-4", date:"05/12/2026", tickets:"560482", truck:"1812", driver:"Hernandez, Luis",         location:"Riviera (440)",        customerName:"HOMESTEAD PAVING CO",  order:"76755", mixCode:"2408LP55",  size:"10.0", status:"to-job", statusLabel:"TO JOB", currentSlump:"-",       ticketedSlump:"6.00 in", prodInitialSlump:"1.5 in",     leavePlantSlump:"-"       },
+      { time:"08:08 AM", tz:"GMT-4", date:"05/12/2026", tickets:"334917", truck:"2298", driver:"GONZALEZ, RAFAEL",        location:"Hialeah (422)",        customerName:"COASTAL CONSTRUCTORS",  order:"76120", mixCode:"2508LP45H", size:"10.0", status:"loaded", statusLabel:"LOADED", currentSlump:"5.50 in", ticketedSlump:"5.00 in", prodInitialSlump:"3.25 in",    leavePlantSlump:"7.5 in"  }
+    ]);
+
+    // Pad defaultRows out to ROW_COUNT by cycling through the base set and
+    // adjusting time + ticket so the rows look distinct when scrolling.
+    (function padDefaultRows() {
+      const base = defaultRows.slice();
+      let minuteOffset = 3; // start subtracting time from row[base.length-1]
+      while (defaultRows.length < ROW_COUNT) {
+        const src = base[defaultRows.length % base.length];
+        // Roll the time backwards by a few minutes each cycle.
+        const totalMinutes = minuteOffset + Math.floor(defaultRows.length / base.length) * 47;
+        const baseDate = new Date(2026, 4, 12, 8, 8); // last row's clock
+        baseDate.setMinutes(baseDate.getMinutes() - totalMinutes);
+        const hh = baseDate.getHours();
+        const mm = baseDate.getMinutes();
+        const ampm = hh >= 12 ? "PM" : "AM";
+        const hh12 = ((hh + 11) % 12) + 1;
+        const timeStr = `${String(hh12).padStart(2,"0")}:${String(mm).padStart(2,"0")} ${ampm}`;
+        defaultRows.push(Object.assign({}, src, {
+          time: timeStr,
+          tickets: String(parseInt(src.tickets, 10) - (defaultRows.length * 17))
+        }));
+        minuteOffset += 3;
+      }
+    })();
+
+    // ===================================================================
+    // Presets
+    // -------------------------------------------------------------------
+    // "qc" preset = the grouped Quality Control View (Batch Information,
+    //   At Plant, At Arrival, Discharge, Customer) with expandable groups.
+    // "default" preset = a flat 10-column list with no group headers.
+    // ===================================================================
+
+    const DEFAULT_COLUMNS = [
+      { key: "time",          label: "Time",                    w: 140 },
+      { key: "tickets",       label: "Ticket Number",           w: 130 },
+      { key: "truck",         label: "Truck",                   w: 90  },
+      { key: "location",      label: "Location",                w: 160 },
+      { key: "customerName",  label: "Customer",                w: 220 },
+      { key: "order",         label: "Order",                   w: 90  },
+      { key: "mixCode",       label: "Mix Code",                w: 120 },
+      { key: "size",          label: "Size",                    w: 100 },
+      { key: "status",        label: "Status",                  w: 120 },
+      { key: "currentSlump",  label: "Current / Ticketed Slump", w: 200 } // explicit min so header never clips
+    ];
+
+    const DISPATCH_COLUMNS = [
+      { key: "time",          label: "Time",          w: 160 },
+      { key: "tickets",       label: "Ticket",        w: 140 },
+      { key: "truck",         label: "Truck",         w: 130 },
+      { key: "location",      label: "Location",      w: 200 },
+      { key: "order",         label: "Order",         w: 130 },
+      { key: "size",          label: "Size",          w: 130 },
+      { key: "mixCode",       label: "Mix Code",      w: 150 },
+      { key: "status",        label: "Status",        w: 130 },
+      { key: "ticketedSlump", label: "Ticketed Slump", w: null }
+    ];
+
+    const PRODUCTION_COLUMNS = [
+      { key: "time",            label: "Time",              w: 160 },
+      { key: "tickets",         label: "Ticket",            w: 130 },
+      { key: "truck",           label: "Truck",             w: 110 },
+      { key: "driver",          label: "Driver",            w: 220 },
+      { key: "location",        label: "Location",          w: 180 },
+      { key: "mixCode",         label: "Mix Code",          w: 140 },
+      { key: "ticketedSlump",   label: "Ticketed Slump",    w: 150 },
+      { key: "prodInitialSlump",label: "Initial Slump",     w: 140 },
+      { key: "leavePlantSlump", label: "Leave Plant Slump", w: null }
+    ];
+
+    let currentPreset = window.currentPreset = "default"; // start in Default view
+
+    // ===================================================================
+    // Render
+    // ===================================================================
+    const colgroupEl = document.getElementById("report-colgroup");
+    const theadEl    = document.getElementById("report-thead");
+    const bodyEl     = document.getElementById("report-body");
+
+    function activeColumns(group) {
+      return (group.expandable && group.expanded && group.expanded_columns)
+        ? group.expanded_columns
+        : group.collapsed;
+    }
+
+    function renderHeaderLabel(label) {
+      if (Array.isArray(label)) {
+        return label.map(l => `<span class="two-line">${l}</span>`).join("");
+      }
+      return label;
+    }
+
+    const tableEl    = document.getElementById("report-table");
+
+    // Row click → open ticket view
+    document.getElementById("report-body").addEventListener("click", function(e) {
+      // Don't intercept badge clicks or header clicks
+      if (e.target.closest(".slump-triage-badge")) return;
+      const tr = e.target.closest("tr[data-row-idx]");
+      if (!tr) return;
+      const idx = parseInt(tr.dataset.rowIdx, 10);
+      const rows = (window.currentPreset === "qc") ? window.qcRows : window.defaultRows;
+      const row = rows[idx];
+      if (row) openTicketView(row);
+    });
+
+    function render() {
+      tableEl.classList.toggle("preset-default", currentPreset !== "qc");
+      tableEl.classList.toggle("preset-qc",      currentPreset === "qc");
+      if (currentPreset === "qc") {
+        renderGrouped();
+      } else if (currentPreset === "dispatch") {
+        renderDispatch();
+      } else if (currentPreset === "production") {
+        renderProduction();
+      } else {
+        renderFlat();
+      }
+    }
+
+    // ----------- QC View: grouped headers with expandable groups -----------
+    function renderGrouped() {
+      // Flatten all currently-visible columns across groups (in order)
+      const flatCols = [];
+      GROUPS.forEach(g => {
+        activeColumns(g).forEach(c => flatCols.push({ group: g, col: c }));
+      });
+
+      // 1. <colgroup> — sets the width for each visible column
+      colgroupEl.innerHTML = flatCols.map(({ col }) =>
+        col.w == null ? `<col />` : `<col style="width:${col.w}px" />`
+      ).join("");
+
+      // 2. <thead> — group row + column row
+      const groupRow = GROUPS.map(g => {
+        const span = activeColumns(g).length;
+        const isExpandable = g.expandable && g.expanded_columns; // only if we actually have an expanded set
+        const cls = [
+          isExpandable ? "expandable" : "",
+          g.expanded   ? "expanded"   : ""
+        ].filter(Boolean).join(" ");
+        const chev = g.expandable
+          ? `<svg class="chev" viewBox="0 0 9 15" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+               <path d="M7.71094 6.30469C8.11719 6.67969 8.11719 7.33594 7.71094 7.71094L1.71094 13.7109C1.33594 14.1172 0.679688 14.1172 0.304688 13.7109C-0.101562 13.3359 -0.101562 12.6797 0.304688 12.3047L5.58594 6.99219L0.304688 1.71094C-0.101562 1.33594 -0.101562 0.679688 0.304688 0.304688C0.679688 -0.101562 1.33594 -0.101562 1.71094 0.304688L7.71094 6.30469Z"/>
+             </svg>`
+          : "";
+        const attrs = isExpandable
+          ? `role="button" tabindex="0" aria-expanded="${g.expanded}" data-group="${g.id}"`
+          : "";
+        return `<th colspan="${span}" class="${cls}" ${attrs}>${g.title} ${chev}</th>`;
+      }).join("");
+
+      const colRow = flatCols.map(({ col }) => {
+        const divider = col.dividerRight ? " divider-right" : "";
+        return `<th class="${divider.trim()}">${renderHeaderLabel(col.label)}</th>`;
+      }).join("");
+
+      theadEl.innerHTML = `
+        <tr class="group-row">${groupRow}</tr>
+        <tr class="col-row">${colRow}</tr>
+      `;
+
+      // 3. <tbody>
+      bodyEl.innerHTML = qcRows.map((r, i) => {
+        const cells = flatCols.map(({ col }) => {
+          const divider = col.dividerRight ? " divider-right" : "";
+          const raw     = r[col.key] ?? "";
+          if (col.key === "customerName") {
+            const addrHtml = (r.customerAddr || "").replace(/\n/g, "<br>");
+            return `<td class="${divider.trim()}" data-col-key="${col.key}">
+              <span class="customer-cell">
+                ${raw}
+                <span class="addr-tooltip">${addrHtml}</span>
+              </span>
+            </td>`;
+          }
+          return `<td class="${divider.trim()}" data-col-key="${col.key}">${raw}</td>`;
+        }).join("");
+        return `<tr data-row-idx="${i}">${cells}</tr>`;
+      }).join("");
+
+      // 4. Hook up clicks/keyboard on expandable group headers
+      theadEl.querySelectorAll("th.expandable").forEach(th => {
+        th.addEventListener("click", onToggle);
+        th.addEventListener("keydown", e => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onToggle.call(th);
+          }
+        });
+      });
+    }
+
+    // ----------- Production View: Time, Ticket, Truck, Driver, Location, Mix Code, slumps -----------
+    function renderProduction() {
+      colgroupEl.innerHTML = PRODUCTION_COLUMNS.map(col =>
+        col.w == null ? `<col />` : `<col style="width:${col.w}px" />`
+      ).join("");
+
+      const colRow = PRODUCTION_COLUMNS.map(col =>
+        `<th>${renderHeaderLabel(col.label)}</th>`
+      ).join("");
+
+      theadEl.innerHTML = `<tr class="col-row">${colRow}</tr>`;
+
+      bodyEl.innerHTML = defaultRows.map((r, i) => `
+        <tr data-row-idx="${i}">
+          <td>
+            <div class="cell-time">
+              <div class="row1">
+                <span class="time">${r.time}</span>
+                <span class="tz">${r.tz}</span>
+              </div>
+              <div class="date">${r.date}</div>
+            </div>
+          </td>
+          <td class="cell-muted">${r.tickets}</td>
+          <td class="cell-muted">${r.truck}</td>
+          <td class="cell-muted">${r.driver}</td>
+          <td class="cell-location">${r.location}</td>
+          <td class="cell-muted">${r.mixCode}</td>
+          <td class="cell-location">${r.ticketedSlump}</td>
+          <td class="cell-location">${r.prodInitialSlump}</td>
+          <td class="cell-location">${r.leavePlantSlump}</td>
+        </tr>
+      `).join("");
+    }
+
+    // ----------- Dispatch View: flat columns, no Customer, single slump -----------
+    function renderDispatch() {
+      colgroupEl.innerHTML = DISPATCH_COLUMNS.map(col =>
+        col.w == null ? `<col />` : `<col style="width:${col.w}px" />`
+      ).join("");
+
+      const colRow = DISPATCH_COLUMNS.map(col =>
+        `<th>${renderHeaderLabel(col.label)}</th>`
+      ).join("");
+
+      theadEl.innerHTML = `<tr class="col-row">${colRow}</tr>`;
+
+      bodyEl.innerHTML = defaultRows.map((r, i) => `
+        <tr data-row-idx="${i}">
+          <td>
+            <div class="cell-time">
+              <div class="row1">
+                <span class="time">${r.time}</span>
+                <span class="tz">${r.tz}</span>
+              </div>
+              <div class="date">${r.date}</div>
+            </div>
+          </td>
+          <td class="cell-location">${r.tickets}</td>
+          <td class="cell-muted">${r.truck}</td>
+          <td class="cell-location">${r.location}</td>
+          <td class="cell-muted">${r.order}</td>
+          <td class="cell-size">${r.size} yd<sup>3</sup></td>
+          <td class="cell-muted">${r.mixCode}</td>
+          <td><span class="status-pill ${r.status}">${r.statusLabel}</span></td>
+          <td class="cell-location">${r.ticketedSlump}</td>
+        </tr>
+      `).join("");
+    }
+
+    // ----------- Default View: flat columns, no group row -----------
+    function renderFlat() {
+      colgroupEl.innerHTML = DEFAULT_COLUMNS.map(col =>
+        col.w == null ? `<col />` : `<col style="width:${col.w}px" />`
+      ).join("");
+
+      const colRow = DEFAULT_COLUMNS.map(col =>
+        `<th>${renderHeaderLabel(col.label)}</th>`
+      ).join("");
+
+      theadEl.innerHTML = `<tr class="col-row">${colRow}</tr>`;
+
+      bodyEl.innerHTML = defaultRows.map((r, i) => `
+        <tr data-row-idx="${i}">
+          <td>
+            <div class="cell-time">
+              <div class="row1">
+                <span class="time">${r.time}</span>
+                <span class="tz">${r.tz}</span>
+              </div>
+              <div class="date">${r.date}</div>
+            </div>
+          </td>
+          <td>${r.tickets}</td>
+          <td>${r.truck}</td>
+          <td class="cell-location">${r.location}</td>
+          <td class="cell-muted">${r.customerName}</td>
+          <td class="cell-muted">${r.order}</td>
+          <td class="cell-muted">${r.mixCode}</td>
+          <td class="cell-size">${r.size} yd<sup>3</sup></td>
+          <td><span class="status-pill ${r.status}">${r.statusLabel}</span></td>
+          <td>
+            <div class="cell-slump">
+              <div class="current${r.currentSlump === '-' ? ' dash' : ''}">${r.currentSlump}</div>
+              <div class="ticketed">${r.ticketedSlump}</div>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function onToggle() {
+      const id = this.dataset.group;
+      const group = GROUPS.find(g => g.id === id);
+      if (!group || !group.expanded_columns) return; // no expanded set yet
+      group.expanded = !group.expanded;
+      render();
+    }
+
+    // ===================================================================
+    // Preset dropdown wiring
+    // ===================================================================
+    const presetWrap    = document.getElementById("preset-wrap");
+    const presetTrigger = document.getElementById("preset-trigger");
+    const presetLabel   = document.getElementById("preset-label");
+    const presetLabels  = {
+      "default":    "Default",
+      "dispatch":   "Dispatch View",
+      "production": "Production View",
+      "qc":         "Quality Control View"
+    };
+
+    presetTrigger.addEventListener("click", e => {
+      e.stopPropagation();
+      presetWrap.classList.toggle("open");
+    });
+
+    presetWrap.querySelectorAll(".preset-option").forEach(opt => {
+      opt.addEventListener("click", e => {
+        e.stopPropagation();
+        currentPreset = window.currentPreset = opt.dataset.preset;
+        presetLabel.textContent = presetLabels[currentPreset];
+        presetWrap.querySelectorAll(".preset-option").forEach(o =>
+          o.classList.toggle("active", o.dataset.preset === currentPreset)
+        );
+        presetWrap.classList.remove("open");
+        render();
+      });
+    });
+
+    // Close menu on outside click
+    document.addEventListener("click", () => presetWrap.classList.remove("open"));
+
+    render();
+
+    // ===================================================================
+    // Prototype top bar wiring: dark-mode toggle + Options dropdown.
+    // Dark mode is the default state for this prototype.
+    // ===================================================================
+    // Theme handling: default = light, remember choice in localStorage so
+    // returning users get the mode they last selected. An inline script at
+    // the top of <head> sets html.theme-dark before paint to avoid a flash;
+    // here we sync that to body.dark which the rest of the styles use.
+    // ===================================================================
+    const THEME_KEY = "load-reports-theme";
+    if (document.documentElement.classList.contains("theme-dark")) {
+      document.body.classList.add("dark");
+    }
+
+    function toggleDarkMode() {
+      const willBeDark = !document.body.classList.contains("dark");
+      document.body.classList.toggle("dark", willBeDark);
+      document.documentElement.classList.toggle("theme-dark", willBeDark);
+      try { localStorage.setItem(THEME_KEY, willBeDark ? "dark" : "light"); } catch {}
+    }
+
+    function vpOptsToggle() {
+      document.getElementById("vp-opts-dd").classList.toggle("open");
+    }
+
+    document.addEventListener("click", function(e) {
+      const wrap = document.getElementById("vp-opts-wrap");
+      if (wrap && !wrap.contains(e.target)) {
+        document.getElementById("vp-opts-dd").classList.remove("open");
+      }
+    });
+
+    // ===================================================================
+    // SLUMP TRIAGE — badge injection + drawer
+    // ===================================================================
+
+    // Slump out-of-spec definition:
+    // currentSlump is numeric and deviates from ticketedSlump by more than +1.5 in
+    // We flag rows where we can parse a numeric current slump and it's significantly over target.
+    // For the prototype we'll specifically flag truck 2564 (6.75 vs 5.00 = +1.75 over)
+    // and truck 1768 (6.0 vs 5.00 = +1.0 over, borderline warn) and any row where
+    // currentSlump reads ">10 in" (out of control).
+
+    function parseSlump(val) {
+      if (!val) return null;
+      const n = parseFloat(val);
+      return isNaN(n) ? null : n;
+    }
+
+    function getSlumpStatus(row) {
+      const cur = parseSlump(row.currentSlump);
+      const tgt = parseSlump(row.ticketedSlump);
+      if (cur === null || tgt === null) {
+        if (row.currentSlump === ">10 in") return "critical";
+        return null;
+      }
+      const delta = cur - tgt;
+      if (delta > 1.5)  return "critical";
+      if (delta > 0.75) return "warn";
+      return null;
+    }
+
+    // After table renders, inject badges into slump cells
+    function injectTriageBadges() {
+      const rows = document.querySelectorAll("tr[data-row-idx]");
+      rows.forEach(tr => {
+        const idx = parseInt(tr.dataset.rowIdx, 10);
+        const rows_data = (window.currentPreset === "qc") ? window.qcRows : window.defaultRows;
+        if (!rows_data) return;
+        const row = rows_data[idx];
+        if (!row) return;
+        const status = getSlumpStatus(row);
+        if (!status) return;
+
+        // Find the slump cell — last td typically
+        const slumpCell = tr.querySelector("td.cell-slump")
+          || tr.querySelector("td[data-col-key='currentSlump']")
+          || tr.querySelector("td[data-col-key='ticketedSlump']")
+          || tr.querySelector("td:last-child");
+        if (!slumpCell) return;
+        if (slumpCell.querySelector(".slump-triage-badge")) return; // already injected
+
+        tr.classList.add("slump-flagged");
+
+        const label = status === "critical" ? "Slump Out of Spec" : "Slump High";
+        const badge = document.createElement("div");
+        badge.className = "slump-triage-badge";
+        badge.innerHTML = `<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 2L14 13H2L8 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 7v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11.5" r="0.75" fill="currentColor"/></svg>${label}`;
+        badge.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openTriageDrawer(row, tr);
+        });
+        slumpCell.appendChild(badge);
+
+        // Register with bell + toast system (waits for DOMContentLoaded)
+        if (typeof window.registerAlert === "function") {
+          window.registerAlert(row, tr, status);
+        }
+      });
+    }
+
+    // Observe table mutations so badges are added after re-renders
+    const tableBody = document.querySelector("tbody") || document.getElementById("report-body");
+    if (tableBody) {
+      const obs = new MutationObserver(injectTriageBadges);
+      obs.observe(tableBody, { childList: true, subtree: true });
+    }
+    // Also run once on load
+    setTimeout(injectTriageBadges, 200);
+
+    // Store rows globally so badge callbacks can access them
+    window.__loadRows = window.defaultRows || [];
+    // Patch renderTable to keep __loadRows in sync
+    const _origRender = window.renderTable;
+    if (typeof _origRender === "function") {
+      window.renderTable = function(...args) {
+        _origRender.apply(this, args);
+        setTimeout(injectTriageBadges, 50);
+      };
+    }
+
+    // ===================================================================
+    // DRAWER OPEN / CLOSE
+    // ===================================================================
+    let activeTriageRow = null;
+
+    function openTriageDrawer(row, trEl) {
+      // Build content
+      const cur = row.currentSlump === ">10 in" ? ">10.0" : parseFloat(row.currentSlump).toFixed(2);
+      const tgt = parseFloat(row.ticketedSlump).toFixed(2);
+      const delta = row.currentSlump === ">10 in" ? ">+5.00" : "+" + (parseFloat(row.currentSlump) - parseFloat(row.ticketedSlump)).toFixed(2);
+
+      // Two-zone bar:
+      // Track represents 0 → maxVal where maxVal = target * 1.6 (gives headroom)
+      const curNum = row.currentSlump === ">10 in" ? 10 : parseFloat(row.currentSlump);
+      const tgtNum = parseFloat(row.ticketedSlump);
+      const maxVal = tgtNum * 1.7;
+      const tgtPct = Math.min(100, (tgtNum / maxVal) * 100);
+      const curPct = Math.min(100, (curNum / maxVal) * 100);
+      const overPct = Math.max(0, curPct - tgtPct);
+
+      document.getElementById("td-truck-num").textContent   = row.truck || "—";
+      document.getElementById("td-ticket-num").textContent  = row.tickets || "—";
+      document.getElementById("td-driver-name").textContent = row.driver || "—";
+      document.getElementById("td-order-num").textContent   = row.order || "—";
+      document.getElementById("td-location").textContent    = row.location || "—";
+
+      document.getElementById("td-cur-slump").textContent   = cur + " in";
+      document.getElementById("td-tgt-slump").textContent   = "Target: " + tgt + " in";
+      document.getElementById("td-delta-val").textContent   = delta + " in over target";
+      document.getElementById("td-zone-ok").style.width        = tgtPct + "%";
+      document.getElementById("td-zone-over").style.left        = tgtPct + "%";
+      document.getElementById("td-zone-over").style.width       = overPct + "%";
+      document.getElementById("td-target-line").style.left      = tgtPct + "%";
+      document.getElementById("td-target-line-label").textContent = tgt + " in";
+
+      document.getElementById("td-card-slump-val").textContent  = cur + " in";
+      document.getElementById("td-card-target-val").textContent = tgt + " in";
+      document.getElementById("td-card-delta-val").textContent  = delta + " in";
+
+      // Supporting table — simulate phase readings
+      const initSlump = row.prodInitialSlump && row.prodInitialSlump !== "Build Up" && row.prodInitialSlump !== "Small Load"
+        ? row.prodInitialSlump : "—";
+      document.getElementById("td-tbl-init").textContent    = initSlump;
+      document.getElementById("td-tbl-plant").textContent   = row.leavePlantSlump || "—";
+      document.getElementById("td-tbl-current").textContent = row.currentSlump || "—";
+      document.getElementById("td-tbl-target").textContent  = row.ticketedSlump || "—";
+
+      // Water added — specific fact from sensor data, not a guess
+      const waterEl = document.getElementById("td-rc-water");
+      const wpNum     = parseFloat(row.waterAtPlant)    || 0;
+      const waNum     = parseFloat(row.waterAtArrival)  || 0;
+      const wdNum     = parseFloat(row.waterAtDischarge)|| 0;
+      const wsNum     = parseFloat(row.stealthWaterVal) || 0;
+      const ageMin    = row.leaveAge ? row.leaveAge + " min after loading" : "at plant";
+
+      if (wpNum > 0 && wsNum > 0) {
+        waterEl.textContent = wpNum + " gal/yd³ metered at plant (" + ageMin + ") + " + wsNum + " gal/yd³ stealth water detected in transit";
+      } else if (wpNum > 0 && waNum > wpNum) {
+        const transitAdd = (waNum - wpNum).toFixed(1);
+        waterEl.textContent = wpNum + " gal/yd³ metered at plant, additional " + transitAdd + " gal/yd³ added in transit";
+      } else if (wpNum > 0) {
+        waterEl.textContent = wpNum + " gal/yd³ metered at plant " + ageMin;
+      } else if (wsNum > 0 && waNum > 0) {
+        waterEl.textContent = wsNum + " gal/yd³ stealth water detected — " + waNum + " gal/yd³ total at arrival";
+      } else if (wsNum > 0) {
+        waterEl.textContent = wsNum + " gal/yd³ stealth water detected in transit";
+      } else if (waNum > 0) {
+        waterEl.textContent = waNum + " gal/yd³ metered total at arrival";
+      } else if (wdNum > 0) {
+        waterEl.textContent = wdNum + " gal/yd³ metered at discharge";
+      } else {
+        // Fall back to slump delta as the signal
+        const initN = parseFloat(row.prodInitialSlump);
+        const plantN = parseFloat(row.leavePlantSlump);
+        if (!isNaN(initN) && !isNaN(plantN) && plantN > initN) {
+          waterEl.textContent = "Slump rose " + (plantN - initN).toFixed(2) + " in between initial and leave-plant — water added at plant";
+        } else {
+          waterEl.textContent = "No metered water data — slump gain not explained by sensor record";
+        }
+      }
+
+      // Open
+      if (activeTriageRow) activeTriageRow.classList.remove("triage-active");
+      activeTriageRow = trEl;
+      if (trEl) trEl.classList.add("triage-active");
+
+      document.getElementById("triage-overlay").classList.add("open");
+      document.getElementById("triage-drawer").classList.add("open");
+    }
+
+    // ===================================================================
+    // VERIFI INSIGHTS PANEL
+    // ===================================================================
+    const VI_PANEL_ORDERS = {
+      attention: [
+        {
+          orderId:    "75274",
+          job:        "Titan Structural — Foundation Pour",
+          customer:   "MCM",
+          location:   "Doral (416)",
+          mixCode:    "1085F",
+          risk:       "high",
+          loads:      29,
+          signals: [
+            { text: "<strong>15 of 29 loads today</strong> left plant over target slump" },
+            { text: "<strong>48% driver managed</strong> — plant batch running wet" },
+            { text: "Structural pour — slump variance affects strength" }
+          ]
+        },
+        {
+          orderId:    "76750",
+          job:        "Marion County Public Schools",
+          customer:   "MARION COUNTY PUBLIC SCHOOLS",
+          location:   "Ocala (Dry)",
+          mixCode:    "4000-C",
+          risk:       "medium",
+          loads:      6,
+          signals: [
+            { text: "<strong>Leave-plant slump 5.25–7.25 in</strong> today vs 4.0 in target" },
+            { text: "<strong>5.7 gal/yd³ stealth water</strong> detected today across 4 trucks" },
+            { text: "Load 6 spiked to 6.75 in at arrival — escalating" }
+          ]
+        }
+      ],
+      normal: [
+        { orderId: "688",  job: "KOAH POOLS",              customer: "KOAH POOLS / PAID",               location: "Ocala (Dry)",             loads: 4, loadsDone: 4, pct: 100, target: 3.0, stealth: 0.0 },
+        { orderId: "684",  job: "DR Horton — Ocala",       customer: "DR HORTON - OCALA",                location: "Gainesville North (Dry)", loads: 3, loadsDone: 3, pct: 92,  target: 5.0, stealth: 0.6 },
+        { orderId: "5178", job: "DR Horton — Orlando East",customer: "DR HORTON INC - ORLANDO EAST",    location: "Orange City (Dry)", loads: 4, loadsDone: 4, pct: 88,  target: 4.0, stealth: 0.5 },
+        { orderId: "5105", job: "Geotechnical Foundation", customer: "GEOTECHNICAL FOUNDATION SYSTEMS", location: "Saint Cloud (Dry)", loads: 5, loadsDone: 5, pct: 83,  target: 9.5, stealth: 0.0 },
+      ]
+    };
+
+    function buildVIPanelHTML() {
+      const attHTML = VI_PANEL_ORDERS.attention.map(o => {
+        const signalsHTML = o.signals.map(s =>
+          `<div class="vi-card-signal">${s.text}</div>`
+        ).join("");
+        const ctaClass = o.risk === "high" ? "red" : "yellow";
+        const ctaText  = o.risk === "high" ? "Review now →" : "Review →";
+        return `
+          <div class="vi-order-card attention risk-${o.risk}" data-order-id="${o.orderId}">
+            <div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+                <div class="vi-risk-pill ${o.risk}"><span class="vi-risk-dot"></span>${o.risk === "high" ? "Needs attention" : "Developing"}</div>
+              </div>
+              <div class="vi-card-order-num">Order ${o.orderId} <span style="font-size:11px;font-weight:500;color:var(--text-muted);">— ${o.job}</span></div>
+              <div class="vi-card-job">${o.customer} · ${o.location}</div>
+            </div>
+            <div class="vi-card-signals">${signalsHTML}</div>
+            <div class="vi-card-footer">
+              <span class="vi-card-cta ${ctaClass}">${ctaText}</span>
+            </div>
+          </div>`;
+      }).join("");
+
+      const normHTML = VI_PANEL_ORDERS.normal.map(o => `
+        <div class="vi-normal-card" data-order-id="${o.orderId}">
+          <div class="vi-normal-left">
+            <div class="vi-normal-order">Order ${o.orderId}</div>
+            <div class="vi-normal-meta">${o.job} · ${o.location}</div>
+          </div>
+          <div class="vi-normal-right">
+            <div class="vi-normal-stat">${o.loadsDone} of ${o.loads} loads · target ${o.target} in</div>
+            <div class="vi-normal-ok">
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              ${o.pct}% in spec${o.stealth === 0 ? ' · no stealth water' : ''}
+            </div>
+          </div>
+        </div>`).join("");
+
+      return `
+        <div class="vi-panel-section-label">Today's Orders — Needs Your Attention</div>
+        <div class="vi-order-grid">${attHTML}</div>
+        <div class="vi-panel-divider"></div>
+        <div class="vi-panel-section-label">Today's Orders — Tracking Normally</div>
+        <div class="vi-normal-grid">${normHTML}</div>`;
+    }
+
+    function initVIPanel() {
+      const body = document.getElementById("vi-panel-body");
+      const collapse = document.getElementById("vi-panel-collapse");
+      const ts = document.getElementById("vi-panel-timestamp");
+      if (!body) return;
+
+      body.innerHTML = buildVIPanelHTML();
+
+      const now = new Date();
+      const dateStr = now.toLocaleDateString([], { month: "short", day: "numeric" });
+      const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      ts.textContent = "Today · " + dateStr + " · Updated " + timeStr;
+
+      // Wire card clicks
+      document.querySelectorAll(".vi-order-card[data-order-id], .vi-normal-card[data-order-id]").forEach(card => {
+        card.addEventListener("click", () => {
+          const oid = card.dataset.orderId;
+          // Find a matching row to pass context
+          const matchRow = window.defaultRows && window.defaultRows.find(r => r.order === oid);
+          openInsightsDrawer(oid, matchRow || {});
+        });
+      });
+
+      // Collapse toggle
+      let collapsed = false;
+      collapse.addEventListener("click", () => {
+        collapsed = !collapsed;
+        body.style.display = collapsed ? "none" : "";
+        collapse.textContent = collapsed ? "Show insights" : "Hide";
+      });
+    }
+
+    // ===================================================================
+    // VERIFI INSIGHTS — contextual drawer
+    // ===================================================================
+
+    // Real order data derived from anonymized_clean.xlsx Order 539
+    // Renamed for prototype: order 75274, job "Titan Structural — Foundation Pour"
+    const VI_ORDER_DATA = {
+      "75274": {
+        orderId:   "75274",
+        job:       "Titan Structural — Foundation Pour",
+        customer:  "MCM",
+        location:  "Doral (416)",
+        mixCode:   "1085F",
+        targetSlump: 4.5,
+        totalLoads: 29,
+        loadsComplete: 29,
+        driverManagedCount: 14,
+        loads: [
+          { ticket:"528845", time:"08:33", driver:"ULLOA ROYLIS",   truck:"2291", initSlump:5.0,  arrSlump:4.75, disSlump:4.75, dm:false },
+          { ticket:"302052", time:"08:31", driver:"Olivera, G.",     truck:"2286", initSlump:5.75, arrSlump:4.5,  disSlump:4.0,  dm:true  },
+          { ticket:"528808", time:"08:29", driver:"ELLIS JEROME",    truck:"2292", initSlump:5.5,  arrSlump:4.75, disSlump:4.5,  dm:false },
+          { ticket:"151172", time:"08:28", driver:"Fiallo, Lazaro",  truck:"2293", initSlump:5.25, arrSlump:5.25, disSlump:10.0, dm:true  },
+          { ticket:"732847", time:"08:27", driver:"OLIVERA SAMUEL",  truck:"2499", initSlump:4.75, arrSlump:4.5,  disSlump:7.25, dm:true  },
+          { ticket:"809173", time:"08:25", driver:"Lopez, Alexei",   truck:"2073", initSlump:5.75, arrSlump:5.75, disSlump:4.5,  dm:true  },
+          { ticket:"528772", time:"08:22", driver:"Norman Slade",    truck:"2074", initSlump:6.0,  arrSlump:5.0,  disSlump:5.0,  dm:true  },
+          { ticket:"445201", time:"08:19", driver:"Smith, Daniel",   truck:"2076", initSlump:4.5,  arrSlump:5.25, disSlump:5.0,  dm:false },
+          { ticket:"918374", time:"08:16", driver:"RIVERA, CARLOS",  truck:"2498", initSlump:5.0,  arrSlump:4.75, disSlump:4.75, dm:false },
+          { ticket:"203847", time:"08:14", driver:"Garcia, Marco",   truck:"1967", initSlump:5.0,  arrSlump:4.5,  disSlump:4.75, dm:true  },
+          { ticket:"711029", time:"08:11", driver:"PEREZ, ANTONIO",  truck:"2073", initSlump:5.5,  arrSlump:5.0,  disSlump:4.5,  dm:true  },
+          { ticket:"560482", time:"08:08", driver:"MARTINEZ, JUAN",  truck:"2499", initSlump:4.75, arrSlump:4.75, disSlump:5.0,  dm:false },
+        ]
+      },
+      "76750": {
+        orderId:   "76750",
+        job:       "Marion County Public Schools",
+        customer:  "MARION COUNTY PUBLIC SCHOOLS",
+        location:  "Ocala (Dry)",
+        mixCode:   "4000-C",
+        targetSlump: 4.0,
+        totalLoads: 6,
+        loadsComplete: 6,
+        driverManagedCount: 0,
+        stealthWaterTotal: 5.7,
+        stealthTruckCount: 4,
+        loads: [
+          { ticket:"41239200", time:"03:13", driver:"Trejo, Favio",     truck:"71827", initSlump:3.5,  arrSlump:5.0,  disSlump:5.0,  dm:false, stealth:2.4 },
+          { ticket:"41239224", time:"03:30", driver:"Mortensen, David", truck:"70164", initSlump:5.25, arrSlump:4.75, disSlump:4.75, dm:false, stealth:1.0 },
+          { ticket:"41239242", time:"03:52", driver:"Hancock, Paul",    truck:"70150", initSlump:5.75, arrSlump:5.0,  disSlump:5.0,  dm:false, stealth:0.0 },
+          { ticket:"41239334", time:"04:35", driver:"Long, Mike",       truck:"73401", initSlump:4.0,  arrSlump:4.75, disSlump:4.75, dm:false, stealth:1.3 },
+          { ticket:"41239373", time:"04:54", driver:"THOMAS ROBERT",    truck:"64575", initSlump:4.75, arrSlump:null, disSlump:null, dm:false, stealth:0.0 },
+          { ticket:"41239396", time:"05:08", driver:"Trejo, Favio",     truck:"71827", initSlump:6.75, arrSlump:6.75, disSlump:null, dm:false, stealth:1.0 },
+        ]
+      },
+      "688": {
+        orderId: "688", job: "KOAH POOLS", customer: "KOAH POOLS / PAID",
+        location: "Ocala (Dry)", mixCode: "3000-P", targetSlump: 3.0,
+        totalLoads: 4, loadsComplete: 4, driverManagedCount: 0, stealthWaterTotal: 0,
+        loads: [
+          { ticket:"41239960", time:"07:26", driver:"Hancock, Paul",   truck:"70150", initSlump:1.5,  arrSlump:2.75, dm:false, stealth:0.0 },
+          { ticket:"41240230", time:"08:15", driver:"TORRES JORGE",    truck:"75520", initSlump:3.0,  arrSlump:2.5,  dm:false, stealth:0.0 },
+          { ticket:"41240426", time:"08:55", driver:"Ortiz, Jaun",     truck:"75518", initSlump:2.75, arrSlump:2.75, dm:false, stealth:0.0 },
+          { ticket:"41240778", time:"10:21", driver:"THOMAS ROBERT",   truck:"64575", initSlump:2.5,  arrSlump:2.75, dm:false, stealth:0.0 },
+        ]
+      },
+      "696": {
+        orderId: "696", job: "BAKAN HOMES", customer: "BAKAN HOMES LLC",
+        location: "Ocala (Dry)", mixCode: "5000-R", targetSlump: 5.0,
+        totalLoads: 4, loadsComplete: 4, driverManagedCount: 0, stealthWaterTotal: 0,
+        loads: [
+          { ticket:"41239231", time:"03:41", driver:"Jones, Zach",       truck:"67015", initSlump:6.5,  arrSlump:6.0,  dm:false, stealth:0.0 },
+          { ticket:"41239504", time:"05:42", driver:"TORRES JORGE",      truck:"75520", initSlump:6.25, arrSlump:5.5,  dm:false, stealth:0.0 },
+          { ticket:"41239545", time:"05:49", driver:"Ortiz, Jaun",       truck:"75518", initSlump:7.25, arrSlump:6.0,  dm:false, stealth:0.0 },
+          { ticket:"41240137", time:"07:56", driver:"Perez, Jonathan",   truck:"71844", initSlump:6.75, arrSlump:5.25, dm:false, stealth:0.0 },
+        ]
+      },
+      "5178": {
+        orderId: "5178", job: "DR Horton — Orlando East", customer: "DR HORTON INC - ORLANDO EAST",
+        location: "Orange City (Dry)", mixCode: "4000-R", targetSlump: 4.0,
+        totalLoads: 4, loadsComplete: 4, driverManagedCount: 0, stealthWaterTotal: 0.5,
+        loads: [
+          { ticket:"41239332", time:"04:37", driver:"Jorge Munoz",       truck:"70157", initSlump:null, arrSlump:null, dm:false, stealth:0.5 },
+          { ticket:"41239350", time:"04:45", driver:"Dante Mickens",     truck:"71793", initSlump:5.0,  arrSlump:4.5,  dm:false, stealth:0.0 },
+          { ticket:"41239367", time:"04:54", driver:"Dwayne Williams",   truck:"69672", initSlump:4.75, arrSlump:3.75, dm:false, stealth:0.0 },
+          { ticket:"41240661", time:"09:51", driver:"DAMIEN BILLINGY",   truck:"67014", initSlump:5.75, arrSlump:null, dm:false, stealth:0.0 },
+        ]
+      },
+      "5105": {
+        orderId: "5105", job: "Geotechnical Foundation", customer: "GEOTECHNICAL FOUNDATION SYSTEMS",
+        location: "Saint Cloud (Dry)", mixCode: "9500-F", targetSlump: 9.5,
+        totalLoads: 5, loadsComplete: 5, driverManagedCount: 0, stealthWaterTotal: 0,
+        loads: [
+          { ticket:"41240505", time:"09:15", driver:"Michael Simpson",   truck:"69727", initSlump:null, arrSlump:null,  dm:false, stealth:0.0 },
+          { ticket:"41240641", time:"09:41", driver:"Irving Caceres",    truck:"68022", initSlump:null, arrSlump:null,  dm:false, stealth:0.0 },
+          { ticket:"41240747", time:"10:13", driver:"HENRY CAMPOS",      truck:"66431", initSlump:null, arrSlump:9.75,  dm:false, stealth:0.0 },
+          { ticket:"41240845", time:"10:54", driver:"Carlos Morales",    truck:"64605", initSlump:null, arrSlump:null,  dm:false, stealth:0.0 },
+          { ticket:"41241058", time:"11:47", driver:"John Mican",        truck:"67671", initSlump:null, arrSlump:null,  dm:false, stealth:0.0 },
+        ]
+      },
+      "696": {
+        orderId: "696", job: "BAKAN HOMES", customer: "BAKAN HOMES LLC",
+        location: "Ocala (Dry)", mixCode: "5000-R", targetSlump: 5.0,
+        totalLoads: 4, loadsComplete: 4, driverManagedCount: 0, stealthWaterTotal: 0,
+        loads: [
+          { ticket:"41239231", time:"03:41", driver:"Jones, Zach",     truck:"67015", initSlump:6.5,  arrSlump:6.0,  dm:false, stealth:0.0 },
+          { ticket:"41239504", time:"05:42", driver:"TORRES JORGE",    truck:"75520", initSlump:6.25, arrSlump:5.5,  dm:false, stealth:0.0 },
+          { ticket:"41239545", time:"05:49", driver:"Ortiz, Jaun",     truck:"75518", initSlump:7.25, arrSlump:6.0,  dm:false, stealth:0.0 },
+          { ticket:"41240137", time:"07:56", driver:"Perez, Jonathan", truck:"71844", initSlump:6.75, arrSlump:5.25, dm:false, stealth:0.0 },
+        ]
+      },
+      "684": {
+        orderId: "684", job: "DR Horton — Ocala", customer: "DR HORTON - OCALA",
+        location: "Gainesville North (Dry)", mixCode: "5000-A", targetSlump: 5.0,
+        totalLoads: 3, loadsComplete: 3, driverManagedCount: 0, stealthWaterTotal: 0.6,
+        loads: [
+          { ticket:"41239451", time:"05:35", driver:"TODD JONES",        truck:"64604", initSlump:4.25, arrSlump:4.5,  dm:false, stealth:0.6 },
+          { ticket:"41239523", time:"05:45", driver:"KIYASHIA FERGUSON", truck:"71843", initSlump:null, arrSlump:null, dm:false, stealth:0.0 },
+          { ticket:"41239574", time:"06:03", driver:"Jerry Mack",        truck:"69711", initSlump:5.25, arrSlump:5.75, dm:false, stealth:0.0 },
+        ]
+      }
+    };
+
+    function openInsightsDrawer(orderId, row) {
+      const data = VI_ORDER_DATA[orderId] || buildInsightsFromRow(row, orderId);
+      const target = data.targetSlump;
+      const loads  = data.loads;
+
+      // Stats — filter nulls
+      const initSlumps = loads.map(l => l.initSlump).filter(v => v != null && !isNaN(v));
+      const avgInit    = initSlumps.length ? (initSlumps.reduce((a,b)=>a+b,0)/initSlumps.length).toFixed(2) : "—";
+      const overTarget = initSlumps.filter(s => s > target + 0.5).length;
+      const dmPct      = Math.round((data.driverManagedCount / data.totalLoads) * 100);
+      const measurable = loads.filter(l => l.arrSlump != null && !isNaN(l.arrSlump));
+      const withinSpec = measurable.filter(l => Math.abs(l.arrSlump - target) <= 1).length;
+      const withinPct  = measurable.length ? Math.round((withinSpec / measurable.length) * 100) : 0;
+      const isNormal   = withinPct >= 80 && dmPct === 0 && (!data.stealthWaterTotal || data.stealthWaterTotal < 1);
+
+      const today = new Date().toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
+      document.getElementById("vi-title").textContent    = "Order " + orderId;
+      document.getElementById("vi-subtitle").textContent = data.customer + " · " + data.location + " · Today " + today + " only";
+
+      document.getElementById("vi-body").innerHTML = buildInsightsHTML(data, avgInit, overTarget, dmPct, withinPct, target, isNormal);
+      document.getElementById("vi-overlay").classList.add("open");
+      document.getElementById("vi-drawer").classList.add("open");
+
+      // Draw slump chart
+      requestAnimationFrame(() => drawInsightsChart(loads, target));
+    }
+
+    function buildInsightsFromRow(row, orderId) {
+      // Fallback for orders without pre-loaded data
+      return {
+        orderId, job: "—", customer: row.customerName || "—",
+        location: row.location || "—", mixCode: row.mixCode || "—",
+        targetSlump: parseFloat(row.ticketedSlump) || 5,
+        totalLoads: 8, loadsComplete: 8, driverManagedCount: 2,
+        loads: []
+      };
+    }
+
+    function buildInsightsHTML(data, avgInit, overTarget, dmPct, withinPct, target, isNormal) {
+      const loadsHTML = data.loads.map(l => {
+        const initClass = l.initSlump > target + 0.5 ? "hi" : l.initSlump < target - 0.5 ? "muted" : "ok";
+        const arrClass  = l.arrSlump  && Math.abs(l.arrSlump - target) <= 1 ? "ok" : "hi";
+        return `<tr>
+          <td class="muted">${l.time}</td>
+          <td>${l.truck}</td>
+          <td>${l.driver}</td>
+          <td class="${initClass}">${l.initSlump} in</td>
+          <td class="${arrClass}">${l.arrSlump || "—"} in</td>
+          <td>${l.dm ? '<span class="vi-dm-badge">DM</span>' : '<span class="muted">—</span>'}</td>
+        </tr>`;
+      }).join("");
+
+      return `
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(48,105,227,0.08);border:1px solid rgba(48,105,227,0.2);border-radius:10px;font-size:12px;color:rgba(229,229,229,0.6);line-height:1.4;">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;color:rgba(48,105,227,0.8)"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M8 7v4M8 5.5v.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          All data below reflects <strong style="color:rgba(229,229,229,0.85)">today's loads only</strong> for this order. This order number does not carry forward — tomorrow's pour will have a new order ID.
+        </div>
+        <div class="vi-section-label">Order Summary</div>
+        <div class="vi-stat-row">
+          <div class="vi-stat-card">
+            <div class="vi-stat-card-label">Total Loads</div>
+            <div class="vi-stat-card-value">${data.totalLoads}</div>
+            <div class="vi-stat-card-sub">${data.loadsComplete} complete today</div>
+          </div>
+          <div class="vi-stat-card">
+            <div class="vi-stat-card-label">Avg Initial Slump</div>
+            <div class="vi-stat-card-value warn">${avgInit} in</div>
+            <div class="vi-stat-card-sub">Target ${target} in</div>
+          </div>
+          <div class="vi-stat-card">
+            ${isNormal
+              ? `<div class="vi-stat-card-label">Driver Managed</div>
+                 <div class="vi-stat-card-value good">0%</div>
+                 <div class="vi-stat-card-sub">No interventions today</div>`
+              : data.stealthWaterTotal
+                ? `<div class="vi-stat-card-label">Stealth Water</div>
+                   <div class="vi-stat-card-value warn">${data.stealthWaterTotal} gal/yd³</div>
+                   <div class="vi-stat-card-sub">Across ${data.stealthTruckCount} trucks today</div>`
+                : `<div class="vi-stat-card-label">Driver Managed</div>
+                   <div class="vi-stat-card-value ${dmPct > 40 ? 'warn' : 'good'}">${dmPct}%</div>
+                   <div class="vi-stat-card-sub">${data.driverManagedCount} of ${data.totalLoads} loads</div>`
+            }
+          </div>
+          <div class="vi-stat-card">
+            <div class="vi-stat-card-label">Within Spec at Arrival</div>
+            <div class="vi-stat-card-value ${withinPct > 70 ? 'good' : 'warn'}">${withinPct}%</div>
+            <div class="vi-stat-card-sub">±1 in of target</div>
+          </div>
+        </div>
+
+        <div class="vi-divider"></div>
+
+        <div class="vi-section-label">What This Means</div>
+        <div class="vi-interpretation">
+          <div class="vi-interp-title">${isNormal ? "This order is tracking normally — no action needed" : data.stealthWaterTotal ? "Concrete leaving plant high — stealth water detected in transit" : "Concrete is leaving the plant high — drivers are correcting it"}</div>
+          <div class="vi-interp-body">
+            ${isNormal
+              ? `${withinPct}% of measurable loads arrived within ±1 in of target slump today. No driver managed events, no stealth water above threshold detected.
+                 <br><br><strong style="color:rgba(229,229,229,0.9)">What this means:</strong> The batch is consistent, drivers are not intervening, and the mix is arriving at spec. No action required — this order can be used as a baseline comparison for other pours today.`
+              : data.stealthWaterTotal
+                ? `${overTarget} of ${data.loads.length} loads left the plant above the ${target} in target. Slump is not correcting itself — it arrived high on 5 of 5 measurable loads.
+                   ${data.stealthWaterTotal} gal/yd³ of stealth water was detected across ${data.stealthTruckCount} trucks. This is unauthorized water added in transit, which dilutes the mix and reduces strength.
+                   <br><br><strong style="color:rgba(229,229,229,0.9)">The risk:</strong> The last load (Trejo, truck 71827) spiked to 6.75 in — well above the 4.0 in target. If the pattern continues on remaining loads, the structural integrity of the pour is at risk.`
+                : `${overTarget} of ${data.loads.length} loads left the plant above target slump. Drivers managed down ${dmPct}% of loads to get concrete within spec at the job site. This is a plant-side consistency issue, not a driver problem — the batch is running wet before it leaves.
+                   <br><br><strong style="color:rgba(229,229,229,0.9)">The risk:</strong> Driver-managed water corrections are inconsistent load-to-load. Some loads arrived in spec, others didn't. Over a ${data.totalLoads}-load pour that variance compounds — especially on structural pours where slump tolerance directly affects strength.`
+            }
+          </div>
+        </div>
+
+        <div class="vi-section-label">Pattern</div>
+        <div class="vi-pattern-strip">
+          <div class="vi-pattern-cells">
+            <div class="vi-pattern-cell">
+              <div class="vi-pattern-cell-title">Plant Consistency</div>
+              <div class="vi-pattern-cell-body">Initial slump averaging ${avgInit} in vs ${target} in target — consistently high across batches, not isolated to one truck</div>
+            </div>
+            <div class="vi-pattern-cell">
+              <div class="vi-pattern-cell-title">${data.stealthWaterTotal ? "Stealth Water" : "Driver Correction"}</div>
+              <div class="vi-pattern-cell-body">${data.stealthWaterTotal
+                ? `${data.stealthWaterTotal} gal/yd³ total unauthorized water added across ${data.stealthTruckCount} of ${data.totalLoads} trucks — not accounted for in the mix design`
+                : `${dmPct}% of loads required driver-managed intervention to pull slump back toward spec before discharge`
+              }</div>
+            </div>
+            <div class="vi-pattern-cell">
+              <div class="vi-pattern-cell-title">Arrival Quality</div>
+              <div class="vi-pattern-cell-body">${data.stealthWaterTotal
+                ? `5 of 5 measurable loads arrived above target — slump is not correcting in transit, it is getting worse`
+                : `${withinPct}% of loads arrived within ±1 in of target — acceptable, but dependent on driver judgment each load`
+              }</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="vi-section-label">Slump Trend — All Loads</div>
+        <div class="vi-chart-wrap">
+          <div class="vi-chart-title">Initial slump vs arrival slump vs target (${target} in)</div>
+          <canvas class="vi-chart-canvas" id="vi-chart-slump" style="height:110px"></canvas>
+          <div style="display:flex;gap:20px;margin-top:10px">
+            <span style="font-size:11px;color:rgba(229,229,229,0.4);display:flex;align-items:center;gap:5px"><span style="width:12px;height:2px;background:#ffba0d;display:inline-block;border-radius:1px"></span>Initial slump</span>
+            <span style="font-size:11px;color:rgba(229,229,229,0.4);display:flex;align-items:center;gap:5px"><span style="width:12px;height:2px;background:#3069e3;display:inline-block;border-radius:1px"></span>Arrival slump</span>
+            <span style="font-size:11px;color:rgba(229,229,229,0.4);display:flex;align-items:center;gap:5px"><span style="width:12px;height:2px;background:rgba(255,255,255,0.25);display:inline-block;border-radius:1px;border-top:1px dashed rgba(255,255,255,0.25)"></span>Target</span>
+          </div>
+        </div>
+
+        <div class="vi-divider"></div>
+
+        <div class="vi-section-label">Load Detail</div>
+        <table class="vi-load-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Truck</th>
+              <th>Driver</th>
+              <th>Initial Slump</th>
+              <th>Arrival Slump</th>
+              <th>Driver Managed</th>
+            </tr>
+          </thead>
+          <tbody>${loadsHTML}</tbody>
+        </table>
+      `;
+    }
+
+    function drawInsightsChart(loads, target) {
+      const canvas = document.getElementById("vi-chart-slump");
+      if (!canvas) return;
+      const W = canvas.offsetWidth || 660;
+      const H = 110;
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext("2d");
+
+      const initData = loads.map(l => l.initSlump).filter(Boolean);
+      const arrData  = loads.map(l => l.arrSlump).filter(Boolean);
+      const allVals  = [...initData, ...arrData, target];
+      const min = Math.min(...allVals) * 0.85;
+      const max = Math.max(...allVals) * 1.1;
+      const sx = i => (i / (Math.max(initData.length, arrData.length) - 1)) * (W - 20) + 10;
+      const sy = v => H - ((v - min) / (max - min)) * (H - 16) - 8;
+
+      ctx.clearRect(0, 0, W, H);
+
+      // Target line
+      const ty = sy(target);
+      ctx.strokeStyle = "rgba(255,255,255,0.2)";
+      ctx.lineWidth = 1; ctx.setLineDash([5,4]);
+      ctx.beginPath(); ctx.moveTo(0, ty); ctx.lineTo(W, ty); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Arrival line (blue)
+      ctx.strokeStyle = "#3069e3"; ctx.lineWidth = 2;
+      ctx.lineJoin = "round"; ctx.lineCap = "round";
+      ctx.beginPath();
+      arrData.forEach((v,i) => i === 0 ? ctx.moveTo(sx(i),sy(v)) : ctx.lineTo(sx(i),sy(v)));
+      ctx.stroke();
+
+      // Initial slump line (yellow)
+      ctx.strokeStyle = "#ffba0d"; ctx.lineWidth = 2;
+      ctx.beginPath();
+      initData.forEach((v,i) => i === 0 ? ctx.moveTo(sx(i),sy(v)) : ctx.lineTo(sx(i),sy(v)));
+      ctx.stroke();
+
+      // Dots on initial
+      initData.forEach((v,i) => {
+        ctx.beginPath();
+        ctx.arc(sx(i), sy(v), 3, 0, Math.PI*2);
+        ctx.fillStyle = v > target + 0.5 ? "#ff3b30" : "#ffba0d";
+        ctx.fill();
+      });
+    }
+
+    function closeInsightsDrawer() {
+      document.getElementById("vi-overlay").classList.remove("open");
+      document.getElementById("vi-drawer").classList.remove("open");
+    }
+
+    // Inject Verifi Insights buttons into Order cells after render
+
+    // ===================================================================
+    // TICKET VIEW
+    // ===================================================================
+    function tkSlumpCell(slumpVal, targetVal) {
+      const cur = parseFloat(slumpVal);
+      const tgt = parseFloat(targetVal);
+      if (isNaN(cur) || isNaN(tgt)) return `<span class="muted">${slumpVal || "—"}</span>`;
+      const delta = cur - tgt;
+      if (delta > 1.5) {
+        return `<span style="color:#ff3b30;font-weight:700">${slumpVal}</span>
+          <div class="slump-triage-badge" style="margin-top:4px;cursor:default;animation:badge-breathe 2.8s ease-in-out infinite">
+            <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 2L14 13H2L8 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 7v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11.5" r="0.75" fill="currentColor"/></svg>
+            Slump Out of Spec
+          </div>`;
+      } else if (delta > 0.75) {
+        return `<span style="color:#ffba0d;font-weight:600">${slumpVal}</span>`;
+      }
+      return slumpVal;
+    }
+
+    function openTicketView(row) {
+      document.getElementById("report-view").style.display = "none";
+      const tv = document.getElementById("ticket-view");
+      tv.style.display = "block";
+      tv.innerHTML = buildTicketHTML(row);
+      tv.scrollTop = 0;
+      // Wire back button
+      tv.querySelector(".tk-back").addEventListener("click", closeTicketView);
+      // Draw sparkline charts
+      drawTicketCharts(row);
+    }
+
+    function closeTicketView() {
+      document.getElementById("ticket-view").style.display = "none";
+      document.getElementById("report-view").style.display = "";
+    }
+
+    function buildTicketHTML(r) {
+      const phaseClass = r.status || "transit";
+      const phaseLabel = r.statusLabel || "IN TRANSIT";
+      const dest = r.location || "—";
+      const addr = r.customerAddr ? r.customerAddr.replace(/\n/g,"<br>") : r.customerName || "—";
+
+      // Compute slump status for header badge
+      const curSlump = parseFloat(r.currentSlump) || parseFloat(r.arrivalSlump) || 0;
+      const tgtSlump = parseFloat(r.ticketedSlump) || 0;
+      const slumpDelta = curSlump - tgtSlump;
+      const headerBadge = slumpDelta > 1.5
+        ? `<div class="slump-triage-badge" style="cursor:default;animation:badge-breathe 2.8s ease-in-out infinite">
+             <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 2L14 13H2L8 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 7v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11.5" r="0.75" fill="currentColor"/></svg>
+             Slump Out of Spec
+           </div>`
+        : "";
+
+      return `
+        <button class="tk-back">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          BACK TO LIST
+        </button>
+
+        <!-- Header -->
+        <div class="tk-header">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div class="tk-ticket-num" style="margin-bottom:0">Ticket ${r.tickets || "—"}</div>
+            ${headerBadge}
+          </div>
+          <div class="tk-meta-row">
+            <div class="tk-meta-item">
+              <span class="tk-meta-label">Location</span>
+              <span class="tk-meta-value">${dest}</span>
+            </div>
+            <div class="tk-meta-item">
+              <span class="tk-meta-label">Driver</span>
+              <span class="tk-meta-value">${r.driver || "—"}</span>
+            </div>
+            <div class="tk-meta-item">
+              <span class="tk-meta-label">Truck Phase</span>
+              <span class="tk-phase-pill ${phaseClass}">${phaseLabel}</span>
+            </div>
+            <div class="tk-meta-item">
+              <span class="tk-meta-label">Order</span>
+              <span class="tk-meta-value">${r.order || "—"}</span>
+            </div>
+            <div class="tk-meta-item">
+              <span class="tk-meta-label">Truck Number</span>
+              <span class="tk-meta-value">${r.truck || "—"}</span>
+            </div>
+            <div class="tk-meta-item">
+              <span class="tk-meta-label">Size</span>
+              <span class="tk-meta-value">${r.size || "—"} yd³</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Two-column layout -->
+        <div class="tk-two-col">
+
+          <!-- LEFT: map -->
+          <div class="tk-left-col">
+            <div class="tk-map-card">
+              <div class="tk-map-dest-bar">
+                <span class="tk-map-dest-label">Destination</span>
+                <span class="tk-map-dest-addr">${addr}</span>
+              </div>
+              <div class="tk-map-frame" id="tk-map-frame">
+                <svg width="100%" height="100%" viewBox="0 0 320 260" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0">
+                  <rect width="320" height="260" fill="#1a2535"/>
+                  <line x1="0" y1="65" x2="320" y2="65" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                  <line x1="0" y1="130" x2="320" y2="130" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                  <line x1="0" y1="195" x2="320" y2="195" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                  <line x1="80" y1="0" x2="80" y2="260" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                  <line x1="160" y1="0" x2="160" y2="260" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                  <line x1="240" y1="0" x2="240" y2="260" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                  <path d="M20 30 Q90 70 160 90 Q230 110 300 120" stroke="rgba(255,255,255,0.1)" stroke-width="3" fill="none"/>
+                  <path d="M0 130 L320 130" stroke="rgba(255,255,255,0.07)" stroke-width="2" fill="none"/>
+                  <path d="M160 0 L160 260" stroke="rgba(255,255,255,0.07)" stroke-width="2" fill="none"/>
+                  <path d="M40 210 Q110 185 180 160 Q250 135 310 220" stroke="rgba(255,255,255,0.07)" stroke-width="2" fill="none"/>
+                  <path d="M65 220 Q100 190 135 155 Q170 120 200 88" stroke="#3069e3" stroke-width="2.5" fill="none" stroke-dasharray="6,3"/>
+                  <circle cx="65" cy="220" r="5" fill="#3069e3"/>
+                  <circle cx="65" cy="220" r="9" fill="rgba(48,105,227,0.25)"/>
+                  <circle cx="200" cy="88" r="5" fill="#34c759"/>
+                  <circle cx="200" cy="88" r="10" fill="rgba(52,199,89,0.2)"/>
+                  <circle cx="148" cy="140" r="6" fill="#ffba0d"/>
+                  <circle cx="148" cy="140" r="11" fill="rgba(255,186,13,0.2)"/>
+                  <text x="55" y="240" font-size="9" fill="rgba(255,255,255,0.45)" font-family="sans-serif">Plant</text>
+                  <text x="188" y="82" font-size="9" fill="rgba(255,255,255,0.45)" font-family="sans-serif">Job Site</text>
+                </svg>
+              </div>
+              <div class="tk-loading-row">
+                <div class="tk-loading-icon">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                    <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/>
+                    <path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="tk-loading-label">Loading At</div>
+                  <div class="tk-loading-time">${r.date || "—"} &nbsp;&nbsp; ${r.time || "—"}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: mix code + charts + status + event log -->
+          <div class="tk-right-col">
+
+            <!-- Mix code bar -->
+            <div class="tk-mixcode-bar">
+              <div class="tk-mixcode-left">
+                <span class="tk-mixcode-label">Mix Code</span>
+                <span class="tk-mixcode-val">${r.mixCode || r.mixId || "—"}</span>
+              </div>
+              <span class="tk-mixcode-instruction">Mix Code Instruction: <strong>Measure Only Do Not Manage</strong></span>
+              <span style="font-size:12px;color:var(--text-muted);">Advanced</span>
+            </div>
+
+            <!-- Charts 3x2 -->
+            <div class="tk-chart-grid">
+              <div class="tk-chart-card">
+                <div class="tk-chart-header">
+                  <div class="tk-chart-title">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M2 10 Q5 4 8 8 Q11 12 14 6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+                    Slump
+                  </div>
+                </div>
+                <canvas class="tk-chart-canvas" id="tk-chart-slump"></canvas>
+                <div class="tk-chart-stats">
+                  <div class="tk-stat"><div class="tk-stat-label">Current</div><div class="tk-stat-value">${r.arrivalSlump || r.currentSlump || "—"} <span class="unit">in</span></div></div>
+                  <div class="tk-stat"><div class="tk-stat-label">Initial</div><div class="tk-stat-value">${r.initialSlump || r.prodInitialSlump || "—"} <span class="unit">in</span></div></div>
+                  <div class="tk-stat"><div class="tk-stat-label">Ticketed</div><div class="tk-stat-value">${r.ticketedSlump || "—"} <span class="unit">in</span></div></div>
+                </div>
+              </div>
+              <div class="tk-chart-card">
+                <div class="tk-chart-header">
+                  <div class="tk-chart-title">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 13h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    Water
+                  </div>
+                </div>
+                <canvas class="tk-chart-canvas" id="tk-chart-water"></canvas>
+                <div class="tk-chart-stats">
+                  <div class="tk-stat"><div class="tk-stat-label">Water Added</div><div class="tk-stat-value">${r.arrivalTotalWater || r.waterAdded || "—"} <span class="unit">gal/yd³</span></div></div>
+                  <div class="tk-stat"><div class="tk-stat-label">Max</div><div class="tk-stat-value">${r.allowableWater || "3.2"} <span class="unit">gal/yd³</span></div></div>
+                </div>
+              </div>
+              <div class="tk-chart-card">
+                <div class="tk-chart-header">
+                  <div class="tk-chart-title">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M8 5v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                    Drum Speed
+                  </div>
+                </div>
+                <canvas class="tk-chart-canvas" id="tk-chart-drum"></canvas>
+                <div class="tk-chart-stats">
+                  <div class="tk-stat"><div class="tk-stat-label">Current</div><div class="tk-stat-value">7.3 <span class="unit">RPM</span></div></div>
+                </div>
+              </div>
+              <div class="tk-chart-card">
+                <div class="tk-chart-header">
+                  <div class="tk-chart-title">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M2 14 Q5 8 8 6 Q11 4 14 2" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+                    Total Revolutions
+                  </div>
+                </div>
+                <canvas class="tk-chart-canvas" id="tk-chart-revs"></canvas>
+                <div class="tk-chart-stats">
+                  <div class="tk-stat"><div class="tk-stat-label">Total</div><div class="tk-stat-value">${r.arrivalTotalRevs || r.totalRevs || "532"} <span class="unit">revolutions</span></div></div>
+                </div>
+              </div>
+              <div class="tk-chart-card">
+                <div class="tk-chart-header">
+                  <div class="tk-chart-title">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 8h8M8 4v8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    Added Admix
+                  </div>
+                </div>
+                <canvas class="tk-chart-canvas" id="tk-chart-admix"></canvas>
+                <div class="tk-chart-stats">
+                  <div class="tk-stat"><div class="tk-stat-label">Total</div><div class="tk-stat-value">${r.arrivalTotalAdmix || "0.0"} <span class="unit">oz/yd³</span></div></div>
+                  <div class="tk-stat"><div class="tk-stat-label">Max</div><div class="tk-stat-value">0.00 <span class="unit">oz/yd³</span></div></div>
+                </div>
+              </div>
+              <div class="tk-chart-card">
+                <div class="tk-chart-header">
+                  <div class="tk-chart-title">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 2 Q12 6 12 10a4 4 0 01-8 0Q4 6 8 2z" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>
+                    Concrete Temperature
+                  </div>
+                </div>
+                <canvas class="tk-chart-canvas" id="tk-chart-temp"></canvas>
+                <div class="tk-chart-stats">
+                  <div class="tk-stat"><div class="tk-stat-label">Current Temp</div><div class="tk-stat-value">${r.arrivalTemp || r.temp || "106"} <span class="unit">°F</span></div></div>
+                  <div class="tk-stat"><div class="tk-stat-label">Max</div><div class="tk-stat-value">106 <span class="unit">°F</span></div></div>
+                </div>
+              </div>
+            </div>
+
+        <!-- Status section -->
+        <div class="tk-section-title">Status</div>
+        <div class="tk-phase-cards">
+          <div class="tk-phase-card">
+            <div class="tk-phase-card-header">
+              <span class="tk-phase-card-name">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M10 5l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Left Plant At
+              </span>
+              <span class="tk-phase-card-time">${r.time || "01:01 PM"}</span>
+            </div>
+            <div class="tk-phase-card-slump-label">Slump</div>
+            <div class="tk-phase-card-slump-val">${r.leavePlantSlump || r.leftPlantSlump || "—"} <span style="font-size:14px;font-weight:500;color:var(--text-muted)">in</span></div>
+          </div>
+          <div class="tk-phase-card">
+            <div class="tk-phase-card-header">
+              <span class="tk-phase-card-name">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5" stroke="currentColor" stroke-width="1.4"/><path d="M8 5v3l2 1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                Arrived On Site At
+              </span>
+              <span class="tk-phase-card-time" style="color:var(--text-muted)">—</span>
+            </div>
+            <div class="tk-phase-card-slump-label">Slump</div>
+            <div class="tk-phase-card-slump-val">${r.arrivalSlump || "—"} <span style="font-size:14px;font-weight:500;color:var(--text-muted)">in</span></div>
+          </div>
+          <div class="tk-phase-card">
+            <div class="tk-phase-card-header">
+              <span class="tk-phase-card-name">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 8 Q6 4 8 8 Q10 12 12 8" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>
+                Started Pouring At
+              </span>
+              <span class="tk-phase-card-time" style="color:var(--text-muted)">—</span>
+            </div>
+            <div class="tk-phase-card-slump-label">Slump</div>
+            <div class="tk-phase-card-slump-val">${r.dischargeSlump || "—"} <span style="font-size:14px;font-weight:500;color:var(--text-muted)">in</span></div>
+          </div>
+        </div>
+
+        <!-- Event log -->
+        <div style="margin-bottom:12px;display:flex;align-items:center;gap:12px;">
+          <span style="font-size:13px;font-weight:600;color:var(--text-muted);">Status</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5l3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <table class="tk-event-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Fluid Event</th>
+              <th>Actual Slump (in)</th>
+              <th>Target Slump (in)</th>
+              <th>Water Added (gal/yd²)</th>
+              <th>Admix Added (oz/yd²)</th>
+              <th>Total Revs</th>
+              <th>Temp (°F)</th>
+              <th>Load Size (yd³)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="tk-phase-group-row"><td colspan="10">At Plant</td></tr>
+            <tr>
+              <td>${r.date || "—"}<br><span style="color:var(--text-muted);font-size:11px">${r.time || "—"}</span></td>
+              <td>Loading</td><td class="muted">—</td><td class="muted">Slump Not Yet Valid</td>
+              <td class="muted">—</td><td>0</td><td>0</td><td>0</td><td>${r.temp || "92"}</td><td class="muted">—</td>
+            </tr>
+            <tr>
+              <td>${r.date || "—"}<br><span style="color:var(--text-muted);font-size:11px">${r.time || "—"}</span></td>
+              <td>Loaded</td><td class="muted">—</td><td class="muted">No Slump Curve</td>
+              <td class="muted">—</td><td>0</td><td>0</td><td>0</td><td>${r.arrivalTemp || "94"}</td><td>${r.size || "10.5"}</td>
+            </tr>
+            <tr class="tk-phase-group-row"><td colspan="10">In Transit</td></tr>
+            <tr>
+              <td>${r.date || "—"}<br><span style="color:var(--text-muted);font-size:11px">${r.time || "—"}</span></td>
+              <td>Left Plant</td><td class="muted">—</td><td class="muted">No Slump Curve</td>
+              <td class="muted">—</td><td>0</td><td>0</td><td>0</td><td>${r.arrivalTemp || "94"}</td><td>${r.size || "10.5"}</td>
+            </tr>
+            <tr>
+              <td>${r.date || "—"}<br><span style="color:var(--text-muted);font-size:11px">${r.time || "—"}</span></td>
+              <td>Deboot</td><td class="muted">—</td><td class="muted">Slump Not Yet Valid</td>
+              <td>${r.ticketedSlump || "1.50"}</td><td>0</td><td>0</td><td>6</td><td>93</td><td>${r.size || "10"}</td>
+            </tr>
+            <tr>
+              <td>${r.date || "—"}<br><span style="color:var(--text-muted);font-size:11px">${r.time || "—"}</span></td>
+              <td>Finished Post Batch Mixing</td><td class="muted">—</td><td class="muted">Slump Not Yet Valid</td>
+              <td>${r.ticketedSlump || "1.50"}</td><td>0</td><td>0</td><td>69</td><td>94</td><td>${r.size || "10"}</td>
+            </tr>
+            <tr>
+              <td>${r.date || "—"}<br><span style="color:var(--text-muted);font-size:11px">${r.time || "—"}</span></td>
+              <td>Initial Slump</td><td class="muted">—</td>
+              <td>${tkSlumpCell(r.initialSlump || r.prodInitialSlump || "1.50", r.ticketedSlump || "1.50")}</td>
+              <td>${r.ticketedSlump || "1.50"}</td><td>0</td><td>0</td><td>75</td><td>93</td><td>${r.size || "10"}</td>
+            </tr>
+            <tr class="tk-phase-group-row"><td colspan="10">At Job Site</td></tr>
+            <tr>
+              <td>${r.date || "—"}<br><span style="color:var(--text-muted);font-size:11px">${r.time || "—"}</span></td>
+              <td>Begin Pour</td><td class="muted">—</td>
+              <td>${tkSlumpCell(r.arrivalSlump || r.dischargeSlump || "1.25", r.ticketedSlump || "1.50")}</td>
+              <td>${r.ticketedSlump || "1.50"}</td><td>0</td><td>0</td>
+              <td>${r.arrivalTotalRevs || "524"}</td><td>99</td><td>${r.size || "10"}</td>
+            </tr>
+            <tr>
+              <td>${r.date || "—"}<br><span style="color:var(--text-muted);font-size:11px">${r.time || "—"}</span></td>
+              <td>End Pour</td><td class="muted">—</td><td class="muted">Small Load</td>
+              <td>${r.ticketedSlump || "1.50"}</td><td>0</td><td>0</td>
+              <td>${r.arrivalTotalRevs || "524"}</td><td>103</td><td class="muted">—</td>
+            </tr>
+          </tbody>
+        </table>
+          </div><!-- /tk-right-col -->
+        </div><!-- /tk-two-col -->
+      `;
+    }
+
+    function drawTicketCharts(r) {
+      // Simple canvas sparklines — each chart gets a different color + pattern
+      const charts = [
+        { id: "tk-chart-slump", color: "#34c759", data: [3.2,3.4,3.1,3.5,3.3,3.6,3.4,3.2,3.5,3.3,3.4,3.2,3.6,3.4,3.3], target: parseFloat(r.ticketedSlump) || 5 },
+        { id: "tk-chart-water", color: "#3069e3", data: [0,0,0,0.2,0.4,0.4,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0], fill: true },
+        { id: "tk-chart-drum",  color: "#ffba0d", data: [14,12,10,8,8,10,9,8,7,8,9,8,7,8,7.3] },
+        { id: "tk-chart-revs",  color: "#ff3b30", data: [0,20,60,120,180,240,280,320,360,400,440,480,510,525,532] },
+        { id: "tk-chart-admix", color: "#9b59b6", data: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] },
+        { id: "tk-chart-temp",  color: "#9b59b6", data: [90,91,92,93,94,95,96,97,98,99,100,102,104,105,106] },
+      ];
+
+      charts.forEach(({ id, color, data, fill, target }) => {
+        const canvas = document.getElementById(id);
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const W = canvas.offsetWidth || 260;
+        const H = 80;
+        canvas.width = W;
+        canvas.height = H;
+
+        const min = Math.min(...data) * 0.85;
+        const max = Math.max(...data) * 1.1;
+        const scaleY = v => H - ((v - min) / (max - min)) * (H - 8) - 4;
+        const scaleX = i => (i / (data.length - 1)) * W;
+
+        ctx.clearRect(0, 0, W, H);
+
+        // Target line
+        if (target) {
+          const ty = scaleY(target);
+          ctx.strokeStyle = "rgba(255,255,255,0.15)";
+          ctx.lineWidth = 1;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath(); ctx.moveTo(0, ty); ctx.lineTo(W, ty); ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        // Fill
+        if (fill) {
+          ctx.beginPath();
+          ctx.moveTo(scaleX(0), H);
+          data.forEach((v, i) => ctx.lineTo(scaleX(i), scaleY(v)));
+          ctx.lineTo(scaleX(data.length - 1), H);
+          ctx.closePath();
+          ctx.fillStyle = color.replace(")", ",0.15)").replace("rgb", "rgba").replace("#", "rgba(").replace("rgba(", "rgba(") || "rgba(48,105,227,0.15)";
+          // simpler fill
+          const grad = ctx.createLinearGradient(0,0,0,H);
+          grad.addColorStop(0, color + "33");
+          grad.addColorStop(1, color + "05");
+          ctx.fillStyle = grad;
+          ctx.fill();
+        }
+
+        // Line
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        data.forEach((v, i) => {
+          i === 0 ? ctx.moveTo(scaleX(i), scaleY(v)) : ctx.lineTo(scaleX(i), scaleY(v));
+        });
+        ctx.stroke();
+
+        // End dot
+        const lx = scaleX(data.length - 1);
+        const ly = scaleY(data[data.length - 1]);
+        ctx.beginPath();
+        ctx.arc(lx, ly, 3, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+      });
+    }
+
+    function closeTriageDrawer() {
+      document.getElementById("triage-overlay").classList.remove("open");
+      document.getElementById("triage-drawer").classList.remove("open");
+      if (activeTriageRow) {
+        activeTriageRow.classList.remove("triage-active");
+        activeTriageRow = null;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("triage-overlay").addEventListener("click", closeTriageDrawer);
+      document.getElementById("td-close-btn").addEventListener("click", closeTriageDrawer);
+      document.getElementById("vi-close-btn").addEventListener("click", closeInsightsDrawer);
+      document.getElementById("vi-overlay").addEventListener("click", closeInsightsDrawer);
+      initVIPanel();
+
+      // ===================================================================
+      // BELL + PREV/NEXT SYSTEM
+      // ===================================================================
+      const bellBtn    = document.getElementById("vp-bell-btn");
+      const toastStack = document.getElementById("toast-stack");
+      const navStrip   = document.getElementById("td-alert-nav-strip");
+      const navPrev    = document.getElementById("td-nav-prev");
+      const navNext    = document.getElementById("td-nav-next");
+      const navCounter = document.getElementById("td-alert-counter");
+
+      // Active alerts registry
+      const activeAlerts = [];
+      let currentAlertIdx = 0;
+
+      window.registerAlert = function(row, trEl, status) {
+        if (activeAlerts.find(a => a.row.tickets === row.tickets)) return;
+        activeAlerts.push({ row, trEl, status });
+        rebuildBell();
+        showToast(row, trEl, status);
+      };
+
+      function rebuildBell() {
+        const count = activeAlerts.length;
+        const old = bellBtn.querySelector(".vp-bell-count");
+        if (old) old.remove();
+        if (count > 0) {
+          bellBtn.classList.add("has-alerts");
+          const badge = document.createElement("span");
+          badge.className = "vp-bell-count";
+          badge.textContent = count;
+          bellBtn.appendChild(badge);
+        } else {
+          bellBtn.classList.remove("has-alerts");
+        }
+      }
+
+      function updateNavStrip() {
+        if (activeAlerts.length <= 1) {
+          navStrip.style.display = "none";
+          return;
+        }
+        navStrip.style.display = "flex";
+        navCounter.textContent = (currentAlertIdx + 1) + " of " + activeAlerts.length;
+        navPrev.disabled = currentAlertIdx === 0;
+        navNext.disabled = currentAlertIdx === activeAlerts.length - 1;
+      }
+
+      function openAlertAt(idx) {
+        currentAlertIdx = idx;
+        const a = activeAlerts[idx];
+        if (!a) return;
+        if (a.trEl) a.trEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        openTriageDrawer(a.row, a.trEl);
+        updateNavStrip();
+      }
+
+      // Bell → open highest priority (first) alert directly
+      bellBtn.addEventListener("click", () => {
+        if (activeAlerts.length === 0) return;
+        openAlertAt(0);
+      });
+
+      navPrev.addEventListener("click", () => {
+        if (currentAlertIdx > 0) openAlertAt(currentAlertIdx - 1);
+      });
+      navNext.addEventListener("click", () => {
+        if (currentAlertIdx < activeAlerts.length - 1) openAlertAt(currentAlertIdx + 1);
+      });
+
+      // ===================================================================
+      // TOAST
+      // ===================================================================
+      const TOAST_DURATION = 5000;
+      let toastQueue = [];
+      let toastShowing = false;
+
+      function showToast(row, trEl, status) {
+        toastQueue.push({ row, trEl, status });
+        if (!toastShowing) drainToastQueue();
+      }
+
+      function drainToastQueue() {
+        if (toastQueue.length === 0) { toastShowing = false; return; }
+        toastShowing = true;
+        const { row, trEl, status } = toastQueue.shift();
+        const isCrit = status === "critical";
+        const cur = parseFloat(row.currentSlump) || 0;
+        const tgt = parseFloat(row.ticketedSlump) || 0;
+        const delta = (cur - tgt).toFixed(2);
+
+        const card = document.createElement("div");
+        card.className = "toast-card" + (isCrit ? "" : " warn");
+        card.innerHTML = `
+          <div class="toast-body">
+            <div class="toast-eyebrow">Verifi Insights — ${isCrit ? "Alert" : "Warning"}</div>
+            <div class="toast-title">Slump Out of Spec — Truck ${row.truck}</div>
+            <div class="toast-sub">${row.location} &nbsp;·&nbsp; +${delta} in over target</div>
+            <div class="toast-progress"><div class="toast-progress-fill" style="transition-duration:${TOAST_DURATION}ms"></div></div>
+          </div>
+          <button class="toast-dismiss" aria-label="Dismiss">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M1 1l8 8M9 1L1 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+          </button>`;
+
+        toastStack.appendChild(card);
+
+        // Animate in
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            card.classList.add("visible");
+            // Start progress bar drain
+            const fill = card.querySelector(".toast-progress-fill");
+            requestAnimationFrame(() => { fill.style.width = "0%"; });
+          });
+        });
+
+        // Click toast body → open drawer
+        card.querySelector(".toast-body").addEventListener("click", () => {
+          dismissToast(card);
+          if (trEl) trEl.scrollIntoView({ behavior: "smooth", block: "center" });
+          setTimeout(() => openTriageDrawer(row, trEl), 200);
+        });
+        card.querySelector(".toast-body").style.cursor = "pointer";
+
+        // Dismiss button
+        let autoTimer;
+        const dismiss = () => { clearTimeout(autoTimer); dismissToast(card); setTimeout(drainToastQueue, 320); };
+        card.querySelector(".toast-dismiss").addEventListener("click", dismiss);
+
+        // Auto-dismiss
+        autoTimer = setTimeout(dismiss, TOAST_DURATION);
+      }
+
+      function dismissToast(card) {
+        card.classList.add("dismissing");
+        card.classList.remove("visible");
+        setTimeout(() => card.remove(), 320);
+      }
+
+      // Expose so injectTriageBadges can call it
+      window._toastRegisterReady = true;
+    });
+  </script>
+
+  <!-- TOAST STACK -->
+  <div class="toast-stack" id="toast-stack"></div>
+
+  <!-- VERIFI INSIGHTS CONTEXTUAL DRAWER -->
+  <div class="vi-overlay" id="vi-overlay"></div>
+  <div class="vi-drawer" id="vi-drawer">
+    <div class="vi-header">
+      <div class="vi-header-left">
+        <div>
+          <div class="vi-eyebrow">Verifi Insights — Today's Order</div>
+          <div class="vi-title" id="vi-title">Order —</div>
+          <div class="vi-subtitle" id="vi-subtitle">—</div>
+        </div>
+      </div>
+      <button class="vi-close-btn" id="vi-close-btn">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="vi-body" id="vi-body"></div>
+  </div>
+
+  <!-- TRIAGE DRAWER -->
+  <div class="triage-overlay" id="triage-overlay"></div>
+  <div class="triage-drawer" id="triage-drawer">
+
+    <!-- Header -->
+    <div class="td-header">
+      <div class="td-header-left">
+        <div class="td-severity-icon">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+            <path d="M8 2L14 13H2L8 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M8 7v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="8" cy="11.5" r="0.75" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="td-title-block">
+          <div class="td-eyebrow">Verifi Insights — Triage</div>
+          <div class="td-title">Slump Out of Spec</div>
+          <div class="td-subtitle">
+            Truck <span id="td-truck-num">—</span> &nbsp;·&nbsp;
+            Ticket <span id="td-ticket-num">—</span> &nbsp;·&nbsp;
+            <span id="td-location">—</span>
+          </div>
+        </div>
+      </div>
+      <button class="td-close-btn" id="td-close-btn" aria-label="Close">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <!-- Alert nav strip -->
+    <div id="td-alert-nav-strip" style="display:none; padding: 8px 24px 0; align-items:center; gap:8px;">
+      <span style="font-size:11px;color:rgba(229,229,229,0.35);flex:1;">Navigate alerts</span>
+      <div class="td-alert-nav">
+        <button class="td-nav-btn" id="td-nav-prev" aria-label="Previous alert">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M7.5 2L3.5 6l4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <span class="td-alert-counter" id="td-alert-counter">1 of 2</span>
+        <button class="td-nav-btn" id="td-nav-next" aria-label="Next alert">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M4.5 2L8.5 6l-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="td-body">
+
+      <!-- Progress bar -->
+      <div class="td-progress-wrap">
+        <div class="td-progress-labels">
+          <span>Target: <span id="td-tgt-slump">—</span></span>
+          <span class="td-current-val" id="td-cur-slump">—</span>
+        </div>
+        <div class="td-progress-track" id="td-progress-track">
+          <div class="td-progress-zone-ok"  id="td-zone-ok"></div>
+          <div class="td-progress-zone-over" id="td-zone-over"></div>
+          <div class="td-progress-target-line" id="td-target-line">
+            <span class="td-target-line-label" id="td-target-line-label">Target</span>
+          </div>
+        </div>
+        <div style="font-size:11px;color:rgba(229,229,229,0.4);margin-top:18px;" id="td-delta-val"></div>
+      </div>
+
+      <div class="td-divider"></div>
+
+      <!-- WHAT HAPPENED -->
+      <div class="td-section-label">What Happened</div>
+      <div class="td-cards">
+        <div class="td-card">
+          <div class="td-card-label"><span class="dot"></span>Current Slump</div>
+          <div class="td-card-value alert" id="td-card-slump-val">—</div>
+          <div class="td-card-meta">Measured at this phase</div>
+        </div>
+        <div class="td-card">
+          <div class="td-card-label"><span class="dot"></span>Target Slump</div>
+          <div class="td-card-value" id="td-card-target-val">—</div>
+          <div class="td-card-meta">Mix spec for this load</div>
+        </div>
+        <div class="td-card">
+          <div class="td-card-label"><span class="dot"></span>Deviation</div>
+          <div class="td-card-value warn" id="td-card-delta-val">—</div>
+          <div class="td-card-meta">Over target threshold</div>
+        </div>
+      </div>
+
+      <!-- WHAT'S DRIVING THIS -->
+      <div class="td-section-label">What's Driving This</div>
+      <div class="td-root-cause">
+        <div class="td-root-cause-cells">
+          <div class="td-rc-cell">
+            <div class="td-rc-cell-title">Water Added</div>
+            <div class="td-rc-cell-body" id="td-rc-water">—</div>
+          </div>
+          <div class="td-rc-cell">
+            <div class="td-rc-cell-title">Pattern</div>
+            <div class="td-rc-cell-body">Driver <span id="td-driver-name">—</span> has 3 similar events this month</div>
+          </div>
+          <div class="td-rc-cell">
+            <div class="td-rc-cell-title">Risk</div>
+            <div class="td-rc-cell-body">Concrete strength below spec — potential reject or QC hold</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="td-divider"></div>
+
+      <!-- RECOMMENDED ACTIONS -->
+      <div class="td-section-label">Recommended Actions</div>
+      <div class="td-rec-cards">
+        <div class="td-rec-card">
+          <div class="td-rec-card-title">Load Action</div>
+          <div class="td-rec-card-body">
+            Slump is over target on Order <strong id="td-order-num">—</strong>. If the load has not discharged, notify the job site and consider flagging for QC review before placement.
+          </div>
+          <div class="td-rec-actions">
+            <button class="td-btn-primary">Flag for QC Review</button>
+            <button class="td-btn-ghost">Notify Contractor</button>
+          </div>
+        </div>
+        <div class="td-rec-card">
+          <div class="td-rec-card-title">Driver Coaching</div>
+          <div class="td-rec-card-body">
+            This is a recurring pattern for this driver. Adding to their scorecard supports a coaching conversation before the next dispatch.
+          </div>
+          <div class="td-rec-actions">
+            <button class="td-btn-primary">Add to Scorecard</button>
+            <button class="td-btn-ghost">Skip</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="td-divider"></div>
+
+      <!-- SUPPORTING DATA -->
+      <div class="td-support">
+        <div class="td-support-header">
+          <div class="td-support-title">Supporting Analysis</div>
+          <span style="font-size:11px;color:rgba(229,229,229,0.4);">Slump readings this load</span>
+        </div>
+        <table class="td-support-table">
+          <thead>
+            <tr>
+              <th>Phase</th>
+              <th>Slump Reading</th>
+              <th>vs Target</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Initial (Plant)</td>
+              <td id="td-tbl-init">—</td>
+              <td class="val-ok">Within spec</td>
+              <td class="val-ok">✓ OK</td>
+            </tr>
+            <tr>
+              <td>Leave Plant</td>
+              <td id="td-tbl-plant">—</td>
+              <td class="val-warn">+1.25 in</td>
+              <td class="val-warn">⚠ High</td>
+            </tr>
+            <tr>
+              <td>Current / Arrival</td>
+              <td id="td-tbl-current">—</td>
+              <td class="val-alert" id="td-tbl-delta">Over target</td>
+              <td class="val-alert">✕ Out of spec</td>
+            </tr>
+            <tr>
+              <td>Target</td>
+              <td id="td-tbl-target">—</td>
+              <td>—</td>
+              <td>Mix spec</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div><!-- /td-body -->
+  </div><!-- /triage-drawer -->
+
+</body>
+</html>

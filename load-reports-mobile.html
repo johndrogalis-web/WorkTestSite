@@ -1890,6 +1890,28 @@
     /* View Ticket button */
     body:not(.dark) #v2-ticket-list .view-ticket-btn { background: #015bbb; color: #fff; }
 
+    /* ── Slump Test light mode ── */
+    body:not(.dark) #so-list { background: #f2f2f7; }
+    body:not(.dark) #so-list .instr-name,
+    body:not(.dark) #so-list div[style*="rgba(229,229,229,0.87)"]  { color: var(--mob-text-primary) !important; }
+    body:not(.dark) #so-list div[style*="rgba(255,255,255,0.35)"],
+    body:not(.dark) #so-list div[style*="rgba(255,255,255,0.38)"],
+    body:not(.dark) #so-list div[style*="rgba(255,255,255,0.4)"]   { color: var(--mob-text-faint) !important; }
+    body:not(.dark) #so-list div[style*="rgba(255,255,255,0.06)"]  { border-color: rgba(0,0,0,0.07) !important; }
+    body:not(.dark) #so-list div[style*="rgba(255,255,255,0.05)"]  { border-color: rgba(0,0,0,0.05) !important; }
+    body:not(.dark) #so-list span[style*="color:#fff"]             { color: var(--mob-text-primary) !important; }
+    body:not(.dark) #so-list .view-ticket-btn                      { background: #015bbb; color: #fff; }
+
+    /* ── Ticketing light mode ── */
+    body:not(.dark) #tk-list { background: #f2f2f7; }
+    body:not(.dark) #tk-list div[style*="rgba(229,229,229,0.87)"]  { color: var(--mob-text-primary) !important; }
+    body:not(.dark) #tk-list div[style*="rgba(255,255,255,0.35)"],
+    body:not(.dark) #tk-list div[style*="rgba(255,255,255,0.38)"],
+    body:not(.dark) #tk-list div[style*="rgba(255,255,255,0.4)"]   { color: var(--mob-text-faint) !important; }
+    body:not(.dark) #tk-list div[style*="rgba(255,255,255,0.06)"]  { border-color: rgba(0,0,0,0.07) !important; }
+    body:not(.dark) #tk-list div[style*="rgba(255,255,255,0.05)"]  { border-color: rgba(0,0,0,0.05) !important; }
+    body:not(.dark) #tk-list span[style*="color:#fff"]             { color: var(--mob-text-primary) !important; }
+
     /* ── AA contrast fixes — swap hardcoded dark-mode alert colors in light mode ── */
     /* Applies to collapsed row slump values, deltas, dots, and expanded detail       */
     body:not(.dark) #v2-ticket-list span[style*="color:#ff3b30"],
@@ -1932,6 +1954,11 @@
 
     /* V2 col header */
     body:not(.dark) #v2-col-header .col-header-cell { color: var(--mob-header-text) !important; }
+    /* Slump Test + Ticketing col headers */
+    body:not(.dark) #so-col-header { background: var(--mob-header-bg) !important; }
+    body:not(.dark) #so-col-header .col-header-cell { color: var(--mob-header-text) !important; }
+    body:not(.dark) #tk-col-header { background: var(--mob-header-bg) !important; }
+    body:not(.dark) #tk-col-header .col-header-cell { color: var(--mob-header-text) !important; }
 
     /* Override all inline dark colors in row cells */
     body:not(.dark) .ticket-row-main div[style*="rgba(229,229,229"] { color: var(--mob-text-primary) !important; }
@@ -3562,9 +3589,9 @@
       if (!list) return;
 
       list.innerHTML = tkCurrentData.map((r, i) => {
-        const statusColor = r.status === 'Sent' ? '#34c759' : '#ffba0d';
-        const statusBg    = r.status === 'Sent' ? 'rgba(52,199,89,0.15)' : 'rgba(255,186,13,0.15)';
-        const statusBorder= r.status === 'Sent' ? 'rgba(52,199,89,0.3)'  : 'rgba(255,186,13,0.4)';
+        const statusColor = r.status === 'Sent' ? '#fff'     : '#fff';
+        const statusBg    = r.status === 'Sent' ? '#2f8d6e'  : '#d4a017';
+        const statusBorder= r.status === 'Sent' ? '#2f8d6e'  : '#d4a017';
 
         return `
           <div class="ticket-row" id="tk-list-row-${i}" onclick="tkToggleRow(${i})">
@@ -3592,7 +3619,7 @@
               </div>
               <!-- Status -->
               <div style="padding:4px 8px;display:flex;align-items:center;">
-                <span style="background:${statusBg};border:1px solid ${statusBorder};border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700;color:${statusColor};white-space:nowrap;">${r.status}</span>
+                <span style="background:${statusBg};border-radius:3px;padding:3px 8px;font-size:10px;font-weight:700;color:#fff !important;text-transform:uppercase;letter-spacing:0.4px;white-space:nowrap;">${r.status}</span>
               </div>
             </div>
 

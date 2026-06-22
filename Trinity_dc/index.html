@@ -282,10 +282,9 @@
   body.dark .dt-pagination { background: var(--layer-1); border-top-color: var(--border); color: var(--defined); }
 
   /* Stat cards */
-  body.dark .dt-stat-row { background: var(--layer-2); border-color: var(--border); }
-  body.dark .dt-stat-cell { border-right-color: var(--border); }
+  body.dark .dt-stat-card { border-right-color: var(--border); }
   body.dark .dt-stat-label { color: var(--soft); }
-  body.dark .dt-stat-val { color: var(--strong); }
+  body.dark .dt-stat-value { color: var(--strong); }
 
   /* Tabs */
   body.dark .dt-tab { color: var(--soft); }
@@ -441,32 +440,33 @@
   body.dark .dt-drawer-ign-badge.off { background: rgba(255,255,255,0.06); color: var(--soft); }
 
   /* Component cards — AA-compliant dark state colors */
-  body.dark .dt-co-card { background: var(--layer-2); border-color: var(--border); }
-  body.dark .dt-co-card.clean  { background: var(--layer-1); border-color: var(--border); }
-  body.dark .dt-co-card.warn   { background: var(--layer-2); border-color: rgba(255,186,13,0.3); }
-  body.dark .dt-co-card.alarm  { background: #d70100; border-color: #9a1f1e; }
-  body.dark .dt-co-card.grey   {
-    background:
-      repeating-linear-gradient(
-        -45deg,
-        transparent,
-        transparent 4px,
-        rgba(255,255,255,0.04) 4px,
-        rgba(255,255,255,0.04) 8px
-      ),
-      var(--layer-1);
-  }
-  body.dark .dt-co-card.empty  { background: #1a1815; border-color: rgba(255,255,255,0.08); border-style: dashed; }
-  body.dark .dt-co-card.pending { background: #2b1f08; border-color: rgba(255,186,13,0.35) !important; }
-  body.dark .dt-co-card.pending .dt-pending-badge { color: #ffffff; }
-  body.dark .dt-co-card.pending .dt-pending-label { color: #ffffff; }
-  body.dark .dt-co-card.pending .dt-pending-dot { background: #ffba0d; }
+  body.dark .dt-co-card { background: var(--layer-1); border-color: rgba(229,229,229,0.25); }
+  body.dark .dt-co-card.clean  { background: var(--layer-1); border-color: rgba(229,229,229,0.25); }
+  body.dark .dt-co-card.warn   { background: var(--layer-1); border-color: rgba(255,186,13,0.3); }
+  body.dark .dt-co-card.alarm  { background: var(--layer-1); border-color: rgba(215,1,0,0.35); }
+  body.dark .dt-co-card.grey   { background: var(--layer-2); border-color: var(--border); }
+  body.dark .dt-co-card.empty  { background: var(--layer-1); border-color: rgba(255,255,255,0.08); border-style: dashed; }
+  body.dark .dt-co-card.pending { background: var(--layer-1); border-color: rgba(255,186,13,0.35) !important; }
+  /* Strip colours — dark mode */
+  body.dark .dt-co-card.clean   .dt-co-card-strip { background:rgba(21,50,47,0.5); }
+  body.dark .dt-co-card.clean   .dt-co-card-strip-label { color:#7ecfa0; }
+  body.dark .dt-co-card.warn    .dt-co-card-strip { background:rgba(255,186,13,0.15); }
+  body.dark .dt-co-card.warn    .dt-co-card-strip-label { color:#ffba0d; }
+  body.dark .dt-co-card.warn    .dt-co-card-strip-dot { background:#ffba0d; }
+  body.dark .dt-co-card.alarm   .dt-co-card-strip { background:rgba(215,1,0,0.2); }
+  body.dark .dt-co-card.alarm   .dt-co-card-strip-label { color:#ff6b6b; }
+  body.dark .dt-co-card.alarm   .dt-co-card-strip-dot { background:#ff6b6b; }
+  body.dark .dt-co-card.pending .dt-co-card-strip { background:rgba(255,186,13,0.15); }
+  body.dark .dt-co-card.pending .dt-co-card-strip-label { color:var(--strong); }
+  body.dark .dt-co-card.empty   .dt-co-card-strip { background:var(--layer-2); }
   body.dark .dt-co-card-name  { color: var(--defined); }
   body.dark .dt-co-card-value { color: var(--strong); }
+  body.dark .dt-co-card.alarm .dt-co-card-value { color: #ff6b6b; }
+  body.dark .dt-co-card.warn  .dt-co-card-value { color: #ffba0d; }
   body.dark .dt-co-card-unit  { color: var(--soft); }
   body.dark .dt-co-card-desc  { color: var(--soft); }
   body.dark .dt-co-card-meta-label { color: var(--soft); }
-  body.dark .dt-co-card.alarm .dt-co-card-dot { background: #ff4444 !important; }
+  body.dark .dt-co-card.alarm .dt-co-card-dot { background: #ff6b6b !important; }
   body.dark .dt-empty-label { color: var(--soft); }
   body.dark .dt-empty-date  { color: var(--subtle); }
   body.dark .dt-empty-action { color: var(--blue); }
@@ -1397,10 +1397,39 @@
   }
   .dt-co-card {
     background:var(--layer-1);
-    border:1px solid var(--border);
-    border-radius:24px; padding:24px;
-    display:flex; flex-direction:column; gap:14px;
+    border:1px solid rgba(54,50,45,0.62);
+    border-radius:20px; padding:0;
+    display:flex; flex-direction:column; gap:0;
+    overflow:hidden;
   }
+  .dt-co-card-body {
+    flex:1; display:flex; flex-direction:column; gap:8px;
+    padding:20px 20px 14px; min-height:0;
+  }
+  .dt-co-card-strip {
+    display:flex; align-items:center; gap:8px;
+    padding:10px 20px; flex-shrink:0;
+  }
+  .dt-co-card-strip-dot {
+    width:8px; height:8px; border-radius:50%; flex-shrink:0;
+  }
+  .dt-co-card-strip-label {
+    font-size:13px; font-weight:500; letter-spacing:-0.26px; white-space:nowrap;
+  }
+  /* Strip colours per state */
+  .dt-co-card.clean   .dt-co-card-strip { background:#d5f1d2; }
+  .dt-co-card.clean   .dt-co-card-strip-label { color:#15322f; }
+  .dt-co-card.warn    .dt-co-card-strip { background:#ffba0d; }
+  .dt-co-card.warn    .dt-co-card-strip-dot { background:#894f18; }
+  .dt-co-card.warn    .dt-co-card-strip-label { color:#894f18; }
+  .dt-co-card.alarm   .dt-co-card-strip { background:#ffd0d0; }
+  .dt-co-card.alarm   .dt-co-card-strip-dot { background:#d70100; }
+  .dt-co-card.alarm   .dt-co-card-strip-label { color:#d70100; }
+  .dt-co-card.pending .dt-co-card-strip { background:#ffefa9; }
+  .dt-co-card.pending .dt-co-card-strip-dot { background:#d97706; }
+  .dt-co-card.pending .dt-co-card-strip-label { color:var(--strong); }
+  .dt-co-card.grey    .dt-co-card-strip { background:var(--layer-2); }
+  .dt-co-card.grey    .dt-co-card-strip-label { color:var(--soft); }
   /* Skeleton loading state for newly linked trucks */
   .dt-co-card.skeleton {
     background:var(--layer-1);
@@ -1434,8 +1463,6 @@
     0%   { background-position:200% 0; }
     100% { background-position:-200% 0; }
   }
-  .dt-co-card.alarm { background:#d70100; border-color:#9a1f1e; }
-  .dt-co-card.warn  { background:#ffba0d; border-color:#887f13; }
   .dt-co-card.grey  { background:var(--layer-2); }
   /* Empty slot */
   .dt-co-card.empty {
@@ -1443,6 +1470,8 @@
     border:1.5px dashed rgba(54,50,45,0.22) !important;
   }
   .dt-co-card.empty .dt-co-card-name { color:var(--soft); }
+  .dt-co-card.empty .dt-co-card-strip { background:var(--layer-2); }
+  .dt-co-card.empty .dt-co-card-strip-label { color:var(--soft); }
   .dt-empty-slot-icon {
     width:36px; height:36px; border-radius:50%;
     background:rgba(54,50,45,0.06);
@@ -1453,7 +1482,7 @@
   .dt-empty-action { font-size:12px; font-weight:500; color:var(--blue); letter-spacing:-0.24px; cursor:pointer; }
   /* Pending verification */
   .dt-co-card.pending {
-    background:#fffbeb;
+    background:var(--layer-1);
     border-color:rgba(180,130,0,0.3) !important;
   }
   .dt-co-card.pending .dt-co-card-name { color:var(--strong); }
@@ -1466,15 +1495,13 @@
 
   /* Desktop replace mode */
   .dt-replace-mode .dt-drawer-cards .dt-co-card,
-  .dt-replace-mode .dt-drawer-cards .dt-co-card-flip {
+  .dt-replace-mode .dt-drawer-cards .dt-co-card {
     cursor:pointer; position:relative;
     transition:transform 0.18s cubic-bezier(0.34,1.56,0.64,1);
   }
-  .dt-replace-mode .dt-drawer-cards .dt-co-card:hover,
-  .dt-replace-mode .dt-drawer-cards .dt-co-card-flip:hover { transform:scale(1.02); }
+  .dt-replace-mode .dt-drawer-cards .dt-co-card:hover { transform:scale(1.02); }
   /* Hollow circle on every card — visible immediately in replace mode */
-  .dt-replace-mode .dt-drawer-cards .dt-co-card::before,
-  .dt-replace-mode .dt-drawer-cards .dt-co-card-flip::before {
+  .dt-replace-mode .dt-drawer-cards .dt-co-card::before {
     content:''; position:absolute; top:10px; right:10px; z-index:10;
     width:22px; height:22px; border-radius:50%;
     border:2px solid rgba(54,50,45,0.25); background:white;
@@ -1482,47 +1509,16 @@
     transition:all 0.2s cubic-bezier(0.34,1.56,0.64,1);
     transform:scale(1); opacity:1;
   }
-  /* Alarm cards — white hollow ring at rest, clearly visible on red */
-  .dt-replace-mode .dt-drawer-cards .dt-co-card.alarm::before,
-  .dt-replace-mode .dt-drawer-cards .dt-co-card-flip::before {
-    border-color:rgba(255,255,255,0.7); background:rgba(255,255,255,0.15);
-  }
   /* Selected: amber fill + white checkmark */
-  .dt-replace-mode .dt-drawer-cards .dt-co-card.co-selected::before,
-  .dt-replace-mode .dt-drawer-cards .dt-co-card-flip.co-selected::before {
+  .dt-replace-mode .dt-drawer-cards .dt-co-card.co-selected::before {
     background:#d97706; border-color:#d97706;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8' fill='none'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     background-repeat:no-repeat; background-position:center; background-size:10px 8px;
     transform:scale(1.15);
   }
-  /* Selected non-alarm: amber ring, scale up */
   .dt-replace-mode .dt-drawer-cards .dt-co-card.co-selected {
     transform:scale(1.02);
     box-shadow:0 0 0 2px #d97706;
-  }
-  /* Alarm selected — dark overlay so red recedes, state is unmistakable */
-  .dt-replace-mode .dt-drawer-cards .dt-co-card.alarm.co-selected,
-  .dt-replace-mode .dt-drawer-cards .dt-co-card-flip.co-selected .dt-co-card.alarm {
-    border:1px solid #9a1f1e !important;
-    box-shadow:inset 0 0 0 1000px rgba(0,0,0,0.18);
-  }
-  /* Selected flip (WDS): white ring flush with card */
-  .dt-replace-mode .dt-drawer-cards .dt-co-card-flip.co-selected {
-    transform:scale(1.02);
-    border-radius:24px;
-  }
-  /* Alarm selected — white ring flush, no offset */
-  .dt-replace-mode .dt-drawer-cards .dt-co-card.alarm.co-selected {
-    transform:scale(1.02);
-    box-shadow:0 0 0 2px white;
-  }
-  /* Alarm selected checkmark — amber circle, white check */
-  .dt-replace-mode .dt-drawer-cards .dt-co-card.alarm.co-selected::before,
-  .dt-replace-mode .dt-drawer-cards .dt-co-card-flip.co-selected::before {
-    background:#d97706; border-color:#d97706;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8' fill='none'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-repeat:no-repeat; background-position:center; background-size:10px 8px;
-    transform:scale(1.15);
   }
 
   /* ── TCG card — desktop ─────────────────────────────────────────
@@ -1570,13 +1566,12 @@
   #dt-replace-bar.visible { display:flex; }
   .dt-replace-bar-label { font-size:13px; color:var(--soft); letter-spacing:-0.26px; }
   .dt-replace-bar-label strong { color:var(--strong); }
-  .dt-co-card-head  { display:flex; align-items:center; gap:8px; }
-  .dt-co-card-dot   { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-  .dt-co-card-name  { font-size:16px; font-weight:500; color:var(--strong); letter-spacing:-0.32px; }
-  .dt-co-card.alarm .dt-co-card-name,
-  .dt-co-card.alarm .dt-co-card-desc,
-  .dt-co-card.alarm .dt-co-card-meta { color:white; }
-  .dt-co-card.alarm .dt-co-card-unit { color:rgba(255,255,255,0.7); }
+  .dt-co-card-head  { display:flex; align-items:center; gap:10px; }
+  .dt-co-card-dot   { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+  .dt-co-card-name  { font-size:16px; font-weight:600; color:var(--strong); letter-spacing:-0.32px; }
+  .dt-co-card.alarm .dt-co-card-name { color:var(--strong); }
+  .dt-co-card.alarm .dt-co-card-value { color:#d70100; }
+  .dt-co-card.warn  .dt-co-card-value { color:#894f18; }
 
   /* WDS flip card — desktop port of the mobile pattern */
   .dt-co-card-flip { perspective:800px; cursor:pointer; border-radius:24px; }
@@ -1636,13 +1631,13 @@
   .dt-tl-alert:hover { filter:brightness(1.08); transform:translateY(-1px); }
   .dt-tl-alert:active { transform:translateY(0); }
   .dt-co-card-value-row { display:flex; align-items:baseline; gap:4px; }
-  .dt-co-card-value { font-size:36px; color:var(--strong); letter-spacing:-0.72px; line-height:1; font-family:var(--font); }
-  .dt-co-card.alarm .dt-co-card-value { color:rgba(229,229,229,0.75); }
-  .dt-co-card-unit  { font-size:15px; font-weight:500; color:var(--strong); letter-spacing:-0.3px; }
-  .dt-co-card-desc  { font-size:14px; color:var(--strong); letter-spacing:-0.28px; line-height:1.3; }
-  .dt-co-card-meta  { display:flex; flex-direction:column; gap:6px; font-size:14px; color:var(--strong); letter-spacing:-0.28px; }
-  .dt-co-card-meta-row { display:flex; gap:8px; }
-  .dt-co-card-meta-label { min-width:100px; }
+  .dt-co-card-value { font-size:32px; color:var(--strong); letter-spacing:-0.64px; line-height:36px; font-family:'DM Mono', monospace; }
+  /* alarm value color now set via .dt-co-card.alarm .dt-co-card-value above */
+  .dt-co-card-unit  { font-size:14px; font-weight:400; color:var(--strong); letter-spacing:-0.28px; }
+  .dt-co-card-desc  { font-size:13px; color:var(--soft); letter-spacing:-0.26px; line-height:18px; display:flex; flex-direction:column; gap:2px; }
+  .dt-co-card-meta  { display:flex; flex-direction:column; gap:2px; font-size:13px; color:var(--soft); letter-spacing:-0.26px; line-height:18px; }
+  .dt-co-card-meta-row { display:flex; gap:4px; }
+  .dt-co-card-meta-label { min-width:0; }
   /* Right side panel */
   .dt-drawer-side {
     width:460px; flex-shrink:0;
@@ -2296,34 +2291,27 @@
   .dt-drawer-side.logs-mode .dt-logs-side-event { display:flex; }
 
   .dt-topbar {
-    padding:20px 0 0;
+    padding:24px 0 0;
     flex-shrink:0;
   }
   .dt-page-title {
     font-size:24px; font-weight:500; color:var(--strong);
     letter-spacing:-0.72px; line-height:1.2;
-    margin-bottom:4px; padding:0 24px;
   }
   .dt-page-sub {
     font-size:13px; color:var(--soft); letter-spacing:-0.26px;
-    margin-bottom:20px; padding:0 24px;
   }
-  /* Compact title row — title+sub on left, optional action button on
-     right. Same line so the header collapses vertically before the
-     metric strip. The row owns the page padding so .dt-page-title
-     and .dt-page-sub drop their own padding when inside this wrap. */
   .dt-title-row {
     display:flex; align-items:flex-start; justify-content:space-between;
     gap:16px;
     padding:0 24px;
-    margin-bottom:16px;
+    margin-bottom:25px;
+    flex-shrink:0;
   }
   .dt-title-block {
     flex:1; min-width:0;
-    display:flex; flex-direction:column; gap:2px;
+    display:flex; flex-direction:column; gap:4px;
   }
-  /* Inside .dt-title-row the title/sub don't need their own padding
-     or margin — parent owns layout. Reset both. */
   .dt-title-row .dt-page-title,
   .dt-title-row .dt-page-sub {
     padding:0;
@@ -2332,31 +2320,32 @@
 
   /* ── Stat cards ── */
   .dt-stat-row {
-    display:flex; border:1px solid var(--border);
-    border-radius:16px; overflow:hidden;
-    background:var(--layer-2);
-    margin:0 24px 20px; flex-shrink:0;
-    box-shadow:0 1px 0 rgba(0,0,0,0.06);
+    display:flex;
+    padding:0 24px;
+    margin-bottom:10px;
+    flex-shrink:0;
   }
   .dt-stat-card {
-    flex:1; padding:20px 24px;
+    flex:1; padding:0 24px 24px;
     border-right:1px solid var(--border);
-    display:flex; flex-direction:column; gap:0;
+    display:flex; flex-direction:column; gap:8px;
+    box-sizing:border-box;
   }
+  .dt-stat-card:first-child { padding-left:0; }
   .dt-stat-card:last-child { border-right:none; }
-  .dt-stat-label {
-    font-size:13px; color:var(--strong); letter-spacing:-0.26px;
-    margin-bottom:16px; line-height:1.3;
-  }
   .dt-stat-value {
-    font-size:36px; font-weight:500; color:var(--strong);
-    letter-spacing:-1.5px; line-height:1;
+    font-family:'ABC Repro', var(--font); font-size:40px; font-weight:500;
+    color:var(--strong); letter-spacing:-1.2px; line-height:1;
+  }
+  .dt-stat-label {
+    font-family:'ABC Repro', var(--font); font-size:16px; font-weight:400;
+    color:var(--strong); letter-spacing:-0.32px; line-height:1.3;
   }
 
   /* ── Toolbar ── */
   .dt-toolbar {
     display:flex; align-items:center; gap:10px;
-    padding:0 24px; margin-bottom:0;
+    padding:0 24px;
     flex-shrink:0; height:44px;
   }
   .dt-filter-wrap { flex-shrink:0; }
@@ -3537,7 +3526,7 @@
   /* ── Tab bar — Trinity Design System spec ── */
   .dt-tabs {
     display:flex; gap:8px; align-items:flex-end;
-    margin-top:16px; flex-shrink:0;
+    margin-top:10px; flex-shrink:0;
     padding-left:24px;
     position:relative;
   }
@@ -3756,10 +3745,10 @@
      Monospace, subtle background, no colour coding. */
   .dt-ver-pill {
     display:inline-flex; align-items:center;
-    padding:2px 7px; border-radius:6px;
-    font-size:12px; font-weight:500; letter-spacing:-0.12px;
+    padding:4px; border-radius:16px;
+    font-size:10px; letter-spacing:-0.2px;
     font-family:'DM Mono', monospace;
-    background:rgba(54,50,45,0.07); color:var(--defined);
+    background:var(--layer-2); color:var(--strong);
     white-space:nowrap;
   }
 
@@ -4639,70 +4628,65 @@
   }
   .ping-btn:active { opacity:0.85; }
   .co-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:8px; }
-  .co-card { background:var(--layer-1); border:1px solid var(--border); border-radius:16px; padding:16px; display:flex; flex-direction:column; gap:10px; height:200px; overflow:hidden; box-sizing:border-box; }
-  .co-card--fault { background:#bc302f; border-color:#bc302f; }
-  .co-card--warn { background:#fffbeb; border-color:rgba(180,130,0,0.3); }
-  .co-card-head { display:flex; align-items:center; gap:8px; }
-  .co-card-head span { font-size:14px; font-weight:500; color:var(--strong); letter-spacing:-0.28px; }
-  .co-card--fault .co-card-head span { color:white; }
-  .co-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-  .co-dot--green { background:#16a34a; }
-  .co-dot--grey  { background:#36322d4d; }
-  .co-dot--white { background:white; }
-  .co-value { font-size:36px; font-weight:500; color:var(--strong); line-height:1; letter-spacing:-1px; }
-  .co-card--fault .co-value { color:white; }
-  .co-unit { font-size:14px; font-weight:500; color:var(--strong); letter-spacing:-0.3px; }
-  .co-card--fault .co-unit { color:white; }
-  .co-fault-msg { font-size:13px; color:white; letter-spacing:-0.2px; line-height:1.3; }
-  /* flip card */
-  .co-card-flip { perspective:600px; cursor:pointer; position:relative; border-radius:16px; overflow:visible; height:200px; }
-  .co-card-flip-inner { height:100%; }
-  .co-card-flip .co-card-front { height:100%; box-sizing:border-box; overflow:hidden; }
-  .co-card-flip-inner { position:relative; transform-style:preserve-3d; transition:transform 0.45s ease; }
-  .co-card-flip.flipped .co-card-flip-inner { transform:rotateY(180deg); }
-  .co-card-front, .co-card-back { backface-visibility:hidden; -webkit-backface-visibility:hidden; }
-  .co-card-back { position:absolute; top:0; left:0; right:0; bottom:0; transform:rotateY(180deg); border-radius:16px; overflow:hidden; }
-
-  .co-card--warn { background:#ffba0d; border-color:#887f13; }
-  .co-card--warn .co-card-head span { color:var(--strong); }
-  .co-card--warn .co-value { color:var(--strong); }
-  .co-card--warn .co-unit { color:var(--strong); }
-  /* Empty slot — component physically removed */
+  /* ── Mobile component cards — new two-zone design ── */
+  .co-card {
+    background:var(--layer-1); border:1px solid rgba(54,50,45,0.62);
+    border-radius:16px; padding:0; display:flex; flex-direction:column;
+    overflow:hidden; box-sizing:border-box;
+  }
+  .co-card-body {
+    flex:1; display:flex; flex-direction:column; gap:6px;
+    padding:14px 14px 10px; min-height:0;
+  }
+  .co-card-head { display:flex; align-items:center; gap:8px; flex-wrap:nowrap; }
+  .co-card-head span { font-size:14px; font-weight:600; color:var(--strong); letter-spacing:-0.28px; }
+  .co-val-row { display:flex; align-items:baseline; gap:3px; }
+  .co-value { font-size:28px; font-family:'DM Mono', monospace; color:var(--strong); line-height:32px; letter-spacing:-0.56px; }
+  .co-unit  { font-size:13px; color:var(--strong); letter-spacing:-0.26px; }
+  .co-desc-group { display:flex; flex-direction:column; gap:2px; }
+  .co-desc-text { font-size:12px; color:var(--soft); letter-spacing:-0.24px; line-height:16px; }
+  .co-meta { display:flex; flex-direction:column; gap:1px; }
+  .co-meta-row { display:flex; gap:4px; font-size:11px; color:var(--soft); letter-spacing:-0.22px; }
+  /* Card strip */
+  .co-card-strip {
+    display:flex; align-items:center; gap:6px;
+    padding:8px 14px; flex-shrink:0;
+  }
+  .co-strip-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+  .co-strip-label { font-size:12px; font-weight:500; letter-spacing:-0.24px; white-space:nowrap; }
+  /* Strip state colours */
+  .co-strip--normal  { background:#d5f1d2; }
+  .co-strip--normal  .co-strip-label { color:#15322f; }
+  .co-strip--warn    { background:#ffba0d; }
+  .co-strip--warn    .co-strip-dot { background:#894f18; }
+  .co-strip--warn    .co-strip-label { color:#894f18; }
+  .co-strip--alarm   { background:#ffd0d0; }
+  .co-strip--alarm   .co-strip-dot { background:#d70100; }
+  .co-strip--alarm   .co-strip-label { color:#d70100; }
+  .co-strip--pending { background:#ffefa9; }
+  .co-strip--pending .co-strip-dot { background:#d97706; }
+  .co-strip--pending .co-strip-label { color:var(--strong); }
+  .co-strip--empty   { background:var(--layer-2); }
+  .co-strip--empty   .co-strip-label { color:var(--soft); }
+  .co-strip--grey    { background:var(--layer-2); }
+  .co-strip--grey    .co-strip-label { color:var(--soft); }
+  /* Empty / pending card variants */
   .co-card--empty {
     background:var(--layer-1); border:1.5px dashed rgba(54,50,45,0.25);
-    border-radius:16px; padding:16px;
-    display:flex; flex-direction:column; gap:10px;
+    border-radius:16px;
   }
-  .co-card--empty .co-card-head span { color:var(--soft); }
-  .co-empty-slot-icon {
-    width:32px; height:32px; border-radius:50%;
-    background:rgba(54,50,45,0.06);
-    display:flex; align-items:center; justify-content:center;
-    flex-shrink:0;
-  }
-  .co-empty-label { font-size:13px; color:var(--soft); letter-spacing:-0.26px; }
-  .co-empty-date  { font-size:11px; color:rgba(54,50,45,0.4); letter-spacing:-0.22px; }
-  .co-empty-action {
-    font-size:12px; font-weight:500; color:var(--blue);
-    letter-spacing:-0.24px; margin-top:2px; cursor:pointer;
-  }
-  /* Pending verification — replacement recorded, awaiting Error Reset */
   .co-card--pending {
-    background:#fffbeb; border:1px solid rgba(180,130,0,0.3);
-    border-radius:16px; padding:16px;
-    display:flex; flex-direction:column; gap:10px;
+    background:var(--layer-1); border:1px solid rgba(180,130,0,0.3);
+    border-radius:16px;
   }
-  .co-card--pending .co-card-head span { color:var(--strong); }
+  /* TCG replace btn, lock hint (unchanged) */
   .co-pending-badge {
     display:inline-flex; align-items:center; gap:5px;
-    font-size:11px; font-weight:500; color:#92400e;
-    letter-spacing:-0.22px;
+    font-size:11px; font-weight:500; color:#92400e; letter-spacing:-0.22px;
   }
-  .co-pending-dot {
-    width:7px; height:7px; border-radius:50%;
-    background:#d97706; flex-shrink:0;
-  }
+  .co-pending-dot { width:7px; height:7px; border-radius:50%; background:#d97706; flex-shrink:0; }
   .co-pending-label { font-size:12px; color:#92400e; letter-spacing:-0.24px; }
+
 
   /* ── Chunk 2: Replace Components mode ── */
   /* Mobile replace toolbar */
@@ -4723,35 +4707,32 @@
   .co-replace-btn:hover { border-color:var(--border-mid); color:var(--strong); }
   .co-replace-btn.active { border-color:var(--amber); color:#92400e; background:rgba(255,186,13,0.08); }
   /* Selection ring on cards in replace mode */
-  /* Cards use overflow:visible so ::before ring clips outside card bounds without affecting layout */
   .co-replace-mode .co-card,
   .co-replace-mode .co-card--empty,
-  .co-replace-mode .co-card--pending,
-  .co-replace-mode .co-card-flip {
-    cursor:pointer; position:relative; overflow:visible;
+  .co-replace-mode .co-card--pending {
+    cursor:pointer; position:relative; overflow:hidden;
     transition:transform 0.18s cubic-bezier(0.34,1.56,0.64,1);
   }
   .co-replace-mode .co-card:hover { transform:scale(1.02); }
-  /* Hollow circle visible on every card immediately */
-  .co-replace-mode .co-card::before,
-  .co-replace-mode .co-card--empty::before,
-  .co-replace-mode .co-card--pending::before,
-  .co-replace-mode .co-card-flip::before {
-    content:''; position:absolute; top:8px; right:8px; z-index:10;
+  /* Ring sits inside co-card-body, not the card root — avoids overflow clip on strip */
+  .co-replace-mode .co-card .co-card-body,
+  .co-replace-mode .co-card--empty .co-card-body,
+  .co-replace-mode .co-card--pending .co-card-body {
+    position:relative; overflow:visible;
+  }
+  .co-replace-mode .co-card .co-card-body::before,
+  .co-replace-mode .co-card--empty .co-card-body::before,
+  .co-replace-mode .co-card--pending .co-card-body::before {
+    content:''; position:absolute; top:0; right:0; z-index:10;
     width:20px; height:20px; border-radius:50%;
     border:2px solid rgba(54,50,45,0.25); background:white;
     pointer-events:none;
     transition:all 0.2s cubic-bezier(0.34,1.56,0.64,1);
     transform:scale(1); opacity:1;
   }
-  /* Alarm cards — white hollow circle on red */
-  .co-replace-mode .co-card--fault::before {
-    border-color:rgba(255,255,255,0.5); background:rgba(255,255,255,0.15);
-  }
-  /* Selected: amber fill + white check */
-  .co-replace-mode .co-card.co-selected::before,
-  .co-replace-mode .co-card--empty.co-selected::before,
-  .co-replace-mode .co-card--pending.co-selected::before {
+  .co-replace-mode .co-card.co-selected .co-card-body::before,
+  .co-replace-mode .co-card--empty.co-selected .co-card-body::before,
+  .co-replace-mode .co-card--pending.co-selected .co-card-body::before {
     background:#d97706; border-color:#d97706;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8' fill='none'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     background-repeat:no-repeat; background-position:center; background-size:10px 8px;
@@ -4763,59 +4744,34 @@
     transform:scale(1.03);
     box-shadow:0 0 0 2px #d97706, 0 4px 12px rgba(217,119,6,0.2);
   }
-  /* WDS flip card selected — no amber outline, dark overlay on inner fault card */
-  .co-replace-mode .co-card-flip.co-selected {
-    transform:scale(1.03);
-  }
-  .co-replace-mode .co-card-flip.co-selected .co-card--fault {
-    box-shadow:inset 0 0 0 1000px rgba(0,0,0,0.22), 0 0 0 2px #9a1f1e;
-    overflow:hidden;
-  }
-  /* Amber check on WDS flip when selected */
-  .co-replace-mode .co-card-flip.co-selected::before {
-    background:#d97706; border-color:#d97706;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8' fill='none'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-repeat:no-repeat; background-position:center; background-size:10px 8px;
-    transform:scale(1.15);
-  }
-  /* Fault card selected — white circle, red check */
-  .co-replace-mode .co-card--fault.co-selected::before {
-    background:white; border-color:white;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8' fill='none'%3E%3Cpath d='M1 4l3 3 5-6' stroke='%23bc302f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-repeat:no-repeat; background-position:center; background-size:10px 8px;
-    transform:scale(1.15);
-  }
-  /* Empty and pending cards selectable in replace mode */
   .co-replace-mode .co-card--empty,
   .co-replace-mode .co-card--pending { cursor:pointer; }
+
 
   /* ── TCG card — mobile ──────────────────────────────────────────
      Locked out of multi-select replace flow. Has its own dedicated path. */
   .co-card-tcg { position:relative; }
-  /* Corner wrench icon — sits in the top-right of the TCG card */
+  /* Wrench button — visible normally, hidden in replace mode */
   .co-tcg-replace-btn {
-    position:absolute; top:8px; right:8px;
+    margin-left:auto; flex-shrink:0;
     width:26px; height:26px;
     display:flex; align-items:center; justify-content:center;
     background:var(--layer-2); border:1px solid var(--border);
     border-radius:50%; padding:0;
     color:var(--soft); cursor:pointer;
-    transition:all 0.15s; z-index:5;
+    transition:all 0.15s;
   }
   .co-tcg-replace-btn:active { background:var(--border); color:var(--strong); }
-  .co-tcg-lock-hint { display:none; }
-  /* In replace mode — TCG dims, selection circle hides, hint appears */
+  /* In replace mode — TCG dims, wrench hides, strip swaps to "Replace separately" */
   .co-replace-mode .co-card-tcg { opacity:0.45; cursor:not-allowed !important; }
   .co-replace-mode .co-card-tcg:hover { transform:none; }
-  .co-replace-mode .co-card-tcg::before { display:none !important; }
+  .co-replace-mode .co-card-tcg .co-card-body::before { display:none !important; }
   .co-replace-mode .co-card-tcg .co-tcg-replace-btn { display:none; }
-  .co-replace-mode .co-card-tcg .co-tcg-lock-hint {
-    display:block; position:absolute; top:8px; right:8px;
-    font-size:9px; font-weight:600; color:var(--soft);
-    letter-spacing:0.3px; text-transform:uppercase;
-    background:var(--layer-2); border:1px solid var(--border);
-    border-radius:5px; padding:3px 6px;
-  }
+  .co-replace-mode .co-card-tcg .co-tcg-strip-normal  { display:none; }
+  .co-replace-mode .co-card-tcg .co-tcg-strip-replace { display:inline !important; }
+  .co-replace-mode .co-card-tcg .co-card-strip { background:#dfdedd; }
+  /* Replace separately strip label colour */
+  .co-tcg-strip .co-tcg-strip-replace { color:#36322d; }
 
   /* Mobile sticky replace bar */
   .co-replace-bar {
@@ -6248,8 +6204,8 @@ const SENSOR_DATA = [
     background:transparent;
     border:none;
     border-radius:0;
-    padding:24px;
-    display:flex; flex-direction:column; gap:24px;
+    padding:24px 0 0;
+    display:flex; flex-direction:column;
     min-height:100%;
     box-sizing:border-box;
   }
@@ -6266,14 +6222,14 @@ const SENSOR_DATA = [
   .swu-icon-pill:hover { background:#36322d08; }
   .swu-icon-pill-sm { width:32px; height:32px; background:var(--layer-1); border:1px solid var(--border); border-radius:32px; }
 
-  .swu-title-row { padding:8px; display:flex; align-items:baseline; gap:12px; }
+  .swu-title-row { display:flex; align-items:flex-start; gap:8px; flex-direction:column; }
   .swu-title {
     font-family:var(--font); font-size:24px; font-weight:500;
     color:var(--strong); letter-spacing:-0.72px; line-height:1.2;
   }
   .swu-page-sub {
-    font-family:var(--font); font-size:14px;
-    color:var(--soft); letter-spacing:-0.14px;
+    font-family:var(--font); font-size:13px;
+    color:var(--soft); letter-spacing:-0.26px;
   }
 
   /* Metric strip — matches All Trucks / Units pattern via .dt-stat-row.
@@ -6281,30 +6237,28 @@ const SENSOR_DATA = [
      No margin — parent .swu-page-card uses flex gap:24px to space rows. */
   .swu-stat-row {
     display:flex;
-    border:1px solid var(--border);
-    border-radius:16px;
-    overflow:hidden;
-    background:var(--layer-2);
     flex-shrink:0;
-    box-shadow:0 1px 0 rgba(0,0,0,0.06);
+    margin-left:-24px; margin-right:-24px;
+    padding-left:24px; padding-right:24px;
   }
   .swu-stat-card {
     flex:1;
-    padding:20px 24px;
+    padding-bottom:24px; padding-top:0;
     border-right:1px solid var(--border);
-    display:flex; flex-direction:column;
+    display:flex; flex-direction:column; justify-content:space-between;
+    height:139px; box-sizing:border-box;
     min-width:0;
   }
+  .swu-stat-card:first-child { padding-left:0; }
   .swu-stat-card:last-child { border-right:none; }
-  .swu-stat-label {
-    font-family:var(--font); font-size:13px;
-    color:var(--strong); letter-spacing:-0.26px;
-    margin-bottom:14px; line-height:1.3;
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-  }
   .swu-stat-value {
-    font-family:var(--font); font-size:36px; font-weight:500;
-    color:var(--strong); letter-spacing:-1.5px; line-height:1;
+    font-family:'ABC Repro', var(--font); font-size:40px; font-weight:500;
+    color:var(--strong); letter-spacing:-1.2px; line-height:1;
+  }
+  .swu-stat-label {
+    font-family:'ABC Repro', var(--font); font-size:16px; font-weight:400;
+    color:var(--strong); letter-spacing:-0.32px; line-height:1.3;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
 
   /* Filter bar */
@@ -6312,6 +6266,7 @@ const SENSOR_DATA = [
     display:flex; align-items:center; justify-content:space-between;
     gap:10px;
     height:44px;
+    padding:0 24px;
   }
   .swu-filterbar-left {
     display:flex; align-items:center; gap:10px;
@@ -6662,20 +6617,23 @@ const SENSOR_DATA = [
      like siblings inside Diagnostic Center. */
   .dc-map-shell {
     flex:1; min-height:0; min-width:0;
-    display:flex; flex-direction:column; gap:24px;
-    padding:24px 32px;
+    display:flex; flex-direction:column;
+    padding:24px 0 0;
     overflow:hidden;
     box-sizing:border-box;
   }
 
   /* Title row — small page header above the metric strip. */
   .dc-map-title-row {
-    display:flex; align-items:center; justify-content:space-between;
+    display:flex; align-items:flex-start; justify-content:space-between;
     gap:16px; flex-shrink:0;
   }
   .dc-map-title {
     font-family:var(--font); font-size:24px; font-weight:500;
-    color:var(--strong); letter-spacing:-0.48px; line-height:1.2;
+    color:var(--strong); letter-spacing:-0.72px; line-height:1.2;
+  }
+  .dc-map-title-sub {
+    font-size:13px; color:var(--soft); letter-spacing:-0.26px; margin-top:4px;
   }
 
   /* Metric strip — 5 stat cards in a single row. Mirrors the
@@ -6683,32 +6641,26 @@ const SENSOR_DATA = [
      wrapper, so it sits on the page background not the tint. */
   .dc-map-metric-strip {
     display:flex; align-items:stretch;
-    background:var(--layer-2);
-    border:1px solid var(--border);
-    border-radius:24px;
-    overflow:hidden;
     flex-shrink:0;
-    box-shadow:0 1px 0 rgba(0,0,0,0.06);
   }
   .dc-map-metric {
     flex:1 1 0; min-width:0;
     display:flex; flex-direction:column; justify-content:space-between;
-    padding:24px;
+    padding-bottom:24px; padding-top:0;
     border-left:1px solid var(--border);
-    box-shadow:0 1px 0 rgba(0,0,0,0.06);
     box-sizing:border-box;
     height:139px;
   }
-  .dc-map-metric:first-child { border-left:none; }
-  .dc-map-metric-label {
-    font-family:var(--font); font-size:16px; font-weight:400;
-    color:var(--strong); letter-spacing:-0.32px;
-    line-height:1.3;
-  }
+  .dc-map-metric:first-child { border-left:none; padding-left:0; }
   .dc-map-metric-value {
-    font-family:var(--font); font-size:40px; font-weight:500;
+    font-family:'ABC Repro', var(--font); font-size:40px; font-weight:500;
     color:var(--strong); line-height:1;
     letter-spacing:-1.2px;
+  }
+  .dc-map-metric-label {
+    font-family:'ABC Repro', var(--font); font-size:16px; font-weight:400;
+    color:var(--strong); letter-spacing:-0.32px;
+    line-height:1.3;
   }
 
   /* Filter row — Filters button + truck-number search on the left,
@@ -6717,6 +6669,7 @@ const SENSOR_DATA = [
     display:flex; align-items:center; justify-content:space-between;
     gap:16px; flex-shrink:0;
     height:44px;
+    padding:0 24px;
   }
   .dc-map-filterbar-left {
     display:flex; align-items:center; gap:10px;
@@ -7710,7 +7663,7 @@ const SENSOR_DATA = [
     <svg width="72" height="18" viewBox="0 0 96 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="white"/>
     </svg>
-    <span class="vp-version-tag">v6.0.1</span>
+    <span class="vp-version-tag">v6.1.9</span>
   </div>
 
   <!-- Viewport pills — desktop only. Hidden on mobile/tablet viewports since
@@ -8153,7 +8106,7 @@ const SENSOR_DATA = [
       </div>
 
       <!-- STATE C: COMPONENTS OVERVIEW -->
-      <div id="state-components" style="display:none;flex-direction:column;flex:1;overflow:visible;">
+      <div id="state-components" style="display:none;flex-direction:column;flex:1;overflow:hidden;min-height:0;">
 
         <!-- Replace Components toolbar -->
         <div class="co-replace-toolbar" id="co-replace-toolbar">
@@ -10052,28 +10005,28 @@ const SENSOR_DATA = [
         <!-- Stat cards -->
         <div class="dt-stat-row" id="dt-stat-row">
           <div class="dt-stat-card">
-            <div class="dt-stat-label">Trucks commissioned</div>
             <div class="dt-stat-value" id="dt-stat-commissioned">—</div>
+            <div class="dt-stat-label">Trucks commissioned</div>
           </div>
           <div class="dt-stat-card">
-            <div class="dt-stat-label">Unlinked Units</div>
             <div class="dt-stat-value" id="dt-stat-unlinked">3</div>
+            <div class="dt-stat-label">Unlinked Units</div>
           </div>
           <div class="dt-stat-card">
-            <div class="dt-stat-label">Maintenance required</div>
             <div class="dt-stat-value" id="dt-stat-maint">3</div>
+            <div class="dt-stat-label">Maintenance required</div>
           </div>
           <div class="dt-stat-card">
-            <div class="dt-stat-label">Scheduled for maintenance</div>
             <div class="dt-stat-value">20</div>
+            <div class="dt-stat-label">Scheduled for maintenance</div>
           </div>
           <div class="dt-stat-card">
-            <div class="dt-stat-label">Out of service</div>
             <div class="dt-stat-value">2</div>
+            <div class="dt-stat-label">Out of service</div>
           </div>
           <div class="dt-stat-card">
-            <div class="dt-stat-label">In maintenance</div>
             <div class="dt-stat-value">5</div>
+            <div class="dt-stat-label">In maintenance</div>
           </div>
         </div>
 
@@ -10195,11 +10148,6 @@ const SENSOR_DATA = [
             </button>
           </div>
           <div class="dt-spacer"></div>
-
-          <button class="dt-add-btn" onclick="dtAtOpen()">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
-            Add Truck
-          </button>
         </div>
 
         <!-- Tab bar -->
@@ -10297,24 +10245,24 @@ const SENSOR_DATA = [
           <!-- Stat row — same treatment as All Trucks -->
           <div class="dt-stat-row" id="dt-units-stat-row">
             <div class="dt-stat-card">
-              <div class="dt-stat-label">Units Active</div>
               <div class="dt-stat-value" id="dt-units-stat-commissioned">—</div>
+              <div class="dt-stat-label">Units Active</div>
             </div>
             <div class="dt-stat-card">
-              <div class="dt-stat-label">Total Units</div>
               <div class="dt-stat-value" id="dt-units-stat-total">—</div>
+              <div class="dt-stat-label">Total Units</div>
             </div>
             <div class="dt-stat-card">
-              <div class="dt-stat-label">Unlinked Units</div>
               <div class="dt-stat-value" id="dt-units-stat-unlinked">—</div>
+              <div class="dt-stat-label">Unlinked Units</div>
             </div>
             <div class="dt-stat-card">
-              <div class="dt-stat-label">Maintenance Mode</div>
               <div class="dt-stat-value" id="dt-units-stat-maintreq">—</div>
+              <div class="dt-stat-label">Maintenance Mode</div>
             </div>
             <div class="dt-stat-card">
-              <div class="dt-stat-label">Pending Return</div>
               <div class="dt-stat-value" id="dt-units-stat-pending">—</div>
+              <div class="dt-stat-label">Pending Return</div>
             </div>
           </div>
 
@@ -10711,32 +10659,34 @@ const SENSOR_DATA = [
           <div class="swu-page-card">
 
             <!-- Page title -->
-            <div class="swu-title-row">
-              <div class="swu-title">Diagnostic Center</div>
-              <div class="swu-page-sub" id="swu-page-sub">Software Update</div>
+            <div class="dt-title-row">
+              <div class="dt-title-block">
+                <div class="dt-page-title">Diagnostic Center</div>
+                <div class="dt-page-sub" id="swu-page-sub">Software Update</div>
+              </div>
             </div>
 
             <!-- Metric strip — fleet-wide update health -->
-            <div class="swu-stat-row" id="swu-stat-row">
-              <div class="swu-stat-card">
-                <div class="swu-stat-label">Total trucks</div>
-                <div class="swu-stat-value" id="swu-stat-total">—</div>
+            <div class="dt-stat-row" id="swu-stat-row">
+              <div class="dt-stat-card">
+                <div class="dt-stat-value" id="swu-stat-total">—</div>
+                <div class="dt-stat-label">Total trucks</div>
               </div>
-              <div class="swu-stat-card">
-                <div class="swu-stat-label">On latest version</div>
-                <div class="swu-stat-value" id="swu-stat-latest">—</div>
+              <div class="dt-stat-card">
+                <div class="dt-stat-value" id="swu-stat-latest">—</div>
+                <div class="dt-stat-label">On latest version</div>
               </div>
-              <div class="swu-stat-card">
-                <div class="swu-stat-label">Pending updates</div>
-                <div class="swu-stat-value" id="swu-stat-pending">—</div>
+              <div class="dt-stat-card">
+                <div class="dt-stat-value" id="swu-stat-pending">—</div>
+                <div class="dt-stat-label">Pending updates</div>
               </div>
-              <div class="swu-stat-card">
-                <div class="swu-stat-label">Out of compliance</div>
-                <div class="swu-stat-value" id="swu-stat-noncompliant">—</div>
+              <div class="dt-stat-card">
+                <div class="dt-stat-value" id="swu-stat-noncompliant">—</div>
+                <div class="dt-stat-label">Out of compliance</div>
               </div>
-              <div class="swu-stat-card">
-                <div class="swu-stat-label">Failed updates</div>
-                <div class="swu-stat-value" id="swu-stat-failed">—</div>
+              <div class="dt-stat-card">
+                <div class="dt-stat-value" id="swu-stat-failed">—</div>
+                <div class="dt-stat-label">Failed updates</div>
               </div>
             </div>
 
@@ -11001,35 +10951,36 @@ const SENSOR_DATA = [
         <div class="dc-map-shell">
 
           <!-- Title row -->
-          <div class="dc-map-title-row">
-            <div class="dc-map-title">Diagnostic Center</div>
-            <!-- Right-side filler (notification bell etc. would live here per Figma; out of scope for this slice) -->
+          <div class="dt-title-row">
+            <div class="dt-title-block">
+              <div class="dt-page-title">Diagnostic Center</div>
+              <div class="dt-page-sub" id="dc-map-page-sub">Maps</div>
+            </div>
           </div>
 
           <!-- Metric strip — 5 cards, separated by left borders -->
-          <div class="dc-map-metric-strip">
-            <div class="dc-map-metric">
-              <div class="dc-map-metric-label">Trucks commissioned</div>
-              <div class="dc-map-metric-value" id="dc-map-metric-commissioned">250</div>
+          <div class="dt-stat-row" id="dc-map-metric-strip">
+            <div class="dt-stat-card">
+              <div class="dt-stat-value" id="dc-map-metric-commissioned">250</div>
+              <div class="dt-stat-label">Trucks commissioned</div>
             </div>
-            <div class="dc-map-metric">
-              <div class="dc-map-metric-label">Maintenance required</div>
-              <div class="dc-map-metric-value" id="dc-map-metric-maint-req">3</div>
+            <div class="dt-stat-card">
+              <div class="dt-stat-value" id="dc-map-metric-maint-req">3</div>
+              <div class="dt-stat-label">Maintenance required</div>
             </div>
-            <div class="dc-map-metric">
-              <div class="dc-map-metric-label">Scheduled for maintenance</div>
-              <div class="dc-map-metric-value" id="dc-map-metric-maint-sched">20</div>
+            <div class="dt-stat-card">
+              <div class="dt-stat-value" id="dc-map-metric-maint-sched">20</div>
+              <div class="dt-stat-label">Scheduled for maintenance</div>
             </div>
-            <div class="dc-map-metric">
-              <div class="dc-map-metric-label">Out of service</div>
-              <div class="dc-map-metric-value" id="dc-map-metric-oos">2</div>
+            <div class="dt-stat-card">
+              <div class="dt-stat-value" id="dc-map-metric-oos">2</div>
+              <div class="dt-stat-label">Out of service</div>
             </div>
-            <div class="dc-map-metric">
-              <div class="dc-map-metric-label">In maintenance</div>
-              <div class="dc-map-metric-value" id="dc-map-metric-in-maint">5</div>
+            <div class="dt-stat-card">
+              <div class="dt-stat-value" id="dc-map-metric-in-maint">5</div>
+              <div class="dt-stat-label">In maintenance</div>
             </div>
           </div>
-
           <!-- Filter row -->
           <div class="dc-map-filterbar">
             <div class="dc-map-filterbar-left">
@@ -12519,6 +12470,48 @@ const CC_NAME_MAP = {
   'Admix Pump':    'Admix Pump',
   'IOX supply voltage': 'Bus Power',
 };
+
+/* ── Component fault/warning reason lookup ───────────────────────────────
+   Returns a short, believable reason string for the bottom status strip.
+   Groups: signal-based, power-based, mechanical.
+   Trinity will replace this with real fault codes when available.        */
+function coFaultReason(compName, state) {
+  var ALARM_REASONS = {
+    'WDS':                  'No signal',
+    'CWR':                  'No signal',
+    'TCG':                  'No signal',
+    'ICD':                  'No connection',
+    'ED':                   'No connection',
+    'DPS pressure':         'Voltage fault',
+    'CPS':                  'Voltage fault',
+    'IOX supply voltage':   'Voltage fault',
+    'Bus Power':            'Voltage fault',
+    'DRS':                  'Out of range',
+    'Water Pump':           'Out of range',
+    'Admix Pump':           'Out of range',
+    'Water meter flow rate':'Out of range',
+    'Admix meter flow rate':'Out of range',
+  };
+  var WARN_REASONS = {
+    'WDS':                  'Signal degraded',
+    'CWR':                  'Signal degraded',
+    'TCG':                  'Signal degraded',
+    'ICD':                  'Signal degraded',
+    'ED':                   'Signal degraded',
+    'DPS pressure':         'Approaching limit',
+    'CPS':                  'Approaching limit',
+    'IOX supply voltage':   'Approaching limit',
+    'Bus Power':            'Approaching limit',
+    'DRS':                  'Approaching limit',
+    'Water Pump':           'Approaching limit',
+    'Admix Pump':           'Approaching limit',
+    'Water meter flow rate':'Approaching limit',
+    'Admix meter flow rate':'Approaching limit',
+  };
+  if (state === 'alarm') return ALARM_REASONS[compName] || 'Fault detected';
+  if (state === 'warn')  return WARN_REASONS[compName]  || 'Out of range';
+  return '';
+}
 
 
 
@@ -16574,86 +16567,107 @@ function renderMobileCards() {
   var waterLabel = unitConfig === 'Winter Water' ? 'Winter Water' : 'Temperate Water';
 
   function buildMobileCard(card) {
+    var state = card.forceAlarm ? 'alarm' : (card.warnCard ? 'warn' : (card.greyDot ? 'grey' : 'clean'));
+
+    /* Check CC_TRUCKS state if not already overridden */
+    if (!card.forceAlarm && !card.warnCard && !card.greyDot && card.state !== 'empty' && card.state !== 'pending') {
+      if (cc && cc.components) {
+        var ccName = CC_NAME_MAP[card.name] || card.name;
+        var comp = cc.components.find(function(c){ return c.name===ccName; });
+        if (comp) {
+          if (comp.state === 'alarm') state = 'alarm';
+          else if (comp.state === 'warn') state = 'warn';
+        }
+      }
+    }
+
     /* Empty slot */
     if (card.state === 'empty') {
-      var removedColor = document.body.classList.contains('dark') ? 'rgba(255,255,255,0.3)' : 'rgba(54,50,45,0.4)';
       return '<div class="co-card co-card--empty" onclick="if(!coReplaceActive) coInstallOpen(\'' + card.name + '\',\'' + (card.removedDate||'') + '\')" style="cursor:pointer;">'
+        + '<div class="co-card-body">'
         + '<div class="co-card-head"><div style="width:14px;height:14px;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="rgba(54,50,45,0.3)" stroke-width="1.2" stroke-dasharray="3 2"/></svg></div><span style="color:var(--soft);">' + card.name + '</span></div>'
-        + '<div class="co-value" style="color:var(--soft);font-size:14px;">Not installed</div>'
-        + (card.removedDate ? '<div class="co-desc" style="color:'+removedColor+';font-size:11px;">Removed ' + card.removedDate + '</div>' : '')
-        + '<div class="co-desc" style="color:var(--blue);font-weight:500;font-size:12px;">Tap to install →</div>'
+        + '<div class="co-desc-text" style="color:var(--soft);font-size:12px;">No component installed</div>'
+        + (card.removedDate ? '<div class="co-desc-text" style="color:rgba(54,50,45,0.4);font-size:11px;">Removed ' + card.removedDate + '</div>' : '')
+        + '<div style="flex:1;"></div>'
+        + '<div style="color:var(--blue);font-weight:500;font-size:12px;letter-spacing:-0.24px;">Install replacement \u2192</div>'
+        + '</div>'
+        + '<div class="co-card-strip co-strip--empty"><span class="co-strip-label">Not installed</span></div>'
         + '</div>';
     }
+
     /* Pending verification */
     if (card.state === 'pending') {
       var serial = card.serial || (card.value || '--');
-      var dark = document.body.classList.contains('dark');
-      var dotColor = dark ? '#ffba0d' : '#d97706';
-      var recColor = dark ? '#ffffff' : '#92400e';
       return '<div class="co-card co-card--pending">'
-        + '<div class="co-card-head"><div style="width:8px;height:8px;border-radius:50%;background:'+dotColor+';flex-shrink:0;"></div><span>' + card.name + '</span></div>'
-        + '<div class="co-value" style="font-size:' + coAutoFontSize(serial) + ';word-break:break-all;line-height:1.15;">' + serial + '</div>'
-        + '<div class="co-desc" style="color:'+recColor+';font-size:11px;">Replacement recorded</div>'
-        + '<div class="co-desc" style="color:var(--soft);font-size:11px;">Pending verification</div>'
+        + '<div class="co-card-body">'
+        + '<div class="co-card-head"><div style="width:12px;height:12px;border-radius:50%;background:#d97706;flex-shrink:0;"></div><span>' + card.name + '</span></div>'
+        + '<div class="co-val-row"><span class="co-value" style="font-size:18px;letter-spacing:-0.36px;line-height:22px;">' + serial + '</span></div>'
+        + '<div class="co-desc-text">Pending verification</div>'
+        + '</div>'
+        + '<div class="co-card-strip co-strip--pending"><span class="co-strip-dot"></span><span class="co-strip-label">Pending verification</span></div>'
         + '</div>';
     }
-    /* Alarm/fault card */
-    if (card.forceAlarm || card.state === 'alarm') {
-      var hasFlip = !!card.flipBack;
-      if (hasFlip) {
-        return '<div class="co-card-flip" onclick="if(!coReplaceActive)flipCard(this)">'
-          + '<div class="co-card-flip-inner">'
-          + '<div class="co-card co-card--fault co-card-front">'
-          + '<div class="co-card-head"><div class="co-dot co-dot--white"></div><span style="color:white;">' + card.name + '</span></div>'
-          + '<div class="co-value" style="color:rgba(229,229,229,0.75);">--</div>'
-          + '<div class="co-fault-msg">' + (card.label||'').replace('\n','<br>') + '</div>'
-          + '<div class="co-meta" style="color:rgba(255,255,255,0.75);">'
-          + (card.startup!=null ? '<div class="co-meta-row"><span>Startup Count:</span><span style="color:white;">' + card.startup + '</span></div>' : '')
-          + (card.err!=null ? '<div class="co-meta-row"><span>Error Count:</span><span style="color:white;font-weight:500;">' + card.err + '</span></div>' : '')
-          + '</div></div>'
-          + '<div class="co-card co-card-back" style="background:#ffd0d0;border-color:#9a1f1e;display:flex;flex-direction:column;gap:8px;">'
-          + '<div style="border-bottom:1px solid rgba(154,31,30,0.3);padding-bottom:8px;display:flex;align-items:center;gap:6px;">'
-          + '<span style="color:#9a1f1e;font-size:14px;font-weight:500;flex:1;">' + card.name + '</span></div>'
-          + (card.flipBack.lastSeen ? '<div><div style="font-size:10px;font-weight:500;color:rgba(54,50,45,0.5);text-transform:uppercase;margin-bottom:2px;">Last seen</div><div style="font-size:13px;font-weight:500;color:var(--strong);">' + card.flipBack.lastSeen + '</div></div>' : '')
-          + '<button onclick="event.stopPropagation();openWdsLog();" style="width:100%;background:#1594ef;color:white;border:none;border-radius:32px;padding:8px 12px;font-size:13px;font-weight:500;font-family:var(--font);cursor:pointer;margin-top:auto;">View Truck Logs</button>'
-          + '</div></div></div>';
-      }
-      return '<div class="co-card co-card--fault">'
-        + '<div class="co-card-head"><div class="co-dot co-dot--white"></div><span style="color:white;">' + card.name + '</span></div>'
-        + '<div class="co-value" style="color:rgba(229,229,229,0.75);">' + (card.value||'--') + '</div>'
-        + '<div class="co-fault-msg">' + (card.label||'').replace('\n','<br>') + '</div>'
-        + '</div>';
+
+    /* All other states — unified new card */
+    var dotColor = state === 'alarm' ? '#d70100' : state === 'warn' ? '#ffba0d' : state === 'grey' ? 'rgba(54,50,45,0.3)' : '#2ecf1d';
+    var faultReason = coFaultReason(card.name, state);
+    var stripLabel = state === 'alarm' ? ('Alarm \u00b7 ' + faultReason)
+                   : state === 'warn'  ? ('Warning \u00b7 ' + faultReason)
+                   : state === 'grey'  ? 'Not active'
+                   : 'Operating normally';
+    var stripDot = (state === 'alarm' || state === 'warn') ? '<span class="co-strip-dot"></span>' : '';
+    var stripClass = 'co-strip--' + (state === 'clean' ? 'normal' : state);
+
+    /* WDS alarm — value blank */
+    if (card.name === 'WDS' && state === 'alarm') {
+      card = Object.assign({}, card, { value:'--', err:'14' });
     }
-    /* Grey dot */
-    var dotClass = card.greyDot ? 'co-dot--grey' : (card.warnCard ? 'co-dot--green' : 'co-dot--green');
-    var cardClass = card.warnCard ? ' co-card--warn' : '';
-    if (card.name === 'TCG') cardClass += ' co-card-tcg';
-    return '<div class="co-card' + cardClass + '" data-comp="' + card.name + '">'
-      + '<div class="co-card-head"><div class="co-dot ' + dotClass + '"></div><span>' + card.name + '</span>'
-      + (card.fw ? '<span class="dt-ver-pill" style="margin-left:4px;font-size:10px;padding:1px 5px;">' + card.fw + '</span>' : '')
-      + '</div>'
-      + '<div class="co-value">' + (card.value||'--') + (card.unit ? ' <span class="co-unit">' + card.unit + '</span>' : '') + '</div>'
-      + '<div class="co-desc">' + (card.label||card.name||'').replace('\n','<br>') + '</div>'
-      + '<div class="co-meta">'
-      + (card.extra ? '<div class="co-meta-row"><span>' + card.extra.label + ':</span><span>' + card.extra.val + '</span></div>' : '')
-      + (card.startup!=null ? '<div class="co-meta-row"><span>Startup Count:</span><span>' + card.startup + '</span></div>' : '')
-      + (card.err!=null ? '<div class="co-meta-row"><span>Error Count:</span><span>' + card.err + '</span></div>' : '')
-      + (card.flowExtra ? '<div class="co-meta-row"><span>Flow Error:</span><span>' + card.flowExtra.error + '</span></div>'
+
+    var isTcg = card.name === 'TCG';
+    var valueHtml;
+    if (isTcg) {
+      valueHtml = '<span class="co-value" style="font-size:18px;letter-spacing:-0.36px;line-height:22px;">' + (card.value || 'TCG-1042') + '</span>';
+    } else {
+      var valColor = state === 'alarm' ? '#d70100' : state === 'warn' ? '#894f18' : 'var(--strong)';
+      valueHtml = '<span class="co-value" style="color:' + valColor + ';">' + (card.value||'--') + '</span>'
+        + (card.unit ? '<span class="co-unit">' + card.unit + '</span>' : '');
+    }
+
+    var cardClass = 'co-card' + (isTcg ? ' co-card-tcg' : '');
+    var tcgBtn = isTcg
+      ? '<button class="co-tcg-replace-btn" onclick="event.stopPropagation();coOpenTcgReplace(false);" title="Replace TCG" aria-label="Replace TCG"><svg width="13" height="13" viewBox="0 0 21 21" fill="none"><path d="M12.4513 5.05364C12.2681 5.24057 12.1655 5.49189 12.1655 5.75364C12.1655 6.01539 12.2681 6.26671 12.4513 6.45364L14.0513 8.05364C14.2382 8.23687 14.4896 8.3395 14.7513 8.3395C15.0131 8.3395 15.2644 8.23687 15.4513 8.05364L19.2213 4.28364C19.7242 5.39483 19.8764 6.63288 19.6578 7.83279C19.4392 9.0327 18.86 10.1375 17.9976 10.9999C17.1352 11.8624 16.0304 12.4415 14.8305 12.6601C13.6306 12.8787 12.3925 12.7265 11.2813 12.2236L4.37132 19.1336C3.9735 19.5315 3.43393 19.755 2.87132 19.755C2.30871 19.755 1.76914 19.5315 1.37132 19.1336C0.973496 18.7358 0.75 18.1962 0.75 17.6336C0.75 17.071 0.973496 16.5315 1.37132 16.1336L8.28132 9.22364C7.77848 8.11245 7.62624 6.87441 7.84486 5.6745C8.06349 4.47459 8.64261 3.3698 9.50504 2.50736C10.3675 1.64493 11.4723 1.06581 12.6722 0.847184C13.8721 0.628558 15.1101 0.780807 16.2213 1.28364L12.4613 5.04364L12.4513 5.05364Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
+      : '';
+
+    var descLine = (card.label || '').split('\n')[0] || '';
+    var metaHtml = '';
+    if (card.extra) metaHtml += '<div class="co-meta-row"><span>' + card.extra.label + ':</span><span>' + card.extra.val + '</span></div>';
+    if (card.startup != null) metaHtml += '<div class="co-meta-row"><span>Startup Count:</span><span>' + card.startup + '</span></div>';
+    if (card.err != null)     metaHtml += '<div class="co-meta-row"><span>Error Count:</span><span>' + card.err + '</span></div>';
+    if (card.flowExtra) {
+      metaHtml += '<div class="co-meta-row"><span>Flow Error:</span><span>' + card.flowExtra.error + '</span></div>'
         + '<div class="co-meta-row"><span>No Stop:</span><span>' + card.flowExtra.noStop + '</span></div>'
-        + '<div class="co-meta-row"><span>Flow Rate:</span><span>' + card.flowExtra.rate + '</span></div>' : '')
+        + '<div class="co-meta-row"><span>Flow Rate:</span><span>' + card.flowExtra.rate + '</span></div>';
+    }
+
+    return '<div class="' + cardClass + '" data-comp="' + card.name + '">'
+      + '<div class="co-card-body">'
+      + '<div class="co-card-head"><div style="width:12px;height:12px;border-radius:50%;background:' + dotColor + ';flex-shrink:0;"></div><span>' + card.name + '</span>'
+      + (!isTcg && card.fw ? '<span class="dt-ver-pill">' + card.fw + '</span>' : '')
+      + tcgBtn
       + '</div>'
-      /* TCG gets its own "Replace TCG" affordance — corner wrench icon, outside replace mode (hidden via CSS) */
-      + (card.name === 'TCG'
-          ? '<button class="co-tcg-replace-btn" onclick="event.stopPropagation();coOpenTcgReplace(false);" title="Replace TCG" aria-label="Replace TCG">'
-            + '<svg width="13" height="13" viewBox="0 0 21 21" fill="none"><path d="M12.4513 5.05364C12.2681 5.24057 12.1655 5.49189 12.1655 5.75364C12.1655 6.01539 12.2681 6.26671 12.4513 6.45364L14.0513 8.05364C14.2382 8.23687 14.4896 8.3395 14.7513 8.3395C15.0131 8.3395 15.2644 8.23687 15.4513 8.05364L19.2213 4.28364C19.7242 5.39483 19.8764 6.63288 19.6578 7.83279C19.4392 9.0327 18.86 10.1375 17.9976 10.9999C17.1352 11.8624 16.0304 12.4415 14.8305 12.6601C13.6306 12.8787 12.3925 12.7265 11.2813 12.2236L4.37132 19.1336C3.9735 19.5315 3.43393 19.755 2.87132 19.755C2.30871 19.755 1.76914 19.5315 1.37132 19.1336C0.973496 18.7358 0.75 18.1962 0.75 17.6336C0.75 17.071 0.973496 16.5315 1.37132 16.1336L8.28132 9.22364C7.77848 8.11245 7.62624 6.87441 7.84486 5.6745C8.06349 4.47459 8.64261 3.3698 9.50504 2.50736C10.3675 1.64493 11.4723 1.06581 12.6722 0.847184C13.8721 0.628558 15.1101 0.780807 16.2213 1.28364L12.4613 5.04364L12.4513 5.05364Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-            + '</button>'
-          : '')
-      /* TCG locked-state hint — visible only when replace mode is active (CSS-driven) */
-      + (card.name === 'TCG'
-          ? '<div class="co-tcg-lock-hint">Replace separately</div>'
-          : '')
+      + '<div class="co-val-row">' + valueHtml + '</div>'
+      + '<div class="co-desc-group">'
+      + (descLine ? '<div class="co-desc-text">' + descLine + '</div>' : '')
+      + '<div class="co-meta">' + metaHtml + '</div>'
+      + '</div>'
+      + '</div>'
+      + '<div class="co-card-strip ' + stripClass + (isTcg ? ' co-tcg-strip' : '') + '">' + stripDot
+      + '<span class="co-strip-label co-tcg-strip-normal">' + stripLabel + '</span>'
+      + (isTcg ? '<span class="co-strip-label co-tcg-strip-replace" style="display:none;">Replace separately</span>' : '')
+      + '</div>'
       + '</div>';
   }
+
 
   /* MCS cards data — matches the hardcoded defaults + session state */
   var mcsCards = [
@@ -16731,8 +16745,8 @@ function renderMobileCards() {
 
   /* Re-wire replace mode handlers if active */
   if (coReplaceActive) {
-    document.querySelectorAll('#co-scroll .co-card:not(.co-card-front):not(.co-card-back):not(.co-card-flip *), #co-scroll .co-card-flip').forEach(function(card) {
-      var nameEl = card.querySelector('.co-card-head span') || card.querySelector('.co-card-front .co-card-head span');
+    document.querySelectorAll('#co-scroll .co-card').forEach(function(card) {
+      var nameEl = card.querySelector('.co-card-head span');
       if (!nameEl) return;
       var compName = nameEl.textContent.trim();
       card._coReplaceHandler = function(e) { e.stopPropagation(); e.preventDefault(); coMobileCardTap(card, compName); };
@@ -16911,7 +16925,7 @@ function coReplaceEnter(btnId, scrollId, cardSelector) {
   if (hint) hint.style.display = 'inline-flex';
   // Wire click handlers on mobile co-cards
   if (scrollId === 'co-scroll') {
-    document.querySelectorAll('#co-scroll .co-card:not(.co-card-front):not(.co-card-back):not(.co-card-flip *), #co-scroll .co-card-flip').forEach(function(card) {
+    document.querySelectorAll('#co-scroll .co-card').forEach(function(card) {
       /* Extract component name */
       var nameEl = card.querySelector('.co-card-head span')
                 || card.querySelector('.co-card-front .co-card-head span');
@@ -16950,7 +16964,7 @@ function coReplaceExit(btnId, scrollId, cardSelector, btnOrigHTML) {
   document.querySelectorAll(cardSelector).forEach(function(c) { c.classList.remove('co-selected'); });
   // Unwire mobile card click handlers
   if (scrollId === 'co-scroll') {
-    document.querySelectorAll('#co-scroll .co-card:not(.co-card-front):not(.co-card-back), #co-scroll .co-card-flip').forEach(function(card) {
+    document.querySelectorAll('#co-scroll .co-card').forEach(function(card) {
       if (card._coReplaceHandler) {
         card.removeEventListener('click', card._coReplaceHandler, true);
         delete card._coReplaceHandler;
@@ -21217,6 +21231,13 @@ window.DC_PHASE_LABELS = {
 
 /* ─── Public init — called by dtNavGo('map') ─── */
 function dcMapInit() {
+  /* Update page sub label with live truck count */
+  var mapSub = document.getElementById('dc-map-page-sub');
+  if (mapSub) {
+    var count = dcMapTrucks().length;
+    mapSub.textContent = 'All Trucks \u00b7 ' + count + ' truck' + (count !== 1 ? 's' : '');
+  }
+
   /* Render the card stack first — works even if Leaflet is still
      loading. */
   dcMapRenderStack();
@@ -24685,7 +24706,7 @@ function tbBuildOverview(t, scroll) {
 
   /* ── Build a single card using the same dt-co-card pattern as desktop ── */
   function tbCard(card) {
-    /* Check session state overrides — mirrors desktop applyOverrides logic */
+    /* Check session state overrides */
     if (window.dtConfirmedComponents && window.dtConfirmedComponents[card.name]) {
       const cd = window.dtConfirmedComponents[card.name];
       card = Object.assign({}, card, { state:null, forceAlarm:false, greyDot:false, warnCard:false, flipBack:null }, (typeof cd === 'object' ? cd : {}));
@@ -24698,58 +24719,86 @@ function tbBuildOverview(t, scroll) {
 
     if (card.state === 'empty') {
       return `<div class="dt-co-card empty" onclick="if(!coReplaceActive) tbInstallOpen('${card.name}','${card.removedDate||''}')">
-        <div class="dt-co-card-head">
-          <div class="dt-empty-slot-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="rgba(54,50,45,0.3)" stroke-width="1.4" stroke-dasharray="3 2"/></svg></div>
-          <span class="dt-co-card-name">${card.name}</span>
+        <div class="dt-co-card-body">
+          <div class="dt-co-card-head">
+            <div class="dt-empty-slot-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="rgba(54,50,45,0.3)" stroke-width="1.4" stroke-dasharray="3 2"/></svg></div>
+            <span class="dt-co-card-name">${card.name}</span>
+          </div>
+          <div class="dt-empty-label">No component installed</div>
+          <div class="dt-empty-date">Removed ${card.removedDate||'\u2014'}</div>
+          <div style="flex:1;"></div>
+          <div class="dt-empty-action">Install replacement \u2192</div>
         </div>
-        <div class="dt-empty-label">Not installed</div>
-        <div class="dt-empty-date">Removed ${card.removedDate||'—'}</div>
-        <div class="dt-empty-action">Tap to install replacement →</div>
+        <div class="dt-co-card-strip">
+          <span class="dt-co-card-strip-label">Not installed</span>
+        </div>
       </div>`;
     }
     if (card.state === 'pending') {
       return `<div class="dt-co-card pending">
-        <div class="dt-co-card-head">
-          <span class="dt-co-card-dot" style="background:#d97706;"></span>
-          <span class="dt-co-card-name">${card.name}</span>
+        <div class="dt-co-card-body">
+          <div class="dt-co-card-head">
+            <span class="dt-co-card-dot" style="background:#d97706;"></span>
+            <span class="dt-co-card-name">${card.name}</span>
+          </div>
+          <div class="dt-co-card-value-row">
+            <span class="dt-co-card-value" style="font-size:22px;letter-spacing:-0.44px;line-height:26px;">${card.value}</span>
+          </div>
+          <div class="dt-co-card-desc"><span>Pending verification</span><span>Reset errors to confirm</span></div>
         </div>
-        <div class="dt-co-card-value-row">
-          <span class="dt-co-card-value" style="color:var(--strong);font-size:20px;word-break:break-all;">${card.value}</span>
-          ${card.unit ? `<span class="dt-co-card-unit" style="color:var(--soft);">${card.unit}</span>` : ''}
+        <div class="dt-co-card-strip">
+          <span class="dt-co-card-strip-dot"></span>
+          <span class="dt-co-card-strip-label">Pending verification</span>
         </div>
-        <div class="dt-pending-badge"><span class="dt-pending-dot"></span>Replacement recorded</div>
       </div>`;
     }
 
     let state = card.forceAlarm ? 'alarm' : (card.warnCard ? 'warn' : (card.greyDot ? 'grey' : tbGetState(card.name)));
     if (card.name === 'WDS' && state === 'alarm') {
-      card = Object.assign({}, card, { label:'Water Drum Sensor\nNo connection', value:'--', err:'14' });
+      card = Object.assign({}, card, { label:'Water Drum Sensor', value:'--', err:'14' });
     }
-    const dotColor = state==='alarm' ? 'rgba(255,255,255,0.7)' : state==='warn' ? '#36322d' : state==='grey' ? 'rgba(54,50,45,0.3)' : '#2ecf1d';
-    const descHtml = (card.label||card.name||'').replace('\n','<br>');
+    const dotColor = state==='alarm' ? '#d70100' : state==='warn' ? '#ffba0d' : state==='grey' ? 'rgba(54,50,45,0.3)' : '#2ecf1d';
+    const faultReason = coFaultReason(card.name, state);
+    const stripLabel = state === 'alarm' ? ('Alarm \u00b7 ' + faultReason)
+                     : state === 'warn'  ? ('Warning \u00b7 ' + faultReason)
+                     : state === 'grey'  ? 'Not active'
+                     : 'Operating normally';
+    const stripDot = (state === 'alarm' || state === 'warn') ? `<span class="dt-co-card-strip-dot"></span>` : '';
+    const descLines = (card.label||'').split('\n').filter(Boolean);
+    const descHtml = descLines.map(l => `<span>${l}</span>`).join('');
     let metaHtml = '';
     if (card.extra) metaHtml += `<div class="dt-co-card-meta-row"><span class="dt-co-card-meta-label">${card.extra.label}:</span><span>${card.extra.val}</span></div>`;
     if (card.startup!=null) metaHtml += `<div class="dt-co-card-meta-row"><span class="dt-co-card-meta-label">Startup Count:</span><span>${card.startup}</span></div>`;
     if (card.err!=null)     metaHtml += `<div class="dt-co-card-meta-row"><span class="dt-co-card-meta-label">Error Count:</span><span>${card.err}</span></div>`;
 
     const safeName = card.name.replace(/'/g, "\\'");
-    const tcgBtn = card.name === 'TCG'
+    const isTcg = card.name === 'TCG';
+    const valueDisplay = isTcg
+      ? `<span class="dt-co-card-value" style="font-size:22px;letter-spacing:-0.44px;line-height:26px;">${card.value || 'TCG-1042'}</span>`
+      : `<span class="dt-co-card-value">${card.value||'\u2014'}</span>${card.unit ? `<span class="dt-co-card-unit">${card.unit}</span>` : ''}`;
+    const tcgBtn = isTcg
       ? `<button class="dt-co-tcg-replace-btn" onclick="event.stopPropagation();coOpenTcgReplace(false);" title="Replace TCG" aria-label="Replace TCG"><svg width="14" height="14" viewBox="0 0 21 21" fill="none"><path d="M12.4513 5.05364C12.2681 5.24057 12.1655 5.49189 12.1655 5.75364C12.1655 6.01539 12.2681 6.26671 12.4513 6.45364L14.0513 8.05364C14.2382 8.23687 14.4896 8.3395 14.7513 8.3395C15.0131 8.3395 15.2644 8.23687 15.4513 8.05364L19.2213 4.28364C19.7242 5.39483 19.8764 6.63288 19.6578 7.83279C19.4392 9.0327 18.86 10.1375 17.9976 10.9999C17.1352 11.8624 16.0304 12.4415 14.8305 12.6601C13.6306 12.8787 12.3925 12.7265 11.2813 12.2236L4.37132 19.1336C3.9735 19.5315 3.43393 19.755 2.87132 19.755C2.30871 19.755 1.76914 19.5315 1.37132 19.1336C0.973496 18.7358 0.75 18.1962 0.75 17.6336C0.75 17.071 0.973496 16.5315 1.37132 16.1336L8.28132 9.22364C7.77848 8.11245 7.62624 6.87441 7.84486 5.6745C8.06349 4.47459 8.64261 3.3698 9.50504 2.50736C10.3675 1.64493 11.4723 1.06581 12.6722 0.847184C13.8721 0.628558 15.1101 0.780807 16.2213 1.28364L12.4613 5.04364L12.4513 5.05364Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`
       : '';
-    return `<div class="dt-co-card ${state}${card.name==='TCG' ? ' dt-co-card-tcg' : ''}" onclick="tbReplaceCardTap(this,'${safeName}')" style="cursor:pointer;">
-      <div class="dt-co-card-head">
-        <span class="dt-co-card-dot" style="background:${dotColor};"></span>
-        <span class="dt-co-card-name">${card.name}</span>
-        ${tcgBtn}
+    return `<div class="dt-co-card ${state}${isTcg ? ' dt-co-card-tcg' : ''}" onclick="tbReplaceCardTap(this,'${safeName}')" style="cursor:pointer;">
+      <div class="dt-co-card-body">
+        <div class="dt-co-card-head">
+          <span class="dt-co-card-dot" style="background:${dotColor};"></span>
+          <span class="dt-co-card-name">${card.name}</span>
+          ${card.fw ? `<span class="dt-ver-pill">${card.fw}</span>` : ''}
+          ${tcgBtn}
+        </div>
+        <div class="dt-co-card-value-row">${valueDisplay}</div>
+        <div class="dt-co-card-desc">${descHtml}</div>
+        <div class="dt-co-card-meta">${metaHtml}</div>
+        ${isTcg ? `<div class="dt-co-tcg-lock-hint">Replace separately</div>` : ''}
       </div>
-      <div class="dt-co-card-value-row">
-        <span class="dt-co-card-value">${card.value||'—'}</span>
-        ${card.unit ? `<span class="dt-co-card-unit">${card.unit}</span>` : ''}
+      <div class="dt-co-card-strip">
+        ${stripDot}
+        <span class="dt-co-card-strip-label">${stripLabel}</span>
       </div>
-      <div class="dt-co-card-desc">${descHtml}</div>
-      <div class="dt-co-card-meta">${metaHtml}</div>
     </div>`;
   }
+
 
   /* Use the same card data as desktop */
   const mcsCards = [
@@ -28053,43 +28102,65 @@ function dtOpenTruck(truckNum) {
     if (card.state === 'empty' && !(window.dtConfirmedComponents && window.dtConfirmedComponents[card.name])) {
       return `
         <div class="dt-co-card empty" onclick="if(!coReplaceActive) dtInstallOpen('${card.name}','${card.removedDate||''}')">
-          <div class="dt-co-card-head">
-            <div class="dt-empty-slot-icon">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="rgba(54,50,45,0.3)" stroke-width="1.4" stroke-dasharray="3 2"/></svg>
+          <div class="dt-co-card-body">
+            <div class="dt-co-card-head">
+              <div class="dt-empty-slot-icon">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="rgba(54,50,45,0.3)" stroke-width="1.4" stroke-dasharray="3 2"/></svg>
+              </div>
+              <span class="dt-co-card-name">${card.name}</span>
             </div>
-            <span class="dt-co-card-name">${card.name}</span>
+            <div class="dt-empty-label">No component installed</div>
+            <div class="dt-empty-date">Removed ${card.removedDate || '—'}</div>
+            <div style="flex:1;"></div>
+            <div class="dt-empty-action">Install replacement →</div>
           </div>
-          <div class="dt-empty-label">Not installed</div>
-          <div class="dt-empty-date">Removed ${card.removedDate || '—'}</div>
-          <div class="dt-empty-action">Tap to install replacement →</div>
+          <div class="dt-co-card-strip">
+            <span class="dt-co-card-strip-label">Not installed</span>
+          </div>
         </div>`;
     }
     /* Pending verification state */
     if (card.state === 'pending' && !(window.dtConfirmedComponents && window.dtConfirmedComponents[card.name])) {
       return `
         <div class="dt-co-card pending">
-          <div class="dt-co-card-head">
-            <span class="dt-co-card-dot" style="background:#d97706;"></span>
-            <span class="dt-co-card-name">${card.name}</span>
+          <div class="dt-co-card-body">
+            <div class="dt-co-card-head">
+              <span class="dt-co-card-dot" style="background:#d97706;"></span>
+              <span class="dt-co-card-name">${card.name}</span>
+            </div>
+            <div class="dt-co-card-value-row">
+              <span class="dt-co-card-value" style="font-size:22px;letter-spacing:-0.44px;line-height:26px;">${card.value}</span>
+            </div>
+            <div class="dt-co-card-desc">
+              <span>Pending verification</span>
+              <span>Reset errors to confirm</span>
+            </div>
           </div>
-          <div class="dt-co-card-value-row">
-            <span class="dt-co-card-value" style="color:var(--strong);font-size:${coAutoFontSize(card.value)};word-break:break-all;line-height:1.15;">${card.value}</span>
-            ${card.unit ? `<span class="dt-co-card-unit" style="color:var(--soft);">${card.unit}</span>` : ''}
+          <div class="dt-co-card-strip">
+            <span class="dt-co-card-strip-dot"></span>
+            <span class="dt-co-card-strip-label">Pending verification</span>
           </div>
-          <div class="dt-pending-badge"><span class="dt-pending-dot"></span>Replacement recorded</div>
-          <div class="dt-pending-label">Pending verification · Run Error Reset to confirm</div>
         </div>`;
     }
 
+
     let state = card.forceAlarm ? 'alarm' : (card.greyDot ? 'grey' : getCardState(card.name));
     if (card.warnCard) state = 'warn';
-    /* WDS in alarm state — override label and value to match no-connection display */
+    /* WDS in alarm state — override label and value */
     if (card.name === 'WDS' && state === 'alarm') {
-      card = Object.assign({}, card, { label:'Water Drum Sensor\nNo connection', value:'--', err:'14' });
+      card = Object.assign({}, card, { label:'Water Drum Sensor', value:'--', err:'14' });
     }
 
-    const dotColor = state === 'alarm' ? 'rgba(255,255,255,0.7)' : state === 'warn' ? '#36322d' : state === 'grey' ? 'rgba(54,50,45,0.3)' : '#2ecf1d';
-    const descHtml = (card.label || card.name || '').replace('\n', '<br>');
+    const dotColor = state === 'alarm' ? '#d70100' : state === 'warn' ? '#ffba0d' : state === 'grey' ? 'rgba(54,50,45,0.3)' : '#2ecf1d';
+    const faultReason = coFaultReason(card.name, state);
+    const stripLabel = state === 'alarm' ? ('Alarm · ' + faultReason)
+                     : state === 'warn'  ? ('Warning · ' + faultReason)
+                     : state === 'grey'  ? 'Not active'
+                     : 'Operating normally';
+    const stripDot = (state === 'alarm' || state === 'warn') ? `<span class="dt-co-card-strip-dot"></span>` : '';
+
+    const descLines = (card.label || '').split('\n').filter(Boolean);
+    const descHtml = descLines.map(l => `<span>${l}</span>`).join('');
 
     let metaHtml = '';
     if (card.extra) {
@@ -28107,75 +28178,40 @@ function dtOpenTruck(truckNum) {
       metaHtml += `<div class="dt-co-card-meta-row"><span class="dt-co-card-meta-label">Flow Rate</span><span>${card.flowExtra.rate}</span></div>`;
     }
 
-    // Flip-back? render the flip wrapper instead of the plain card
-    if (card.flipBack) {
-      return buildFlipCard(card, state, dotColor, descHtml, metaHtml);
-    }
+    const isTcg = card.name === 'TCG';
+    const valueDisplay = isTcg
+      ? `<span class="dt-co-card-value" style="font-size:22px;letter-spacing:-0.44px;line-height:26px;">${card.value || 'TCG-1042'}</span>`
+      : `<span class="dt-co-card-value">${card.value || '\u2014'}</span>${card.unit ? `<span class="dt-co-card-unit">${card.unit}</span>` : ''}`;
+
+    const tcgBtn = isTcg
+      ? `<button class="dt-co-tcg-replace-btn" onclick="event.stopPropagation();coOpenTcgReplace(true);" title="Replace TCG" aria-label="Replace TCG"><svg width="14" height="14" viewBox="0 0 21 21" fill="none"><path d="M12.4513 5.05364C12.2681 5.24057 12.1655 5.49189 12.1655 5.75364C12.1655 6.01539 12.2681 6.26671 12.4513 6.45364L14.0513 8.05364C14.2382 8.23687 14.4896 8.3395 14.7513 8.3395C15.0131 8.3395 15.2644 8.23687 15.4513 8.05364L19.2213 4.28364C19.7242 5.39483 19.8764 6.63288 19.6578 7.83279C19.4392 9.0327 18.86 10.1375 17.9976 10.9999C17.1352 11.8624 16.0304 12.4415 14.8305 12.6601C13.6306 12.8787 12.3925 12.7265 11.2813 12.2236L4.37132 19.1336C3.9735 19.5315 3.43393 19.755 2.87132 19.755C2.30871 19.755 1.76914 19.5315 1.37132 19.1336C0.973496 18.7358 0.75 18.1962 0.75 17.6336C0.75 17.071 0.973496 16.5315 1.37132 16.1336L8.28132 9.22364C7.77848 8.11245 7.62624 6.87441 7.84486 5.6745C8.06349 4.47459 8.64261 3.3698 9.50504 2.50736C10.3675 1.64493 11.4723 1.06581 12.6722 0.847184C13.8721 0.628558 15.1101 0.780807 16.2213 1.28364L12.4613 5.04364L12.4513 5.05364Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`
+      : '';
 
     return `
-      <div class="dt-co-card ${state}${card.name === 'TCG' ? ' dt-co-card-tcg' : ''}" data-comp="${card.name}" onclick="dtReplaceCardTap(this,'${card.name}')">
-        <div class="dt-co-card-head">
-          <span class="dt-co-card-dot" style="background:${dotColor};"></span>
-          <span class="dt-co-card-name">${card.name}</span>
-          ${card.fw ? '<span class="dt-ver-pill" style="margin-left:4px;font-size:10px;padding:1px 5px;">' + card.fw + '</span>' : ''}
-        </div>
-        <div class="dt-co-card-value-row">
-          <span class="dt-co-card-value">${card.value}</span>
-          ${card.unit ? `<span class="dt-co-card-unit">${card.unit}</span>` : ''}
-        </div>
-        <div class="dt-co-card-desc">${descHtml}</div>
-        <div class="dt-co-card-meta">${metaHtml}</div>
-        ${card.name === 'TCG' ? `<button class="dt-co-tcg-replace-btn" onclick="event.stopPropagation();coOpenTcgReplace(true);" title="Replace TCG" aria-label="Replace TCG"><svg width="14" height="14" viewBox="0 0 21 21" fill="none"><path d="M12.4513 5.05364C12.2681 5.24057 12.1655 5.49189 12.1655 5.75364C12.1655 6.01539 12.2681 6.26671 12.4513 6.45364L14.0513 8.05364C14.2382 8.23687 14.4896 8.3395 14.7513 8.3395C15.0131 8.3395 15.2644 8.23687 15.4513 8.05364L19.2213 4.28364C19.7242 5.39483 19.8764 6.63288 19.6578 7.83279C19.4392 9.0327 18.86 10.1375 17.9976 10.9999C17.1352 11.8624 16.0304 12.4415 14.8305 12.6601C13.6306 12.8787 12.3925 12.7265 11.2813 12.2236L4.37132 19.1336C3.9735 19.5315 3.43393 19.755 2.87132 19.755C2.30871 19.755 1.76914 19.5315 1.37132 19.1336C0.973496 18.7358 0.75 18.1962 0.75 17.6336C0.75 17.071 0.973496 16.5315 1.37132 16.1336L8.28132 9.22364C7.77848 8.11245 7.62624 6.87441 7.84486 5.6745C8.06349 4.47459 8.64261 3.3698 9.50504 2.50736C10.3675 1.64493 11.4723 1.06581 12.6722 0.847184C13.8721 0.628558 15.1101 0.780807 16.2213 1.28364L12.4613 5.04364L12.4513 5.05364Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : ''}
-        ${card.name === 'TCG' ? `<div class="dt-co-tcg-lock-hint">Replace separately</div>` : ''}
-      </div>`;
-  }
-
-  /* Render front-card markup (used for both regular cards and flip-card front) */
-  function buildCardFront(card, state, dotColor, descHtml, metaHtml) {
-    return `
-      <div class="dt-co-card ${state} dt-co-card-front">
-        <div class="dt-co-card-head">
-          <span class="dt-co-card-dot" style="background:${dotColor};"></span>
-          <span class="dt-co-card-name">${card.name}</span>
-        </div>
-        <div class="dt-co-card-value-row">
-          <span class="dt-co-card-value">${card.value}</span>
-          ${card.unit ? `<span class="dt-co-card-unit">${card.unit}</span>` : ''}
-        </div>
-        <div class="dt-co-card-desc">${descHtml}</div>
-        <div class="dt-co-card-meta">${metaHtml}</div>
-      </div>`;
-  }
-
-  /* Wrap a card in flip mechanic when flipBack is provided */
-  function buildFlipCard(card, state, dotColor, descHtml, metaHtml) {
-    const fb = card.flipBack;
-    return `
-      <div class="dt-co-card-flip" onclick="if(coReplaceActive){dtReplaceCardTap(this,'WDS');return;} dtFlipWdsCard(this);">
-        <div class="dt-co-card-flip-inner">
-          ${buildCardFront(card, state, dotColor, descHtml, metaHtml)}
-          <div class="dt-co-card-back">
-            <div class="dt-co-card-back-head">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;"><rect x="1" y="1" width="12" height="12" rx="2" stroke="#9a1f1e" stroke-width="1.4"/><path d="M7 4.5v3M7 9.5h.01" stroke="#9a1f1e" stroke-width="1.4" stroke-linecap="round"/></svg>
-              <span class="dt-co-card-back-head-name">${card.name}</span>
-              <span class="dt-co-card-back-head-val">--</span>
-            </div>
-            <div>
-              <div class="dt-co-card-back-label">Last seen</div>
-              <div class="dt-co-card-back-val">${fb.lastSeen}</div>
-            </div>
-            <div>
-              <div class="dt-co-card-back-label">Last battery voltage</div>
-              <div class="dt-co-card-back-val-big" style="color:${parseFloat(fb.lastVoltage) < 2.9 ? '#d70100' : parseFloat(fb.lastVoltage) <= 3.6 ? '#16a34a' : 'var(--strong)'};">
-                ${fb.lastVoltage} <span class="unit">${fb.voltageUnit}</span>
-              </div>
-              <div style="font-size:10px;color:var(--soft);margin-top:2px;letter-spacing:-0.2px;">Good: 2.9 – 3.6V · Bad: below 2.9V</div>
-            </div>
-            <button class="dt-co-card-back-btn" onclick="event.stopPropagation();dtOpenWdsLog();">View Truck Logs</button>
+      <div class="dt-co-card ${state}${isTcg ? ' dt-co-card-tcg' : ''}" data-comp="${card.name}" onclick="dtReplaceCardTap(this,'${card.name}')">
+        <div class="dt-co-card-body">
+          <div class="dt-co-card-head">
+            <span class="dt-co-card-dot" style="background:${dotColor};"></span>
+            <span class="dt-co-card-name">${card.name}</span>
+            ${card.fw ? `<span class="dt-ver-pill">${card.fw}</span>` : ''}
+            ${tcgBtn}
           </div>
+          <div class="dt-co-card-value-row">${valueDisplay}</div>
+          <div class="dt-co-card-desc">${descHtml}</div>
+          <div class="dt-co-card-meta">${metaHtml}</div>
+          ${isTcg ? `<div class="dt-co-tcg-lock-hint">Replace separately</div>` : ''}
+        </div>
+        <div class="dt-co-card-strip">
+          ${stripDot}
+          <span class="dt-co-card-strip-label">${stripLabel}</span>
         </div>
       </div>`;
   }
+
+  /* buildCardFront/buildFlipCard stubs — no longer used in main flow */
+  function buildCardFront(card, state, dotColor, descHtml, metaHtml) { return buildCard(card); }
+  function buildFlipCard(card, state, dotColor, descHtml, metaHtml) { return buildCard(card); }
+
 
   document.getElementById('dt-drawer-mcs-cards').innerHTML = mcsCards.map(buildCard).join('');
   document.getElementById('dt-drawer-fdm-cards').innerHTML = fdmCards.map(buildCard).join('');

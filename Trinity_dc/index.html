@@ -6201,10 +6201,8 @@ const SENSOR_DATA = [
      the page background. Inner padding preserved so children don't
      slam the sidebar edge. */
   .swu-page-card {
-    background:transparent;
-    border:none;
-    border-radius:0;
-    padding:24px 0 0;
+    background:var(--layer-1);
+    padding:24px 0 24px;
     display:flex; flex-direction:column;
     min-height:100%;
     box-sizing:border-box;
@@ -6384,6 +6382,7 @@ const SENSOR_DATA = [
   .swu-subtabs {
     display:flex; gap:8px;
     border-bottom:1px solid var(--border);
+    padding:0 24px;
   }
   .swu-subtab {
     padding:12px 8px;
@@ -6405,14 +6404,14 @@ const SENSOR_DATA = [
     grid-template-columns:412px 280px 1fr;
     gap:24px;
     align-items:start;
-    /* Tinted workspace wrapper — grounds the page so the white inner
-       cards (truck cards, Update Software, Package Overview) pop against
-       a softer surface. Mirrors the Driver Scorecard pattern. */
     background:var(--layer-2);
     border:1px solid var(--border);
     border-radius:24px;
     padding:24px;
+    margin:10px 24px 0;
   }
+  body.dark .swu-page-card { background:var(--layer-1); border-color:var(--border); }
+  body.dark .dc-map-shell { background:var(--layer-1); border-color:var(--border); }
   body.dark .swu-body { background:rgba(255,255,255,0.025); }
 
   /* Left column */
@@ -6618,7 +6617,8 @@ const SENSOR_DATA = [
   .dc-map-shell {
     flex:1; min-height:0; min-width:0;
     display:flex; flex-direction:column;
-    padding:24px 0 0;
+    background:var(--layer-1);
+    padding:24px 0 24px;
     overflow:hidden;
     box-sizing:border-box;
   }
@@ -6736,11 +6736,14 @@ const SENSOR_DATA = [
     flex:1; min-height:0;
     display:flex; gap:10px;
     overflow:hidden;
+    padding-right:24px;
+    margin-top:15px;
   }
   .dc-map-stack-wrap {
     width:412px; flex-shrink:0;
     display:flex; flex-direction:column;
     min-height:0;
+    padding-left:24px;
   }
   .dc-map-stack {
     /* Mirror SWU stack: explicit max-height + min-height instead
@@ -7663,7 +7666,7 @@ const SENSOR_DATA = [
     <svg width="72" height="18" viewBox="0 0 96 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="white"/>
     </svg>
-    <span class="vp-version-tag">v6.1.9</span>
+    <span class="vp-version-tag">v6.2.7</span>
   </div>
 
   <!-- Viewport pills — desktop only. Hidden on mobile/tablet viewports since
@@ -10956,6 +10959,10 @@ const SENSOR_DATA = [
               <div class="dt-page-title">Diagnostic Center</div>
               <div class="dt-page-sub" id="dc-map-page-sub">Maps</div>
             </div>
+            <button class="dt-filter-btn" onclick="dtAtOpen()" style="height:36px;flex-shrink:0;">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              Add Trucks
+            </button>
           </div>
 
           <!-- Metric strip — 5 cards, separated by left borders -->

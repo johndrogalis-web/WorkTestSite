@@ -3781,15 +3781,15 @@
               </div>
               <!-- Test Slump -->
               <div style="padding:4px 4px;display:flex;flex-direction:column;justify-content:center;">
-                <div style="font-size:12px;font-weight:700;color:rgba(229,229,229,0.87);font-family:'Courier New',monospace;white-space:nowrap;">${r.slumpTest.replace(' in','')}</div>
+                <div style="font-size:12px;font-weight:700;color:rgba(229,229,229,0.87);font-family:'Courier New',monospace;white-space:nowrap;">${fmtSInShort(r.slumpTest)}</div>
               </div>
               <!-- Verifi Slump -->
               <div style="padding:4px 4px;display:flex;flex-direction:column;justify-content:center;">
-                <div style="font-size:12px;font-weight:700;color:rgba(229,229,229,0.87);font-family:'Courier New',monospace;white-space:nowrap;">${r.verifiSlump.replace(' in','')}</div>
+                <div style="font-size:12px;font-weight:700;color:rgba(229,229,229,0.87);font-family:'Courier New',monospace;white-space:nowrap;">${fmtSInShort(r.verifiSlump)}</div>
               </div>
               <!-- Diff -->
               <div style="padding:4px 4px;display:flex;flex-direction:column;justify-content:center;">
-                <div style="font-size:12px;font-weight:700;color:rgba(229,229,229,0.87);font-family:'Courier New',monospace;white-space:nowrap;">${r.slumpDiff.replace(' in','')}</div>
+                <div style="font-size:12px;font-weight:700;color:rgba(229,229,229,0.87);font-family:'Courier New',monospace;white-space:nowrap;">${fmtSInShort(r.slumpDiff)}</div>
               </div>
             </div>
 
@@ -3807,15 +3807,15 @@
                 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
                   <div>
                     <div style="font-size:9px;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-bottom:3px;">Test</div>
-                    <div style="font-size:14px;font-weight:700;color:rgba(229,229,229,0.87);font-family:'Courier New',monospace;">${r.slumpTest}</div>
+                    <div style="font-size:14px;font-weight:700;color:rgba(229,229,229,0.87);font-family:'Courier New',monospace;">${fmtSIn(r.slumpTest)}</div>
                   </div>
                   <div>
                     <div style="font-size:9px;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-bottom:3px;">Verifi</div>
-                    <div style="font-size:14px;font-weight:700;color:rgba(229,229,229,0.87);font-family:'Courier New',monospace;">${r.verifiSlump}</div>
+                    <div style="font-size:14px;font-weight:700;color:rgba(229,229,229,0.87);font-family:'Courier New',monospace;">${fmtSIn(r.verifiSlump)}</div>
                   </div>
                   <div>
                     <div style="font-size:9px;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-bottom:3px;">Difference</div>
-                    <div style="font-size:14px;font-weight:700;color:rgba(229,229,229,0.87);font-family:'Courier New',monospace;">${r.slumpDiff}</div>
+                    <div style="font-size:14px;font-weight:700;color:rgba(229,229,229,0.87);font-family:'Courier New',monospace;">${fmtSIn(r.slumpDiff)}</div>
                   </div>
                 </div>
               </div>
@@ -4046,12 +4046,18 @@
       document.getElementById('metric-toggle-label').textContent = isMetric ? 'Metric' : 'US';
       renderV2List();
       renderSlumpOverride();
+      renderTicketing();
     }
 
     function fmtS(val) {  // slump value only
       const v = parseFloat(val);
       if (!val || val === '—' || isNaN(v)) return '—';
       return isMetric ? Math.round(v * 25.4) + ' mm' : v.toFixed(1) + '"';
+    }
+
+    function fmtDelta(d) {  // slump difference value
+      const sign = d >= 0 ? '+' : '';
+      return isMetric ? sign + Math.round(d * 25.4) + ' mm' : sign + d.toFixed(2) + '"';
     }
 
     function fmtT(val) {  // temperature
@@ -4067,6 +4073,24 @@
     }
 
     function fmtWU() { return isMetric ? 'L/m³' : 'gal/yd³'; }
+
+    function fmtSIn(val) {  // handles "6.0 in" string format
+      const v = parseFloat(val);
+      if (!val || isNaN(v)) return '—';
+      return isMetric ? Math.round(v * 25.4) + ' mm' : v.toFixed(2) + '"';
+    }
+
+    function fmtSInShort(val) {  // strip unit, handles "6.0 in"
+      const v = parseFloat(val);
+      if (!val || isNaN(v)) return '—';
+      return isMetric ? Math.round(v * 25.4) + '' : v.toFixed(2);
+    }
+
+    function fmtSize(val) {  // yd³ → m³
+      const v = parseFloat(val);
+      if (!val || isNaN(v)) return '—';
+      return isMetric ? (v * 0.7646).toFixed(2) + ' m³' : v + ' yd³';
+    }
 
     function milTime(timeStr, addMin) {
       if (!timeStr || timeStr === '—' || !addMin || addMin === '—') return null;
@@ -4112,7 +4136,7 @@
         if (isNaN(p.slump)||isNaN(tgt)) { html += '<div style="'+VAL+' color:rgba(255,255,255,0.25);">—</div>'; return; }
         const d = p.slump-tgt, sign = d>=0?'+':'';
         html += '<div><div style="'+VAL+'">'+fmtS(p.slump)+'</div>' +
-                '<div style="'+SUB+'color:rgba(229,229,229,0.6);">'+sign+d.toFixed(2)+'"</div></div>';
+                '<div style="'+SUB+'color:rgba(229,229,229,0.6);">'+fmtDelta(d)+'</div></div>';
       });
       html += '</div>';
       html += '</div>'; // close padding div
@@ -4252,7 +4276,7 @@
               </div>
               <!-- Target Slump -->
               <div style="padding:4px 4px;display:flex;flex-direction:column;justify-content:center;gap:2px;">
-                <div style="font-size:12px;font-weight:600;color:rgba(229,229,229,0.87);font-family:'Courier New',monospace;white-space:nowrap;">${(() => { const t = r.ticketedSlump || r.targetSlump; const v = parseFloat(t); return (!t || isNaN(v)) ? '—' : v.toFixed(1) + '"'; })()}</div>
+                <div style="font-size:12px;font-weight:600;color:rgba(229,229,229,0.87);font-family:'Courier New',monospace;white-space:nowrap;">${(() => { const t = r.ticketedSlump || r.targetSlump; const v = parseFloat(t); return (!t || isNaN(v)) ? '—' : fmtS(t); })()}</div>
               </div>
               <!-- Three slumps stacked: Init, Arrival, Discharge -->
               <div style="padding:4px 8px;display:flex;flex-direction:column;gap:3px;justify-content:center;">
@@ -4269,7 +4293,7 @@
                     }
                     return '<div style="display:flex;align-items:baseline;gap:5px;">' +
                            '<span style="font-size:9px;color:rgba(255,255,255,0.35);text-transform:uppercase;width:22px;flex-shrink:0;">' + label + '</span>' +
-                           '<span style="font-size:12px;font-weight:600;color:rgba(229,229,229,0.87);font-family:\'Courier New\',monospace;">' + v.toFixed(1) + '"</span>' +
+                           '<span style="font-size:12px;font-weight:600;color:rgba(229,229,229,0.87);font-family:\'Courier New\',monospace;">' + fmtS(val) + '</span>' +
                            '</div>';
                   }
                   return slumpRow(r.prodInitialSlump || r.initialSlump, 'Init') +
@@ -4315,7 +4339,7 @@
                   </div>
                   <div style="padding:9px 14px;">
                     <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:3px;">Size</div>
-                    <div style="font-size:12px;font-weight:600;color:rgba(229,229,229,0.87);">${r.size||'—'} yd³</div>
+                    <div style="font-size:12px;font-weight:600;color:rgba(229,229,229,0.87);">${fmtSize(r.size)}</div>
                   </div>
                 </div>
                 <div style="padding:9px 14px 9px 33px;">

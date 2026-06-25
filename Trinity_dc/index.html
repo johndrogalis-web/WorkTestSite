@@ -2095,9 +2095,12 @@
   }
   .dt-side-ed-body {
     flex:1; min-height:0; overflow-y:auto;
-    padding-right:12px;
+    padding: 0;
     scrollbar-width:thin;
     scrollbar-gutter:stable;
+  }
+  .dt-side-ed-body .tl-detail-body {
+    padding: 12px 16px 24px;
   }
   /* Empty state */
   .dt-side-ed-empty {
@@ -4355,7 +4358,13 @@
   }
   .det-tab.on { color: var(--strong); border-bottom-color: var(--strong); font-weight: 500; }
 
-  .detail-scroll { flex: 1; overflow-y: auto; padding: 11px 22px; background: var(--layer-2); -webkit-overflow-scrolling: touch; }
+  .detail-scroll { flex: 1; overflow-y: auto; padding: 0; background: var(--layer-2); -webkit-overflow-scrolling: touch; }
+
+  /* Wrapper injected by tl render engine — controls vertical rhythm of the detail panel */
+  .tl-detail-body {
+    display: flex; flex-direction: column; gap: 10px;
+    padding: 12px 16px 24px;
+  }
 
   /* inline event header in back bar */
   .det-event-header-inline { flex: 1; padding: 0 8px; min-width: 0; }
@@ -4432,6 +4441,257 @@
     font-size: 11px; color: var(--defined);
     line-height: 1.75; overflow-x: auto; white-space: pre;
   }
+
+
+  /* ── FONT MONO TOKEN (used by tl render engine) ──────────────── */
+  :root { --font-mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+  /* ── SHARED LOG DETAIL STYLES (tl-* classes) ─────────────────── */
+.tl-section-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+/* Remove any margin-top that individual render functions set inline — tl-detail-body gap handles it */
+.tl-detail-body > .tl-section-group,
+.tl-detail-body > .tl-flag,
+.tl-detail-body > .tl-chip { margin-top: 0 !important; }
+.tl-side-empty {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px;
+  color: var(--soft); background: var(--layer-2);
+}
+.tl-side-empty p { font-size: 14px; letter-spacing: -0.28px; }
+/* Footer — disabled color */
+.tl-side-foot {
+  font-size: 14px; color: rgba(54,50,45,0.36);
+  letter-spacing: -0.28px;
+  padding: 10px 24px 14px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--layer-2);
+}
+
+/* ── Structured view — matches Figma node 3472:20202 ── */
+/* Event chip: white card, 8px radius, 10px padding */
+.tl-chip {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  background: var(--layer-1);
+  border: 1px solid rgba(54,50,45,0.14);
+  border-radius: 8px; padding: 10px;
+  flex-shrink: 0;
+}
+.tl-chip-left { display: flex; align-items: center; gap: 10px; }
+.tl-chip-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.tl-chip-label { font-size: 16px; font-weight: 500; letter-spacing: -0.32px; color: var(--strong); }
+.tl-chip-time  { font-size: 16px; color: rgba(54,50,45,0.5); letter-spacing: -0.32px; white-space: nowrap; }
+
+/* Section label: "Online (7)" — 16px regular, no bold */
+.tl-section-hdr {
+  font-size: 14px; font-weight: 500; color: var(--soft);
+  letter-spacing: 0.3px; text-transform: uppercase; line-height: 1.2;
+}
+
+/* Card stack: 10px gap between cards */
+.tl-card-stack { display: flex; flex-direction: column; gap: 10px; }
+
+/* Individual card: white, 8px radius, border rgba(54,50,45,0.14) */
+.tl-card {
+  background: var(--layer-1);
+  border: 1px solid rgba(54,50,45,0.14);
+  border-radius: 8px; overflow: hidden;
+  transition: border-color 0.12s;
+}
+.tl-card.open { border-color: rgba(54,50,45,0.28); }
+
+/* Card row: 8px horizontal padding, 16px vertical — matches Figma px-[8px] py-[16px] */
+.tl-card-row {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px; width: 100%;
+  background: none; border: none; cursor: default;
+  font-family: var(--font); text-align: left; gap: 8px;
+  min-height: 44px;
+}
+.tl-card-row.xp { cursor: pointer; }
+.tl-card-row.xp:hover { background: rgba(54,50,45,0.02); }
+.tl-card-left  { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.tl-card-right { display: flex; align-items: center; gap: 9px; flex-shrink: 0; }
+.tl-card-dot   { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.tl-card-label { font-size: 14px; font-weight: 500; color: var(--strong); letter-spacing: -0.28px; }
+.tl-card-value { font-size: 14px; font-weight: 500; color: var(--strong); letter-spacing: -0.28px; text-align: right; }
+.tl-card-value.val-warn  { color: #7a5200; }
+.tl-card-value.val-alarm { color: var(--red); }
+.tl-card-value.val-muted { color: var(--subtle); }
+/* Chevron SVG replaced by a unicode down arrow for reliability */
+.tl-card-chev { transition: transform 0.2s; flex-shrink: 0; color: var(--soft); font-size: 10px; }
+.tl-card.open .tl-card-chev { transform: rotate(180deg); }
+.tl-card-body {
+  display: none; flex-direction: column;
+  border-top: 1px solid rgba(54,50,45,0.14);
+  padding: 0;
+}
+.tl-card.open .tl-card-body { display: flex; }
+
+/* Expand detail rows: 8px padding matching Figma */
+.tl-detail-row {
+  display: flex; justify-content: space-between;
+  align-items: baseline; padding: 8px 16px;
+  gap: 12px; font-size: 14px; letter-spacing: -0.28px;
+  border-bottom: 1px solid rgba(54,50,45,0.08);
+  line-height: 1.3;
+}
+.tl-detail-row:last-child { border-bottom: none; }
+.tl-detail-k { color: rgba(54,50,45,0.62); flex-shrink: 0; }
+.tl-detail-v { color: var(--strong); text-align: right; word-break: break-word; }
+.tl-detail-v.val-warn  { color: #7a5200; font-weight: 500; }
+.tl-detail-v.val-alarm { color: var(--red); font-weight: 500; }
+.tl-detail-v.val-muted { color: var(--subtle); }
+
+/* Unified component status table (Online + Offline) */
+.tl-comp-table {
+  display: flex;
+  flex-direction: column;
+  background: var(--layer-1);
+  border: 1px solid rgba(54,50,45,0.14);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.tl-comp-thead {
+  display: flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-bottom: 1px solid rgba(54,50,45,0.14);
+  background: var(--layer-2);
+  gap: 8px;
+}
+.tl-comp-thead span {
+  font-size: 11px; font-weight: 500;
+  color: var(--soft); letter-spacing: 0.3px;
+  text-transform: uppercase; white-space: nowrap;
+}
+.tl-comp-row {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  min-height: 44px;
+  gap: 8px;
+  border-bottom: 1px solid rgba(54,50,45,0.07);
+  font-size: 14px; letter-spacing: -0.28px;
+}
+.tl-comp-row:last-child { border-bottom: none; }
+.tl-comp-row.alt { background: rgba(54,50,45,0.02); }
+/* Name gets all remaining space */
+.tl-comp-name {
+  display: flex; align-items: center; gap: 8px;
+  flex: 1; min-width: 0;
+  font-weight: 500; color: var(--strong);
+}
+/* Fixed-width right columns so they never collide */
+.tl-comp-seen {
+  width: 68px; flex-shrink: 0; text-align: right;
+  color: var(--soft); font-family: var(--font-mono);
+  font-size: 12px; white-space: nowrap;
+}
+.tl-comp-errors {
+  width: 44px; flex-shrink: 0; text-align: center;
+  font-size: 14px; font-weight: 500;
+}
+.tl-comp-errors.has-errors { color: var(--red); }
+.tl-comp-errors.no-errors  { color: rgba(54,50,45,0.3); }
+/* Clickable error count — touch-friendly badge */
+.tl-err-link {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 28px; min-height: 28px;
+  padding: 0 8px;
+  background: rgba(215,1,0,0.10);
+  border: 1px solid rgba(215,1,0,0.25);
+  border-radius: 100px;
+  font-family: var(--font); font-size: 13px; font-weight: 600;
+  color: var(--red); cursor: pointer;
+  /* Expand the tap zone without changing visual size */
+  position: relative;
+}
+.tl-err-link::after {
+  content: ''; position: absolute;
+  inset: -8px;
+}
+.tl-err-link:hover { background: rgba(215,1,0,0.16); }
+.tl-comp-status {
+  width: 80px; flex-shrink: 0; text-align: right;
+  color: var(--soft); font-size: 13px; white-space: nowrap;
+}
+.tl-comp-status.no-contact { color: rgba(54,50,45,0.3); }
+
+/* Flag banners */
+.tl-flag {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 11px 14px; border-radius: 10px;
+  font-size: 14px; letter-spacing: -0.28px;
+  font-weight: 500; line-height: 1.4; flex-shrink: 0;
+}
+.tl-flag.alarm { background: rgba(215,1,0,0.08); color: #a80000; border: 1px solid rgba(215,1,0,0.2); }
+.tl-flag.warn  { background: rgba(255,186,13,0.12); color: #7a5200; border: 1px solid rgba(255,186,13,0.3); }
+.tl-flag.info  { background: rgba(48,105,227,0.08); color: #2355c4; border: 1px solid rgba(48,105,227,0.2); }
+
+
+/* ── Raw JSON ── */
+.tl-raw-wrap { display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; }
+.tl-raw-search {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--layer-1); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; flex-shrink: 0;
+}
+.tl-raw-search:focus-within { border-color: var(--strong); }
+.tl-raw-search input {
+  flex: 1; border: none; outline: none; background: transparent;
+  font-size: 13px; font-family: var(--font);
+  letter-spacing: -0.26px; color: var(--strong);
+}
+.tl-raw-search input::placeholder { color: var(--soft); }
+.tl-raw-count { font-size: 11px; color: var(--soft); font-family: var(--font-mono); white-space: nowrap; flex-shrink: 0; }
+.tl-raw-nav {
+  width: 22px; height: 22px; padding: 0;
+  background: transparent; border: none; border-radius: 4px;
+  color: var(--strong); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.tl-raw-nav:hover { background: rgba(54,50,45,0.06); }
+.tl-raw-block {
+  background: #1c1a17; border-radius: 8px;
+  padding: 12px 14px;
+  font-family: var(--font-mono); font-size: 11.5px;
+  color: #e9e6df; line-height: 1.6; white-space: pre;
+  overflow: auto; flex: 1; min-height: 0; scrollbar-width: thin;
+}
+.tl-raw-block .jk  { color: #9ecbff; }
+.tl-raw-block .js  { color: #a5d6a7; }
+.tl-raw-block .jn  { color: #ffcb6b; }
+.tl-raw-block .jb  { color: #f78c6c; }
+.tl-raw-block mark.tl-hi {
+  background: rgba(255,200,80,0.3); color: inherit;
+  border-radius: 2px; padding: 0 1px;
+  box-shadow: 0 0 0 1px rgba(255,200,80,0.45);
+}
+.tl-raw-block mark.tl-hi.active {
+  background: rgba(255,200,80,0.85); color: #1c1a17;
+  box-shadow: 0 0 0 1px rgba(255,200,80,1);
+}
+/* Override shell drawer to be full-height two-column */
+.drawer { display: flex; flex-direction: column; }
+.drawer-chrome { flex-shrink: 0; }
+.drawer-body { flex: 1; min-height: 0; padding: 0 !important; }
+.tl-raw-block mark.hi {
+  background: rgba(255,200,80,0.3); color: inherit;
+  border-radius: 2px; padding: 0 1px;
+  box-shadow: 0 0 0 1px rgba(255,200,80,0.45);
+}
+.tl-raw-block mark.hi.active {
+  background: rgba(255,200,80,0.85); color: #1c1a17;
+  box-shadow: 0 0 0 1px rgba(255,200,80,1);
+}
 
   /* ─── MANUAL CONTROL CARDS ──────────────────────── */
   .mc2-card { background:var(--layer-1); border:1px solid var(--border); border-radius:16px; padding:14px 12px; display:flex; flex-direction:column; gap:6px; transition:border-color 0.3s, box-shadow 0.3s; position:relative; overflow:hidden; }
@@ -7666,7 +7926,7 @@ const SENSOR_DATA = [
     <svg width="72" height="18" viewBox="0 0 96 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="white"/>
     </svg>
-    <span class="vp-version-tag">v6.2.8</span>
+    <span class="vp-version-tag">v6.3.1</span>
   </div>
 
   <!-- Viewport pills — desktop only. Hidden on mobile/tablet viewports since
@@ -12557,24 +12817,61 @@ const DRS_RPM = {
   '65396': 11,
 };
 
-const logs = [
-  { date:'02/17/2026', time:'04:14 PM', type:'Ticket Sent',       sub:'Ticketed Received'  },
-  { date:'02/17/2026', time:'04:14 PM', type:'Ticketed Received',  sub:'Buildup Data'       },
-  { date:'02/18/2026', time:'09:30 AM', type:'Backend Request',    sub:'Identity'           },
-  { date:'02/18/2026', time:'11:00 AM', type:'Event',              sub:'WDS'        },
-  { date:'02/19/2026', time:'02:15 PM', type:'Event',              sub:'Fluid Error'        },
-  { date:'02/19/2026', time:'03:00 PM', type:'Ticketed Received',  sub:'Feedback Session'   },
-  { date:'02/20/2026', time:'10:00 AM', type:'Event',              sub:'Build Up Data'      },
-  { date:'02/20/2026', time:'01:45 PM', type:'Event',              sub:'Fluid Error'        },
-  { date:'02/21/2026', time:'04:30 PM', type:'Event',              sub:'Fluid Error'        },
-  { date:'02/21/2026', time:'05:15 PM', type:'Event',              sub:'Fluid Error'        },
-  { date:'02/22/2026', time:'09:00 AM', type:'Ticketed Received',  sub:'Ticketed Received'  },
-  { date:'02/22/2026', time:'12:00 PM', type:'Backend Request',    sub:'Identity'           },
-  { date:'02/23/2026', time:'08:30 AM', type:'Backend Request',    sub:'Identity'           },
-  { date:'02/23/2026', time:'02:30 PM', type:'Backend Request',    sub:'Identity'           },
-  { date:'02/24/2026', time:'03:00 PM', type:'Backend Request',    sub:'Identity'           },
-  { date:'03/23/2026', time:'08:24 AM', type:'Event',              sub:'WDS No Connection', wds:true },
+/* ── UNIFIED LOG DATA — single source of truth for mobile, tablet, desktop ── */
+const TL_ROWS = [
+  { id:0,  date:'02/17/2026', time:'04:14 PM', sentTime:'00:00', source:'TRUCK', type:'Event',              sub:'StartUp',                sev:'info'  },
+  { id:1,  date:'02/17/2026', time:'03:49 PM', sentTime:'00:01', source:'TRUCK', type:'Event',              sub:'TicketReceived',          sev:'info'  },
+  { id:2,  date:'02/18/2026', time:'09:30 AM', sentTime:'00:00', source:'TRUCK', type:'Identity',           sub:'Identity',               sev:'info'  },
+  { id:3,  date:'02/18/2026', time:'11:00 AM', sentTime:'00:01', source:'TRUCK', type:'Event',              sub:'TruckHealth',            sev:'warn'  },
+  { id:4,  date:'02/19/2026', time:'02:15 PM', sentTime:'00:00', source:'TRUCK', type:'Event',              sub:'FluidError',             sev:'warn'  },
+  { id:5,  date:'02/19/2026', time:'03:00 PM', sentTime:'00:01', source:'TRUCK', type:'Event',              sub:'IgnitionChange',         sev:'info'  },
+  { id:6,  date:'02/20/2026', time:'10:00 AM', sentTime:'00:00', source:'TRUCK', type:'Event',              sub:'GPSLocation',            sev:'info'  },
+  { id:7,  date:'02/20/2026', time:'01:45 PM', sentTime:'00:01', source:'TRUCK', type:'Event',              sub:'FluidAdd',               sev:'warn'  },
+  { id:8,  date:'02/21/2026', time:'04:30 PM', sentTime:'00:00', source:'TRUCK', type:'Event',              sub:'ConcreteStatus',         sev:'info'  },
+  { id:9,  date:'02/21/2026', time:'05:15 PM', sentTime:'00:01', source:'TRUCK', type:'Event',              sub:'DriverAction',           sev:'info'  },
+  { id:10, date:'02/22/2026', time:'09:00 AM', sentTime:'00:00', source:'TRUCK', type:'Event',              sub:'OperatingMode',          sev:'info'  },
+  { id:11, date:'02/22/2026', time:'12:00 PM', sentTime:'00:01', source:'TRUCK', type:'BackendRequest',     sub:'ALL_PLANTS_GEOFENCES',   sev:'info'  },
+  { id:12, date:'02/23/2026', time:'08:30 AM', sentTime:'00:00', source:'TRUCK', type:'DeviceBinding',      sub:'DeviceBinding',          sev:'info'  },
+  { id:13, date:'02/23/2026', time:'02:30 PM', sentTime:'00:01', source:'TRUCK', type:'Event',              sub:'CalculatedArriveSite',   sev:'info'  },
+  { id:14, date:'02/24/2026', time:'03:00 PM', sentTime:'00:00', source:'TRUCK', type:'Event',              sub:'TruckHealth',            sev:'info'  },
+  { id:15, date:'03/23/2026', time:'08:24 AM', sentTime:'00:01', source:'TRUCK', type:'Event',              sub:'TruckHealth',            sev:'alarm' },
+  { id:16, date:'03/23/2026', time:'10:42 AM', sentTime:'00:00', source:'TRUCK', type:'Event',              sub:'FluidDoseSummary',       sev:'info'  },
+  { id:17, date:'03/23/2026', time:'11:30 AM', sentTime:'00:01', source:'TRUCK', type:'Event',              sub:'SpeedChangeData',        sev:'info'  },
+  { id:18, date:'03/24/2026', time:'08:40 AM', sentTime:'00:00', source:'TRUCK', type:'Event',              sub:'Shutdown',               sev:'info'  },
+  { id:19, date:'03/24/2026', time:'09:12 AM', sentTime:'00:00', source:'TRUCK', type:'BackendRequest',     sub:'ALL_PLANTS_GEOFENCES',   sev:'info'  },
+  { id:20, date:'03/24/2026', time:'09:45 AM', sentTime:'00:00', source:'TRUCK', type:'DeviceBinding',      sub:'DrumSensor',             sev:'info'  },
+  { id:21, date:'03/24/2026', time:'10:03 AM', sentTime:'00:00', source:'TRUCK', type:'WirelessDrumBinding',sub:'UnboundTC3Notification', sev:'warn'  },
+  { id:22, date:'03/24/2026', time:'10:31 AM', sentTime:'00:00', source:'TRUCK', type:'Event',              sub:'ConcreteStatus',         sev:'info'  },
+  { id:23, date:'03/25/2026', time:'07:15 AM', sentTime:'00:00', source:'TRUCK', type:'DeviceBinding',      sub:'WaterModule',            sev:'info'  },
+  { id:24, date:'03/25/2026', time:'08:00 AM', sentTime:'00:01', source:'TRUCK', type:'BackendRequest',     sub:'WEATHER',                sev:'info'  },
+  { id:25, date:'03/25/2026', time:'09:30 AM', sentTime:'00:00', source:'TRUCK', type:'Event',              sub:'SystemStatus',           sev:'info'  },
+  { id:26, date:'03/26/2026', time:'11:22 AM', sentTime:'00:00', source:'TRUCK', type:'Event',              sub:'SystemStatus',           sev:'warn'  },
 ];
+
+/* Alias used by mobile and tablet code that references `logs` by name */
+const logs = TL_ROWS;
+
+/* ── PAYLOADS — real JSON keyed by row id ── */
+const TL_PAYLOADS = {
+  26: { message_type:'Event', time:{seconds:1781111769,microseconds:882283}, sender_mac_id:'125765154369', accountId:'26', truckId:'7876', truckName:'2084', event:{ event_type:'SystemStatus', lastLoadingTime:{seconds:0,microseconds:0}, location:{status:'VALID',latitude:21.37427583,longitude:-157.90896283}, lastLoadingLocationId:'-1', locationStatus:{}, system_status:{ timeBootSeconds:1781111006.03, ignitionOnEventCount:1, sensorPowerOnCount:1, wifiSNR:0, pressureCharge:{alive:true,lastContactSeconds:1781111769.83,errorMessageReceived:true,lastErrorCondition:33024,startupMessageCount:1,errorMessageCount:174}, pressureDischarge:{alive:true,lastContactSeconds:1781111769.83,errorMessageReceived:true,lastErrorCondition:33024,startupMessageCount:1,errorMessageCount:139}, iox:{alive:true,lastContactSeconds:1781111769.28,errorMessageReceived:true,lastErrorCondition:33024,startupMessageCount:1,errorMessageCount:44,temperatureCelsius:35,supplyVoltage:13.84}, wiredDrum:{alive:true,lastContactSeconds:1781111769.17,startupMessageCount:1,version:304}, externalDisplay:{alive:true,lastContactSeconds:1781111769.20,startupMessageCount:1,version:8195}, powerModule:{alive:false}, wirelessDrum:{alive:false}, inCabDisplay:{alive:true,lastContactSeconds:1781111768.90,startupMessageCount:1,version:1468}, cwr:{alive:true,lastContactSeconds:1781111766.88,startupMessageCount:1,temperatureCelsius:45.23,microS08:{versionMajor:35,versionMinor:0}}, jacketHeater:{alive:false}, fdmHeater:{alive:false}, ignition:true, sensorPower:true, ghostMode:false, offMode:false, operatingMode:{mode:'LIVE',localMode:'DRIVER_ON',coldWeatherMode:'COLD_WEATHER_OFF',fdmMode:'FDM_V3_IOX'}, vnextSensorBoard:{alive:false}, vnextAdmixBoard:{alive:false}, vnextWaterBoard:{alive:false}, roboteq:{alive:false} } } },
+  23: { message_type:'DeviceBinding', time:{seconds:1781010299,microseconds:725705}, sender_mac_id:'125765210720', accountId:'24', truckId:'11531', truckName:'1838', pbversion:4, device_binding:{ bindingType:'Seen', deviceType:'WaterModule', signalStrength:'-62', macId:'141704516048573' } },
+  25: { message_type:'Event', time:{seconds:1781010492,microseconds:231872}, sender_mac_id:'125765273411', accountId:'24', truckId:'13024', truckName:'2550', pbversion:4, event:{ event_type:'SystemStatus', lastLoadingTime:{seconds:1781008749,microseconds:707052}, location:{status:'VALID',latitude:25.79684033,longitude:-80.36183233}, lastLoadingLocationId:'625', locationStatus:{status:'PLANT_OUTSIDE_FENCE',locationId:'625',locationName:''}, system_status:{ timeBootSeconds:1780983404.03, ignitionOnEventCount:1, sensorPowerOnCount:1, wifiSNR:0, pressureCharge:{alive:true,lastContactSeconds:1781010492.04}, pressureDischarge:{alive:true,lastContactSeconds:1781010492.04}, iox:{alive:false}, wiredDrum:{alive:false}, externalDisplay:{alive:true,lastContactSeconds:1781010491.24,startupMessageCount:1,version:8195}, powerModule:{alive:false}, wirelessDrum:{alive:true,lastContactSeconds:1781010490.63,batteryVoltage:3.51,temperatureCelsius:32.74}, inCabDisplay:{alive:true,lastContactSeconds:1781010490.49,startupMessageCount:1,version:1468}, cwr:{alive:true,lastContactSeconds:1781010490.55,startupMessageCount:1,temperatureCelsius:0,microS08:{versionMajor:44,versionMinor:0}}, jacketHeater:{alive:false}, fdmHeater:{alive:false}, ignition:true, sensorPower:true, ghostMode:false, offMode:false, operatingMode:{mode:'LIVE',localMode:'DRIVER_ON',coldWeatherMode:'COLD_WEATHER_OFF',fdmMode:'FDM_VNEXT'}, vnextSensorBoard:{alive:true,lastContactSeconds:1781010491.65,version:44,hardwareVersion:129}, vnextSensorBoardDevices:{pressureCharge:{pressurePascal:6560800.5},pressureDischarge:{pressurePascal:1801910},can1:{voltageV:11.95},can2:{voltageV:11.86},battPowerVoltage:{voltageV:13.37}}, vnextAdmixBoard:{alive:false}, vnextWaterBoard:{alive:true,lastContactSeconds:1781010491.78,version:23,hardwareVersion:6}, vnextWaterBoardDevices:{flowMeter:{pulseCount:30849},ambientTemp:{temperatureCelsius:53.9},battPowerVoltage:{voltageV:1.02}}, kzValveVnextAir:{alive:true,lastContactSeconds:1781010491.44,valveRequiredPositionDegrees:180,valveReportedPositionDegrees:179}, kzValveVnextTemperateWaterMain:{alive:true,lastContactSeconds:1781010491.30,valveRequiredPositionDegrees:0,valveReportedPositionDegrees:0} } } },
+  14: { message_type:'Event', time:{seconds:1781009702,microseconds:167380}, sender_mac_id:'125765276177', accountId:'83', truckId:'10258', truckName:'75523', pbversion:4, event:{ event_type:'TruckHealth', lastLoadingTime:{seconds:1781005150,microseconds:537372}, location:{status:'VALID',latitude:29.103703,longitude:-82.19526467}, lastLoadingLocationId:'1137', locationStatus:{status:'PLANT_OUTSIDE_FENCE',locationId:'1137',locationName:''}, truck_health:{ eventType:'RPM_DECREASE_SLUMP_INCREASE' } } },
+  4:  { message_type:'Event', time:{seconds:1781009416,microseconds:933583}, sender_mac_id:'125765146235', accountId:'83', truckId:'10187', truckName:'70147', pbversion:4, event:{ event_type:'FluidError', lastLoadingTime:{seconds:1781003259,microseconds:277103}, location:{status:'VALID',latitude:28.66199783,longitude:-81.53805617}, lastLoadingLocationId:'1133', locationStatus:{status:'PLANT_OUTSIDE_FENCE',locationId:'1133',locationName:''}, fluid_error:{ error:'FDM_ERROR', fluid:'WATER' } } },
+  2:  { message_type:'Identity', time:{seconds:1781009455,microseconds:340280}, sender_mac_id:'125765292552', accountId:'83', truckId:'10090', truckName:'67038', pbversion:4, identity:{ macId:'125765292552', imsi:'310170877383180', serialNo:'220000519631', version:'26.2.3', commissioned:true, truckId:'67038', wirelessDrumSensorBound:true, wirelessDrumSensorMacId:'141704507334621', bspVersion:'1.01', deviceType:'TCG4', deviceVariant:'104400' } },
+  0:  { message_type:'Event', time:{seconds:1781009405,microseconds:444636}, sender_mac_id:'125765292552', accountId:'83', truckId:'10090', truckName:'67038', pbversion:4, event:{ event_type:'Startup', lastLoadingTime:{seconds:0,microseconds:0}, location:{status:'INVALID'}, lastLoadingLocationId:'-1', locationStatus:{}, startup:{ previousShutdownType:'DIRTY' } } },
+  18: { message_type:'Event', time:{seconds:1780988400,microseconds:0}, sender_mac_id:'125765292552', accountId:'83', truckId:'10090', truckName:'67038', pbversion:4, event:{ event_type:'Shutdown', lastLoadingTime:{seconds:1780985000}, location:{status:'VALID',latitude:29.175,longitude:-82.143}, lastLoadingLocationId:'1139', locationStatus:{status:'PLANT_OUTSIDE_FENCE'}, shutdown:{ shutdownType:'CLEAN' } } },
+  1:  { message_type:'Event', time:{seconds:1781009629,microseconds:941719}, sender_mac_id:'125765259653', accountId:'83', truckId:'10163', truckName:'75527', pbversion:4, event:{ event_type:'TicketReceived', lastLoadingTime:{seconds:1781009473,microseconds:298053}, location:{status:'VALID',latitude:29.17227683,longitude:-82.14356583}, lastLoadingLocationId:'1139', locationStatus:{status:'UNKNOWN'}, ticket_received:{ receivedTicket:{ loadSizeCubicMeters:7.646, dischargeSlumpMillimeters:127, batchSlumpMillimeters:127, transitSlumpMillimeters:127, minDischargeSlumpMillimeters:6.350013, maxDischargeSlumpMillimeters:254.0005, autoAddWater:true, maxWaterLitersPerCubicMeter:5.598, allowWaterBeyondMax:false, autoAddAdmix:false, admixName:'', mixRevsAfterLoading:70, postBatchAdditions:false, ticketType:'NORMAL', maxMinutesInPlant:12, displayTicketNumber:'41233410', verifiInstructionName:'Manage to Allowable Water', verifiInstructionId:'1030', batchAdjustmentFluids:'WATER_ONLY', allowDriverWaterAddsOnSite:true, doNotManageLoad:false, customerName:'MAXTER ENTERPRISES', customerAddress:'3171 NW 44TH AVE', driverId:'70724', driverCode:'Perez, Jonathan', plantId:'1277', plantName:'Dry', locationName:'Ocala', locationId:'1139', jobId:'976033', jobName:'LOADINGDOCK/WALL', orderNumber:'402', mixCodeName:'1595570', mixCodeId:'236232', accountName:'Cemex Orlando', azureTicketId:'45986252', slumpCurveName:'cis_wc50-55' } } } },
+  9:  { message_type:'Event', time:{seconds:1780937807,microseconds:606967}, sender_mac_id:'125765259860', accountId:'83', truckId:'10153', truckName:'69703', pbversion:4, event:{ event_type:'DriverAction', lastLoadingTime:{seconds:1780924028,microseconds:933127}, location:{status:'VALID',latitude:29.20740583,longitude:-82.14746033}, lastLoadingLocationId:'1139', locationStatus:{status:'PLANT_OUTSIDE_FENCE',locationId:'1139',locationName:''}, driver_action:{ action:'DRIVER_REQUESTED_WATER', parameterRaw:3975 } } },
+  8:  { message_type:'Event', time:{seconds:1780927836,microseconds:439050}, sender_mac_id:'125765259863', accountId:'83', truckId:'10113', truckName:'45689', pbversion:4, event:{ event_type:'ConcreteStatus', lastLoadingTime:{seconds:1780919183}, location:{status:'VALID',latitude:29.02696233,longitude:-82.23808433}, lastLoadingLocationId:'1137', locationStatus:{status:'PLANT_OUTSIDE_FENCE',locationId:'1137',locationName:''}, concrete_status:{ concreteStatus:'VALUE_CHANGED', targetSlumpMillimeters:127, slumpMillimeters:-1, targetMinDrumSpeedRpm:2, targetMaxDrumSpeedRpm:6, drumSpeedRpm:-1, cumulativeRevolutionsSinceLoad:0, remainingWaterLiters:0, slumpReason:'SLUMP_NOT_YET_VALID', estimatedWaterToSlumpLiters:-1, estimatedAdmixToSlumpMilliliters:-1, mixingRevolutionsSinceLoad:-1, agitationRevolutionsSinceLoad:-1, revolutionsDischargingMaterial:0, loadSizeCubicMeters:-1, chargePressurePascals:8980983, dischargePressurePascals:1419466, truckTiltDegrees:0.286, slumpIsStable:false, standardSlumpMm:-1, threeStageSlumpMm:-1, continuousSlumpMm:-1, ambientTempCelsius:59.78, probBuildup:0, loadedTriggeredFromBackend:true, probBadChargeSensor:0, probBadMagnet:0, chargePressureMax:9390000, chargePressureMin:8650000, dischargePressureMax:1450000, dischargePressureMin:1380000, instantaneousSlumpMm:-1, estimatedBuildupPounds:1037.19, deliveryState:'LOADED_STATE', deliveryPhase:'PHASE_ON_SITE', locationId:'1137', loadedTriggerStatus:'POST_TICKET_TIMEOUT_NOT_MANAGED', slumpDisplay:'NO_DISPLAY_SMALL_LOAD', totalWaterAddedLiters:83.12256, totalAdmixAddedMilliliters:0, totalWaterAddedLitersPerCubicMeter:10.871, active_load:true, azureTicketId:'45970263', ticketId:'-1', drumWaterAddedLiters:0 } } },
+  22: { message_type:'Event', time:{seconds:1780927836,microseconds:818790}, sender_mac_id:'125765292548', accountId:'83', truckId:'10135', truckName:'45689', pbversion:4, event:{ event_type:'ConcreteStatus', lastLoadingTime:{seconds:1780918798}, location:{status:'VALID',latitude:28.615418,longitude:-80.8080995}, lastLoadingLocationId:'1480', locationStatus:{status:'PLANT_OUTSIDE_FENCE',locationId:'1480',locationName:''}, concrete_status:{ concreteStatus:'VALUE_CHANGED', targetSlumpMillimeters:-1, slumpMillimeters:448.01205, targetMinDrumSpeedRpm:2, targetMaxDrumSpeedRpm:6, drumSpeedRpm:2.3, cumulativeRevolutionsSinceLoad:988.93, remainingWaterLiters:0, concreteTempCelsius:31.32, slumpReason:'DRUM_NOT_IN_CHARGE', estimatedWaterToSlumpLiters:0, estimatedAdmixToSlumpMilliliters:0, mixingRevolutionsSinceLoad:798.68, agitationRevolutionsSinceLoad:189.83, revolutionsDischargingMaterial:16.67, loadSizeCubicMeters:0, chargePressurePascals:1795100, dischargePressurePascals:1526816, truckTiltDegrees:-2.364, slumpIsStable:false, standardSlumpMm:444.16, threeStageSlumpMm:469.37, continuousSlumpMm:472.43, ambientTempCelsius:56.47, probSlumpIncrease:1, probSlumpDecrease:0, probRpmIncrease:1, probRpmDecrease:0, probBuildup:0, loadedTriggeredFromBackend:false, probBadChargeSensor:0, probBadMagnet:1, chargePressureMax:2980000, chargePressureMin:1370000, dischargePressureMax:2740000, dischargePressureMin:1290000, instantaneousSlumpMm:619.54, estimatedBuildupPounds:1731.95, slumpNormPressurePascals:556000, slumpDrumSpeedRpm:13.3, cumulativeRevolutionsSinceLoaded:941.16, deliveryState:'IDLE', deliveryPhase:'PHASE_RETURN_TO_PLANT', locationId:'1480', loadedTriggerStatus:'SENSORS_MANAGED', slumpDisplay:'NO_DISPLAY_SMALL_LOAD', totalWaterAddedLiters:109.73, totalAdmixAddedMilliliters:0, totalWaterAddedLitersPerCubicMeter:13.67, active_load:false, azureTicketId:'45968508', ticketId:'-1', drumWaterAddedLiters:0, underAgitationRevolutionsSinceLoad:0.087, overMixingRevolutionsSinceLoad:0 } } },
+  11: { message_type:'BackendRequest', time:{seconds:1780927500,microseconds:117652}, sender_mac_id:'125765276178', accountId:'83', truckId:'10206', truckName:'45689', pbversion:4, backend_request:{ requestType:'ALL_PLANTS_GEOFENCES', location:{status:'VALID',latitude:28.61317667,longitude:-81.43043633} } },
+  19: { message_type:'BackendRequest', time:{seconds:1780927500,microseconds:117652}, sender_mac_id:'125765276178', accountId:'83', truckId:'10206', truckName:'45689', pbversion:4, backend_request:{ requestType:'ALL_PLANTS_GEOFENCES', location:{status:'VALID',latitude:28.61317667,longitude:-81.43043633} } },
+  12: { message_type:'DeviceBinding', time:{seconds:1780927799,microseconds:247769}, sender_mac_id:'125765199888', accountId:'83', truckId:'10049', truckName:'45689', pbversion:4, device_binding:{ bindingType:'Seen', deviceType:'DrumSensor', signalStrength:'-84', macId:'141704494042636' } },
+  20: { message_type:'DeviceBinding', time:{seconds:1780927799,microseconds:247769}, sender_mac_id:'125765199888', accountId:'83', truckId:'10049', truckName:'45689', pbversion:4, device_binding:{ bindingType:'Seen', deviceType:'DrumSensor', signalStrength:'-84', macId:'141704494042636' } },
+  21: { message_type:'WirelessDrumBinding', time:{seconds:1780927346,microseconds:622410}, sender_mac_id:'125765370241', accountId:'83', truckId:'10257', truckName:'45689', wireless_drum_binding:{ wirelessDrumBindingType:'UnboundTC3Notification' } },
+  7:  { message_type:'Event', time:{seconds:1777316790,microseconds:271117}, sender_mac_id:'125765200636', accountId:'83', truckId:'9171', truckName:'45689', pbversion:4, event:{ event_type:'FluidAdd', lastLoadingTime:{seconds:1777314613}, location:{status:'VALID',latitude:32.91751967,longitude:-111.51281633}, lastLoadingLocationId:'578', locationStatus:{status:'PLANT_OUTSIDE_FENCE',locationId:'578',locationName:''}, fluid_add:{ fluidAddEvent:'STEALTH_WATER_DETECTED', maxFluidReached:false, waterAddedLiters:67.247, admixAddedMilliliters:0, fluidFlowRateMillilitersPerSecond:-1, fluidRequestedLiters:0, waterAdaptationPercent:-1, admixAdaptationPercent:-1, startTime:{seconds:1777316697}, waterAddedLitersPerCubicMeter:8.795, admixAddedMillilitersPerCubicMeter:0 } } },
+};
 
 /* ── STATE ──────────────────────────────────────── */
 let expanded = {};
@@ -13353,9 +13650,12 @@ function openDetail(i) {
   const row = document.getElementById('lr-'+i);
   if (row) row.style.background = 'rgba(48,105,227,0.07)';
 
-  document.getElementById('det-title').textContent = logs[i].sub + ' Event';
-  const meta = logs[i].date + ' ' + logs[i].time + ' · TRUCK · ' + logs[i].type;
-  document.getElementById('det-meta').textContent = meta.length > 40 ? meta.substring(0, 38) + '...' : meta;
+  const logRow = TL_ROWS[i];
+  if (logRow) {
+    document.getElementById('det-title').textContent = logRow.sub + ' — ' + logRow.type;
+    const meta = logRow.date + ' ' + logRow.time + ' · TRUCK';
+    document.getElementById('det-meta').textContent = meta.length > 40 ? meta.substring(0, 38) + '...' : meta;
+  }
 
   activeLogIdx = i;
   activeTab = 'structured';
@@ -13378,130 +13678,780 @@ function switchTab(tab, el) {
   renderDetailContent(tab);
 }
 
+/* ════════════════════════════════════════════════════════════════
+   SHARED LOG RENDER ENGINE — used by mobile, tablet, and desktop.
+   Ported from logs-test.html. All tl* functions are the single
+   source of truth for structured + raw detail views.
+   ════════════════════════════════════════════════════════════════ */
+
+function tlEsc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function tlFmtDT(sec) { return new Date(sec*1000).toLocaleString('en-US',{month:'2-digit',day:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+function tlKpa(pa) { return (pa/1000).toFixed(1)+' kPa'; }
+function tlIn(mm)  { return (mm/25.4).toFixed(1)+'"'; }
+function tlOk(v)   { return v !== -1 && v !== null && v !== undefined && String(v) !== 'NaN' && !Number.isNaN(v); }
+
+var TL_PHASES = {PHASE_WAITING_TO_LOAD:'Waiting to load',PHASE_LOADING:'Loading',PHASE_LOADED:'Loaded',PHASE_TO_JOB:'In transit to job',PHASE_ON_SITE:'On site',PHASE_POURING:'Pouring',PHASE_WASHING:'Washing',PHASE_RETURN_TO_PLANT:'Returning to plant',PHASE_IGNITION_OFF:'Ignition off'};
+var TL_STATES = {LOADED_STATE:'Loaded',IDLE:'Idle',LOADING_STATE:'Loading',DISCHARGING_STATE:'Discharging'};
+var TL_SLUMP = {SLUMP_NOT_YET_VALID:'Drum not spinning long enough yet',DRUM_NOT_IN_CHARGE:'Drum not in charge position',SLUMP_IS_VALID:'Valid reading',LOAD_TOO_SMALL:'Load too small',NO_LOAD:'No active load'};
+var TL_FLUID = {STEALTH_WATER_DETECTED:'Stealth water detected',NORMAL_ADD:'Normal addition',MAX_FLUID_REACHED:'Max fluid limit reached',ADMIX_ONLY:'Admix only'};
+
+function tlSigQ(dbm) { var v=parseInt(dbm); return v>=-70?{l:'Strong',c:''}:v>=-85?{l:'Moderate',c:'val-warn'}:{l:'Weak',c:'val-alarm'}; }
+function tlChev(cls) { return '<svg class="'+cls+'" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
+
+function tlCard(opts) {
+  var label=opts.label, value=opts.value, vcls=opts.vcls||'', dot=opts.dot||'', detail=opts.detail||[], mono=opts.mono||false;
+  var cid='tlc'+Math.random().toString(36).slice(2);
+  var dotH=dot?'<span class="tl-card-dot" style="background:'+dot+';"></span>':'';
+  var hasD=detail.length>0;
+  var valStyle=mono?' style="font-family:var(--font-mono);font-size:12px;"':'';
+  var detH=detail.map(function(d){var k=d[0],v=d[1],c=d[2]||'';return '<div class="tl-detail-row"><span class="tl-detail-k">'+tlEsc(k)+'</span><span class="tl-detail-v '+c+'">'+tlEsc(String(v))+'</span></div>';}).join('');
+  var chevH=hasD?'<svg class="tl-card-chev" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>':'';
+  var onclickAttr=hasD?'onclick="tlToggleCard(\'' +cid+ '\')"':'disabled';
+  return '<div class="tl-card'+(hasD?' open':'') +'" id="'+cid+'">'+
+    '<button class="tl-card-row'+(hasD?' xp':'')+'" '+onclickAttr+'>'+
+    '<span class="tl-card-left">'+dotH+'<span class="tl-card-label">'+tlEsc(label)+'</span></span>'+
+    '<span class="tl-card-right"><span class="tl-card-value '+vcls+'"'+valStyle+'>'+tlEsc(String(value))+'</span>'+chevH+'</span>'+
+    '</button>'+(hasD?'<div class="tl-card-body">'+detH+'</div>':'')+
+    '</div>';
+}
+function tlFlag(msg, type) {
+  return '<div class="tl-flag '+type+'">'+msg+'</div>';
+}
+
+function tlToggleFD(id){var b=document.getElementById(id);var t=b.previousElementSibling;b.classList.toggle('open');t.classList.toggle('open');}
+
+function tlGetPayload(row) {
+  return TL_PAYLOADS[row.id]||{message_type:row.type,time:{seconds:1780927000},sender_mac_id:'n/a',accountId:'83',truckId:'10000',truckName:'45689',pbversion:4,_note:'No payload for '+row.type+' \u003e '+row.sub};
+}
+
+/* ── Structured templates ── */
+function tlRenderConcreteStatus(row, p) {
+  if(!p.event||!p.event.concrete_status) return tlRenderGeneric(row);
+  var cs=p.event.concrete_status, ts=tlFmtDT(p.time.seconds);
+  var phase=TL_PHASES[cs.deliveryPhase]||cs.deliveryPhase, state=TL_STATES[cs.deliveryState]||cs.deliveryState;
+  var sOk=tlOk(cs.slumpMillimeters)&&cs.slumpMillimeters>0;
+  var sDisp=sOk?cs.slumpMillimeters.toFixed(0)+' mm ('+tlIn(cs.slumpMillimeters)+')':'—';
+  var rOk=tlOk(cs.drumSpeedRpm)&&cs.drumSpeedRpm>0;
+  var rDisp=rOk?cs.drumSpeedRpm.toFixed(1)+' RPM':'—';
+  var rInR=rOk&&cs.drumSpeedRpm>=cs.targetMinDrumSpeedRpm&&cs.drumSpeedRpm<=cs.targetMaxDrumSpeedRpm;
+  var cpOk=cs.chargePressurePascals>=cs.chargePressureMin&&cs.chargePressurePascals<=cs.chargePressureMax;
+  var dpOk=cs.dischargePressurePascals>=cs.dischargePressureMin&&cs.dischargePressurePascals<=cs.dischargePressureMax;
+  var flags=[];
+  if(cs.probBadMagnet===1) flags.push(tlFlag('Bad magnet probability high — drum speed may be unreliable','warn'));
+  if(!cpOk) flags.push(tlFlag('Charge pressure out of range ('+tlKpa(cs.chargePressureMin)+' – '+tlKpa(cs.chargePressureMax)+')','alarm'));
+  if(!dpOk) flags.push(tlFlag('Discharge pressure out of range ('+tlKpa(cs.dischargePressureMin)+' – '+tlKpa(cs.dischargePressureMax)+')','alarm'));
+  if(cs.estimatedBuildupPounds>1500) flags.push(tlFlag('Estimated buildup: '+cs.estimatedBuildupPounds.toFixed(0)+' lbs','warn'));
+  var h='<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:#3069e3;"></span><span class="tl-chip-label">Concrete Status</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+  h+=flags.join('');
+  h+='<div class="tl-section-group"><div class="tl-section-hdr">Key signals</div><div class="tl-card-stack">';
+  h+=tlCard({label:'Delivery phase',value:phase,dot:cs.deliveryPhase==='PHASE_ON_SITE'?'#2ecf1d':'#3069e3'});
+  h+=tlCard({label:'Delivery state',value:state,dot:cs.active_load?'#2ecf1d':'#3069e3'});
+  h+=tlCard({label:'Slump reading',value:sDisp,vcls:sOk?'':'val-muted',dot:sOk?'#2ecf1d':'#ffba0d',detail:sOk?[['Target',tlOk(cs.targetSlumpMillimeters)?cs.targetSlumpMillimeters+' mm':'—'],['Standard',tlOk(cs.standardSlumpMm)&&cs.standardSlumpMm>0?cs.standardSlumpMm.toFixed(0)+' mm':'—'],['3-stage',tlOk(cs.threeStageSlumpMm)&&cs.threeStageSlumpMm>0?cs.threeStageSlumpMm.toFixed(0)+' mm':'—'],['Stable',cs.slumpIsStable?'Yes':'No']]:[['Reason',TL_SLUMP[cs.slumpReason]||cs.slumpReason]]});
+  h+=tlCard({label:'Drum speed',value:rDisp,vcls:rOk?(!rInR?'val-warn':''):'',dot:rOk?(rInR?'#2ecf1d':'#ffba0d'):'',detail:rOk?[['Target range',cs.targetMinDrumSpeedRpm+' – '+cs.targetMaxDrumSpeedRpm+' RPM'],['In range',rInR?'Yes':'No',rInR?'':'val-warn']]:[['Target',cs.targetMinDrumSpeedRpm+' – '+cs.targetMaxDrumSpeedRpm+' RPM']]});
+  h+=tlCard({label:'Charge pressure',value:tlKpa(cs.chargePressurePascals),vcls:cpOk?'':'val-alarm',dot:cpOk?'#2ecf1d':'#d70100',detail:[['Expected',tlKpa(cs.chargePressureMin)+' – '+tlKpa(cs.chargePressureMax)],['In range',cpOk?'Yes':'No',cpOk?'':'val-alarm']]});
+  h+=tlCard({label:'Discharge pressure',value:tlKpa(cs.dischargePressurePascals),vcls:dpOk?'':'val-alarm',dot:dpOk?'#2ecf1d':'#d70100',detail:[['Expected',tlKpa(cs.dischargePressureMin)+' – '+tlKpa(cs.dischargePressureMax)],['In range',dpOk?'Yes':'No',dpOk?'':'val-alarm']]});
+  h+=tlCard({label:'Total water added',dot:'#3069e3',value:cs.totalWaterAddedLiters.toFixed(1)+' L',detail:[['Per m³',cs.totalWaterAddedLitersPerCubicMeter.toFixed(2)+' L/m³'],['Admix',cs.totalAdmixAddedMilliliters>0?cs.totalAdmixAddedMilliliters.toFixed(0)+' mL':'None']]});
+  h+='</div></div>';
+  return h;
+}
+
+function tlRenderFluidAdd(row, p) {
+  if(!p.event||!p.event.fluid_add) return tlRenderGeneric(row);
+  var fa=p.event.fluid_add, ts=tlFmtDT(p.time.seconds);
+  var isS=fa.fluidAddEvent==='STEALTH_WATER_DETECTED';
+  var flowOk=tlOk(fa.fluidFlowRateMillilitersPerSecond)&&fa.fluidFlowRateMillilitersPerSecond>0;
+  var h='<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:'+(isS?'#d70100':'#3069e3')+';"></span><span class="tl-chip-label">Fluid Add</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+  if(isS) h+=tlFlag('Stealth water detected — water added without being requested','alarm');
+  if(fa.maxFluidReached) h+=tlFlag('Maximum fluid limit was reached','warn');
+  h+='<div class="tl-section-group"><div class="tl-section-hdr">Key signals</div><div class="tl-card-stack">';
+  h+=tlCard({label:'Event type',value:TL_FLUID[fa.fluidAddEvent]||fa.fluidAddEvent,vcls:isS?'val-alarm':'',dot:isS?'#d70100':'#2ecf1d'});
+  h+=tlCard({label:'Water added',value:fa.waterAddedLiters.toFixed(2)+' L',detail:[['Per m³',fa.waterAddedLitersPerCubicMeter.toFixed(3)+' L/m³']]});
+  h+=tlCard({label:'Admix added',value:fa.admixAddedMilliliters>0?fa.admixAddedMilliliters.toFixed(0)+' mL':'None'});
+  h+=tlCard({label:'Flow rate',value:flowOk?fa.fluidFlowRateMillilitersPerSecond.toFixed(1)+' mL/s':'—',vcls:flowOk?'':'val-muted',dot:flowOk?'#2ecf1d':''});
+  h+='</div></div>';
+  return h;
+}
+
+function tlRenderBackend(row, p) {
+  if(!p.backend_request) return tlRenderGeneric(row);
+  var br=p.backend_request, ts=tlFmtDT(p.time.seconds);
+  var locOk=br.location&&br.location.status==='VALID';
+  var h='<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:#3069e3;"></span><span class="tl-chip-label">Backend Request</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+  h+=tlFlag('System housekeeping message. No action required.','info');
+  h+='<div class="tl-section-group"><div class="tl-section-hdr">Key signals</div><div class="tl-card-stack">';
+  h+=tlCard({label:'Request type',value:br.requestType.replace(/_/g,' ').toLowerCase().replace(/\b\w/g,function(c){return c.toUpperCase();}),dot:'#3069e3'});
+  h+=tlCard({label:'GPS at request',value:locOk?'Valid fix':'No fix',vcls:locOk?'':'val-warn',dot:locOk?'#2ecf1d':'#ffba0d',detail:locOk?[['Lat',br.location.latitude.toFixed(6)],['Lng',br.location.longitude.toFixed(6)]]:[]});
+  h+='</div></div>';
+  return h;
+}
+
+function tlRenderDeviceBinding(row, p) {
+  if(!p.device_binding) return tlRenderGeneric(row);
+  var db=p.device_binding, ts=tlFmtDT(p.time.seconds);
+  var sq=tlSigQ(db.signalStrength), isBound=db.bindingType==='Bound';
+  var h='<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:#3069e3;"></span><span class="tl-chip-label">Device Binding</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+  if(!isBound) h+=tlFlag(db.deviceType+' detected nearby but not yet bound to this truck','info');
+  h+='<div class="tl-section-group"><div class="tl-section-hdr">Key signals</div><div class="tl-card-stack">';
+  h+=tlCard({label:'Device',value:db.deviceType,dot:'#3069e3'});
+  h+=tlCard({label:'Binding status',value:isBound?'Bound':'Detected nearby (not bound)',vcls:isBound?'':'val-warn',dot:isBound?'#2ecf1d':'#ffba0d'});
+  h+=tlCard({label:'Signal strength',value:sq.l+' ('+db.signalStrength+' dBm)',vcls:sq.c,detail:[['Raw dBm',db.signalStrength],['Quality',sq.l,sq.c]]});
+  h+=tlCard({label:'MAC ID',value:db.macId,mono:true});
+  h+='</div></div>';
+  return h;
+}
+
+function tlRenderWireless(row, p) {
+  if(!p.wireless_drum_binding) return tlRenderGeneric(row);
+  var wb=p.wireless_drum_binding, ts=tlFmtDT(p.time.seconds);
+  var isU=wb.wirelessDrumBindingType==='UnboundTC3Notification';
+  var h='<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:'+(isU?'#ffba0d':'#2ecf1d')+';"></span><span class="tl-chip-label">Wireless Drum Binding</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+  h+=isU?tlFlag('Wireless drum not bound to TCG. Physical inspection may be required.','warn'):tlFlag('Wireless drum successfully bound to TCG.','info');
+  h+='<div class="tl-section-group"><div class="tl-section-hdr">Key signals</div><div class="tl-card-stack">';
+  h+=tlCard({label:'Binding status',value:isU?'Unbound from TCG':'Bound to TCG',vcls:isU?'val-warn':'',dot:isU?'#ffba0d':'#2ecf1d'});
+  if(isU) h+=tlCard({label:'Action needed',value:'Check drum sensor and TCG pairing',vcls:'val-warn'});
+  h+='</div></div>';
+  return h;
+}
+
+function tlRenderTicketReceived(row, p) {
+  if(!p.event||!p.event.ticket_received) return tlRenderGeneric(row);
+  var ts  = tlFmtDT(p.time.seconds);
+  var tr  = p.event.ticket_received.receivedTicket;
+
+  // Slump conversion helpers
+  function mmToIn(mm) { return (mm / 25.4).toFixed(1); }
+  function slumpDisp(mm) {
+    if(!tlOk(mm)||mm<0) return '—';
+    return mm + ' mm / ' + mmToIn(mm) + '"';
+  }
+
+  var targetSlump  = slumpDisp(tr.dischargeSlumpMillimeters);
+  var slumpOk      = tlOk(tr.dischargeSlumpMillimeters) && tr.dischargeSlumpMillimeters > 0;
+  var loadSize     = tlOk(tr.loadSizeCubicMeters) ? tr.loadSizeCubicMeters.toFixed(2) + ' m³' : '—';
+  var maxWater     = tlOk(tr.maxWaterLitersPerCubicMeter) ? tr.maxWaterLitersPerCubicMeter.toFixed(2) + ' L/m³' : '—';
+  var autoWater    = tr.autoAddWater ? 'Enabled' : 'Disabled';
+  var autoWaterDot = tr.autoAddWater ? '#2ecf1d' : '#ffba0d';
+  var job          = tr.jobName || '—';
+  var customer     = tr.customerName || '—';
+  var ticketNum    = tr.displayTicketNumber || '—';
+  var instruction  = tr.verifiInstructionName || '—';
+
+  var h = '';
+  h += '<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:#2ecf1d;"></span><span class="tl-chip-label">Ticket Received</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+
+  h += '<div class="tl-section-group"><div class="tl-section-hdr">Key signals</div><div class="tl-card-stack">';
+
+  h += tlCard({
+    label:'Ticket',
+    value:ticketNum,
+    dot:'#3069e3',
+    mono:true,
+    detail:[
+      ['Order',        tr.orderNumber||'—'],
+      ['Account',      tr.accountName||'—'],
+      ['Plant',        tr.plantName+' — '+tr.locationName],
+      ['Driver',       tr.driverCode||'—'],
+    ]
+  });
+
+  h += tlCard({
+    label:'Job',
+    value:job,
+    dot:'#3069e3',
+    detail:[
+      ['Customer',     customer],
+      ['Address',      tr.customerAddress||'—'],
+      ['Mix code',     tr.mixCodeName||'—'],
+    ]
+  });
+
+  h += tlCard({
+    label:'Load size',
+    value:loadSize,
+    dot:'#2ecf1d',
+    detail:[
+      ['Target slump', targetSlump],
+      ['Min discharge',slumpDisp(tr.minDischargeSlumpMillimeters)],
+      ['Max discharge',slumpDisp(tr.maxDischargeSlumpMillimeters)],
+      ['Mix revs after load', tr.mixRevsAfterLoading||'—'],
+    ]
+  });
+
+  h += tlCard({
+    label:'Auto-add water',
+    value:autoWater,
+    dot:autoWaterDot,
+    detail:[
+      ['Max water',      maxWater],
+      ['Beyond max',     tr.allowWaterBeyondMax?'Allowed':'Not allowed'],
+      ['Driver adds on site', tr.allowDriverWaterAddsOnSite?'Allowed':'Not allowed'],
+      ['Instruction',    instruction],
+    ]
+  });
+
+  h += '</div></div>';
+  return h;
+}
+
+function tlRenderDriverAction(row, p) {
+  if(!p.event||!p.event.driver_action) return tlRenderGeneric(row);
+  var da=p.event.driver_action, ts=tlFmtDT(p.time.seconds);
+  var locOk=p.event.location&&p.event.location.status==='VALID';
+
+  // Translate action enum to plain English
+  var TL_DRIVER_ACTIONS = {
+    'DRIVER_REQUESTED_WATER':  'Driver requested water',
+    'DRIVER_REQUESTED_ADMIX':  'Driver requested admix',
+    'DRIVER_CANCEL_WATER':     'Driver cancelled water request',
+    'DRIVER_CANCEL_ADMIX':     'Driver cancelled admix request',
+    'DRIVER_CONFIRMED_EMPTY':  'Driver confirmed truck empty',
+    'DRIVER_STARTED_DISCHARGE':'Driver started discharge',
+  };
+  var actionLabel = TL_DRIVER_ACTIONS[da.action] || da.action.replace(/_/g,' ').toLowerCase().replace(/\b\w/g,function(c){return c.toUpperCase();});
+
+  // parameterRaw is likely mL of water requested — convert to L
+  var paramLabel = '';
+  if(da.action.indexOf('WATER') !== -1 && da.parameterRaw > 0) {
+    paramLabel = (da.parameterRaw / 1000).toFixed(2) + ' L requested';
+  } else if(da.parameterRaw > 0) {
+    paramLabel = da.parameterRaw + ' (raw)';
+  }
+
+  var isWater = da.action.indexOf('WATER') !== -1;
+  var chipDot  = isWater ? '#3069e3' : '#3069e3';
+
+  var h = '';
+  h += '<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:'+chipDot+';"></span><span class="tl-chip-label">Driver Action</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+
+  h += '<div class="tl-section-group"><div class="tl-section-hdr">Key signals</div><div class="tl-card-stack">';
+  h += tlCard({label:'Action', value:actionLabel, dot:'#3069e3'});
+  if(paramLabel) {
+    h += tlCard({label:'Amount', value:paramLabel, dot:'#3069e3'});
+  }
+  h += tlCard({
+    label:'Truck location',
+    value: locOk ? 'Valid fix' : 'No fix',
+    dot:   locOk ? '#2ecf1d' : '#ffba0d',
+    vcls:  locOk ? '' : 'val-warn',
+    detail: locOk ? [
+      ['Lat', p.event.location.latitude.toFixed(6)],
+      ['Lng', p.event.location.longitude.toFixed(6)],
+    ] : []
+  });
+  h += '</div></div>';
+  return h;
+}
+
+function tlRenderSystemStatusReal(row, p) {
+  if(!p.event||!p.event.system_status) return tlRenderGeneric(row);
+  var ss = p.event.system_status;
+  var ts = tlFmtDT(p.time.seconds);
+
+  // Map of component key → display name + how to get a reading value
+  var COMP_MAP = [
+    { key:'wirelessDrum',     label:'Wireless Drum',      reading: function(c){ return c.batteryVoltage ? c.batteryVoltage.toFixed(2)+'V' : 'Active'; } },
+    { key:'iox',              label:'IOX',                reading: function(){ return 'Active'; } },
+    { key:'inCabDisplay',     label:'In-Cab Display',     reading: function(c){ return c.version ? 'v'+c.version : 'Active'; } },
+    { key:'externalDisplay',  label:'External Display',   reading: function(c){ return c.version ? 'v'+c.version : 'Active'; } },
+    { key:'vnextSensorBoard', label:'Sensor Board',       reading: function(c){ return c.version ? 'v'+c.version : 'Active'; } },
+    { key:'vnextWaterBoard',  label:'Water Board',        reading: function(c){ return c.version ? 'v'+c.version : 'Active'; } },
+    { key:'pressureCharge',   label:'Charge Pressure',    reading: function(){ var d=ss.vnextSensorBoardDevices; return d&&d.pressureCharge ? tlKpa(d.pressureCharge.pressurePascal) : 'Connected'; } },
+    { key:'pressureDischarge',label:'Discharge Pressure', reading: function(){ var d=ss.vnextSensorBoardDevices; return d&&d.pressureDischarge ? tlKpa(d.pressureDischarge.pressurePascal) : 'Connected'; } },
+    { key:'cwr',              label:'CWR',                reading: function(c){ return c.temperatureCelsius !== undefined ? c.temperatureCelsius+'° C' : 'Active'; } },
+    { key:'kzValveVnextAir',  label:'Air Valve',          reading: function(c){ return c.valveReportedPositionDegrees !== undefined ? c.valveReportedPositionDegrees+'°' : 'Active'; } },
+    { key:'kzValveVnextTemperateWaterMain', label:'Water Valve', reading: function(c){ return c.valveReportedPositionDegrees !== undefined ? c.valveReportedPositionDegrees+'°' : 'Active'; } },
+    { key:'wiredDrum',        label:'Wired Drum',         reading: function(){ return '—'; } },
+    { key:'powerModule',      label:'Power Module',       reading: function(){ return '—'; } },
+    { key:'jacketHeater',     label:'Jacket Heater',      reading: function(){ return '—'; } },
+    { key:'fdmHeater',        label:'FDM Heater',         reading: function(){ return '—'; } },
+    { key:'vnextAdmixBoard',  label:'Admix Board',        reading: function(){ return '—'; } },
+    { key:'roboteq',          label:'Roboteq',            reading: function(){ return '—'; } },
+  ];
+
+  var online = [], offline = [];
+  COMP_MAP.forEach(function(cm) {
+    var comp = ss[cm.key];
+    if(!comp) return;
+    if(comp.alive) {
+      online.push({ label: cm.label, reading: cm.reading(comp), lastSeen: comp.lastContactSeconds ? new Date(comp.lastContactSeconds*1000).toISOString().substr(11,8) : '—', errors: comp.errorMessageCount || 0 });
+    } else {
+      offline.push(cm.label);
+    }
+  });
+
+  // Status flags
+  var flags = [];
+  if(!ss.ignition)    flags.push('Ignition off');
+  if(!ss.sensorPower) flags.push('Sensor power off');
+  if(ss.ghostMode)    flags.push('Ghost mode active');
+  if(ss.offMode)      flags.push('Off mode active');
+
+  var totalErrors = online.reduce(function(sum, c){ return sum + c.errors; }, 0);
+  if(totalErrors > 0) flags.push(totalErrors + ' component error' + (totalErrors > 1 ? 's' : '') + ' active');
+  var flagType = flags.length ? 'warn' : 'info';
+  var summaryMsg = flags.length
+    ? flags.join(' — ')
+    : online.length + ' of ' + (online.length+offline.length) + ' components online — '
+      + (ss.operatingMode ? ss.operatingMode.mode : '') + ' / ' + (ss.operatingMode ? ss.operatingMode.localMode : '');
+
+  var h = '';
+  h += '<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:#3069e3;"></span><span class="tl-chip-label">System Status</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+  h += tlFlag(summaryMsg, flagType);
+
+  // Unified component table
+  h += '<div class="tl-section-group">';
+  h += '<div class="tl-section-hdr">Components ('+online.length+' online, '+offline.length+' no contact)</div>';
+  h += '<div class="tl-comp-table">';
+  h += '<div class="tl-comp-thead"><span style="flex:1;">Component</span><span style="width:68px;flex-shrink:0;text-align:right;">Last seen</span><span style="width:44px;flex-shrink:0;text-align:center;">Errors</span><span style="width:80px;flex-shrink:0;text-align:right;">Reading</span></div>';
+
+  online.forEach(function(c, i) {
+    var dotH = c.errors > 0
+      ? '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="flex-shrink:0;margin-right:2px;" xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="5" fill="#d70100" fill-opacity="0.12"/><path d="M3 3L7 7M7 3L3 7" stroke="#d70100" stroke-width="1.4" stroke-linecap="round"/></svg>'
+      : '<span class="tl-card-dot" style="background:#2ecf1d;flex-shrink:0;"></span>';
+    h += '<div class="tl-comp-row'+(i%2===1?' alt':'')+'">';
+    h += '<span class="tl-comp-name">'+dotH+tlEsc(c.label)+'</span>';
+    h += '<span class="tl-comp-seen">'+tlEsc(c.lastSeen)+'</span>';
+    var errH = c.errors > 0
+      ? '<button class="tl-err-link" onclick="tlDrillErrors(\''+c.label+'\')">' + c.errors + '</button>'
+      : '0';
+    h += '<span class="tl-comp-errors '+(c.errors>0?'has-errors':'no-errors')+'">'+errH+'</span>';
+    h += '<span class="tl-comp-status" style="color:var(--strong);font-weight:500;">'+tlEsc(c.reading)+'</span>';
+    h += '</div>';
+  });
+  offline.forEach(function(name, i) {
+    var alt = (online.length + i) % 2 === 1;
+    h += '<div class="tl-comp-row'+(alt?' alt':'')+'">';
+    h += '<span class="tl-comp-name"><span class="tl-card-dot" style="background:rgba(54,50,45,0.18);flex-shrink:0;"></span>'+tlEsc(name)+'</span>';
+    h += '<span class="tl-comp-seen" style="color:rgba(54,50,45,0.25);">—</span>';
+    h += '<span class="tl-comp-errors no-errors" style="color:rgba(54,50,45,0.25);">—</span>';
+    h += '<span class="tl-comp-status no-contact">No Contact</span>';
+    h += '</div>';
+  });
+  h += '</div></div>';
+  return h;
+}
+
+function tlRenderTruckHealth(row, p) {
+  if(!p.event||!p.event.truck_health) return tlRenderGeneric(row);
+  var th = p.event.truck_health;
+  var ts = tlFmtDT(p.time.seconds);
+  var locOk = p.event.location && p.event.location.status === 'VALID';
+
+  // TruckHealth events are behavioral pattern detections, not hardware faults.
+  // Translate eventType to plain English + explain what it means for the FST.
+  var TL_TRUCK_HEALTH_EVENTS = {
+    'RPM_DECREASE_SLUMP_INCREASE': {
+      label:   'RPM decrease, slump increase',
+      meaning: 'Drum slowed while slump rose — possible buildup, over-wet mix, or sensor issue.',
+      sev:     'warn',
+    },
+    'RPM_INCREASE_SLUMP_DECREASE': {
+      label:   'RPM increase, slump decrease',
+      meaning: 'Drum sped up while slump dropped — mix may be stiffening faster than expected.',
+      sev:     'warn',
+    },
+    'SLUMP_OUT_OF_RANGE': {
+      label:   'Slump out of range',
+      meaning: 'Slump reading outside acceptable limits for this load.',
+      sev:     'alarm',
+    },
+    'DRUM_NOT_RESPONDING': {
+      label:   'Drum not responding',
+      meaning: 'No drum speed signal detected. Check WDS connection and magnet alignment.',
+      sev:     'alarm',
+    },
+    'PRESSURE_ANOMALY': {
+      label:   'Pressure anomaly',
+      meaning: 'Charge or discharge pressure reading outside expected range.',
+      sev:     'warn',
+    },
+    'CAN_BUS_ERROR': {
+      label:   'CAN bus error',
+      meaning: 'Communication error on the CAN bus. May affect multiple components.',
+      sev:     'alarm',
+    },
+  };
+
+  var def    = TL_TRUCK_HEALTH_EVENTS[th.eventType] || {
+    label:   th.eventType.replace(/_/g,' ').toLowerCase().replace(/\w/g,function(c){return c.toUpperCase();}),
+    meaning: 'Behavioral pattern detected. Review recent ConcreteStatus and sensor readings.',
+    sev:     'warn',
+  };
+  var isAlarm = def.sev === 'alarm';
+  var chipDot = isAlarm ? '#d70100' : '#ffba0d';
+
+  var h = '';
+  h += '<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:'+chipDot+';"></span><span class="tl-chip-label">Truck Health</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+  h += tlFlag(def.meaning, def.sev === 'alarm' ? 'alarm' : 'warn');
+
+  h += '<div class="tl-section-group"><div class="tl-section-hdr">Key signals</div><div class="tl-card-stack">';
+
+  h += tlCard({
+    label: 'Pattern detected',
+    value: def.label,
+    dot:   chipDot,
+    vcls:  isAlarm ? 'val-alarm' : 'val-warn',
+  });
+
+  h += tlCard({
+    label: 'Truck location',
+    value: locOk ? 'Valid fix' : 'No fix',
+    dot:   locOk ? '#2ecf1d' : '#ffba0d',
+    vcls:  locOk ? '' : 'val-warn',
+    detail: locOk ? [
+      ['Lat', p.event.location.latitude.toFixed(6)],
+      ['Lng', p.event.location.longitude.toFixed(6)],
+    ] : []
+  });
+
+  h += '</div></div>';
+  return h;
+}
+
+function tlRenderFluidError(row, p) {
+  if(!p.event||!p.event.fluid_error) return tlRenderGeneric(row);
+  var fe = p.event.fluid_error;
+  var ts = tlFmtDT(p.time.seconds);
+  var locOk = p.event.location && p.event.location.status === 'VALID';
+
+  // Translate error codes to plain English
+  var TL_FLUID_ERRORS = {
+    'FDM_ERROR':          'FDM hardware failure',
+    'FLOW_TOO_LOW':       'Flow rate too low',
+    'FLOW_TOO_HIGH':      'Flow rate too high',
+    'VALVE_STUCK_OPEN':   'Valve stuck open',
+    'VALVE_STUCK_CLOSED': 'Valve stuck closed',
+    'TIMEOUT':            'Fluid add timed out',
+    'TANK_EMPTY':         'Tank empty',
+  };
+  var TL_FLUID_NAMES = {
+    'WATER': 'Water', 'ADMIX': 'Admix', 'AIR': 'Air',
+  };
+
+  var errorLabel = TL_FLUID_ERRORS[fe.error] || fe.error.replace(/_/g,' ').toLowerCase().replace(/\w/g,function(c){return c.toUpperCase();});
+  var fluidLabel = TL_FLUID_NAMES[fe.fluid] || fe.fluid;
+
+  var h = '';
+  h += '<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:#d70100;"></span><span class="tl-chip-label">Fluid Error</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+  h += tlFlag(fluidLabel+' add failed — '+errorLabel+'. Check FDM wiring and valve.', 'alarm');
+
+  h += '<div class="tl-section-group"><div class="tl-section-hdr">Key signals</div><div class="tl-card-stack">';
+
+  h += tlCard({
+    label: 'Error',
+    value: errorLabel,
+    dot:   '#d70100',
+    vcls:  'val-alarm',
+  });
+
+  h += tlCard({
+    label: 'Fluid affected',
+    value: fluidLabel,
+    dot:   '#d70100',
+  });
+
+  h += tlCard({
+    label: 'Truck location',
+    value: locOk ? 'Valid fix' : 'No fix',
+    dot:   locOk ? '#2ecf1d' : '#ffba0d',
+    vcls:  locOk ? '' : 'val-warn',
+    detail: locOk ? [
+      ['Lat', p.event.location.latitude.toFixed(6)],
+      ['Lng', p.event.location.longitude.toFixed(6)],
+    ] : []
+  });
+
+  h += '</div></div>';
+  return h;
+}
+
+function tlRenderIdentity(row, p) {
+  if(!p.identity) return tlRenderGeneric(row);
+  var id = p.identity;
+  var ts = tlFmtDT(p.time.seconds);
+
+  var commissioned   = id.commissioned === true;
+  var drumBound      = id.wirelessDrumSensorBound === true;
+  var commDot        = commissioned ? '#2ecf1d' : '#d70100';
+  var commVal        = commissioned ? 'Yes' : 'No';
+  var commVcls       = commissioned ? '' : 'val-alarm';
+  var drumDot        = drumBound ? '#2ecf1d' : '#ffba0d';
+  var drumVal        = drumBound ? 'Bound' : 'Not bound';
+  var drumVcls       = drumBound ? '' : 'val-warn';
+
+  var h = '';
+  h += '<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:#3069e3;"></span><span class="tl-chip-label">Identity</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+
+  if (!commissioned) {
+    h += tlFlag('TCG is not commissioned — unit will not report data until commissioned.', 'warn');
+  }
+
+  h += '<div class="tl-section-group"><div class="tl-section-hdr">Key signals</div><div class="tl-card-stack">';
+
+  h += tlCard({
+    label: 'Device',
+    value: (id.deviceType||'—'),
+    dot: '#3069e3',
+    detail: [
+      ['Serial',        id.serialNo||'—'],
+      ['MAC ID',        id.macId||'—'],
+      ['Variant',       id.deviceVariant||'—'],
+    ]
+  });
+
+  h += tlCard({
+    label: 'Software version',
+    value: (id.version||'—'),
+    dot: '#3069e3',
+    mono: true,
+    detail: [
+      ['BSP version',   id.bspVersion||'—'],
+      ['Protocol',      'v'+p.pbversion],
+    ]
+  });
+
+  h += tlCard({
+    label: 'Commissioned',
+    value: commVal,
+    dot: commDot,
+    vcls: commVcls,
+  });
+
+  h += tlCard({
+    label: 'Wireless drum sensor',
+    value: drumVal,
+    dot: drumDot,
+    vcls: drumVcls,
+    detail: drumBound ? [
+      ['Drum MAC ID', id.wirelessDrumSensorMacId||'—'],
+    ] : []
+  });
+
+  h += '</div></div>';
+  return h;
+}
+
+function tlRenderGeneric(row) {
+  var p   = tlGetPayload(row);
+  var ts  = tlFmtDT(p.time ? p.time.seconds : 0);
+
+  // Extract top-level keys from the payload to give devs a field list to work from
+  var payloadKeys = Object.keys(p).filter(function(k) {
+    return ['message_type','time','sender_mac_id','accountId','truckId','truckName','pbversion','_note'].indexOf(k) === -1;
+  });
+  // Drill into the event sub-object if present
+  var eventKeys = [];
+  if (p.event) {
+    eventKeys = Object.keys(p.event).filter(function(k) { return k !== 'event_type'; });
+    // If there's a typed sub-object (driver_action, fluid_add, etc.) drill one more level
+    eventKeys.forEach(function(k) {
+      if (typeof p.event[k] === 'object' && p.event[k] !== null && !Array.isArray(p.event[k])) {
+        Object.keys(p.event[k]).forEach(function(sub) {
+          eventKeys.push(k + '.' + sub);
+        });
+      }
+    });
+  }
+  var allKeys = payloadKeys.concat(eventKeys);
+
+  var h = '';
+
+  // Chip — same as every other template
+  h += '<div class="tl-chip">';
+  h += '<div class="tl-chip-left"><span class="tl-chip-dot" style="background:#3069e3;"></span><span class="tl-chip-label">'+tlEsc(row.sub)+'</span></div>';
+  h += '<span class="tl-chip-time">'+tlEsc(ts)+'</span>';
+  h += '</div>';
+
+  // Dev contract notice — styled differently from a warning, more like a spec annotation
+  h += '<div style="background:rgba(48,105,227,0.06);border:1px dashed rgba(48,105,227,0.3);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;">';
+  h += '<div style="font-size:12px;font-weight:600;color:#2355c4;letter-spacing:0.3px;text-transform:uppercase;">Template needed — '+tlEsc(row.type)+' › '+tlEsc(row.sub)+'</div>';
+  h += '<div style="font-size:13px;color:var(--defined);letter-spacing:-0.26px;line-height:1.5;">Pick 2–4 key signals from the fields below. Each becomes a card with a label, value, status dot, and optional expand rows.</div>';
+  h += '</div>';
+
+  // Field list — shows devs exactly what's available in the payload
+  if(allKeys.length > 0) {
+    h += '<div class="tl-section-group">';
+    h += '<div class="tl-section-hdr">Available fields</div>';
+    h += '<div class="tl-comp-table">';
+    h += '<div class="tl-comp-thead"><span style="flex:1;">Field</span><span style="flex:1;text-align:right;">Sample value</span></div>';
+    allKeys.forEach(function(key, i) {
+      // Resolve nested value
+      var val = p;
+      key.split('.').forEach(function(part) {
+        val = val && typeof val === 'object' ? (val[part] !== undefined ? val[part] : val.event ? val.event[part] : '—') : '—';
+      });
+      if (typeof val === 'object') val = JSON.stringify(val);
+      var muted = !tlOk(val) || val === '—' || val === null;
+      h += '<div class="tl-comp-row'+(i%2===1?' alt':'')+'" style="min-height:36px;">';
+      h += '<span style="flex:1;font-family:var(--font-mono);font-size:12px;color:var(--soft);">'+tlEsc(key)+'</span>';
+      h += '<span style="flex:1;text-align:right;font-size:13px;'+(muted?'color:var(--subtle);font-style:italic;':'color:var(--strong);font-weight:500;')+'">'+tlEsc(muted?'—':String(val))+'</span>';
+      h += '</div>';
+    });
+    h += '</div></div>';
+  } else {
+    // No payload captured yet — show the skeleton with question marks
+    h += '<div class="tl-section-group">';
+    h += '<div class="tl-section-hdr">Key signals — to be defined</div>';
+    h += '<div class="tl-card-stack">';
+    h += tlCard({label:'Signal 1', value:'?', dot:'rgba(54,50,45,0.2)'});
+    h += tlCard({label:'Signal 2', value:'?', dot:'rgba(54,50,45,0.2)'});
+    h += tlCard({label:'Signal 3', value:'?', dot:'rgba(54,50,45,0.2)'});
+    h += '</div></div>';
+  }
+
+  return h;
+}
+
+/* ── SystemStatus template — matches Figma node 3472:20202 ── */
+var TL_ONLINE_COMPONENTS = [
+  { name:'Wireless Drum',     value:'3.54V',    dot:'#2ecf1d', detail:[['Last Seen:','13:49:59'],['Start Up Count:','1'],['Error Count:','0']] },
+  { name:'IOX',               value:'12.92 V',  dot:'#2ecf1d', detail:[['Last Seen:','13:49:58'],['Start Up Count:','1'],['Error Count:','0']] },
+  { name:'In-Cab Display',    value:'Active',   dot:'#2ecf1d', detail:[['Last Seen:','13:49:57'],['Start Up Count:','1'],['Error Count:','0']] },
+  { name:'External Display',  value:'Active',   dot:'#2ecf1d', detail:[['Last Seen:','13:49:57'],['Start Up Count:','1'],['Error Count:','0']] },
+  { name:'Bus Power',         value:'12.76V',   dot:'#2ecf1d', detail:[['Last Seen:','13:49:59'],['Start Up Count:','1'],['Error Count:','0']] },
+  { name:'Discharge Pressure',value:'Connected',dot:'#2ecf1d', detail:[['Last Seen:','13:49:56'],['Start Up Count:','1'],['Error Count:','0']] },
+  { name:'Charge Pressure',   value:'Connected',dot:'#2ecf1d', detail:[['Last Seen:','13:49:56'],['Start Up Count:','1'],['Error Count:','0']] },
+  { name:'CWR',               value:'45° C',    dot:'#2ecf1d', detail:[['Last Seen:','13:49:55'],['Start Up Count:','1'],['Error Count:','2']] },
+];
+var TL_OFFLINE_COMPONENTS = [
+  'Wired Drum','Roboteq','Power Module','FDM Heater','Jacket Heater',
+  'Admix Board','Sensor Board','Water Board','AWAS','Air V4','Air vNext','Water Main',
+];
+
+function tlRenderSystemStatus(row, ts, shutdownType) {
+  var online  = TL_ONLINE_COMPONENTS.length;
+  var offline = TL_OFFLINE_COMPONENTS.length;
+  var total   = online + offline;
+  var errored = TL_ONLINE_COMPONENTS.filter(function(c){ return c.detail && parseInt(c.detail[2][1]) > 0; }).length;
+  var isShutdown = row.sub === 'Shutdown';
+
+  // Shutdown type flag — only meaningful on StartUp (tells us how last session ended)
+  var shutdownFlagH = '';
+  if (!isShutdown && shutdownType) {
+    if (shutdownType === 'DIRTY') {
+      shutdownFlagH = tlFlag('Previous shutdown was unclean — power may have been cut unexpectedly. Previous session data may be incomplete.', 'warn');
+    } else if (shutdownType === 'CLEAN') {
+      shutdownFlagH = tlFlag('Previous shutdown was clean.', 'info');
+    }
+  }
+
+  // Component summary flag
+  var flagType, flagMsg;
+  if (errored > 0) {
+    flagType = 'warn';
+    flagMsg  = errored + ' component' + (errored > 1 ? 's' : '') + ' reporting errors — ' + online + ' of ' + total + ' online at ' + (isShutdown ? 'shutdown' : 'startup');
+  } else if (offline > 0) {
+    flagType = 'info';
+    flagMsg  = online + ' of ' + total + ' components online at ' + (isShutdown ? 'shutdown' : 'startup') + ' — ' + offline + ' no contact';
+  } else {
+    flagType = 'info';
+    flagMsg  = 'All ' + total + ' components online at ' + (isShutdown ? 'shutdown' : 'startup') + ' — no errors';
+  }
+
+  var h = '';
+  h += '<div class="tl-chip"><div class="tl-chip-left"><span class="tl-chip-dot" style="background:#3069e3;"></span><span class="tl-chip-label">'+(isShutdown ? 'Shutdown' : 'StartUp')+' Event</span></div><span class="tl-chip-time">'+tlEsc(ts)+'</span></div>';
+  h += shutdownFlagH;
+  h += tlFlag(flagMsg, flagType);
+
+  h += '<div class="tl-section-group">';
+  h += '<div class="tl-section-hdr">Components ('+TL_ONLINE_COMPONENTS.length+' online, '+TL_OFFLINE_COMPONENTS.length+' no contact)</div>';
+  h += '<div class="tl-comp-table">';
+
+  // Header
+  h += '<div class="tl-comp-thead">';
+  h += '<span style="flex:1;">Component</span>';
+  h += '<span style="width:68px;flex-shrink:0;text-align:right;">Last seen</span>';
+  h += '<span style="width:44px;flex-shrink:0;text-align:center;">Errors</span>';
+  h += '<span style="width:80px;flex-shrink:0;text-align:right;">Reading</span>';
+  h += '</div>';
+
+  // Online rows
+  TL_ONLINE_COMPONENTS.forEach(function(c, i) {
+    var lastSeen = c.detail ? c.detail[0][1] : '—';
+    var errors   = c.detail ? parseInt(c.detail[2][1]) : 0;
+    var errCls   = errors > 0 ? 'has-errors' : 'no-errors';
+    h += '<div class="tl-comp-row'+(i%2===1?' alt':'')+'">';
+    h += '<span class="tl-comp-name"><span class="tl-card-dot" style="background:'+c.dot+';flex-shrink:0;"></span>'+tlEsc(c.name)+'</span>';
+    h += '<span class="tl-comp-seen">'+tlEsc(lastSeen)+'</span>';
+    h += '<span class="tl-comp-errors '+errCls+'">';
+    if (errors > 0) {
+      h += '<button class="tl-err-link" onclick="tlDrillErrors(\''+tlEsc(c.name)+'\')">'+errors+'</button>';
+    } else {
+      h += '0';
+    }
+    h += '</span>';
+    h += '<span class="tl-comp-status" style="color:var(--strong);font-weight:500;">'+tlEsc(c.value)+'</span>';
+    h += '</div>';
+  });
+
+  // Offline rows
+  TL_OFFLINE_COMPONENTS.forEach(function(name, i) {
+    var alt = (TL_ONLINE_COMPONENTS.length + i) % 2 === 1;
+    h += '<div class="tl-comp-row'+(alt?' alt':'')+'">';
+    h += '<span class="tl-comp-name"><span class="tl-card-dot" style="background:rgba(54,50,45,0.18);flex-shrink:0;"></span>'+tlEsc(name)+'</span>';
+    h += '<span class="tl-comp-seen" style="color:rgba(54,50,45,0.25);">—</span>';
+    h += '<span class="tl-comp-errors no-errors" style="color:rgba(54,50,45,0.25);">—</span>';
+    h += '<span class="tl-comp-status no-contact">No Contact</span>';
+    h += '</div>';
+  });
+
+  h += '</div></div>';
+  return h;
+}
+
+function tlRenderStructured(row) {
+  var p = tlGetPayload(row);
+  var inner;
+  if (row.type==='Event' && row.sub==='SystemStatus' && p.event && p.event.system_status) {
+    inner = tlRenderSystemStatusReal(row, p);
+  } else if (row.type==='Event' && (row.sub==='StartUp'||row.sub==='Shutdown'||row.sub==='SystemStatus')) {
+    var shutdownType = p.event && p.event.startup ? p.event.startup.previousShutdownType
+                     : p.event && p.event.shutdown ? p.event.shutdown.shutdownType
+                     : null;
+    inner = tlRenderSystemStatus(row, tlFmtDT(p.time.seconds), shutdownType);
+  } else if (row.type==='Event' && row.sub==='TruckHealth')     { inner = tlRenderTruckHealth(row, p); }
+  else if (row.type==='Event' && row.sub==='FluidError')        { inner = tlRenderFluidError(row, p); }
+  else if (row.type==='Identity')                               { inner = tlRenderIdentity(row, p); }
+  else if (row.type==='Event' && row.sub==='TicketReceived')    { inner = tlRenderTicketReceived(row, p); }
+  else if (row.type==='Event' && row.sub==='DriverAction')      { inner = tlRenderDriverAction(row, p); }
+  else if (row.type==='Event' && row.sub==='ConcreteStatus')    { inner = tlRenderConcreteStatus(row, p); }
+  else if (row.type==='Event' && row.sub==='FluidAdd')          { inner = tlRenderFluidAdd(row, p); }
+  else if (row.type==='BackendRequest')                         { inner = tlRenderBackend(row, p); }
+  else if (row.type==='DeviceBinding')                          { inner = tlRenderDeviceBinding(row, p); }
+  else if (row.type==='WirelessDrumBinding')                    { inner = tlRenderWireless(row, p); }
+  else { inner = tlRenderGeneric(row); }
+  return '<div class="tl-detail-body">' + inner + '</div>';
+}
+
+/* ── Raw JSON ── */
+var tlRS={q:'',m:[],a:0};
+function tlHlJson(j){var e=j.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');return e.replace(/(\"(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*\"(\s*:)?|\b(true|false|null)\b|-?[\d.]+([eE][+-]?\d+)?)/g,function(m){var c='jn';if(/^"/.test(m))c=/:$/.test(m)?'jk':'js';else if(/true|false/.test(m))c='jb';else if(/null/.test(m))c='jnu';return'<span class="'+c+'">'+m+'</span>';});}
+function tlRenderRaw(row){tlRS={q:'',m:[],a:0};var j=JSON.stringify(tlGetPayload(row),null,2);return '<div class="tl-detail-body" style="flex:1;min-height:0;"><div class="tl-raw-wrap"><div class="tl-raw-search"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="rgba(54,50,45,0.5)" stroke-width="1.3"/><line x1="8.5" y1="8.5" x2="11.5" y2="11.5" stroke="rgba(54,50,45,0.5)" stroke-width="1.3" stroke-linecap="round"/></svg><input type="text" placeholder="Search JSON" autocomplete="off" oninput="tlRSUpdate(this.value)" onkeydown="tlRSKey(event)"><span class="tl-raw-count" id="tl-rc"></span><button class="tl-raw-nav" onclick="tlRSStep(-1)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 7.5L6 4.5L9 7.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="tl-raw-nav" onclick="tlRSStep(1)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div><div class="tl-raw-block" id="tl-rb">'+tlHlJson(j)+'</div></div></div>';}
+function tlRSUpdate(q){tlRS.q=q;tlRS.a=0;tlRSApply();}
+function tlRSApply(){var b=document.getElementById('tl-rb'),c=document.getElementById('tl-rc');if(!b||!c)return;b.querySelectorAll('mark.tl-hi').forEach(function(m){m.replaceWith(document.createTextNode(m.textContent));});b.normalize();var q=tlRS.q.toLowerCase();if(!q){tlRS.m=[];c.textContent='';return;}var w=document.createTreeWalker(b,NodeFilter.SHOW_TEXT);var ns=[];var n;while((n=w.nextNode()))ns.push(n);var ms=[];ns.forEach(function(tn){var t=tn.nodeValue,l=t.toLowerCase(),i=0,f,e=0,fr=document.createDocumentFragment();while((f=l.indexOf(q,i))!==-1){if(f>e)fr.appendChild(document.createTextNode(t.slice(e,f)));var m=document.createElement('mark');m.className='tl-hi';m.textContent=t.slice(f,f+q.length);fr.appendChild(m);ms.push(m);e=f+q.length;i=e;}if(e>0){if(e<t.length)fr.appendChild(document.createTextNode(t.slice(e)));tn.parentNode.replaceChild(fr,tn);}});tlRS.m=ms;if(!ms.length){c.textContent='No results';return;}if(tlRS.a>=ms.length)tlRS.a=0;tlRSHL();}
+function tlRSHL(){var ms=tlRS.m,a=tlRS.a,c=document.getElementById('tl-rc');ms.forEach(function(m,i){m.classList.toggle('active',i===a);});if(ms.length){c.textContent=(a+1)+' of '+ms.length;ms[a].scrollIntoView({block:'nearest',behavior:'smooth'});}}
+function tlRSStep(d){if(!tlRS.m.length)return;tlRS.a=(tlRS.a+d+tlRS.m.length)%tlRS.m.length;tlRSHL();}
+function tlRSKey(e){if(e.key==='Enter'){e.preventDefault();tlRSStep(e.shiftKey?-1:1);}else if(e.key==='Escape'){e.target.value='';tlRSUpdate('');}}
+
+
+/* tlToggleCard — shared expand/collapse for tl-card elements */
+function tlToggleCard(id) {
+  var c = document.getElementById(id);
+  if (c) c.classList.toggle('open');
+}
+
+/* ════════════════════════════════════════════════════════════════ */
+
 function renderDetailContent(tab) {
   const area = document.getElementById('detail-scroll');
+  if (!area) return;
   area.scrollTop = 0;
-  const isWds = logs[activeLogIdx] && logs[activeLogIdx].wds;
-
+  const row = TL_ROWS[activeLogIdx];
+  if (!row) return;
   if (tab === 'structured') {
-    if (isWds) {
-      area.innerHTML = `
-        <div class="det-section-label" style="margin-top:4px;">Online (6)</div>
-
-        ${[
-          ['IOX',               'g', '12.92 V'],
-          ['In-Cab Dsplay',     'g', 'Active' ],
-          ['External Display',  'g', 'Active' ],
-          ['Bus Power',         'g', '12.76V' ],
-          ['Discharge Pressure','g', 'Connected'],
-          ['CWR',               'g', '45° C'  ],
-        ].map(([n,c,v]) => `
-          <div class="comp-card">
-            <div class="comp-card-row">
-              <div class="comp-card-left"><div class="s-dot ${c}"></div><span class="comp-card-name">${n}</span></div>
-              <div class="comp-card-right">
-                <span class="comp-card-val">${v}</span>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </div>
-            </div>
-          </div>`).join('')}
-
-        <div class="det-section-label" style="margin-top:12px;">No Contact (5)</div>
-        <div class="nc-table">
-          <div class="nc-table-head">
-            <div class="nc-th">Components</div>
-            <div class="nc-th">Status</div>
-          </div>
-          <div class="nc-tr"><div class="nc-td" style="color:#d70100;font-weight:500;">WDS</div><div class="nc-td" style="color:#d70100;font-weight:500;">No Contact</div></div>
-          ${['Wired Drum','Roboteq','Power Module','FDM Heater'].map(n=>`
-            <div class="nc-tr"><div class="nc-td">${n}</div><div class="nc-td">No Contact</div></div>`).join('')}
-        </div>
-
-        <div class="caveat" style="margin-top:14px;">
-          <p>WDS lost contact on 03/23/2026 at 08:24 AM. Last battery voltage recorded was 2.4V. Check wiring and sensor connection before replacement.</p>
-        </div>`;
-      return;
-    }
-    area.innerHTML = `
-      <div class="det-section-label" style="margin-top:4px;">Online (7) - Expand All</div>
-
-      <div class="comp-card">
-        <div class="comp-card-row">
-          <div class="comp-card-left"><div class="s-dot g"></div><span class="comp-card-name">Wireless Drum</span></div>
-          <div class="comp-card-right">
-            <span class="comp-card-val">3.54V</span>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-        </div>
-        <div class="comp-card-details">
-          <div class="comp-detail-row"><span class="comp-detail-k">Last Seen:</span><span class="comp-detail-v">13:49:59</span></div>
-          <div class="comp-detail-row"><span class="comp-detail-k">Start Up Count:</span><span class="comp-detail-v">1</span></div>
-          <div class="comp-detail-row"><span class="comp-detail-k">Error Count:</span><span class="comp-detail-v">0</span></div>
-        </div>
-      </div>
-
-      ${[
-        ['IOX',               'g', '12.92 V'],
-        ['In-Cab Dsplay',     'g', 'Active' ],
-        ['External Display',  'g', 'Active' ],
-        ['Bus Power',         'g', '12.76V' ],
-        ['Discharge Pressure','g', 'Connected'],
-        ['Charge Pressure',   'g', 'Connected'],
-        ['CWR',               'g', '45° C'  ],
-      ].map(([n,c,v]) => `
-        <div class="comp-card">
-          <div class="comp-card-row">
-            <div class="comp-card-left"><div class="s-dot ${c}"></div><span class="comp-card-name">${n}</span></div>
-            <div class="comp-card-right">
-              <span class="comp-card-val">${v}</span>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#36322d9e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </div>
-          </div>
-        </div>`).join('')}
-
-      <div class="nc-table">
-        <div class="nc-table-head">
-          <div class="nc-th">Components</div>
-          <div class="nc-th">Status</div>
-        </div>
-        ${['Wired Drum','Roboteq','Power Module','FDM Heater','Jacket Heater','Admix Board'].map(n=>`
-          <div class="nc-tr"><div class="nc-td">${n}</div><div class="nc-td">No Contact</div></div>`).join('')}
-      </div>
-
-      <div class="caveat" style="margin-top:14px;">
-        <p>This snapshot reflects truck state at the moment this event was recorded — not current status. Review logs before and after this event to understand the full picture.</p>
-      </div>`;
-
+    area.innerHTML = tlRenderStructured(row);
   } else {
-    area.innerHTML = `<div class="raw-block">{
-  "wirelessDrum": {
-    "alive": true,
-    "lastContactSeconds": 1775568429.56,
-    "microS08": {
-      "registerContents": 40,
-      "versionMajor": 33,
-      "versionMinor": 0
-    }
-  },
-  "inCabDisplay": {
-    "alive": true,
-    "lastContactSeconds": 1775569460.29,
-    "startupMessageCount": 1,
-    "version": 1468
-  },
-  "cwr": {
-    "alive": false,
-    "lastContactSeconds": 1775568442.36,
-    "startupMessageCount": 1
-  },
-  "jacketHeater": { "alive": false },
-  "fdmHeater":    { "alive": false },
-  "powerModuleBusStatusIOX": {
-    "voltageV": 1.12,
-    "currentMinmA": 0,
-    "currentMaxmA": 0
-  }
-}</div>`;
+    area.innerHTML = tlRenderRaw(row);
   }
 }
 
@@ -25087,8 +26037,8 @@ function tbLogsOpenDetail(i) {
   const l = logs[i];
   const titleEl = document.getElementById('tb-det-title');
   const metaEl  = document.getElementById('tb-det-meta');
-  if (titleEl) titleEl.textContent = l.sub + ' Event';
-  if (metaEl)  metaEl.textContent  = l.date + ' ' + l.time + ' · TRUCK · ' + l.type;
+  if (titleEl) titleEl.textContent = l.sub + ' — ' + l.type;
+  if (metaEl)  metaEl.textContent  = l.date + ' ' + l.time + ' · TRUCK';
   document.getElementById('tb-logs-list').style.display   = 'none';
   const overlay = document.getElementById('tb-logs-overlay');
   if (overlay) { overlay.style.display = 'flex'; }
@@ -29081,41 +30031,15 @@ function dtTimelineRenderRows(idx) {
 /* Real-world rows. Message Type matches the protobuf message_type values
    from the dropdown screenshot: BackendRequest, DeviceBinding, Event, Identity.
    For Event rows, `sub` is the event_type within the Event message. */
-const DT_LOGS_ROWS = [
-  { id:0,  date:'02/17/2026', time:'04:14 PM', sentTime:'00:00', source:'TRUCK', type:'Event',          sub:'StartUp',              severity:'info' },
-  { id:1,  date:'02/17/2026', time:'03:49 PM', sentTime:'00:01', source:'TRUCK', type:'Event',          sub:'TicketReceived',       severity:'info' },
-  { id:2,  date:'02/18/2026', time:'09:30 AM', sentTime:'00:00', source:'TRUCK', type:'Identity',       sub:'Identity',             severity:'info' },
-  { id:3,  date:'02/18/2026', time:'11:00 AM', sentTime:'00:01', source:'TRUCK', type:'Event',          sub:'DrumSensor',           severity:'warn' },
-  { id:4,  date:'02/19/2026', time:'02:15 PM', sentTime:'00:00', source:'TRUCK', type:'Event',          sub:'FluidError',           severity:'warn' },
-  { id:5,  date:'02/19/2026', time:'03:00 PM', sentTime:'00:01', source:'TRUCK', type:'Event',          sub:'IgnitionChange',       severity:'info' },
-  { id:6,  date:'02/20/2026', time:'10:00 AM', sentTime:'00:00', source:'TRUCK', type:'Event',          sub:'GpsLocation',          severity:'info' },
-  { id:7,  date:'02/20/2026', time:'01:45 PM', sentTime:'00:01', source:'TRUCK', type:'Event',          sub:'FluidAdd',             severity:'warn' },
-  { id:8,  date:'02/21/2026', time:'04:30 PM', sentTime:'00:00', source:'TRUCK', type:'Event',          sub:'ConcreteStatus',       severity:'info' },
-  { id:9,  date:'02/21/2026', time:'05:15 PM', sentTime:'00:01', source:'TRUCK', type:'Event',          sub:'DriverAction',         severity:'info' },
-  { id:10, date:'02/22/2026', time:'09:00 AM', sentTime:'00:00', source:'TRUCK', type:'Event',          sub:'OperatingMode',        severity:'info' },
-  { id:11, date:'02/22/2026', time:'12:00 PM', sentTime:'00:01', source:'TRUCK', type:'BackendRequest', sub:'AllPlants',            severity:'info' },
-  { id:12, date:'02/23/2026', time:'08:30 AM', sentTime:'00:00', source:'TRUCK', type:'DeviceBinding',  sub:'DeviceBinding',        severity:'info' },
-  { id:13, date:'02/23/2026', time:'02:30 PM', sentTime:'00:01', source:'TRUCK', type:'Event',          sub:'CalculatedArriveSite', severity:'info' },
-  { id:14, date:'02/24/2026', time:'03:00 PM', sentTime:'00:00', source:'TRUCK', type:'Event',          sub:'TruckHealth',          severity:'info' },
-  { id:15, date:'03/23/2026', time:'08:24 AM', sentTime:'00:01', source:'TRUCK', type:'Event',          sub:'WdsNoConnection',      severity:'alarm' },
-  { id:16, date:'03/23/2026', time:'10:42 AM', sentTime:'00:00', source:'TRUCK', type:'Event',          sub:'FluidDoseSummary',     severity:'info' },
-  { id:17, date:'03/23/2026', time:'11:30 AM', sentTime:'00:01', source:'TRUCK', type:'Event',          sub:'SpeedChangeData',      severity:'info' },
-  { id:18, date:'03/24/2026', time:'08:40 AM', sentTime:'00:00', source:'TRUCK', type:'Event',          sub:'Shutdown',             severity:'info' },
-];
+/* DT_LOGS_ROWS and DT_LOGS_SUB_TYPES now point to the unified TL_ROWS dataset */
+const DT_LOGS_ROWS = TL_ROWS;
 
-/* Sub message types per Message Type (drives dependent dropdown).
-   Event has 17 sub-types; the others are single-shape messages so the
-   only sub option is the type itself. */
 const DT_LOGS_SUB_TYPES = {
-  'Event': [
-    'AllPlants', 'CalculatedArriveSite', 'ConcreteStatus', 'DriverAction',
-    'DrumSensor', 'FluidAdd', 'FluidDoseSummary', 'FluidError', 'GpsLocation',
-    'IgnitionChange', 'NetworkChange', 'OperatingMode', 'Shutdown',
-    'SpeedChangeData', 'StartUp', 'TicketReceived', 'TruckHealth', 'WdsNoConnection'
-  ],
-  'BackendRequest': ['AllPlants', 'Identity', 'ConfigurationSync', 'SoftwareUpdate'],
-  'DeviceBinding':  ['DeviceBinding'],
-  'Identity':       ['Identity']
+  'Event':              ['CalculatedArriveSite','ConcreteStatus','DriverAction','FluidAdd','FluidDoseSummary','FluidError','GPSLocation','IgnitionChange','NetworkChange','OperatingMode','Shutdown','SpeedChangeData','StartUp','SystemStatus','TicketReceived','TruckHealth'],
+  'BackendRequest':     ['ALL_PLANTS_GEOFENCES','WEATHER','ConfigurationSync','SoftwareUpdate'],
+  'DeviceBinding':      ['DrumSensor','WaterModule','WDS','IOX'],
+  'WirelessDrumBinding':['UnboundTC3Notification','BoundNotification'],
+  'Identity':           ['Identity'],
 };
 
 /* Logs filter / selection state */
@@ -29376,37 +30300,7 @@ if (typeof window !== 'undefined' && !window.__dtLogsKeyNavBound) {
    selected row. Wiring real data per event type is a future task.
    ──────────────────────────────────────────────────────────── */
 
-/* Dummy JSON shown in Raw tab — uses the FluidAdd sample as a stand-in
-   so the Raw tab has something realistic to look at. */
-const DT_LOGS_DUMMY_PAYLOAD = {
-  message_type: 'Event',
-  time: { seconds: 1777316790, microseconds: 271117 },
-  sender_mac_id: '125765200636',
-  accountId: '45',
-  truckId: '9171',
-  truckName: '76717',
-  pbversion: 4,
-  event: {
-    event_type: 'FluidAdd',
-    lastLoadingTime: { seconds: 1777314613, microseconds: 549861 },
-    location: { status: 'VALID', latitude: 32.91751967, longitude: -111.51281633 },
-    lastLoadingLocationId: '578',
-    locationStatus: { status: 'PLANT_OUTSIDE_FENCE', locationId: '578', locationName: '' },
-    fluid_add: {
-      fluidAddEvent: 'STEALTH_WATER_DETECTED',
-      maxFluidReached: false,
-      waterAddedLiters: 67.247116,
-      admixAddedMilliliters: 0,
-      fluidFlowRateMillilitersPerSecond: -1,
-      fluidRequestedLiters: 0,
-      waterAdaptationPercent: -1,
-      admixAdaptationPercent: -1,
-      startTime: { seconds: 1777316697, microseconds: 0 },
-      waterAddedLitersPerCubicMeter: 8.795072,
-      admixAddedMillilitersPerCubicMeter: 0
-    }
-  }
-};
+/* DT_LOGS_DUMMY_PAYLOAD removed — desktop Raw tab now uses tlGetPayload(row) for real data */
 
 /* Render the Event Details inspector for the current selection */
 function dtLogsRenderEventDetails() {
@@ -29468,7 +30362,8 @@ let dtLogsRawSearch = { query: '', matches: [], active: 0 };
 function dtLogsRenderRaw() {
   // Reset search state every time Raw is rendered (fresh tab switch / row change)
   dtLogsRawSearch = { query: '', matches: [], active: 0 };
-  const json = JSON.stringify(DT_LOGS_DUMMY_PAYLOAD, null, 2);
+  const row = DT_LOGS_ROWS.find(r => r.id === dtLogsSelectedId);
+  const json = JSON.stringify(row ? tlGetPayload(row) : {}, null, 2);
   return `
     <div class="dt-raw-wrap">
       <div class="dt-raw-search">
@@ -29602,71 +30497,8 @@ const DT_LOGS_OFFLINE_COMPONENTS = [
 ];
 
 function dtLogsRenderStructured(row) {
-  // Header chip
-  const ts = `${row.date.slice(0,2)}/${row.date.slice(3,5)} ${row.time}`;
-  let html = `
-    <div class="dt-ed-chip">
-      <div class="dt-ed-chip-left">
-        <span class="dt-ed-chip-dot" style="background:#3069e3;"></span>
-        <span class="dt-ed-chip-label">System Status Event</span>
-      </div>
-      <span class="dt-ed-chip-time">${escapeHtml(ts)}</span>
-    </div>
-
-    <div class="dt-ed-section-heading">Online (${DT_LOGS_ONLINE_COMPONENTS.length})</div>
-    <div class="dt-ed-card-stack">
-  `;
-
-  // Online cards
-  DT_LOGS_ONLINE_COMPONENTS.forEach((c, i) => {
-    const cardId = `dt-ed-card-${i}`;
-    const hasDetail = !!c.detail;
-    const startsOpen = c.expanded ? ' open' : '';
-    html += `
-      <div class="dt-ed-card${hasDetail ? ' has-expand' : ''}${startsOpen}" id="${cardId}">
-        <button class="dt-ed-card-row" ${hasDetail ? `onclick="dtLogsToggleCard('${cardId}')"` : 'disabled'}>
-          <span class="dt-ed-card-left">
-            <span class="dt-ed-card-dot" style="background:#2ecf1d;"></span>
-            <span class="dt-ed-card-label">${escapeHtml(c.name)}</span>
-          </span>
-          <span class="dt-ed-card-right">
-            <span class="dt-ed-card-value">${escapeHtml(c.value)}</span>
-            <svg class="dt-ed-card-chev" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-        </button>
-        ${hasDetail ? `
-          <div class="dt-ed-card-expand">
-            ${c.detail.map(([k, v]) => `
-              <div class="dt-ed-card-expand-row">
-                <span class="dt-ed-card-expand-k">${escapeHtml(k)}</span>
-                <span class="dt-ed-card-expand-v">${escapeHtml(v)}</span>
-              </div>
-            `).join('')}
-          </div>
-        ` : ''}
-      </div>
-    `;
-  });
-
-  html += `</div>`;
-
-  // Bottom Components / Status table
-  html += `
-    <div class="dt-ed-table" style="margin-top:8px;">
-      <div class="dt-ed-table-row dt-ed-table-head">
-        <span class="dt-ed-table-k">Components</span>
-        <span class="dt-ed-table-v">Status</span>
-      </div>
-      ${DT_LOGS_OFFLINE_COMPONENTS.map((name, i) => `
-        <div class="dt-ed-table-row${i % 2 === 0 ? ' alt' : ''}">
-          <span class="dt-ed-table-k">${escapeHtml(name)}</span>
-          <span class="dt-ed-table-v">No Contact</span>
-        </div>
-      `).join('')}
-    </div>
-  `;
-
-  return html;
+  /* Delegate to shared tl render engine */
+  return tlRenderStructured(row);
 }
 
 /* Card expand toggle */

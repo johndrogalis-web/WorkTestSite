@@ -3905,7 +3905,7 @@
     width: 120px; height: 34px;
     background: #111;
     border-radius: 20px;
-    z-index: 999;
+    z-index: 1200;
   }
 
   /* ─── REAL-DEVICE RESPONSIVE: when the actual viewport is phone-sized,
@@ -5536,7 +5536,7 @@ const SENSOR_DATA = [
   /* ─── SIDE NAV ─────────────────────────────────── */
   .sidenav-overlay {
     position:absolute; inset:0; background:rgba(0,0,0,0.45);
-    z-index:1000; opacity:0; pointer-events:none;
+    z-index:1250; opacity:0; pointer-events:none;
     transition:opacity 0.32s cubic-bezier(0.22,1,0.36,1); border-radius:50px;
   }
   .sidenav-overlay.open { opacity:1; pointer-events:all; }
@@ -5545,7 +5545,7 @@ const SENSOR_DATA = [
     position:absolute; top:0; left:0; bottom:0; width:85%;
     max-width:310px; background:#f6f4f2;
     border-radius:50px 0 0 50px;
-    z-index:1001; transform:translateX(-110%);
+    z-index:1300; transform:translateX(-110%);
     transition:transform 0.38s cubic-bezier(0.22,1,0.36,1);
     display:flex; flex-direction:column; overflow:hidden;
     box-shadow:4px 0 24px rgba(0,0,0,0.15);
@@ -7590,9 +7590,10 @@ const SENSOR_DATA = [
     flex-direction: column;
     position: absolute;
     inset: 0;
-    z-index: 1000;         /* above .screen stack and sidenav-overlay; sidenav itself is 1001 but closes before map opens */
+    z-index: 1000;         /* above .screen stack; sidenav is now 1300 */
     background: var(--base);
     overflow: hidden;
+    padding-top: 54px;
     margin-top: 0 !important;  /* override .screen > :first-child margin-top:54px */
   }
   #mo-page-map.active { display: flex; }
@@ -8359,7 +8360,7 @@ const SENSOR_DATA = [
     <svg width="72" height="18" viewBox="0 0 96 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="white"/>
     </svg>
-    <span class="vp-version-tag">v6.8.4</span>
+    <span class="vp-version-tag">v6.8.9</span>
   </div>
 
   <!-- Viewport pills — desktop only. Hidden on mobile/tablet viewports since
@@ -12292,7 +12293,7 @@ const SENSOR_DATA = [
        MOBILE — Software Update page
        Slides in over s-main, shares the real swu engine.
   ═══════════════════════════════════════════════════ -->
-  <div id="mob-page-update" style="display:none;position:absolute;inset:0;background:var(--layer-1);z-index:200;flex-direction:column;overflow:hidden;">
+  <div id="mob-page-update" style="display:none;position:absolute;inset:0;background:var(--base);z-index:200;flex-direction:column;overflow:hidden;padding-top:54px;">
 
     <!-- Top nav bar — matches s-main top-nav exactly -->
     <div class="top-nav" style="flex-shrink:0;">
@@ -12302,10 +12303,7 @@ const SENSOR_DATA = [
       <div style="position:absolute;left:50%;transform:translateX(-50%);">
         <svg width="28" height="16" viewBox="0 0 28 16" fill="none"><path d="M10.3958 0H0V3.1785H9.15381L0.367992 15.9386H8.00383L12.6497 3.22457C13.1097 1.98081 12.4197 0 10.3958 0ZM16.6517 0C14.6277 0 13.9377 1.98081 14.3977 3.22457L19.0436 15.9386H26.6794L17.8936 3.1785H27.0474V0H16.6517Z" fill="#36322D"/></svg>
       </div>
-      <div style="margin-left:auto;position:relative;width:40px;height:40px;display:flex;align-items:center;justify-content:center;">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 11H3l1-2V7a4 4 0 018 0v2l1 2z" stroke="#36322D" stroke-width="1.4" stroke-linejoin="round"/><path d="M6.5 13a1.5 1.5 0 003 0" stroke="#36322D" stroke-width="1.4"/></svg>
-        <div style="position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--red);border:1.5px solid var(--layer-1);"></div>
-      </div>
+      <div style="margin-left:auto;width:40px;height:40px;flex-shrink:0;"></div>
     </div>
 
     <!-- Page title row -->
@@ -28516,6 +28514,11 @@ function mobSwuOpen() {
   mobSwuSyncFromState();
   mobSwuRenderStatusTab();
   mobSwuSyncSendBtn();
+  /* Mark Software Updates active in sidenav */
+  document.querySelectorAll('.sn-sub-item').forEach(function(i) { i.classList.remove('active'); });
+  document.querySelectorAll('.sn-sub-item').forEach(function(i) {
+    if (i.textContent.trim() === 'Software Updates') i.classList.add('active');
+  });
   if (typeof closeNav === 'function') closeNav();
 }
 

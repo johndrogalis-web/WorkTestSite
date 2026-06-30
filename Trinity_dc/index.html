@@ -8360,7 +8360,7 @@ const SENSOR_DATA = [
     <svg width="72" height="18" viewBox="0 0 96 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="white"/>
     </svg>
-    <span class="vp-version-tag">v6.8.9</span>
+    <span class="vp-version-tag">v6.8.15</span>
   </div>
 
   <!-- Viewport pills — desktop only. Hidden on mobile/tablet viewports since
@@ -19198,12 +19198,16 @@ function coRenderManual() {
   if (!body) return;
   var bar = document.getElementById('co-install-bar');
   var compName = bar ? bar.dataset.compName : '';
+  var isTcg = coIsTcgReplaceMode();
   body.innerHTML =
-    '<label style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;display:block;margin-bottom:6px;">Serial Number</label>'
-    + '<input id="co-install-serial" type="text" placeholder="e.g. WP-4421" autocomplete="off" maxlength="20" oninput="coManualInput(this)" style="width:100%;box-sizing:border-box;padding:11px 13px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--font);color:var(--strong);letter-spacing:-0.28px;outline:none;"/>'
-    + '<div style="margin-top:10px;padding:0 4px;">'
-    +   '<button onclick="coRenderScanning(\'' + compName.replace(/'/g,"\\'") + '\');coStartScanTimer(\'' + compName.replace(/'/g,"\\'") + '\')" style="background:none;border:none;padding:0;font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;color:var(--blue-link);cursor:pointer;">← Scan for nearby ' + compName + '</button>'
-    + '</div>';
+    '<label style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;display:block;margin-bottom:6px;">' + (isTcg ? 'TCG Serial Number' : 'Serial Number') + '</label>'
+    + '<input id="co-install-serial" type="text" placeholder="' + (isTcg ? 'e.g. TCG-38291' : 'e.g. WP-4421') + '" autocomplete="off" maxlength="20" oninput="coManualInput(this)" style="width:100%;box-sizing:border-box;padding:11px 13px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--font);color:var(--strong);letter-spacing:-0.28px;outline:none;"/>'
+    + (isTcg
+        ? '<div style="font-size:11px;color:var(--subtle);letter-spacing:-0.22px;margin-top:8px;padding:0 4px;">TCG serials must be entered manually — the new unit can\'t scan for itself.</div>'
+        : '<div style="margin-top:10px;padding:0 4px;">'
+          +   '<button onclick="coRenderScanning(\'' + compName.replace(/'/g,"\\'") + '\');coStartScanTimer(\'' + compName.replace(/'/g,"\\'") + '\')" style="background:none;border:none;padding:0;font-size:12px;font-weight:500;font-family:var(--font);letter-spacing:-0.24px;color:var(--blue-link);cursor:pointer;">← Scan for nearby ' + compName + '</button>'
+          + '</div>'
+      );
   body.dataset.mode = 'manual';
   body.dataset.serial = '';
   coSetConfirmEnabled(false);
@@ -19307,7 +19311,7 @@ function coInstallConfirmScanned(serial) {
     if (comp) { comp.state='pending'; comp.evt='Replacement recorded'; comp.dot='#d97706'; comp.serial=serial; comp.installedDate=dateStr; }
   });
   renderConditions();
-  coCheckShowErrorResetPrompt('mobile');
+  coCheckComponentFirmware(compName, 'mobile');
 }
 
 function coInstallConfirm() {
@@ -19357,14 +19361,14 @@ function dtInstallConfirmScanned(serial) {
   });
 
   if (document.body.classList.contains('view-tablet')) {
-    /* Tablet — re-render overview in place, check for error reset */
-    coCheckShowErrorResetPrompt('tablet');
+    /* Tablet — re-render overview in place, then sync firmware before error reset becomes available */
+    coCheckComponentFirmware(compName, 'tablet');
     var scroll = document.getElementById('tb-drawer-scroll');
     if (scroll && typeof tbDrawerTruck !== 'undefined' && tbDrawerTruck) {
       tbBuildOverview(tbDrawerTruck, scroll);
     }
   } else {
-    coCheckShowErrorResetPrompt('desktop');
+    coCheckComponentFirmware(compName, 'desktop');
     if (dtDrawerTruckNum) dtOpenTruck(dtDrawerTruckNum);
   }
 }
@@ -19499,19 +19503,101 @@ function coRenderTcgConfirmStage(isDesktop) {
     + '</div>';
 }
 
-/* Stage B — swap into the standard scan UI for TCG */
+/* Stage B — TCG cannot be auto-discovered by scan (it IS the radio that would
+   do the discovering). Skip scanning entirely and drop straight into manual
+   serial entry. tcgReplace flag stays set on the bar so the confirm handler
+   routes correctly afterward. */
 function coTcgContinueToScan(isDesktop) {
   var bar = document.getElementById('co-install-bar');
   if (!bar) return;
-  /* Re-use coStartScan — it builds the install frame. tcgReplace flag stays set
-     on the bar so the confirm handler routes correctly afterward. */
-  coStartScan('TCG', !isDesktop);
+  bar.dataset.compName = 'TCG';
+  bar.innerHTML = coBuildInstallFrame('TCG', !isDesktop);
+  coRenderManual();
 }
 
+/* TCG's own target firmware for this prototype — the version every new TCG
+   gets verified/updated against before it becomes the source of truth for
+   the components reconnecting to it. */
+var TCG_LATEST_FW = 'v5.01.008';
+
 /* Stage C — called when user confirms the new TCG install.
-   Plays the reconnection animation: TCG comes online, then each component
-   briefly flashes "reconnecting" before going back to green. */
+   Two-step per [user]: 1) confirm/update the TCG itself to latest software
+   (it has to be current before it can be trusted as the reference point),
+   2) only once that's confirmed, each component reconnects AND syncs to
+   its own latest version — TCG is the trigger event, not a literal version
+   match (TCG and component firmware are different numbering schemes). */
 function coTcgConfirmInstall(serial, isDesktop) {
+  var bar = document.getElementById('co-install-bar');
+  if (!bar) return;
+  coShowTcgFirmwareCheck(serial, isDesktop);
+}
+
+function coShowTcgFirmwareCheck(serial, isDesktop) {
+  var bar = document.getElementById('co-install-bar');
+  if (!bar) return;
+  var DURATION = 2400;
+  bar.innerHTML =
+    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">'
+    +   '<div style="width:36px;height:36px;border-radius:50%;background:rgba(48,105,227,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+    +     '<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="#3069e3" stroke-width="1.6"/></svg>'
+    +   '</div>'
+    +   '<div>'
+    +     '<div style="font-size:15px;font-weight:600;color:var(--strong);letter-spacing:-0.3px;">New TCG installed</div>'
+    +     '<div style="font-size:12px;font-family:\'DM Mono\', monospace;color:var(--soft);letter-spacing:0.2px;">' + serial + '</div>'
+    +   '</div>'
+    + '</div>'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px;">'
+    +   '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">Updating TCG software\u2026</div>'
+    +   '<div id="co-tcg-fw-pct" style="font-size:12px;font-weight:600;color:#3069e3;font-family:\'DM Mono\', monospace;letter-spacing:0.2px;flex-shrink:0;">0%</div>'
+    + '</div>'
+    + '<div style="width:100%;height:5px;border-radius:3px;background:var(--border);overflow:hidden;margin-bottom:7px;">'
+    +   '<div id="co-tcg-fw-bar" style="width:0%;height:100%;background:#3069e3;border-radius:3px;transition:width 0.12s linear;"></div>'
+    + '</div>'
+    + '<div style="font-size:12px;color:var(--soft);letter-spacing:-0.26px;">Syncing to ' + TCG_LATEST_FW + ' before components reconnect</div>';
+
+  var start = Date.now();
+  var timer = setInterval(function() {
+    if (!document.getElementById('co-tcg-fw-bar')) { clearInterval(timer); return; }
+    var pct = Math.min(100, Math.round((Date.now() - start) / DURATION * 100));
+    var barEl = document.getElementById('co-tcg-fw-bar');
+    var pctEl = document.getElementById('co-tcg-fw-pct');
+    if (barEl) barEl.style.width = pct + '%';
+    if (pctEl) pctEl.textContent = pct + '%';
+    if (pct >= 100) {
+      clearInterval(timer);
+      coShowTcgFirmwareSuccess(serial, isDesktop);
+    }
+  }, 60);
+}
+
+function coShowTcgFirmwareSuccess(serial, isDesktop) {
+  var bar = document.getElementById('co-install-bar');
+  if (!bar) return;
+  var successSubColor = document.body.classList.contains('dark') ? '#ffffff' : '#166534';
+  bar.innerHTML =
+    '<div style="display:flex;align-items:center;gap:12px;">'
+    +   '<div style="width:36px;height:36px;border-radius:50%;background:rgba(22,163,74,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+    +     '<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 10l4 4 8-8" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    +   '</div>'
+    +   '<div>'
+    +     '<div style="font-size:15px;font-weight:600;color:var(--strong);letter-spacing:-0.3px;">TCG software updated</div>'
+    +     '<div style="font-size:12px;color:'+successSubColor+';letter-spacing:-0.24px;">Now running ' + TCG_LATEST_FW + ' \u2014 reconnecting components next</div>'
+    +   '</div>'
+    + '</div>';
+
+  /* TCG is now the source of truth — record its version on the truck */
+  CC_TRUCKS.forEach(function(t) {
+    if (!t.components) return;
+    var comp = t.components.find(function(c){ return c.name === 'TCG'; });
+    if (comp) comp.fw = TCG_LATEST_FW;
+  });
+
+  setTimeout(function() { coTcgRenderReconnect(serial, isDesktop); }, 1300);
+}
+
+/* Stage D — reconnection list. Each component now also syncs to its own
+   latest firmware as it reconnects, using the TCG update as the trigger. */
+function coTcgRenderReconnect(serial, isDesktop) {
   var bar = document.getElementById('co-install-bar');
   if (!bar) return;
   var comps = coGetTruckCompList(isDesktop);
@@ -19527,7 +19613,7 @@ function coTcgConfirmInstall(serial, isDesktop) {
     +     '<div style="font-size:12px;font-family:\'DM Mono\', monospace;color:var(--soft);letter-spacing:0.2px;">' + serial + '</div>'
     +   '</div>'
     + '</div>'
-    + '<div style="font-size:13px;color:var(--soft);letter-spacing:-0.26px;margin-bottom:12px;">Reconnecting components…</div>'
+    + '<div style="font-size:13px;color:var(--soft);letter-spacing:-0.26px;margin-bottom:12px;">Reconnecting components and syncing software\u2026</div>'
     + '<div id="co-tcg-reconnect-list" style="border-top:1px solid var(--border);padding-top:6px;margin-bottom:14px;">'
     +   comps.map(function(n, i){
           return '<div class="co-tcg-reconnect-row" data-comp="' + n + '" data-idx="' + i + '" style="display:flex;align-items:center;gap:10px;padding:6px 0;">'
@@ -19540,7 +19626,7 @@ function coTcgConfirmInstall(serial, isDesktop) {
     + '</div>'
     + '<button id="co-tcg-done-btn" disabled onclick="coTcgFinish(' + (isDesktop?'true':'false') + ')" style="width:100%;background:'+coPrimaryBtnBg()+';color:'+coPrimaryBtnColor()+';border:none;border-radius:32px;padding:12px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;opacity:0.4;transition:opacity 0.2s;">Reconnecting…</button>';
 
-  /* Animate each component reconnecting in sequence */
+  /* Animate each component reconnecting + syncing in sequence */
   comps.forEach(function(name, i) {
     setTimeout(function() {
       var row = document.querySelector('.co-tcg-reconnect-row[data-idx="' + i + '"]');
@@ -19548,12 +19634,13 @@ function coTcgConfirmInstall(serial, isDesktop) {
       /* Pending state */
       var dot = row.querySelector('.co-tcg-reconnect-dot');
       var status = row.querySelector('.co-tcg-reconnect-status');
+      var hasFw = !!COMPONENT_LATEST_FW[name];
       if (dot) {
         dot.style.background = 'rgba(48,105,227,0.15)';
         dot.style.borderColor = '#3069e3';
         dot.innerHTML = '<div style="position:absolute;inset:1px;border-radius:50%;border:1.5px solid #3069e3;border-top-color:transparent;animation:tcgSpin 0.7s linear infinite;"></div>';
       }
-      if (status) { status.textContent = 'Connecting'; status.style.color = '#3069e3'; }
+      if (status) { status.textContent = hasFw ? 'Syncing software' : 'Connecting'; status.style.color = '#3069e3'; }
 
       /* Connected state ~700ms later */
       setTimeout(function() {
@@ -19563,29 +19650,63 @@ function coTcgConfirmInstall(serial, isDesktop) {
           dot.style.borderColor = '#16a34a';
           dot.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="position:absolute;inset:1px;"><path d="M2 5l2 2 4-5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         }
-        if (status) { status.textContent = 'Connected'; status.style.color = '#16a34a'; }
-        /* If this is the last one, enable the Done button */
+        if (status) { status.textContent = hasFw ? 'Up to date' : 'Connected'; status.style.color = '#16a34a'; }
+        /* Component now matches its latest firmware, with the TCG update as the trigger */
+        if (hasFw && typeof CC_TRUCKS !== 'undefined') {
+          CC_TRUCKS.forEach(function(t) {
+            if (!t.components) return;
+            var comp = t.components.find(function(c){ return c.name === name; });
+            if (comp) comp.fw = COMPONENT_LATEST_FW[name];
+          });
+        }
+        /* If this is the last one, move to the final confirmation stage
+           instead of enabling Done directly off the reconnect list */
         if (i === comps.length - 1) {
-          var btn = document.getElementById('co-tcg-done-btn');
-          if (btn) {
-            btn.disabled = false;
-            btn.style.opacity = '1';
-            btn.textContent = 'Done';
-          }
+          setTimeout(function() { coTcgRenderFinalConfirm(serial, isDesktop, comps); }, 500);
         }
       }, 700);
     }, 350 + i * 600);
   });
 
-  /* Edge case: no components — enable Done immediately */
+  /* Edge case: no components — skip straight to final confirmation */
   if (comps.length === 0) {
-    var btn = document.getElementById('co-tcg-done-btn');
-    if (btn) {
-      btn.disabled = false;
-      btn.style.opacity = '1';
-      btn.textContent = 'Done';
-    }
+    setTimeout(function() { coTcgRenderFinalConfirm(serial, isDesktop, comps); }, 400);
   }
+}
+
+/* Stage E — explicit confirmation that every reconnected component is
+   verified on its current firmware, with the TCG's own version as the
+   reference point. This is the step that was missing: the reconnect list
+   shows the work happening, but the FST needs a clear "verified" beat
+   before they can close out the replacement. */
+function coTcgRenderFinalConfirm(serial, isDesktop, comps) {
+  var bar = document.getElementById('co-install-bar');
+  if (!bar) return;
+  var successSubColor = document.body.classList.contains('dark') ? '#ffffff' : '#166534';
+  var fwRows = comps.map(function(name) {
+    var fw = COMPONENT_LATEST_FW[name];
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;">'
+      +   '<span style="font-size:13px;color:var(--strong);letter-spacing:-0.26px;">' + name + '</span>'
+      +   '<span style="font-size:12px;font-family:\'DM Mono\', monospace;color:'+(fw?'#16a34a':'var(--soft)')+';letter-spacing:0.2px;">' + (fw ? fw + ' \u2713' : 'Connected') + '</span>'
+      + '</div>';
+  }).join('');
+
+  bar.innerHTML =
+    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">'
+    +   '<div style="width:36px;height:36px;border-radius:50%;background:rgba(22,163,74,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+    +     '<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 10l4 4 8-8" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    +   '</div>'
+    +   '<div>'
+    +     '<div style="font-size:15px;font-weight:600;color:var(--strong);letter-spacing:-0.3px;">All components verified</div>'
+    +     '<div style="font-size:12px;color:'+successSubColor+';letter-spacing:-0.24px;">Matched to TCG ' + serial + ' \u00b7 ' + TCG_LATEST_FW + '</div>'
+    +   '</div>'
+    + '</div>'
+    + (comps.length
+        ? '<div style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;margin-bottom:2px;">Component software</div>'
+          + '<div style="border-top:1px solid var(--border);padding:4px 0 0;margin-bottom:16px;">' + fwRows + '</div>'
+        : '<div style="font-size:13px;color:var(--soft);letter-spacing:-0.26px;margin-bottom:16px;">No other components were installed on this truck.</div>'
+      )
+    + '<button onclick="coTcgFinish(' + (isDesktop?'true':'false') + ')" style="width:100%;background:'+coPrimaryBtnBg()+';color:'+coPrimaryBtnColor()+';border:none;border-radius:32px;padding:12px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">Done</button>';
 }
 
 /* Stage C completion — close the panel, refresh views */
@@ -19630,6 +19751,102 @@ function coGetErrorCount() {
     : (typeof dtDrawerTruckNum !== 'undefined' ? dtDrawerTruckNum : null);
   var t = trucks.find(function(tr) { return String(tr.num) === String(truckNum); });
   return t ? (getTruckAlerts(t.num).err + getTruckAlerts(t.num).wrn) : 0;
+}
+
+/* ── Component firmware sync ───────────────────────────────────────────────
+   Runs automatically the moment a component install is confirmed, before
+   the error-reset prompt becomes available. Replaced parts ship at whatever
+   firmware they shipped with — they need to be auto-updated to the current
+   target version before the FST is allowed to run the error test, the same
+   way a fresh TCG re-syncs its components on a TCG swap. Only components
+   that carry a firmware/version field are checked; sensors with no fw value
+   (e.g. CPS, DPS — value-only readouts) skip straight through.
+──────────────────────────────────────────────────────────────────────────── */
+var COMPONENT_LATEST_FW = {
+  'WDS':         'v2.1.4',
+  'DRS':         'v1.0.8',
+  'CWR':         'v35.0',
+  'ICD':         'v1468',
+  'Water Pump':  'v4.2.1',
+  'Admix Pump':  'v4.2.1',
+  'ED':          'v8195'
+};
+
+function coCheckComponentFirmware(compName, view) {
+  var latest = COMPONENT_LATEST_FW[compName];
+  /* No firmware field for this component type — nothing to sync */
+  if (!latest) { coCheckShowErrorResetPrompt(view); return; }
+  coShowFirmwareSyncBanner(compName, latest, view);
+}
+
+function coFirmwareBannerSlot(view) {
+  if (view === 'tablet')  return document.getElementById('tb-error-banner');
+  if (view === 'desktop') return document.getElementById('dt-error-banner');
+  return document.getElementById('co-replace-toolbar');
+}
+
+function coShowFirmwareSyncBanner(compName, latest, view) {
+  var slot = coFirmwareBannerSlot(view);
+  if (!slot) { coCheckShowErrorResetPrompt(view); return; }
+  var isMobile = (view !== 'tablet' && view !== 'desktop');
+  var pad      = view === 'desktop' ? '12px 24px' : view === 'tablet' ? '12px 20px' : '12px 16px';
+  var border   = isMobile ? 'border-bottom' : 'border-top';
+  var DURATION = 2400; /* slowed down from the old 1.8s timer so the bar reads clearly */
+
+  slot.style.cssText = 'flex-shrink:0;background:var(--layer-2);'+border+':1px solid var(--border);padding:'+pad+';display:flex;flex-direction:column;gap:7px;animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);';
+  slot.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">'
+    +   '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">Updating ' + compName + ' software\u2026</div>'
+    +   '<div id="co-fw-sync-pct" style="font-size:12px;font-weight:600;color:#3069e3;font-family:\'DM Mono\', monospace;letter-spacing:0.2px;flex-shrink:0;">0%</div>'
+    + '</div>'
+    + '<div style="width:100%;height:5px;border-radius:3px;background:var(--border);overflow:hidden;">'
+    +   '<div id="co-fw-sync-bar" style="width:0%;height:100%;background:#3069e3;border-radius:3px;transition:width 0.12s linear;"></div>'
+    + '</div>'
+    + '<div style="font-size:12px;color:var(--soft);letter-spacing:-0.24px;">Syncing to ' + latest + ' before error test</div>';
+  if (isMobile) slot.dataset.bannerActive = '1';
+
+  var start = Date.now();
+  var timer = setInterval(function() {
+    /* If the banner slot got reused/overwritten by something else, stop ticking */
+    if (!document.getElementById('co-fw-sync-bar')) { clearInterval(timer); return; }
+    var pct = Math.min(100, Math.round((Date.now() - start) / DURATION * 100));
+    var bar = document.getElementById('co-fw-sync-bar');
+    var pctEl = document.getElementById('co-fw-sync-pct');
+    if (bar) bar.style.width = pct + '%';
+    if (pctEl) pctEl.textContent = pct + '%';
+    if (pct >= 100) {
+      clearInterval(timer);
+      if (typeof CC_TRUCKS !== 'undefined') {
+        CC_TRUCKS.forEach(function(t) {
+          if (!t.components) return;
+          var comp = t.components.find(function(c){ return c.name === compName; });
+          if (comp) comp.fw = latest;
+        });
+      }
+      coShowFirmwareSyncSuccess(compName, latest, view);
+    }
+  }, 60);
+}
+
+/* Brief confirmation beat so the bar finishing doesn't read as a fail-and-
+   recover cycle right before the error-reset banner appears. */
+function coShowFirmwareSyncSuccess(compName, latest, view) {
+  var slot = coFirmwareBannerSlot(view);
+  if (!slot) { coCheckShowErrorResetPrompt(view); return; }
+  var isMobile = (view !== 'tablet' && view !== 'desktop');
+  var pad      = view === 'desktop' ? '12px 24px' : view === 'tablet' ? '12px 20px' : '12px 16px';
+  var border   = isMobile ? 'border-bottom' : 'border-top';
+  slot.style.cssText = 'flex-shrink:0;background:'+coSuccessBannerBg()+';'+border+':1px solid '+coSuccessBannerBorder()+';padding:'+pad+';display:flex;align-items:center;gap:10px;animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);';
+  var successSubColor = document.body.classList.contains('dark') ? '#ffffff' : '#166534';
+  slot.innerHTML = '<div style="width:28px;height:28px;border-radius:50%;background:rgba(22,163,74,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+    +   '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-7" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    + '</div>'
+    + '<div style="flex:1;min-width:0;">'
+    +   '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">' + compName + ' software updated</div>'
+    +   '<div style="font-size:12px;color:'+successSubColor+';letter-spacing:-0.24px;">Now running ' + latest + ' \u2014 running error test next</div>'
+    + '</div>';
+  if (isMobile) slot.dataset.bannerActive = '1';
+
+  setTimeout(function() { coCheckShowErrorResetPrompt(view); }, 1300);
 }
 
 function coCheckShowErrorResetPrompt(view) {

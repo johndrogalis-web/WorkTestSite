@@ -1253,7 +1253,7 @@
      the target slide-in is the only motion the user sees. */
   .dt-drawer.no-anim { transition:none; }
   .dt-drawer.open {
-    width:clamp(860px, calc(100% - 280px), 1400px);
+    width:clamp(600px, calc(100% - 280px), 1400px);
     pointer-events:all;
   }
   .dt-drawer-main {
@@ -1264,6 +1264,9 @@
   }
   .dt-drawer-header {
     flex-shrink:0;
+    min-width:0;
+    width:100%;
+    box-sizing:border-box;
     padding:20px 24px 0;
     background:var(--layer-1);
   }
@@ -1347,9 +1350,38 @@
   .dt-also-viewing.inline {
     margin:16px 0 0; padding:16px 0 0;
   }
+  /* Wrapper provides the bottom border + right-edge fade affordance.
+     The fade is a pointer-events-none ::after so clicks still reach
+     the last tab. It disappears once the user scrolls to the end. */
+  .dt-drawer-tabs-wrap {
+    position:relative;
+    border-bottom:1px solid var(--border);
+    flex-shrink:0;
+    /* width:0 + min-width:100% forces this to exactly match the flex-column parent
+       width. Without an explicit width, the box sizes to content and overflow-x:auto
+       on the child tabs never has a bounded container to scroll inside. */
+    width:0;
+    min-width:100%;
+    box-sizing:border-box;
+    overflow:hidden;
+  }
+  .dt-drawer-tabs-wrap::after {
+    content:'';
+    position:absolute; top:0; right:0; bottom:1px;
+    width:48px;
+    background:linear-gradient(to right, transparent, var(--layer-1));
+    pointer-events:none;
+    transition:opacity 0.2s;
+    z-index:1;
+  }
+  .dt-drawer-tabs-wrap.scrolled-end::after { opacity:0; }
   .dt-drawer-tabs {
-    display:flex; border-bottom:1px solid var(--border);
-    overflow-x:auto; scrollbar-width:none;
+    display:flex; border-bottom:none;
+    overflow-x:auto; overflow-y:hidden;
+    scrollbar-width:none;
+    width:100%; max-width:100%;
+    box-sizing:border-box;
+    min-width:0;
   }
   .dt-drawer-tabs::-webkit-scrollbar { display:none; }
   /* Ticket drawer — tab underline starts at 20px to align with the tabs */
@@ -1366,9 +1398,9 @@
   }
   .dt-drawer-tab {
     flex-shrink:0; background:none; border:none;
-    font-size:14px; font-family:var(--font); letter-spacing:-0.28px;
+    font-size:13px; font-family:var(--font); letter-spacing:-0.26px;
     color:var(--soft); cursor:pointer;
-    padding:12px 8px; margin-bottom:-1px;
+    padding:12px 6px; margin-bottom:-1px;
   }
   .dt-drawer-tab.active {
     color:var(--strong);
@@ -1393,7 +1425,7 @@
   }
   .dt-drawer-cards {
     display:grid;
-    grid-template-columns:repeat(3, minmax(200px, 1fr));
+    grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));
     gap:16px; margin-bottom:24px;
     overflow-x:auto;
     padding:6px; margin-left:-6px; margin-right:-6px;
@@ -1643,7 +1675,7 @@
   .dt-co-card-meta-label { min-width:0; }
   /* Right side panel */
   .dt-drawer-side {
-    width:460px; flex-shrink:0;
+    width:clamp(280px, 37%, 460px); flex-shrink:0;
     display:flex; flex-direction:column;
     overflow-y:auto; overflow-x:hidden;
     scrollbar-width:thin;
@@ -4207,10 +4239,12 @@
                 opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     opacity: 0;
     z-index: 1100;
+    pointer-events: none;
   }
   .drawer.open {
     transform: translateX(0) scale(1);
     opacity: 1;
+    pointer-events: auto;
   }
   .drawer.closing {
     transform: translateX(100%) scale(0.96);
@@ -5420,6 +5454,73 @@ const SENSOR_DATA = [
   .cfg-tilt-reset-label { font-size:13px; font-weight:500; color:var(--strong); letter-spacing:-0.2px; }
   .cfg-tilt-reset-sub { font-size:12px; color:var(--soft); margin-top:2px; line-height:1.4; }
   .cfg-tilt-reset-btn { flex-shrink:0; padding:7px 16px; border-radius:32px; border:1px solid rgba(215,1,0,0.3); background:rgba(215,1,0,0.06); color:#d70100; font-size:13px; font-weight:500; cursor:pointer; font-family:var(--font); white-space:nowrap; transition:background 0.15s; }
+
+  /* ── Clone from truck card ── */
+  .clone-card { background:var(--layer-1); border-radius:12px; border:1px solid var(--border); padding:14px 16px; margin-bottom:14px; }
+  .clone-card-header { display:flex; align-items:center; gap:12px; }
+  .clone-card-text { flex:1; min-width:0; }
+  .clone-card-title { font-size:13px; font-weight:600; color:var(--strong); letter-spacing:-0.26px; }
+  .clone-card-sub { font-size:12px; color:var(--soft); letter-spacing:-0.2px; margin-top:2px; }
+  .clone-card-controls { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+
+  /* Mobile: stack text above, controls below */
+  body.view-mobile .clone-card { padding:12px 14px; }
+  body.view-mobile .clone-card-header { flex-direction:column; align-items:stretch; gap:10px; }
+  body.view-mobile .clone-card-controls { width:100%; }
+  body.view-mobile .clone-selector-wrap { flex:1; }
+  body.view-mobile .clone-selector { flex:1; min-width:0; }
+  body.view-mobile .clone-apply-btn { flex-shrink:0; }
+  body.view-mobile .clone-dropdown { right:auto; left:0; width:100%; }
+
+  /* Dropdown selector */
+  .clone-selector-wrap { position:relative; }
+  .clone-selector {
+    display:flex; align-items:center; gap:6px;
+    border:1px solid var(--border); border-radius:8px;
+    padding:7px 10px 7px 12px; cursor:pointer;
+    background:var(--layer-1); min-width:160px;
+    font-size:13px; color:var(--strong); letter-spacing:-0.26px;
+    user-select:none; white-space:nowrap;
+  }
+  .clone-selector-label { flex:1; }
+  .clone-selector svg { flex-shrink:0; }
+  .clone-dropdown {
+    display:none; position:absolute; top:calc(100% + 4px); right:0; z-index:200;
+    background:var(--layer-1); border:1px solid var(--border); border-radius:10px;
+    box-shadow:0 4px 16px rgba(0,0,0,0.10); overflow:hidden; min-width:220px;
+  }
+  .clone-dropdown.open { display:block; }
+  .clone-dropdown-search {
+    display:flex; align-items:center; gap:8px;
+    padding:9px 12px; border-bottom:1px solid var(--border);
+  }
+  .clone-dropdown-search input {
+    flex:1; border:none; outline:none; background:none;
+    font-size:13px; color:var(--strong); font-family:var(--font); letter-spacing:-0.26px;
+  }
+  .clone-dropdown-search input::placeholder { color:var(--soft); }
+  .clone-truck-list { max-height:200px; overflow-y:auto; }
+  .clone-truck-row { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; cursor:pointer; border-bottom:1px solid var(--border); transition:background 0.12s; -webkit-tap-highlight-color:transparent; user-select:none; }
+  .clone-truck-row:last-child { border-bottom:none; }
+  .clone-truck-row:hover { background:var(--layer-2); }
+  .clone-truck-row.selected { color:var(--blue); }
+  .clone-truck-num { font-size:13px; color:inherit; letter-spacing:-0.26px; }
+  .clone-truck-check { color:var(--blue); }
+  .clone-no-results { font-size:13px; color:var(--soft); padding:12px; text-align:center; }
+
+  /* Preview panel — expands below header when truck selected */
+  .clone-preview { border-top:1px solid var(--border); margin-top:12px; padding-top:10px; display:none; }
+  .clone-preview.visible { display:block; }
+  .clone-preview-label { font-size:11px; font-weight:500; color:var(--soft); letter-spacing:0.3px; text-transform:uppercase; margin-bottom:8px; }
+  .clone-preview-row { display:flex; justify-content:space-between; align-items:baseline; padding:4px 0; border-bottom:1px solid var(--border); }
+  .clone-preview-row:last-child { border-bottom:none; }
+  .clone-preview-key { font-size:12px; color:var(--soft); letter-spacing:-0.2px; }
+  .clone-preview-val { font-size:12px; font-weight:500; color:var(--strong); letter-spacing:-0.24px; }
+
+  /* Apply button */
+  .clone-apply-btn { padding:8px 18px; border-radius:32px; border:none; background:var(--blue); color:#fff; font-size:13px; font-weight:500; font-family:var(--font); letter-spacing:-0.26px; cursor:pointer; white-space:nowrap; flex-shrink:0; }
+  .clone-apply-btn:disabled { opacity:0.45; cursor:not-allowed; }
+  .clone-applied-badge { display:inline-flex; align-items:center; gap:4px; background:rgba(48,105,227,0.1); color:var(--blue); font-size:11px; font-weight:500; padding:3px 8px; border-radius:20px; letter-spacing:-0.18px; margin-left:8px; vertical-align:middle; }
   .cfg-tilt-reset-btn:hover { background:rgba(215,1,0,0.12); }
   body.dark .cfg-tilt-readout { background:rgba(255,255,255,0.05); }
   body.dark .cfg-tilt-reset-row { background:rgba(215,1,0,0.08); border-color:rgba(215,1,0,0.2); }
@@ -8360,7 +8461,7 @@ const SENSOR_DATA = [
     <svg width="72" height="18" viewBox="0 0 96 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="white"/>
     </svg>
-    <span class="vp-version-tag">v6.8.15</span>
+    <span class="vp-version-tag">v6.8.50</span>
   </div>
 
   <!-- Viewport pills — desktop only. Hidden on mobile/tablet viewports since
@@ -9500,7 +9601,7 @@ const SENSOR_DATA = [
       <div id="units-drawer" style="
         position:absolute;inset:0;background:var(--layer-1);
         transform:translateX(100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);
-        display:flex;flex-direction:column;z-index:10;padding-top:54px;
+        display:flex;flex-direction:column;z-index:10;padding-top:54px;pointer-events:none;
       ">
         <!-- ROW 1: Unit label + status pill left, close button right -->
         <div class="d-chrome">
@@ -9535,7 +9636,7 @@ const SENSOR_DATA = [
         </div>
 
         <!-- Detail scroll body -->
-        <div id="ud-body-wrap" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--layer-2);padding:16px;">
+        <div id="ud-body-wrap" style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;background:var(--layer-2);padding:16px;">
           <div id="ud-body"></div>
         </div>
       </div>
@@ -10281,8 +10382,8 @@ const SENSOR_DATA = [
         </div>
         <!-- Tabs -->
         <div class="tb-drawer-tabs" style="margin-top:0;">
-          <button class="tb-drawer-tab active" onclick="tbDrawerTab('overview',this)">Components overview</button>
-          <button class="tb-drawer-tab" onclick="tbDrawerTab('timeline',this)">Component timeline</button>
+          <button class="tb-drawer-tab active" onclick="tbDrawerTab('overview',this)">Overview</button>
+          <button class="tb-drawer-tab" onclick="tbDrawerTab('timeline',this)">Timeline</button>
           <button class="tb-drawer-tab" onclick="tbDrawerTab('logs',this)">Trucks Logs</button>
           <button class="tb-drawer-tab" onclick="tbDrawerTab('manual',this)">Manual Control</button>
           <button class="tb-drawer-tab" onclick="tbDrawerTab('sensor',this)">Sensor</button>
@@ -10673,7 +10774,7 @@ const SENSOR_DATA = [
               </button>
               <!-- Back-to-Unit pill — only shown when truck drawer was opened
                    via a unit pivot. Sits at the right edge of the title row so
-                   it's visible from any tab (Components overview, etc.). -->
+                   it's visible from any tab (Overview, etc.). -->
               <button id="dt-drawer-back-to-unit" class="dt-drawer-back-to-unit" style="display:none;margin-left:auto;" onclick="dtBackToUnit()">
                 <svg id="dt-drawer-back-to-unit-arrow-left" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M9.5 6h-7M5.5 2.5L2 6l3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <span id="dt-drawer-back-to-unit-label">Back to Unit </span><strong id="dt-drawer-back-to-unit-id">—</strong>
@@ -10682,14 +10783,16 @@ const SENSOR_DATA = [
             </div>
 
             <!-- Tabs -->
+            <div class="dt-drawer-tabs-wrap" id="dt-drawer-tabs-wrap">
             <div class="dt-drawer-tabs" id="dt-drawer-tabs">
-              <button class="dt-drawer-tab active" onclick="dtDrawerTab('overview', this)">Components overview</button>
-              <button class="dt-drawer-tab" onclick="dtDrawerTab('timeline', this)">Component timeline</button>
+              <button class="dt-drawer-tab active" onclick="dtDrawerTab('overview', this)">Overview</button>
+              <button class="dt-drawer-tab" onclick="dtDrawerTab('timeline', this)">Timeline</button>
               <button class="dt-drawer-tab" onclick="dtDrawerTab('logs', this)">Trucks Logs</button>
               <button class="dt-drawer-tab" onclick="dtDrawerTab('manual', this)">Manual Control</button>
               <button class="dt-drawer-tab" onclick="dtDrawerTab('sensor', this)">Sensor</button>
               <button class="dt-drawer-tab" onclick="dtDrawerTab('config', this)">Configuration</button>
             </div>
+            </div><!-- /dt-drawer-tabs-wrap -->
           </div>
 
           <!-- Scrollable card area -->
@@ -14489,49 +14592,38 @@ function utabDoAttach(unitId, truckId) {
   const overlay = document.getElementById('utab-confirm-overlay');
   if (overlay) overlay.remove();
 
-  /* Update unit record */
   const u = UNITS_DATA.find(u => u.id === unitId);
-  if (u) { u.status = 'Linked Unit'; u.truck = truckId; u.assignedToTruck = new Date().toLocaleDateString('en-US'); }
+  if (!u) return;
 
-  /* Mark truck as re-linked */
-  const t = trucks.find(t => t.num === truckId);
-  if (t) { t.unlinked = false; t.truckMode = 'Active'; t.unitId = unitId; }
-  const tCC = CC_TRUCKS.find(t => t.num === truckId);
-  if (tCC) { tCC.unlinked = false; }
+  /* Mirror desktop dtTrAttachDo — set Pending, capture revert state */
+  dtUdPendingPrevState = {
+    unitId:        u.id,
+    prevStatus:    u.status,
+    prevTruck:     u.truck,
+    prevAssigned:  u.assignedToTruck || null,
+    truckSnapshot: (typeof UNLINKED_TRUCKS !== 'undefined')
+      ? UNLINKED_TRUCKS.find(t => t.number === truckId)
+      : null,
+  };
 
-  /* Remove from unlinked trucks pool */
-  const poolIdx = UNLINKED_TRUCKS.findIndex(t => t.number === truckId);
+  u.status          = 'Pending';
+  u.truck           = truckId;
+  u.assignedToTruck = new Date().toLocaleDateString('en-US', {month:'2-digit', day:'2-digit', year:'numeric'});
+
+  /* Remove truck from unlinked pool while pending */
+  const poolIdx = (typeof UNLINKED_TRUCKS !== 'undefined')
+    ? UNLINKED_TRUCKS.findIndex(t => t.number === truckId) : -1;
   if (poolIdx > -1) UNLINKED_TRUCKS.splice(poolIdx, 1);
 
-  renderUnits();
-  renderTrucks();
-  renderOverview();
-  renderConditions();
+  if (typeof renderUnits === 'function') renderUnits();
 
-  /* Show success in drawer then close */
-  const existing = document.getElementById('state-unlink-success');
-  if (existing) existing.remove();
-  const successDiv = document.createElement('div');
-  successDiv.id = 'state-unlink-success';
-  successDiv.style.cssText = 'display:flex;flex-direction:column;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;';
-  successDiv.innerHTML = `
-    <div style="padding:48px 24px 32px;text-align:center;display:flex;flex-direction:column;align-items:center;">
-      <div style="width:52px;height:52px;border-radius:50%;background:rgba(48,105,227,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-          <path d="M4 11h14M11 4l7 7-7 7" stroke="#3069e3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <div style="font-size:18px;font-weight:500;color:var(--strong);letter-spacing:-0.4px;margin-bottom:8px;">Unit Attached</div>
-      <div style="font-size:14px;color:var(--soft);letter-spacing:-0.28px;line-height:1.6;margin-bottom:28px;">
-        Unit <strong style="color:var(--strong);">${unitId}</strong> has been attached to Truck ${truckId}.
-      </div>
-      <button onclick="closeDrawer()" style="background:var(--blue);color:white;border:none;border-radius:32px;padding:14px 32px;font-size:15px;font-weight:500;font-family:var(--font);letter-spacing:-0.3px;cursor:pointer;width:100%;">Done</button>
-    </div>
-  `;
-
-  /* Hide state-unlinked, show success */
-  document.getElementById('state-unlinked').style.display = 'none';
-  document.getElementById('drawer-body').appendChild(successDiv);
+  /* Close truck drawer, then open unit detail at Configuration tab.
+     openUnitDetail detects status === 'Pending' and routes to config. */
+  closeDrawer();
+  setTimeout(function() {
+    openUnits();
+    setTimeout(function() { openUnitDetail(unitId); }, 150);
+  }, 250);
 }
 
 function navigateDrawer(dir) {
@@ -21390,31 +21482,41 @@ let udCurrentTab  = 'lifespan';
 function openUnitDetail(unitId) {
   udCurrentUnit = UNITS_DATA.find(u => u.id === unitId);
   if (!udCurrentUnit) return;
-  udCurrentTab = 'lifespan';
+
+  /* Pending units land directly on Configuration tab — same as desktop/tablet */
+  const isPending = udCurrentUnit.status === 'Pending';
+  udCurrentTab = isPending ? 'config' : 'lifespan';
 
   /* Status pill */
   const pill = document.getElementById('ud-status-pill');
   const cls  = statusClass(udCurrentUnit.status);
   pill.className = '';
   pill.style.cssText = '';
-  const pillLabel = udCurrentUnit.status === 'Linked Unit' ? 'Active' : udCurrentUnit.status;
+  const pillLabel = udCurrentUnit.status === 'Linked Unit' ? 'Active'
+    : udCurrentUnit.status === 'Pending' ? 'Pending Configuration'
+    : udCurrentUnit.status;
   pill.innerHTML = `<span class="ustatus ${cls}"><span class="ustatus-dot"></span>${pillLabel}</span>`;
 
   document.getElementById('ud-unit-id').textContent = unitId;
 
-  /* Build nav dropdown based on unit status, land on Unit Life Span */
-  udCurrentTab = 'lifespan';
-  document.getElementById('ud-nav-label').textContent = 'Unit Life Span';
+  /* Build nav and set label */
+  const navLabel = isPending ? 'Configuration' : 'Unit Life Span';
+  document.getElementById('ud-nav-label').textContent = navLabel;
   document.getElementById('ud-nav-chev').style.transform = '';
-  udBuildNavDropdown('lifespan');
+  udBuildNavDropdown(udCurrentTab);
 
   /* Arrow state */
   udUpdateArrows();
 
-  udRenderLifespan();
+  if (isPending) {
+    udRenderConfig();
+  } else {
+    udRenderLifespan();
+  }
 
   const drawer = document.getElementById('units-drawer');
   drawer.style.display = 'flex';
+  drawer.style.pointerEvents = 'auto';
   requestAnimationFrame(() => drawer.style.transform = 'translateX(0)');
 }
 
@@ -21422,6 +21524,10 @@ function openUnitDetail(unitId) {
 const UD_NAV_UNLINKED = [
   { label: 'Unit Life Span',  tab: 'lifespan' },
   { label: 'Attach to Truck', tab: 'attach'   },
+];
+const UD_NAV_PENDING = [
+  { label: 'Unit Life Span',  tab: 'lifespan' },
+  { label: 'Configuration',   tab: 'config'   },
 ];
 const UD_NAV_LINKED = [
   { label: 'Unit Life Span',       tab: 'lifespan'  },
@@ -21432,10 +21538,16 @@ const UD_NAV_LINKED = [
   { label: 'Configuration',        tab: 'config'    },
 ];
 
+function udNavItems(u) {
+  if (!u) return UD_NAV_UNLINKED;
+  if (u.status === 'Linked Unit') return UD_NAV_LINKED;
+  if (u.status === 'Pending')     return UD_NAV_PENDING;
+  return UD_NAV_UNLINKED;
+}
+
 function udBuildNavDropdown(activeTab) {
   const u    = udCurrentUnit;
-  const isLinked = u && u.status === 'Linked Unit';
-  const items = isLinked ? UD_NAV_LINKED : UD_NAV_UNLINKED;
+  const items = udNavItems(u);
   const dd   = document.getElementById('ud-nav-dropdown');
   if (!dd) return;
   dd.innerHTML = items.map(item => {
@@ -21450,8 +21562,7 @@ function udSwitchTab(tab) {
   udCurrentTab = tab;
   /* Update pill label */
   const u    = udCurrentUnit;
-  const isLinked = u && u.status === 'Linked Unit';
-  const items = isLinked ? UD_NAV_LINKED : UD_NAV_UNLINKED;
+  const items = udNavItems(u);
   const item  = items.find(i => i.tab === tab);
   if (item) document.getElementById('ud-nav-label').textContent = item.label;
   udBuildNavDropdown(tab);
@@ -21493,12 +21604,69 @@ function udRenderConfig() {
   document.getElementById('ud-body').style.padding = '0';
   document.getElementById('ud-body').style.background = 'var(--layer-2)';
 
+  /* Build clone source pool: same plant, other commissioned trucks */
+  var allTrucks = [];
+  (truckGroups || []).forEach(function(g) { allTrucks = allTrucks.concat(g.trucks || []); });
+  /* Find the plant of the unit's linked truck */
+  var linkedTruckNum = (u.truck && u.truck !== '--') ? String(u.truck) : (attachSelectedTruck ? String(attachSelectedTruck) : '');
+  var linkedTruck = allTrucks.find(function(t) { return String(t.num) === linkedTruckNum; });
+  /* If truck not in truckGroups (came from UNLINKED_TRUCKS pool), fall back to first plant */
+  var unitPlant = linkedTruck ? linkedTruck.plant : (allTrucks.length > 0 ? allTrucks[0].plant : '');
+  var clonePool = allTrucks.filter(function(t) {
+    return t.plant === unitPlant && String(t.num) !== linkedTruckNum;
+  }).slice(0, 6);
+
+  /* Prototype clone settings — what we'll apply */
+  const cloneSettings = [
+    { key: 'Drum Magnets', field: 'numDrumMagnets', val: '4' },
+    { key: 'Drum Size', field: 'drumSize', val: '8 yd³' },
+    { key: 'Min Batch Revolutions', field: 'minBatch', val: '70' },
+    { key: 'Min Agitation Speed', field: 'minAgi', val: '2 RPM' },
+    { key: 'Min Mixing Speed', field: 'minMix', val: '8 RPM' },
+    { key: 'Max Mixing Speed', field: 'maxMix', val: '18 RPM' },
+    { key: 'Slump Tolerance', field: 'slumpTol', val: '0.5 in' },
+    { key: 'Water Hose (QC→Nozzle)', field: 'waterHose1', val: '12 ft' },
+  ];
+
   document.getElementById('ud-body').innerHTML = `
     <!-- Toolbar -->
-    <div class="cfg-toolbar" style="position:sticky;top:0;z-index:2;">
+    <div class="cfg-toolbar" style="position:sticky;top:0;z-index:10;">
       <div class="cfg-search">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4" stroke="#36322d9e" stroke-width="1.3"/><path d="M10.5 10.5l3 3" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
         <input type="text" placeholder="Search" class="cfg-search-input">
+      </div>
+    </div>
+
+    <!-- Clone card — persistent, no toggle -->
+    <div class="clone-card" id="ud-clone-banner" style="margin:10px 12px;">
+      <div class="clone-card-header">
+        <div class="clone-card-text">
+          <div class="clone-card-title">Clone setting from a similar truck <span id="ud-clone-applied-badge" style="display:none;" class="clone-applied-badge"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Applied</span></div>
+          <div class="clone-card-sub">Prefill equipment &amp; Mixing setting from a commissioned truck</div>
+        </div>
+        <div class="clone-card-controls">
+          <div class="clone-selector-wrap">
+            <div class="clone-selector" id="ud-clone-selector" onclick="udCloneToggleDropdown()">
+              <span class="clone-selector-label" id="ud-clone-selector-label">Truck Number</span>
+              <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
+            </div>
+            <div class="clone-dropdown" id="ud-clone-dropdown">
+              <div class="clone-dropdown-search">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#36322d9e" stroke-width="1.3"/><path d="M10 10l2.5 2.5" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
+                <input id="ud-clone-search" type="text" placeholder="Search truck Number" oninput="udCloneSearch(this.value)" autocomplete="off">
+              </div>
+              <div class="clone-truck-list" id="ud-clone-list"></div>
+            </div>
+          </div>
+          <button class="clone-apply-btn" id="ud-clone-apply-btn" onclick="udApplyClone()" disabled>Apply Settings</button>
+        </div>
+      </div>
+      <!-- Preview expands below when truck selected -->
+      <div class="clone-preview" id="ud-clone-preview">
+        <div class="clone-preview-label">Fields That will be Prefilled</div>
+        ${cloneSettings.map(function(s) {
+          return `<div class="clone-preview-row"><span class="clone-preview-key">${s.key}</span><span class="clone-preview-val">${s.val}</span></div>`;
+        }).join('')}
       </div>
     </div>
 
@@ -21764,6 +21932,250 @@ function udRenderConfig() {
   });
 }
 
+/* ── Desktop + Tablet clone from truck ── */
+var dtCloneSelectedIdx = -1;
+var dtClonePool = [];
+
+function dtBuildClonePool() {
+  var u = UNITS_DATA.find(function(x) { return x.id === dtUdCurrentUnitId; });
+  var linkedTruckNum = u ? String(u.truck) : '';
+  var allTrucks = [];
+  (truckGroups || []).forEach(function(g) { allTrucks = allTrucks.concat(g.trucks || []); });
+  var linkedTruck = allTrucks.find(function(t) { return String(t.num) === linkedTruckNum; });
+  var unitPlant = linkedTruck ? linkedTruck.plant : (allTrucks[0] ? allTrucks[0].plant : '');
+  dtClonePool = allTrucks.filter(function(t) {
+    return t.plant === unitPlant && String(t.num) !== linkedTruckNum;
+  });
+  dtRenderCloneList('');
+}
+
+function dtCloneToggleDropdown() {
+  var dd = document.getElementById('dt-clone-dropdown');
+  if (!dd) return;
+  var opening = !dd.classList.contains('open');
+  dd.classList.toggle('open');
+  if (opening) {
+    if (dtClonePool.length === 0) dtBuildClonePool();
+    else dtRenderCloneList('');
+    var inp = document.getElementById('dt-clone-search');
+    if (inp) { inp.value = ''; setTimeout(function() { inp.focus(); }, 40); }
+  }
+}
+
+function dtCloneSearch(val) {
+  dtRenderCloneList(val);
+}
+
+function dtRenderCloneList(query) {
+  var list = document.getElementById('dt-clone-list');
+  if (!list) return;
+  var q = query.trim().toLowerCase();
+  var filtered = q ? dtClonePool.filter(function(t) { return String(t.num).toLowerCase().includes(q); }) : dtClonePool;
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="clone-no-results">No trucks match</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(function(t) {
+    var realIdx = dtClonePool.indexOf(t);
+    var isSel = realIdx === dtCloneSelectedIdx;
+    return '<div class="clone-truck-row' + (isSel ? ' selected' : '') + '" onclick="dtPickCloneTruck(' + realIdx + ')">' +
+      '<span class="clone-truck-num">Truck ' + t.num + '</span>' +
+      (isSel ? '<span class="clone-truck-check"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1.5 5l3 3L10.5 1.5" stroke="var(--blue)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' : '') +
+    '</div>';
+  }).join('');
+}
+
+function dtPickCloneTruck(idx) {
+  dtCloneSelectedIdx = idx;
+  var t = dtClonePool[idx];
+  if (!t) return;
+  /* Update selector label */
+  var label = document.getElementById('dt-clone-selector-label');
+  if (label) label.textContent = 'Truck ' + t.num;
+  /* Close dropdown */
+  var dd = document.getElementById('dt-clone-dropdown');
+  if (dd) dd.classList.remove('open');
+  /* Show preview panel */
+  var preview = document.getElementById('dt-clone-preview');
+  if (preview) preview.classList.add('visible');
+  /* Enable apply button */
+  var btn = document.getElementById('dt-clone-apply-btn');
+  if (btn) btn.disabled = false;
+}
+
+function dtApplyClone() {
+  if (dtCloneSelectedIdx < 0) return;
+  var fieldMap = [
+    { label: 'Number of Drum Magnets', val: '4' },
+    { label: 'Drum Size (yd³)', val: '8' },
+    { label: 'Min Batch Revolutions', val: '70' },
+    { label: 'Min Agitation Speed (RPM)', val: '2' },
+    { label: 'Min Mixing Speed (RPM)', val: '8' },
+    { label: 'Max Mixing Speed (RPM)', val: '18' },
+    { label: 'Water Hose: Quick Connect to Nozzle (ft)', val: '12' },
+    { label: 'Water Hose: FDM to Quick Connect (ft)', val: '6' },
+    { label: 'Admix Hose Length (ft)', val: '8' },
+    { label: 'Slump Tolerance (in)', val: '0.5' },
+    { label: 'Initial Water Ratio', val: '1.05' },
+    { label: 'Initial Admix Ratio', val: '0.95' },
+    { label: 'Min Water Ratio', val: '0.85' },
+    { label: 'Max Water Ratio', val: '1.20' },
+  ];
+  var accs = document.querySelectorAll('#dt-cfg-accs .cfg-acc');
+  fieldMap.forEach(function(item) {
+    accs.forEach(function(acc) {
+      acc.querySelectorAll('.cfg-field').forEach(function(field) {
+        var lbl = field.querySelector('label');
+        if (!lbl || lbl.textContent.trim() !== item.label) return;
+        var inp = field.querySelector('.cfg-edit-input');
+        if (inp) {
+          inp.value = item.val;
+          inp.style.background = 'rgba(48,105,227,0.07)';
+          inp.style.borderColor = 'rgba(48,105,227,0.3)';
+          var ro = field.querySelector('.cfg-ro-val');
+          if (ro) ro.textContent = item.val;
+        }
+        if (!acc.classList.contains('open')) {
+          acc.classList.add('open');
+          var body = acc.querySelector('.cfg-acc-body');
+          if (body) body.style.display = '';
+        }
+      });
+    });
+  });
+  var badge = document.getElementById('dt-clone-applied-badge');
+  if (badge) badge.style.display = 'inline-flex';
+  var preview = document.getElementById('dt-clone-preview');
+  if (preview) preview.classList.remove('visible');
+  var btn = document.getElementById('dt-clone-apply-btn');
+  if (btn) { btn.textContent = 'Applied ✓'; btn.disabled = true; btn.style.opacity = '0.5'; }
+  /* Allow re-selection — reset after short delay so FST sees confirmation */
+  setTimeout(function() {
+    dtCloneSelectedIdx = -1;
+    var label = document.getElementById('dt-clone-selector-label');
+    if (label) label.textContent = 'Truck Number';
+    if (btn) { btn.textContent = 'Apply Settings'; btn.disabled = true; btn.style.opacity = ''; }
+  }, 1500);
+}
+
+
+
+var udCloneSelectedIdx = -1;
+var udClonePool = [];
+
+function udBuildClonePool() {
+  var u = udCurrentUnit;
+  var allTrucks = [];
+  (truckGroups || []).forEach(function(g) { allTrucks = allTrucks.concat(g.trucks || []); });
+  var linkedTruckNum = (u && u.truck && u.truck !== '--') ? String(u.truck) : (attachSelectedTruck ? String(attachSelectedTruck) : '');
+  var linkedTruck = allTrucks.find(function(t) { return String(t.num) === linkedTruckNum; });
+  var unitPlant = linkedTruck ? linkedTruck.plant : (allTrucks.length > 0 ? allTrucks[0].plant : '');
+  udClonePool = allTrucks.filter(function(t) {
+    return t.plant === unitPlant && String(t.num) !== linkedTruckNum;
+  });
+  udRenderCloneList('');
+}
+
+function udCloneToggleDropdown() {
+  var dd = document.getElementById('ud-clone-dropdown');
+  if (!dd) return;
+  var opening = !dd.classList.contains('open');
+  dd.classList.toggle('open');
+  if (opening) {
+    if (udClonePool.length === 0) udBuildClonePool();
+    else udRenderCloneList('');
+    var inp = document.getElementById('ud-clone-search');
+    if (inp) { inp.value = ''; setTimeout(function() { inp.focus(); }, 40); }
+  }
+}
+
+function udCloneSearch(val) {
+  udRenderCloneList(val);
+}
+
+function udRenderCloneList(query) {
+  var list = document.getElementById('ud-clone-list');
+  if (!list) return;
+  var q = query.trim().toLowerCase();
+  var filtered = q ? udClonePool.filter(function(t) { return String(t.num).toLowerCase().includes(q); }) : udClonePool;
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="clone-no-results">No trucks match</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(function(t) {
+    var realIdx = udClonePool.indexOf(t);
+    var isSel = realIdx === udCloneSelectedIdx;
+    return '<div class="clone-truck-row' + (isSel ? ' selected' : '') + '" ontouchstart="" onclick="udPickCloneTruck(' + realIdx + ')">' +
+      '<span class="clone-truck-num">Truck ' + t.num + '</span>' +
+      (isSel ? '<span class="clone-truck-check"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1.5 5l3 3L10.5 1.5" stroke="var(--blue)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' : '') +
+    '</div>';
+  }).join('');
+}
+
+function udPickCloneTruck(idx) {
+  udCloneSelectedIdx = idx;
+  var t = udClonePool[idx];
+  if (!t) return;
+  var label = document.getElementById('ud-clone-selector-label');
+  if (label) label.textContent = 'Truck ' + t.num;
+  var dd = document.getElementById('ud-clone-dropdown');
+  if (dd) dd.classList.remove('open');
+  var preview = document.getElementById('ud-clone-preview');
+  if (preview) preview.classList.add('visible');
+  var btn = document.getElementById('ud-clone-apply-btn');
+  if (btn) btn.disabled = false;
+}
+
+function udApplyClone() {
+  if (udCloneSelectedIdx < 0) return;
+  var fieldMap = [
+    { accIdx: 1, label: 'Number of Drum Magnets', val: '4' },
+    { accIdx: 1, label: 'Drum Size (yd³)', val: '8' },
+    { accIdx: 2, label: 'Min Batch Revolutions', val: '70' },
+    { accIdx: 2, label: 'Min Agitation Speed (RPM)', val: '2' },
+    { accIdx: 2, label: 'Min Mixing Speed (RPM)', val: '8' },
+    { accIdx: 2, label: 'Max Mixing Speed (RPM)', val: '18' },
+    { accIdx: 3, label: 'Water Hose: Quick Connect to Nozzle (ft)', val: '12' },
+    { accIdx: 3, label: 'Water Hose: FDM to Quick Connect (ft)', val: '6' },
+    { accIdx: 3, label: 'Admix Hose Length (ft)', val: '8' },
+    { accIdx: 7, label: 'Slump Tolerance (in)', val: '0.5' },
+    { accIdx: 7, label: 'Initial Water Ratio', val: '1.05' },
+    { accIdx: 7, label: 'Initial Admix Ratio', val: '0.95' },
+    { accIdx: 7, label: 'Min Water Ratio', val: '0.85' },
+    { accIdx: 7, label: 'Max Water Ratio', val: '1.20' },
+  ];
+  fieldMap.forEach(function(item) {
+    var acc = document.getElementById('ud-cfg-acc-' + item.accIdx);
+    if (!acc) return;
+    acc.querySelectorAll('input[type="text"], input[type="number"]').forEach(function(inp) {
+      var lbl = inp.closest('.cfg-field') && inp.closest('.cfg-field').querySelector('label');
+      if (lbl && lbl.textContent.trim() === item.label) {
+        inp.value = item.val;
+        inp.style.background = 'rgba(48,105,227,0.07)';
+        inp.style.borderColor = 'rgba(48,105,227,0.3)';
+      }
+    });
+    if (!acc.classList.contains('open')) {
+      acc.classList.add('open');
+      var body = acc.querySelector('.cfg-acc-body');
+      if (body) body.style.display = 'block';
+    }
+  });
+  var badge = document.getElementById('ud-clone-applied-badge');
+  if (badge) badge.style.display = 'inline-flex';
+  var preview = document.getElementById('ud-clone-preview');
+  if (preview) preview.classList.remove('visible');
+  var btn = document.getElementById('ud-clone-apply-btn');
+  if (btn) { btn.textContent = 'Applied ✓'; btn.disabled = true; btn.style.opacity = '0.5'; }
+  /* Allow re-selection — reset after short delay so FST sees confirmation */
+  setTimeout(function() {
+    udCloneSelectedIdx = -1;
+    var label = document.getElementById('ud-clone-selector-label');
+    if (label) label.textContent = 'Truck Number';
+    if (btn) { btn.textContent = 'Apply Settings'; btn.disabled = true; btn.style.opacity = ''; }
+  }, 1500);
+}
+
 function udToggleCfgAcc(n) {
   const acc = document.getElementById('ud-cfg-acc-' + n);
   if (!acc) return;
@@ -21776,6 +22188,12 @@ function udToggleCfgAcc(n) {
 function udSaveConfig() {
   if (udCurrentUnit) {
     udCurrentUnit.status = 'Linked Unit';
+    if (!udCurrentUnit.firstCommissioned) {
+      const _n = new Date(), _h = _n.getHours(), _m = _n.getMinutes();
+      const _ap = _h >= 12 ? 'PM' : 'AM', _h12 = _h % 12 || 12;
+      const _mo = String(_n.getMonth()+1).padStart(2,'0'), _d = String(_n.getDate()).padStart(2,'0'), _y = _n.getFullYear();
+      udCurrentUnit.firstCommissioned = `${_h12}:${String(_m).padStart(2,'0')} ${_ap} ${_mo}/${_d}/${_y}`;
+    }
     renderUnits();
   }
 
@@ -22211,6 +22629,11 @@ function doAttach() {
     u.truck           = attachSelectedTruck;
     u.assignedToTruck = new Date().toLocaleDateString('en-US', {month:'2-digit',day:'2-digit',year:'numeric'});
     u.mixerType       = attachedTruckData ? attachedTruckData.mixer : '';
+    if (!u.firstCommissioned) {
+      const _n = new Date(), _h = _n.getHours(), _m = _n.getMinutes();
+      const _ap = _h >= 12 ? 'PM' : 'AM', _h12 = _h % 12 || 12;
+      u.firstCommissioned = `${_h12}:${String(_m).padStart(2,'0')} ${_ap} ${u.assignedToTruck}`;
+    }
   }
   const idx = UNLINKED_TRUCKS.findIndex(t => t.number === attachSelectedTruck);
   if (idx > -1) UNLINKED_TRUCKS.splice(idx, 1);
@@ -22268,6 +22691,7 @@ function closeUnitDetail() {
   if (overlay) overlay.remove();
   const drawer = document.getElementById('units-drawer');
   drawer.style.transform = 'translateX(100%)';
+  drawer.style.pointerEvents = 'none';
   setTimeout(() => drawer.style.display = 'none', 280);
 }
 
@@ -22344,12 +22768,15 @@ function showUnlinkConfirm(unitId, truckId, source) {
         </svg>
       </div>
       <div class="confirm-title">Confirm unlink</div>
-      <div class="confirm-body">
-        ${unitId !== '--' ? `Unit <strong>${unitId}</strong> will be removed from Truck <strong>${truckId}</strong>.` : `Truck <strong>${truckId}</strong> will be unlinked.`}
-        The unit will become inactive and unlinked, and will need to be reattached before it can collect data again.
+      <div class="confirm-body" id="unlink-confirm-body">
+        The unit will become inactive and will need to be reattached before it can collect data again.
       </div>
-      <div class="confirm-btns">
-        <button class="confirm-btn-primary" style="background:var(--red);" onclick="doUnlink('${unitId}', '${truckId}', '${source}')">Confirm Unlink</button>
+      <label style="display:flex;align-items:center;gap:10px;margin:14px 0 4px;cursor:pointer;user-select:none;">
+        <input type="checkbox" id="unlink-return-cb" onchange="unlinkToggleReturn(this)" style="width:18px;height:18px;accent-color:var(--blue);cursor:pointer;">
+        <span style="font-size:14px;color:var(--strong);letter-spacing:-0.28px;">Return to Verify</span>
+      </label>
+      <div class="confirm-btns" style="margin-top:14px;">
+        <button class="confirm-btn-primary" style="background:var(--red);" onclick="doUnlink('${unitId}', '${truckId}', '${source}', document.getElementById('unlink-return-cb').checked)">Confirm Unlink</button>
         <button class="confirm-btn-cancel" onclick="cancelUnlink()">Cancel</button>
       </div>
     </div>
@@ -22357,18 +22784,26 @@ function showUnlinkConfirm(unitId, truckId, source) {
   drawerEl.appendChild(overlay);
 }
 
+function unlinkToggleReturn(cb) {
+  var body = document.getElementById('unlink-confirm-body');
+  if (!body) return;
+  body.textContent = cb.checked
+    ? 'The unit will be marked Pending Return and stay visible until Verify confirms receipt.'
+    : 'The unit will become inactive and will need to be reattached before it can collect data again.';
+}
+
 function cancelUnlink() {
   const el = document.getElementById('unlink-confirm-overlay');
   if (el) el.remove();
 }
 
-function doUnlink(unitId, truckId, source) {
+function doUnlink(unitId, truckId, source, andReturn) {
   cancelUnlink();
 
   /* Revert the unit */
   const u = UNITS_DATA.find(u => u.id === unitId);
   if (u) {
-    u.status          = 'Unlinked Unit';
+    u.status          = andReturn ? 'Pending Return' : 'Unlinked Unit';
     u.truck           = '--';
     u.assignedToTruck = null;
   }
@@ -22909,6 +23344,20 @@ document.addEventListener('click', (e) => {
   }
 });
 
+/* Close clone dropdown when clicking outside */
+document.addEventListener('click', function(e) {
+  var dtWrap = document.getElementById('dt-clone-selector') && document.getElementById('dt-clone-selector').closest('.clone-selector-wrap');
+  var dtDd = document.getElementById('dt-clone-dropdown');
+  if (dtDd && dtDd.classList.contains('open') && dtWrap && !dtWrap.contains(e.target)) {
+    dtDd.classList.remove('open');
+  }
+  var udWrap = document.getElementById('ud-clone-selector') && document.getElementById('ud-clone-selector').closest('.clone-selector-wrap');
+  var udDd = document.getElementById('ud-clone-dropdown');
+  if (udDd && udDd.classList.contains('open') && udWrap && !udWrap.contains(e.target)) {
+    udDd.classList.remove('open');
+  }
+});
+
 /* Legacy entrypoint kept for backwards compat — table inline filter only */
 function dtSearch(q) {
   dtSearchQuery = q.trim();
@@ -23272,6 +23721,7 @@ function hmBuildMap(el) {
     zoom: 10,
     zoomControl: true,
     attributionControl: false,
+    keyboard: false
   });
 
   /* OpenStreetMap tiles — no API key */
@@ -23625,7 +24075,8 @@ function dcMapInit() {
     center:[37.7649, -122.2300],   /* SF Bay — frames most markers */
     zoom:11,
     zoomControl:false,
-    attributionControl:true
+    attributionControl:true,
+    keyboard:false   /* prevent Leaflet focus on flyTo causing browser page scroll */
   });
 
   /* Two free tile providers — toggle via the terrain button.
@@ -23715,7 +24166,8 @@ function tbMapInit() {
     center: [37.7649, -122.2300],
     zoom: 11,
     zoomControl: false,
-    attributionControl: true
+    attributionControl: true,
+    keyboard: false
   });
 
   var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -23826,9 +24278,13 @@ function tbmFocusTruck(num) {
   }
   /* Re-render cards to show active highlight */
   tbmRenderCards();
-  /* Scroll the card strip to the active card */
-  var card = document.querySelector('.tbm-card[data-truck="' + num + '"]');
-  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  /* Scroll the card strip to the active card — horizontal only, never vertical */
+  var strip = document.getElementById('tbm-card-strip');
+  var card  = document.querySelector('.tbm-card[data-truck="' + num + '"]');
+  if (strip && card) {
+    var target = card.offsetLeft - (strip.offsetWidth / 2) + (card.offsetWidth / 2);
+    strip.scrollTo({ left: target, behavior: 'smooth' });
+  }
   /* Drawer opens only on second tap (marker click) — see tbmOpenTruckDrawer */
 }
 
@@ -23925,6 +24381,7 @@ function moGoMap() {
   /* Close side nav if open */
   if (typeof closeNav === 'function') closeNav();
 
+
   var page = document.getElementById('mo-page-map');
   if (!page) return;
 
@@ -23974,7 +24431,8 @@ function moMapInit() {
     center: [37.7649, -122.2300],
     zoom: 11,
     zoomControl: false,
-    attributionControl: true
+    attributionControl: true,
+    keyboard: false
   });
 
   var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -24102,9 +24560,13 @@ function moFocusTruck(num) {
   }
   /* Re-render cards to show active highlight */
   momRenderCards();
-  /* Scroll strip to active card */
-  var card = document.querySelector('.mom-card[data-truck="' + num + '"]');
-  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  /* Scroll strip to active card — horizontal only, never touch vertical page scroll */
+  var strip = document.getElementById('mom-card-strip');
+  var card  = document.querySelector('.mom-card[data-truck="' + num + '"]');
+  if (strip && card) {
+    var target = card.offsetLeft - (strip.offsetWidth / 2) + (card.offsetWidth / 2);
+    strip.scrollTo({ left: target, behavior: 'smooth' });
+  }
 }
 
 /* Marker tap — focus then open the drawer on top of the map */
@@ -24398,7 +24860,15 @@ function dcMapFocusTruck(num, fromMarker) {
   if (fromMarker) {
     setTimeout(function() {
       var card = document.querySelector('.dc-tc[data-truck="' + num + '"]');
-      if (card) card.scrollIntoView({ behavior:'smooth', block:'center' });
+      if (card) {
+        var stack = document.querySelector('.dc-map-stack');
+        if (stack) {
+          var stackTop = stack.getBoundingClientRect().top;
+          var cardTop  = card.getBoundingClientRect().top;
+          var target   = stack.scrollTop + (cardTop - stackTop) - (stack.clientHeight / 2) + (card.offsetHeight / 2);
+          stack.scrollTo({ top: target, behavior: 'smooth' });
+        }
+      }
     }, 30);
     /* Marker click also opens the truck drawer so the user can dig into
        the truck without a second click. Card click keeps the existing
@@ -26358,9 +26828,11 @@ function dtUnitsRender() {
     if (c === 'sysType')   return `<td class="dt-td">${u.sysType}</td>`;
     if (c === 'config')    return `<td class="dt-td">${u.config}</td>`;
     if (c === 'firstComm') {
-      return u.firstCommissioned
-        ? `<td class="dt-td"><span>1:16 PM</span> <span class="dt-units-date-secondary">${u.firstCommissioned}</span></td>`
-        : `<td class="dt-td"><span style="color:var(--soft);">—</span></td>`;
+      if (!u.firstCommissioned) return `<td class="dt-td"><span style="color:var(--soft);">—</span></td>`;
+      const _p = u.firstCommissioned.match(/^(\d{1,2}:\d{2}\s*[AP]M)\s+(.+)$/i);
+      return _p
+        ? `<td class="dt-td"><span>${_p[1]}</span> <span class="dt-units-date-secondary">${_p[2]}</span></td>`
+        : `<td class="dt-td"><span>${u.firstCommissioned}</span></td>`;
     }
     return `<td class="dt-td">—</td>`;
   }
@@ -27847,6 +28319,346 @@ function tbBuildOverview(t, scroll) {
     ${tbBuildSidePanel(t)}`;
 }
 
+/* ── Tablet truck drawer — De-install unit flow ──────────────────────────
+   Mirrors dtTruckDrawerUnlink* exactly: inline confirm panel (no modal),
+   "Return to Verify" checkbox, two-state toast, then reshape the drawer.  */
+
+function tbTruckDrawerUnlinkUnit() {
+  if (!tbDrawerTruck) return;
+  const truckNum = tbDrawerTruck.num;
+  const u = (typeof UNITS_DATA !== 'undefined')
+    ? UNITS_DATA.find(x => x.status === 'Linked Unit' && String(x.truck) === String(truckNum))
+    : null;
+  if (!u) return;
+
+  const panel = document.getElementById('tb-drawer-unlink-confirm');
+  if (!panel) return;
+  panel.innerHTML = `
+    <div class="dt-inline-confirm-head">
+      <div class="dt-inline-confirm-icon">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
+          <path d="M8 12a4.5 4.5 0 006 0l2.5-2.5a4.5 4.5 0 00-6-6L9 5" stroke="#d70100" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 8a4.5 4.5 0 00-6 0L3.5 10.5a4.5 4.5 0 006 6L11 15" stroke="#d70100" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3 3l14 14" stroke="#d70100" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="dt-inline-confirm-text">
+        <div class="dt-inline-confirm-title">Confirm unlink</div>
+        <div class="dt-inline-confirm-body" id="tb-drawer-unlink-body">
+          The unit becomes inactive and will need to be reattached before it can collect data again.
+        </div>
+      </div>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;margin:10px 0 12px;cursor:pointer;font-size:13px;color:var(--strong);user-select:none;">
+      <input type="checkbox" class="dt-units-cb" id="tb-drawer-unlink-return-cb"
+             onchange="tbTruckDrawerUnlinkToggleReturn(this)">
+      Return to Verify
+    </label>
+    <div class="dt-inline-confirm-btns">
+      <button class="dt-inline-confirm-btn cancel" onclick="tbTruckDrawerUnlinkCancel()">Cancel</button>
+      <button class="dt-inline-confirm-btn danger" onclick="tbTruckDrawerUnlinkDo(document.getElementById('tb-drawer-unlink-return-cb').checked)">Confirm Unlink</button>
+    </div>`;
+  panel.style.display = 'block';
+
+  const btn = document.getElementById('tb-drawer-unlink-btn');
+  if (btn) btn.setAttribute('aria-pressed', 'true');
+}
+
+function tbTruckDrawerUnlinkCancel() {
+  const panel = document.getElementById('tb-drawer-unlink-confirm');
+  if (panel) { panel.style.display = 'none'; panel.innerHTML = ''; }
+  const btn = document.getElementById('tb-drawer-unlink-btn');
+  if (btn) btn.removeAttribute('aria-pressed');
+}
+
+function tbTruckDrawerUnlinkToggleReturn(cb) {
+  const body = document.getElementById('tb-drawer-unlink-body');
+  if (!body) return;
+  body.textContent = cb.checked
+    ? 'The unit will be marked Pending Return and stay visible until Verify confirms receipt.'
+    : 'The unit becomes inactive and will need to be reattached before it can collect data again.';
+}
+
+function tbTruckDrawerUnlinkDo(andReturn) {
+  tbTruckDrawerUnlinkCancel();
+  if (!tbDrawerTruck) return;
+  const truckNum = tbDrawerTruck.num;
+  const u = (typeof UNITS_DATA !== 'undefined')
+    ? UNITS_DATA.find(x => x.status === 'Linked Unit' && String(x.truck) === String(truckNum))
+    : null;
+  if (!u) return;
+  const unitId = u.id;
+
+  /* 1. Set unit end state */
+  if (andReturn) {
+    const now = new Date();
+    u.status = 'Pending Return';
+    u.returnDate = (now.getMonth()+1) + '/' + now.getDate() + '/' + now.getFullYear();
+  } else {
+    u.status = 'Unlinked Unit';
+  }
+  u.truck = '--';
+  u.assignedToTruck = null;
+
+  /* 2. Add truck back to UNLINKED_TRUCKS pool */
+  if (typeof UNLINKED_TRUCKS !== 'undefined') {
+    const exists = UNLINKED_TRUCKS.find(t => t.number === truckNum);
+    if (!exists) {
+      UNLINKED_TRUCKS.push({ number: truckNum, type: 'Front', drum: '--', water: '--', mixer: '--' });
+    }
+  }
+
+  /* 3. Mark truck unlinked across shared data */
+  if (typeof trucks !== 'undefined') {
+    const tMain = trucks.find(t => t.num === truckNum);
+    if (tMain) { tMain.unlinked = true; tMain.err = 0; tMain.wrn = 0; tMain.truckMode = 'Non Active'; tMain.unitId = '--'; }
+  }
+  if (typeof CC_TRUCKS !== 'undefined') {
+    const tCC = CC_TRUCKS.find(t => t.num === truckNum);
+    if (tCC) { tCC.unlinked = true; tCC.err = 0; tCC.wrn = 0; }
+  }
+
+  /* 4. Re-render visible tables */
+  if (typeof dtRefreshTable === 'function' && typeof dtActiveTab !== 'undefined') dtRefreshTable(dtActiveTab);
+  if (typeof dtUnitsRender === 'function') dtUnitsRender();
+  if (andReturn && typeof dtUnitsUpdateTabs === 'function') dtUnitsUpdateTabs();
+  if (andReturn && typeof dtUnitsPendingRender === 'function') dtUnitsPendingRender();
+
+  /* 5. Reshape the tablet drawer to the unlinked empty state */
+  tbTruckDrawerApplyUnlinkedState(truckNum);
+
+  /* 6. Toast — wording differs by end state */
+  if (andReturn) {
+    dtShowToast({
+      title: 'Unit flagged for return',
+      body: 'Unit ' + unitId + ' removed from Truck ' + truckNum + '. Pending Return · Verify will confirm receipt.',
+      variant: 'warning',
+    });
+  } else {
+    dtShowToast({
+      title: 'Unit unlinked',
+      body: 'Unit ' + unitId + ' was removed from Truck ' + truckNum + '. Connect a new unit to bring this truck back online.',
+    });
+  }
+}
+
+function tbTruckDrawerApplyUnlinkedState(truckNum) {
+  /* Reshape the tablet truck drawer to the "Truck Not Connected" empty state —
+     mirrors dtTruckDrawerApplyUnlinkedState exactly. */
+
+  /* 1. Replace tab bar — only Logs + Attach Unit */
+  const tabsEl = document.querySelector('#tb-drawer .tb-drawer-tabs');
+  if (tabsEl) {
+    tabsEl.innerHTML =
+      '<button class="tb-drawer-tab active" onclick="tbTruckDrawerShowUnlinkedLogs()">Logs</button>' +
+      '<button class="tb-drawer-tab" onclick="tbTruckDrawerOpenAttachUnit()">Attach Unit</button>';
+  }
+
+  /* 2. Status pill — grey "Not Connected" */
+  const ignBadge = document.getElementById('tb-drawer-ign-badge');
+  const ignText  = document.getElementById('tb-drawer-ign-text');
+  if (ignBadge) ignBadge.classList.add('off');
+  if (ignText)  ignText.textContent = 'Not Connected';
+
+  /* 3. Unit ID subtitle → dash */
+  const unitIdEl = document.getElementById('tb-drawer-unit-id');
+  if (unitIdEl) unitIdEl.textContent = '—';
+
+  /* 4. Collapse inline confirm if somehow open */
+  const inlineConfirm = document.getElementById('tb-drawer-unlink-confirm');
+  if (inlineConfirm) { inlineConfirm.style.display = 'none'; inlineConfirm.innerHTML = ''; }
+
+  /* 5. Scroll area — shared illustration + copy + CTA */
+  const scroll = document.getElementById('tb-drawer-scroll');
+  if (scroll) {
+    scroll.innerHTML =
+      '<div class="dt-truck-empty">' +
+        '<div class="dt-truck-empty-illust">' + dtTruckEmptyIllustrationSvg() + '</div>' +
+        '<div class="dt-truck-empty-title">Truck Not Connected</div>' +
+        '<div class="dt-truck-empty-sub">Attach Verifi hardware to have a connected truck.</div>' +
+        '<button class="dt-truck-empty-cta" onclick="tbTruckDrawerOpenAttachUnit()">Connect Unit</button>' +
+      '</div>';
+  }
+}
+
+function tbTruckDrawerShowUnlinkedLogs() {
+  /* Keep Logs tab active, re-render the empty state */
+  var tbTabs = document.querySelectorAll('#tb-drawer .tb-drawer-tab');
+  tbTabs.forEach(function(t) { t.classList.remove('active'); });
+  if (tbTabs.length >= 1) tbTabs[0].classList.add('active');
+  var scroll = document.getElementById('tb-drawer-scroll');
+  if (!scroll) return;
+  scroll.innerHTML =
+    '<div class="dt-truck-empty">' +
+      '<div class="dt-truck-empty-illust">' + dtTruckEmptyIllustrationSvg() + '</div>' +
+      '<div class="dt-truck-empty-title">Truck Not Connected</div>' +
+      '<div class="dt-truck-empty-sub">Attach Verifi hardware to have a connected truck.</div>' +
+      '<button class="dt-truck-empty-cta" onclick="tbTruckDrawerOpenAttachUnit()">Connect Unit</button>' +
+    '</div>';
+}
+
+function tbTruckDrawerOpenAttachUnit() {
+  /* Switch Attach Unit tab active */
+  var tbTabs = document.querySelectorAll('#tb-drawer .tb-drawer-tab');
+  tbTabs.forEach(function(t) { t.classList.remove('active'); });
+  if (tbTabs.length >= 2) tbTabs[1].classList.add('active');
+
+  /* Reset desktop attach state — we reuse dtTrAtt* functions but point
+     them at tb-drawer-scroll by temporarily aliasing dtDrawerTruckNum */
+  dtTrAttachSelected = null;
+  dtTrAttachQuery    = '';
+
+  tbTruckDrawerRenderAttachUnit();
+}
+
+function tbTruckDrawerRenderAttachUnit() {
+  /* Identical logic to dtTruckDrawerRenderAttachUnit but targets
+     tb-drawer-scroll and uses tbDrawerTruck for the truck number. */
+  var truckNum = tbDrawerTruck ? tbDrawerTruck.num : null;
+  if (!truckNum) return;
+
+  var allUnits   = (typeof UNITS_DATA !== 'undefined') ? UNITS_DATA : [];
+  var candidates = allUnits.filter(function(u) {
+    return u.status === 'Unlinked Unit' && u.contract === ACTIVE_ACCOUNT;
+  });
+  var q = (dtTrAttachQuery || '').toLowerCase();
+  var filtered = candidates.filter(function(u) {
+    return !q ||
+      String(u.id).toLowerCase().includes(q) ||
+      (u.contract || '').toLowerCase().includes(q) ||
+      (u.sysType  || '').toLowerCase().includes(q) ||
+      (u.config   || '').toLowerCase().includes(q) ||
+      (u.tgw      || '').toLowerCase().includes(q);
+  });
+
+  var rows = filtered.map(function(u, i) {
+    var sel  = dtTrAttachSelected === u.id;
+    var safe = String(u.id).split("'").join("\'");
+    return '<div class="dt-attach-row' + (sel ? ' selected' : '') + (i%2===1?' alt':'') + '" onclick="tbTrAttachSelect(\'' + safe + '\')">' +
+      '<div class="dt-attach-cell" style="flex:1;">' + u.id + '</div>' +
+      '<div class="dt-attach-cell" style="width:110px;">' + (u.sysType||'—') + '</div>' +
+      '<div class="dt-attach-cell" style="width:140px;">' + (u.config||'—') + '</div>' +
+    '</div>';
+  }).join('');
+
+  var empty = filtered.length === 0
+    ? '<div class="dt-attach-empty">' + (candidates.length === 0 ? 'No unlinked units available.' : 'No units match your search.') + '</div>'
+    : '';
+
+  var btnDisabled = !dtTrAttachSelected;
+
+  var scroll = document.getElementById('tb-drawer-scroll');
+  if (!scroll) return;
+  scroll.innerHTML =
+    '<div class="dt-attach-title">' + candidates.length + ' Unit' + (candidates.length===1?'':'s') + ' Unlinked</div>' +
+    '<div class="dt-attach-toolbar" id="tb-tr-attach-toolbar">' +
+      '<div class="dt-attach-search">' +
+        '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="#36322d9e" stroke-width="1.4"/><path d="M11 11l2.5 2.5" stroke="#36322d9e" stroke-width="1.4" stroke-linecap="round"/></svg>' +
+        '<input id="tb-tr-attach-search" placeholder="Search" autocomplete="off" value="' + (dtTrAttachQuery||'').split('"').join('&quot;') + '" oninput="tbTrAttachSearch()" />' +
+      '</div>' +
+      '<button class="dt-attach-cta"' + (btnDisabled?' disabled':'') + ' onclick="tbTrAttachConfirm()">Attach Unit</button>' +
+    '</div>' +
+    '<div id="tb-tr-attach-confirm" class="dt-inline-confirm informational toolbar-row" style="display:none;"></div>' +
+    '<div class="dt-attach-table">' +
+      '<div class="dt-attach-table-hdr">' +
+        '<div class="dt-attach-th" style="flex:1;"><span class="dt-attach-th-label">Unit ID</span><div class="dt-attach-th-divider"></div></div>' +
+        '<div class="dt-attach-th" style="width:110px;"><span class="dt-attach-th-label">System Type</span><div class="dt-attach-th-divider"></div></div>' +
+        '<div class="dt-attach-th" style="width:140px;flex:0 0 140px;"><span class="dt-attach-th-label">Config</span></div>' +
+      '</div>' +
+      '<div class="dt-attach-table-body" id="tb-tr-attach-table-body">' + rows + empty + '</div>' +
+    '</div>';
+}
+
+function tbTrAttachSelect(unitId) {
+  dtTrAttachSelected = dtTrAttachSelected === unitId ? null : unitId;
+  document.querySelectorAll('#tb-tr-attach-table-body .dt-attach-row').forEach(function(r) { r.classList.remove('selected'); });
+  if (dtTrAttachSelected) {
+    var safe = String(dtTrAttachSelected).split("'").join("\'");
+    var row = document.querySelector('#tb-tr-attach-table-body .dt-attach-row[onclick*="' + safe + '"]');
+    if (row) row.classList.add('selected');
+  }
+  var cta = document.querySelector('#tb-tr-attach-toolbar .dt-attach-cta');
+  if (cta) cta.disabled = !dtTrAttachSelected;
+}
+
+function tbTrAttachSearch() {
+  dtTrAttachQuery = document.getElementById('tb-tr-attach-search').value;
+  tbTruckDrawerRenderAttachUnit();
+  var input = document.getElementById('tb-tr-attach-search');
+  if (input) { input.focus(); var len = input.value.length; input.setSelectionRange(len, len); }
+}
+
+function tbTrAttachConfirm() {
+  if (!dtTrAttachSelected || !tbDrawerTruck) return;
+  var truckNum = tbDrawerTruck.num;
+  var panel = document.getElementById('tb-tr-attach-confirm');
+  if (!panel) return;
+  panel.innerHTML =
+    '<div class="dt-inline-confirm-head">' +
+      '<div class="dt-inline-confirm-icon">' +
+        '<svg width="12" height="12" viewBox="0 0 16 16" fill="none">' +
+          '<path d="M6.5 9.5a3.5 3.5 0 005 0l2-2a3.5 3.5 0 00-5-5L7.5 3.5" stroke="#3069e3" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<path d="M9.5 6.5a3.5 3.5 0 00-5 0l-2 2a3.5 3.5 0 005 5l1-1" stroke="#3069e3" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '</svg>' +
+      '</div>' +
+      '<div class="dt-inline-confirm-text">' +
+        '<div class="dt-inline-confirm-title">Link Unit ' + dtTrAttachSelected + ' to Truck ' + truckNum + '?</div>' +
+        '<div class="dt-inline-confirm-body">Unit moves to Pending Configuration — fill in config, then save to finalize.</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="dt-inline-confirm-btns">' +
+      '<button class="dt-inline-confirm-btn cancel" onclick="tbTrAttachCancel()">Cancel</button>' +
+      '<button class="dt-inline-confirm-btn primary" onclick="tbTrAttachDo()">Link to unit</button>' +
+    '</div>';
+  panel.style.display = 'flex';
+  var toolbar = document.getElementById('tb-tr-attach-toolbar');
+  if (toolbar) toolbar.style.display = 'none';
+}
+
+function tbTrAttachCancel() {
+  var panel = document.getElementById('tb-tr-attach-confirm');
+  if (panel) { panel.style.display = 'none'; panel.innerHTML = ''; }
+  var toolbar = document.getElementById('tb-tr-attach-toolbar');
+  if (toolbar) toolbar.style.display = '';
+  var cta = document.querySelector('#tb-tr-attach-toolbar .dt-attach-cta');
+  if (cta) cta.disabled = !dtTrAttachSelected;
+}
+
+function tbTrAttachDo() {
+  tbTrAttachCancel();
+  if (!dtTrAttachSelected || !tbDrawerTruck) return;
+
+  var truckNum = tbDrawerTruck.num;
+  var u = UNITS_DATA.find(function(x) { return x.id === dtTrAttachSelected; });
+  if (!u) return;
+
+  /* Mirror desktop dtTrAttachDo mutations exactly */
+  dtUdPendingPrevState = {
+    unitId:        u.id,
+    prevStatus:    u.status,
+    prevTruck:     u.truck,
+    prevAssigned:  u.assignedToTruck || null,
+    truckSnapshot: (typeof UNLINKED_TRUCKS !== 'undefined')
+      ? UNLINKED_TRUCKS.find(function(t) { return t.number === truckNum; })
+      : null,
+  };
+
+  u.status          = 'Pending';
+  u.truck           = truckNum;
+  u.assignedToTruck = new Date().toLocaleDateString('en-US', {month:'2-digit', day:'2-digit', year:'numeric'});
+
+  var idx = (typeof UNLINKED_TRUCKS !== 'undefined')
+    ? UNLINKED_TRUCKS.findIndex(function(t) { return t.number === truckNum; }) : -1;
+  if (idx > -1) UNLINKED_TRUCKS.splice(idx, 1);
+
+  if (typeof dtUnitsRender === 'function') dtUnitsRender();
+
+  /* Pivot: close truck drawer, open unit drawer at Configuration tab —
+     tbUdOpen detects status === 'Pending' and routes to config automatically */
+  dtTrAttachSelected = null;
+  tbUdOpen(u.id);
+}
+
 /* Side panel content — Connectivity, meta table, action buttons, fleet map.
    Shared between the Components Overview and Component Timeline tabs. */
 function tbBuildSidePanel(t) {
@@ -27900,10 +28712,11 @@ function tbBuildSidePanel(t) {
       </div>
     </div>
     <div class="dt-drawer-meta">${metaHtml}</div>
-    <div class="dt-drawer-actions">
-      <button class="dt-drawer-action-btn">Ping Truck</button>
-      <button class="dt-drawer-action-btn danger">De-install unit</button>
+    <div class="dt-drawer-actions" id="tb-drawer-actions">
+      <button class="dt-drawer-action-btn" onclick="tbPingTruck()">Ping Truck</button>
+      <button class="dt-drawer-action-btn danger" id="tb-drawer-unlink-btn" onclick="tbTruckDrawerUnlinkUnit()">De-install unit</button>
     </div>
+    <div id="tb-drawer-unlink-confirm" class="dt-inline-confirm" style="display:none;"></div>
     <div style="margin:16px 8px 8px;background:white;border:1px solid var(--border);border-radius:16px;overflow:hidden;">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);">
         <span style="font-size:14px;font-weight:500;color:var(--strong);letter-spacing:-0.28px;">Fleet map</span>
@@ -29502,7 +30315,7 @@ function tbUdBuildTabs() {
   } else if (u.status === 'Linked Unit') {
     tabs = [
       { id:'lifespan',  label:'Unit Lifespan' },
-      { id:'timeline',  label:'Component timeline' },
+      { id:'timeline',  label:'Timeline' },
       { id:'logs',      label:'Truck Logs' },
       { id:'manual',    label:'Manual Control' },
       { id:'sensor',    label:'Sensor' },
@@ -30193,7 +31006,7 @@ function dtUdBuildTabs() {
   } else if (u.status === 'Linked Unit') {
     tabs = [
       { id:'lifespan', label:'Unit Lifespan' },
-      { id:'timeline', label:'Component timeline' },
+      { id:'timeline', label:'Timeline' },
       { id:'logs',     label:'Trucks Logs' },
       { id:'manual',   label:'Manual Control' },
       { id:'sensor',   label:'Sensor' },
@@ -30327,6 +31140,12 @@ function dtUdCfgSaveAndLink() {
   const u = UNITS_DATA.find(x => x.id === currentId);
   if (!u) return;
   u.status = 'Linked Unit';
+  if (!u.firstCommissioned) {
+    const _n = new Date(), _h = _n.getHours(), _m = _n.getMinutes();
+    const _ap = _h >= 12 ? 'PM' : 'AM', _h12 = _h % 12 || 12;
+    const _mo = String(_n.getMonth()+1).padStart(2,'0'), _d = String(_n.getDate()).padStart(2,'0'), _y = _n.getFullYear();
+    u.firstCommissioned = _h12+':'+String(_m).padStart(2,'0')+' '+_ap+' '+_mo+'/'+_d+'/'+_y;
+  }
 
   if (typeof trucks !== 'undefined' && u.truck && u.truck !== '--') {
     const t = trucks.find(x => x.num === u.truck);
@@ -31742,7 +32561,7 @@ function dtOpenTruck(truckNum) {
 
   /* Branch: if the truck is in unlinked state, reshape the drawer to the
      "Truck Not Connected" empty state and stop here. The full Linked drawer
-     (Components overview, Sensor, etc.) doesn't apply when nothing's attached.
+     (Overview, Sensor, etc.) doesn't apply when nothing's attached.
 
      Source of truth is t.unlinked on the truck record itself — that flag is
      set/cleared by attach/unlink mutations. Don't cross-check UNITS_DATA
@@ -31766,15 +32585,15 @@ function dtOpenTruck(truckNum) {
   const tabsEl = document.getElementById('dt-drawer-tabs');
   if (tabsEl && !tabsEl.querySelector('[onclick*="overview"]')) {
     tabsEl.innerHTML = `
-      <button class="dt-drawer-tab active" onclick="dtDrawerTab('overview', this)">Components overview</button>
-      <button class="dt-drawer-tab" onclick="dtDrawerTab('timeline', this)">Component timeline</button>
+      <button class="dt-drawer-tab active" onclick="dtDrawerTab('overview', this)">Overview</button>
+      <button class="dt-drawer-tab" onclick="dtDrawerTab('timeline', this)">Timeline</button>
       <button class="dt-drawer-tab" onclick="dtDrawerTab('logs', this)">Trucks Logs</button>
       <button class="dt-drawer-tab" onclick="dtDrawerTab('manual', this)">Manual Control</button>
       <button class="dt-drawer-tab" onclick="dtDrawerTab('sensor', this)">Sensor</button>
       <button class="dt-drawer-tab" onclick="dtDrawerTab('config', this)">Configuration</button>`;
   }
 
-  /* Ensure the drawer is reset to Components overview before populating cards.
+  /* Ensure the drawer is reset to Overview before populating cards.
      Without this, reopening the drawer after the user left it on a different
      tab would leave the scroll area showing that tab's content, and the card
      grid lookups below would crash with `Cannot set properties of null`. */
@@ -31802,7 +32621,7 @@ function dtOpenTruck(truckNum) {
         </div>
         <div class="dt-drawer-cards" id="dt-drawer-fdm-cards"></div>`;
     }
-    /* Reset the active tab indicator to Components overview */
+    /* Reset the active tab indicator to Overview */
     document.querySelectorAll('.dt-drawer-tab').forEach((b, i) => b.classList.toggle('active', i === 0));
     /* Clear logs-mode if the drawer was last left on the Logs tab */
     const sidePanel = document.querySelector('#dt-drawer .dt-drawer-side');
@@ -32097,11 +32916,42 @@ function dtOpenTruck(truckNum) {
     }, 2000);
   }
 
-  /* Open */
+  /* Open + wire tab-bar fade affordance.
+     dtInitTabsFade() is called immediately so the listener is registered,
+     but the drawer width is still 0 at rAF time (CSS transition is 0.38s).
+     We fire a second update() after the transition settles so the fade
+     reflects the real scrollWidth of the fully-open drawer. */
   requestAnimationFrame(() => {
     drawer.classList.add('open');
     document.getElementById('dt-drawer-scrim').classList.add('open');
+    dtInitTabsFade();
+    // Re-check overflow state once transition completes (~400ms)
+    setTimeout(function() {
+      var tabs = document.getElementById('dt-drawer-tabs');
+      var wrap = document.getElementById('dt-drawer-tabs-wrap');
+      if (!tabs || !wrap) return;
+      var atEnd = tabs.scrollLeft + tabs.clientWidth >= tabs.scrollWidth - 4;
+      wrap.classList.toggle('scrolled-end', atEnd);
+    }, 420);
   });
+}
+
+/* Adds a right-edge fade to the tab bar when there are hidden tabs,
+   and removes it once the user scrolls to the end. Safe to call
+   multiple times — it checks before adding the listener. */
+function dtInitTabsFade() {
+  var wrap = document.getElementById('dt-drawer-tabs-wrap');
+  var tabs = document.getElementById('dt-drawer-tabs');
+  if (!wrap || !tabs || tabs._fadeWired) return;
+  tabs._fadeWired = true;
+  function update() {
+    var atEnd = tabs.scrollLeft + tabs.clientWidth >= tabs.scrollWidth - 4;
+    wrap.classList.toggle('scrolled-end', atEnd);
+  }
+  tabs.addEventListener('scroll', update, { passive: true });
+  // Also update on resize (drawer width changes)
+  new ResizeObserver(update).observe(tabs);
+  update();
 }
 
 /* ── WDS card flip + jump to Truck Logs ────────────────
@@ -33804,6 +34654,45 @@ function dtBuildConfig(isNewUnit) {
         <button onclick="dtCfgStartEdit()" style="flex-shrink:0;background:var(--layer-1);border:1px solid var(--border);border-radius:20px;padding:8px 16px;font-size:13px;font-weight:500;color:var(--strong);font-family:var(--font);letter-spacing:-0.26px;cursor:pointer;">Update</button>
       </div>
 
+      <!-- Clone banner — only shown for new/pending units -->
+      ${isNewUnit ? `
+      <div class="clone-card" id="dt-clone-banner">
+        <div class="clone-card-header">
+          <div class="clone-card-text">
+            <div class="clone-card-title">Clone setting from a similar truck <span id="dt-clone-applied-badge" style="display:none;" class="clone-applied-badge"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Applied</span></div>
+            <div class="clone-card-sub" id="dt-clone-sub">Prefill equipment &amp; Mixing setting from a commissioned truck</div>
+          </div>
+          <div class="clone-card-controls">
+            <div class="clone-selector-wrap">
+              <div class="clone-selector" id="dt-clone-selector" onclick="dtCloneToggleDropdown()">
+                <span class="clone-selector-label" id="dt-clone-selector-label">Truck Number</span>
+                <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
+              </div>
+              <div class="clone-dropdown" id="dt-clone-dropdown">
+                <div class="clone-dropdown-search">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#36322d9e" stroke-width="1.3"/><path d="M10 10l2.5 2.5" stroke="#36322d9e" stroke-width="1.3" stroke-linecap="round"/></svg>
+                  <input id="dt-clone-search" type="text" placeholder="Search truck Number" oninput="dtCloneSearch(this.value)" autocomplete="off">
+                </div>
+                <div class="clone-truck-list" id="dt-clone-list"></div>
+              </div>
+            </div>
+            <button class="clone-apply-btn" id="dt-clone-apply-btn" onclick="dtApplyClone()" disabled>Apply Settings</button>
+          </div>
+        </div>
+        <!-- Preview expands below when truck selected -->
+        <div class="clone-preview" id="dt-clone-preview">
+          <div class="clone-preview-label">Fields That will be Prefilled</div>
+          <div class="clone-preview-row"><span class="clone-preview-key">Drum Magnets</span><span class="clone-preview-val">4</span></div>
+          <div class="clone-preview-row"><span class="clone-preview-key">Drum Size</span><span class="clone-preview-val">8 yd³</span></div>
+          <div class="clone-preview-row"><span class="clone-preview-key">Min Batch Revolutions</span><span class="clone-preview-val">70</span></div>
+          <div class="clone-preview-row"><span class="clone-preview-key">Min Agitation Speed</span><span class="clone-preview-val">2 RPM</span></div>
+          <div class="clone-preview-row"><span class="clone-preview-key">Min Mixing Speed</span><span class="clone-preview-val">8 RPM</span></div>
+          <div class="clone-preview-row"><span class="clone-preview-key">Max Mixing Speed</span><span class="clone-preview-val">18 RPM</span></div>
+          <div class="clone-preview-row"><span class="clone-preview-key">Slump Tolerance</span><span class="clone-preview-val">0.5 in</span></div>
+          <div class="clone-preview-row"><span class="clone-preview-key">Water Hose (QC→Nozzle)</span><span class="clone-preview-val">12 ft</span></div>
+        </div>
+      </div>` : ''}
+
       <!-- Accordions -->
       <div id="dt-cfg-accs" style="display:flex;flex-direction:column;gap:10px;">
         ${acc('Information','Defines how this truck is registered and configured within the system for tracking and reporting.',s1,true)}
@@ -34596,7 +35485,7 @@ if (document.body.classList.contains('view-desktop')) {
    #mobile/trucks/45689/sensor             Truck drawer, Sensor tab
    #mobile/trucks/45689/manual             Truck drawer, Manual Control tab
    #mobile/trucks/45689/config             Truck drawer, Config tab
-   #mobile/trucks/45689/timeline           Truck drawer, Component timeline tab
+   #mobile/trucks/45689/timeline           Truck drawer, Timeline tab
    #mobile/units                           Units list
    #mobile/units/83651024                  Unit drawer, default tab
    #mobile/units/83651024/lifespan         Unit drawer, Lifespan tab
@@ -34609,8 +35498,8 @@ if (document.body.classList.contains('view-desktop')) {
    #desktop/trucks/cc                      All Trucks — Component Conditions
    #desktop/trucks/45689                   Truck drawer open (default tab)
    #desktop/trucks/45689/logs              Truck drawer — Logs
-   #desktop/trucks/45689/overview          Truck drawer — Components overview
-   #desktop/trucks/45689/timeline          Truck drawer — Component timeline
+   #desktop/trucks/45689/overview          Truck drawer — Overview
+   #desktop/trucks/45689/timeline          Truck drawer — Timeline
    #desktop/trucks/45689/manual            Truck drawer — Manual Control
    #desktop/trucks/45689/sensor            Truck drawer — Sensor
    #desktop/trucks/45689/config            Truck drawer — Configuration

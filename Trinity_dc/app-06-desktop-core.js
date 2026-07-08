@@ -3804,91 +3804,148 @@ if (_origSelectDtTab) {
 tbTsUpdateLabels();
 
 
+
 /* ════════════════════════════════════════════════════════════
-   DC ONBOARDING TOUR — v6.8.51
-   Welcome card + two spotlight chapters. Desktop only.
+   DC ONBOARDING TOUR — v6.8.52
+   Welcome card + two spotlight chapters, per breakpoint.
 
    Entry point: dcTourLaunch() — called from the Options dropdown
    today; a production help affordance would call the same function.
+   Launches for whichever breakpoint is CURRENTLY active
+   (body.view-desktop / view-tablet / view-mobile — body classes,
+   never DOM presence, since all three layouts exist in the DOM).
 
-   Chapter model:
-     'hub'    — 5 stops around the All Trucks page. Ends by pointing
-                at a table row; the user's own click on a truck is
-                the bridge to chapter 2.
-     'drawer' — 3 stops inside the truck drawer. Fires once, after
-                the drawer opens, if the pending flag is armed.
+   Chapter model per breakpoint:
+     'hub'    — around the trucks list. Desktop/tablet: 5 stops.
+                Mobile: 4 (its view-switcher pill collapses the
+                desktop tab stops into one). Ends by pointing at a
+                row/card; the user's own tap bridges to chapter 2.
+     'drawer' — 3 stops inside the truck drawer, fired once after
+                open when the pending flag is armed.
 
    Flag semantics (session only — resets on reload, no persistence,
    so every customer demo starts clean):
      - Finishing the hub chapter arms the drawer chapter.
-     - "Explore on my own" on the welcome card also arms it, so a
-       user who skips still gets contextual help on first open.
+     - "Explore on my own" also arms it — a user who skips still
+       gets contextual help on first open.
      - Dismissing via X or Esc kills everything pending.
    ════════════════════════════════════════════════════════════ */
 
-let dcTour = { active:false, chapter:null, step:0, drawerArmed:false };
+let dcTour = { active:false, bp:'desktop', chapter:null, step:0, drawerArmed:false };
+
+function dcTourBp() {
+  if (document.body.classList.contains('view-mobile'))  return 'mobile';
+  if (document.body.classList.contains('view-tablet'))  return 'tablet';
+  return 'desktop';
+}
 
 /* ── Step definitions ─────────────────────────────────────────
    anchor() returns an element or an array of elements (spotlight
    covers their union). Resolved lazily so DOM state at show-time
    wins. `place` is a hint; the placer flips when out of room. */
-function dcTourTrucksTab(i) {
+function dcTourDtTab(i) {
   return document.querySelectorAll('#dt-page-trucks .dt-tabs .dt-tab')[i] || null;
 }
+function dcTourTbTab(i) {
+  return document.querySelectorAll('#tb-tabs-row .tb-tab')[i] || null;
+}
+
 const DC_TOUR_CHAPTERS = {
-  hub: [
-    {
-      anchor: () => document.getElementById('dt-nav-dc-group'),
-      place: 'right',
-      title: 'One hub for the fleet',
-      body:  'Everything lives here now — All Trucks, Map, Units, and Software Update, one click apart.'
-    },
-    {
-      anchor: () => dcTourTrucksTab(0),
-      place: 'below',
-      title: 'Where To Start',
-      body:  'Your triage list. Only trucks with active alerts, grouped by plant, worst first. If a truck isn\u2019t here, it doesn\u2019t need you today.'
-    },
-    {
-      anchor: () => [dcTourTrucksTab(1), dcTourTrucksTab(2)],
-      place: 'below',
-      title: 'The other two views',
-      body:  'Overview shows the full fleet. Components Condition is a per-component health matrix across every truck.'
-    },
-    {
-      anchor: () => document.querySelector('#dt-page-trucks .dt-toolbar'),
-      place: 'below',
-      title: 'Make the table yours',
-      body:  'Filter, pick columns, search, and scope to your territory \u2014 the same table, arranged your way.'
-    },
-    {
-      anchor: () => document.querySelector('#dt-tbody tr.dt-tr'),
-      place: 'below',
-      title: 'Open a truck',
-      body:  'Click any row to open that truck\u2019s diagnostic drawer. Try it when we\u2019re done \u2014 the tour picks up in there.'
-    },
-  ],
-  drawer: [
-    {
-      anchor: () => document.querySelector('#dt-drawer .dt-drawer-title-row'),
-      place: 'below',
-      title: 'The truck at a glance',
-      body:  'Truck number, its linked unit, and the mode badge. Click the badge to switch between Live, Maintenance, and Offline.'
-    },
-    {
-      anchor: () => document.getElementById('dt-drawer-tabs'),
-      place: 'below',
-      title: 'Every tab, one truck',
-      body:  'Timeline, logs, manual control, sensors, and configuration \u2014 everything about this truck without leaving the page.'
-    },
-    {
-      anchor: () => document.getElementById('dt-overview-toolbar'),
-      place: 'below',
-      title: 'Act from here',
-      body:  'Component cards below show health at a glance, and Replace starts a hardware swap right from the drawer.'
-    },
-  ],
+  desktop: {
+    hub: [
+      { anchor: () => document.getElementById('dt-nav-dc-group'), place:'right',
+        title: 'One hub for the fleet',
+        body:  'Everything lives here now — All Trucks, Map, Units, and Software Update, one click apart.' },
+      { anchor: () => dcTourDtTab(0), place:'below',
+        title: 'Where To Start',
+        body:  'Your triage list. Only trucks with active alerts, grouped by plant, worst first. If a truck isn\u2019t here, it doesn\u2019t need you today.' },
+      { anchor: () => [dcTourDtTab(1), dcTourDtTab(2)], place:'below',
+        title: 'The other two views',
+        body:  'Overview shows the full fleet. Components Condition is a per-component health matrix across every truck.' },
+      { anchor: () => document.querySelector('#dt-page-trucks .dt-toolbar'), place:'below',
+        title: 'Make the table yours',
+        body:  'Filter, pick columns, search, and scope to your territory \u2014 the same table, arranged your way.' },
+      { anchor: () => document.querySelector('#dt-tbody tr.dt-tr'), place:'below',
+        title: 'Open a truck',
+        body:  'Click any row to open that truck\u2019s diagnostic drawer. Try it when we\u2019re done \u2014 the tour picks up in there.' },
+    ],
+    drawer: [
+      { anchor: () => document.querySelector('#dt-drawer .dt-drawer-title-row'), place:'below',
+        title: 'The truck at a glance',
+        body:  'Truck number, its linked unit, and the mode badge. Click the badge to switch between Live, Maintenance, and Offline.' },
+      { anchor: () => document.getElementById('dt-drawer-tabs'), place:'below',
+        title: 'Every tab, one truck',
+        body:  'Timeline, logs, manual control, sensors, and configuration \u2014 everything about this truck without leaving the page.' },
+      { anchor: () => document.getElementById('dt-overview-toolbar'), place:'below',
+        title: 'Act from here',
+        body:  'Component cards below show health at a glance, and Replace starts a hardware swap right from the drawer.' },
+    ],
+  },
+
+  tablet: {
+    hub: [
+      { anchor: () => document.querySelector('.tb-nav-ham'), place:'below',
+        title: 'Everything else is behind the menu',
+        body:  'All Trucks, Map, Units, and Software Update \u2014 the whole Diagnostic Center, one tap away.' },
+      { anchor: () => dcTourTbTab(0), place:'below',
+        title: 'Where To Start',
+        body:  'Your triage list. Only trucks with active alerts, grouped by plant, worst first. If a truck isn\u2019t here, it doesn\u2019t need you today.' },
+      { anchor: () => [dcTourTbTab(1), dcTourTbTab(2)], place:'below',
+        title: 'The other two views',
+        body:  'Overview shows the full fleet. Component Conditions is a per-component health matrix across every truck.' },
+      { anchor: () => document.getElementById('tb-search-row'), place:'below',
+        title: 'Find it or add it',
+        body:  'Search by truck, plant, or version \u2014 or bring a new truck into the fleet from right here.' },
+      { anchor: () => document.querySelector('#tb-content tr.tb-group-row'), place:'below',
+        title: 'Open a truck',
+        body:  'Trucks group by plant. Tap a group to expand it, then View Truck opens the full drawer \u2014 try it when we\u2019re done.' },
+    ],
+    drawer: [
+      { anchor: () => document.querySelector('#tb-drawer .dt-drawer-title-row'), place:'below',
+        title: 'The truck at a glance',
+        body:  'Truck number, its linked unit, and the mode badge. Tap the badge to switch between Live, Maintenance, and Offline.' },
+      { anchor: () => document.querySelector('#tb-drawer .tb-drawer-tabs'), place:'below',
+        title: 'Every tab, one truck',
+        body:  'Timeline, logs, manual control, sensors, and configuration \u2014 everything about this truck without leaving the page.' },
+      { anchor: () => document.querySelector('#tb-drawer-scroll > *'), place:'below',
+        title: 'Act from here',
+        body:  'Component cards show health at a glance, and Replace starts a hardware swap right from the drawer.' },
+    ],
+  },
+
+  mobile: {
+    hub: [
+      { anchor: () => document.querySelector('#s-main .top-nav button'), place:'below',
+        title: 'Everything else is behind the menu',
+        body:  'Map, Units, Software Update, and the rest of the Diagnostic Center \u2014 one tap away.' },
+      { anchor: () => document.getElementById('wts-btn'), place:'below',
+        title: 'Where To Start',
+        body:  'Your triage list \u2014 only trucks with active alerts, worst first. This pill also switches views: Overview and Components Condition live here too.' },
+      { anchor: () => [document.querySelector('#s-main .filter-row'), document.getElementById('srch-wrap')], place:'below',
+        title: 'Narrow it down',
+        body:  'Filter the list, switch layouts, and search by truck, plant, or version.' },
+      { anchor: () => document.querySelector('#page-where-to-start .truck-row'), place:'below',
+        title: 'Open a truck',
+        body:  'Tap a truck to expand it, then View Truck opens the full picture \u2014 try it when we\u2019re done.' },
+    ],
+    drawer: [
+      { anchor: () => document.querySelector('#drawer .d-chrome-row1'), place:'below',
+        title: 'The truck at a glance',
+        body:  'Truck number, its linked unit, and the mode pill. Tap the pill to switch between Live, Maintenance, and Offline.' },
+      { anchor: () => document.getElementById('drawer-nav-btn'), place:'below',
+        title: 'Every section, one truck',
+        body:  'Switch sections here \u2014 components overview, timeline, and the rest of this truck\u2019s story.' },
+      { anchor: () => document.querySelector('#drawer-body > *'), place:'below',
+        title: 'Health at a glance',
+        body:  'Component cards show what\u2019s working and what needs attention \u2014 no digging required.' },
+    ],
+  },
 };
+
+function dcTourSteps() {
+  const bp = DC_TOUR_CHAPTERS[dcTour.bp];
+  return (bp && bp[dcTour.chapter]) || null;
+}
 
 /* ── Entry ──────────────────────────────────────────────────── */
 function dcTourLaunch() {
@@ -3898,20 +3955,53 @@ function dcTourLaunch() {
   if (dd)  dd.classList.remove('open');
   if (btn) btn.classList.remove('open');
 
-  /* Desktop only — switch if needed so anchors exist */
-  if (!document.body.classList.contains('view-desktop') && typeof setView === 'function') {
-    setView('desktop');
-  }
-  /* Force the state every hub anchor depends on: All Trucks page,
-     Where To Start tab. */
-  if (typeof dtNavGo === 'function') dtNavGo('trucks');
-  const wtsTab = dcTourTrucksTab(0);
-  if (wtsTab && typeof dtSelectTab === 'function') dtSelectTab('wts', wtsTab);
+  const bp = dcTourBp();
+  dcTourForceState(bp);
 
   dcTourTeardown();               /* restart-safe */
-  dcTour = { active:true, chapter:null, step:0, drawerArmed:false };
+  dcTour = { active:true, bp:bp, chapter:null, step:0, drawerArmed:false };
   dcTourBuildOverlay(true);
   dcTourRenderWelcome();
+}
+
+/* Force the page/tab state every hub anchor depends on, and close
+   any open truck drawer so the spotlight isn't fighting it. */
+function dcTourForceState(bp) {
+  if (bp === 'desktop') {
+    if (typeof dtNavGo === 'function') dtNavGo('trucks');
+    const t = dcTourDtTab(0);
+    if (t && typeof dtSelectTab === 'function') dtSelectTab('wts', t);
+    const dtDrawer = document.getElementById('dt-drawer');
+    if (dtDrawer && dtDrawer.classList.contains('open') && typeof dtCloseDrawer === 'function') dtCloseDrawer();
+
+  } else if (bp === 'tablet') {
+    /* Inverse of tbNavMap()/tbNavUnits() — the tablet nav has no
+       "back to All Trucks" restore, so the tour does it. */
+    const show = (id, val) => { const el = document.getElementById(id); if (el) el.style.display = val; };
+    show('tb-content', '');
+    show('tb-page-units', 'none');
+    show('tb-page-update', 'none');
+    show('tb-page-map', 'none');
+    show('tb-search-row', '');
+    show('tb-tabs-row', '');
+    show('tb-page-header', '');
+    const title = document.querySelector('#tb-page .tb-page-title');
+    if (title) title.textContent = 'Diagnostic Center';
+    if (typeof tbNavClose === 'function') tbNavClose();
+    if (typeof tbNavSetActive === 'function') tbNavSetActive('tb-nav-alltrucks');
+    const t = dcTourTbTab(0);
+    if (t && typeof tbSelectTab === 'function') tbSelectTab('wts', t);
+    const tbDrawer = document.getElementById('tb-drawer');
+    if (tbDrawer && tbDrawer.classList.contains('open') && typeof tbCloseDrawer === 'function') tbCloseDrawer();
+
+  } else { /* mobile */
+    document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === 's-main'));
+    const cond = document.getElementById('s-conditions');
+    if (cond) cond.style.display = 'none';
+    const wtsOpt = document.querySelector('#wts-dropdown .wts-option');
+    if (wtsOpt && typeof selectWts === 'function') selectWts('Where to start', wtsOpt);
+    if (typeof closeDrawer === 'function') closeDrawer();
+  }
 }
 
 /* ── Welcome card ───────────────────────────────────────────── */
@@ -3936,6 +4026,12 @@ function dcTourRenderWelcome() {
         <button class="dc-tour-btn dc-tour-btn-ghost" onclick="dcTourExplore()">Explore on my own</button>
       </div>
     </div>`;
+  /* Mobile: the welcome card becomes a bottom sheet docked inside
+     the phone frame instead of a viewport-centered modal. */
+  if (dcTour.bp === 'mobile') {
+    const w = overlay.querySelector('.dc-tour-welcome');
+    if (w) { w.classList.add('dc-tour-sheet'); dcTourPositionSheet(w, 'bottom'); }
+  }
 }
 
 function dcTourBegin() {
@@ -3985,8 +4081,8 @@ function dcTourKeydown(e) {
 /* ── Step rendering ─────────────────────────────────────────── */
 function dcTourResolveAnchor(step) {
   let a = step.anchor();
-  if (Array.isArray(a)) a = a.filter(Boolean);
-  if (!a || (Array.isArray(a) && a.length === 0)) return null;
+  if (Array.isArray(a)) { a = a.filter(Boolean); if (a.length === 0) return null; }
+  if (!a) return null;
   return a;
 }
 
@@ -4002,7 +4098,7 @@ function dcTourAnchorRect(a) {
 }
 
 function dcTourShowStep() {
-  const steps = DC_TOUR_CHAPTERS[dcTour.chapter];
+  const steps = dcTourSteps();
   if (!steps) return;
   /* Skip forward past any stop whose anchor doesn't exist right now
      (e.g. empty triage table \u2192 no first row). If nothing is left,
@@ -4021,8 +4117,8 @@ function dcTourShowStep() {
   if (!overlay) return;
   overlay.classList.remove('dc-tour-welcome-mode');
 
-  const isLast  = dcTour.step === steps.length - 1;
-  const dots    = steps.map((_, i) =>
+  const isLast = dcTour.step === steps.length - 1;
+  const dots   = steps.map((_, i) =>
     `<span class="dc-tour-dot${i === dcTour.step ? ' active' : ''}"></span>`).join('');
 
   /* Reuse nodes when possible so the cutout + card animate between
@@ -4049,39 +4145,112 @@ function dcTourShowStep() {
       </div>
     </div>`;
 
+  /* Mobile sheets don't transition position (see CSS) — replay the
+     slide-up on each step change instead. First step skips this:
+     the class isn't on yet, so adding it plays the animation. */
+  if (dcTour.bp === 'mobile' && card.classList.contains('dc-tour-sheet')) {
+    card.style.animation = 'none';
+    void card.offsetWidth;      /* force reflow to restart it */
+    card.style.animation = '';
+  }
+
   dcTourReposition();
+}
+
+/* Clamp bounds: the browser viewport on desktop, the device frame
+   on tablet/mobile so cards visually stay with the phone. */
+function dcTourPhoneRect() {
+  const phone = document.querySelector('.phone');
+  if (!phone) return { left:0, top:0, right:window.innerWidth, bottom:window.innerHeight, width:window.innerWidth };
+  return phone.getBoundingClientRect();
+}
+
+/* Dock a sheet inside the phone frame — bottom by default, top when
+   the spotlight target would sit underneath it. Width is set before
+   height is measured so wrap-dependent height is correct. The +52px
+   top offset clears the notch. */
+function dcTourPositionSheet(el, dock) {
+  const p = dcTourPhoneRect(), m = 10;
+  el.style.left  = (p.left + m) + 'px';
+  el.style.width = (p.width - m * 2) + 'px';
+  if (dock === 'top') {
+    el.style.top    = (p.top + 52) + 'px';
+    el.style.bottom = 'auto';
+  } else {
+    el.style.top    = 'auto';
+    el.style.bottom = (window.innerHeight - p.bottom + m) + 'px';
+  }
+}
+
+function dcTourBounds() {
+  if (dcTour.bp !== 'desktop') {
+    const phone = document.querySelector('.phone');
+    if (phone) {
+      const r = phone.getBoundingClientRect();
+      return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+    }
+  }
+  return { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
 }
 
 /* Position the cutout over the anchor and the card beside it.
    Runs on step change, resize, and any scroll (capture). */
 function dcTourReposition() {
-  if (!dcTour.active || !dcTour.chapter) return;
-  const steps = DC_TOUR_CHAPTERS[dcTour.chapter];
+  if (!dcTour.active) return;
+  /* Welcome card showing (no chapter yet) — keep the mobile sheet
+     docked through resizes; desktop/tablet welcome is CSS-centered. */
+  if (!dcTour.chapter) {
+    if (dcTour.bp === 'mobile') {
+      const w = document.querySelector('#dc-tour-overlay .dc-tour-welcome');
+      if (w) dcTourPositionSheet(w, 'bottom');
+    }
+    return;
+  }
+  const steps = dcTourSteps();
   const step  = steps && steps[dcTour.step];
   if (!step) return;
-  const anchor = dcTourResolveAnchor(step);
+  const anchor  = dcTourResolveAnchor(step);
   const overlay = document.getElementById('dc-tour-overlay');
   if (!anchor || !overlay) return;
   const cutout = overlay.querySelector('.dc-tour-cutout');
   const card   = overlay.querySelector('.dc-tour-card');
   if (!cutout || !card) return;
 
-  const pad = 8;
   const r = dcTourAnchorRect(anchor);
+  /* Anchor got hidden (e.g. breakpoint switched mid-tour) — bail
+     cleanly instead of spotlighting a zero rect at the origin. */
+  if (r.width === 0 && r.height === 0) { dcTourDismiss(); return; }
+
+  const pad = 8;
   cutout.style.top    = (r.top - pad) + 'px';
   cutout.style.left   = (r.left - pad) + 'px';
   cutout.style.width  = (r.width + pad * 2) + 'px';
   cutout.style.height = (r.height + pad * 2) + 'px';
 
+  /* Mobile: caption is a docked sheet, not a floating card.
+     Bottom by default; flip to the top of the frame when the
+     spotlighted element would sit underneath the sheet. */
+  if (dcTour.bp === 'mobile') {
+    card.classList.add('dc-tour-sheet');
+    const p = dcTourPhoneRect(), m = 10;
+    card.style.left  = (p.left + m) + 'px';
+    card.style.width = (p.width - m * 2) + 'px';
+    const ch2 = card.offsetHeight || 200;
+    const sheetTop = p.bottom - m - ch2;
+    const dockTop = (r.top + r.height) > (sheetTop - 12);
+    dcTourPositionSheet(card, dockTop ? 'top' : 'bottom');
+    return;
+  }
+
   /* Card placement — honor the hint, flip when out of room, clamp. */
-  const gap = 14, m = 16;
-  const vw = window.innerWidth, vh = window.innerHeight;
+  const gap = 14, m = 12;
+  const b  = dcTourBounds();
   const cw = card.offsetWidth || 330, ch = card.offsetHeight || 180;
   let top, left;
   let place = step.place || 'below';
-  if (place === 'right' && r.left + r.width + gap + cw > vw - m) place = 'below';
-  if (place === 'below' && r.top + r.height + gap + ch > vh - m) place = 'above';
-  if (place === 'above' && r.top - gap - ch < m)                 place = 'right';
+  if (place === 'right' && r.left + r.width + gap + cw > b.right - m)  place = 'below';
+  if (place === 'below' && r.top + r.height + gap + ch > b.bottom - m) place = 'above';
+  if (place === 'above' && r.top - gap - ch < b.top + m)               place = 'right';
 
   if (place === 'right') {
     left = r.left + r.width + pad + gap;
@@ -4093,15 +4262,15 @@ function dcTourReposition() {
     left = r.left;
     top  = r.top + r.height + pad + gap;
   }
-  left = Math.max(m, Math.min(left, vw - cw - m));
-  top  = Math.max(m, Math.min(top,  vh - ch - m));
+  left = Math.max(b.left + m, Math.min(left, b.right - cw - m));
+  top  = Math.max(b.top + m,  Math.min(top,  b.bottom - ch - m));
   card.style.left = left + 'px';
   card.style.top  = top + 'px';
 }
 
 /* ── Navigation ─────────────────────────────────────────────── */
 function dcTourNext() {
-  const steps = DC_TOUR_CHAPTERS[dcTour.chapter];
+  const steps = dcTourSteps();
   if (!steps) return;
   if (dcTour.step >= steps.length - 1) { dcTourFinishChapter(); return; }
   dcTour.step++;
@@ -4127,27 +4296,61 @@ function dcTourDismiss() {
 
 function dcTourClose(opts) {
   const arm = !!(opts && opts.armDrawer);
+  const bp  = dcTour.bp;
   dcTourTeardown();
-  dcTour = { active:false, chapter:null, step:0, drawerArmed:arm };
+  dcTour = { active:false, bp:bp, chapter:null, step:0, drawerArmed:arm };
 }
 
 /* ── Drawer chapter bridge ──────────────────────────────────────
-   Wrap dtOpenTruck instead of editing it: any path into the truck
-   drawer (row click, search, unit pivot) triggers the pending
-   chapter exactly once. The 480ms delay lets the drawer's open
-   transition settle so anchor rects are final. */
-const dcTourOrigOpenTruck = dtOpenTruck;
-dtOpenTruck = function (truckNum) {
-  dcTourOrigOpenTruck(truckNum);
+   Wrap the drawer-open entry point on each breakpoint instead of
+   editing them: any path into the truck drawer (row tap, search,
+   unit pivot, map card) triggers the pending chapter exactly once.
+   The 480ms delay lets the open transition settle so anchor rects
+   are final. The wrapper only fires when the CURRENT breakpoint
+   matches the one it wraps — body classes, not DOM presence. */
+function dcTourMaybeDrawerChapter(bpExpected, prep) {
   if (!dcTour.drawerArmed || dcTour.active) return;
-  if (!document.body.classList.contains('view-desktop')) return;
+  if (dcTourBp() !== bpExpected) return;
   dcTour.drawerArmed = false;   /* consume the flag — fires once */
   setTimeout(() => {
-    /* Guarantee the Overview tab so all three anchors exist */
-    const ovTab = document.querySelector('#dt-drawer-tabs .dt-drawer-tab');
-    if (ovTab && typeof dtDrawerTab === 'function') dtDrawerTab('overview', ovTab);
-    dcTour = { active:true, chapter:'drawer', step:0, drawerArmed:false };
+    if (typeof prep === 'function') prep();
+    dcTour = { active:true, bp:bpExpected, chapter:'drawer', step:0, drawerArmed:false };
     dcTourBuildOverlay(false);
     dcTourShowStep();
   }, 480);
+}
+
+/* Desktop */
+const dcTourOrigDtOpenTruck = dtOpenTruck;
+dtOpenTruck = function (...args) {
+  const out = dcTourOrigDtOpenTruck.apply(this, args);
+  dcTourMaybeDrawerChapter('desktop', () => {
+    const ovTab = document.querySelector('#dt-drawer-tabs .dt-drawer-tab');
+    if (ovTab && typeof dtDrawerTab === 'function') dtDrawerTab('overview', ovTab);
+  });
+  return out;
 };
+
+/* Tablet */
+if (typeof tbOpenTruck === 'function') {
+  const dcTourOrigTbOpenTruck = tbOpenTruck;
+  tbOpenTruck = function (...args) {
+    const out = dcTourOrigTbOpenTruck.apply(this, args);
+    dcTourMaybeDrawerChapter('tablet', () => {
+      const ovTab = document.querySelector('#tb-drawer .tb-drawer-tab');
+      if (ovTab && typeof tbDrawerTab === 'function') tbDrawerTab('overview', ovTab);
+    });
+    return out;
+  };
+}
+
+/* Mobile — openDrawer is the universal mobile drawer entry
+   (list rows, CC view, map cards all route through it). */
+if (typeof openDrawer === 'function') {
+  const dcTourOrigOpenDrawer = openDrawer;
+  openDrawer = function (...args) {
+    const out = dcTourOrigOpenDrawer.apply(this, args);
+    dcTourMaybeDrawerChapter('mobile', null);
+    return out;
+  };
+}

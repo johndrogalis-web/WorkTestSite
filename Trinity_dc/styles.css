@@ -7714,3 +7714,41 @@
     display:flex; align-items:center; gap:10px; margin-top:22px;
   }
   .dc-tour-welcome-btns .dc-tour-btn { padding:10px 20px; font-size:14px; }
+
+  /* ─── Mobile sheet variant — v6.8.53 ─────────────────────────
+     On view-mobile the welcome card and tour caption cards become
+     bottom sheets docked inside the phone frame: full-width with a
+     10px inset, stacked full-width buttons (primary on top, 44px+
+     tap targets). JS flips the dock to the top of the frame when
+     the spotlighted element would sit underneath the sheet. */
+  .dc-tour-welcome.dc-tour-sheet,
+  .dc-tour-card.dc-tour-sheet {
+    top:auto; transform:none;
+    /* No positional transition — sheets are placed instantly and
+       animate via the translateY slide-up only, so motion never
+       originates outside the phone frame. */
+    transition:none;
+    max-width:none;
+    border-radius:20px;
+    padding:20px 20px 18px;
+    animation:dcTourSheetIn 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  @keyframes dcTourSheetIn {
+    from { opacity:0; transform:translateY(14px); }
+    to   { opacity:1; transform:none; }
+  }
+  .dc-tour-sheet .dc-tour-close { top:14px; right:14px; width:36px; height:36px; }
+  .dc-tour-sheet .dc-tour-welcome-btns {
+    flex-direction:column; align-items:stretch; gap:8px; margin-top:18px;
+  }
+  .dc-tour-sheet .dc-tour-welcome-btns .dc-tour-btn { width:100%; padding:13px 20px; }
+  .dc-tour-sheet .dc-tour-foot {
+    flex-direction:column; align-items:stretch; gap:12px; margin-top:14px;
+  }
+  .dc-tour-sheet .dc-tour-dots { justify-content:center; }
+  /* column-reverse puts the primary (last in DOM) on top — the
+     standard mobile stack order */
+  .dc-tour-sheet .dc-tour-btns {
+    width:100%; flex-direction:column-reverse; align-items:stretch; gap:8px;
+  }
+  .dc-tour-sheet .dc-tour-btn { width:100%; padding:13px 16px; font-size:14px; }

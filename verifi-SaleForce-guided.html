@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verifi Console — Flow Prototype v22 (Guided)</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  html, body, #root { height: 100%; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid #0176D3; outline-offset: 1px; }
+  @keyframes spotPulse { 0% { box-shadow: 0 0 0 0 rgba(46,132,74,.45); } 70% { box-shadow: 0 0 0 12px rgba(46,132,74,0); } 100% { box-shadow: 0 0 0 0 rgba(46,132,74,0); } }
+  @keyframes spotHole { 0%, 68% { box-shadow: 0 0 0 4px rgba(46,132,74,.9), 0 0 0 100vmax rgba(8,14,22,.55); } 100% { box-shadow: 0 0 0 3px rgba(46,132,74,.25), 0 0 0 100vmax rgba(8,14,22,0); } }
+  [data-spot] { scroll-margin: 16px 0 24px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const C = {
+  page:"#F3F3F3", border:"#DDDBDA", borderLt:"#EAEAEA",
+  text:"#181818", sub:"#5C5C5C", link:"#0176D3", topBar:"#16325C",
+  ok:"#2E844A", okBg:"#EFFCF4", warn:"#A56500", warnBg:"#FEF3E7",
+  info:"#0176D3", infoBg:"#EEF4FE", purp:"#7526E3", purpBg:"#F4EEFC",
+  err:"#BA0517", errBg:"#FEF1EE", neutral:"#5C5C5C", neutralBg:"#F2F2F2",
+  green:"#D6F0DC", orange:"#FBE3D0",
+};
+const TONES = { ok:[C.ok,C.okBg], warn:[C.warn,C.warnBg], info:[C.info,C.infoBg], err:[C.err,C.errBg], purp:[C.purp,C.purpBg], neutral:[C.neutral,C.neutralBg] };
+
+const ROLES = [
+  ["CSM","customer success"], ["FSM","field service"],
+  ["Installation Specialist","real title — Campbell / Bruschi today"], ["Supply Chain","dynamic · James K today"],
+  ["Finance","dynamic · Jim today"], ["Regional Manager",""],
+  ["Crew","FST / 3rd party / customer"], ["Command Center","transitional team"],
+];
+
+const CHECKLIST = [
+  "Air system leak-free (OEM + Verifi)", "Water system leak-free (OEM + Verifi)", "Hydraulic connections leak-free",
+  ">5 satellites", "Connected to cellular + backend", "Hydraulic charge/discharge correct",
+  "Drum speeds registering", "Fluids adding accurately (WNM)", "All connections tightened",
+  "Cables/hoses protected from abrasion", "Truck cleaned of install debris", "All documentation complete",
+];
+const DEINSTALL_CHECKLIST = [
+  "System powered down safely", "Unit removed from truck", "Components bagged & labeled for return",
+  "Truck wiring capped / secured", "Photos taken of removal",
+];
+const MIXERS = ["McNeilus","Beck","Terex","Revolution","Oshkosh","ConTech","Continental"];
+const SYSTEMS = ["V3","V3 w/ Admix","V5 Basic (VAS)","Spark","V5 temperate water","V5 cold water","V5 w/ Admix","V5 — Module only (Upgrade)"];
+const INSTALL_REASONS = ["New Install (brownfield)"]; // Upgrade routes through New Unit Ordering per build-thread
+const SERVICE_REASONS = ["Re-Install","Re-Install — Truck Damage/Paint/New Drum","De-install & Re-Install (new truck)","Deinstall — Keep at Account","Deinstall — Return Unit to Verifi","Transfer to Another Truck (name change only — no physical work)","Transfer to Another Account (unit + truck switch, routes via Command Center)"];
+const PRESET_FILES = { "Install":["v5 equipment & install content 25-0718.pdf","FST V5 Installation Checklist.docx","FST V5 Air Schematics Checklist.docx"], "De-install":["FST V5 De-install Checklist.docx","Safety protocols"], "Re-Install":["FST V5 Re-install Checklist.docx","FST V5 Truck Testing Checklist.docx"], "Return":["V5 Return Order Checklist.docx","Site readiness checklist"] };
+// Fake how-to docs, per-COLI — same preset library used everywhere else, just surfaced at the COLI level now (was only a case-level text note before).
+const docsFor = (type) => {
+  if (!type) return [];
+  if (type.startsWith("Install")) return PRESET_FILES["Install"];
+  if (type.startsWith("De-install")) return PRESET_FILES["De-install"].concat(type.includes("Return") ? PRESET_FILES["Return"] : []);
+  if (type === "Re-Install") return PRESET_FILES["Re-Install"];
+  if (type.includes("Return")) return PRESET_FILES["Return"];
+  return [];
+};
+const WORKBY = ["Verifi","Customer","3rd Party"];
+const RET_STAGES = ["Requested","BOL uploaded","Picked up (3rd party)","Shipped — SC takes over","Received","Processed"];
+const FAKE_TYPES = ["Account Configuration","Annual Planning","Mixes / Slumps","Reporting / Data","SBM Case","Service Case","Settings / Code","Ticketing","Software Releases"];
+const TERRITORY = {
+  "AZ Materials — Plant 12": { fsm:"Marcus T. (FSM)", fst:"Matthew Machado (FST)", loc:"2200 Kiln Rd, Phoenix AZ" },
+  "Globex Concrete — Plant 3": { fsm:"J. Rivera (FSM)", fst:"D. Okafor (FST)", loc:"41 Quarry Ave, Tucson AZ" },
+};
+const PARTS = ["V5 temperate water system","V5 cold water system","V5 Admix (Z-bracket)","V3 water system","Spark (brain)","Display","Flow meter","Front-discharge adder kit"];
+
+function Chip({tone="neutral", children, dim}) {
+  const [fg,bg] = TONES[tone];
+  return <span style={{background:bg, color:fg, border:`1px solid ${fg}22`, borderRadius:10, padding:"1px 8px", fontSize:11, fontWeight:600, whiteSpace:"nowrap", opacity:dim?0.5:1}}>{children}</span>;
+}
+function Btn({role, need, onClick, children, tone="info", disabled, title, big, setRole}) {
+  // Role-gating is simulator behavior (real Salesforce hides actions by profile). Blocked = quiet lock;
+  // switch hats via "Acting as" or let the guided Next act as the owner. The old per-button "→ role"
+  // switcher is retired — it was pre-guided-Next scaffolding and drowned every screen in blue buttons.
+  const needs = Array.isArray(need) ? need : (need ? [need] : []);
+  const roleBlocked = needs.length > 0 && !needs.includes(role);
+  const off = disabled || roleBlocked;
+  const [fg,bg] = TONES[tone];
+  return (
+    <span style={{display:"inline-flex", alignItems:"center", marginRight:6, marginBottom:4}}>
+      <button onClick={off ? undefined : onClick} disabled={off}
+        title={roleBlocked ? ("Needs: " + needs.join(" or ") + " — pick it under \u201CActing as\u201D, or let \u25B6 Next act as the owner") : (title || "")}
+        style={{ background: off ? "#F4F4F4" : bg, color: off ? "#9b9b9b" : fg,
+          border:`1px solid ${off ? C.border : fg}`, borderRadius: 4, padding: big ? "6px 14px" : "4px 10px",
+          fontSize: big ? 13 : 12, fontWeight:700, cursor: off ? "not-allowed" : "pointer" }}>
+        {children}{roleBlocked ? " \uD83D\uDD12" : ""}
+      </button>
+    </span>
+  );
+}
+function Card({title, badge, children, hot, just, spot, you, coach}) {
+  // just = {who, label} when the last guided step happened inside this card → green spotlight + caption
+  // spot = space-separated step keys; the guided Next scrolls to [data-spot~="key"]
+  return (
+    <div data-spot={spot} style={{background:"#fff", border:`1px solid ${just ? C.ok : you ? C.warn : hot ? C.link : C.border}`, boxShadow: just ? `0 0 0 3px ${C.okBg}` : you ? `0 0 0 3px ${C.warnBg}` : hot ? `0 0 0 2px ${C.infoBg}` : "none", borderRadius:6, marginBottom:12, position:"relative", zIndex: just ? 31 : "auto"}}>
+      {just && just.when && <span key={just.when} style={{position:"absolute", inset:0, borderRadius:6, pointerEvents:"none", animation:"spotHole 3s ease forwards"}} />}
+      <div style={{padding:"8px 12px", borderBottom:`1px solid ${C.borderLt}`, display:"flex", justifyContent:"space-between", alignItems:"center", background: just ? C.okBg : you ? C.warnBg : hot ? C.infoBg : "transparent", flexWrap:"wrap", gap:6}}>
+        <span style={{fontSize:13, fontWeight:700}}>{hot ? "▶ " : ""}{title}</span>
+        <span style={{display:"inline-flex", alignItems:"center", gap:6}}>{badge}
+        {(just || you) && <Why key={just ? String(just.when) : ("you-" + ((you && you.key) || "x"))} author="Guided tour" initial="T" defaultOpen={just ? true : !!(you && you.firstTime)}>
+          {just ? <span style={{display:"block"}}>
+            <b style={{color:C.ok}}>✓ {just.who}</b> — {just.label}
+            {coach && coach.N && <span style={{display:"block", marginTop:4}}>{coach.N.manual ? coach.N.text : <span>Next: <b>{coach.N.who}</b> — {coach.N.text}</span>}</span>}
+            {coach && coach.N && coach.N.run && <span style={{display:"block", marginTop:8, textAlign:"right"}}><button onClick={coach.advance} style={{background:C.link, border:"1px solid " + C.link, borderRadius:14, padding:"4px 14px", fontSize:12, fontWeight:700, color:"#fff", cursor:"pointer"}}>Next →</button></span>}
+          </span> : <span style={{display:"block"}}><b style={{color:C.warn}}>✋ Your move</b> — {(you && you.text) ? you.text : "Fill this in; the tour resumes after save."}</span>}
+        </Why>}
+        </span>
+      </div>
+      <div style={{padding:12}}>{children}</div>
+    </div>
+  );
+}
+function Note({children, tone="info"}) {
+  const [fg,bg] = TONES[tone];
+  return <div style={{background:bg, borderLeft:`3px solid ${fg}`, padding:"6px 10px", fontSize:12, borderRadius:3, margin:"6px 0"}}>{children}</div>;
+}
+/* Why — a Figma/Miro-style comment pin. Deliberately looks like a review-layer comment floating ON TOP
+   of the prototype (teardrop avatar pin + white comment card with author), so it cannot be mistaken for UI. */
+function Why({children, author="Spec note", initial="S", defaultOpen=false}) {
+  const [open, setOpen] = useState(defaultOpen);
+  const [pos, setPos] = useState(null);
+  const btnRef = React.useRef(null);
+  const pinColor = "#E5397F";
+  const W = 280;
+  // Popover renders position:fixed at the viewport top layer (z 300) — above the window, dock, and modals —
+  // clamped to the screen, so no pin placement ever needs individual checking.
+  const place = () => {
+    const el = btnRef.current; if (!el) return;
+    const r = el.getBoundingClientRect();
+    let left = r.right - W; if (left < 8) left = 8; if (left + W > window.innerWidth - 8) left = window.innerWidth - W - 8;
+    const below = r.bottom + 8; const flip = below > window.innerHeight - 200;
+    setPos({ left, top: flip ? r.top - 8 : below, flip });
+  };
+  React.useLayoutEffect(() => { if (defaultOpen) place(); }, []);
+  React.useEffect(() => {
+    if (!open) return;
+    let raf = null;
+    const h = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = null; place(); }); };
+    window.addEventListener("scroll", h, true); window.addEventListener("resize", h);
+    return () => { window.removeEventListener("scroll", h, true); window.removeEventListener("resize", h); if (raf) cancelAnimationFrame(raf); };
+  }, [open]);
+  const toggle = (e) => { e.stopPropagation(); if (!open) place(); setOpen(o => !o); };
+  return (
+    <span style={{position:"relative", display:"inline-block", marginLeft:8, verticalAlign:"middle"}}>
+      <button ref={btnRef} onClick={toggle} title={author + " — comment (not part of the prototype)"}
+        style={{width:26, height:26, borderRadius:"50% 50% 50% 4px", border:"2px solid #fff", background:pinColor, color:"#fff",
+          fontSize:12, fontWeight:800, cursor:"pointer", lineHeight:"22px", padding:0, boxShadow:"0 2px 8px rgba(0,0,0,.35)",
+          transform:"translateY(-4px) rotate(-45deg)"}}>
+        <span style={{display:"inline-block", transform:"rotate(45deg)"}}>{initial}</span>
+      </button>
+      {open && pos && <span onClick={e=>e.stopPropagation()} style={{position:"fixed", zIndex:300, top:pos.top, left:pos.left, width:W,
+        transform: pos.flip ? "translateY(-100%)" : "none",
+        background:"#fff", borderRadius:12, padding:"12px 14px", boxShadow:"0 8px 28px rgba(0,0,0,.28)", textAlign:"left",
+        fontWeight:400, border:"1px solid rgba(0,0,0,.06)", maxHeight:"70vh", overflowY:"auto"}}>
+        <span style={{display:"flex", alignItems:"center", gap:8, marginBottom:6}}>
+          <span style={{width:22, height:22, borderRadius:"50%", background:pinColor, color:"#fff", fontSize:11, fontWeight:800, display:"inline-flex", alignItems:"center", justifyContent:"center", flexShrink:0}}>{initial}</span>
+          <span style={{fontSize:12, fontWeight:700, color:"#111"}}>{author}</span>
+          <span style={{fontSize:11, color:"#999"}}>· not part of the prototype</span>
+          <button onClick={(e)=>{e.stopPropagation(); setOpen(false);}} style={{marginLeft:"auto", border:"none", background:"none", color:"#999", cursor:"pointer", fontSize:13, lineHeight:1, padding:0}}>✕</button>
+        </span>
+        <span style={{display:"block", fontSize:12, color:"#333", lineHeight:1.45}}>{children}</span>
+      </span>}
+    </span>
+  );
+}
+
+/* Shared across all 3 COLI engines (Order-install, Movement, Mid-life) — H/I/K/L */
+function ColiTable({colis, onOpen}) {
+  return (
+    <div style={{overflowX:"auto"}}>
+      <table style={{borderCollapse:"collapse", fontSize:12, width:"100%"}}>
+        <thead><tr>{["COLI","Type","Unit","Truck","Work By","Status","Docs",""].map(h=><th key={h} style={{padding:"5px 8px", border:`1px solid ${C.border}`, background:"#EAF0F6", textAlign:"left", whiteSpace:"nowrap"}}>{h}</th>)}</tr></thead>
+        <tbody>{colis.map(c=>(
+          <tr key={c.id} onClick={()=>onOpen(c.id)} style={{cursor:"pointer"}} onMouseOver={e=>e.currentTarget.style.background=C.infoBg} onMouseOut={e=>e.currentTarget.style.background="transparent"}>
+            <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, color:C.link, fontWeight:600, whiteSpace:"nowrap"}}>{c.id}</td>
+            <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, whiteSpace:"nowrap"}}>{c.type}</td>
+            <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, whiteSpace:"nowrap"}}>{c.unit||"—"}</td>
+            <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, whiteSpace:"nowrap"}}>{c.truck}</td>
+            <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, whiteSpace:"nowrap"}}>{c.by}</td>
+            <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, whiteSpace:"nowrap"}}><Chip tone={c.status.includes("Billed")?"ok":c.status.includes("Hold")||c.status.includes("Held")?"warn":c.status.includes("Pending")||c.status==="Requested"?"warn":"info"}>{c.status}</Chip>{c.verified && <span style={{marginLeft:4}}><Chip tone="ok">{c.verified}</Chip></span>}</td>
+            <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, fontSize:11, color:C.sub, maxWidth:160}} onClick={e=>e.stopPropagation()}>{docsFor(c.type).length ? docsFor(c.type).map((f,i)=><div key={i} title={f} style={{whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", color:C.link, cursor:"pointer"}}>📄 {f}</div>) : "—"}</td>
+            <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, color:C.link, fontSize:11}}>Open →</td>
+          </tr>
+        ))}</tbody>
+      </table>
+    </div>
+  );
+}
+function Modal({title, badges, onClose, children}) {
+  return (
+    <div style={{position:"fixed", inset:0, background:"rgba(0,0,0,.35)", zIndex:50, display:"flex", alignItems:"center", justifyContent:"center", padding:16}} onClick={onClose}>
+      <div style={{background:"#fff", borderRadius:8, maxWidth:640, width:"100%", maxHeight:"85vh", overflowY:"auto", boxShadow:"0 8px 30px rgba(0,0,0,.25)"}} onClick={e=>e.stopPropagation()}>
+        <div style={{padding:"14px 18px", borderBottom:`1px solid ${C.borderLt}`, display:"flex", justifyContent:"space-between", alignItems:"flex-start"}}>
+          <div><div style={{fontWeight:700, fontSize:15}}>{title}</div><div style={{marginTop:4, display:"flex", gap:6, flexWrap:"wrap"}}>{badges}</div></div>
+          <button onClick={onClose} style={{border:"none", background:"none", fontSize:18, cursor:"pointer", color:C.sub, lineHeight:1}}>✕</button>
+        </div>
+        <div style={{padding:16}}>{children}</div>
+      </div>
+    </div>
+  );
+}
+function FieldGrid({rows}) {
+  return <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:"3px 16px", fontSize:12, color:C.sub, marginBottom:10}}>
+    {rows.map(([label,val,extra],i)=><span key={i}>{label}: <b style={{color:C.text}}>{val}</b>{extra}</span>)}
+  </div>;
+}
+function ClosureBanner() {
+  return <Note tone="ok">✓ <b>Closure recorded.</b> Operational billing: event date = the date the work happened; CSM confirms billable + month at case close.</Note>;
+}
+
+
+function App({onRestart}) {
+  const [role, setRole] = useState("CSM");
+  const [tab, setTab]   = useState("cases");
+  const [openColi, setOpenColi] = useState(null); // {engine:"order"|"move"|"mid", caseId, coliId} — K
+  const [subTab, setSubTab] = useState({}); // {caseId: "Related"|"Details"} — H, defaults to Related
+  const [lastAction, setLastAction] = useState(null); // {key, who, label, when} — guided Next: what just ran + where to spotlight
+  const [showLegend, setShowLegend] = useState(true); // guide-dock color-code legend, shown by default (collapsible)
+  const [walked, setWalked] = useState({}); // guided tour: which step kinds were walked through the modal once (rest fast-forward)
+  const [log, setLog]   = useState([]);
+  const addLog = (who, msg) => setLog(l=>[{n:l.length+1, who, msg}, ...l]);
+  const [fieldHistory, setFieldHistory] = useState([]); // {n, field, oldVal, newVal, who, when, record} — real audit trail, not prose
+  const recordHistory = (record, field, oldVal, newVal, who) => setFieldHistory(h=>[{n:h.length+1, record, field, oldVal, newVal, who, when: new Date().toLocaleString()}, ...h]);
+
+  /* new-case picker + forms */
+  const [picker, setPicker] = useState(false);
+  const [showOrderForm, setShowOrderForm] = useState(false);
+  const [installForm, setInstallForm] = useState(null); // {reason, unit, by}
+  const [moveForm, setMoveForm] = useState(null);       // {intent, unit, by, dest}
+  const [creator, setCreator] = useState(null);
+  const [draft, setDraft] = useState({ customer:"AZ Materials — Plant 12", trucks:3, system:"V5 Basic (VAS)", labor:"3rd Party", reqDate:"07/21/26", model:"Lease", contact:"R. Alvarez", phone:"(602) 555-0144", liftgate:true, hours:"6a–2p M–F", priority:"Medium", parts:{"V5 temperate water system":3,"Spark (brain)":3,"Display":3,"Flow meter":1} });
+  const approver = creator === "CSM" ? "FSM" : "CSM";
+
+  /* order state */
+  const [created, setCreated] = useState(false);
+  const [fields, setFields] = useState(null);
+  const [changed, setChanged] = useState({});
+  const [dualApproved, setDualApproved] = useState(false);
+  const [killed, setKilled] = useState(false);
+  const [hasIM, setHasIM] = useState(true);
+  const [imConfirmed, setImConfirmed] = useState(false);
+  const [crew, setCrew] = useState("Precision Install Co. (3rd party)");
+  const [contract, setContract] = useState(true);
+  const [finOK, setFinOK] = useState(false);       // no-contract gate
+  const [finBigOK, setFinBigOK] = useState(false); // >40 trucks gate (recovered from build thread)
+  const [rmOK, setRmOK] = useState(false);
+  const [ioCreated, setIoCreated] = useState(false);
+  const [ioClosed, setIoClosed] = useState(false);
+  const [laborDone, setLaborDone] = useState(false);
+  const [scClosed, setScClosed] = useState(false); // SC order closure (restored)
+  const [estDate, setEstDate] = useState(null);
+  const [shipped, setShipped] = useState(false);
+  const [hubTask, setHubTask] = useState(false);
+  const [hubCreated, setHubCreated] = useState(false);
+  const [units, setUnits] = useState([
+    { id:"U-2511-A01", truck:"TRK-201", status:"installed", waiting:0, seeded:true },
+    { id:"U-2511-A02", truck:"TRK-207", status:"installed", waiting:0, seeded:true },
+    { id:"U-2511-A03", truck:"—", status:"available", waiting:0, seeded:true }, // always-available unit, kept off a truck so Re-Install is testable without running a De-install case first
+  ]);
+  const [colis, setColis] = useState([]);
+  const [wolis, setWolis] = useState([]);
+  const [sentCC, setSentCC] = useState(false);
+  // Billing grain CHANGED per July 15 call (15:23): the billable decision lives ON THE COLI, not the case.
+  const [noBillReason, setNoBillReason] = useState("Replacement unit — on us"); // default reason for per-COLI no-bills
+  const [installClosed, setInstallClosed] = useState(false);
+  const [ret, setRet] = useState({ parts:true, unit:"", stage:0 });
+  const retShippedBack = ret.stage>=3, retReceived = ret.stage>=5;
+  const [midCases, setMidCases] = useState([]);   // Verifi Install: upgrade / brownfield
+  const [moveCases, setMoveCases] = useState([]); // Verifi Service: {id,reason,unit,by,account,status,colis:[{...}],schedule}
+  const coliBillResolved = (c) => c.billable === "yes" || c.billable === "no-ok";
+  const locked = colis.length > 0 && colis.every(coliBillResolved); // case locks when EVERY COLI's billing is resolved
+  const anyNoBillPending = colis.some(c => ["no-pending","no-pending-fin","no-rejected"].includes(c.billable));
+  const [ccEnabled, setCcEnabled] = useState(true); // Command Center — first-class step, toggleable off once the system is trusted. — Spec §4.6, Q26
+  const [installSchedule, setInstallSchedule] = useState(null); // schedule-lite, extended to Order-install physical COLIs
+
+  // Cross-engine duplicate guard: at most one OPEN case may hold a unit, across Order-install / Mid-life / Movement.
+  // "Open" = case/engine not yet closed — NOT the same as "unbilled". A de-install COLI + its own pending re-install
+  // living on ONE case is the intended hold pattern, never a conflict (Franco, 7/04). This only flags a SECOND,
+  // separate case reaching for a unit that already has one.
+  const unitOpenElsewhere = (unit, excludeCaseId) => {
+    if (!locked && colis.some(c => c.unit === unit)) return { engine: "Order-install", id: "CASE-0101" };
+    const mid = midCases.find(m => m.id !== excludeCaseId && m.status !== "Closed" && m.colis.some(c => c.unit === unit));
+    if (mid) return { engine: "Mid-life", id: mid.id };
+    const mv = moveCases.find(m => m.id !== excludeCaseId && m.status !== "Closed" && m.status !== "Rejected" && m.colis.some(c => c.unit === unit));
+    if (mv) return { engine: "Movement", id: mv.id };
+    return null;
+  };
+  // WOLI-blocks-lock: minimal implementation (real WOLI workflow still 📌 parked with field teams). `wolis` already
+  // tracks unit IDs with an open fix; this just gives it teeth against every billing/lock action, cross-engine.
+  const unitHasOpenWoli = (unit) => wolis.includes(unit);
+  const woliResolve = (unit) => { setWolis(w => w.filter(u => u !== unit)); addLog("FSM", `${unit}: WOLI fix confirmed complete — cleared. Billing/lock can proceed. — minimal impl, pending field-teams' real WOLI workflow 📌`); };
+
+  const pendingFields = Object.keys(changed);
+  const approvalDone  = dualApproved && pendingFields.length === 0 && !killed;
+  const gateNeeded    = created && (!contract || fields.trucks > 20);
+  const gateDone      = !gateNeeded || ((contract ? true : (finOK && rmOK)) && ((created && fields.trucks > 20) ? rmOK : true) && ((created && fields.trucks > 40) ? finBigOK : true));
+  const atSC          = approvalDone && imConfirmed && gateDone && !killed;
+  const allValidated  = colis.length > 0 && colis.every(c => c.status.startsWith("Validated"));
+
+  /* ── New Case picker routing ── */
+  const openPicker = () => { setPicker(true); setTab("cases"); };
+  const pickType = (t) => {
+    setPicker(false);
+    if (!["CSM","FSM"].includes(role)) { setRole("CSM"); addLog("System","Switched role to CSM — CSM/FSM create cases."); }
+    if (t==="order") { setShowOrderForm(true); }
+    if (t==="install") { setInstallForm({ reason:"New Install (brownfield)", account:"AZ Materials — Plant 12", system:"V5 Basic (VAS)", by:"Verifi", truck:"TRK-701" }); addLog("System","Verifi Install entrance: existing systems already on hand. Upgrades route through New Unit Ordering instead (System Type: Module only). — build-thread"); }
+    if (t==="move") { setMoveErr(""); setMoveForm({ reason:"Re-Install", units:[], by:"Verifi", dest:"Globex Concrete (Acct B)", account:"AZ Materials — Plant 12", system:"V5", truckAlsoChanges:false }); }
+  };
+
+  const submitOrder = () => {
+    const who = ["CSM","FSM"].includes(role) ? role : "CSM";
+    const t = TERRITORY[draft.customer];
+    setFields({...draft, csm:"Dana R. (CSM)", fsm:t.fsm, fst:t.fst, loc:t.loc}); setCreated(true); setShowOrderForm(false); setCreator(who);
+    addLog(who, `ORD-1042 created via dynamic form — the form IS the case (1:1 replacement of MIN-00006 incl. the parts sheet). Account/location selected → auto-pulled ${t.fsm} + ${t.fst}. Creator (${who}) approval recorded; ${who==="CSM"?"FSM":"CSM"} approves next. Requested on-site: ${draft.reqDate}. — Spec §2.2–2.3`);
+  };
+
+  /* ── Phase 0 ── */
+  const flagField = (f, who) => {
+    if (shipped) { addLog(who, `Updated "${f}" post-ship → notify-only; propagated everywhere it's referenced. — Spec §4.2`); return; }
+    setChanged(c => ({...c, [f]:{CSM:false, FSM:false}}));
+    addLog(who, `Edited "${f}" → highlighted; re-approval by BOTH CSM & FSM required. History recorded. — Spec §2.4`);
+  };
+  const editTrucks = () => { const cyc={3:24,24:45,45:3}; const old=fields.trucks; const v=cyc[fields.trucks]||3; setFields(f=>({...f, trucks:v})); recordHistory("ORD-1042","Truck count",old,v,role); flagField("Truck count", role); if(v>20) addLog("System", v>40 ? "Truck count > 40 → Finance approval ALSO required (>20 → RM). — build-thread rule" : "Truck count > 20 → RM approval required. — Spec §2.6"); };
+  const editLabor  = () => { const o=["Verifi","Customer","3rd Party"]; const old=fields.labor; const v=o[(o.indexOf(fields.labor)+1)%3]; setFields(f=>({...f, labor:v})); recordHistory("ORD-1042","Install labor",old,v,role); flagField("Install labor", role); };
+  const reapprove  = (f, r) => setChanged(c => { const e={...c[f],[r]:true}; const n={...c}; if(e.CSM&&e.FSM){delete n[f]; addLog("System",`"${f}" re-approved by both — cleared.`);} else n[f]=e; return n; });
+  const reapproveAll = (as) => pendingFields.forEach(f => reapprove(f, as || role)); // as = role guided Next is acting as (setRole is async, closures see stale role)
+  const approveOrder = () => { setDualApproved(true); addLog(approver,"Reviewed whole order line-by-line and approved (dual approval complete). — Spec §2.3"); };
+  const killOrder  = () => { setKilled(true); addLog(role,"Order KILLED — terminable by design. — Spec §2.7"); };
+  const imConfirm  = () => { setImConfirmed(true); addLog(hasIM?"Installation Specialist":"Supply Chain", (hasIM?"Installation Specialist":"Supply Chain (fallback — FSM+CSM+SC notified)") + ` confirmed labor (${fields.labor}) and crew: ${crew}. → Released to Supply Chain. — Spec §2.5`); };
+  const imOwnEdit  = () => { setCrew("Ramos Field Services (3rd party)"); addLog("Installation Specialist","Updated own field (crew/schedule) → notify-only. — Spec §2.5"); };
+  const imWeek     = () => addLog("System","1 idle week → weekly escalation reminder to Installation Specialist. 📌 cadence w/ SC. — Spec §2.5");
+
+  /* ── Phase 1 ── */
+  const createIO   = () => { setIoCreated(true); addLog("Finance","IO/PO/GL/CC created at Supply Chain. Blocks order close, not shipping. — Spec §2.8"); };
+  const setEst     = () => { setEstDate("07/14/26"); addLog("Supply Chain","Estimated ship date set: 07/14/26 (requested " + fields.reqDate + "). — Spec §3.1"); };
+  const markShipped = () => {
+    setShipped(true); setHubTask(true);
+    setUnits(us=>[...us, ...[1,2,3].map(i => ({ id:"U-2607-00"+i, truck:"—", status:"shipped", waiting:0 }))]);
+    addLog("Supply Chain","Mark Shipped → 3 unit IDs BORN in Salesforce. Docs uploaded; split 2 destinations. — Spec §3.2");
+    addLog("System","Excess Return Order RO-311 auto-created (over-ship policy). Field-team FYI: incoming installs, NO TRUCKS ASSIGNED YET — trucks confirmed as they arrive, inside the install flow. — build-thread rule");
+    addLog("System","TASK → Supply Chain: create units in Hub. LOUD — resolve BEFORE units arrive. — Spec §3.3");
+  };
+  const createHub  = () => {
+    setHubCreated(true); setHubTask(false);
+    setColis([1,2,3].map(i => ({ unit:"U-2607-00"+i, status:"Not Started", checks:0, serviceReady:null, shipBack:false, open:false, truck:"TRK-90"+i, tcg:"TCG-4"+i, mixer:MIXERS[i%3], wds:"WDS-77"+i, prop:i%2?"Pump":"Pressure" })));
+    addLog("Supply Chain","Units created in Hub → Hub owns sync from now on.");
+    addLog("System","Hub-synced units detected → install case CASE-0101 auto-created: one case, one install-WOLI (COLI) per unit. — Spec §3.4");
+  };
+  const processLabor = () => { setLaborDone(true); addLog("Supply Chain","Labor processed (" + fields.labor + " labor — never customer labor). — Spec §3.5"); };
+  const scheduleInstall = (as) => { setInstallSchedule({loc:fields.loc, date:"07/18/26", team:fields.fst+" team"}); addLog(as || role, `CASE-0101: schedule-lite confirmed — ${fields.loc}, opens 07/18/26, team ${fields.fst} team (confirmed, not auto-assigned). CSM CC'd. — Spec v1.5, extended to all physical COLIs`); };
+  const closeSC = () => { setScClosed(true); addLog("Supply Chain","SC order CLOSED on the tracker — shipment processed + labor + IO closure all green. — Spec §3.6 (restored)"); };
+
+  /* ── Phase 2: COLIs ── */
+  const crewLabel = created ? (fields.labor === "Verifi" ? "FST (Verifi)" : fields.labor === "Customer" ? "Customer crew" : "3rd-party crew") : "";
+  const stampTruck = (uid, truck) => setUnits(us => us.map(u => u.id===uid ? {...u, status:"installed", truck} : u));
+  const patchColi = (i, patch) => setColis(cs => cs.map((c,j)=> j===i ? {...c, ...patch} : c));
+  const coliReady = (c) => c.checks===CHECKLIST.length && c.serviceReady==="Yes" && c.shipBack;
+  const submitColi = (i) => {
+    const c = colis[i];
+    if (c.serviceReady === "No") { patchColi(i, {status:"On Hold — not service ready"}); addLog("Crew", `${c.unit}: Service Ready = NO → On Hold; Product Request (rush parts) raised. — Spec v1.1`); return; }
+    if (fields.labor === "Verifi") { patchColi(i, {status:"Validated (auto)", open:false}); stampTruck(c.unit, c.truck); addLog("Crew", `${c.unit}: checklist complete by FST → Validated automatically (Verifi exempt). Truck ${c.truck} confirmed on arrival + STAMPED. — Spec §4.3`); return; }
+    patchColi(i, {status:"Pending FSM", open:false});
+    addLog("Crew", `${c.unit}: checklist + fields complete by ${crewLabel} → Pending FSM. — Spec §4.3`);
+  };
+  const validateColi = (i) => { const c=colis[i]; patchColi(i, {status:"Validated"}); stampTruck(c.unit, c.truck); addLog("FSM", `${c.unit}: validated (check & fix). Truck ${c.truck} STAMPED — Unit ID + TCG + Truck on the WOLI so the record survives even if the unit later disappears. — Spec §4.4, build-thread`); };
+  const woliColi = (i) => { const u=colis[i].unit; setWolis(w=>[...w,u]); addLog("FSM", `${u}: issue → WOLI created for the fix. 📌 field teams. — Spec §4.4`); };
+  const resumeHold = (i) => { const c=colis[i]; patchColi(i, {status:"Not Started", serviceReady:null}); addLog("Supply Chain", `${c.unit}: rush parts delivered → COLI reopened.`); };
+  const sendCC   = () => { setSentCC(true); addLog("FSM", "Sent to COMMAND CENTER (transitional, toggleable). — Spec §4.5–4.6"); };
+  const openWoliUnits = () => colis.filter(c => unitHasOpenWoli(c.unit)).map(c=>c.unit);
+  const confirmColiBill = (i, as, month) => { const c = colis[i]; if (!c) return; if (unitHasOpenWoli(c.unit)) { addLog("System", `Blocked — open WOLI on ${c.unit}. Resolve the fix before locking billing on this COLI.`); return; } const m = month || "Jul 2026"; recordHistory("CASE-0101", c.unit + " · CSM Billable Status", "—", `Billable · ${m}`, as || role); patchColi(i, { billable:"yes", billMonth:m }); addLog("CSM", `${c.unit}: billable + month (${m}) confirmed ON THE COLI → this COLI locks forever. — July 15 call (15:23) + Spec §7`); };
+  const noBillColi = (i, reason) => { const c = colis[i]; if (!c) return; if (unitHasOpenWoli(c.unit)) { addLog("System", `Blocked — open WOLI on ${c.unit}.`); return; } const r = reason || noBillReason; recordHistory("CASE-0101", c.unit + " · CSM Billable Status", "—", `No-bill: ${r}`, role); patchColi(i, { billable:"no-pending", noBillReason:r }); addLog("CSM", `${c.unit}: NO-BILL requested ("${r}") — needs RM approval (Finance too if the no-billed set exceeds 5 units). — Spec v1.3`); };
+  const noBillSet = (pred) => colis.map((c,j)=>({c,j})).filter(x=>pred(x.c));
+  const rmNoBill = () => { const pend = noBillSet(c=>c.billable==="no-pending"); if (!pend.length) return; if (pend.length>5) { pend.forEach(({j})=>patchColi(j,{billable:"no-pending-fin"})); addLog("Regional Manager", `No-bill approved by RM for ${pend.length} COLIs → >5 units, escalates to Finance for second approval. — Spec v1.3`); } else { pend.forEach(({c,j})=>{ recordHistory("CASE-0101", c.unit+" · CSM Billable Status", "No-bill: "+(c.noBillReason||noBillReason), "Non-billable (RM approved)", "Regional Manager"); patchColi(j,{billable:"no-ok"}); }); addLog("Regional Manager", `No-bill APPROVED by RM → ${pend.map(x=>x.c.unit).join(", ")} lock as NON-BILLABLE. — Spec v1.3`); } };
+  const finNoBill = () => { const pend = noBillSet(c=>c.billable==="no-pending-fin"); if (!pend.length) return; pend.forEach(({c,j})=>{ recordHistory("CASE-0101", c.unit+" · CSM Billable Status", "No-bill: "+(c.noBillReason||noBillReason), "Non-billable (Finance approved)", "Finance"); patchColi(j,{billable:"no-ok"}); }); addLog("Finance", `No-bill APPROVED by Finance (>5 units) → ${pend.map(x=>x.c.unit).join(", ")} lock as NON-BILLABLE. — Spec v1.3`); };
+  const rmRejectNoBill  = () => { noBillSet(c=>c.billable==="no-pending").forEach(({j})=>patchColi(j,{billable:"no-rejected"})); addLog("Regional Manager", `No-bill REJECTED by RM → bounced back to CSM (per-COLI).`); };
+  const finRejectNoBill = () => { noBillSet(c=>c.billable==="no-pending-fin").forEach(({j})=>patchColi(j,{billable:null})); addLog("Finance","No-bill REJECTED by Finance (final) → those COLIs revert and must proceed as billable."); };
+  const csmReviseNoBill = (reason) => { setNoBillReason(reason); noBillSet(c=>c.billable==="no-rejected").forEach(({j})=>patchColi(j,{billable:"no-pending", noBillReason:reason})); addLog("CSM", `No-bill reason revised to "${reason}" → resubmitted to RM.`); };
+  const csmEscalateFinance = () => { noBillSet(c=>c.billable==="no-rejected").forEach(({j})=>patchColi(j,{billable:"no-pending-fin"})); addLog("CSM","No-bill escalated straight to Finance after RM rejection."); };
+  const pushSAP  = () => { setInstallClosed(true); addLog("Command Center","Pushed to SAP → INSTALL case closed" + (colis.every(c=>c.billable==="no-ok") ? " as NON-BILLABLE (approved)" : "") + ". ORDER case continues. — Spec §4.5, §4.7"); };
+
+  /* ── Phase 4: returns ── */
+  const advanceReturn = () => {
+    const s = ret.stage + 1;
+    setRet(r=>({...r, stage:s}));
+    const what = [ret.parts && "excess parts", ret.unit && ("UNIT " + ret.unit)].filter(Boolean).join(" + ");
+    if (s===1) addLog("FSM", `RO-311: requested + BOL uploaded — ${what}${ret.unit ? " (unit picker — the field SF is missing today)" : ""}. — Spec §6.1`);
+    if (s===2) addLog("FSM", "RO-311: 3rd-party logistics picked up on site.");
+    if (s===3) addLog("Supply Chain", "RO-311: shipped — SC owns the return from here. — Spec §6.2");
+    if (s===4) addLog("Supply Chain", "RO-311: received at Verifi.");
+    if (s===5) {
+      if (ret.unit) { setUnits(us=>us.map(u=>u.id===ret.unit ? {...u, status:"retired", truck:"—"} : u)); addLog("Supply Chain", `RO-311 PROCESSED: arrival confirmed — ${what}. Unit ${ret.unit} identified → removed from Hub (UNIT DEATH; stamped WOLI survives)${ret.parts?"; parts restocked, no Hub action for them":""}. — Spec §6.3`); }
+      else addLog("Supply Chain", "RO-311 PROCESSED — parts only, restocked, no Hub removal. — Spec §6.3");
+    }
+  };
+  const closeIO = () => { setIoClosed(true); addLog("Finance","IO closed on the order case."); };
+
+  /* ── Verifi Install mid-life (Upgrade / brownfield) ── */
+  const submitInstallCase = () => {
+    const m = installForm;
+    const dupTruck = units.find(u => u.truck === m.truck && u.status === "installed");
+    if (dupTruck) { addLog("System", `Blocked — ${dupTruck.id} is already registered on truck ${m.truck}. Check for an existing unit record before registering a new one (brownfield dedupe). — build-thread`); return; }
+    const id = "CASE-02" + (10 + midCases.length);
+    const newUnitId = "U-BF"+(1000+midCases.length);
+    setUnits(us=>[...us, { id:newUnitId, truck:m.truck, status:"installed", waiting:0 }]);
+    const t = TERRITORY[m.account];
+    const coli = { id:"COLI-"+id.slice(-4), unit:newUnitId, type:"Install", status:"Ready to Dispatch", by:m.by, truck:m.truck, truckStampedAtCreate:m.truck, checks:0,
+      tcg:"TCG-BF"+id.slice(-2), wds:"WDS-BF"+id.slice(-2), mixer:MIXERS[id.length%3], system:m.system, ready:null, fst:t.fst, install:"—", complete:"—", billStatus:"—", billable:"pending work", manualTcg:m.by!=="Verifi", partsConsumed:"" };
+    setMidCases(mc=>[...mc, {id, reason:m.reason, unit:newUnitId, by:m.by, account:m.account, status:"In Progress", colis:[coli], schedule:null}]);
+    setInstallForm(null);
+    addLog(role, `${id} created — Verifi Install: ${m.reason} on new unit ${newUnitId} (equipment already on hand, registered now), truck ${m.truck}, by ${m.by}, Assigned FST auto-pulled (${t.fst}). Same COLI engine as everywhere else — checklist, validation gate, billing lock. — Spec §5.1`);
+  };
+  const midWoli = (mid, cid) => { const m=midCases.find(x=>x.id===mid); const c=m.colis.find(x=>x.id===cid); setWolis(w=>[...w,c.unit]); addLog("FSM", `${c.unit}: issue found → WOLI created for the fix. 📌 field teams.`); };
+  const midSchedule = (id, loc, date, team) => { setMidCases(mc=>mc.map(m=>m.id===id?{...m, schedule:{loc,date,team}}:m)); addLog(role, `${id}: schedule-lite confirmed — ${loc}, opens ${date}, team ${team} (confirmed, not auto-assigned). CSM CC'd. Lands on the Planning Gantt. — Spec v1.5`); };
+  const midComplete = (mid, cid, parts) => setMidCases(mc=>mc.map(m=>{ if(m.id!==mid) return m;
+    const c = m.colis.find(x=>x.id===cid);
+    if (c.ready==="No") { addLog("Crew", `${cid}: System Ready = No, "${c.notReadyReason||"see comment"}" → HOLD. Not billable; FSM reminder; optional rush parts.`); return {...m, colis:m.colis.map(x=>x.id===cid?{...x,status:"On Hold — Not Ready"}:x)}; }
+    if (c.by!=="Verifi") { addLog("Crew", `${cid}: checklist complete by ${c.by} (TCG entered manually — no Hub access) → "Submitted – Pending FSM Validation".`); return {...m, colis:m.colis.map(x=>x.id===cid?{...x,status:"Submitted – Pending FSM", partsConsumed:parts||x.partsConsumed}:x)}; }
+    addLog("Crew", `${cid}: 13-item checklist + Verifi-only commissioning signed off → Work Complete. Truck ${c.truck} stamped at creation, confirmed at completion.${parts?` Parts consumed: ${parts}.`:""}`);
+    return {...m, colis:m.colis.map(x=>x.id===cid?{...x,status:"Work Complete", complete:"07/16/26", truckStampedAtComplete:c.truck, verified:"✓ verified by data flow", partsConsumed:parts||x.partsConsumed}:x)};
+  }));
+  const midValidate = (mid, cid) => setMidCases(mc=>mc.map(m=>{ if(m.id!==mid) return m;
+    addLog("FSM", `${cid}: FSM validated 3rd-party/customer install → real/billable.`);
+    return {...m, colis:m.colis.map(x=>x.id===cid?{...x,status:"Work Complete", complete:"07/16/26", truckStampedAtComplete:x.truck, verified:"✓ verified by data flow"}:x)};
+  }));
+  const midResumeHold = (mid, cid) => setMidCases(mc=>mc.map(m=>{ if(m.id!==mid) return m; addLog("Supply Chain", `${cid}: rush parts delivered → COLI reopened.`); return {...m, colis:m.colis.map(x=>x.id===cid?{...x,status:"Ready to Dispatch", ready:null, checks:x.checks}:x)}; }));
+  const midBillConfirm = (mid, cid, month) => setMidCases(mc=>mc.map(m=>{ if(m.id!==mid) return m;
+    const c = m.colis.find(x=>x.id===cid);
+    if (unitHasOpenWoli(c.unit)) { addLog("System", `${cid}: BLOCKED — open WOLI on ${c.unit}. Resolve the fix before locking billing.`); return m; }
+    recordHistory(cid,"CSM Billable Status","—","Billable: Yes · "+month,"CSM");
+    addLog("CSM", `${cid}: confirmed billable, month ${month}. LOCKED.`);
+    const cols = m.colis.map(x=>x.id===cid?{...x,status:"Billed 🔒", billStatus:"Billed", billable:"Billable: Yes · "+month}:x);
+    const allDone = cols.every(x=>x.status.includes("Billed"));
+    return {...m, colis:cols, status: allDone ? (ccEnabled ? "Ready for Command Center" : "Closed") : m.status};
+  }));
+  const midSendToCC = (id) => setMidCases(mc=>mc.map(m=>m.id===id?{...m, status:"Closed"}:m)) || addLog("Command Center", `${id}: all COLIs billed → pushed to SAP, case CLOSED. — Spec §4.5–4.6`);
+
+  /* ── Unit Movement / Verifi Service (v18: multi-unit, combined reason, dual stamp) ── */
+  const [moveErr, setMoveErr] = useState("");
+  const isPhysical = (reason) => reason.startsWith("Re-Install") || reason.startsWith("Deinstall") || reason.startsWith("De-install &");
+  const needsReinstall = (reason) => reason.startsWith("Re-Install") || reason.startsWith("De-install &");
+  const isReturn = (reason) => reason.includes("Return Unit to Verifi");
+  const isNonPhysical = (reason) => reason.startsWith("Transfer");
+  const isAcctChange = (reason) => reason.includes("Another Account");
+  const validForReason = (reason, status) => {
+    if (reason.startsWith("Re-Install")) return status==="available"; // must already be off a truck
+    if (reason.startsWith("De-install &")) return status==="installed"; // moving to a new truck — must be currently mounted
+    if (reason.startsWith("Deinstall")) return status==="installed"; // can't de-install what isn't installed
+    if (reason.startsWith("Transfer to Another Truck")) return status==="installed"; // name/truck-mapping change on a mounted unit
+    if (reason.startsWith("Transfer to Another Account")) return status==="installed"; // moving an active install to a new account
+    return true;
+  };
+  const submitMove = () => {
+    const m = moveForm;
+    const wrongStatus = m.units.filter(u => !validForReason(m.reason, (units.find(x=>x.id===u)||{}).status));
+    if (wrongStatus.length) { setMoveErr(`"${m.reason}" doesn't apply to: ${wrongStatus.join(", ")} (wrong status). This is enforced here too, not just in the picker.`); addLog("System", `Blocked at submit — reason/status mismatch on ${wrongStatus.join(", ")}.`); return; }
+    const blocked = m.units.map(u => ({ u, conflict: unitOpenElsewhere(u) })).filter(x => x.conflict);
+    if (blocked.length) {
+      setMoveErr(`Blocked: ${blocked.map(b=>`${b.u} (open on ${b.conflict.engine} ${b.conflict.id})`).join("; ")}. Close/resolve it first, or deselect.`);
+      addLog("System", `${blocked.map(b=>b.u).join(", ")}: DUPLICATE GUARD (cross-engine — Order-install/Mid-life/Movement) — blocked. — build-thread`);
+      return;
+    }
+    if (!m.units.length) { setMoveErr("Pick at least one unit."); return; }
+    setMoveErr("");
+    const id = "000030" + (10 + moveCases.length);
+    const isRet = isReturn(m.reason), phys = isPhysical(m.reason), nonPhys = isNonPhysical(m.reason), acctChg = isAcctChange(m.reason);
+    const t = TERRITORY[m.account];
+    const cols = [];
+    m.units.forEach((uid, i) => {
+      const truckNow = (units.find(u=>u.id===uid)||{}).truck||"—";
+      if (nonPhys) {
+        cols.push({ id:"COLI-"+id.slice(-4)+String.fromCharCode(65+i), unit:uid, type:"Billing-only", status: acctChg?"Requested":"Command Center Action", by:m.by, truck:truckNow,
+          tcg:"", wds:"", mixer:"", system:"", ready:"—", fst:t.fst, install:"—", complete:"—", billStatus:"—", billable:"pending CSM confirm", truckAlsoChanges:m.truckAlsoChanges });
+      }
+      if (phys) {
+        const needsFin = isRet;
+        const wantsDeinstall = m.reason.startsWith("Deinstall") || m.reason.startsWith("De-install &");
+        const standaloneReinstall = m.reason.startsWith("Re-Install"); // pure re-install — the unit is ALREADY off a truck (validForReason requires "available"); no de-install happens in this case, so it's basically an install job, not a hold.
+        if (wantsDeinstall) {
+          cols.push({ id:"COLI-"+id.slice(-4)+String.fromCharCode(65+i*2), unit:uid, type: isRet?"De-install (Return)":"De-install", status: needsFin?"Held — Pending Finance":"Ready to Dispatch", by:m.by, truck:truckNow, truckStampedAtCreate:truckNow, checks:0,
+            tcg:"TCG-5"+id.slice(-2)+i, wds:"WDS-8"+id.slice(-2)+i, mixer:MIXERS[(id.length+i)%3], system:m.system, ready:null, fst:t.fst, install:"—", complete:"—", billStatus:"—", billable:"pending work", manualTcg:m.by!=="Verifi", partsConsumed:"" });
+        }
+        if (needsReinstall(m.reason)) cols.push({ id:"COLI-"+id.slice(-4)+String.fromCharCode(65+i*2+1), unit:uid, type:"Re-Install", status: standaloneReinstall ? "Ready to Dispatch" : "On Hold — Awaiting Truck", by:m.by, truck: standaloneReinstall ? truckNow : "—", truckStampedAtCreate: standaloneReinstall ? truckNow : "— (pending)", checks:0,
+          tcg:"", wds:"", mixer:MIXERS[(id.length+i)%3], system:m.system, ready:null, fst:t.fst, install:"—", complete:"—", billStatus:"—", billable:"pending work", manualTcg:m.by!=="Verifi", partsConsumed:"" });
+      }
+    });
+    setMoveCases(mc=>[...mc, {id, reason:m.reason, units:m.units, by:m.by, account:m.account, dest:acctChg?m.dest:null, status: isRet?"Pending Finance":"In Progress", colis:cols, schedule:null}]);
+    setMoveForm(null);
+    if (nonPhys) addLog(role, `${id} created — ${m.reason} on ${m.units.length} unit(s): ${m.units.join(", ")}. ${acctChg ? "Physical-adjacent: unit switch (+ truck switch if needed) must be requested before Command Center processes it, then the team confirms." : "Billing-only COLI, straight to Command Center Action."} ${acctChg?`Destination account: ${m.dest}. `:""}— build-thread`);
+    else addLog(role, `${id} created — Install Reason: ${m.reason}, ${m.units.length} unit(s): ${m.units.join(", ")}, by ${m.by}, Assigned FST auto-pulled (${t.fst}). ${m.reason.startsWith("Re-Install") ? "Standalone Re-Install — unit already off a truck, no de-install in this case; Re-Install COLI goes straight to Ready to Dispatch (basically an install)." : "Truck STAMPED at creation on each De-install COLI."} ${m.by!=="Verifi" ? "3rd-party/Customer: no Hub visibility → TCG entered manually; close = Submitted, pending FSM validation." : ""} ${isRet?"Held: Finance approval BEFORE dispatch — First Commissioned surfaced for depreciation; approval triggers the Return Order + parts manifest.":""} — build-thread`);
+  };
+  const patchMove = (id, fn) => setMoveCases(mc=>mc.map(m=>m.id===id?fn(m):m));
+  const patchColiM = (mid, cid, patch) => patchMove(mid, m => ({...m, colis: m.colis.map(c=>c.id===cid?{...c,...patch}:c)}));
+  const rollup = (m, cols) => { const allDone = cols.every(x=>x.status.includes("Billed")||x.status==="Cancelled"||x.status.includes("Confirmed")); if (allDone) addLog("System", `${m.id}: all COLIs closed → case rolls up to CLOSED.`); return allDone; };
+  const moveFinance = (id, ok) => patchMove(id, m => {
+    if(!ok){ addLog("Finance", `${id}: REJECTED — case returns to CSM/FSM for edit or resubmission.`); return {...m, status:"Rejected"}; }
+    addLog("Finance", `${id}: depreciation approved (First Commissioned reviewed) → Return Order + parts manifest triggered; de-install released to dispatch. — build-thread`);
+    return {...m, status:"In Progress", colis:m.colis.map(c=>c.type.startsWith("De-install")?{...c,status:"Ready to Dispatch"}:c)};
+  });
+  const moveResubmit = (id) => patchMove(id, m => { addLog(role, `${id}: resubmitted to Finance after edit/review.`); return {...m, status:"Pending Finance"}; });
+  const moveWithdraw = (id) => patchMove(id, m => { addLog(role, `${id}: withdrawn — case closed without proceeding.`); return {...m, status:"Closed"}; });
+  const moveSchedule = (id, loc, date, team) => { patchMove(id, m=>({...m, schedule:{loc,date,team}})); addLog(role, `${id}: schedule-lite confirmed — ${loc}, opens ${date}, team ${team} (confirmed, not auto-assigned). CSM CC'd. Lands on the Planning Gantt at the bottom — never a Service Appointment, never counted against FST dispatch KPIs. — build-thread`); };
+  const coliListFor = (c) => c.type.startsWith("De-install") ? DEINSTALL_CHECKLIST : CHECKLIST;
+  const moveColiReady = (c) => c.checks === coliListFor(c).length && c.ready==="Yes";
+  const nonVerifi = (c) => c.by!=="Verifi";
+  const moveComplete = (mid, cid, coliParts) => patchMove(mid, m => {
+    const c = m.colis.find(x=>x.id===cid);
+    if (c.ready==="No") { addLog("Crew", `${cid}: System Ready = No, "${c.notReadyReason||"see comment"}" → HOLD. Not billable; FSM reminder; optional rush parts.`); return {...m, colis:m.colis.map(x=>x.id===cid?{...x,status:"On Hold — Not Ready"}:x)}; }
+    if (nonVerifi(c)) {
+      addLog("Crew", `${cid}: checklist complete by ${c.by} (TCG entered manually — no Hub access) → "Submitted – Pending FSM Validation" — stage-gate before it's real/billable.`);
+      return {...m, colis:m.colis.map(x=>x.id===cid?{...x,status:"Submitted – Pending FSM", partsConsumed:coliParts||x.partsConsumed}:x)};
+    }
+    const finalTruck = c.type==="Re-Install" ? "TRK-9"+id_suffix(mid) : "—";
+    if (c.type.startsWith("De-install")) setUnits(us=>us.map(u=>u.id===c.unit?{...u, status: isReturn(m.reason)?"in transit (return)":"available", truck:"—", waiting:0}:u));
+    if (c.type==="Re-Install") setUnits(us=>us.map(u=>u.id===c.unit?{...u, status:"installed", truck:finalTruck, waiting:0}:u));
+    addLog("Crew", `${cid}: checklist signed off (proof of work${c.type.startsWith("De-install")?" — de-install-specific: power-down, unit removed, components bagged & labeled, wiring capped, PHOTOS TAKEN":", incl. Verifi-only tilt/settings/config/firmware/software"}) → Work Complete. Truck field STAMPED AT COMPLETION (${c.type==="Re-Install"?finalTruck:"— removed"}) — was already stamped at creation (${c.truckStampedAtCreate}); both stamps compared to unit's live truck → data-flow "✓ verified" indicator.${coliParts?` Parts consumed: ${coliParts}.`:""}`);
+    return {...m, colis:m.colis.map(x=>x.id===cid?{...x,status:"Work Complete", complete:"07/16/26", truck:finalTruck, truckStampedAtComplete: c.type==="Re-Install"?finalTruck:"— (removed)", verified:"✓ verified by data flow", partsConsumed:coliParts||x.partsConsumed}:x)};
+  });
+  function id_suffix(mid){ return mid.slice(-4); }
+  const moveValidate = (mid, cid) => patchMove(mid, m => {
+    const c = m.colis.find(x=>x.id===cid);
+    const finalTruck = c.type==="Re-Install" ? "TRK-9"+id_suffix(mid) : "—";
+    if (c.type.startsWith("De-install")) setUnits(us=>us.map(u=>u.id===c.unit?{...u, status: isReturn(m.reason)?"in transit (return)":"available", truck:"—", waiting:0}:u));
+    if (c.type==="Re-Install") setUnits(us=>us.map(u=>u.id===c.unit?{...u, status:"installed", truck:finalTruck, waiting:0}:u));
+    addLog("FSM", `${cid}: FSM VALIDATED (3rd-party/customer stage-gate) → now real/billable. Truck field stamp compared to unit's live truck — "✓ verified by data flow".`);
+    return {...m, colis:m.colis.map(x=>x.id===cid?{...x,status:"Work Complete", complete:"07/16/26", truck:finalTruck, truckStampedAtComplete: c.type==="Re-Install"?finalTruck:"— (removed)", verified:"✓ verified by data flow"}:x)};
+  });
+  const moveWoli = (mid, cid) => { const m=moveCases.find(x=>x.id===mid); const c=m.colis.find(x=>x.id===cid); setWolis(w=>[...w,c.unit]); addLog("FSM", `${c.unit}: issue found → WOLI created for the fix. 📌 field teams.`); };
+  const moveBillConfirm = (mid, cid, month) => patchMove(mid, m => {
+    const c = m.colis.find(x=>x.id===cid);
+    if (unitHasOpenWoli(c.unit)) { addLog("System", `${cid}: BLOCKED — open WOLI on ${c.unit}. Resolve the fix before locking billing.`); return m; }
+    recordHistory(cid,"CSM Billable Status","—","Billable: Yes · "+month,"CSM");
+    addLog("CSM", `${cid}: confirmed billable, month ${month} (unit's actual commission/decommission date from data flow). Per-COLI billing fires on its own clock — nothing waits for a slow truck or for the case's IO/GL (separate Finance process). LOCKED.`);
+    const cols = m.colis.map(x=>x.id===cid?{...x,status:"Billed 🔒", billStatus:"Billed", billable:"Billable: Yes · "+month}:x);
+    if (isReturn(m.reason) && c.type.startsWith("De-install")) { addLog("Supply Chain", `${cid}: awaiting SC receipt of returned unit ${c.unit} before Hub removal.`); return {...m, colis:cols, status:"Awaiting SC receipt"}; }
+    return {...m, colis:cols, status: rollup(m,cols) ? (ccEnabled ? "Ready for Command Center" : "Closed") : m.status};
+  });
+  const moveSendToCC = (id) => patchMove(id, m => { addLog("Command Center", `${m.id}: all COLIs billed/cancelled → pushed to SAP, case CLOSED. — Spec §4.5–4.6`); return {...m, status:"Closed"}; });
+  // Non-physical Account Change sub-workflow: Requested → Unit Switch → (Truck Switch) → Command Center Action → Confirmed
+  const moveUnitSwitch = (mid, cid) => patchColiM(mid, cid, {status:"Unit Switch Requested"}) || addLog(role, `${cid}: unit switch requested.`);
+  const moveTruckSwitch = (mid, cid) => patchColiM(mid, cid, {status:"Truck Switch Requested"}) || addLog(role, `${cid}: truck switch also requested (destination account uses a different truck).`);
+  const moveSendCC = (mid, cid) => patchColiM(mid, cid, {status:"Command Center Action"}) || addLog(role, `${cid}: sent to Command Center to process the account move.`);
+  const moveTeamConfirm = (mid, cid) => patchMove(mid, m => { addLog("CSM", `${cid}: Command Center processed the move — team confirmed. Closed.`); const cols=m.colis.map(x=>x.id===cid?{...x,status:"Confirmed — Closed"}:x); return {...m, colis:cols, status: rollup(m,cols)?"Closed":m.status}; });
+  const nonPhysConfirmSimple = (mid, cid) => patchMove(mid, m => { addLog("CSM", `${cid}: non-physical name change confirmed via Command Center. Usually no billing.`); const cols=m.colis.map(x=>x.id===cid?{...x,status:"Confirmed — Closed"}:x); return {...m, colis:cols, status: rollup(m,cols)?"Closed":m.status}; });
+  const moveReceipt = (mid, cid) => patchMove(mid, m => {
+    const c = m.colis.find(x=>x.id===cid);
+    setUnits(us=>us.map(u=>u.id===c.unit?{...u, status:"retired", truck:"—"}:u));
+    addLog("Supply Chain", `${cid}: parts manifest received + unit confirmed (${c.unit}) → removed in Hub. UNIT DEATH — the stamped COLI survives the disappearing asset. — build-thread`);
+    const cols = m.colis.map(x=>x.id===cid?{...x,status:"Received — Closed"}:x);
+    return {...m, colis:cols, status: rollup(m,cols) ? "Closed" : m.status};
+  });
+  const moveReady = (mid, cid) => patchMove(mid, m => { addLog(role==="Crew"?"Customer (portal)":role, `${cid}: truck ready → Reinstall COLI ACTIVATED, auto-assigned to FST. (FSM, CSM, or the customer via portal can trigger this; 13-day gentle aging reminder while waiting — keeps multiple open re-installs from piling up on the same truck.) — Spec §5.5`); return {...m, colis:m.colis.map(x=>x.id===cid?{...x,status:"Activated — Ready to Dispatch"}:x)}; });
+  const moveResumeHold = (mid, cid) => patchMove(mid, m => { addLog("Supply Chain", `${cid}: rush parts delivered → COLI reopened.`); return {...m, colis:m.colis.map(x=>x.id===cid?{...x,status:"Ready to Dispatch", ready:null}:x)}; });
+  const cancelColi = (mid, cid) => patchMove(mid, m => {
+    const c = m.colis.find(x=>x.id===cid);
+    if (c.status.includes("Billed")) { addLog("System", `${cid}: CANNOT cancel — billed/locked COLIs are immutable.`); return m; }
+    addLog(role, `${cid} CANCELLED (customer dropped the truck) — kept for audit. — build-thread`);
+    const cols = m.colis.map(x=>x.id===cid?{...x,status:"Cancelled"}:x);
+    return {...m, colis:cols, status: rollup(m,cols) ? "Closed" : m.status};
+  });
+  const week = (uid) => setUnits(us=>us.map(u=>{ if(u.id!==uid) return u; const w=u.waiting+7; if(w>13) addLog("System", `${uid}: waiting ${w}d → gentle 13-day aging reminder on pending reinstalls. — Spec §5.5`); return {...u, waiting:w}; }));
+
+  /* ── THE THREAD ── */
+  const jump = (t, fn) => (...a) => { setTab(t); if (fn) fn(...a); }; // args pass through — guided Next hands the acting role to role-sensitive steps
+  const nextOrderStep = () => {
+    if (!created) return null; // no order yet — let mid/move cases surface, or fall through to "create" at the very end
+    if (killed) return { who:"—", text:"Order killed. ⟲ Restart to run again.", tone:"err", key:"killed" };
+    if (pendingFields.length) { const needR = ["CSM","FSM"].filter(r => pendingFields.some(f => !changed[f][r])); return { who:(needR.join(" & ")||"CSM & FSM"), text:`Re-approve highlighted field(s): ${pendingFields.join(", ")}. Both CSM and FSM must sign off — one role per step.`, tone:"warn", roles:(needR.length?needR:["CSM","FSM"]), label:"Re-approve as " + (needR[0]||"CSM"), run: jump("order", reapproveAll), tab:"order", key:"fields" }; }
+    if (!dualApproved) return { who:approver, text:`Review the whole order line-by-line and approve (creator was ${creator}).`, tone:"info", roles:[approver], label:"Approve whole order", run: jump("order", approveOrder), tab:"order", key:"approve" };
+    if (!imConfirmed) return { who:hasIM?"Installation Specialist":"Supply Chain (fallback)", text:"Confirm labor type & crew.", tone:"info", roles:[hasIM?"Installation Specialist":"Supply Chain"], label:"Confirm labor & crew", run: jump("order", imConfirm), tab:"order", key:"im" };
+    if (gateNeeded && !gateDone) {
+      const needFin = !contract && !finOK, needRM = ((!contract) || fields.trucks>20) && !rmOK, needBig = fields.trucks>40 && !finBigOK;
+      const roles = [ (needFin||needBig) && "Finance", needRM && "Regional Manager"].filter(Boolean);
+      return { who:roles.join(" + "), text: (needBig ? ">40 trucks → Finance approval. " : "") + (needRM ? ">20 trucks → RM approval. " : "") + (!contract ? "No contract → Finance + RM." : ""), tone:"warn", roles, label:"Approve gate as " + (roles.includes(role)?role:"…"), run: jump("order", (as)=>{ const r = as || role; if(r==="Finance"){ if(needFin){setFinOK(true);addLog("Finance","Approved (no-contract gate).");} if(needBig){setFinBigOK(true);addLog("Finance","Approved (>40 trucks). — build-thread rule");} } if(r==="Regional Manager"&&needRM){setRmOK(true);addLog("Regional Manager","Approved (>20 trucks).");} }), tab:"order", key:"gate" };
+    }
+    if (!estDate) return { who:"Supply Chain", text:"Set estimated ship date. (Finance: IO in parallel.)", tone:"info", roles:["Supply Chain"], label:"Set estimated ship date", run: jump("order", setEst), tab:"order", key:"est" };
+    if (!shipped) return { who:"Supply Chain", text:"Mark Shipped → units born in Salesforce.", tone:"info", roles:["Supply Chain"], label:"Mark Shipped", run: jump("order", markShipped), tab:"order", key:"ship" };
+    if (hubTask) return { who:"Supply Chain", text:"LOUD: create units in Hub before arrival.", tone:"err", roles:["Supply Chain"], label:"Create units in Hub", run: jump("order", createHub), tab:"order", key:"hub" };
+    if (colis.length && !installSchedule && colis.some(c=>c.status==="Not Started")) return { who:"FSM or CSM", text:"Confirm schedule-lite (team & open-date) before the checklist.", tone:"info", roles:["FSM","CSM"], label:"Confirm team & open-date", run: jump("install", scheduleInstall), tab:"install", key:"sched-order" };
+    if (!allValidated) {
+      const hi = colis.findIndex(c=>c.status.startsWith("On Hold"));
+      if (hi>=0) return { who:"Supply Chain", text:`${colis[hi].unit} On Hold — rush parts (Product Request), then reopen.`, tone:"warn", roles:["Supply Chain"], label:"Rush parts delivered", run: jump("install", ()=>resumeHold(hi)), tab:"install", key:"hold" };
+      const pi = colis.findIndex(c=>c.status==="Pending FSM");
+      if (pi>=0 && unitHasOpenWoli(colis[pi].unit)) return { who:"FSM", text:`${colis[pi].unit}: open WOLI is blocking further progress — resolve the fix.`, tone:"err", roles:["FSM"], label:"Resolve WOLI — "+colis[pi].unit, run: jump("install", ()=>woliResolve(colis[pi].unit)), tab:"install", key:"woli" };
+      if (pi>=0) return { who:"FSM", text:`Validate ${colis[pi].unit} (check & fix).`, tone:"info", roles:["FSM"], label:"Validate " + colis[pi].unit, run: jump("install", ()=>validateColi(pi)), tab:"install", key:"val", unit: colis[pi].unit };
+      const ni = colis.findIndex(c=>c.status==="Not Started");
+      if (ni>=0) { const c=colis[ni];
+        if (c.checks<CHECKLIST.length) return { who:"Crew ("+crewLabel+")", text:`Complete ${c.unit}'s 12-item checklist (Check All to fast-forward).`, tone:"info", roles:["Crew"], label:"Check all — " + c.unit, run: jump("install", ()=>patchColi(ni,{checks:CHECKLIST.length, open:true})), tab:"install", key:"coli", unit: c.unit };
+        if (!coliReady(c) && c.serviceReady!=="No") return { who:"Crew ("+crewLabel+")", text:`${c.unit}: mark Service Ready = Yes + Equipment Ship Back (closure requirements).`, tone:"info", roles:["Crew"], label:"Ready + Ship Back", run: jump("install", ()=>patchColi(ni,{serviceReady:"Yes", shipBack:true, open:true})), tab:"install", key:"coli" };
+        return { who:"Crew ("+crewLabel+")", text:`Submit ${c.unit}.`, tone:"info", roles:["Crew"], label:"Submit COLI " + c.unit, run: jump("install", ()=>submitColi(ni)), tab:"install", key:"coli" }; }
+    }
+    if (!locked) { const owi = colis.find(c=>unitHasOpenWoli(c.unit)); if (owi) return { who:"FSM", text:`${owi.unit}: open WOLI is blocking billing/lock — resolve the fix.`, tone:"err", roles:["FSM"], label:"Resolve WOLI — "+owi.unit, run: jump("install", ()=>woliResolve(owi.unit)), tab:"install", key:"woli" }; }
+    if (ccEnabled && !sentCC && !locked) return { who:"FSM", text:"All validated → send to Command Center.", tone:"info", roles:["FSM"], label:"Send to Command Center", run: jump("install", sendCC), tab:"install", key:"cc" };
+    if (sentCC || !ccEnabled) {
+      const bi = colis.findIndex(c => c.status.startsWith("Validated") && !c.billable);
+      if (bi >= 0) { const c = colis[bi]; return { who:"CSM", text:`Billing lives on the COLI: confirm ${c.unit} billable + month — locks THAT COLI forever (or No-bill with a reason).`, tone:"purp", roles:["CSM"], label:"Confirm billable — " + c.unit, run: jump("install", (as)=>confirmColiBill(bi, as)), tab:"install", key:"bill", unit:c.unit }; }
+      if (colis.some(c=>c.billable==="no-pending")) return { who:"Regional Manager", text:`No-bill pending on ${colis.filter(c=>c.billable==="no-pending").map(c=>c.unit).join(", ")} — RM approves, or rejects (bounces to CSM).`, tone:"warn", roles:["Regional Manager"], label:"Approve no-bill (RM)", run: jump("install", rmNoBill), tab:"install", key:"bill" };
+      if (colis.some(c=>c.billable==="no-pending-fin")) return { who:"Finance", text:"No-billed set exceeds 5 units → Finance approval required (or reject → final, those COLIs must bill).", tone:"warn", roles:["Finance"], label:"Approve no-bill (Finance)", run: jump("install", finNoBill), tab:"install", key:"bill" };
+      if (colis.some(c=>c.billable==="no-rejected")) return { who:"CSM", text:"RM rejected the no-bill. Revise & resubmit, or escalate straight to Finance.", tone:"err", roles:["CSM"], label:"Escalate to Finance", run: jump("install", csmEscalateFinance), tab:"install", key:"bill" };
+    }
+    if (!installClosed) return { who:"Command Center", text:"Push to SAP and close the INSTALL case.", tone:"purp", roles:["Command Center"], label:"Push to SAP & close install case", run: jump("install", pushSAP), tab:"install", key:"sap" };
+    if (ret.stage < 5) {
+      if (ret.stage === 0) {
+        if (tab !== "returns") return { who:"FSM", text:"Start the return (RO-311) — open the Returns tab.", tone:"info", roles:["FSM"], label:"Open Returns", run: jump("returns"), tab:"returns", key:"retship", free:true };
+        return { who:"You", text:"Pick what's returning — excess parts (default) and/or a unit (choose WHICH unit — the new field) — then hit Request return + upload BOL.", tone:"warn", roles:["FSM"], manual:true, tab:"returns", key:"retship" };
+      }
+      const rWho = ret.stage < 3 ? "FSM" : "Supply Chain";
+      return { who:rWho, text:`RO-311: advance to "${RET_STAGES[ret.stage+1]}"${ret.stage===4?" (Processed = Hub removal if a unit)":""}.`, tone:"info", roles:[rWho], label:"→ " + RET_STAGES[ret.stage+1], run: jump("returns", advanceReturn), tab:"returns", key:"retship" };
+    }
+    if (!laborDone && fields.labor!=="Customer") return { who:"Supply Chain", text:"Process labor on the SC dashboard.", tone:"info", roles:["Supply Chain"], label:"Process labor", run: jump("sc", processLabor), tab:"sc", key:"labor" };
+    if (!ioCreated) return { who:"Finance", text:"IO was never created — order can't close.", tone:"err", roles:["Finance"], label:"Create IO", run: jump("order", createIO), tab:"order", key:"io" };
+    if (!ioClosed) return { who:"Finance", text:"IO closure on the order case (SC documentation tail).", tone:"info", roles:["Finance"], label:"Close IO", run: jump("sc", closeIO), tab:"sc", key:"ioclose" };
+    if (!scClosed) return { who:"Supply Chain", text:"Everything green — close the SC order on the tracker.", tone:"info", roles:["Supply Chain"], label:"Close SC order", run: jump("sc", closeSC), tab:"sc", key:"scclose" };
+    return null; // order fully resolved (parking-lot final-close excluded) — let mid/move cases surface, or fall to the all-caught-up message
+  };
+
+  // Mid-life (Verifi Install / brownfield) — same COLI engine, so the thread logic mirrors it 1:1
+  const nextMidStep = (m) => {
+    if (m.status === "Closed") return null;
+    if (m.status === "Ready for Command Center") return { who:"Command Center", text:`${m.id}: all COLIs billed → push to SAP and close the case.`, tone:"purp", roles:["Command Center"], label:"Push to SAP & close case", run: jump("cases", ()=>midSendToCC(m.id)), tab:"cases", key:"mid-cc-"+m.id };
+    if (!m.schedule && m.colis.some(c=>c.status==="Ready to Dispatch")) return { who:"FSM or CSM", text:`${m.id}: confirm schedule-lite (team & open-date) before the checklist.`, tone:"info", roles:["FSM","CSM"], label:"Confirm team & open-date", run: jump("cases", ()=>midSchedule(m.id, TERRITORY[m.account].loc, "07/18/26", TERRITORY[m.account].fst+" team")), tab:"cases", key:"mid-sched-"+m.id };
+    for (const c of m.colis) {
+      if (c.status.includes("Billed")) continue;
+      if (unitHasOpenWoli(c.unit) && c.status==="Work Complete") return { who:"FSM", text:`${m.id} · ${c.unit}: open WOLI is blocking billing/lock — resolve the fix.`, tone:"err", roles:["FSM"], label:"Resolve WOLI", run: jump("cases", ()=>woliResolve(c.unit)), tab:"cases", key:"mid-"+c.id };
+      if (c.status === "On Hold — Not Ready") return { who:"Supply Chain", text:`${m.id} · ${c.unit}: On Hold — deliver rush parts, then reopen.`, tone:"warn", roles:["Supply Chain"], label:"Rush parts delivered", run: jump("cases", ()=>midResumeHold(m.id,c.id)), tab:"cases", key:"mid-"+c.id };
+      if (c.status === "Ready to Dispatch") {
+        if (c.checks < CHECKLIST.length) return { who:"Crew ("+c.by+")", text:`${m.id} · ${c.unit}: complete the ${CHECKLIST.length}-item checklist.`, tone:"info", roles:["Crew"], label:"Check all", run: jump("cases", ()=>setMidCases(mc=>mc.map(x=>x.id===m.id?{...x,colis:x.colis.map(y=>y.id===c.id?{...y,checks:CHECKLIST.length}:y)}:x))), tab:"cases", key:"mid-"+c.id };
+        if (!c.ready) return { who:"Crew ("+c.by+")", text:`${m.id} · ${c.unit}: set System Ready.`, tone:"info", roles:["Crew"], label:"Set Ready = Yes", run: jump("cases", ()=>setMidCases(mc=>mc.map(x=>x.id===m.id?{...x,colis:x.colis.map(y=>y.id===c.id?{...y,ready:"Yes"}:y)}:x))), tab:"cases", key:"mid-"+c.id };
+        return { who:"Crew ("+c.by+")", text:`${m.id} · ${c.unit}: checklist + ready — complete it.`, tone:"info", roles:["Crew"], label:"Complete", run: jump("cases", ()=>midComplete(m.id,c.id,"")), tab:"cases", key:"mid-"+c.id };
+      }
+      if (c.status === "Submitted – Pending FSM" && unitHasOpenWoli(c.unit)) return { who:"FSM", text:`${m.id} · ${c.unit}: open WOLI is blocking further progress — resolve the fix.`, tone:"err", roles:["FSM"], label:"Resolve WOLI", run: jump("cases", ()=>woliResolve(c.unit)), tab:"cases", key:"mid-"+c.id };
+      if (c.status === "Submitted – Pending FSM") return { who:"FSM", text:`${m.id} · ${c.unit}: validate (3rd-party/customer stage-gate).`, tone:"info", roles:["FSM"], label:"Validate", run: jump("cases", ()=>midValidate(m.id,c.id)), tab:"cases", key:"mid-"+c.id };
+      if (c.status === "Work Complete") return { who:"CSM", text:`${m.id} · ${c.unit}: confirm billable + month → lock.`, tone:"purp", roles:["CSM"], label:"Confirm billable + month", run: jump("cases", ()=>midBillConfirm(m.id,c.id,"07/2026")), tab:"cases", key:"mid-"+c.id };
+    }
+    return null;
+  };
+
+  // Verifi Service (movement) — every reason/state combination
+  const nextMoveStep = (m) => {
+    if (m.status === "Closed") return null;
+    if (m.status === "Ready for Command Center") return { who:"Command Center", text:`${m.id}: all COLIs billed/cancelled → push to SAP and close the case.`, tone:"purp", roles:["Command Center"], label:"Push to SAP & close case", run: jump("cases", ()=>moveSendToCC(m.id)), tab:"cases", key:"mv-cc-"+m.id };
+    if (m.status === "Rejected") return { who:"CSM or FSM", text:`${m.id}: rejected by Finance — this doesn't dead-end. Resubmit after fixing it, or withdraw.`, tone:"err", roles:["CSM","FSM"], label:"Resubmit to Finance", run: jump("cases", ()=>moveResubmit(m.id)), tab:"cases", key:"mv-"+m.id };
+    if (m.status === "Pending Finance") return { who:"Finance", text:`${m.id}: depreciation approval needed before any dispatch.`, tone:"warn", roles:["Finance"], label:"Finance approve", run: jump("cases", ()=>moveFinance(m.id,true)), tab:"cases", key:"mv-"+m.id };
+    for (const c of m.colis) {
+      if (c.status.includes("Billed") || c.status==="Cancelled" || c.status.includes("Confirmed")) continue;
+      if (c.status==="Work Complete" && unitHasOpenWoli(c.unit)) return { who:"FSM", text:`${m.id} · ${c.unit}: open WOLI is blocking billing/lock — resolve the fix.`, tone:"err", roles:["FSM"], label:"Resolve WOLI", run: jump("cases", ()=>woliResolve(c.unit)), tab:"cases", key:"mv-"+c.id };
+      if (c.status === "Command Center Action") return isAcctChange(m.reason)
+        ? { who:"CSM or FSM", text:`${m.id} · ${c.unit}: Command Center processed the move — team confirms to close.`, tone:"purp", roles:["CSM","FSM"], label:"Team: confirm", run: jump("cases", ()=>moveTeamConfirm(m.id,c.id)), tab:"cases", key:"mv-"+c.id }
+        : { who:"CSM", text:`${m.id} · ${c.unit}: confirm the name change (usually no billing).`, tone:"purp", roles:["CSM"], label:"CSM: confirm", run: jump("cases", ()=>nonPhysConfirmSimple(m.id,c.id)), tab:"cases", key:"mv-"+c.id };
+      if (c.status === "Requested") return { who:"CSM or FSM", text:`${m.id} · ${c.unit}: request the unit switch.`, tone:"info", roles:["CSM","FSM"], label:"Request unit switch", run: jump("cases", ()=>moveUnitSwitch(m.id,c.id)), tab:"cases", key:"mv-"+c.id };
+      if (c.status === "Unit Switch Requested") return c.truckAlsoChanges
+        ? { who:"CSM or FSM", text:`${m.id} · ${c.unit}: destination account uses a different truck — request the truck switch.`, tone:"info", roles:["CSM","FSM"], label:"Request truck switch", run: jump("cases", ()=>moveTruckSwitch(m.id,c.id)), tab:"cases", key:"mv-"+c.id }
+        : { who:"CSM or FSM", text:`${m.id} · ${c.unit}: send to Command Center.`, tone:"purp", roles:["CSM","FSM"], label:"Send to Command Center", run: jump("cases", ()=>moveSendCC(m.id,c.id)), tab:"cases", key:"mv-"+c.id };
+      if (c.status === "Truck Switch Requested") return { who:"CSM or FSM", text:`${m.id} · ${c.unit}: send to Command Center.`, tone:"purp", roles:["CSM","FSM"], label:"Send to Command Center", run: jump("cases", ()=>moveSendCC(m.id,c.id)), tab:"cases", key:"mv-"+c.id };
+      if (c.status === "On Hold — Not Ready") return { who:"Supply Chain", text:`${m.id} · ${c.unit}: On Hold — deliver rush parts, then reopen.`, tone:"warn", roles:["Supply Chain"], label:"Rush parts delivered", run: jump("cases", ()=>moveResumeHold(m.id,c.id)), tab:"cases", key:"mv-"+c.id };
+      if (c.status === "On Hold — Awaiting Truck") return { who:"FSM, CSM, or customer portal", text:`${m.id} · ${c.unit}: waiting on a truck for re-install.`, tone:"warn", roles:["FSM","CSM","Crew"], label:"Mark truck ready", run: jump("cases", ()=>moveReady(m.id,c.id)), tab:"cases", key:"mv-"+c.id };
+      if (c.status === "Ready to Dispatch" || c.status === "Activated — Ready to Dispatch") {
+        const list = coliListFor(c);
+        if (c.checks < list.length) return { who:"Crew ("+c.by+")", text:`${m.id} · ${c.unit}: complete the ${list.length}-item ${c.type} checklist.`, tone:"info", roles:["Crew"], label:"Check all", run: jump("cases", ()=>patchColiM(m.id,c.id,{checks:list.length})), tab:"cases", key:"mv-"+c.id };
+        if (!c.ready) return { who:"Crew ("+c.by+")", text:`${m.id} · ${c.unit}: set System Ready.`, tone:"info", roles:["Crew"], label:"Set Ready = Yes", run: jump("cases", ()=>patchColiM(m.id,c.id,{ready:"Yes"})), tab:"cases", key:"mv-"+c.id };
+        return { who:"Crew ("+c.by+")", text:`${m.id} · ${c.unit}: checklist + ready — complete the ${c.type}.`, tone:"info", roles:["Crew"], label:"Complete", run: jump("cases", ()=>moveComplete(m.id,c.id,"")), tab:"cases", key:"mv-"+c.id };
+      }
+      if (c.status === "Submitted – Pending FSM" && unitHasOpenWoli(c.unit)) return { who:"FSM", text:`${m.id} · ${c.unit}: open WOLI is blocking further progress — resolve the fix.`, tone:"err", roles:["FSM"], label:"Resolve WOLI", run: jump("cases", ()=>woliResolve(c.unit)), tab:"cases", key:"mv-"+c.id };
+      if (c.status === "Submitted – Pending FSM") return { who:"FSM", text:`${m.id} · ${c.unit}: validate (3rd-party/customer stage-gate).`, tone:"info", roles:["FSM"], label:"Validate", run: jump("cases", ()=>moveValidate(m.id,c.id)), tab:"cases", key:"mv-"+c.id };
+      if (c.status === "Work Complete") return { who:"CSM", text:`${m.id} · ${c.unit}: confirm billable + month → lock.`, tone:"purp", roles:["CSM"], label:"Confirm billable + month", run: jump("cases", ()=>moveBillConfirm(m.id,c.id,"07/2026")), tab:"cases", key:"mv-"+c.id };
+      if (c.status === "Awaiting SC receipt") return { who:"Supply Chain", text:`${m.id} · ${c.unit}: confirm receipt → remove in Hub.`, tone:"info", roles:["Supply Chain"], label:"Confirm receipt", run: jump("cases", ()=>moveReceipt(m.id,c.id)), tab:"cases", key:"mv-"+c.id };
+    }
+    if (m.status === "In Progress" && !m.schedule && m.colis.some(c=>c.status==="Ready to Dispatch")) return { who:"FSM or CSM", text:`${m.id}: confirm schedule-lite (team &amp; open-date) before dispatch.`, tone:"info", roles:["FSM","CSM"], label:"Confirm team & open-date", run: jump("cases", ()=>moveSchedule(m.id, TERRITORY[m.account].loc, "07/18/26", TERRITORY[m.account].fst+" team")), tab:"cases", key:"mv-sched-"+m.id };
+    return null;
+  };
+
+  const next = () => {
+    // Guided modal walkthrough: first unit is done by hand inside the record — the tour waits.
+    if (openColi && openColi.guided && openColi.engine==="order") {
+      const c = colis.find(x=>x.unit===openColi.coliId);
+      if (c && openColi.mode==="coli" && c.status!=="Pending FSM" && !c.status.startsWith("Validated")) return { who:"You", text:"Inside " + c.unit + ": Check All (12 items), set Service Ready = Yes + Equipment Shipped Back, then Submit COLI.", tone:"warn", manual:true, tab:"install", key:"modal-guided" };
+      if (c && openColi.mode==="val" && c.status==="Pending FSM") return { who:"You", text:"You're the FSM inside " + c.unit + " — hit Validate (check & fix). Problems become a WOLI on the unit.", tone:"warn", manual:true, tab:"install", key:"modal-guided" };
+      if (c && openColi.mode==="bill" && !c.billable) return { who:"You", text:"You're the CSM inside " + c.unit + " — confirm billable + month ON THE COLI (Ariel's rule), or No-bill with a reason. This COLI locks forever on confirm.", tone:"warn", manual:true, tab:"install", key:"modal-guided" };
+    }
+    // Manual-input states: the guide is waiting on a human — surface it, don't go silent.
+    if (showOrderForm) return { who:"You", text:"Fill the New Unit Order form — account, trucks, parts sheet — then hit Create order. The guide resumes after save.", tone:"warn", manual:true, tab:"cases", key:"form-order" };
+    if (installForm) return { who:"You", text:"Fill the Verifi Install form and hit Create — it registers the brownfield unit. The guide resumes after save.", tone:"warn", manual:true, tab:"cases", key:"form-install" };
+    if (moveForm) return { who:"You", text:"Pick the Install Reason and unit(s), then Create — the duplicate guard checks your picks. The guide resumes after save.", tone:"warn", manual:true, tab:"cases", key:"form-move" };
+    if (picker) return { who:"You", text:"Pick a record type — all three live types are clickable: New Unit Order (the main ordering flow), Verifi Service (de-install / re-install / movement), or Verifi Install (brownfield). Each runs its own guided flow.", tone:"warn", manual:true, tab:"cases", key:"picker" };
+    const order = nextOrderStep();
+    if (order) return order;
+    for (const m of midCases) { const s = nextMidStep(m); if (s) return s; }
+    for (const m of moveCases) { const s = nextMoveStep(m); if (s) return s; }
+    if (!created && !midCases.length && !moveCases.length) return { who:"CSM or FSM", text:"New Case — pick the record type. New Unit Order starts the whole flow (replaces the Excel).", tone:"info", roles:["CSM","FSM"], label:"＋ New Case", run: openPicker, tab:"cases", key:"create", free:true };
+    return { who:"All caught up", text:(created ? "🏁 Workflow complete — the only step left, Final close, is parked (owner TBD, see the pin on the story bar). " : "Nothing actionable across any open case right now. ") + "Start another with ＋ New Case.", tone:"ok", roles:["CSM","FSM"], label:"＋ New Case", run: openPicker, tab:"cases", key:"create", free:true };
+  };
+  const N = next();
+  const orderDone = created && !nextOrderStep(); // the order-install story is exhausted — only the parking-lot final close remains
+  const hot = (k) => N.key === k;
+  const just = (...ks) => (!orderDone && !N.manual && lastAction && ks.includes(lastAction.key)) ? lastAction : null; // ONE open tour voice at a time: the last-action pin yields at the finish AND whenever a your-turn pin is active (the dock still shows the ✓ readout)
+  // Guided Next: runs the step AS its owner (role switched + passed explicitly, since setRole is async),
+  // jumps to the right tab, records what happened for the green spotlight, and scrolls to where it happened.
+  const showMe = () => { setTab(N.tab); setTimeout(() => { const el = document.querySelector('[data-spot~="' + (N.key||"") + '"]'); if (el) el.scrollIntoView({behavior:"smooth", block:"center"}); }, 120); };
+  const GUIDE = { N, advance: () => advance(), clear: () => setLastAction(null) };
+  const caseKeys = (prefix, m) => [prefix+m.id, prefix+"cc-"+m.id, prefix+"sched-"+m.id, ...m.colis.map(c=>prefix+c.id)]; // every step key a move/mid case can emit — for spotlight wiring
+  const seenTours = React.useRef({}); // your-turn pins auto-open ONCE per key per session; afterwards the T pin stays clickable but quiet
+  React.useEffect(() => { if (N.manual && N.key) seenTours.current[N.key] = true; }, [N.manual, N.key]);
+  const youStep = (k) => (N.manual && N.key === k) ? { ...N, firstTime: !seenTours.current[k] } : null;
+  const advance = () => {
+    // Walk the FIRST unit through the real record modal — validation lives inside the unit, and Amicus must see that.
+    if ((N.key==="coli" || N.key==="val" || N.key==="bill") && N.unit && !walked[N.key]) {
+      setWalked(w => ({...w, [N.key]:true}));
+      if (N.roles && N.roles.length && !N.roles.includes(role)) setRole(N.roles[0]);
+      setTab("install");
+      setOpenColi({engine:"order", caseId:"CASE-0101", coliId:N.unit, guided:true, mode:N.key});
+      setLastAction(null);
+      return;
+    }
+    if (!N.run) return;
+    const as = (N.roles && N.roles.length) ? N.roles[0] : null;
+    if (as && !N.roles.includes(role)) setRole(as);
+    N.run(as);
+    if (!N.free) setLastAction({ key:N.key, who:N.who, label:N.label, when:Date.now() });
+    setTimeout(() => { const el = document.querySelector('[data-spot~="' + (N.key||"") + '"]'); if (el) el.scrollIntoView({behavior:"smooth", block:"center"}); }, 150);
+  };
+
+  const spine = created ? [
+    ["Draft & dual approval", approvalDone],
+    ["Installation Specialist", imConfirmed],
+    [gateNeeded ? "Contract / RM / Fin gate" : "Contract gate (skipped)", gateNeeded ? gateDone : null],
+    ["Supply Chain · IO", shipped],
+    ["Units born · Hub", hubCreated],
+    ["Install & billing", installClosed],
+    ["Returns · labor · IO closure", retReceived && ioClosed && (laborDone || fields.labor==="Customer")],
+    ["SC order closed", scClosed],
+    ["Final close · owner TBD", false],
+  ] : [];
+  const currentIdx = spine.findIndex(([,d]) => d === false);
+
+  const fieldRow = (label, value, editFn) => {
+    const pend = changed[label];
+    return (
+      <div key={label} style={{display:"flex", alignItems:"center", gap:8, padding:"5px 0", borderBottom:`1px solid ${C.borderLt}`, background: pend ? C.warnBg : "transparent", flexWrap:"wrap"}}>
+        <span style={{width:170, fontSize:12, color:C.sub}}>{label}</span>
+        <span style={{fontSize:13, fontWeight:600, flex:1}}>{value}{locked && " 🔒"}</span>
+        {!locked && !killed && !installClosed && <Btn role={role} setRole={setRole} need={shipped ? ["CSM","FSM","Installation Specialist"] : ["CSM","FSM"]} tone="neutral" onClick={editFn || (()=>flagField(label, role))}>edit</Btn>}
+        {pend && <span style={{fontSize:11}}>
+          {!pend.CSM ? <Btn role={role} setRole={setRole} need="CSM" tone="warn" onClick={()=>reapprove(label,"CSM")}>CSM ✓</Btn> : <Chip tone="ok">CSM ✓</Chip>}{" "}
+          {!pend.FSM ? <Btn role={role} setRole={setRole} need="FSM" tone="warn" onClick={()=>reapprove(label,"FSM")}>FSM ✓</Btn> : <Chip tone="ok">FSM ✓</Chip>}
+        </span>}
+      </div>
+    );
+  };
+  const TabBtn = ({id, label}) => (
+    <button onClick={()=>setTab(id)} style={{border:"none", borderBottom: tab===id ? `3px solid ${C.link}` : "3px solid transparent", background:"none", padding:"8px 12px", fontSize:13, fontWeight: tab===id?700:500, color: tab===id?C.link:C.sub, cursor:"pointer"}}>
+      {label}{N.tab===id && tab!==id ? " ●" : ""}
+    </button>
+  );
+  const cell = (val, done) => <td style={{padding:"5px 8px", fontSize:11, background: done ? C.green : C.orange, border:`1px solid ${C.border}`, fontWeight:600, textAlign:"center", whiteSpace:"nowrap"}}>{val}</td>;
+
+  const caseRow = (id, type, detail, status, tone, onOpen) => (
+    <div key={id} style={{display:"flex", alignItems:"center", gap:10, padding:"8px 6px", borderBottom:`1px solid ${C.borderLt}`, flexWrap:"wrap"}}>
+      <span onClick={onOpen} style={{fontWeight:700, fontSize:13, color:onOpen?C.link:C.text, cursor:onOpen?"pointer":"default", width:92}}>{id}</span>
+      <Chip tone="neutral">{type}</Chip>
+      <span style={{fontSize:12, flex:1, minWidth:160}}>{detail}</span>
+      <Chip tone={tone}>{status}</Chip>
+    </div>
+  );
+
+  const renderColiModal = () => {
+    const {engine, caseId, coliId} = openColi;
+    const close = () => setOpenColi(null);
+
+    if (engine === "order") {
+      const i = colis.findIndex(c=>c.unit===coliId);
+      if (i<0) return null;
+      const c = colis[i];
+      return <Modal title={coliId + " — Install COLI"} badges={[<Chip key="s" tone={c.status.startsWith("Validated")?"ok":c.status==="Pending FSM"?"warn":c.status.startsWith("On Hold")?"err":"neutral"}>{c.status}</Chip>, coliBillResolved(c) && <Chip key="l" tone="purp">🔒 {c.billable==="yes" ? "billed · " + c.billMonth : "non-billable"}</Chip>]} onClose={close}>
+        {openColi.guided && <div style={{display:"flex", justifyContent:"flex-end", marginBottom:4}}><Why key={"modal-"+openColi.mode+"-"+coliId} author="Guided tour" initial="T" defaultOpen>
+          <b style={{color:C.warn}}>✋ Your move — inside the unit record.</b> {openColi.mode==="coli" ? "Install work really lives here: tick the 12 checklist items (Check All fast-forwards), set Service Ready = Yes + Equipment Shipped Back, then Submit COLI." : openColi.mode==="bill" ? "Billing lives ON THE COLI (July 15 call, 15:23): confirm billable + month here — this unit locks forever. The case locks when every COLI is resolved." : "FSM validation happens here, inside the record: hit Validate (check & fix) — problems become a WOLI on the unit."} <span style={{display:"block", marginTop:4, color:C.sub}}>Remaining units fast-forward automatically after this one.</span>
+        </Why></div>}
+        <FieldGrid rows={[
+          ["Truck #",c.truck],["TCG/Unit #",c.tcg],["Mixer Make",c.mixer],["WDS #",c.wds],["Propulsion",c.prop],["System",fields.system],
+          ["VIN (opt)","1HTMM"+c.tcg.slice(-1)+"824"+c.wds.slice(-1)+"L"],["Assigned FST",fields.fst],
+          ["Install Date",c.status==="Not Started"?"—":"07/16/26"],["Completion",c.status.startsWith("Validated")?"07/16/26":"—"],
+          ["Billing Status", c.billable==="yes" ? "Billed · " + c.billMonth : c.billable==="no-ok" ? "Closed — non-billable" : "—"],["CSM Billable Status",(c.billable==="yes"?"Billable":c.billable?"Non-billable ("+c.billable.replace("no-","")+")":"—")+" · USD"],
+        ]} />
+        {docsFor(c.type).length>0 && <div style={{marginBottom:10, fontSize:12}}>
+          <span style={{color:C.sub, fontWeight:600}}>Attached docs: </span>
+          {docsFor(c.type).map((f,k)=><span key={k} title={f} style={{display:"inline-block", margin:"2px 4px 2px 0", padding:"2px 7px", borderRadius:10, border:`1px solid ${C.border}`, color:C.link, cursor:"pointer"}}>📄 {f}</span>)}
+        </div>}
+        <div style={{columns:2, columnGap:16, fontSize:12}}>
+          {CHECKLIST.map((item,k)=>(<label key={k} style={{display:"block", breakInside:"avoid", padding:"2px 0"}}><input type="checkbox" checked={k<c.checks} onChange={()=>patchColi(i,{checks:k<c.checks?k:k+1})} disabled={c.status!=="Not Started"}/> {item}</label>))}
+        </div>
+        <div style={{marginTop:8, display:"flex", alignItems:"center", gap:14, flexWrap:"wrap"}}>
+          {c.status==="Not Started" && c.checks<CHECKLIST.length && <Btn role={role} setRole={setRole} need="Crew" tone="neutral" onClick={()=>patchColi(i,{checks:CHECKLIST.length})}>Check all ({crewLabel})</Btn>}
+          <span style={{fontSize:12}}>Service Ready
+            <label style={{marginLeft:6}}><input type="radio" checked={c.serviceReady==="Yes"} onChange={()=>patchColi(i,{serviceReady:"Yes"})} disabled={c.status!=="Not Started"}/> Yes</label>
+            <label style={{marginLeft:6}}><input type="radio" checked={c.serviceReady==="No"} onChange={()=>patchColi(i,{serviceReady:"No"})} disabled={c.status!=="Not Started"}/> No</label>
+            <Why>System Service Ready is tied to billing and the service lifecycle — Ready = No means not billable, FSM gets a reminder, and rush parts can be raised (Spec v1.1).</Why>
+          </span>
+          <label style={{fontSize:12}}><input type="checkbox" checked={c.shipBack} onChange={e=>patchColi(i,{shipBack:e.target.checked})} disabled={c.status!=="Not Started"}/> Equipment shipped back</label>
+        </div>
+        <div style={{marginTop:10}}>
+          {c.status==="Not Started" && <Btn role={role} setRole={setRole} need="Crew" tone="ok" disabled={!coliReady(c) && c.serviceReady!=="No"} onClick={()=>{submitColi(i); close();}}>Submit COLI</Btn>}
+          {c.status.startsWith("On Hold") && <Btn role={role} setRole={setRole} need="Supply Chain" tone="warn" onClick={()=>{resumeHold(i); close();}}>Rush parts delivered — reopen</Btn>}
+          {c.status==="Pending FSM" && (unitHasOpenWoli(c.unit) ? <Btn role={role} setRole={setRole} need="FSM" tone="err" onClick={()=>{woliResolve(c.unit);}}>Resolve WOLI</Btn> : <React.Fragment>
+            <Btn role={role} setRole={setRole} need="FSM" tone="ok" onClick={()=>{validateColi(i); close();}}>Validate</Btn><Why>Validation is check-and-fix, not pass/fail: problems become a WOLI on the unit, a coordinated fix, or an on-the-spot fix (Spec §4.4).</Why>
+            <Btn role={role} setRole={setRole} need="FSM" tone="purp" onClick={()=>{woliColi(i); close();}}>Log WOLI fix</Btn>
+          </React.Fragment>)}
+        </div>
+        {c.status.startsWith("Validated") && (sentCC || !ccEnabled) && !c.billable && <div style={{marginTop:10, paddingTop:8, borderTop:`1px solid ${C.borderLt}`, display:"flex", alignItems:"center", gap:10, flexWrap:"wrap", fontSize:12}}>
+          <b>CSM billing — on this COLI:</b>
+          <span>Month <input id={"ob-"+c.unit} defaultValue="Jul 2026" style={{width:74, padding:3, border:`1px solid ${C.border}`, borderRadius:4, fontSize:12}}/></span>
+          <Btn role={role} setRole={setRole} need="CSM" tone="purp" onClick={()=>{confirmColiBill(i, null, document.getElementById("ob-"+c.unit).value); close();}}>Confirm billable + month</Btn>
+          <Why>Billing lives ON THE COLI — changed per the July 15 call (15:23, Ariel: "that should actually be on the COLI, not on the case") and Spec §7. Confirming locks THIS COLI forever; the install case locks when every COLI is resolved. Ariel: veto here if this grain is wrong.</Why>
+          <Btn role={role} setRole={setRole} need="CSM" tone="err" onClick={()=>{noBillColi(i); close();}}>No-bill</Btn>
+          <select value={noBillReason} onChange={e=>setNoBillReason(e.target.value)} style={{fontSize:11, padding:3}}>
+            <option>Replacement unit — on us</option>
+            <option>Warranty rework</option>
+            <option>Contract covers install</option>
+            <option>Goodwill / customer retention</option>
+          </select>
+        </div>}
+        {["no-pending","no-pending-fin","no-rejected"].includes(c.billable) && <Note tone="warn">No-bill ("{c.noBillReason}") {c.billable==="no-pending" ? "awaiting RM approval" : c.billable==="no-pending-fin" ? "awaiting Finance approval (>5 units)" : "rejected by RM — CSM must revise or escalate"} — see the case card.</Note>}
+        {c.status.startsWith("Validated") && coliBillResolved(c) && <ClosureBanner/>}
+      </Modal>;
+    }
+
+    if (engine === "move") {
+      const m = moveCases.find(x=>x.id===caseId); if (!m) return null;
+      const c = m.colis.find(x=>x.id===coliId); if (!c) return null;
+      const list = coliListFor(c);
+      return <Modal title={c.id + " — " + c.type + " COLI (" + caseId + ")"} badges={[<Chip key="s" tone={c.status.includes("Billed")?"ok":c.status==="Cancelled"?"neutral":c.status.includes("Hold")||c.status.includes("Held")?"warn":"info"}>{c.status}</Chip>, c.verified && <Chip key="v" tone="ok">{c.verified}</Chip>]} onClose={close}>
+        {c.type!=="Billing-only" && <FieldGrid rows={[
+          ["Truck now",c.truck],["TCG/Unit #",(c.tcg||"—")],
+          ["Truck stamped @ create",c.truckStampedAtCreate],["Truck stamped @ complete",c.truckStampedAtComplete||"— (pending)"],
+          ["Mixer Make",c.mixer],["WDS #",c.wds||"—"],["System Type",c.system],["Assigned FST",c.fst],
+          ["Work Performed by",c.by],["Install / Completion",c.install+" / "+c.complete],
+          ["CSM Billable Status",c.billStatus],["Billable",c.billable],["Parts Consumed",c.partsConsumed||"—"],[" ",""],
+        ]} />}
+        {c.type!=="Billing-only" && docsFor(c.type).length>0 && <div style={{marginBottom:10, fontSize:12}}>
+          <span style={{color:C.sub, fontWeight:600}}>Attached docs: </span>
+          {docsFor(c.type).map((f,k)=><span key={k} title={f} style={{display:"inline-block", margin:"2px 4px 2px 0", padding:"2px 7px", borderRadius:10, border:`1px solid ${C.border}`, color:C.link, cursor:"pointer"}}>📄 {f}</span>)}
+        </div>}
+        {(c.status==="Ready to Dispatch" || c.status==="Activated — Ready to Dispatch") && c.type!=="Billing-only" && <div>
+          <div style={{fontSize:12, fontWeight:600, marginBottom:2}}>{list===DEINSTALL_CHECKLIST ? "De-install checklist (5 items)" : "Checklist ("+list.length+" items)"}</div>
+          <div style={{columns:2, columnGap:16, fontSize:12}}>{list.map((item,k)=>(<label key={k} style={{display:"block", breakInside:"avoid", padding:"2px 0"}}><input type="checkbox" checked={k<c.checks} onChange={()=>patchColiM(m.id,c.id,{checks:k<c.checks?k:k+1})} disabled={c.status!=="Ready to Dispatch" && c.status!=="Activated — Ready to Dispatch"}/> {item}</label>))}</div>
+          {c.checks<list.length && <Btn role={role} setRole={setRole} need="Crew" tone="neutral" onClick={()=>patchColiM(m.id,c.id,{checks:list.length})}>Check all</Btn>}
+          <div style={{marginTop:6}}><span style={{fontSize:12}}>System Ready:
+            <label style={{marginLeft:6}}><input type="radio" checked={c.ready==="Yes"} onChange={()=>patchColiM(m.id,c.id,{ready:"Yes"})}/> Yes</label>
+            <label style={{marginLeft:6}}><input type="radio" checked={c.ready==="No"} onChange={()=>patchColiM(m.id,c.id,{ready:"No"})}/> No</label>
+          </span></div>
+          {c.ready==="No" && <input placeholder="Reason if not ready" onChange={e=>patchColiM(m.id,c.id,{notReadyReason:e.target.value})} style={{marginTop:6, fontSize:12, padding:4, border:`1px solid ${C.border}`, borderRadius:4}}/>}
+          <div style={{marginTop:8, display:"flex", alignItems:"center", gap:6, flexWrap:"wrap"}}>
+            <input placeholder="Parts consumed (e.g. Wire harness ×1)" id={"pcm-"+c.id} style={{fontSize:12, padding:4, border:`1px solid ${C.border}`, borderRadius:4, width:190}}/>
+            <Btn role={role} setRole={setRole} need="Crew" tone="ok" disabled={!moveColiReady(c) && c.ready!=="No"} onClick={()=>{moveComplete(m.id,c.id,document.getElementById("pcm-"+c.id).value); close();}}>{c.type} checklist — Complete</Btn>
+          </div>
+        </div>}
+        {c.status==="Submitted – Pending FSM" && (unitHasOpenWoli(c.unit) ? <Btn role={role} setRole={setRole} need="FSM" tone="err" onClick={()=>{woliResolve(c.unit);}}>Resolve WOLI</Btn> : <React.Fragment>
+          <Btn role={role} setRole={setRole} need="FSM" tone="ok" onClick={()=>{moveValidate(m.id,c.id); close();}}>Validate</Btn><Why>Hard two-stage gate: 3rd-party/customer crews have no Hub access, so their close is only "Submitted" — the record isn't real or billable until the FSM validates it (Spec v1.4).</Why>
+          <Btn role={role} setRole={setRole} need="FSM" tone="purp" onClick={()=>{moveWoli(m.id,c.id); close();}}>Log WOLI fix</Btn>
+        </React.Fragment>)}
+        {c.status==="Work Complete" && (unitHasOpenWoli(c.unit) ? <Note tone="err">⚠ Open WOLI on {c.unit} — blocking billing/lock. <Btn role={role} setRole={setRole} need="FSM" tone="err" onClick={()=>{woliResolve(c.unit);}}>Resolve WOLI</Btn></Note> : <div style={{display:"flex", alignItems:"center", gap:8, flexWrap:"wrap"}}>
+          <select id={"mm2-"+c.id} style={{fontSize:12, padding:3}} defaultValue="07/2026"><option>07/2026</option><option>08/2026</option></select>
+          <Btn role={role} setRole={setRole} need="CSM" tone="purp" onClick={()=>{moveBillConfirm(m.id,c.id,document.getElementById("mm2-"+c.id).value); close();}}>Confirm billable + month</Btn><Why>The one immutability moment: confirming billable + month locks this COLI forever — billed COLIs can never be edited or cancelled (Spec §7.3).</Why>
+        </div>)}
+        {c.status==="On Hold — Awaiting Truck" && <React.Fragment>
+          <Btn role={role} setRole={setRole} need={["FSM","CSM","Crew"]} tone="warn" onClick={()=>{moveReady(m.id,c.id); close();}}>Mark truck ready</Btn>
+          <Btn role={role} setRole={setRole} need={["CSM","FSM"]} tone="neutral" onClick={()=>{cancelColi(m.id,c.id); close();}}>Cancel COLI</Btn>
+        </React.Fragment>}
+        {c.status==="On Hold — Not Ready" && <React.Fragment><Note tone="warn">Not billable · FSM reminder active · optional rush parts.</Note><Btn role={role} setRole={setRole} need="Supply Chain" tone="warn" onClick={()=>{moveResumeHold(m.id,c.id); close();}}>Rush parts delivered — reopen</Btn></React.Fragment>}
+        {c.status==="Requested" && <Btn role={role} setRole={setRole} need={["CSM","FSM"]} tone="ok" onClick={()=>{moveUnitSwitch(m.id,c.id); close();}}>Request unit switch</Btn>}
+        {c.status==="Unit Switch Requested" && (c.truckAlsoChanges ? <Btn role={role} setRole={setRole} need={["CSM","FSM"]} tone="ok" onClick={()=>{moveTruckSwitch(m.id,c.id); close();}}>Request truck switch</Btn> : <Btn role={role} setRole={setRole} need={["CSM","FSM"]} tone="purp" onClick={()=>{moveSendCC(m.id,c.id); close();}}>Send to Command Center</Btn>)}
+        {c.status==="Truck Switch Requested" && <Btn role={role} setRole={setRole} need={["CSM","FSM"]} tone="purp" onClick={()=>{moveSendCC(m.id,c.id); close();}}>Send to Command Center</Btn>}
+        {c.status==="Command Center Action" && (isAcctChange(m.reason) ? <React.Fragment><Btn role={role} setRole={setRole} need={["CSM","FSM"]} tone="ok" onClick={()=>{moveTeamConfirm(m.id,c.id); close();}}>Confirm move complete</Btn><Why>Account changes are not actually non-physical: unit switch (+ truck switch if flagged) route through Command Center, and the TEAM confirming the move is what closes it (Spec v1.5 item 9).</Why></React.Fragment> : <React.Fragment><Btn role={role} setRole={setRole} need="CSM" tone="ok" onClick={()=>{nonPhysConfirmSimple(m.id,c.id); close();}}>Confirm name change</Btn><Why>Transfer to Another Truck is a name change only — no field work, no checklist, and usually no bill. It exists purely to document the change (Spec v1.4).</Why></React.Fragment>)}
+        {c.status==="Awaiting SC receipt" && <React.Fragment><Btn role={role} setRole={setRole} need="Supply Chain" tone="ok" onClick={()=>{moveReceipt(m.id,c.id); close();}}>Confirm receipt</Btn><Why>Supply Chain confirming arrival (+ which unit) triggers removal from Hub — UNIT DEATH. The stamped WOLI record survives in Salesforce (Spec §6.3). Dual-state design (July 15 call, 27:45–30:20): TODAY Salesforce/SC owns the return end-to-end (build this). FUTURE: the FST marks the unit “pending return” in Hub when they pull it; this case then watches for the unit to disappear as its trigger. Amicus: build today’s state, leave the hook for the Hub-pending trigger.</Why></React.Fragment>}
+        {c.status.includes("Billed") && <ClosureBanner/>}
+      </Modal>;
+    }
+
+    if (engine === "mid") {
+      const m = midCases.find(x=>x.id===caseId); if (!m) return null;
+      const c = m.colis.find(x=>x.id===coliId); if (!c) return null;
+      return <Modal title={c.id + " — " + c.type + " COLI (" + caseId + ")"} badges={[<Chip key="s" tone={c.status.includes("Billed")?"ok":c.status.includes("Hold")?"warn":"info"}>{c.status}</Chip>, c.verified && <Chip key="v" tone="ok">{c.verified}</Chip>]} onClose={close}>
+        <FieldGrid rows={[
+          ["Truck now",c.truck],["TCG/Unit #",c.tcg],
+          ["Truck stamped @ create",c.truckStampedAtCreate],["Truck stamped @ complete",c.truckStampedAtComplete||"— (pending)"],
+          ["Mixer Make",c.mixer],["WDS #",c.wds],["System Type",c.system],["Assigned FST",c.fst],
+          ["Work Performed by",c.by],["Install / Completion",c.install+" / "+c.complete],
+          ["CSM Billable Status",c.billStatus],["Billable",c.billable],["Parts Consumed",c.partsConsumed||"—"],[" ",""],
+        ]} />
+        {docsFor(c.type).length>0 && <div style={{marginBottom:10, fontSize:12}}>
+          <span style={{color:C.sub, fontWeight:600}}>Attached docs: </span>
+          {docsFor(c.type).map((f,k)=><span key={k} title={f} style={{display:"inline-block", margin:"2px 4px 2px 0", padding:"2px 7px", borderRadius:10, border:`1px solid ${C.border}`, color:C.link, cursor:"pointer"}}>📄 {f}</span>)}
+        </div>}
+        {c.status==="Ready to Dispatch" && <div>
+          <div style={{fontSize:12, fontWeight:600, marginBottom:2}}>Checklist ({CHECKLIST.length} items) — same list used everywhere</div>
+          <div style={{columns:2, columnGap:16, fontSize:12}}>{CHECKLIST.map((item,k)=>(<label key={k} style={{display:"block", breakInside:"avoid", padding:"2px 0"}}><input type="checkbox" checked={k<c.checks} onChange={()=>setMidCases(mc=>mc.map(x=>x.id===m.id?{...x,colis:x.colis.map(y=>y.id===c.id?{...y,checks:k<y.checks?k:k+1}:y)}:x))} disabled={c.status!=="Ready to Dispatch"}/> {item}</label>))}</div>
+          {c.checks<CHECKLIST.length && <Btn role={role} setRole={setRole} need="Crew" tone="neutral" onClick={()=>setMidCases(mc=>mc.map(x=>x.id===m.id?{...x,colis:x.colis.map(y=>y.id===c.id?{...y,checks:CHECKLIST.length}:y)}:x))}>Check all</Btn>}
+          {c.by==="Verifi" && <div style={{fontSize:12, color:C.sub, marginTop:4}}>+ Verifi-only commissioning: tilt · settings · config · firmware · software</div>}
+          <div style={{marginTop:6}}><span style={{fontSize:12}}>System Ready:
+            <label style={{marginLeft:6}}><input type="radio" checked={c.ready==="Yes"} onChange={()=>setMidCases(mc=>mc.map(x=>x.id===m.id?{...x,colis:x.colis.map(y=>y.id===c.id?{...y,ready:"Yes"}:y)}:x))}/> Yes</label>
+            <label style={{marginLeft:6}}><input type="radio" checked={c.ready==="No"} onChange={()=>setMidCases(mc=>mc.map(x=>x.id===m.id?{...x,colis:x.colis.map(y=>y.id===c.id?{...y,ready:"No"}:y)}:x))}/> No</label>
+          </span></div>
+          {c.ready==="No" && <input placeholder="Reason if not ready" onChange={e=>setMidCases(mc=>mc.map(x=>x.id===m.id?{...x,colis:x.colis.map(y=>y.id===c.id?{...y,notReadyReason:e.target.value}:y)}:x))} style={{marginTop:6, fontSize:12, padding:4, border:`1px solid ${C.border}`, borderRadius:4}}/>}
+          <div style={{marginTop:8, display:"flex", alignItems:"center", gap:6, flexWrap:"wrap"}}>
+            <input placeholder="Parts consumed" id={"mpc2-"+c.id} style={{fontSize:12, padding:4, border:`1px solid ${C.border}`, borderRadius:4, width:170}}/>
+            <Btn role={role} setRole={setRole} need="Crew" tone="ok" disabled={!(c.checks===CHECKLIST.length && c.ready==="Yes") && c.ready!=="No"} onClick={()=>{midComplete(m.id,c.id,document.getElementById("mpc2-"+c.id).value); close();}}>Complete</Btn>
+          </div>
+        </div>}
+        {c.status==="On Hold — Not Ready" && <React.Fragment><Note tone="warn">Not billable · FSM reminder active · optional rush parts.</Note><Btn role={role} setRole={setRole} need="Supply Chain" tone="warn" onClick={()=>{midResumeHold(m.id,c.id); close();}}>Rush parts delivered — reopen</Btn></React.Fragment>}
+        {c.status==="Submitted – Pending FSM" && (unitHasOpenWoli(c.unit) ? <Btn role={role} setRole={setRole} need="FSM" tone="err" onClick={()=>{woliResolve(c.unit);}}>Resolve WOLI</Btn> : <React.Fragment>
+          <Btn role={role} setRole={setRole} need="FSM" tone="ok" onClick={()=>{midValidate(m.id,c.id); close();}}>Validate</Btn><Why>Hard two-stage gate: 3rd-party/customer crews have no Hub access, so their close is only "Submitted" — the record isn't real or billable until the FSM validates it (Spec v1.4).</Why>
+          <Btn role={role} setRole={setRole} need="FSM" tone="purp" onClick={()=>{midWoli(m.id,c.id); close();}}>Log WOLI fix</Btn>
+        </React.Fragment>)}
+        {c.status==="Work Complete" && (unitHasOpenWoli(c.unit) ? <Note tone="err">⚠ Open WOLI on {c.unit} — blocking billing/lock. <Btn role={role} setRole={setRole} need="FSM" tone="err" onClick={()=>{woliResolve(c.unit);}}>Resolve WOLI</Btn></Note> : <div style={{display:"flex", alignItems:"center", gap:8, flexWrap:"wrap"}}>
+          <select id={"mm3-"+c.id} style={{fontSize:12, padding:3}} defaultValue="07/2026"><option>07/2026</option><option>08/2026</option></select>
+          <Btn role={role} setRole={setRole} need="CSM" tone="purp" onClick={()=>{midBillConfirm(m.id,c.id,document.getElementById("mm3-"+c.id).value); close();}}>Confirm billable + month</Btn><Why>The one immutability moment: confirming billable + month locks this COLI forever — billed COLIs can never be edited or cancelled (Spec §7.3).</Why>
+        </div>)}
+        {c.status.includes("Billed") && <ClosureBanner/>}
+      </Modal>;
+    }
+    return null;
+  };
+
+  return (
+    <div style={{height:"100vh", background:"#20242D", color:C.text, display:"flex", flexDirection:"column", overflow:"hidden"}}>
+      {/* ─ GUIDE DOCK — sticky, always visible; magenta = not-the-product, same language as the comment pins ─ */}
+      <div style={{position:"relative", zIndex:45, flex:"none", background:"#20242D", borderBottom:"3px solid #E5397F", boxShadow:"0 6px 18px rgba(0,0,0,.35)"}}>
+      <div style={{color:"#fff", padding:"6px 16px 4px", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:8}}>
+        <div style={{display:"flex", alignItems:"center", gap:8, flexWrap:"wrap"}}>
+          <span style={{background:"#E5397F", color:"#fff", borderRadius:4, padding:"2px 8px", fontSize:10, fontWeight:800, letterSpacing:.5}}>GUIDE LAYER</span>
+          <span style={{fontSize:12, color:"#9BA3B2"}}>not part of the product</span>
+        </div>
+        <div style={{display:"flex", alignItems:"center", gap:8}}>
+          <button onClick={()=>setShowLegend(v=>!v)} style={{background:"none", color:"#9BA3B2", border:"1px solid #3A4150", borderRadius:4, padding:"3px 10px", fontSize:11, fontWeight:600, cursor:"pointer"}}>■ color code {showLegend ? "▴" : "▾"}</button>
+          <button onClick={onRestart} style={{background:"rgba(255,255,255,.1)", color:"#fff", border:"1px solid #3A4150", borderRadius:4, padding:"3px 12px", fontSize:11, fontWeight:700, cursor:"pointer"}}>⟲ Restart</button>
+        </div>
+      </div>
+      {showLegend && <div style={{padding:"0 16px 6px", fontSize:11, color:"#9BA3B2", display:"flex", gap:12, flexWrap:"wrap", alignItems:"center"}}>
+        <span style={{color:"#E5397F", fontWeight:700}}>guide-only — real buttons ship in standard Salesforce styling:</span>
+        <span style={{color:"#B58BEF"}}>■ purple = billing · lock · Command Center</span>
+        <span style={{color:"#FF8A80"}}>■ red = blocking / loud</span>
+        <span style={{color:"#7DD69A"}}>■ green = advance</span>
+        <span style={{color:"#E8C15A"}}>■ amber = gate / waiting</span>
+      </div>}
+
+      <div style={{padding:"3px 16px 5px", display:"flex", gap:6, flexWrap:"wrap", alignItems:"center"}}>
+        <span title="roles are dynamic, not people" style={{fontSize:10, color:"#8A90A0", marginRight:4, fontWeight:700, letterSpacing:.6}}>ACTING AS</span>
+        {ROLES.map(([r, sub]) => (
+          <button key={r} onClick={()=>setRole(r)} title={sub}
+            style={{borderRadius:14, border: role===r ? "1px solid #fff" : "1px solid #3A4150", background: role===r ? "#fff" : "transparent", color: role===r ? "#20242D" : "#C9CED8", padding:"2px 11px", fontSize:12, fontWeight: role===r?700:500, cursor:"pointer"}}>
+            {r}
+          </button>
+        ))}
+      </div>
+
+      {created && <div style={{padding:"3px 16px 5px"}}>
+        <div style={{fontSize:10, color:"#8A90A0", marginBottom:4, display:"flex", alignItems:"center", gap:6, flexWrap:"wrap", fontWeight:700, letterSpacing:.6}}>STORY PROGRESS — ORD-1042 {killed && <Chip tone="err">KILLED</Chip>}<Why>In the real build this becomes a Salesforce Path on the Order case — a stage bar Amicus builds, with stages like Draft &amp; dual approval → Installation Specialist → Contract/RM/Finance gate → Supply Chain · IO → Units born (Hub) → Install &amp; billing → Returns · IO closure → SC order closed → Final close. Two bits here are guide-only, NOT stage names: “(skipped)” narrates a conditional this order didn’t hit, and “owner TBD” is an open parking-lot question (who closes the order case — Finance or SC?), still undecided in the spec.</Why></div>
+        <div style={{display:"flex", alignItems:"center", flexWrap:"wrap", gap:4}}>
+          {spine.map(([label, done], i) => (
+            <React.Fragment key={label}>
+              <Chip tone={done===true ? "ok" : done===null ? "neutral" : i===currentIdx ? "info" : "neutral"} dim={done===null || (done===false && i!==currentIdx)}>
+                {done===true ? "✓ " : i===currentIdx ? "● " : ""}{label}
+              </Chip>
+              {i < spine.length-1 && <span style={{color:"#4A5160"}}>—</span>}
+            </React.Fragment>
+          ))}
+          {orderDone && <Why key="finish" author="Guided tour" initial="T" defaultOpen>
+            <b>🏁 Workflow complete.</b> You just ran the entire order-install lifecycle — order → dual approval → ship → units born in Hub → install → validate → bill (locked forever) → SAP → returns → IO closure → SC close.
+            <span style={{display:"block", marginTop:5}}>The one step that can’t run is <b>Final close</b>: its owner is an open spec question (Finance or Supply Chain?) — the flow deliberately parks here so nobody forgets to decide.</span>
+            <span style={{display:"block", marginTop:8, textAlign:"right"}}><button onClick={onRestart} style={{background:C.link, border:"1px solid " + C.link, borderRadius:14, padding:"4px 14px", fontSize:12, fontWeight:700, color:"#fff", cursor:"pointer"}}>⟲ Reset the workflow</button></span>
+            <span style={{display:"block", marginTop:5, color:"#777", fontSize:11}}>…or leave it as-is and start a Verifi Service case to walk de-install / re-install.</span>
+          </Why>}
+        </div>
+      </div>}
+
+      <div style={{margin:"5px 16px 12px", background:"#2A2F3B", border: N.manual ? "1px solid #E8C15A" : "1px solid #3A4150", borderRadius:10, padding:"9px 14px", display:"flex", alignItems:"center", gap:12, flexWrap:"wrap", boxShadow:"0 2px 10px rgba(0,0,0,.3)"}}>
+        {lastAction && <span style={{display:"inline-flex", alignItems:"center", gap:6, fontSize:12, minWidth:0}}>
+          <b style={{color:"#7DD69A", whiteSpace:"nowrap"}}>✓ {lastAction.who}</b><span style={{color:"#9BA3B2"}}>{lastAction.label}</span>
+        </span>}
+        {lastAction && <span style={{color:"#4A5160"}}>→</span>}
+        <span style={{flex:1, minWidth:240, fontSize:13, color:"#fff"}}>
+          <span style={{background:TONES[N.tone][1], color:TONES[N.tone][0], borderRadius:4, padding:"1px 7px", fontSize:10, fontWeight:800, marginRight:8, whiteSpace:"nowrap"}}>{N.manual ? "✋ YOUR TURN" : "NEXT"}</span>
+          <b>{N.who}</b> <span style={{color:"#B9BEC9"}}>— {N.text}</span>
+        </span>
+        {N.run && <button onClick={advance} title={"Runs this step as " + N.who + " and highlights where it happened in the window — or pick a role under Acting as and drive every button yourself"} style={{background:C.ok, color:"#fff", border:"1px solid " + C.ok, borderRadius:6, padding:"7px 16px", fontSize:13, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap"}}>▶ Next — {N.label}</button>}
+        {N.manual && <button onClick={showMe} style={{background:"none", color:"#E8C15A", border:"1px solid #E8C15A", borderRadius:6, padding:"7px 14px", fontSize:13, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap"}}>✋ Show me where</button>}
+      </div>
+      </div>{/* ─ end guide dock ─ */}
+
+      <div style={{display:"flex", gap:14, alignItems:"stretch", flexWrap:"nowrap", margin:"14px 16px 16px", flex:1, minHeight:0}}>
+      {/* ─ PRODUCT WINDOW — everything inside this frame is the Salesforce UI that gets built ─ */}
+      <div style={{flex:"2 1 620px", minWidth:360, borderRadius:10, boxShadow:"0 12px 34px rgba(0,0,0,.4)", display:"flex", flexDirection:"column", minHeight:0}}>
+        <div style={{background:"#E8EBF0", border:"1px solid #C6CBD4", borderBottom:"none", borderRadius:"10px 10px 0 0", padding:"7px 12px", display:"flex", alignItems:"center", gap:8, flexWrap:"wrap"}}>
+          <span style={{display:"inline-flex", gap:5}}><span style={{width:10,height:10,borderRadius:"50%",background:"#FF5F57"}}/><span style={{width:10,height:10,borderRadius:"50%",background:"#FEBC2E"}}/><span style={{width:10,height:10,borderRadius:"50%",background:"#28C840"}}/></span>
+          <span style={{fontSize:12, fontWeight:700, color:"#3A3F47"}}>Salesforce — Verifi Console</span>
+          <span style={{marginLeft:"auto", fontSize:11, color:"#7A8089", fontWeight:600}}>THE PRODUCT — everything inside this window is what gets built</span>
+        </div>
+        <div style={{background:C.page, border:"1px solid #C6CBD4", borderTop:"none", borderRadius:"0 0 10px 10px", padding:"12px 12px 20px", flex:1, minHeight:0, overflowY:"auto"}}>
+      <div style={{display:"flex", gap:12, alignItems:"flex-start", flexWrap:"wrap"}}>
+        <div style={{flex:"2 1 560px", minWidth:340}}>
+          <div style={{background:"#fff", border:`1px solid ${C.border}`, borderRadius:"6px 6px 0 0", display:"flex", flexWrap:"wrap"}}>
+            <TabBtn id="cases" label="Cases" />
+            <TabBtn id="order" label="Order" />
+            <TabBtn id="install" label={"Install" + (colis.length ? " · 0101" : "")} />
+            <TabBtn id="units" label="Units" />
+            <TabBtn id="returns" label="Returns" />
+            <TabBtn id="sc" label="SC dashboard" />
+            <TabBtn id="history" label={"History" + (fieldHistory.length ? " ("+fieldHistory.length+")" : "")} />
+            <TabBtn id="spec" label="Spec" />
+          </div>
+          <div style={{background:"#fff", border:`1px solid ${C.border}`, borderTop:"none", borderRadius:"0 0 6px 6px", padding:12, marginBottom:12}}>
+
+            {tab==="cases" && <div>
+              <Card title={"All cases (" + ((created?1:0)+(colis.length?1:0)+midCases.length+moveCases.length) + ") — the team's one view"} hot={hot("create")} badge={<Btn role={role} setRole={setRole} tone="ok" onClick={openPicker}>＋ New Case</Btn>}>
+                {!created && !picker && <div style={{textAlign:"center", padding:"20px", color:C.sub, fontSize:13}}>No cases yet. Everything — orders, installs, upgrades, movements — starts at ＋ New Case.</div>}
+                {created && caseRow("ORD-1042","New Unit Order", fields.customer + " · " + fields.trucks + " trucks · " + fields.system, killed?"Killed":scClosed?"Tail — final close TBD":installClosed?"Open — order tail":atSC?"At Supply Chain":"In approval", killed?"err":installClosed?"warn":"info", ()=>setTab("order"))}
+                {colis.length>0 && caseRow("CASE-0101","Verifi Install · New Install", "3 units · " + crewLabel, installClosed?"Closed":anyNoBillPending?"No-bill pending":locked?(colis.every(c=>c.billable==="no-ok")?"Non-billable · locked":"Billed · locked"):"Open", installClosed?"ok":anyNoBillPending?"warn":"info", ()=>setTab("install"))}
+                {midCases.map(m=>caseRow(m.id,"Verifi Install · "+m.reason, m.unit+" · by "+m.by, m.status, m.status==="Closed"?"ok":"info", null))}
+                {moveCases.map(m=>caseRow(m.id,"Verifi Service", m.reason+" · "+m.units.join(", "), m.status, m.status==="Closed"?"ok":m.status==="Pending Finance"?"err":m.status==="Rejected"?"err":"info", null))}
+              </Card>
+
+              {picker && <Card title="New Case — choose the record type" you={youStep("picker")} spot="picker" badge={<Why>Every case type — ordering, brownfield install, movement/service — starts from this same ＋ New Case entry point. No separate entrances (declined: dedicated worklist tabs, v1.5/v1.7).</Why>}>
+                <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(210px,1fr))", gap:8}}>
+                  <button onClick={()=>pickType("order")} style={{textAlign:"left", padding:"10px", border:`2px solid ${C.link}`, borderRadius:6, background:C.infoBg, cursor:"pointer"}}><b style={{fontSize:13}}>New Unit Order</b><div style={{fontSize:11, color:C.sub}}>MIN-00006 successor — full ordering flow</div></button>
+                  <button onClick={()=>pickType("install")} style={{textAlign:"left", padding:"10px", border:`2px solid ${C.link}`, borderRadius:6, background:C.infoBg, cursor:"pointer"}}><b style={{fontSize:13}}>Verifi Install</b><div style={{fontSize:11, color:C.sub}}>Upgrade · brownfield new install</div></button>
+                  <button onClick={()=>pickType("move")} style={{textAlign:"left", padding:"10px", border:`2px solid ${C.link}`, borderRadius:6, background:C.infoBg, cursor:"pointer"}}><b style={{fontSize:13}}>Verifi Service</b><div style={{fontSize:11, color:C.sub}}>de-install · re-install · keep · return · name/account change</div></button>
+                  {FAKE_TYPES.map(f=><div key={f} style={{padding:"10px", border:`1px solid ${C.border}`, borderRadius:6, color:"#b5b5b5", fontSize:12, background:"#FAFAFA"}}>{f}</div>)}
+                </div>
+                <Note tone="neutral">Only three record types are live in this prototype; the rest mirror the real New Case picker. Movement scope (confirmed): purely move / remove / re-install — new installs stay under Verifi Install.</Note>
+              </Card>}
+
+              {showOrderForm && <Card title={"New Unit Order — dynamic form (creator: " + role + ")"} you={youStep("form-order")} spot="form-order" badge={<Why>This form is a 1:1 replacement of the MIN-00006 Excel including its parts sheet — the form IS the case-creation screen (Spec §2.2). Show/hide by selection, one model per configuration line.</Why>}>
+                <div style={{display:"grid", gridTemplateColumns:"170px 1fr", gap:"8px 10px", alignItems:"center", fontSize:13}}>
+                  <span style={{fontSize:12, color:C.sub}}>* Account</span>
+                  <select value={draft.customer} onChange={e=>{const v=e.target.value; setDraft(d=>({...d,customer:v})); addLog("System", `Account "${v}" selected → auto-pulled ${TERRITORY[v].fsm} + ${TERRITORY[v].fst} + ship-to location.`);}} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4}}>{Object.keys(TERRITORY).map(a=><option key={a}>{a}</option>)}</select>
+                  <span style={{fontSize:12, color:C.sub}}>Location (ship-to)</span>
+                  <span style={{fontSize:12}}>{TERRITORY[draft.customer].loc}<Why>Ship-to auto-fills from the selected account — Amicus builds this as a lookup, not a typed field.</Why></span>
+                  <span style={{fontSize:12, color:C.sub}}>Primary FSM · Assigned FST</span>
+                  <span style={{fontSize:12}}>{TERRITORY[draft.customer].fsm} · {TERRITORY[draft.customer].fst}<Why>FSM + Assigned FST are auto-pulled from the account/location territory — never typed by the creator. Build as territory-driven assignment (Spec §2.2, v1.4).</Why></span>
+                  <span style={{fontSize:12, color:C.sub}}>Delivery contact / phone</span>
+                  <span><input value={draft.contact} onChange={e=>setDraft(d=>({...d,contact:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:130}} /> <input value={draft.phone} onChange={e=>setDraft(d=>({...d,phone:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:130}} /></span>
+                  <span style={{fontSize:12, color:C.sub}}>Liftgate · receiving hours</span>
+                  <span style={{fontSize:12}}><label><input type="checkbox" checked={draft.liftgate} onChange={e=>setDraft(d=>({...d,liftgate:e.target.checked}))}/> liftgate required</label> · <input value={draft.hours} onChange={e=>setDraft(d=>({...d,hours:e.target.value}))} style={{padding:4, border:`1px solid ${C.border}`, borderRadius:4, width:110}} /></span>
+                  <span style={{fontSize:12, color:C.sub}}>* Truck count</span>
+                  <input type="number" value={draft.trucks} onChange={e=>setDraft(d=>({...d,trucks:+e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:110}} />
+                  <span style={{fontSize:12, color:C.sub}}>* System type</span>
+                  <select value={draft.system} onChange={e=>setDraft(d=>({...d,system:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4}}>{SYSTEMS.map(s=><option key={s}>{s}</option>)}</select>
+                  <span style={{fontSize:12, color:C.sub}}>* Install labor (proposed)</span>
+                  <select value={draft.labor} onChange={e=>setDraft(d=>({...d,labor:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:150}}><option>Verifi</option><option>Customer</option><option>3rd Party</option></select>
+                  <span style={{fontSize:12, color:C.sub}}>* Desired install / on-site</span>
+                  <input value={draft.reqDate} onChange={e=>setDraft(d=>({...d,reqDate:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:130}} />
+                  <span style={{fontSize:12, color:C.sub}}>Lease / Sale · Priority</span>
+                  <span><select value={draft.model} onChange={e=>setDraft(d=>({...d,model:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:110}}><option>Lease</option><option>Sale</option></select> <select value={draft.priority} onChange={e=>setDraft(d=>({...d,priority:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:110}}><option>Low</option><option>Medium</option><option>High</option></select></span>
+                </div>
+                <div style={{marginTop:12, border:`1px solid ${C.border}`, borderRadius:5}}>
+                  <div style={{padding:"6px 10px", background:"#EAF0F6", fontSize:12, fontWeight:700}}>Parts order sheet — quantities per configuration (the 1:1 sheet)</div>
+                  <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(230px,1fr))", gap:"4px 14px", padding:"8px 10px"}}>
+                    {PARTS.map(p=>(
+                      <label key={p} style={{display:"flex", alignItems:"center", justifyContent:"space-between", fontSize:12, gap:8}}>
+                        <span>{p}</span>
+                        <input type="number" min="0" value={draft.parts[p]||0} onChange={e=>setDraft(d=>({...d, parts:{...d.parts, [p]:+e.target.value}}))} style={{width:56, padding:3, border:`1px solid ${C.border}`, borderRadius:4}} />
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div style={{marginTop:12}}>
+                  <Btn role={role} setRole={setRole} tone="ok" big onClick={submitOrder}>Create order</Btn><Why>Creating the order records the creator's approval automatically — whichever of CSM/FSM didn't create it approves next (dual approval, Spec §2.3).</Why>
+                  <Btn role={role} setRole={setRole} tone="neutral" onClick={()=>setShowOrderForm(false)}>Cancel</Btn>
+                </div>
+                <Note>Over-ship is policy — the parts sheet intentionally exceeds truck count; the excess Return Order handles the difference. Account/location drives FSM + FST assignment; they are pulled, never typed.</Note>
+              </Card>}
+
+              {installForm && <Card title="New Case: Verifi Install (brownfield)" you={youStep("form-install")} spot="form-install" badge={<Why>Brownfield: equipment already on site that Salesforce never knew about. Saving registers a brand-new unit record and runs the SAME COLI engine as ordering and movement — checklist, validation gate, billing lock (Spec v1.6).</Why>}>
+                <div style={{display:"grid", gridTemplateColumns:"150px 1fr", gap:"8px 10px", alignItems:"center", fontSize:13}}>
+                  <span style={{fontSize:12, color:C.sub}}>* Account</span>
+                  <select value={installForm.account} onChange={e=>setInstallForm(m=>({...m,account:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4}}>{Object.keys(TERRITORY).map(a=><option key={a}>{a}</option>)}</select>
+                  <span style={{fontSize:12, color:C.sub}}>* Install Reason</span>
+                  <select value={installForm.reason} onChange={e=>setInstallForm(m=>({...m,reason:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4}}>{INSTALL_REASONS.map(r=><option key={r}>{r}</option>)}</select>
+                  <span style={{fontSize:12, color:C.sub}}>* System Type</span>
+                  <select value={installForm.system} onChange={e=>setInstallForm(m=>({...m,system:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4}}>{SYSTEMS.slice(0,5).map(s=><option key={s}>{s}</option>)}</select>
+                  <span style={{fontSize:12, color:C.sub}}>* Truck # (already on this truck)</span>
+                  <input value={installForm.truck} onChange={e=>setInstallForm(m=>({...m,truck:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:120}}/>
+                  <span style={{fontSize:12, color:C.sub}}>* Work Performed by</span>
+                  <select value={installForm.by} onChange={e=>setInstallForm(m=>({...m,by:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:150}}>{WORKBY.map(w=><option key={w}>{w}</option>)}</select>
+                </div>
+                <Note tone="neutral">This registers equipment that's already physically on hand — a brand-new unit is created (Salesforce didn't know about it before). Assigned FST auto-pulled from account/location, same as ordering. Runs the same checklist + validation + billing-lock engine as install and movement COLIs.</Note>
+                <div style={{marginTop:10}}><Btn role={role} setRole={setRole} need={["CSM","FSM"]} tone="ok" onClick={submitInstallCase} disabled={!installForm.truck}>Save &amp; generate COLI</Btn><Btn role={role} setRole={setRole} tone="neutral" onClick={()=>setInstallForm(null)}>Cancel</Btn></div>
+              </Card>}
+
+              {moveForm && <Card title="New Case: Verifi Service" you={youStep("form-move")} spot="form-move" badge={<Why>The Install Reason picklist drives which COLIs get generated (e.g. combined De-install &amp; Re-Install creates both at once). Multi-unit: the checkbox picker creates one COLI set per unit, each guarded individually (Spec v1.4–v1.5).</Why>}>
+                {moveErr && <Note tone="err">⚠ {moveErr}</Note>}
+                <div style={{display:"grid", gridTemplateColumns:"150px 1fr", gap:"8px 10px", alignItems:"center", fontSize:13}}>
+                  <span style={{fontSize:12, color:C.sub}}>* Account</span>
+                  <select value={moveForm.account} onChange={e=>{const v=e.target.value; setMoveForm(m=>({...m,account:v,units:[]}));}} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4}}>{Object.keys(TERRITORY).map(a=><option key={a}>{a}</option>)}</select>
+                  <span style={{fontSize:12, color:C.sub}}>* Install Reason</span>
+                  <select value={moveForm.reason} onChange={e=>{ const r=e.target.value; setMoveForm(m=>{ const kept=m.units.filter(uid=>validForReason(r,(units.find(u=>u.id===uid)||{}).status)); if(kept.length<m.units.length) addLog("System", `Reason changed to "${r}" → deselected unit(s) that don't fit: only units in the right status for this reason stay picked.`); return {...m, reason:r, units:kept}; }); }} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4}}>{SERVICE_REASONS.map(r=><option key={r}>{r}</option>)}</select>
+                  <span style={{fontSize:12, color:C.sub}}>* System Type</span>
+                  <select value={moveForm.system} onChange={e=>setMoveForm(m=>({...m,system:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4}}>{SYSTEMS.slice(0,5).map(s=><option key={s}>{s}</option>)}</select>
+                  <span style={{fontSize:12, color:C.sub}}>* Work Performed by</span>
+                  <select value={moveForm.by} onChange={e=>setMoveForm(m=>({...m,by:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:150}}>{WORKBY.map(w=><option key={w}>{w}</option>)}</select>
+                  {isAcctChange(moveForm.reason) && <React.Fragment>
+                    <span style={{fontSize:12, color:C.sub}}>Destination account</span>
+                    <input value={moveForm.dest} onChange={e=>setMoveForm(m=>({...m,dest:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4}} />
+                    <span style={{fontSize:12, color:C.sub}}>Truck also changes?</span>
+                    <label style={{fontSize:12}}><input type="checkbox" checked={moveForm.truckAlsoChanges} onChange={e=>setMoveForm(m=>({...m,truckAlsoChanges:e.target.checked}))}/> destination account uses a different truck</label>
+                  </React.Fragment>}
+                </div>
+                <div style={{marginTop:8}}>
+                  <span style={{fontSize:12, color:C.sub, fontWeight:600}}>* Units (select one or more)</span>
+                  <div style={{fontSize:11, color:C.sub, margin:"2px 0 4px"}}>Only units in a status that makes sense for "{moveForm.reason}" are selectable.</div>
+                  {!units.some(u=>u.status!=="retired" && u.status!=="shipped" && validForReason(moveForm.reason, u.status)) && (
+                    <Note tone="warn">No units currently qualify for "{moveForm.reason}".{moveForm.reason.startsWith("Re-Install") ? " Re-Install needs a unit that's already off a truck (status \"available\") — de-install one first (Deinstall — Keep at Account), or use \"De-install & Re-Install (new truck)\" if it's still mounted and just moving to a different truck." : moveForm.reason.startsWith("Deinstall")||moveForm.reason.startsWith("Transfer")||moveForm.reason.startsWith("De-install &") ? " These reasons need a unit that's currently \"installed\" — nothing here matches yet." : ""}</Note>
+                  )}
+                  <div style={{display:"flex", flexWrap:"wrap", gap:6, marginTop:4}}>
+                    {units.filter(u=>u.status!=="retired" && u.status!=="shipped").map(u=>{
+                      const openCase = unitOpenElsewhere(u.id);
+                      const statusOk = validForReason(moveForm.reason, u.status);
+                      const blocked = !!openCase || !statusOk;
+                      const picked = moveForm.units.includes(u.id);
+                      return <button key={u.id} disabled={blocked} onClick={()=>setMoveForm(m=>({...m, units: picked ? m.units.filter(x=>x!==u.id) : [...m.units, u.id]}))}
+                        title={openCase?`Blocked: open on ${openCase.engine} ${openCase.id}`:!statusOk?`"${moveForm.reason}" doesn't apply to a unit that's currently "${u.status}"`:""}
+                        style={{fontSize:11, padding:"4px 9px", borderRadius:12, border:`1px solid ${blocked?C.border:picked?C.link:C.border}`, background:blocked?"#F4F4F4":picked?C.infoBg:"#fff", color:blocked?"#aaa":picked?C.link:C.text, cursor:blocked?"not-allowed":"pointer"}}>
+                        {u.id} ({u.status}){openCase?" — blocked":!statusOk?" — wrong status":""}
+                      </button>;
+                    })}
+                  </div>
+                </div>
+                {isNonPhysical(moveForm.reason) ? <Note tone="purp">{isAcctChange(moveForm.reason) ? <span><b>Account Change</b> — not fully non-physical: the unit (and truck, if flagged) must be switched first. Sequence: request unit switch → request truck switch (if flagged) → send to Command Center → <b>team confirms</b> to close.</span> : <span>Non-physical name change — no field work. Goes straight to <b>Command Center Action</b>, then a simple confirm. Usually <b>no billing</b>.</span>}</Note>
+                : moveForm.by!=="Verifi" && <Note tone="purp"><b>{moveForm.by}</b> selected — they get FST-like access but <b>can't see the Hub</b>, so they'll <b>manually enter TCG</b> and extra fields. Their close = <b>"Submitted, pending FSM validation"</b> — the FSM is a stage-gate before it's real/billable.</Note>}
+                {moveForm.reason.startsWith("De-install &") && <Note tone="info">Combined reason: generates a <b>De-install COLI (dispatchable now)</b> + a <b>Re-Install COLI (On Hold — Awaiting Truck)</b> per unit — the re-install stays gated until someone actively marks the truck ready, which is what keeps multiple open re-installs from piling up on one truck.</Note>}
+                <div style={{marginTop:10}}><Btn role={role} setRole={setRole} need={["CSM","FSM"]} tone="ok" onClick={submitMove} disabled={!moveForm.units.length}>Save &amp; generate COLI(s)</Btn><Btn role={role} setRole={setRole} tone="neutral" onClick={()=>{setMoveForm(null); setMoveErr("");}}>Cancel</Btn></div>
+                <Note tone="neutral">Required fields by reason are DRAFT until the Hub's authoritative list lands. Return-to-Verifi holds the whole case for Finance (First Commissioned surfaced for depreciation; approval triggers the RO + parts manifest).</Note>
+              </Card>}
+
+              {moveCases.map(m=>(
+                <Card key={m.id} title={m.id + " — " + m.reason + " · " + m.units.join(", ")} hot={N.key && N.key.startsWith("mv-") && (N.key.includes(m.id) || m.colis.some(c=>N.key===("mv-"+c.id)))} just={m.status==="Closed" ? null : just(...caseKeys("mv-",m))} spot={caseKeys("mv-",m).join(" ")} coach={GUIDE} badge={<span style={{display:"inline-flex", alignItems:"center", gap:4}}><Chip tone={m.status==="Closed"?"ok":m.status==="Pending Finance"||m.status==="Rejected"?"err":"info"}>{m.status}</Chip>{isAcctChange(m.reason) && <Why>Billing cutover on transfers (July 15 call, 37:10): unit IDs only transfer between PARENTED accounts (e.g. Folsom ↔ Silver Strike, the Semex family). Everyone else: whole-month billing — no prorated billing exists today. Amicus: don’t build proration; the cutover is month-granular.</Why>}{m.colis.some(c=>c.type==="Re-Install") && <Why>Future automation to capture now (July 15 call, 21:45–23:27): the re-install needs a comment/field for “going on truck 123”; the data flow then validates the stamped unit actually landed there — stamped-vs-live mismatch → flag CSM/FSM automatically. Field goes in v1; the flag automation is future state.</Why>}{m.status==="Closed" && !(picker || showOrderForm || installForm || moveForm) && <Why key={"done-"+m.id} author="Guided tour" initial="T" defaultOpen><b>🏁 {m.id} complete.</b> {m.reason} on {m.units.join(", ")} ran end to end — checklist gate, FSM stage-gate where 3rd-party/customer did the work, per-COLI billing lock, Command Center close.<span style={{display:"block", marginTop:5, color:"#777", fontSize:11}}>Pick the next flow at ＋ New Case — or ⟲ Restart to reset everything.</span></Why>}</span>}>
+                  {m.reason.includes("Another") && <Note tone="warn">⚠ Transfer parts consumption routes through a <b>different PR (transfer IO / PR-against-the-case)</b>, not the regular work-order path — flagged, not yet numbered. <b>Open question for Finance/Supply Chain.</b></Note>}
+                  <div style={{display:"flex", gap:4, marginBottom:8, borderBottom:`1px solid ${C.borderLt}`}}>
+                    {["Related","Details"].map(t=><button key={t} onClick={()=>setSubTab(s=>({...s,[m.id]:t}))} style={{border:"none", background:"none", padding:"4px 10px", fontSize:12, fontWeight:(subTab[m.id]||"Related")===t?700:500, color:(subTab[m.id]||"Related")===t?C.link:C.sub, borderBottom:(subTab[m.id]||"Related")===t?`2px solid ${C.link}`:"2px solid transparent", cursor:"pointer"}}>{t}</button>)}
+                  </div>
+                  {(subTab[m.id]||"Related")==="Related" ? <ColiTable colis={m.colis} onOpen={(cid)=>setOpenColi({engine:"move", caseId:m.id, coliId:cid})} />
+                  : <FieldGrid rows={[["Account",m.account],["Install Reason",m.reason],["Units",m.units.join(", ")],["Work Performed by",m.by],["Destination",m.dest||"—"]]} />}
+                  {m.colis.length>0 && m.colis.every(c=>c.status.includes("Billed")||c.status==="Cancelled"||c.status.includes("Confirmed")) && <Note tone="neutral">All complete &amp; validated → case rolls up to Closed.</Note>}
+                  {m.status==="Pending Finance" && <React.Fragment>
+                    <Btn role={role} setRole={setRole} need="Finance" tone="ok" onClick={()=>moveFinance(m.id,true)}>Finance approve (depreciation — First Commissioned reviewed)</Btn>
+                    <Btn role={role} setRole={setRole} need="Finance" tone="err" onClick={()=>moveFinance(m.id,false)}>Reject</Btn>
+                  </React.Fragment>}
+                  {m.status==="Rejected" && <React.Fragment>
+                    <Note tone="err">Rejected by Finance — this doesn't dead-end. Edit and resend, or withdraw the case.</Note>
+                    <Btn role={role} setRole={setRole} need={["CSM","FSM"]} tone="ok" onClick={()=>moveResubmit(m.id)}>Resubmit to Finance</Btn>
+                    <Btn role={role} setRole={setRole} need={["CSM","FSM"]} tone="neutral" onClick={()=>moveWithdraw(m.id)}>Withdraw case</Btn>
+                  </React.Fragment>}
+                  {m.colis.some(c=>c.status==="Awaiting SC receipt") && m.colis.filter(c=>c.status==="Awaiting SC receipt").map(c=>
+                    <Btn key={c.id} role={role} setRole={setRole} need="Supply Chain" tone="ok" onClick={()=>moveReceipt(m.id,c.id)}>Confirm receipt of {c.unit}</Btn>)}
+                  {m.colis.some(c=>unitHasOpenWoli(c.unit)) && <Note tone="err">⚠ Open WOLI on {m.colis.filter(c=>unitHasOpenWoli(c.unit)).map(c=>c.unit).join(", ")} — blocking billing/lock. <Btn role={role} setRole={setRole} need="FSM" tone="err" onClick={()=>m.colis.filter(c=>unitHasOpenWoli(c.unit)).forEach(c=>woliResolve(c.unit))}>Resolve WOLI(s)</Btn></Note>}
+                  {m.status==="Ready for Command Center" && <Btn role={role} setRole={setRole} need="Command Center" tone="ok" onClick={()=>moveSendToCC(m.id)}>Push to SAP & close case</Btn>}
+                  {!m.schedule && m.status==="In Progress" && m.colis.some(c=>c.status==="Ready to Dispatch") && <Card title="Schedule-lite" badge={<Why>Schedule-lite is planning, NOT a Field Service Appointment — deliberately kept out of the FST dispatch app so it never pollutes Field Service scheduling KPIs. Confirms location, open-date, and a SUGGESTED team (confirm, not auto-assign); CSM is CC'd (Spec v1.4).</Why>}>
+                    <div style={{fontSize:12}}>Never counts against FST dispatch KPIs. Lands on the Planning Gantt (bottom of Cases — future).</div>
+                    <div style={{marginTop:6}}><Btn role={role} setRole={setRole} need={["FSM","CSM"]} tone="ok" onClick={()=>moveSchedule(m.id, TERRITORY[m.account].loc, "07/18/26", TERRITORY[m.account].fst+" team")}>Confirm team &amp; open-date</Btn></div>
+                  </Card>}
+                  {m.schedule && <Note tone="neutral">Schedule-lite: {m.schedule.loc} · opens {m.schedule.date} · {m.schedule.team} · CSM CC'd.</Note>}
+                  <Note tone="neutral">Files auto-attached ({m.reason.startsWith("De-install")||m.reason.startsWith("De-install &")?PRESET_FILES["De-install"].concat(m.reason.startsWith("De-install &")?PRESET_FILES["Re-Install"]:[]).join(" · "):m.reason.startsWith("Re-Install")?PRESET_FILES["Re-Install"].join(" · "):"—"}{m.colis.some(c=>c.type.includes("Return"))?" · "+PRESET_FILES["Return"].join(" · "):""}) — tagged to system version {m.colis[0]?.system||""}.</Note>
+                  <Note tone="neutral">Per-COLI billing on its own clock, independent of the case's IO/GL closure (that's a separate Finance/Jim process — see Spec §7). Case rolls up to Closed when every COLI is billed, confirmed, or cancelled. Billed/locked COLIs can never be cancelled.</Note>
+                </Card>
+              ))}
+              <Note tone="neutral">📋 Planning Gantt (COLIs across days) — future add, deliberately placed here so it isn't forgotten.</Note>
+              {midCases.map(m=>(
+                <Card key={m.id} title={m.id + " — " + m.reason + " · " + m.unit} hot={N.key && N.key.startsWith("mid-") && (N.key.includes(m.id) || m.colis.some(c=>N.key===("mid-"+c.id)))} just={m.status==="Closed" ? null : just(...caseKeys("mid-",m))} spot={caseKeys("mid-",m).join(" ")} coach={GUIDE} badge={<span style={{display:"inline-flex", alignItems:"center", gap:4}}><Chip tone={m.status==="Closed"?"ok":"info"}>{m.status}</Chip>{m.status==="Closed" && !(picker || showOrderForm || installForm || moveForm) && <Why key={"done-"+m.id} author="Guided tour" initial="T" defaultOpen><b>🏁 {m.id} complete.</b> Brownfield install of {m.unit} registered a brand-new unit and ran the same COLI engine as everything else — checklist, validation gate, per-COLI billing lock, Command Center close.<span style={{display:"block", marginTop:5, color:"#777", fontSize:11}}>Pick the next flow at ＋ New Case — or ⟲ Restart to reset everything.</span></Why>}</span>}>
+                  <div style={{display:"flex", gap:4, marginBottom:8, borderBottom:`1px solid ${C.borderLt}`}}>
+                    {["Related","Details"].map(t=><button key={t} onClick={()=>setSubTab(s=>({...s,[m.id]:t}))} style={{border:"none", background:"none", padding:"4px 10px", fontSize:12, fontWeight:(subTab[m.id]||"Related")===t?700:500, color:(subTab[m.id]||"Related")===t?C.link:C.sub, borderBottom:(subTab[m.id]||"Related")===t?`2px solid ${C.link}`:"2px solid transparent", cursor:"pointer"}}>{t}</button>)}
+                  </div>
+                  {(subTab[m.id]||"Related")==="Related" ? <ColiTable colis={m.colis} onOpen={(cid)=>setOpenColi({engine:"mid", caseId:m.id, coliId:cid})} />
+                  : <FieldGrid rows={[["Account",m.account],["Install Reason",m.reason],["Unit",m.unit],["Work Performed by",m.by]]} />}
+                  {m.colis.length>0 && m.colis.every(c=>c.status.includes("Billed")) && <Note tone="neutral">All complete &amp; validated → case closed.</Note>}
+                  {m.colis.some(c=>unitHasOpenWoli(c.unit)) && <Note tone="err">⚠ Open WOLI on {m.colis.filter(c=>unitHasOpenWoli(c.unit)).map(c=>c.unit).join(", ")} — blocking billing/lock. <Btn role={role} setRole={setRole} need="FSM" tone="err" onClick={()=>m.colis.filter(c=>unitHasOpenWoli(c.unit)).forEach(c=>woliResolve(c.unit))}>Resolve WOLI(s)</Btn></Note>}
+                  {m.status==="Ready for Command Center" && <Btn role={role} setRole={setRole} need="Command Center" tone="ok" onClick={()=>midSendToCC(m.id)}>Push to SAP & close case</Btn>}
+                  {!m.schedule && m.colis.some(c=>c.status==="Ready to Dispatch") && <Card title="Schedule-lite" badge={<Why>Schedule-lite is planning, NOT a Field Service Appointment — deliberately kept out of the FST dispatch app so it never pollutes Field Service scheduling KPIs. Confirms location, open-date, and a SUGGESTED team (confirm, not auto-assign); CSM is CC'd (Spec v1.4).</Why>}>
+                    <div style={{fontSize:12}}>Extended to every physical COLI, not just Movement. Never counts against FST dispatch KPIs.</div>
+                    <div style={{marginTop:6}}><Btn role={role} setRole={setRole} need={["FSM","CSM"]} tone="ok" onClick={()=>midSchedule(m.id, TERRITORY[m.account].loc, "07/18/26", TERRITORY[m.account].fst+" team")}>Confirm team &amp; open-date</Btn></div>
+                  </Card>}
+                  {m.schedule && <Note tone="neutral">Schedule-lite: {m.schedule.loc} · opens {m.schedule.date} · {m.schedule.team} · CSM CC'd.</Note>}
+                  <Note tone="neutral">Same engine as install & movement COLIs: checklist gate, 3rd-party/customer FSM validation stage, billing lock. Per-COLI billing on its own clock; case waits for Command Center once every COLI is billed. — Spec §4.5–4.6, v1.3</Note>
+                </Card>
+              ))}
+            </div>}
+
+            {tab==="order" && !created && <Note tone="neutral">No order yet — start from the Cases tab → ＋ New Case → New Unit Order.</Note>}
+            {tab==="order" && created && <div>
+              <Card title="Approvals & routing" badge={<Chip tone={approvalDone && imConfirmed && gateDone ? "ok" : "warn"}>{approvalDone && imConfirmed && gateDone ? "cleared" : "in progress"}</Chip>}>
+                <FieldGrid rows={[
+                  ["FSM aligned", creator==="FSM" ? "Yes (creator)" : dualApproved ? "Yes" : "Pending"],
+                  ["CSM aligned", creator==="CSM" ? "Yes (creator)" : dualApproved ? "Yes" : "Pending"],
+                  ["RM approval (>20)", fields.trucks>20 ? (rmOK ? "Approved" : "Pending") : "n/a"],
+                  ["Finance approval (>40)", fields.trucks>40 ? (finBigOK ? "Approved" : "Pending") : "n/a"],
+                  ["Install Manager — who installs?", imConfirmed ? crew + (hasIM ? " (confirmed)" : " (SC fallback)") : "Not yet confirmed"],
+                  ["Install Labor", fields.labor],
+                ]} />
+                <Note tone="neutral">Summary only — the cards below still drive the actual approve/confirm/gate actions; this just shows where everything stands at a glance.</Note>
+              </Card>
+              <Card title="Order fields — field-level approval machine (pre-ship)" hot={hot("fields")||hot("approve")||hot("im")} just={just("fields","approve","im")} spot="fields approve im" coach={GUIDE} badge={<span style={{display:"inline-flex", alignItems:"center", gap:4}}><Chip tone={approvalDone?"ok":"warn"}>{approvalDone?"approved":"in approval"}</Chip><Why>Every field has an edit control because the whole order is field-editable pre-ship by CSM/FSM: any edit flags that field and BOTH must re-approve it, with full history — the field-level re-approval machine (Spec §2.4). Post-ship, edits become notify-only. The 🔒 on buttons is simulator role-gating, not a real Salesforce button state — in production, profiles simply hide actions from non-owners.</Why></span>}>
+                {fieldRow("Account", fields.customer)}
+                {fieldRow("Location (ship-to)", fields.loc)}
+                {fieldRow("Primary CSM", fields.csm)}
+                {fieldRow("Primary FSM · Assigned FST", fields.fsm + " · " + fields.fst)}
+                {fieldRow("Delivery contact", fields.contact + " · " + fields.phone)}
+                {fieldRow("Liftgate · receiving hours", (fields.liftgate?"Liftgate required":"No liftgate") + " · " + fields.hours)}
+                {fieldRow("Truck count", fields.trucks + (fields.trucks>40 ? "  (>40 → Finance, >20 → RM)" : fields.trucks>20 ? "  (>20 → RM gate)" : ""), editTrucks)}
+                {fieldRow("System type", fields.system)}
+                {fieldRow("Install labor", fields.labor, editLabor)}
+                {fieldRow("Desired install / on-site", fields.reqDate)}
+                {fieldRow("Lease / Sale · Priority", fields.model + " · " + fields.priority)}
+                {fieldRow("Parts sheet", Object.entries(fields.parts).filter(p=>p[1]>0).map(p=>p[1]+"× "+p[0]).join(" · ") || "—")}
+                <div style={{marginTop:8}}>
+                  {!dualApproved && !killed && <Btn role={role} setRole={setRole} need={approver} tone="ok" onClick={approveOrder}>Approve whole order (dual approval)</Btn>}
+                  {!killed && !shipped && <Btn role={role} setRole={setRole} need={["CSM","FSM"]} tone="err" onClick={killOrder}>Kill order</Btn>}
+                </div>
+                <div style={{marginTop:10, paddingTop:8, borderTop:`1px solid ${C.borderLt}`}}>
+                  <div style={{fontSize:12, fontWeight:700, marginBottom:4, display:"flex", alignItems:"center", gap:6, flexWrap:"wrap"}}>Install labor & crew — Installation Specialist <Chip tone={imConfirmed?"ok":"info"}>{imConfirmed?"confirmed":"waiting"}</Chip><Why>Moved INTO Order fields per the July 15 call (6:45–7:38, Ariel: crew confirmation “is part of the order fields information now, so it probably should be in there” — it was “way down here” before).</Why></div>
+                  <div style={{fontSize:13, marginBottom:6}}>Crew: <b>{crew}</b> · <label style={{fontSize:12, color:C.sub}}><input type="checkbox" checked={hasIM} onChange={e=>setHasIM(e.target.checked)} disabled={imConfirmed}/> account has an Installation Specialist</label></div>
+                  {!imConfirmed && approvalDone && !killed && <div>
+                    <Btn role={role} setRole={setRole} need={hasIM?"Installation Specialist":"Supply Chain"} tone="ok" onClick={imConfirm}>Confirm labor & crew</Btn>
+                    <Btn role={role} setRole={setRole} need="Installation Specialist" tone="neutral" onClick={imOwnEdit}>Edit own field — notify only</Btn>
+                    <Btn role={role} setRole={setRole} need="Installation Specialist" tone="warn" onClick={()=>flagField("Truck count","Installation Specialist")}>Edit order field — bounces back</Btn>
+                    <Btn role={role} setRole={setRole} tone="neutral" onClick={imWeek}>Simulate 1 idle week</Btn>
+                  </div>}
+                </div>
+              </Card>
+              <Card title="Gates & finance" hot={hot("gate")||hot("io")} just={just("gate","io")} spot="gate io" coach={GUIDE} badge={gateNeeded ? <Chip tone={gateDone?"ok":"warn"}>{gateDone?"cleared":"gated"}</Chip> : <Chip tone="ok">no gate</Chip>}>
+                <div style={{fontSize:12, marginBottom:6}}><label><input type="checkbox" checked={contract} onChange={e=>{setContract(e.target.checked); addLog("System", e.target.checked ? "Contract found — no gate." : "NO contract → Finance + RM before Supply Chain. — Spec §2.6");}} disabled={atSC}/> contract on file</label></div>
+                {!contract && !finOK && <Btn role={role} setRole={setRole} need="Finance" tone="ok" onClick={()=>{setFinOK(true);addLog("Finance","Approved (no-contract gate).");}}>Finance approve (no contract)</Btn>}
+                {created && fields.trucks>40 && !finBigOK && <Btn role={role} setRole={setRole} need="Finance" tone="ok" onClick={()=>{setFinBigOK(true);addLog("Finance","Approved (>40 trucks). — build-thread rule");}}>Finance approve (&gt;40 trucks)</Btn>}
+                {((!contract) || fields.trucks>20) && !rmOK && <Btn role={role} setRole={setRole} need="Regional Manager" tone="ok" onClick={()=>{setRmOK(true);addLog("Regional Manager","Approved.");}}>RM approve</Btn>}
+                {gateNeeded && !gateDone && !killed && <Btn role={role} setRole={setRole} need="Regional Manager" tone="err" onClick={()=>{setChanged(c=>({...c,"Truck count":{CSM:false,FSM:false}})); addLog("Regional Manager","REJECTED → back to CSM/FSM (edit + re-approve, or kill). — Spec §2.7");}}>RM reject</Btn>}
+                <div style={{marginTop:8, paddingTop:8, borderTop:`1px solid ${C.borderLt}`}}>
+                  {atSC && !ioCreated && <Btn role={role} setRole={setRole} need="Finance" tone="purp" onClick={createIO}>Create IO / PO / GL / CC</Btn>}
+                  <Chip tone={ioCreated ? "ok" : "neutral"}>{ioCreated ? "IO created" : "IO pending — blocks order close, not shipping"}</Chip>
+                </div>
+              </Card>
+              <Card title="Supply Chain (owner family — James K)" hot={hot("est")||hot("ship")||hot("hub")||hot("labor")||hot("scclose")} just={just("est","ship","hub")} spot="est ship hub" coach={GUIDE} badge={<Chip tone={scClosed?"ok":shipped?"info":"neutral"}>{scClosed?"closed":shipped?"shipped":"queued"}</Chip>}>
+                <div style={{fontSize:12, color:C.sub, marginBottom:6}}>Requested: <b>{fields.reqDate}</b> · Estimated: <b>{estDate || "—"}</b> · Actual: <b>{shipped?"07/14/26":"—"}</b> · Labor processed: <b>{laborDone||fields.labor==="Customer"?"Yes":"No"}</b></div>
+                {atSC && !estDate && <Btn role={role} setRole={setRole} need="Supply Chain" onClick={setEst}>Set estimated ship date</Btn>}
+                {atSC && estDate && !shipped && <Btn role={role} setRole={setRole} need="Supply Chain" tone="ok" onClick={markShipped}>Mark Shipped — units born</Btn>}
+                {hubTask && <Note tone="err"><b>LOUD:</b> create units in Hub before arrival. <Btn role={role} setRole={setRole} need="Supply Chain" tone="err" onClick={createHub}>Create units in Hub</Btn></Note>}
+                {shipped && <Note tone="neutral">Units arrive with NO trucks assigned — field-team FYI list; trucks confirmed as they arrive inside the install flow.</Note>}
+                {shipped && fields.labor!=="Customer" && !laborDone && <Btn role={role} setRole={setRole} need="Supply Chain" tone="ok" onClick={processLabor}>Process labor ({fields.labor})</Btn>}
+                {retReceived && ioClosed && (laborDone || fields.labor==="Customer") && !scClosed && <Btn role={role} setRole={setRole} need="Supply Chain" tone="ok" onClick={closeSC}>Close SC order</Btn>}
+                <Note tone="neutral">Every Supply-Chain-owned action lives here now, one owner, one card. Detailed tracker view stays on the SC dashboard tab.</Note>
+              </Card>
+            </div>}
+
+            {tab==="install" && <div>
+              {!colis.length && <Note tone="neutral">No install case yet — auto-creates on Hub sync.</Note>}
+              {colis.length>0 && <Card title="CASE-0101 — auto-created from Hub sync" hot={["coli","val","cc","bill","sap","hold","woli","sched-order"].some(hot)} just={just("coli","val","cc","bill","sap","hold","woli","sched-order")} spot="coli val cc bill sap hold woli sched-order" coach={GUIDE} badge={installClosed ? <Chip tone="ok">closed (order still open)</Chip> : locked ? <Chip tone="purp">{colis.every(c=>c.billable==="no-ok")?"non-billable · locked":"billed · locked"}</Chip> : anyNoBillPending ? <Chip tone="warn">no-bill pending approval</Chip> : <Chip tone="info">{colis.filter(coliBillResolved).length ? colis.filter(coliBillResolved).length + "/" + colis.length + " COLIs billed" : "open"}</Chip>}>
+                <div style={{display:"flex", alignItems:"center", flexWrap:"wrap", gap:4, marginBottom:10}}>
+                  {["Pending","Awaiting Ship Date","Units Shipped","Units Arrived","Closed"].map((s,i)=>{
+                    const stage = !created?0 : !shipped?1 : !hubCreated?2 : !installClosed?3 : 4;
+                    return <React.Fragment key={s}><Chip tone={i<stage?"ok":i===stage?"info":"neutral"} dim={i>stage}>{i<stage?"✓ ":i===stage?"● ":""}{s}</Chip>{i<4 && <span style={{color:C.border}}>—</span>}</React.Fragment>;
+                  })}
+                </div>
+                <div style={{display:"flex", gap:4, marginBottom:8, borderBottom:`1px solid ${C.borderLt}`}}>
+                  {["Related","Details"].map(t=><button key={t} onClick={()=>setSubTab(s=>({...s,"CASE-0101":t}))} style={{border:"none", background:"none", padding:"4px 10px", fontSize:12, fontWeight:(subTab["CASE-0101"]||"Related")===t?700:500, color:(subTab["CASE-0101"]||"Related")===t?C.link:C.sub, borderBottom:(subTab["CASE-0101"]||"Related")===t?`2px solid ${C.link}`:"2px solid transparent", cursor:"pointer"}}>{t}</button>)}
+                </div>
+                {(subTab["CASE-0101"]||"Related")==="Related" ? <ColiTable colis={colis.map(c=>({...c, id:c.unit, type:"Install", by:crewLabel}))} onOpen={(cid)=>setOpenColi({engine:"order", caseId:"CASE-0101", coliId:cid})} />
+                : <FieldGrid rows={[["Account",fields.customer],["System Type",fields.system],["Install Labor",fields.labor],["Requested on-site",fields.reqDate],["Assigned FST",fields.fst],["Primary FSM",fields.fsm]]} />}
+                {colis.every(c=>c.status.startsWith("Validated")) && <Note tone="neutral">All complete &amp; validated → CSM can close the case.</Note>}
+                {!installSchedule && colis.length>0 && colis.some(c=>c.status==="Not Started") && <Card title="Schedule-lite" badge={<Why>Schedule-lite is planning, NOT a Field Service Appointment — deliberately kept out of the FST dispatch app so it never pollutes Field Service scheduling KPIs. Confirms location, open-date, and a SUGGESTED team (confirm, not auto-assign); CSM is CC'd (Spec v1.4).</Why>}>
+                  <div style={{fontSize:12}}>Extended to every physical COLI, not just Movement. Never counts against FST dispatch KPIs.</div>
+                  <div style={{marginTop:6}}><Btn role={role} setRole={setRole} need={["FSM","CSM"]} tone="ok" onClick={scheduleInstall}>Confirm team &amp; open-date</Btn></div>
+                </Card>}
+                {installSchedule && <Note tone="neutral">Schedule-lite: {installSchedule.loc} · opens {installSchedule.date} · {installSchedule.team} · CSM CC'd.</Note>}
+                {colis.some(c=>unitHasOpenWoli(c.unit)) && <Note tone="err">⚠ Open WOLI on {colis.filter(c=>unitHasOpenWoli(c.unit)).map(c=>c.unit).join(", ")} — blocking billing/lock. <Btn role={role} setRole={setRole} need="FSM" tone="err" onClick={()=>colis.filter(c=>unitHasOpenWoli(c.unit)).forEach(c=>woliResolve(c.unit))}>Resolve WOLI(s)</Btn></Note>}
+                <div style={{marginTop:10, display:"flex", alignItems:"center", gap:8, flexWrap:"wrap"}}>
+                  {ccEnabled && allValidated && !sentCC && !locked && <React.Fragment><Btn role={role} setRole={setRole} need="FSM" tone="purp" onClick={sendCC}>Send to Command Center</Btn><Why>Real button, unusual requirement: Command Center is a transitional team kept for double-duty documentation while the new system earns trust. Build it as a first-class step with a decommission TOGGLE (SC dashboard tab), default ON. CC waits for the WHOLE case to close — not per-COLI — then pushes to SAP and closes the install case. Toggled off, cases close directly (Spec §4.6).</Why></React.Fragment>}
+                  {(sentCC || !ccEnabled) && !locked && <span style={{fontSize:12, color:C.sub}}>Billing is <b>per-COLI</b> — open each validated unit and confirm billable + month there ({colis.filter(coliBillResolved).length}/{colis.length} locked).<Why>Changed per the July 15 call (15:23): the billable decision moved from the case to the COLI, matching Movement/Mid-life and Spec §7 ("billing submits on COLI closure"). The case locks when every COLI is resolved. Ariel: veto here if wrong.</Why></span>}
+                  {colis.some(c=>c.billable==="no-pending") && <React.Fragment>
+                    <Btn role={role} setRole={setRole} need="Regional Manager" tone="warn" onClick={rmNoBill}>RM: approve no-bill</Btn>
+                    <Btn role={role} setRole={setRole} need="Regional Manager" tone="err" onClick={rmRejectNoBill}>RM: reject</Btn>
+                  </React.Fragment>}
+                  {colis.some(c=>c.billable==="no-pending-fin") && <React.Fragment>
+                    <Btn role={role} setRole={setRole} need="Finance" tone="warn" onClick={finNoBill}>Finance: approve no-bill (&gt;5 units)</Btn>
+                    <Btn role={role} setRole={setRole} need="Finance" tone="err" onClick={finRejectNoBill}>Finance: reject (final)</Btn>
+                  </React.Fragment>}
+                  {locked && !installClosed && <Btn role={role} setRole={setRole} need="Command Center" tone="ok" onClick={pushSAP}>Push to SAP & close install case</Btn>}
+                </div>
+                {colis.some(c=>c.billable==="no-rejected") && <Note tone="err">RM rejected the no-bill ("{noBillReason}"). <select id="revise-reason" defaultValue={noBillReason} style={{fontSize:11, padding:2}}>
+                    <option>Replacement unit — on us</option>
+                    <option>Warranty rework</option>
+                    <option>Contract covers install</option>
+                    <option>Goodwill / customer retention</option>
+                  </select> <Btn role={role} setRole={setRole} need="CSM" tone="warn" onClick={()=>csmReviseNoBill(document.getElementById("revise-reason").value)}>Revise & resubmit to RM</Btn> <Btn role={role} setRole={setRole} need="CSM" tone="ok" onClick={csmEscalateFinance}>Escalate to Finance</Btn></Note>}
+                <Why>Billing submits on COLI closure (install AND movement COLIs alike) — confirmed independent of the order case's IO/GL closure, which is a separate Finance process on its own timeline. Neither blocks the other (Spec §7). Amicus: two decoupled processes, don't wire one to wait on the other.</Why>
+              </Card>}
+            </div>}
+
+            {tab==="units" && <div>
+              {!units.length && <Note tone="neutral">No units yet — born at Mark Shipped.</Note>}
+              {units.map(u=>(
+                <div key={u.id} style={{display:"flex", alignItems:"center", gap:8, padding:"7px 4px", borderBottom:`1px solid ${C.borderLt}`, flexWrap:"wrap"}}>
+                  <span style={{fontWeight:700, fontSize:13, width:100}}>{u.id}</span>
+                  <Chip tone={u.status==="retired"?"err":u.status==="available"?"warn":u.status==="installed"?"ok":"info"}>{u.status}{u.status==="retired" && " — Hub removed"}</Chip>
+                  <span style={{fontSize:12, color:C.sub}}>truck: <b>{u.truck}</b></span>
+                  <span style={{fontSize:10, color:C.sub, letterSpacing:.3}}>{[["Born",true],["Installed",u.status!=="shipped"],["Billed",locked && u.status!=="shipped"],["Retired",u.status==="retired"]].map(p=>(p[1]?"●":"○")+" "+p[0]).join("  →  ")}</span>
+                  {u.status==="available" && <span style={{fontSize:11, color:C.sub}}>waiting {u.waiting}d <Btn role={role} setRole={setRole} tone="neutral" onClick={()=>week(u.id)}>+1 week</Btn></span>}
+                </div>
+              ))}
+              <Note tone="neutral">Units are read-only here — every case (movement, upgrade, brownfield) starts at Cases → ＋ New Case. Related units show only for the account you're on.</Note>
+            </div>}
+
+            {tab==="returns" && <div>
+              <Card title="RO-311 — excess Return Order" hot={hot("retship")} just={just("retship")} you={youStep("retship")} spot="retship" coach={GUIDE} badge={<Chip tone={retReceived?"ok":shipped?"info":"neutral"}>{retReceived?"processed":shipped?"open":"—"}</Chip>}>
+                {!installClosed && <Note tone="neutral">Executes on the order-case tail, after the install case closes.</Note>}
+                {installClosed && ret.stage===0 && <div style={{fontSize:13}}>
+                  <label style={{marginRight:14}}><input type="checkbox" checked={ret.parts} onChange={e=>setRet(r=>({...r,parts:e.target.checked}))}/> excess parts</label>
+                  <label><input type="checkbox" checked={!!ret.unit || false} onChange={e=>setRet(r=>({...r, unit: e.target.checked ? (units.find(u=>u.status!=="retired")||{}).id||"" : ""}))}/> a unit</label>
+                  {ret.unit!=="" && <span style={{marginLeft:10}}>
+                    <select value={ret.unit} onChange={e=>setRet(r=>({...r,unit:e.target.value}))} style={{fontSize:12, padding:3}}>
+                      {units.filter(u=>u.status!=="retired").map(u=><option key={u.id} value={u.id}>{u.id}</option>)}
+                    </select><Why>NEW FIELD for Amicus to build: the Salesforce Return Order today has no way to capture WHICH unit is returning — unit-vs-parts distinction is essential for Hub removal (unit death, Spec §6.1). This picker is the missing field.</Why>
+                  </span>}
+                  <div style={{marginTop:8}}><Btn role={role} setRole={setRole} need="FSM" tone="ok" disabled={!ret.parts && !ret.unit} title={!ret.parts && !ret.unit ? "Pick parts, a unit, or both" : ""} onClick={advanceReturn}>Request return + upload BOL (FSM)</Btn></div>
+                </div>}
+                {ret.stage>0 && <div style={{margin:"8px 0", display:"flex", alignItems:"center", flexWrap:"wrap", gap:4}}>
+                  {RET_STAGES.map((s,i)=>(<React.Fragment key={s}><Chip tone={i<=ret.stage?"ok":"neutral"} dim={i>ret.stage}>{i<=ret.stage?"✓ ":""}{s}</Chip>{i<RET_STAGES.length-1 && <span style={{color:C.border}}>—</span>}</React.Fragment>))}
+                </div>}
+                {ret.stage>0 && ret.stage<5 && <Btn role={role} setRole={setRole} need={ret.stage<3?"FSM":"Supply Chain"} tone="ok" onClick={advanceReturn}>→ {RET_STAGES[ret.stage+1]}</Btn>}
+              </Card>
+              <Card title="Order-case final close" hot={hot("tbd")} badge={<Chip tone="warn">owner TBD</Chip>}>
+                <Btn role={role} setRole={setRole} disabled tone="neutral" title="Parking lot: Finance or Supply Chain">Final close order case — owner TBD 📌</Btn>
+              </Card>
+            </div>}
+
+            {tab==="sc" && <div>
+              <Card title="Command Center (transitional)" badge={<Chip tone={ccEnabled?"info":"neutral"}>{ccEnabled?"step ON":"bypassed"}</Chip>}>
+                <label style={{fontSize:12}}><input type="checkbox" checked={ccEnabled} onChange={e=>{setCcEnabled(e.target.checked); addLog("System", e.target.checked ? "Command Center step turned ON — every engine routes through it before closing." : "Command Center step turned OFF (toggle) — cases close directly, bypassing CC. — Spec §4.6");}}/> Route Order-install, Movement, and Mid-life through Command Center before closing</label>
+                <Note tone="neutral">First-class, toggleable step (Spec §4.6) — meant to come off once the org trusts the system. Applies everywhere except Supply Chain's own order-closing steps, which never routed through CC.</Note>
+              </Card>
+              <Card title="Supply Chain dashboard — James's tracker, live" hot={hot("labor")||hot("ioclose")||hot("scclose")} just={just("labor","ioclose","scclose")} spot="labor ioclose scclose" coach={GUIDE} badge={<Chip tone={hubTask?"err":scClosed?"ok":"neutral"}>{hubTask?"HUB TASK OPEN":scClosed?"SC ORDER CLOSED":"tracking"}</Chip>}>
+                {!created && <Note tone="neutral">Empty until an order exists.</Note>}
+                {created && <div style={{overflowX:"auto"}}>
+                  <table style={{borderCollapse:"collapse", fontSize:11, width:"100%"}}>
+                    <thead><tr>
+                      {["Order","Requested On-Site","Labor","IO / PO / GL / CC","Est Ship","Actual Ship","Shipment Processed","Fleet","Drop","Labor Processed","Returns Processed","IO Closure","SC Closed","Comments"].map(h=>
+                        <th key={h} style={{padding:"5px 8px", border:`1px solid ${C.border}`, background:"#EAF0F6", whiteSpace:"nowrap", fontSize:11}}>{h}</th>)}
+                    </tr></thead>
+                    <tbody><tr>
+                      <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, fontWeight:700, whiteSpace:"nowrap"}}>ORD-1042</td>
+                      {cell(fields.reqDate, true)}
+                      {cell(fields.labor, true)}
+                      {cell(ioCreated ? "IO-6076812" : "Needed", ioCreated)}
+                      {cell(estDate || "Needed", !!estDate)}
+                      {cell(shipped ? "07/14/26" : "Needed", shipped)}
+                      {cell(hubCreated ? "07/15/26" : "Needed", hubCreated)}
+                      {cell("TLC", true)}
+                      {cell(shipped ? "2 dest" : "—", shipped)}
+                      {cell(fields.labor==="Customer" ? "N/A" : laborDone ? "Done" : "Needed", laborDone || fields.labor==="Customer")}
+                      {cell(retReceived ? fields.fsm.split(" ")[0] + " (FSM)" : "Needed", retReceived)}
+                      {cell(ioClosed ? "Closed" : "Needed", ioClosed)}
+                      {cell(scClosed ? "✓" : "Open", scClosed)}
+                      <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, fontSize:11}}>{!contract && !gateDone ? "Waiting on contract signing." : killed ? "Order killed." : ""}</td>
+                    </tr></tbody>
+                  </table>
+                </div>}
+                <div style={{marginTop:10}}>
+                  {shipped && fields.labor!=="Customer" && !laborDone && <Btn role={role} setRole={setRole} need="Supply Chain" tone="ok" onClick={processLabor}>Process labor ({fields.labor})</Btn>}
+                  {retReceived && ioCreated && !ioClosed && <Btn role={role} setRole={setRole} need="Finance" tone="ok" onClick={closeIO}>IO closure</Btn>}
+                  {retReceived && ioClosed && (laborDone || (created && fields.labor==="Customer")) && !scClosed && <Btn role={role} setRole={setRole} need="Supply Chain" tone="ok" onClick={closeSC}>Close SC order</Btn>}
+                  {hubTask && <Btn role={role} setRole={setRole} need="Supply Chain" tone="err" onClick={createHub}>Create units in Hub — LOUD</Btn>}
+                </div>
+                <Note tone="neutral">SC close requires: shipment processed + labor + returns + IO closure — the "rest of the supply chain documentation" tail. Order-case final close (owner TBD) sits above this.</Note>
+              </Card>
+            </div>}
+
+            {tab==="history" && <div>
+              <Card title="Field History — the real audit trail" badge={<Chip tone="neutral">{fieldHistory.length} changes</Chip>}>
+                <Note tone="neutral">This is a structured, queryable record (old value → new value → who → when) — distinct from the narrative Activity Log. Requested in Phase 0 ("full field history required, who changed what last") and not actually delivered until now.</Note>
+                {!fieldHistory.length && <div style={{fontSize:12, color:C.sub, padding:"10px 0"}}>No tracked field changes yet. Try editing Truck Count or Install Labor on the Order tab, or running a billing decision.</div>}
+                {fieldHistory.length>0 && <div style={{overflowX:"auto"}}>
+                  <table style={{borderCollapse:"collapse", fontSize:12, width:"100%"}}>
+                    <thead><tr>{["Record","Field","Old Value","New Value","Changed By","When"].map(h=><th key={h} style={{padding:"6px 8px", border:`1px solid ${C.border}`, background:"#EAF0F6", textAlign:"left", whiteSpace:"nowrap"}}>{h}</th>)}</tr></thead>
+                    <tbody>{fieldHistory.map(h=>(
+                      <tr key={h.n}>
+                        <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, fontWeight:700, whiteSpace:"nowrap"}}>{h.record}</td>
+                        <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, whiteSpace:"nowrap"}}>{h.field}</td>
+                        <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, color:C.err}}>{String(h.oldVal)}</td>
+                        <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, color:C.ok, fontWeight:600}}>{String(h.newVal)}</td>
+                        <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, whiteSpace:"nowrap"}}><Chip tone="info">{h.who}</Chip></td>
+                        <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, color:C.sub, whiteSpace:"nowrap"}}>{h.when}</td>
+                      </tr>
+                    ))}</tbody>
+                  </table>
+                </div>}
+                <Note tone="warn">Scope note: currently tracks Order-case fields (Truck Count, Install Labor) and billing-status transitions — the two places the spec explicitly calls for auditability. Extending to every editable field (COLI fields, movement-case fields) is straightforward with the same `recordHistory` pattern — flag if you want that widened before this ships to the team.</Note>
+              </Card>
+            </div>}
+
+            {tab==="spec" && <div style={{fontSize:13, lineHeight:1.7}}>
+              <b>v13 — Spec v1.2 coverage:</b>
+              <div>0 · Everything starts at Cases → ＋ New Case picker (New Unit Order · Verifi Install · Verifi Service; the rest greyed like the real picker).</div>
+              <div>1 · All-cases list for the team · 2 · Order spine incl. <b>&gt;40 → Finance</b> gate (recovered) · 3 · Billing review actionable from the thread; No-bill + reason intact · 4 · Real COLIs · 5 · <b>Verifi Service</b> (real Install Reason picklist — "Transfer" killed as physical work, split into non-physical name/account-change COLIs vs physical de/re-install COLIs), real Truck-Install fields, 3rd-party manual TCG + FSM validation gate, Service Ready hold, data-flow "verified" indicator, per-COLI billing-month confirm, schedule-lite, Pending-Finance return + parts manifest, cancel COLI, duplicate guard, case roll-up close · 6 · Returns six-stage stepper · 7 · SC dashboard with <b>IO Closure + SC order close</b> (restored).</div>
+              <Note tone="neutral">📌 Parked: damaged/DOA · full WOLI workflow (this build only adds "blocks billing/lock" — real field-team process still TBD) · cadence · billing object · Customer Onboarding phase · cross-account timing (SF won't know when the unit moves — Hub data flow). Command Center toggle is now built (SC dashboard tab).</Note>
+            </div>}
+          </div>
+        </div>
+
+      </div>
+        </div>
+      </div>{/* ─ end product window ─ */}
+
+      {/* ─ GUIDE NARRATION — the story so far; content is guide, but the capability it stands in for is a real requirement ─ */}
+      <div style={{flex:"1 1 300px", minWidth:280, background:"#20242D", border:"1px solid #3A4050", borderTop:"3px solid #E5397F", borderRadius:10, boxShadow:"0 10px 26px rgba(0,0,0,.35)", display:"flex", flexDirection:"column", minHeight:0}}>
+        <div style={{padding:"8px 12px", display:"flex", alignItems:"center", gap:8, flexWrap:"wrap"}}>
+          <span style={{background:"#E5397F", color:"#fff", borderRadius:4, padding:"2px 8px", fontSize:10, fontWeight:800, letterSpacing:.5}}>GUIDE</span>
+          <span style={{fontSize:12, fontWeight:700, color:"#fff"}}>Narration — the story so far</span>
+          <span style={{marginLeft:"auto", fontSize:11, color:"#B9BEC9"}}>{log.length} handoffs</span>
+        </div>
+        <div style={{margin:"0 8px 8px", background:"#fff", borderRadius:8, padding:"8px 10px", flex:1, minHeight:0, display:"flex", flexDirection:"column"}}>
+          <div style={{fontSize:11, color:C.sub, paddingBottom:6, marginBottom:2, borderBottom:`1px solid ${C.borderLt}`}}>These spec-citation narrations are guide-only — but in the real build this panel becomes the case feed + field history: the end-to-end “no one ever has to ask what’s happening” requirement. The History tab in the window is the real audit-trail piece.</div>
+          {!log.length && <div style={{fontSize:12, color:C.sub, paddingTop:4}}>Nothing yet — the thread starts at ＋ New Case.</div>}
+          <div style={{flex:1, minHeight:0, overflowY:"auto"}}>
+            {log.map(e=>(
+              <div key={e.n} style={{padding:"6px 0", borderBottom:`1px solid ${C.borderLt}`, fontSize:12}}>
+                <div><Chip tone="info">{e.who}</Chip> <span style={{color:C.sub}}>#{e.n}</span></div>
+                <div style={{marginTop:2}}>{e.msg}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      </div>{/* ─ end page flex ─ */}
+      {openColi && renderColiModal()}
+    </div>
+  );
+}
+
+function Root() {
+  const [epoch, setEpoch] = useState(0);
+  return <App key={epoch} onRestart={()=>setEpoch(e=>e+1)} />;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Root />);
+</script>
+</body>
+</html>

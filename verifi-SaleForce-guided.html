@@ -184,7 +184,7 @@ function ColiTable({colis, onOpen}) {
             <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, color:C.link, fontWeight:600, whiteSpace:"nowrap"}}>{c.id}</td>
             <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, whiteSpace:"nowrap"}}>{c.type}</td>
             <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, whiteSpace:"nowrap"}}>{c.unit||"—"}</td>
-            <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, whiteSpace:"nowrap"}}>{c.truck}</td>
+            <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, whiteSpace:"nowrap"}}>{c.truck}{(c.truckStampedAtCreate || c.truckStampedAtComplete) && <div style={{fontSize:10, color:C.sub, lineHeight:1.3}}>@create: <b>{c.truckStampedAtCreate||"—"}</b>{c.truckStampedAtComplete!==undefined && <span> · @complete: <b>{c.truckStampedAtComplete||(c.type.startsWith("De-install")?"— empty confirmed":"— pending")}</b></span>}</div>}</td>
             <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, whiteSpace:"nowrap"}}>{c.by}</td>
             <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, whiteSpace:"nowrap"}}><Chip tone={c.status.includes("Billed")?"ok":c.status.includes("Hold")||c.status.includes("Held")?"warn":c.status.includes("Pending")||c.status==="Requested"?"warn":"info"}>{c.status}</Chip>{c.verified && <span style={{marginLeft:4}}><Chip tone="ok">{c.verified}</Chip></span>}</td>
             <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, fontSize:11, color:C.sub, maxWidth:160}} onClick={e=>e.stopPropagation()}>{docsFor(c.type).length ? docsFor(c.type).map((f,i)=><div key={i} title={f} style={{whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", color:C.link, cursor:"pointer"}}>📄 {f}</div>) : "—"}</td>
@@ -376,7 +376,7 @@ function App({onRestart}) {
   const resumeHold = (i) => { const c=colis[i]; patchColi(i, {status:"Not Started", serviceReady:null}); addLog("Supply Chain", `${c.unit}: rush parts delivered → COLI reopened.`); };
   const sendCC   = () => { setSentCC(true); addLog("FSM", "Sent to COMMAND CENTER (transitional, toggleable). — Spec §4.5–4.6"); };
   const openWoliUnits = () => colis.filter(c => unitHasOpenWoli(c.unit)).map(c=>c.unit);
-  const confirmColiBill = (i, as, month) => { const c = colis[i]; if (!c) return; if (unitHasOpenWoli(c.unit)) { addLog("System", `Blocked — open WOLI on ${c.unit}. Resolve the fix before locking billing on this COLI.`); return; } const m = month || "Jul 2026"; recordHistory("CASE-0101", c.unit + " · CSM Billable Status", "—", `Billable · ${m}`, as || role); patchColi(i, { billable:"yes", billMonth:m }); addLog("CSM", `${c.unit}: billable + month (${m}) confirmed ON THE COLI → this COLI locks forever. — July 15 call (15:23) + Spec §7`); };
+  const confirmColiBill = (i, as, comments) => { const c = colis[i]; if (!c) return; if (unitHasOpenWoli(c.unit)) { addLog("System", `Blocked — open WOLI on ${c.unit}. Resolve the fix before locking billing on this COLI.`); return; } const autoMonth = "Jul 2026"; /* Month auto-pulled from the case, not entered — July 16 review */ const cmt = (comments||"").trim() || "—"; recordHistory("CASE-0101", c.unit + " · CSM Billable Status", "—", `Billable · ${autoMonth}`, as || role); patchColi(i, { billable:"yes", billMonth:autoMonth, billComments:cmt }); addLog("CSM", `${c.unit}: billable confirmed ON THE COLI (month auto=${autoMonth}, comments: "${cmt}") → this COLI locks forever. — July 15+16 review`); };
   const noBillColi = (i, reason) => { const c = colis[i]; if (!c) return; if (unitHasOpenWoli(c.unit)) { addLog("System", `Blocked — open WOLI on ${c.unit}.`); return; } const r = reason || noBillReason; recordHistory("CASE-0101", c.unit + " · CSM Billable Status", "—", `No-bill: ${r}`, role); patchColi(i, { billable:"no-pending", noBillReason:r }); addLog("CSM", `${c.unit}: NO-BILL requested ("${r}") — needs RM approval (Finance too if the no-billed set exceeds 5 units). — Spec v1.3`); };
   const noBillSet = (pred) => colis.map((c,j)=>({c,j})).filter(x=>pred(x.c));
   const rmNoBill = () => { const pend = noBillSet(c=>c.billable==="no-pending"); if (!pend.length) return; if (pend.length>5) { pend.forEach(({j})=>patchColi(j,{billable:"no-pending-fin"})); addLog("Regional Manager", `No-bill approved by RM for ${pend.length} COLIs → >5 units, escalates to Finance for second approval. — Spec v1.3`); } else { pend.forEach(({c,j})=>{ recordHistory("CASE-0101", c.unit+" · CSM Billable Status", "No-bill: "+(c.noBillReason||noBillReason), "Non-billable (RM approved)", "Regional Manager"); patchColi(j,{billable:"no-ok"}); }); addLog("Regional Manager", `No-bill APPROVED by RM → ${pend.map(x=>x.c.unit).join(", ")} lock as NON-BILLABLE. — Spec v1.3`); } };
@@ -638,7 +638,7 @@ function App({onRestart}) {
       }
       if (c.status === "Submitted – Pending FSM" && unitHasOpenWoli(c.unit)) return { who:"FSM", text:`${m.id} · ${c.unit}: open WOLI is blocking further progress — resolve the fix.`, tone:"err", roles:["FSM"], label:"Resolve WOLI", run: jump("cases", ()=>woliResolve(c.unit)), tab:"cases", key:"mid-"+c.id };
       if (c.status === "Submitted – Pending FSM") return { who:"FSM", text:`${m.id} · ${c.unit}: validate (3rd-party/customer stage-gate).`, tone:"info", roles:["FSM"], label:"Validate", run: jump("cases", ()=>midValidate(m.id,c.id)), tab:"cases", key:"mid-"+c.id };
-      if (c.status === "Work Complete") return { who:"CSM", text:`${m.id} · ${c.unit}: confirm billable + month → lock.`, tone:"purp", roles:["CSM"], label:"Confirm billable + month", run: jump("cases", ()=>midBillConfirm(m.id,c.id,"07/2026")), tab:"cases", key:"mid-"+c.id };
+      if (c.status === "Work Complete") return { who:"CSM", text:`${m.id} · ${c.unit}: confirm billable (month auto from case; comments optional) → lock.`, tone:"purp", roles:["CSM"], label:"Confirm billable", run: jump("cases", ()=>midBillConfirm(m.id,c.id,"")), tab:"cases", key:"mid-"+c.id };
     }
     return null;
   };
@@ -666,11 +666,11 @@ function App({onRestart}) {
         const list = coliListFor(c);
         if (c.checks < list.length) return { who:"Crew ("+c.by+")", text:`${m.id} · ${c.unit}: complete the ${list.length}-item ${c.type} checklist.`, tone:"info", roles:["Crew"], label:"Check all", run: jump("cases", ()=>patchColiM(m.id,c.id,{checks:list.length})), tab:"cases", key:"mv-"+c.id };
         if (!c.ready) return { who:"Crew ("+c.by+")", text:`${m.id} · ${c.unit}: set System Ready.`, tone:"info", roles:["Crew"], label:"Set Ready = Yes", run: jump("cases", ()=>patchColiM(m.id,c.id,{ready:"Yes"})), tab:"cases", key:"mv-"+c.id };
-        return { who:"Crew ("+c.by+")", text:`${m.id} · ${c.unit}: checklist + ready — complete the ${c.type}.`, tone:"info", roles:["Crew"], label:"Complete", run: jump("cases", ()=>moveComplete(m.id,c.id,"")), tab:"cases", key:"mv-"+c.id };
+        return { who:"Crew ("+c.by+")", text:`${m.id} · ${c.unit}: Crew signs off the ${c.type} checklist — hit Complete.`, tone:"info", roles:["Crew"], label:"Complete as Crew", run: jump("cases", ()=>moveComplete(m.id,c.id,"")), tab:"cases", key:"mv-"+c.id };
       }
       if (c.status === "Submitted – Pending FSM" && unitHasOpenWoli(c.unit)) return { who:"FSM", text:`${m.id} · ${c.unit}: open WOLI is blocking further progress — resolve the fix.`, tone:"err", roles:["FSM"], label:"Resolve WOLI", run: jump("cases", ()=>woliResolve(c.unit)), tab:"cases", key:"mv-"+c.id };
       if (c.status === "Submitted – Pending FSM") return { who:"FSM", text:`${m.id} · ${c.unit}: validate (3rd-party/customer stage-gate).`, tone:"info", roles:["FSM"], label:"Validate", run: jump("cases", ()=>moveValidate(m.id,c.id)), tab:"cases", key:"mv-"+c.id };
-      if (c.status === "Work Complete") return { who:"CSM", text:`${m.id} · ${c.unit}: confirm billable + month → lock.`, tone:"purp", roles:["CSM"], label:"Confirm billable + month", run: jump("cases", ()=>moveBillConfirm(m.id,c.id,"07/2026")), tab:"cases", key:"mv-"+c.id };
+      if (c.status === "Work Complete") return { who:"CSM", text:`${m.id} · ${c.unit}: confirm billable (month auto from case; comments optional) → lock.`, tone:"purp", roles:["CSM"], label:"Confirm billable", run: jump("cases", ()=>moveBillConfirm(m.id,c.id,"")), tab:"cases", key:"mv-"+c.id };
       if (c.status === "Awaiting SC receipt") return { who:"Supply Chain", text:`${m.id} · ${c.unit}: confirm receipt → remove in Hub.`, tone:"info", roles:["Supply Chain"], label:"Confirm receipt", run: jump("cases", ()=>moveReceipt(m.id,c.id)), tab:"cases", key:"mv-"+c.id };
     }
     if (m.status === "In Progress" && !m.schedule && m.colis.some(c=>c.status==="Ready to Dispatch")) return { who:"FSM or CSM", text:`${m.id}: confirm schedule-lite (team &amp; open-date) before dispatch.`, tone:"info", roles:["FSM","CSM"], label:"Confirm team & open-date", run: jump("cases", ()=>moveSchedule(m.id, TERRITORY[m.account].loc, "07/18/26", TERRITORY[m.account].fst+" team")), tab:"cases", key:"mv-sched-"+m.id };
@@ -732,7 +732,7 @@ function App({onRestart}) {
     ["Installation Specialist", imConfirmed],
     [gateNeeded ? "Contract / RM / Fin gate" : "Contract gate (skipped)", gateNeeded ? gateDone : null],
     ["Supply Chain · IO", shipped],
-    ["Units born · Hub", hubCreated],
+    ["Units created (Hub)", hubCreated],
     ["Install & billing", installClosed],
     ["Returns · labor · IO closure", retReceived && ioClosed && (laborDone || fields.labor==="Customer")],
     ["SC order closed", scClosed],
@@ -814,9 +814,10 @@ function App({onRestart}) {
         </div>
         {c.status.startsWith("Validated") && (sentCC || !ccEnabled) && !c.billable && <div style={{marginTop:10, paddingTop:8, borderTop:`1px solid ${C.borderLt}`, display:"flex", alignItems:"center", gap:10, flexWrap:"wrap", fontSize:12}}>
           <b>CSM billing — on this COLI:</b>
-          <span>Month <input id={"ob-"+c.unit} defaultValue="Jul 2026" style={{width:74, padding:3, border:`1px solid ${C.border}`, borderRadius:4, fontSize:12}}/></span>
-          <Btn role={role} setRole={setRole} need="CSM" tone="purp" onClick={()=>{confirmColiBill(i, null, document.getElementById("ob-"+c.unit).value); close();}}>Confirm billable + month</Btn>
-          <Why>Billing lives ON THE COLI — changed per the July 15 call (15:23, Ariel: "that should actually be on the COLI, not on the case") and Spec §7. Confirming locks THIS COLI forever; the install case locks when every COLI is resolved. Ariel: veto here if this grain is wrong.</Why>
+          <span style={{display:"inline-flex", alignItems:"center", gap:4, fontSize:12, color:C.sub}}>Month <Chip tone="ok">auto · from case</Chip></span>
+          <input id={"ob-"+c.unit} placeholder="Billing comments (why this call)" style={{minWidth:180, padding:3, border:`1px solid ${C.border}`, borderRadius:4, fontSize:12}}/>
+          <Btn role={role} setRole={setRole} need="CSM" tone="purp" onClick={()=>{confirmColiBill(i, null, document.getElementById("ob-"+c.unit).value); close();}}>Confirm billable</Btn>
+          <Why>Billing lives ON THE COLI (July 15 call, 15:23) and the CSM types COMMENTS about why they made the call — month is auto-pulled from the case, not entered (Ariel, July 16 review). Confirming locks THIS COLI forever; the install case locks when every COLI is resolved.</Why>
           <Btn role={role} setRole={setRole} need="CSM" tone="err" onClick={()=>{noBillColi(i); close();}}>No-bill</Btn>
           <select value={noBillReason} onChange={e=>setNoBillReason(e.target.value)} style={{fontSize:11, padding:3}}>
             <option>Replacement unit — on us</option>
@@ -858,6 +859,7 @@ function App({onRestart}) {
           <div style={{marginTop:8, display:"flex", alignItems:"center", gap:6, flexWrap:"wrap"}}>
             <input placeholder="Parts consumed (e.g. Wire harness ×1)" id={"pcm-"+c.id} style={{fontSize:12, padding:4, border:`1px solid ${C.border}`, borderRadius:4, width:190}}/>
             <Btn role={role} setRole={setRole} need="Crew" tone="ok" disabled={!moveColiReady(c) && c.ready!=="No"} onClick={()=>{moveComplete(m.id,c.id,document.getElementById("pcm-"+c.id).value); close();}}>{c.type} checklist — Complete</Btn>
+            {role !== "Crew" && moveColiReady(c) && <span style={{fontSize:11, color:C.warn, marginLeft:6}}>⤴ Crew signs off. Switch under “Acting as”, or let ▶ Next do it.</span>}
           </div>
         </div>}
         {c.status==="Submitted – Pending FSM" && (unitHasOpenWoli(c.unit) ? <Btn role={role} setRole={setRole} need="FSM" tone="err" onClick={()=>{woliResolve(c.unit);}}>Resolve WOLI</Btn> : <React.Fragment>
@@ -910,6 +912,7 @@ function App({onRestart}) {
           <div style={{marginTop:8, display:"flex", alignItems:"center", gap:6, flexWrap:"wrap"}}>
             <input placeholder="Parts consumed" id={"mpc2-"+c.id} style={{fontSize:12, padding:4, border:`1px solid ${C.border}`, borderRadius:4, width:170}}/>
             <Btn role={role} setRole={setRole} need="Crew" tone="ok" disabled={!(c.checks===CHECKLIST.length && c.ready==="Yes") && c.ready!=="No"} onClick={()=>{midComplete(m.id,c.id,document.getElementById("mpc2-"+c.id).value); close();}}>Complete</Btn>
+            {role !== "Crew" && c.checks===CHECKLIST.length && c.ready==="Yes" && <span style={{fontSize:11, color:C.warn, marginLeft:6}}>⤴ Crew signs off. Switch under “Acting as”, or let ▶ Next do it.</span>}
           </div>
         </div>}
         {c.status==="On Hold — Not Ready" && <React.Fragment><Note tone="warn">Not billable · FSM reminder active · optional rush parts.</Note><Btn role={role} setRole={setRole} need="Supply Chain" tone="warn" onClick={()=>{midResumeHold(m.id,c.id); close();}}>Rush parts delivered — reopen</Btn></React.Fragment>}
@@ -960,7 +963,7 @@ function App({onRestart}) {
       </div>
 
       {created && <div style={{padding:"3px 16px 5px"}}>
-        <div style={{fontSize:10, color:"#8A90A0", marginBottom:4, display:"flex", alignItems:"center", gap:6, flexWrap:"wrap", fontWeight:700, letterSpacing:.6}}>STORY PROGRESS — ORD-1042 {killed && <Chip tone="err">KILLED</Chip>}<Why>In the real build this becomes a Salesforce Path on the Order case — a stage bar Amicus builds, with stages like Draft &amp; dual approval → Installation Specialist → Contract/RM/Finance gate → Supply Chain · IO → Units born (Hub) → Install &amp; billing → Returns · IO closure → SC order closed → Final close. Two bits here are guide-only, NOT stage names: “(skipped)” narrates a conditional this order didn’t hit, and “owner TBD” is an open parking-lot question (who closes the order case — Finance or SC?), still undecided in the spec.</Why></div>
+        <div style={{fontSize:10, color:"#8A90A0", marginBottom:4, display:"flex", alignItems:"center", gap:6, flexWrap:"wrap", fontWeight:700, letterSpacing:.6}}>STORY PROGRESS — ORD-1042 {killed && <Chip tone="err">KILLED</Chip>}<Why>In the real build this becomes a Salesforce Path on the Order case — a stage bar Amicus builds, with stages like Draft &amp; dual approval → Installation Specialist → Contract/RM/Finance gate → Supply Chain · IO → Units created (Hub) → Install &amp; billing → Returns · IO closure → SC order closed → Final close. Two bits here are guide-only, NOT stage names: “Units created (Hub)” is a rename from “Units born” per July 16 review — Ariel: "consider naming change" — open to a better label from her. “(skipped)” narrates a conditional this order didn’t hit, and “owner TBD” is an open parking-lot question (who closes the order case — Finance or SC?), still undecided in the spec.</Why></div>
         <div style={{display:"flex", alignItems:"center", flexWrap:"wrap", gap:4}}>
           {spine.map(([label, done], i) => (
             <React.Fragment key={label}>
@@ -1040,7 +1043,7 @@ function App({onRestart}) {
                   <span style={{fontSize:12, color:C.sub}}>* Account</span>
                   <select value={draft.customer} onChange={e=>{const v=e.target.value; setDraft(d=>({...d,customer:v})); addLog("System", `Account "${v}" selected → auto-pulled ${TERRITORY[v].fsm} + ${TERRITORY[v].fst} + ship-to location.`);}} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4}}>{Object.keys(TERRITORY).map(a=><option key={a}>{a}</option>)}</select>
                   <span style={{fontSize:12, color:C.sub}}>Location (ship-to)</span>
-                  <span style={{fontSize:12}}>{TERRITORY[draft.customer].loc}<Why>Ship-to auto-fills from the selected account — Amicus builds this as a lookup, not a typed field.</Why></span>
+                  <span style={{display:"inline-flex", alignItems:"center", gap:6, fontSize:12}}><select value={draft.locKind||"plant"} onChange={e=>setDraft(d=>({...d,locKind:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, fontSize:12}}><option value="plant">Plant location</option><option value="ship">Ship location</option><option value="custom">Other on account</option></select> <span>{TERRITORY[draft.customer].loc}</span><Why author="Spec note" initial="S">Ship-to defaults to the account’s plant location BUT the CSM must be able to change it to a ship location on the account, not just plants (Ariel, July 16 review). Amicus: lookup filtered by account, with plant/ship/other kinds.</Why></span>
                   <span style={{fontSize:12, color:C.sub}}>Primary FSM · Assigned FST</span>
                   <span style={{fontSize:12}}>{TERRITORY[draft.customer].fsm} · {TERRITORY[draft.customer].fst}<Why>FSM + Assigned FST are auto-pulled from the account/location territory — never typed by the creator. Build as territory-driven assignment (Spec §2.2, v1.4).</Why></span>
                   <span style={{fontSize:12, color:C.sub}}>Delivery contact / phone</span>
@@ -1048,7 +1051,7 @@ function App({onRestart}) {
                   <span style={{fontSize:12, color:C.sub}}>Liftgate · receiving hours</span>
                   <span style={{fontSize:12}}><label><input type="checkbox" checked={draft.liftgate} onChange={e=>setDraft(d=>({...d,liftgate:e.target.checked}))}/> liftgate required</label> · <input value={draft.hours} onChange={e=>setDraft(d=>({...d,hours:e.target.value}))} style={{padding:4, border:`1px solid ${C.border}`, borderRadius:4, width:110}} /></span>
                   <span style={{fontSize:12, color:C.sub}}>* Truck count</span>
-                  <input type="number" value={draft.trucks} onChange={e=>setDraft(d=>({...d,trucks:+e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:110}} />
+                  <span style={{display:"inline-flex", alignItems:"center", gap:6}}><input type="number" value={draft.trucks} disabled={draft.trucksUnknown} onChange={e=>setDraft(d=>({...d,trucks:+e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:80, background:draft.trucksUnknown?"#F4F4F4":"#fff"}} /><label style={{fontSize:11, color:"#666"}}><input type="checkbox" checked={!!draft.trucksUnknown} onChange={e=>setDraft(d=>({...d,trucksUnknown:e.target.checked}))}/> unknown at order</label><Why author="Spec note" initial="S">Truck # at ordering can be known OR unknown — Ariel (July 16 review). Known: entered now, stamped at COLI create, compared to stamp at complete (data-flow verify). Unknown: field stays blank at order and gets set later when SC/FSM confirms; the stamped-at-complete comparison then anchors to whatever was set. Amicus: nullable at order, required by the time COLI moves to Work Complete.</Why></span>
                   <span style={{fontSize:12, color:C.sub}}>* System type</span>
                   <select value={draft.system} onChange={e=>setDraft(d=>({...d,system:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4}}>{SYSTEMS.map(s=><option key={s}>{s}</option>)}</select>
                   <span style={{fontSize:12, color:C.sub}}>* Install labor (proposed)</span>
@@ -1056,7 +1059,7 @@ function App({onRestart}) {
                   <span style={{fontSize:12, color:C.sub}}>* Desired install / on-site</span>
                   <input value={draft.reqDate} onChange={e=>setDraft(d=>({...d,reqDate:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:130}} />
                   <span style={{fontSize:12, color:C.sub}}>Lease / Sale · Priority</span>
-                  <span><select value={draft.model} onChange={e=>setDraft(d=>({...d,model:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:110}}><option>Lease</option><option>Sale</option></select> <select value={draft.priority} onChange={e=>setDraft(d=>({...d,priority:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:110}}><option>Low</option><option>Medium</option><option>High</option></select></span>
+                  <span style={{display:"inline-flex", alignItems:"center", gap:6}}><span style={{fontSize:13, fontWeight:700}}>{draft.model}</span><Chip tone="ok">from contract on account</Chip><Why author="Spec note" initial="S">Lease vs Sale is NOT a dropdown — it reads from the contract on the account (Ariel, July 16 review). Amicus: lookup off the account’s active contract, not a picker on the form.</Why> <select value={draft.priority} onChange={e=>setDraft(d=>({...d,priority:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:110}}><option>Low</option><option>Medium</option><option>High</option></select></span>
                 </div>
                 <div style={{marginTop:12, border:`1px solid ${C.border}`, borderRadius:5}}>
                   <div style={{padding:"6px 10px", background:"#EAF0F6", fontSize:12, fontWeight:700}}>Parts order sheet — quantities per configuration (the 1:1 sheet)</div>

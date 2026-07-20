@@ -3123,7 +3123,7 @@ function dtBuildLifespanHTML(targetUnitId, linkedTruckNum, showOpenTruckLink) {
               ${icon}
               <span class="dt-ls-comp-name${isRemoved ? ' dim' : ''}">${comp.name}</span>
             </div>
-            <div class="dt-ls-comp-mac${isRemoved ? ' dim' : ''}">${current.mac}</div>
+            <div class="dt-ls-comp-mac${isRemoved ? ' dim' : ''}">${current.mac}${!isRemoved ? dcAgeInfo(current.mac) : ''}</div>
           </div>
           <div style="display:flex;align-items:center;gap:12px;">
             ${changesTxt}

@@ -1916,7 +1916,7 @@ function udRenderLifespan() {
               ${icon}
               <div class="ls-comp-name" style="${nameColor}">${comp.name}</div>
             </div>
-            <div style="font-size:12px;${macColor}letter-spacing:-0.2px;font-family:monospace;padding-left:18px;">${current.mac}</div>
+            <div style="font-size:12px;${macColor}letter-spacing:-0.2px;font-family:monospace;padding-left:18px;">${current.mac}${!isRemoved ? dcAgeInfo(current.mac) : ''}</div>
           </div>
           <div style="display:flex;align-items:center;gap:8px;">
             ${changesTxt}

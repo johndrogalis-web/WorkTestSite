@@ -562,3 +562,33 @@ var CC_TRUCKS = [
       { name:'WDS',         dot:'#d70100', state:'alarm', evt:'Alarm · Hydraulic' },
     ]},
 ];
+
+/* ============================================================
+   Component "active for" duration — Unit Lifespan ⓘ (v6.8.55)
+   Prototype-only. Seeded off the serial so each part shows a
+   stable, realistic duration (never re-randomizes on re-render,
+   and the same serial reads the same on any unit it lands on).
+   Range 5..1460 days ≈ 1 week to 4 years (capped at 4 years).
+   Rounding: single coarsest unit, always rounded UP — never a
+   compound "1 yr 3 mo". Never states time remaining.
+   ============================================================ */
+function dcActiveDays(serial) {
+  let h = 2166136261;
+  const s = String(serial || '');
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  h = h >>> 0;
+  return 5 + (h % 1456);              /* 5 .. 1460 days */
+}
+function dcActiveLabel(serial) {
+  const d = dcActiveDays(serial);
+  let t;
+  if (d <= 7)        t = d + (d === 1 ? ' day' : ' days');
+  else if (d <= 28)  { const w = Math.ceil(d / 7);      t = w + (w === 1 ? ' week'  : ' weeks');  }
+  else if (d <= 364) { const m = Math.ceil(d / 30.44);  t = m + (m === 1 ? ' month' : ' months'); }
+  else               { const y = Math.ceil(d / 365.25); t = y + (y === 1 ? ' year'  : ' years');  }
+  return 'Active for ' + t;
+}
+function dcAgeInfo(serial) {
+  const label = dcActiveLabel(serial);
+  return `<span class="dc-agei" tabindex="0" aria-label="${label}"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.4" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="5.15" r="0.95" fill="currentColor"/><path d="M8 7.4v4.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span class="dc-agei-tip">${label}</span></span>`;
+}

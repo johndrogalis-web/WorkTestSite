@@ -43,8 +43,10 @@ const ROLES = [
 const CHECKLIST = [
   "Air system leak-free (OEM + Verifi)", "Water system leak-free (OEM + Verifi)", "Hydraulic connections leak-free",
   ">5 satellites", "Connected to cellular + backend", "Hydraulic charge/discharge correct",
-  "Drum speeds registering", "Fluids adding accurately (WNM)", "All connections tightened",
-  "Cables/hoses protected from abrasion", "Truck cleaned of install debris", "All documentation complete",
+  "Drum speeds registering", "Concrete temperature registering", "Fluids adding accurately (WNM)",
+  "All connections tightened and greased", "Electrical connections tightened and greased",
+  "Cables/hoses protected from abrasion", "Truck and work area cleared of install debris",
+  "Work area cleaned of debris and garbage", "All documentation complete",
 ];
 const DEINSTALL_CHECKLIST = [
   "System powered down safely", "Unit removed from truck", "Components bagged & labeled for return",
@@ -334,7 +336,7 @@ function App({onRestart}) {
   const reapprove  = (f, r) => setChanged(c => { const e={...c[f],[r]:true}; const n={...c}; if(e.CSM&&e.FSM){delete n[f]; addLog("System",`"${f}" re-approved by both — cleared.`);} else n[f]=e; return n; });
   const reapproveAll = (as) => pendingFields.forEach(f => reapprove(f, as || role)); // as = role guided Next is acting as (setRole is async, closures see stale role)
   const approveOrder = () => { setDualApproved(true); addLog(approver,"Reviewed whole order line-by-line and approved (dual approval complete). — Spec §2.3"); };
-  const killOrder  = () => { setKilled(true); addLog(role,"Order KILLED — terminable by design. — Spec §2.7"); };
+  const killOrder  = () => { setKilled(true); addLog(role,"Order CANCELLED — terminable by design. — Spec §2.7"); };
   const imConfirm  = () => { setImConfirmed(true); addLog(hasIM?"Installation Specialist":"Supply Chain", (hasIM?"Installation Specialist":"Supply Chain (fallback — FSM+CSM+SC notified)") + ` confirmed labor (${fields.labor}) and crew: ${crew}. → Released to Supply Chain. — Spec §2.5`); };
   const imOwnEdit  = () => { setCrew("Ramos Field Services (3rd party)"); addLog("Installation Specialist","Updated own field (crew/schedule) → notify-only. — Spec §2.5"); };
   const imWeek     = () => addLog("System","1 idle week → weekly escalation reminder to Installation Specialist. 📌 cadence w/ SC. — Spec §2.5");
@@ -572,7 +574,7 @@ function App({onRestart}) {
   const jump = (t, fn) => (...a) => { setTab(t); if (fn) fn(...a); }; // args pass through — guided Next hands the acting role to role-sensitive steps
   const nextOrderStep = () => {
     if (!created) return null; // no order yet — let mid/move cases surface, or fall through to "create" at the very end
-    if (killed) return { who:"—", text:"Order killed. ⟲ Restart to run again.", tone:"err", key:"killed" };
+    if (killed) return { who:"—", text:"Order cancelled. ⟲ Restart to run again.", tone:"err", key:"killed" };
     if (pendingFields.length) { const needR = ["CSM","FSM"].filter(r => pendingFields.some(f => !changed[f][r])); return { who:(needR.join(" & ")||"CSM & FSM"), text:`Re-approve highlighted field(s): ${pendingFields.join(", ")}. Both CSM and FSM must sign off — one role per step.`, tone:"warn", roles:(needR.length?needR:["CSM","FSM"]), label:"Re-approve as " + (needR[0]||"CSM"), run: jump("order", reapproveAll), tab:"order", key:"fields" }; }
     if (!dualApproved) return { who:approver, text:`Review the whole order line-by-line and approve (creator was ${creator}).`, tone:"info", roles:[approver], label:"Approve whole order", run: jump("order", approveOrder), tab:"order", key:"approve" };
     if (!imConfirmed) return { who:hasIM?"Installation Specialist":"Supply Chain (fallback)", text:"Confirm labor type & crew.", tone:"info", roles:[hasIM?"Installation Specialist":"Supply Chain"], label:"Confirm labor & crew", run: jump("order", imConfirm), tab:"order", key:"im" };
@@ -594,7 +596,7 @@ function App({onRestart}) {
       const ni = colis.findIndex(c=>c.status==="Not Started");
       if (ni>=0) { const c=colis[ni];
         if (c.checks<CHECKLIST.length) return { who:"Crew ("+crewLabel+")", text:`Complete ${c.unit}'s 12-item checklist (Check All to fast-forward).`, tone:"info", roles:["Crew"], label:"Check all — " + c.unit, run: jump("install", ()=>patchColi(ni,{checks:CHECKLIST.length, open:true})), tab:"install", key:"coli", unit: c.unit };
-        if (!coliReady(c) && c.serviceReady!=="No") return { who:"Crew ("+crewLabel+")", text:`${c.unit}: mark Service Ready = Yes + Equipment Ship Back (closure requirements).`, tone:"info", roles:["Crew"], label:"Ready + Ship Back", run: jump("install", ()=>patchColi(ni,{serviceReady:"Yes", shipBack:true, open:true})), tab:"install", key:"coli" };
+        if (!coliReady(c) && c.serviceReady!=="No") return { who:"Crew ("+crewLabel+")", text:`${c.unit}: mark Service Ready = Yes + confirm equipment gathered on pallet (closure requirements).`, tone:"info", roles:["Crew"], label:"Ready + Equipment", run: jump("install", ()=>patchColi(ni,{serviceReady:"Yes", shipBack:true, open:true})), tab:"install", key:"coli" };
         return { who:"Crew ("+crewLabel+")", text:`Submit ${c.unit}.`, tone:"info", roles:["Crew"], label:"Submit COLI " + c.unit, run: jump("install", ()=>submitColi(ni)), tab:"install", key:"coli" }; }
     }
     if (!locked) { const owi = colis.find(c=>unitHasOpenWoli(c.unit)); if (owi) return { who:"FSM", text:`${owi.unit}: open WOLI is blocking billing/lock — resolve the fix.`, tone:"err", roles:["FSM"], label:"Resolve WOLI — "+owi.unit, run: jump("install", ()=>woliResolve(owi.unit)), tab:"install", key:"woli" }; }
@@ -681,7 +683,7 @@ function App({onRestart}) {
     // Guided modal walkthrough: first unit is done by hand inside the record — the tour waits.
     if (openColi && openColi.guided && openColi.engine==="order") {
       const c = colis.find(x=>x.unit===openColi.coliId);
-      if (c && openColi.mode==="coli" && c.status!=="Pending FSM" && !c.status.startsWith("Validated")) return { who:"You", text:"Inside " + c.unit + ": Check All (12 items), set Service Ready = Yes + Equipment Shipped Back, then Submit COLI.", tone:"warn", manual:true, tab:"install", key:"modal-guided" };
+      if (c && openColi.mode==="coli" && c.status!=="Pending FSM" && !c.status.startsWith("Validated")) return { who:"You", text:"Inside " + c.unit + ": Check All (" + CHECKLIST.length + " items), set Service Ready = Yes + confirm equipment gathered on pallet, then Submit COLI.", tone:"warn", manual:true, tab:"install", key:"modal-guided" };
       if (c && openColi.mode==="val" && c.status==="Pending FSM") return { who:"You", text:"You're the FSM inside " + c.unit + " — hit Validate (check & fix). Problems become a WOLI on the unit.", tone:"warn", manual:true, tab:"install", key:"modal-guided" };
       if (c && openColi.mode==="bill" && !c.billable) return { who:"You", text:"You're the CSM inside " + c.unit + " — confirm billable + month ON THE COLI (Ariel's rule), or No-bill with a reason. This COLI locks forever on confirm.", tone:"warn", manual:true, tab:"install", key:"modal-guided" };
     }
@@ -780,7 +782,7 @@ function App({onRestart}) {
       const c = colis[i];
       return <Modal title={coliId + " — Install COLI"} badges={[<Chip key="s" tone={c.status.startsWith("Validated")?"ok":c.status==="Pending FSM"?"warn":c.status.startsWith("On Hold")?"err":"neutral"}>{c.status}</Chip>, coliBillResolved(c) && <Chip key="l" tone="purp">🔒 {c.billable==="yes" ? "billed · " + c.billMonth : "non-billable"}</Chip>]} onClose={close}>
         {openColi.guided && <div style={{display:"flex", justifyContent:"flex-end", marginBottom:4}}><Why key={"modal-"+openColi.mode+"-"+coliId} author="Guided tour" initial="T" defaultOpen>
-          <b style={{color:C.warn}}>✋ Your move — inside the unit record.</b> {openColi.mode==="coli" ? "Install work really lives here: tick the 12 checklist items (Check All fast-forwards), set Service Ready = Yes + Equipment Shipped Back, then Submit COLI." : openColi.mode==="bill" ? "Billing lives ON THE COLI (July 15 call, 15:23): confirm billable + month here — this unit locks forever. The case locks when every COLI is resolved." : "FSM validation happens here, inside the record: hit Validate (check & fix) — problems become a WOLI on the unit."} <span style={{display:"block", marginTop:4, color:C.sub}}>Remaining units fast-forward automatically after this one.</span>
+          <b style={{color:C.warn}}>✋ Your move — inside the unit record.</b> {openColi.mode==="coli" ? "Install work really lives here: tick the " + CHECKLIST.length + " checklist items (Check All fast-forwards), set Service Ready = Yes + confirm equipment gathered on pallet, then Submit COLI." : openColi.mode==="bill" ? "Billing lives ON THE COLI (July 15 call, 15:23): confirm billable + month here — this unit locks forever. The case locks when every COLI is resolved." : "FSM validation happens here, inside the record: hit Validate (check & fix) — problems become a WOLI on the unit."} <span style={{display:"block", marginTop:4, color:C.sub}}>Remaining units fast-forward automatically after this one.</span>
         </Why></div>}
         <FieldGrid rows={[
           ["Truck #",c.truck],["TCG/Unit #",c.tcg],["Mixer Make",c.mixer],["WDS #",c.wds],["Propulsion",c.prop],["System",fields.system],
@@ -802,7 +804,7 @@ function App({onRestart}) {
             <label style={{marginLeft:6}}><input type="radio" checked={c.serviceReady==="No"} onChange={()=>patchColi(i,{serviceReady:"No"})} disabled={c.status!=="Not Started"}/> No</label>
             <Why>System Service Ready is tied to billing and the service lifecycle — Ready = No means not billable, FSM gets a reminder, and rush parts can be raised (Spec v1.1).</Why>
           </span>
-          <label style={{fontSize:12}}><input type="checkbox" checked={c.shipBack} onChange={e=>patchColi(i,{shipBack:e.target.checked})} disabled={c.status!=="Not Started"}/> Equipment shipped back</label>
+          <label style={{fontSize:12}}><input type="checkbox" checked={c.shipBack} onChange={e=>patchColi(i,{shipBack:e.target.checked})} disabled={c.status!=="Not Started"}/> All remaining equipment gathered and placed on pallet in designated area<Why author="Spec note" initial="S">Reworded July 21 review so crews/3rd-party know to pile leftover equipment, not literally ship it. PENDING (medium): this belongs on the CASE level, not the COLI — the actual ship-back is one shipment at the end of all installs (Bruschi), done by FSM. Move in the next pass.</Why></label>
         </div>
         <div style={{marginTop:10}}>
           {c.status==="Not Started" && <Btn role={role} setRole={setRole} need="Crew" tone="ok" disabled={!coliReady(c) && c.serviceReady!=="No"} onClick={()=>{submitColi(i); close();}}>Submit COLI</Btn>}
@@ -963,7 +965,7 @@ function App({onRestart}) {
       </div>
 
       {created && <div style={{padding:"3px 16px 5px"}}>
-        <div style={{fontSize:10, color:"#8A90A0", marginBottom:4, display:"flex", alignItems:"center", gap:6, flexWrap:"wrap", fontWeight:700, letterSpacing:.6}}>STORY PROGRESS — ORD-1042 {killed && <Chip tone="err">KILLED</Chip>}<Why>In the real build this becomes a Salesforce Path on the Order case — a stage bar Amicus builds, with stages like Draft &amp; dual approval → Installation Specialist → Contract/RM/Finance gate → Supply Chain · IO → Units created (Hub) → Install &amp; billing → Returns · IO closure → SC order closed → Final close. Two bits here are guide-only, NOT stage names: “Units created (Hub)” is a rename from “Units born” per July 16 review — Ariel: "consider naming change" — open to a better label from her. “(skipped)” narrates a conditional this order didn’t hit, and “owner TBD” is an open parking-lot question (who closes the order case — Finance or SC?), still undecided in the spec.</Why></div>
+        <div style={{fontSize:10, color:"#8A90A0", marginBottom:4, display:"flex", alignItems:"center", gap:6, flexWrap:"wrap", fontWeight:700, letterSpacing:.6}}>STORY PROGRESS — ORD-1042 {killed && <Chip tone="err">CANCELLED</Chip>}<Why>In the real build this becomes a Salesforce Path on the Order case — a stage bar Amicus builds, with stages like Draft &amp; dual approval → Installation Specialist → Contract/RM/Finance gate → Supply Chain · IO → Units created (Hub) → Install &amp; billing → Returns · IO closure → SC order closed → Final close. Two bits here are guide-only, NOT stage names: “Units created (Hub)” is a rename from “Units born” per July 16 review — Ariel: "consider naming change" — open to a better label from her. “(skipped)” narrates a conditional this order didn’t hit, and “owner TBD” is an open parking-lot question (who closes the order case — Finance or SC?), still undecided in the spec.</Why></div>
         <div style={{display:"flex", alignItems:"center", flexWrap:"wrap", gap:4}}>
           {spine.map(([label, done], i) => (
             <React.Fragment key={label}>
@@ -1022,7 +1024,7 @@ function App({onRestart}) {
             {tab==="cases" && <div>
               <Card title={"All cases (" + ((created?1:0)+(colis.length?1:0)+midCases.length+moveCases.length) + ") — the team's one view"} hot={hot("create")} badge={<Btn role={role} setRole={setRole} tone="ok" onClick={openPicker}>＋ New Case</Btn>}>
                 {!created && !picker && <div style={{textAlign:"center", padding:"20px", color:C.sub, fontSize:13}}>No cases yet. Everything — orders, installs, upgrades, movements — starts at ＋ New Case.</div>}
-                {created && caseRow("ORD-1042","New Unit Order", fields.customer + " · " + fields.trucks + " trucks · " + fields.system, killed?"Killed":scClosed?"Tail — final close TBD":installClosed?"Open — order tail":atSC?"At Supply Chain":"In approval", killed?"err":installClosed?"warn":"info", ()=>setTab("order"))}
+                {created && caseRow("ORD-1042","New Unit Order", fields.customer + " · " + fields.trucks + " trucks · " + fields.system, killed?"Cancelled":scClosed?"Tail — final close TBD":installClosed?"Open — order tail":atSC?"At Supply Chain":"In approval", killed?"err":installClosed?"warn":"info", ()=>setTab("order"))}
                 {colis.length>0 && caseRow("CASE-0101","Verifi Install · New Install", "3 units · " + crewLabel, installClosed?"Closed":anyNoBillPending?"No-bill pending":locked?(colis.every(c=>c.billable==="no-ok")?"Non-billable · locked":"Billed · locked"):"Open", installClosed?"ok":anyNoBillPending?"warn":"info", ()=>setTab("install"))}
                 {midCases.map(m=>caseRow(m.id,"Verifi Install · "+m.reason, m.unit+" · by "+m.by, m.status, m.status==="Closed"?"ok":"info", null))}
                 {moveCases.map(m=>caseRow(m.id,"Verifi Service", m.reason+" · "+m.units.join(", "), m.status, m.status==="Closed"?"ok":m.status==="Pending Finance"?"err":m.status==="Rejected"?"err":"info", null))}
@@ -1051,7 +1053,9 @@ function App({onRestart}) {
                   <span style={{fontSize:12, color:C.sub}}>Liftgate · receiving hours</span>
                   <span style={{fontSize:12}}><label><input type="checkbox" checked={draft.liftgate} onChange={e=>setDraft(d=>({...d,liftgate:e.target.checked}))}/> liftgate required</label> · <input value={draft.hours} onChange={e=>setDraft(d=>({...d,hours:e.target.value}))} style={{padding:4, border:`1px solid ${C.border}`, borderRadius:4, width:110}} /></span>
                   <span style={{fontSize:12, color:C.sub}}>* Truck count</span>
-                  <span style={{display:"inline-flex", alignItems:"center", gap:6}}><input type="number" value={draft.trucks} disabled={draft.trucksUnknown} onChange={e=>setDraft(d=>({...d,trucks:+e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:80, background:draft.trucksUnknown?"#F4F4F4":"#fff"}} /><label style={{fontSize:11, color:"#666"}}><input type="checkbox" checked={!!draft.trucksUnknown} onChange={e=>setDraft(d=>({...d,trucksUnknown:e.target.checked}))}/> unknown at order</label><Why author="Spec note" initial="S">Truck # at ordering can be known OR unknown — Ariel (July 16 review). Known: entered now, stamped at COLI create, compared to stamp at complete (data-flow verify). Unknown: field stays blank at order and gets set later when SC/FSM confirms; the stamped-at-complete comparison then anchors to whatever was set. Amicus: nullable at order, required by the time COLI moves to Work Complete.</Why></span>
+                  <span style={{display:"inline-flex", alignItems:"center", gap:6}}><input type="number" value={draft.trucks} disabled={draft.trucksUnknown} onChange={e=>setDraft(d=>({...d,trucks:+e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:80, background:draft.trucksUnknown?"#F4F4F4":"#fff"}} /><label style={{fontSize:11, color:"#666"}}><input type="checkbox" checked={!!draft.trucksUnknown} onChange={e=>setDraft(d=>({...d,trucksUnknown:e.target.checked}))}/> unknown at order</label></span>
+                  <span style={{fontSize:12, color:C.sub}}>Truck number(s)</span>
+                  <span style={{display:"inline-flex", alignItems:"center", gap:6}}><input value={draft.truckNos||""} disabled={draft.truckNosUnknown} placeholder="e.g. 4471, 4472, 4473" onChange={e=>setDraft(d=>({...d,truckNos:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:200, background:draft.truckNosUnknown?"#F4F4F4":"#fff"}} /><label style={{fontSize:11, color:"#666"}}><input type="checkbox" checked={!!draft.truckNosUnknown} onChange={e=>setDraft(d=>({...d,truckNosUnknown:e.target.checked}))}/> unknown at order</label><Why author="Spec note" initial="S">Truck # at ordering can be known OR unknown — Ariel (July 16 review). Known: entered now, stamped at COLI create, compared to stamp at complete (data-flow verify). Unknown: field stays blank at order and gets set later when SC/FSM confirms; the stamped-at-complete comparison then anchors to whatever was set. Amicus: nullable at order, required by the time COLI moves to Work Complete. PENDING (James K): at-scale entry (168-truck Cemex) and multi-location orders — per-truck vs bulk still open.</Why></span>
                   <span style={{fontSize:12, color:C.sub}}>* System type</span>
                   <select value={draft.system} onChange={e=>setDraft(d=>({...d,system:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4}}>{SYSTEMS.map(s=><option key={s}>{s}</option>)}</select>
                   <span style={{fontSize:12, color:C.sub}}>* Install labor (proposed)</span>
@@ -1221,7 +1225,7 @@ function App({onRestart}) {
                 {fieldRow("Parts sheet", Object.entries(fields.parts).filter(p=>p[1]>0).map(p=>p[1]+"× "+p[0]).join(" · ") || "—")}
                 <div style={{marginTop:8}}>
                   {!dualApproved && !killed && <Btn role={role} setRole={setRole} need={approver} tone="ok" onClick={approveOrder}>Approve whole order (dual approval)</Btn>}
-                  {!killed && !shipped && <Btn role={role} setRole={setRole} need={["CSM","FSM"]} tone="err" onClick={killOrder}>Kill order</Btn>}
+                  {!killed && !shipped && <Btn role={role} setRole={setRole} need={["CSM","FSM"]} tone="err" onClick={killOrder}>Cancel order</Btn>}
                 </div>
                 <div style={{marginTop:10, paddingTop:8, borderTop:`1px solid ${C.borderLt}`}}>
                   <div style={{fontSize:12, fontWeight:700, marginBottom:4, display:"flex", alignItems:"center", gap:6, flexWrap:"wrap"}}>Install labor & crew — Installation Specialist <Chip tone={imConfirmed?"ok":"info"}>{imConfirmed?"confirmed":"waiting"}</Chip><Why>Moved INTO Order fields per the July 15 call (6:45–7:38, Ariel: crew confirmation “is part of the order fields information now, so it probably should be in there” — it was “way down here” before).</Why></div>
@@ -1239,7 +1243,7 @@ function App({onRestart}) {
                 {!contract && !finOK && <Btn role={role} setRole={setRole} need="Finance" tone="ok" onClick={()=>{setFinOK(true);addLog("Finance","Approved (no-contract gate).");}}>Finance approve (no contract)</Btn>}
                 {created && fields.trucks>40 && !finBigOK && <Btn role={role} setRole={setRole} need="Finance" tone="ok" onClick={()=>{setFinBigOK(true);addLog("Finance","Approved (>40 trucks). — build-thread rule");}}>Finance approve (&gt;40 trucks)</Btn>}
                 {((!contract) || fields.trucks>20) && !rmOK && <Btn role={role} setRole={setRole} need="Regional Manager" tone="ok" onClick={()=>{setRmOK(true);addLog("Regional Manager","Approved.");}}>RM approve</Btn>}
-                {gateNeeded && !gateDone && !killed && <Btn role={role} setRole={setRole} need="Regional Manager" tone="err" onClick={()=>{setChanged(c=>({...c,"Truck count":{CSM:false,FSM:false}})); addLog("Regional Manager","REJECTED → back to CSM/FSM (edit + re-approve, or kill). — Spec §2.7");}}>RM reject</Btn>}
+                {gateNeeded && !gateDone && !killed && <Btn role={role} setRole={setRole} need="Regional Manager" tone="err" onClick={()=>{setChanged(c=>({...c,"Truck count":{CSM:false,FSM:false}})); addLog("Regional Manager","REJECTED → back to CSM/FSM (edit + re-approve, or cancel). — Spec §2.7");}}>RM reject</Btn>}
                 <div style={{marginTop:8, paddingTop:8, borderTop:`1px solid ${C.borderLt}`}}>
                   {atSC && !ioCreated && <Btn role={role} setRole={setRole} need="Finance" tone="purp" onClick={createIO}>Create IO / PO / GL / CC</Btn>}
                   <Chip tone={ioCreated ? "ok" : "neutral"}>{ioCreated ? "IO created" : "IO pending — blocks order close, not shipping"}</Chip>
@@ -1365,7 +1369,7 @@ function App({onRestart}) {
                       {cell(retReceived ? fields.fsm.split(" ")[0] + " (FSM)" : "Needed", retReceived)}
                       {cell(ioClosed ? "Closed" : "Needed", ioClosed)}
                       {cell(scClosed ? "✓" : "Open", scClosed)}
-                      <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, fontSize:11}}>{!contract && !gateDone ? "Waiting on contract signing." : killed ? "Order killed." : ""}</td>
+                      <td style={{padding:"5px 8px", border:`1px solid ${C.border}`, fontSize:11}}>{!contract && !gateDone ? "Waiting on contract signing." : killed ? "Order cancelled." : ""}</td>
                     </tr></tbody>
                   </table>
                 </div>}

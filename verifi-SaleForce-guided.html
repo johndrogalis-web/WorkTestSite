@@ -62,12 +62,20 @@ const SPARE_UNIT_ID = "U-26075USL010";
 const MEASURE_OPTS = ["None","Pulse","Spark","v5 Sensor","v3"];
 const WATER_OPTS_V5 = ["None","v5 Temperate","v5 Winter"], WATER_OPTS_V3 = ["None","v3"];
 const ADMIX_OPTS_V5 = ["None","v5 Unheated Admix","v5 Heated Admix"], ADMIX_OPTS_V3 = ["None","v3"];
-// Returns {pairs:[[groupLabel,a,b],...] either-or, addons:[...] yes/no} for the combo, or null for Measure=None (upgrade — no new units).
+// James K matrix v2 (July 28, post-LJ feedback — new rows in red on his sheet). Group headers follow HIS sheet headers verbatim.
+// Returns {pairs:[[groupLabel,a,b],...] either-or, addons:[...] yes/no}, or null when nothing is selected at all.
 const ADDON_RULES = (m,w,a) => {
-  if (m==="None") return null;
-  if (m==="v3") return { pairs:[["Discharge type","Rear Discharge","Front Discharge"],["Water delivery","Pressurized Tank","Water Pump"]], addons: a==="v3" ? ["24 Volt Batteries","Tank Z-Bracket"] : ["24 Volt Batteries"] };
-  if (w==="None" && a==="None") return { pairs:[["Discharge type","Rear Discharge","Front Discharge"],["Display device","Customer Tablet","Verifi ICD"]], addons:["External Display","Water Meter","Hanging Bracket"] };
-  return { pairs:[["Discharge type","Rear Discharge","Front Discharge"],["Display device","Customer Tablet","Verifi ICD"]], addons:["24 Volt Batteries","External Display","Hanging Bracket"] };
+  const DIS=["Discharge Type","Rear Discharge","Front Discharge"], DEV=["Display Device","Customer Tablet","Verifi ICD"],
+        WD=["Water Delivery","Pressurized Tank","Water Pump"], SPOUT=["Admix Spout Mount To","Truck Water Spout","Hopper"];
+  if (m==="None") {
+    if (w==="None" && a==="None") return null;                                   // nothing selected
+    if (a==="None") return { pairs:[DIS], addons:["24 Volt Batteries"] };        // NEW (red): upgrade — add v5 water to existing units
+    return { pairs:[DIS, SPOUT], addons:["24 Volt Batteries"] };                 // NEW (red): upgrade — add v5 admix (± water)
+  }
+  if (m==="v3") return { pairs:[DIS, WD], addons: a==="v3" ? ["24 Volt Batteries","Tank Z-Bracket"] : ["24 Volt Batteries"] };
+  if (w==="None" && a==="None") return { pairs:[DIS, DEV], addons:["External Display","Water Meter","Hanging Bracket"] };
+  if (a==="None") return { pairs:[DIS, DEV], addons:["24 Volt Batteries","External Display","Hanging Bracket"] };      // NEW (red): non-v3 + v5 water, no admix — SPLIT from old combined row
+  return { pairs:[DIS, DEV, SPOUT], addons:["24 Volt Batteries","External Display","Hanging Bracket"] };               // non-v3 + v5 admix → Admix Spout pick-one added
 };
 const INSTALL_REASONS = ["New Install (brownfield)"]; // Upgrade routes through New Unit Ordering per build-thread
 const SERVICE_REASONS = ["Re-Install","Re-Install — Truck Damage/Paint/New Drum","De-install & Re-Install (new truck)","Deinstall — Keep at Account","Deinstall — Return Unit to Verifi","Transfer to Another Truck (name change only — no physical work)","Transfer to Another Account (unit + truck switch, routes via Command Center)"];
@@ -1146,7 +1154,7 @@ function App({onRestart}) {
                   <span style={{display:"inline-flex", alignItems:"center", gap:6}}><input value={draft.specialReq} placeholder="one-off notes for supply chain" onChange={e=>setDraft(d=>({...d,specialReq:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:260}} /><Why author="Spec note" initial="S">Free-text special requests happen on occasion — give the creator the chance to note them on the order (James K, July 24, 9:52).</Why></span>
                 </div>
                 <div style={{marginTop:12, border:`1px solid ${C.border}`, borderRadius:5}}>
-                  <div style={{padding:"6px 10px", background:"#EAF0F6", fontSize:12, fontWeight:700, display:"flex", alignItems:"center", gap:6}}>Install options — driven by the three selections<Why author="Spec note" initial="S">James K's matrix (call + spreadsheet, July 27): the three dropdowns trigger a combination-specific set of options. Simple CHECKBOXES, not quantities — trucks in a fleet are homogeneous, so one set of checks applies to the WHOLE install (3:43–4:35; double-check with LJ &amp; Bruschi — fallback is numbers if mixed fleets prove common). Nothing pre-checked (4:42). Pairs marked "pick one" are either-or: trucks are rear OR front, tablet OR ICD, and a v3 moves water by pressurized tank OR pump — never both (4:42–6:34). Mixed combos in one install are rare — the special-requests field covers them (3:00–3:33). Sheet is "unfinished but pretty close": James double-checking whether the two non-v3 rows combine, and running it by Bruce &amp; Ajay (1:05, 7:28). Always make a selection in each dropdown — "None" is the default when not doing that piece (0:03). July 24 rule stands: Measure = None → UPGRADE, no new units created; Measure = anything → create units. v3 measure pairs with v3 water/admix; non-v3 pairs with v5 options — the dropdowns constrain each other to stay on the sheet.</Why></div>
+                  <div style={{padding:"6px 10px", background:"#EAF0F6", fontSize:12, fontWeight:700, display:"flex", alignItems:"center", gap:6}}>Install options — driven by the three selections<Why author="Spec note" initial="S">James K's matrix (call + spreadsheet, July 27): the three dropdowns trigger a combination-specific set of options. Simple CHECKBOXES, not quantities — trucks in a fleet are homogeneous, so one set of checks applies to the WHOLE install (3:43–4:35; double-check with LJ &amp; Bruschi — fallback is numbers if mixed fleets prove common). Nothing pre-checked (4:42). Pairs marked "pick one" are either-or: trucks are rear OR front, tablet OR ICD, and a v3 moves water by pressurized tank OR pump — never both (4:42–6:34). Mixed combos in one install are rare — the special-requests field covers them (3:00–3:33). Sheet v2 (July 28, after LJ feedback): the two non-v3 rows did NOT combine — they SPLIT (v5-water-no-admix vs any-admix), plus two NEW upgrade rows for Measure=None and a NEW pick-one group, Admix Spout Mount To (Truck Water Spout / Hopper), whenever v5 admix is selected. Group headers follow James's sheet verbatim. Bruce &amp; Ajay review status unchanged. Always make a selection in each dropdown — "None" is the default when not doing that piece (0:03). July 24 rule stands: Measure = None → UPGRADE, no new units created; Measure = anything → create units. v3 measure pairs with v3 water/admix; non-v3 pairs with v5 options — the dropdowns constrain each other to stay on the sheet.</Why></div>
                   <div style={{display:"flex", gap:16, padding:"10px 10px 2px", flexWrap:"wrap", alignItems:"flex-end"}}>
                     <label style={{fontSize:12, color:C.sub, display:"flex", flexDirection:"column", gap:3}}><span>* Measure</span><select value={draft.measure} onChange={e=>{const v=e.target.value; setDraft(d=>({...d, measure:v, water: v==="v3" ? (WATER_OPTS_V3.includes(d.water)?d.water:"None") : (WATER_OPTS_V5.includes(d.water)?d.water:"None"), admix: v==="v3" ? (ADMIX_OPTS_V3.includes(d.admix)?d.admix:"None") : (ADMIX_OPTS_V5.includes(d.admix)?d.admix:"None"), addons:{}}));}} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:150}}>{MEASURE_OPTS.map(s=><option key={s}>{s}</option>)}</select></label>
                     <label style={{fontSize:12, color:C.sub, display:"flex", flexDirection:"column", gap:3}}><span>* Water Manage</span><select value={draft.water} onChange={e=>{const v=e.target.value; setDraft(d=>({...d, water:v, addons:{}}));}} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:150}}>{(draft.measure==="v3"?WATER_OPTS_V3:WATER_OPTS_V5).map(s=><option key={s}>{s}</option>)}</select></label>
@@ -1154,11 +1162,12 @@ function App({onRestart}) {
                   </div>
                   <div style={{fontSize:11, color:"#8A90A0", padding:"4px 10px 2px", fontStyle:"italic"}}>As you change these three selections, the install options below update to match — any checked options reset.</div>
                   {(() => { const rule = ADDON_RULES(draft.measure, draft.water, draft.admix);
-                    if (!rule) return <Note tone="warn">Measure = None → UPGRADE order: no new unit IDs are created; existing units get selected instead (July 24 rule). The upgrade add-on row isn't on James's sheet yet — upgrade flow is stage 2.</Note>;
+                    if (!rule) return <Note tone="warn">Nothing selected — pick at least one of Measure / Water / Admix.</Note>;
+                    const upgradeNote = draft.measure==="None" ? <Note tone="warn">Upgrade order — adds equipment to existing units, so no new unit IDs are created.<Why author="Spec note" initial="S">Upgrade parts rows landed on James's sheet v2 (July 28, LJ feedback) — the options shown are real, straight from the matrix. Rule from July 24 stands: Measure = None means existing units get selected instead of creating new ones; that existing-unit selection flow is stage 2, which is why Create stays gated on this path.</Why></Note> : null;
                     const toggle = (name, pairWith) => setDraft(d=>{ const a={...d.addons, [name]:!d.addons[name]}; if(pairWith && a[name]) a[pairWith]=false; return {...d, addons:a}; });
                     const groupHead = (t) => <div style={{fontSize:10, fontWeight:700, color:"#8A90A0", letterSpacing:.6, textTransform:"uppercase", marginBottom:5}}>{t}</div>;
                     const box = {border:`1px solid ${C.border}`, borderRadius:5, padding:"7px 12px", background:"#FAFBFC", minWidth:160};
-                    return <div style={{display:"flex", gap:10, padding:"8px 10px", flexWrap:"wrap", alignItems:"stretch"}}>
+                    return <React.Fragment>{upgradeNote}<div style={{display:"flex", gap:10, padding:"8px 10px", flexWrap:"wrap", alignItems:"stretch"}}>
                       {rule.pairs.map(([label,a,b])=>(
                         <div key={label} style={box}>
                           {groupHead(label + " — pick one")}
@@ -1171,10 +1180,10 @@ function App({onRestart}) {
                           {rule.addons.map(p=>(<label key={p} style={{fontSize:12}}><input type="checkbox" checked={!!draft.addons[p]} onChange={()=>toggle(p)}/> {p}</label>))}
                         </div>
                       </div>
-                    </div>; })()}
+                    </div></React.Fragment>; })()}
                 </div>
                 <div style={{marginTop:12}}>
-                  {draft.measure!=="None" ? <Btn role={role} setRole={setRole} tone="ok" big disabled={!draft.surveyFile} onClick={submitOrder}>Create order{!draft.surveyFile && " — attach survey first"}</Btn> : <Chip tone="warn">Upgrade path (Measure = None) is stage 2 — pick a Measure option to create a New Unit order</Chip>}<Why>Creating the order records the creator's approval automatically — whichever of CSM/FSM didn't create it approves next (dual approval, Spec §2.3). Survey attachment is a hard gate (July 16, LJ).</Why>
+                  {draft.measure!=="None" ? <Btn role={role} setRole={setRole} tone="ok" big disabled={!draft.surveyFile} onClick={submitOrder}>Create order{!draft.surveyFile && " — attach survey first"}</Btn> : <Chip tone="warn">Select a Measure option to create a New Unit order</Chip>}<Why>Creating the order records the creator's approval automatically — whichever of CSM/FSM didn't create it approves next (dual approval, Spec §2.3). Survey attachment is a hard gate (July 16, LJ). When Measure = None the Create button is replaced by the chip: that's the upgrade path, whose existing-unit selection flow is stage 2 — jargon stays here in the pin, the UI just says what to do.</Why>
                   <Btn role={role} setRole={setRole} tone="neutral" onClick={()=>setShowOrderForm(false)}>Cancel</Btn>
                 </div>
                 <Note>Over-ship is policy — supply chain intentionally ships spares beyond truck count; the excess Return Order handles the difference. Account/location drives FSM + FST assignment; they are pulled, never typed.</Note>

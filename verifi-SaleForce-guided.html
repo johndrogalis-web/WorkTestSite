@@ -323,6 +323,7 @@ function App({onRestart}) {
   const gateNeeded    = created && (!contract || fields.trucks > 20);
   const gateDone      = !gateNeeded || ((contract ? true : (finOK && rmOK)) && ((created && fields.trucks > 20) ? rmOK : true) && ((created && fields.trucks > 40) ? finBigOK : true));
   const atSC          = approvalDone && imConfirmed && gateDone && !killed;
+  const fsmWorkDone   = colis.length>0 && colis.every(c=>c.status.startsWith("Validated")); // FSM side closed — returns can start (parallel to CSM billing, Ariel July 28)
   const allValidated  = colis.length > 0 && colis.every(c => c.status.startsWith("Validated"));
 
   /* ── New Case picker routing ── */
@@ -373,8 +374,25 @@ function App({onRestart}) {
   const createHub  = () => {
     setHubCreated(true); setHubTask(false);
     setColis([1,2,3].map(i => ({ unit:"U-2607-00"+i, status:"Not Started", checks:0, serviceReady:null, shipBack:false, open:false, truck:"TRK-90"+i, tcg:"TCG-4"+i, mixer:MIXERS[i%3], wds:"WDS-77"+i, prop:i%2?"Pump":"Pressure" })));
-    addLog("Supply Chain","Units registered in Hub → Hub owns sync from now on.");
+    addLog("Supply Chain","Units registered in Hub → Hub owns sync from now on. SC PROMPTED with the Unit IDs (U-2607-001…004) — check them against the RUNNING ID REGISTRY on the Units tab so nothing duplicates; IDs are EDITABLE there (ISO code is sometimes wrong) and units can be ADDED outside this workflow (Ariel, July 28). Reference: unit-ID sheet — to be attached to the case (sheet not yet in project).");
     addLog("System","Hub-synced units detected → install case CASE-0101 auto-created: one case, one install-WOLI (COLI) per unit. — Spec §3.4");
+  };
+  const editUnitId = (oldId, newId) => {
+    newId = (newId||"").trim();
+    if (!newId || newId===oldId) return;
+    if (units.some(u=>u.id===newId)) { addLog("System", `BLOCKED — ${newId} already exists in the ID registry. Duplicate unit IDs are exactly what the running log prevents (Ariel, July 28).`); return; }
+    setUnits(us=>us.map(u=>u.id===oldId?{...u, id:newId}:u));
+    setColis(cs=>cs.map(c=>c.unit===oldId?{...c, unit:newId}:c));
+    setRet(r=>r.unit===oldId?{...r, unit:newId}:r);
+    recordHistory("Hub registry", "Unit ID", oldId, newId, role);
+    addLog(role, `Unit ID corrected: ${oldId} → ${newId} (edit allowed — ISO code sometimes wrong; Ariel July 28). COLIs and returns re-linked.`);
+  };
+  const addUnitManual = () => {
+    let n = units.length+1, id = "U-2607-" + String(n).padStart(3,"0");
+    while (units.some(u=>u.id===id)) { n++; id = "U-2607-" + String(n).padStart(3,"0"); }
+    setUnits(us=>[...us, {id, truck:"—", status:"available", waiting:0}]);
+    recordHistory("Hub registry", "Unit added (manual)", "—", id, role);
+    addLog(role, `Unit ${id} ADDED outside the order workflow (manual add on the registry — Ariel, July 28). Logged to the running ID registry; no duplicate.`);
   };
   const processLabor = () => { setLaborDone(true); addLog("Supply Chain","Labor processed (" + fields.labor + " labor — never customer labor). — Spec §3.5"); };
   const scheduleInstall = (as) => { setInstallSchedule({loc:fields.loc, date:"07/18/26", team:fields.fst+" team"}); addLog(as || role, `CASE-0101: schedule-lite confirmed — ${fields.loc}, opens 07/18/26, team ${fields.fst} team (confirmed, not auto-assigned). CSM CC'd. — Spec v1.5, extended to all physical COLIs`); };
@@ -384,7 +402,7 @@ function App({onRestart}) {
   const crewLabel = created ? (fields.labor === "Verifi" ? "FST (Verifi)" : fields.labor === "Customer" ? "Customer crew" : "3rd-party crew") : "";
   const stampTruck = (uid, truck) => setUnits(us => us.map(u => u.id===uid ? {...u, status:"installed", truck} : u));
   const patchColi = (i, patch) => setColis(cs => cs.map((c,j)=> j===i ? {...c, ...patch} : c));
-  const coliReady = (c) => c.checks===CHECKLIST.length && c.serviceReady==="Yes";
+  const coliReady = (c) => c.checks===CHECKLIST.length && (fields.labor==="Verifi" ? c.serviceReady==="Yes" : true); // non-Verifi crews can't touch the hub — FSM sets Service Ready at validation (FSM call + July 24; Ariel July 28)
   const confirmEquipGathered = (as) => { setEquipGathered(true); addLog(as || role, "CASE-0101: all remaining equipment gathered and placed on pallet in designated area — ONE case-level confirmation at the end of installs, not per-truck (July 24, James K 37:52: per-truck 'is not how this works'). FSM is the responsible party for ship-back from here (July 24, 39:25)."); };
   const submitColi = (i) => {
     const c = colis[i];
@@ -393,7 +411,7 @@ function App({onRestart}) {
     patchColi(i, {status:"Pending FSM", open:false});
     addLog("Crew", `${c.unit}: checklist + fields complete by ${crewLabel} → Pending FSM. — Spec §4.3`);
   };
-  const validateColi = (i) => { const c=colis[i]; patchColi(i, {status:"Validated"}); stampTruck(c.unit, c.truck); addLog("FSM", `${c.unit}: validated (check & fix). Truck ${c.truck} STAMPED — Unit ID + TCG + Truck on the WOLI so the record survives even if the unit later disappears. — Spec §4.4, build-thread`); };
+  const validateColi = (i) => { const c=colis[i]; const setSR = fields.labor!=="Verifi" && c.serviceReady!=="Yes"; patchColi(i, {status:"Validated", ...(setSR?{serviceReady:"Yes"}:{})}); stampTruck(c.unit, c.truck); addLog("FSM", `${c.unit}: validated (check & fix).${setSR?" SERVICE READY set = Yes BY THE FSM at confirmation — not by the "+crewLabel+", who can't touch the hub (FSM call; July 24 38:44; Ariel July 28)." : ""} Truck ${c.truck} STAMPED — Unit ID + TCG + Truck on the WOLI so the record survives even if the unit later disappears. — Spec §4.4, build-thread`); };
   const woliColi = (i) => { const u=colis[i].unit; setWolis(w=>[...w,u]); addLog("FSM", `${u}: issue → WOLI created for the fix. 📌 field teams. — Spec §4.4`); };
   const resumeHold = (i) => { const c=colis[i]; patchColi(i, {status:"Not Started", serviceReady:null}); addLog("Supply Chain", `${c.unit}: rush parts delivered → COLI reopened.`); };
   const sendCC   = () => { setSentCC(true); addLog("FSM", "Sent to COMMAND CENTER (transitional, toggleable). — Spec §4.5–4.6"); };
@@ -704,7 +722,7 @@ function App({onRestart}) {
     // Guided modal walkthrough: first unit is done by hand inside the record — the tour waits.
     if (openColi && openColi.guided && openColi.engine==="order") {
       const c = colis.find(x=>x.unit===openColi.coliId);
-      if (c && openColi.mode==="coli" && c.status!=="Pending FSM" && !c.status.startsWith("Validated")) return { who:"You", text:"Inside " + c.unit + ": Check All (" + CHECKLIST.length + " items), set Service Ready = Yes, then Submit COLI. (Equipment gathering is one case-level step at the end.)", tone:"warn", manual:true, tab:"install", key:"modal-guided" };
+      if (c && openColi.mode==="coli" && c.status!=="Pending FSM" && !c.status.startsWith("Validated")) return { who:"You", text:"Inside " + c.unit + ": Check All (" + CHECKLIST.length + " items)" + (fields.labor==="Verifi" ? ", set Service Ready = Yes," : " —") + " then Submit COLI." + (fields.labor!=="Verifi" ? " (Service Ready is set by the FSM at validation — " + crewLabel + " can't touch the hub.)" : "") + " (Equipment gathering is one case-level step at the end.)", tone:"warn", manual:true, tab:"install", key:"modal-guided" };
       if (c && openColi.mode==="val" && c.status==="Pending FSM") return { who:"You", text:"You're the FSM inside " + c.unit + " — hit Validate (check & fix). Problems become a WOLI on the unit.", tone:"warn", manual:true, tab:"install", key:"modal-guided" };
       if (c && openColi.mode==="bill" && !c.billable) return { who:"You", text:"You're the CSM inside " + c.unit + " — confirm billable + month ON THE COLI (Ariel's rule)" + (fields.labor==="3rd Party" ? ", set OK-to-pay-3rd-party (third line)" : "") + ", or No-bill with a reason. This COLI locks forever on confirm.", tone:"warn", manual:true, tab:"install", key:"modal-guided" };
     }
@@ -755,13 +773,25 @@ function App({onRestart}) {
     ["Installation Specialist", imConfirmed],
     [gateNeeded ? "Contract / RM / Fin gate" : "Contract gate (skipped)", gateNeeded ? gateDone : null],
     ["Supply Chain · IO", shipped],
-    ["Units registered — Hub live", hubCreated],
+    ["Units born", hubCreated],
     ["Install & billing", installClosed],
     ["Returns · labor · IO closure", retReceived && ioClosed && (laborDone || fields.labor==="Customer")],
     ["SC order closed", scClosed],
     ["Final close · owner TBD", false],
   ] : [];
   const currentIdx = spine.findIndex(([,d]) => d === false);
+
+  /* Salesforce-style Path chevron — Ariel July 28: teams need a stage indicator ON the case */
+  const Chevron = ({steps, cur}) => (
+    <div style={{display:"flex", gap:2, margin:"0 0 10px", flexWrap:"wrap"}}>
+      {steps.map(([label,done],i)=>{
+        const st = done===true?"done":done===null?"skip":i===cur?"cur":"todo";
+        const bg = st==="done"?"#3BA755":st==="cur"?"#0B5CAB":st==="skip"?"#E4E6EA":"#F0F1F3";
+        const col = st==="todo"||st==="skip"?"#6B7280":"#fff";
+        return <div key={label} title={label} style={{flex:"1 1 auto", minWidth:72, background:bg, color:col, fontSize:9.5, fontWeight:700, letterSpacing:.3, padding:"6px 6px 6px 16px", clipPath:"polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%, 10px 50%)", textAlign:"center", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"}}>{st==="cur"?"▸ ":""}{label}</div>;
+      })}
+    </div>
+  );
 
   const fieldRow = (label, value, editFn) => {
     const pend = changed[label];
@@ -803,7 +833,7 @@ function App({onRestart}) {
       const c = colis[i];
       return <Modal title={coliId + " — Install COLI"} badges={[<Chip key="s" tone={c.status.startsWith("Validated")?"ok":c.status==="Pending FSM"?"warn":c.status.startsWith("On Hold")?"err":"neutral"}>{c.status}</Chip>, coliBillResolved(c) && <Chip key="l" tone="purp">🔒 {c.billable==="yes" ? "billed · " + c.billMonth : "non-billable"}</Chip>]} onClose={close}>
         {openColi.guided && <div style={{display:"flex", justifyContent:"flex-end", marginBottom:4}}><Why key={"modal-"+openColi.mode+"-"+coliId} author="Guided tour" initial="T" defaultOpen>
-          <b style={{color:C.warn}}>✋ Your move — inside the unit record.</b> {openColi.mode==="coli" ? "Install work really lives here: tick the " + CHECKLIST.length + " checklist items (Check All fast-forwards), set Service Ready = Yes, then Submit COLI. Equipment gathering happens ONCE at case level at the end." : openColi.mode==="bill" ? "Billing lives ON THE COLI (July 15 call, 15:23): confirm billable + month here — this unit locks forever. The case locks when every COLI is resolved." : "FSM validation happens here, inside the record: hit Validate (check & fix) — problems become a WOLI on the unit."} <span style={{display:"block", marginTop:4, color:C.sub}}>Remaining units fast-forward automatically after this one.</span>
+          <b style={{color:C.warn}}>✋ Your move — inside the unit record.</b> {openColi.mode==="coli" ? "Install work really lives here: tick the " + CHECKLIST.length + " checklist items (Check All fast-forwards)" + (fields.labor==="Verifi" ? ", set Service Ready = Yes," : " —") + " then Submit COLI." + (fields.labor!=="Verifi" ? " Service Ready gets set by the FSM at validation, not by the crew." : "") + " Equipment gathering happens ONCE at case level at the end." : openColi.mode==="bill" ? "Billing lives ON THE COLI (July 15 call, 15:23): confirm billable + month here — this unit locks forever. The case locks when every COLI is resolved." : "FSM validation happens here, inside the record: hit Validate (check & fix) — problems become a WOLI on the unit."} <span style={{display:"block", marginTop:4, color:C.sub}}>Remaining units fast-forward automatically after this one.</span>
         </Why></div>}
         <FieldGrid rows={[
           ["Truck #",c.truck],["TCG/Unit #",c.tcg],["Mixer Make",c.mixer],["WDS #",c.wds],["Propulsion",c.prop],["System",fields.system],
@@ -820,11 +850,11 @@ function App({onRestart}) {
         </div>
         <div style={{marginTop:8, display:"flex", alignItems:"center", gap:14, flexWrap:"wrap"}}>
           {c.status==="Not Started" && c.checks<CHECKLIST.length && <Btn role={role} setRole={setRole} need="Crew" tone="neutral" onClick={()=>patchColi(i,{checks:CHECKLIST.length})}>Check all ({crewLabel})</Btn>}
-          <span style={{fontSize:12}}>Service Ready
+          {fields.labor!=="Verifi" ? <span style={{fontSize:12}}>Service Ready: <Chip tone="neutral">set by FSM at validation</Chip><Why author="Spec note" initial="S">The {crewLabel} can't call this out — they can't touch the hub. The FSM sets Service Ready when they confirm/validate the COLI, not at crew completion (FSM call: "the FSM is the one putting this thing service ready"; July 24, 38:44; Ariel, July 28 — this note didn't make it through the first pass).</Why></span> : <span style={{fontSize:12}}>Service Ready
             <label style={{marginLeft:6}}><input type="radio" checked={c.serviceReady==="Yes"} onChange={()=>patchColi(i,{serviceReady:"Yes"})} disabled={c.status!=="Not Started"}/> Yes</label>
             <label style={{marginLeft:6}}><input type="radio" checked={c.serviceReady==="No"} onChange={()=>patchColi(i,{serviceReady:"No"})} disabled={c.status!=="Not Started"}/> No</label>
             <Why>System Service Ready is tied to billing and the service lifecycle — Ready = No means not billable, FSM gets a reminder, and rush parts can be raised (Spec v1.1).</Why>
-          </span>
+          </span>}
           <span style={{fontSize:12, color:C.sub}}>Equipment gathering: <b>case-level</b>, one step at end of installs<Why author="Spec note" initial="S">Moved OFF the per-truck COLI (July 24, James K 37:52–39:03): equipment is collected in bulk and palletized ONCE at the end — marking it per truck on a 50-truck install is pointless clicking. The single confirmation now lives on CASE-0101, before the install case closes.</Why></span>
         </div>
         <div style={{marginTop:10}}>
@@ -991,7 +1021,7 @@ function App({onRestart}) {
       </div>
 
       {created && <div style={{padding:"3px 16px 5px"}}>
-        <div style={{fontSize:10, color:"#8A90A0", marginBottom:4, display:"flex", alignItems:"center", gap:6, flexWrap:"wrap", fontWeight:700, letterSpacing:.6}}>STORY PROGRESS — ORD-1042 {killed && <Chip tone="err">CANCELLED</Chip>}<Why>In the real build this becomes a Salesforce Path on the Order case — a stage bar Amicus builds, with stages like Draft &amp; dual approval → Installation Specialist → Contract/RM/Finance gate → Supply Chain · IO → Units registered — Hub live → Install &amp; billing → Returns · IO closure → SC order closed → Final close. Stage naming: “Units registered — Hub live” is the PROPOSED label (July 28) — pending Ariel’s sign-off. Lineage: “Units born” (internal jargon, confused the July 16 room) → “Units created (Hub)” (read like manufacturing) → this. Rationale: unit IDs get their record identity at Mark Shipped, then SC stands them up in Hub and Hub owns sync — “registered” says record-keeping, “Hub live” marks the ownership handoff. Short-form fallbacks if Path wants one word: “Unit registration”, “Hub sync live”. “(skipped)” narrates a conditional this order didn’t hit, and “owner TBD” is an open parking-lot question (who closes the order case — Finance or SC?), still undecided in the spec.</Why></div>
+        <div style={{fontSize:10, color:"#8A90A0", marginBottom:4, display:"flex", alignItems:"center", gap:6, flexWrap:"wrap", fontWeight:700, letterSpacing:.6}}>STORY PROGRESS — ORD-1042 {killed && <Chip tone="err">CANCELLED</Chip>}<Why>In the real build this becomes a Salesforce Path on the Order case — a stage bar Amicus builds, with stages like Draft &amp; dual approval → Installation Specialist → Contract/RM/Finance gate → Supply Chain · IO → Units born → Install &amp; billing → Returns · IO closure → SC order closed → Final close. Stage naming DECIDED by Ariel (July 28): “Units Born” is back — it beat the proposed “Units registered — Hub live”. Full lineage on record: “Units born” → “Units created (Hub)” (July 16) → “Units registered” (proposed) → “Units Born” (Ariel, final). “(skipped)” narrates a conditional this order didn’t hit, and “owner TBD” is an open parking-lot question (who closes the order case — Finance or SC?), still undecided in the spec.</Why></div>
         <div style={{display:"flex", alignItems:"center", flexWrap:"wrap", gap:4}}>
           {spine.map(([label, done], i) => (
             <React.Fragment key={label}>
@@ -1248,6 +1278,7 @@ function App({onRestart}) {
 
             {tab==="order" && !created && <Note tone="neutral">No order yet — start from the Cases tab → ＋ New Case → New Unit Order.</Note>}
             {tab==="order" && created && <div>
+              <Chevron steps={spine} cur={currentIdx} />
               <Card title="Approvals & routing" badge={<Chip tone={approvalDone && imConfirmed && gateDone ? "ok" : "warn"}>{approvalDone && imConfirmed && gateDone ? "cleared" : "in progress"}</Chip>}>
                 <FieldGrid rows={[
                   ["FSM aligned", creator==="FSM" ? "Yes (creator)" : dualApproved ? "Yes" : "Pending"],
@@ -1273,7 +1304,15 @@ function App({onRestart}) {
                 {fieldRow("Lease / Sale · Priority", fields.model + " · " + fields.priority)}
                 {fieldRow("Install options", Object.keys(fields.addons||{}).filter(k=>fields.addons[k]).join(" · ") || "none selected")}
                 <div style={{marginTop:8}}>
-                  {!dualApproved && !killed && <Btn role={role} setRole={setRole} need={approver} tone="ok" onClick={approveOrder}>Approve whole order (dual approval)</Btn>}
+                  {!dualApproved && !killed && <div style={{border:`1px solid ${C.warn}`, borderRadius:6, padding:"8px 10px", margin:"6px 0", background:"#FFF9F0"}}>
+                    <div style={{fontSize:11, fontWeight:700, color:C.sub, letterSpacing:.5, textTransform:"uppercase", marginBottom:5}}>Review before approving — exactly what was ordered ({approver} sees the order screen, Ariel July 28)</div>
+                    <div style={{fontSize:12, lineHeight:1.7}}>
+                      <b>{fields.customer}</b> · {fields.trucks} trucks{fields.truckNos?` (#${fields.truckNos})`:""} · <b>{fields.system}</b><br/>
+                      Add-ons: {Object.keys(fields.addons||{}).filter(k=>fields.addons[k]).join(" · ") || "none"} · Labor: <b>{fields.labor}</b> · {fields.model} · Desired on-site <b>{fields.reqDate}</b><br/>
+                      Survey: 📎 {fields.surveyFile||"—"} · Hub contract: {fields.hubContract} · Liftgate {fields.liftgate?"yes":"no"} ({fields.hours}){fields.specialReq?<span> · Special: "{fields.specialReq}"</span>:null}
+                    </div>
+                    <div style={{marginTop:6}}><Btn role={role} setRole={setRole} need={approver} tone="ok" onClick={approveOrder}>Approve whole order (dual approval)</Btn></div>
+                  </div>}
                   {!killed && !shipped && <Btn role={role} setRole={setRole} need={["CSM","FSM"]} tone="err" onClick={killOrder}>Cancel order</Btn>}
                 </div>
                 <div style={{marginTop:10, paddingTop:8, borderTop:`1px solid ${C.borderLt}`}}>
@@ -1357,22 +1396,23 @@ function App({onRestart}) {
 
             {tab==="units" && <div>
               {!units.length && <Note tone="neutral">No units yet — born at Mark Shipped.</Note>}
+              {units.length>0 && <div style={{fontSize:11, color:C.sub, padding:"4px 4px 8px", display:"flex", alignItems:"center", gap:8, flexWrap:"wrap"}}><b style={{letterSpacing:.5}}>UNIT ID REGISTRY — running log: {units.length} IDs issued, 0 duplicates</b><Btn role={role} setRole={setRole} need="Supply Chain" tone="neutral" onClick={addUnitManual}>＋ Add unit (outside order flow)</Btn><Why author="Spec note" initial="S">Ariel (July 28): at the Units Born step, SC is prompted with the generated IDs and this registry keeps the running log so nothing duplicates. IDs are editable — the ISO code is sometimes wrong — and units can be added outside the order process right here. The unit-ID reference sheet she mentioned should attach to the case; not in the project yet — chase it.</Why></div>}
               {units.map(u=>(
                 <div key={u.id} style={{display:"flex", alignItems:"center", gap:8, padding:"7px 4px", borderBottom:`1px solid ${C.borderLt}`, flexWrap:"wrap"}}>
-                  <span style={{fontWeight:700, fontSize:13, width:100}}>{u.id}</span>
+                  <input defaultValue={u.id} key={"in-"+u.id} onBlur={e=>editUnitId(u.id, e.target.value)} onKeyDown={e=>{if(e.key==="Enter")e.target.blur();}} style={{fontWeight:700, fontSize:13, width:100, border:`1px solid ${C.borderLt}`, borderRadius:4, padding:"3px 5px", background:"#FCFCFD"}} title="Editable — ISO code is sometimes wrong (Ariel, July 28)"/>
                   <Chip tone={u.status==="retired"?"err":u.status==="available"||u.status==="spare"?"warn":u.status==="installed"?"ok":"info"}>{u.status==="spare"?"expected spare — no truck":u.status}{u.status==="retired" && " — Hub removed"}</Chip>
                   <span style={{fontSize:12, color:C.sub}}>truck: <b>{u.truck}</b></span>
                   <span style={{fontSize:10, color:C.sub, letterSpacing:.3}}>{[["Born",true],["Installed",u.status!=="shipped" && u.status!=="spare"],["Billed",locked && u.status!=="shipped" && u.status!=="spare"],["Retired",u.status==="retired"]].map(p=>(p[1]?"●":"○")+" "+p[0]).join("  →  ")}</span>
                   {u.status==="available" && <span style={{fontSize:11, color:C.sub}}>waiting {u.waiting}d <Btn role={role} setRole={setRole} tone="neutral" onClick={()=>week(u.id)}>+1 week</Btn></span>}
                 </div>
               ))}
-              <Note tone="neutral">Units are read-only here — every case (movement, upgrade, brownfield) starts at Cases → ＋ New Case. Related units show only for the account you're on.</Note>
+              <Note tone="neutral">Unit IDs are editable in the registry above (dedup-guarded) and units can be added manually — but every CASE (movement, upgrade, brownfield) still starts at Cases → ＋ New Case. Related units show only for the account you're on.</Note>
             </div>}
 
             {tab==="returns" && <div>
               <Card title="RO-311 — excess Return Order" hot={hot("retship")} just={just("retship")} you={youStep("retship")} spot="retship" coach={GUIDE} badge={<Chip tone={retReceived?"ok":shipped?"info":"neutral"}>{retReceived?"processed":shipped?"open":"—"}</Chip>}>
-                {!installClosed && <Note tone="neutral">Executes on the order-case tail, after the install case closes.</Note>}
-                {installClosed && ret.stage===0 && <div style={{fontSize:13}}>
+                {!fsmWorkDone && <Note tone="neutral">Unlocks as soon as the FSM closes out their side (all COLIs validated) — runs PARALLEL to CSM billing, no need to wait for billing approval (Ariel, July 28).</Note>}
+                {fsmWorkDone && ret.stage===0 && <div style={{fontSize:13}}>
                   <label style={{marginRight:14}}><input type="checkbox" checked={ret.parts} onChange={e=>setRet(r=>({...r,parts:e.target.checked}))}/> excess parts</label>
                   <label><input type="checkbox" checked={!!ret.unit || false} onChange={e=>setRet(r=>({...r, unit: e.target.checked ? (units.find(u=>u.status!=="retired")||{}).id||"" : ""}))}/> a unit</label>
                   {ret.unit!=="" && <span style={{marginLeft:10}}>
@@ -1393,6 +1433,19 @@ function App({onRestart}) {
             </div>}
 
             {tab==="sc" && <div>
+              <Card title="Supply Chain — all cases watchlist" badge={<Chip tone="info">SC view</Chip>}>
+                {!created ? <Note tone="neutral">Empty until cases exist.</Note> : <div style={{fontSize:12}}>
+                  {[
+                    ["ORD-1042","New Unit Order", spine[currentIdx]?spine[currentIdx][0]:"Final close", killed?"err":scClosed?"warn":"info"],
+                    colis.length ? ["CASE-0101","Install ("+colis.length+" COLIs)", installClosed?"Closed":locked?"Billing locked — equipment/SAP":fsmWorkDone?"FSM done — billing in flight":"Install in progress", installClosed?"neutral":"info"] : null,
+                    shipped ? ["RO-311","Excess Return", ret.stage===0?(fsmWorkDone?"Ready — can start now (parallel to billing)":"Waiting on FSM close-out"):ret.stage<5?RET_STAGES[ret.stage]:"Processed", ret.stage===5?"ok":fsmWorkDone&&ret.stage===0?"warn":"neutral"] : null,
+                  ].filter(Boolean).map(([id,kind,stage,tone])=>(
+                    <div key={id} style={{display:"flex", alignItems:"center", gap:10, padding:"6px 4px", borderBottom:`1px solid ${C.borderLt}`}}>
+                      <b style={{width:82}}>{id}</b><span style={{width:160, color:C.sub}}>{kind}</span><Chip tone={tone}>{stage}</Chip>
+                    </div>))}
+                  <Note tone="neutral">One page for SC to watch every case and its stage without opening each (Ariel, July 28). Real build: a Salesforce list view filtered to SC-relevant cases, stage as the chevron field.</Note>
+                </div>}
+              </Card>
               <Card title="Command Center (transitional)" badge={<Chip tone={ccEnabled?"info":"neutral"}>{ccEnabled?"step ON":"bypassed"}</Chip>}>
                 <label style={{fontSize:12}}><input type="checkbox" checked={ccEnabled} onChange={e=>{setCcEnabled(e.target.checked); addLog("System", e.target.checked ? "Command Center step turned ON — every engine routes through it before closing." : "Command Center step turned OFF (toggle) — cases close directly, bypassing CC. — Spec §4.6");}}/> Route Order-install, Movement, and Mid-life through Command Center before closing</label>
                 <Note tone="neutral">First-class, toggleable step (Spec §4.6) — meant to come off once the org trusts the system. Applies everywhere except Supply Chain's own order-closing steps, which never routed through CC.</Note>

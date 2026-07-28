@@ -55,6 +55,10 @@ const DEINSTALL_CHECKLIST = [
 const MIXERS = ["McNeilus","Beck","Terex","Revolution","Oshkosh","ConTech","Continental"];
 const SYSTEMS = ["V3","V3 w/ Admix","V5 Basic (VAS)","Spark","V5 temperate water","V5 cold water","V5 w/ Admix","V5 — Module only (Upgrade)"]; // legacy list — still used by brownfield install + movement forms
 /* ── Three-dropdown model + add-on matrix — James K, Order_Case_SC_Selections.xlsx + July 27 call ── */
+/* Real Unit ID convention — TEST_Unit_ID_Generator workbook (Ariel, July 28): U-[YY][MM][hardware digit][ISO][lease L/S][3-digit seq].
+   Demo order: ship July 2026, V5 hardware, US, Lease → sequence continues after the sheet's existing U-26075USL006. */
+const NEW_UNIT_IDS = ["U-26075USL007","U-26075USL008","U-26075USL009"];
+const SPARE_UNIT_ID = "U-26075USL010";
 const MEASURE_OPTS = ["None","Pulse","Spark","v5 Sensor","v3"];
 const WATER_OPTS_V5 = ["None","v5 Temperate","v5 Winter"], WATER_OPTS_V3 = ["None","v3"];
 const ADMIX_OPTS_V5 = ["None","v5 Unheated Admix","v5 Heated Admix"], ADMIX_OPTS_V3 = ["None","v3"];
@@ -365,16 +369,16 @@ function App({onRestart}) {
   const setEst     = () => { setEstDate("07/14/26"); addLog("Supply Chain","ACKNOWLEDGED order (first SC touch — team sees SC has it, July 24 14:13) + estimated SHIP date set: 07/14/26 (pre-filled from desired on-site " + fields.reqDate + ", SC-editable — a ship date, not an arrive date; transit time on top. July 24 14:36–16:45). Team notified of estimate. — Spec §3.1"); };
   const markShipped = () => {
     setShipped(true); setHubTask(true);
-    setUnits(us=>[...us, ...[1,2,3].map(i => ({ id:"U-2607-00"+i, truck:"—", status:"shipped", waiting:0 })), { id:"U-2607-004", truck:"—", status:"spare", waiting:0 }]);
-    addLog("Supply Chain","Mark Shipped → 4 unit IDs CREATED in Salesforce: 3 installs + 1 over-order. The over-ordered system gets a unit ID with an EXPECTED SPARE flag instead of a truck number — so billing does NOT auto-bill it on purchase customers; it ships back (or stays as agreed spare) via the return flow (July 16, 54:38–56:31). Docs uploaded (packing list w/ tracking); ship date field set." + (shipComplete ? " Shipment COMPLETE — everything for this truck count is self-contained (July 24, 28:05)." : ` PARTIAL shipment (intentional short-ship): deferred items get a NEW DATE (${deferDate}) + reason ("${deferReason.trim()||"short parts — defer to next shipment"}") so the field knows what's coming when (July 16, 29:09–29:54; July 24, 24:00–28:21). Installation Specialist (Bruschi) NOTIFIED of the shortage → reviews the actual-ship parts list and confirms (July 16, 20:48–31:00).`) + (dropShip ? " DROP-SHIP included — supplier ships direct to customer (bulky items); supplier packing list + tracking required (July 24, 23:35)." : "") + " — Spec §3.2");
+    setUnits(us=>[...us, ...NEW_UNIT_IDS.map(id => ({ id, truck:"—", status:"shipped", waiting:0 })), { id:SPARE_UNIT_ID, truck:"—", status:"spare", waiting:0 }]);
+    addLog("Supply Chain","Mark Shipped → 4 unit IDs CREATED in Salesforce per the Unit ID Generator convention (U-[YY][MM][hardware][ISO][lease][seq] — e.g. " + NEW_UNIT_IDS[0] + " = 2026, July, V5, US, Lease, #007, continuing the running-log sequence from the generator sheet): 3 installs + 1 over-order. The over-ordered system gets a unit ID with an EXPECTED SPARE flag instead of a truck number — so billing does NOT auto-bill it on purchase customers; it ships back (or stays as agreed spare) via the return flow (July 16, 54:38–56:31). Docs uploaded (packing list w/ tracking); ship date field set." + (shipComplete ? " Shipment COMPLETE — everything for this truck count is self-contained (July 24, 28:05)." : ` PARTIAL shipment (intentional short-ship): deferred items get a NEW DATE (${deferDate}) + reason ("${deferReason.trim()||"short parts — defer to next shipment"}") so the field knows what's coming when (July 16, 29:09–29:54; July 24, 24:00–28:21). Installation Specialist (Bruschi) NOTIFIED of the shortage → reviews the actual-ship parts list and confirms (July 16, 20:48–31:00).`) + (dropShip ? " DROP-SHIP included — supplier ships direct to customer (bulky items); supplier packing list + tracking required (July 24, 23:35)." : "") + " — Spec §3.2");
     if (!shipComplete) addLog("System","Units for the unshipped portion are NOT created yet — partial to one location = create only those units now (July 24, 26:02).");
     addLog("System","Excess Return Order RO-311 auto-created (over-ship policy). Field-team FYI: incoming installs, NO TRUCKS ASSIGNED YET — trucks confirmed as they arrive, inside the install flow. — build-thread rule");
     addLog("System","TASK → Supply Chain: ⚠ ACTION REQUIRED — register units in Hub before equipment arrives on site (the install case can't spawn without Hub sync). — Spec §3.3 (spec language: \"LOUD\", July 16 — renamed for UX July 28)");
   };
   const createHub  = () => {
     setHubCreated(true); setHubTask(false);
-    setColis([1,2,3].map(i => ({ unit:"U-2607-00"+i, status:"Not Started", checks:0, serviceReady:null, shipBack:false, open:false, truck:"TRK-90"+i, tcg:"TCG-4"+i, mixer:MIXERS[i%3], wds:"WDS-77"+i, prop:i%2?"Pump":"Pressure" })));
-    addLog("Supply Chain","Units registered in Hub → Hub owns sync from now on. SC PROMPTED with the Unit IDs (U-2607-001…004) — check them against the RUNNING ID REGISTRY on the Units tab so nothing duplicates; IDs are EDITABLE there (ISO code is sometimes wrong) and units can be ADDED outside this workflow (Ariel, July 28). Reference: unit-ID sheet — to be attached to the case (sheet not yet in project).");
+    setColis(NEW_UNIT_IDS.map((uid,ix)=>{const i=ix+1; return ({ unit:uid, status:"Not Started", checks:0, serviceReady:null, shipBack:false, open:false, truck:"TRK-90"+i, tcg:"TCG-4"+i, mixer:MIXERS[i%3], wds:"WDS-77"+i, prop:i%2?"Pump":"Pressure" });}));
+    addLog("Supply Chain","Units registered in Hub → Hub owns sync from now on. SC PROMPTED with the Unit IDs (" + NEW_UNIT_IDS[0] + "…" + SPARE_UNIT_ID + ") — check them against the RUNNING ID REGISTRY on the Units tab so nothing duplicates; IDs are EDITABLE there (the ISO segment is baked in at generation, so a wrong account region = a wrong ID) and units can be ADDED outside this workflow (Ariel, July 28). Reference: TEST_Unit_ID_Generator workbook — Unit IDs tab IS the running log; the Generate macro fills Ship Date / Hardware / Lease / Account / Qty and continues the sequence.");
     addLog("System","Hub-synced units detected → install case CASE-0101 auto-created: one case, one install-WOLI (COLI) per unit. — Spec §3.4");
   };
   const editUnitId = (oldId, newId) => {
@@ -388,8 +392,10 @@ function App({onRestart}) {
     addLog(role, `Unit ID corrected: ${oldId} → ${newId} (edit allowed — ISO code sometimes wrong; Ariel July 28). COLIs and returns re-linked.`);
   };
   const addUnitManual = () => {
-    let n = units.length+1, id = "U-2607-" + String(n).padStart(3,"0");
-    while (units.some(u=>u.id===id)) { n++; id = "U-2607-" + String(n).padStart(3,"0"); }
+    const prefix = "U-26075USL"; // same YY/MM/hardware/ISO/lease block as this order (generator convention)
+    let n = Math.max(0, ...units.filter(u=>u.id.startsWith(prefix)).map(u=>+u.id.slice(prefix.length)||0)) + 1;
+    let id = prefix + String(n).padStart(3,"0");
+    while (units.some(u=>u.id===id)) { n++; id = prefix + String(n).padStart(3,"0"); }
     setUnits(us=>[...us, {id, truck:"—", status:"available", waiting:0}]);
     recordHistory("Hub registry", "Unit added (manual)", "—", id, role);
     addLog(role, `Unit ${id} ADDED outside the order workflow (manual add on the registry — Ariel, July 28). Logged to the running ID registry; no duplicate.`);
@@ -1396,7 +1402,7 @@ function App({onRestart}) {
 
             {tab==="units" && <div>
               {!units.length && <Note tone="neutral">No units yet — created at Mark Shipped.</Note>}
-              {units.length>0 && <div style={{fontSize:11, color:C.sub, padding:"4px 4px 8px", display:"flex", alignItems:"center", gap:8, flexWrap:"wrap"}}><b style={{letterSpacing:.5}}>UNIT ID REGISTRY — running log: {units.length} IDs issued, 0 duplicates</b><Btn role={role} setRole={setRole} need="Supply Chain" tone="neutral" onClick={addUnitManual}>＋ Add unit (outside order flow)</Btn><Why author="Spec note" initial="S">Ariel (July 28): at the Units created / register-in-Hub step, SC is prompted with the generated IDs and this registry keeps the running log so nothing duplicates. IDs are editable — the ISO code is sometimes wrong — and units can be added outside the order process right here. The unit-ID reference sheet she mentioned should attach to the case; not in the project yet — chase it.</Why></div>}
+              {units.length>0 && <div style={{fontSize:11, color:C.sub, padding:"4px 4px 8px", display:"flex", alignItems:"center", gap:8, flexWrap:"wrap"}}><b style={{letterSpacing:.5}}>UNIT ID REGISTRY — running log: {units.length} IDs issued, 0 duplicates</b><Btn role={role} setRole={setRole} need="Supply Chain" tone="neutral" onClick={addUnitManual}>＋ Add unit (outside order flow)</Btn><Why author="Spec note" initial="S">Ariel (July 28): at the Units created / register-in-Hub step, SC is prompted with the generated IDs and this registry keeps the running log so nothing duplicates. IDs are editable — the ISO code is sometimes wrong — and units can be added outside the order process right here. Reference sheet IN HAND (July 28): TEST_Unit_ID_Generator — Account IDs tab (A-[ISO][YY][seq]; AZ Materials/Summit = A-US230034) + Unit IDs tab, which IS the running log. Format U-[YY][MM][hardware][ISO][lease][seq]; the Generate macro takes Ship Date/Hardware/Lease/Account/Qty and continues the sequence; the ISO segment is why IDs sometimes need hand-editing.</Why></div>}
               {units.map(u=>(
                 <div key={u.id} style={{display:"flex", alignItems:"center", gap:8, padding:"7px 4px", borderBottom:`1px solid ${C.borderLt}`, flexWrap:"wrap"}}>
                   <input defaultValue={u.id} key={"in-"+u.id} onBlur={e=>editUnitId(u.id, e.target.value)} onKeyDown={e=>{if(e.key==="Enter")e.target.blur();}} style={{fontWeight:700, fontSize:13, width:100, border:`1px solid ${C.borderLt}`, borderRadius:4, padding:"3px 5px", background:"#FCFCFD"}} title="Editable — ISO code is sometimes wrong (Ariel, July 28)"/>

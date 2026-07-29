@@ -1,0 +1,2351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnostic Center — Verifi</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #1b1b1b;
+    --row-alt: #232323;
+    --text: #f5f5f5;
+    --muted: #8a8a8a;
+    --dim: #6a6a6a;
+    --orange: #e08a4c;
+    --border: #333;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    display: flex;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    width: 78px;
+    background: #161616;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 18px 0 14px;
+    flex-shrink: 0;
+  }
+  .logo { display: flex; align-items: center; gap: 5px; font-size: 17px; font-weight: 600; letter-spacing: .3px; margin-bottom: 26px; }
+  .logo .pi { font-size: 15px; }
+  .loc { display: flex; flex-direction: column; align-items: center; gap: 5px; margin-bottom: 22px; color: var(--text); }
+  .loc .ic { font-size: 18px; }
+  .loc .txt { font-size: 11px; line-height: 1.2; text-align: center; }
+  .nav { display: flex; flex-direction: column; gap: 20px; width: 100%; align-items: center; }
+  .nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    color: var(--muted); font-size: 10.5px; text-align: center; line-height: 1.15;
+    cursor: pointer; width: 100%; padding: 2px 0;
+  }
+  .nav-item .ic { font-size: 18px; }
+  .nav-item.active, .nav-item:hover { color: var(--text); }
+  .collapse { color: var(--muted); font-size: 18px; margin: 16px 0; cursor: pointer; }
+  .divider { width: 46px; height: 1px; background: var(--border); margin: 6px 0 16px; }
+  .spacer { flex: 1; }
+  .avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 1.5px solid #4a90c2; color: #cfe4f2;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; margin-bottom: 12px;
+  }
+  .foot { color: var(--dim); font-size: 9px; text-align: center; line-height: 1.5; }
+
+  /* ---------- Main ---------- */
+  .main { flex: 1; padding: 28px 40px; position: relative; }
+  .topbar { display: flex; align-items: flex-start; justify-content: space-between; }
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: .3px; }
+  .view-toggle { display: flex; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .view-toggle .vt { width: 40px; height: 34px; display: flex; align-items: center; justify-content: center; color: var(--muted); cursor: pointer; font-size: 16px; }
+  .view-toggle .vt.active { background: #2c2c2c; color: var(--text); }
+  .content { display: flex; gap: 30px; margin-top: 34px; }
+
+  /* ---------- Left filter column ---------- */
+  .filters { width: 250px; flex-shrink: 0; }
+  .filters .label { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+  .select {
+    background: #232323; border: 1px solid var(--border); border-radius: 4px;
+    padding: 12px 14px; display: flex; align-items: center; justify-content: space-between;
+    color: var(--text); font-size: 14px; margin-bottom: 24px; cursor: pointer;
+  }
+  .select .caret { color: var(--muted); font-size: 10px; }
+  .search {
+    background: #232323; border: 1px solid var(--border); border-radius: 4px;
+    padding: 12px 14px; color: var(--muted); font-size: 14px; margin-bottom: 26px;
+  }
+  .filter-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; color: var(--text); font-size: 13.5px; }
+  .filter-row .cb { width: 16px; height: 16px; border: 1.5px solid #555; border-radius: 3px; flex-shrink: 0; }
+  .filter-row .fic { font-size: 15px; width: 18px; text-align: center; color: var(--text); }
+  .filter-row .fname { flex: 1; }
+
+  /* ---------- Table ---------- */
+  .table-area { flex: 1; }
+  .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 6px; }
+  .tab {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 26px 14px 4px; color: var(--muted); font-size: 14px; cursor: pointer;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .tab .ti { font-size: 15px; }
+  .tab.active { color: var(--text); border-bottom-color: var(--text); }
+  .tab.alarm .ti { color: #d64545; }
+  .tab.warning .ti { color: var(--orange); }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th { text-align: left; color: var(--muted); font-size: 12px; font-weight: 600; padding: 18px 12px 14px; vertical-align: top; }
+  tbody td { padding: 15px 12px; font-size: 14px; vertical-align: middle; }
+  tbody tr:nth-child(odd) { background: #232323; }
+  .trow { cursor: pointer; }
+  .trow:hover { background: #2c2c2c !important; }
+  .tname { font-weight: 400; }
+  .ver { font-weight: 700; }
+  .atplant { display: flex; align-items: center; gap: 7px; color: var(--text); }
+  .atplant .x { color: var(--muted); }
+  .alert { color: var(--orange); }
+  .alert .plus { display: inline-flex; align-items: center; gap: 3px; margin-left: 8px; }
+  .conn { font-size: 17px; color: var(--text); }
+  .conn.off { color: var(--muted); }
+  .ign { display: flex; align-items: center; gap: 8px; color: var(--text); }
+  .dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--text); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .dot.on::after { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--text); }
+  .dot.off { border-color: var(--muted); }
+  .dot.prog { border-color: var(--text); font-size: 9px; }
+  .pager { display: flex; align-items: center; justify-content: flex-end; gap: 22px; margin-top: 26px; color: var(--muted); font-size: 12.5px; }
+  .pager .ppsel { border: 1px solid var(--border); border-radius: 3px; padding: 3px 8px; color: var(--text); display: inline-flex; gap: 8px; align-items: center; }
+  .pager .arrows { display: flex; gap: 18px; font-size: 15px; }
+
+  /* ============================================================
+     DRAWER
+     ============================================================ */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.5);
+    opacity: 0; visibility: hidden; transition: opacity .25s ease; z-index: 50;
+  }
+  .overlay.open { opacity: 1; visibility: visible; }
+  .drawer {
+    position: fixed; top: 0; right: 0;
+    width: 1220px; max-width: 95vw; height: 100%;
+    background: #1b1b1b;
+    box-shadow: -12px 0 40px rgba(0,0,0,.5);
+    transform: translateX(100%);
+    transition: transform .3s cubic-bezier(.4,0,.2,1);
+    z-index: 51; overflow-y: auto;
+    padding: 22px 34px 40px;
+  }
+  .drawer.open { transform: translateX(0); }
+
+  /* ── MIGRATION TOKEN LAYER ──────────────────────────────────
+     Everything inside the new Overview + Timeline panels is
+     styled ONLY through these --dc-* tokens, and the markup uses
+     the exact class names / DOM structure from the new Design
+     System prototype (dt-co-card, dt-co-card-strip,
+     dt-drawer-section-hdr, the timeline grid, …).
+
+     Today the tokens hold Hub-dark values so the panels blend
+     into the current product. When the new DC ships, either:
+       a) swap in the Trinity values below (one CSS block), or
+       b) delete this block and load the DS stylesheet — the
+          class names already match, so components restyle
+          themselves with zero markup/JS changes.
+
+     Token             Hub (now)            Trinity dark (later)
+     --dc-layer-1      #232323              #211f1c
+     --dc-layer-2      #1f1f1f              #2f2d28
+     --dc-strong       #f5f5f5              #ffffff
+     --dc-soft         #8a8a8a              #e5e5e5bf
+     --dc-border       #333333              #e5e5e51f
+     --dc-ok           #3fbf5f              #2ecf1d
+     --dc-warn         #e08a4c (Hub orange) #ffba0d (amber)
+     --dc-alarm        #d64545              #d70100
+     --dc-r-card       6px                  20px
+     --dc-r-lg         6px                  24px
+     --dc-r-md         6px                  16px
+  ──────────────────────────────────────────────────────────── */
+  .drawer {
+    --dc-layer-1: #232323;
+    --dc-layer-2: #1f1f1f;
+    --dc-strong: #f5f5f5;
+    --dc-defined: #d5d5d5;
+    --dc-soft: #8a8a8a;
+    --dc-subtle: #6a6a6a;
+    --dc-border: #333333;
+    --dc-ok: #3fbf5f;
+    --dc-warn: #e08a4c;
+    --dc-alarm: #d64545;
+    --dc-strip-ok-bg: rgba(63,191,95,.10);
+    --dc-strip-ok-ink: #7ecfa0;
+    --dc-strip-warn-bg: rgba(224,138,76,.14);
+    --dc-strip-warn-ink: #e08a4c;
+    --dc-strip-alarm-bg: rgba(214,69,69,.16);
+    --dc-strip-alarm-ink: #ff6b6b;
+    --dc-pill-warn-ink: #ffffff;
+    --dc-seg-on: rgba(63,191,95,.40);
+    --dc-seg-off: rgba(255,255,255,.16);
+    --dc-r-sm: 4px;
+    --dc-r-md: 6px;
+    --dc-r-lg: 6px;
+    --dc-r-card: 6px;
+    --dc-blue: #4a90c2;
+    --dc-r-btn: 4px;
+  }
+  /* Trinity preview — same components, new-DS token values */
+  .drawer.trinity {
+    --dc-layer-1: #211f1c;
+    --dc-layer-2: #2f2d28;
+    --dc-strong: #ffffff;
+    --dc-defined: #e5e5e5de;
+    --dc-soft: #e5e5e5bf;
+    --dc-subtle: #e5e5e566;
+    --dc-border: #e5e5e51f;
+    --dc-ok: #2ecf1d;
+    --dc-warn: #ffba0d;
+    --dc-alarm: #d70100;
+    --dc-strip-ok-bg: rgba(21,50,47,.5);
+    --dc-strip-ok-ink: #7ecfa0;
+    --dc-strip-warn-bg: rgba(255,186,13,.15);
+    --dc-strip-warn-ink: #ffba0d;
+    --dc-strip-alarm-bg: rgba(215,1,0,.2);
+    --dc-strip-alarm-ink: #ff6b6b;
+    --dc-pill-warn-ink: #894f18;
+    --dc-seg-on: rgba(46,207,29,.45);
+    --dc-seg-off: rgba(255,255,255,.18);
+    --dc-r-sm: 4px;
+    --dc-r-md: 16px;
+    --dc-r-lg: 24px;
+    --dc-r-card: 20px;
+    --dc-blue: #6492f1;
+    --dc-r-btn: 20px;
+  }
+
+  /* ── Drawer header + nav ── */
+  .d-top {
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 16px; gap: 14px;
+  }
+  .d-title { display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 600; letter-spacing: .5px; white-space: nowrap; }
+  .d-title .back { cursor: pointer; font-size: 19px; color: var(--text); }
+  .d-tnav {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--muted); cursor: pointer; font-size: 13px; font-family: inherit;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .d-tnav:hover { color: var(--text); border-color: var(--muted); }
+  .d-actions { display: flex; align-items: stretch; }
+  .d-act {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 15px; font-size: 11.5px; letter-spacing: .5px;
+    color: var(--muted); cursor: pointer;
+    border-left: 1px solid var(--border);
+    position: relative; white-space: nowrap;
+  }
+  .d-act:first-child { border-left: none; }
+  .d-act .ai { font-size: 13px; }
+  .d-act:hover { color: var(--text); }
+  .d-act.active { color: var(--text); }
+  .d-act.active::after {
+    content: ""; position: absolute; left: 15px; right: 15px; bottom: -17px;
+    height: 2px; background: var(--text);
+  }
+  /* Skin preview toggle removed from the UI for this prototype.
+     The .drawer.trinity token block below is kept — adding that
+     class to #drawer (e.g. from devtools) still previews the
+     new-DS skin, and it documents the migration mapping. */
+
+  /* ── Panels ── */
+  .dc-panel { display: none; padding-top: 22px; }
+  .dc-panel.active { display: block; }
+
+  /* ============================================================
+     OVERVIEW — markup/classes mirror the new DS prototype
+     ============================================================ */
+  .dt-drawer-section-hdr {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 600; color: var(--dc-strong);
+    padding: 6px 0 14px; cursor: pointer; user-select: none;
+  }
+  .dt-drawer-section-hdr .dt-section-chev { transition: transform .2s; color: var(--dc-soft); font-size: 11px; }
+  .dt-drawer-section-hdr.collapsed .dt-section-chev { transform: rotate(-90deg); }
+  .dt-drawer-section-hdr.collapsed + .dt-drawer-cards,
+  .dt-drawer-section-hdr.collapsed + .dc-mc-cards,
+  .dt-drawer-section-hdr.collapsed + .dc-mc-stub { display: none; }
+
+  .dt-drawer-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(212px, 1fr));
+    gap: 14px; margin-bottom: 22px;
+  }
+  .dt-co-card {
+    background: var(--dc-layer-1);
+    border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-card);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .dt-co-card.warn  { border-color: color-mix(in srgb, var(--dc-warn) 35%, transparent); }
+  .dt-co-card.alarm { border-color: color-mix(in srgb, var(--dc-alarm) 40%, transparent); }
+  .dt-co-card.grey  { background: var(--dc-layer-2); }
+  .dt-co-card-body { flex: 1; display: flex; flex-direction: column; gap: 7px; padding: 16px 16px 12px; }
+  .dt-co-card-head { display: flex; align-items: center; gap: 8px; }
+  .dt-co-card-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dt-co-card-name { font-size: 13px; font-weight: 600; color: var(--dc-defined); }
+  .dt-ver-pill {
+    margin-left: auto; font-size: 10px; color: var(--dc-soft);
+    border: 1px solid var(--dc-border); border-radius: 10px; padding: 1px 7px;
+  }
+  .dt-co-card-value-row { display: flex; align-items: baseline; gap: 5px; }
+  .dt-co-card-value { font-size: 26px; font-weight: 700; color: var(--dc-strong); letter-spacing: -.4px; line-height: 1.1; }
+  .dt-co-card.alarm .dt-co-card-value { color: var(--dc-strip-alarm-ink); }
+  .dt-co-card.warn  .dt-co-card-value { color: var(--dc-strip-warn-ink); }
+  .dt-co-card-unit { font-size: 12px; color: var(--dc-soft); }
+  .dt-co-card-desc { display: flex; flex-direction: column; font-size: 11.5px; color: var(--dc-soft); line-height: 1.45; }
+  .dt-co-card-meta { margin-top: auto; display: flex; flex-direction: column; gap: 3px; padding-top: 6px; }
+  .dt-co-card-meta-row { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--dc-defined); }
+  .dt-co-card-meta-label { color: var(--dc-soft); }
+  .dt-co-card-strip { display: flex; align-items: center; gap: 8px; padding: 8px 16px; flex-shrink: 0; }
+  .dt-co-card-strip-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .dt-co-card.clean .dt-co-card-strip { background: var(--dc-strip-ok-bg); }
+  .dt-co-card.clean .dt-co-card-strip-label { color: var(--dc-strip-ok-ink); }
+  .dt-co-card.grey  .dt-co-card-strip { background: var(--dc-layer-2); }
+  .dt-co-card.grey  .dt-co-card-strip-label { color: var(--dc-soft); }
+  .dt-co-card.warn  .dt-co-card-strip { background: var(--dc-strip-warn-bg); }
+  .dt-co-card.warn  .dt-co-card-strip-label { color: var(--dc-strip-warn-ink); }
+  .dt-co-card.warn  .dt-co-card-strip-dot { background: var(--dc-warn); }
+  .dt-co-card.alarm .dt-co-card-strip { background: var(--dc-strip-alarm-bg); }
+  .dt-co-card.alarm .dt-co-card-strip-label { color: var(--dc-strip-alarm-ink); }
+  .dt-co-card.alarm .dt-co-card-strip-dot { background: var(--dc-strip-alarm-ink); }
+  .dt-co-card-strip-label { font-size: 11.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ── Overview layout: cards + merged truck-info side panel ──
+     Side panel merges the legacy Debug/Errors block with the new
+     DS drawer-side (dt-drawer-side: status header, spec table,
+     Ping / De-install, fleet map). Same token layer as the cards. */
+  .dc-ov-wrap { display: flex; gap: 26px; align-items: flex-start; }
+  .dc-ov-main { flex: 1; min-width: 0; }
+  .dc-side { width: 330px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }
+
+  .dc-side-card {
+    background: var(--dc-layer-2);
+    border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-md);
+    padding: 14px;
+  }
+  .dc-side-status { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .dc-ss { display: flex; flex-direction: column; gap: 4px; }
+  .dc-ss .k { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: var(--dc-defined); }
+  .dc-ss .v { font-size: 12px; font-weight: 600; }
+  .dc-ss .v.blue { color: var(--dc-blue); }
+  .dc-ss .v.ok { color: var(--dc-ok); display: flex; align-items: center; gap: 6px; }
+  .dc-ss .v.bad { color: var(--dc-strip-alarm-ink); }
+  .dc-ss .gdot { width: 9px; height: 9px; border-radius: 50%; background: var(--dc-ok); }
+  .dc-ss .gdot.off { background: var(--dc-subtle); }
+
+  .dc-err-row { display: flex; gap: 12px; }
+  .dc-err {
+    flex: 1; border-radius: var(--dc-r-sm); padding: 10px 12px; min-height: 58px;
+    display: flex; flex-direction: column; gap: 4px; font-size: 12px;
+  }
+  .dc-err .eh { display: flex; align-items: center; gap: 7px; font-weight: 600; }
+  .dc-err .ec { font-size: 18px; font-weight: 700; }
+  .dc-err.alarms { background: var(--dc-strip-alarm-bg); border: 1px solid color-mix(in srgb, var(--dc-alarm) 35%, transparent); color: var(--dc-strip-alarm-ink); }
+  .dc-err.warnings { background: var(--dc-strip-warn-bg); border: 1px solid color-mix(in srgb, var(--dc-warn) 35%, transparent); color: var(--dc-strip-warn-ink); }
+  .dc-err .ebox { width: 12px; height: 12px; border: 1.5px solid currentColor; border-radius: 3px; }
+
+  .dc-kv { padding: 4px 0; overflow: hidden; }
+  .dc-kv-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 9px 14px; font-size: 12.5px; }
+  .dc-kv-row:nth-child(odd) { background: var(--dc-layer-1); }
+  .dc-kv-row .k { color: var(--dc-soft); white-space: nowrap; }
+  .dc-kv-row .v { color: var(--dc-defined); font-weight: 600; text-align: right; }
+  .dc-kv-row .v.mono { font-family: "DM Mono", Consolas, monospace; font-weight: 400; letter-spacing: .5px; }
+
+
+  .dc-btn-row { display: flex; gap: 10px; }
+  .dc-btn {
+    flex: 1; padding: 10px 0; text-align: center;
+    border-radius: var(--dc-r-btn); font-size: 12.5px; font-weight: 600;
+    cursor: pointer; font-family: inherit; letter-spacing: .2px;
+  }
+  .dc-btn.ping { background: var(--dc-blue); border: 1px solid var(--dc-blue); color: #fff; }
+
+  /* Debug card — same surface contract as the spec table above it,
+     carrying the mode selector + two mini diagnostics charts.
+     A live debug mode refreshes the charts every 15 s. */
+  .dc-debug-hd { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; font-weight: 600; color: var(--dc-strong); margin-bottom: 10px; }
+  .dc-live {
+    display: none; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 700; letter-spacing: .6px; color: var(--dc-ok);
+  }
+  .dc-live.on { display: inline-flex; }
+  .dc-live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--dc-ok); animation: dcPulse 1.6s ease-in-out infinite; }
+  @keyframes dcPulse { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
+  .dc-mode-dd { display: block; width: 100%; cursor: pointer; }
+  .dc-chart-mini {
+    background: var(--dc-layer-1); border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-sm); padding: 10px 12px 8px;
+    cursor: pointer; margin-top: 10px;
+  }
+  .dc-chart-mini:hover { border-color: color-mix(in srgb, var(--dc-strong) 30%, transparent); }
+  .dc-chart-mini .hd { display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; font-weight: 600; color: var(--dc-defined); margin-bottom: 6px; }
+  .dc-chart-mini .ex { color: var(--dc-soft); font-size: 12px; }
+  .dc-chart-mini svg { display: block; width: 100%; height: 54px; }
+
+  .dc-chart-modal {
+    position: fixed; inset: 0; z-index: 40;
+    display: none; align-items: center; justify-content: center;
+    background: rgba(0,0,0,.55);
+  }
+  .dc-chart-modal.open { display: flex; }
+  .dc-chart-box {
+    position: relative;
+    width: 94%; max-width: 1120px; max-height: 92%;
+    overflow-y: auto;
+    background: var(--dc-layer-2); border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-md); padding: 18px 22px 20px;
+    box-shadow: 0 18px 60px rgba(0,0,0,.5);
+  }
+  .dc-chart-tip {
+    position: absolute; z-index: 6; display: none;
+    background: var(--dc-layer-1); border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-sm); padding: 6px 10px;
+    font-size: 11px; line-height: 1.5; color: var(--dc-soft);
+    pointer-events: none; white-space: nowrap;
+    box-shadow: 0 6px 18px rgba(0,0,0,.4);
+  }
+  .dc-chart-tip b { color: var(--dc-strong); font-size: 12px; }
+
+  /* Zoom brush — overview strip with drag handles, shared by both charts */
+  .dc-brush {
+    position: relative; height: 44px;
+    background: var(--dc-layer-1); border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-sm); user-select: none; overflow: visible;
+  }
+  .dc-brush > svg { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .55; pointer-events: none; }
+  .dc-brush-win {
+    position: absolute; top: 0; bottom: 0;
+    background: color-mix(in srgb, var(--dc-blue) 16%, transparent);
+    border: 1px solid color-mix(in srgb, var(--dc-blue) 65%, transparent);
+    cursor: grab;
+  }
+  .dc-brush-win:active { cursor: grabbing; }
+  .dc-brush-win .hdl {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 10px; height: 24px; border-radius: 3px;
+    background: var(--dc-strong); box-shadow: 0 1px 3px rgba(0,0,0,.4);
+    cursor: ew-resize;
+  }
+  .dc-brush-win .hdl.l { left: -5px; }
+  .dc-brush-win .hdl.r { right: -5px; }
+  .dc-brush-days { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--dc-soft); padding: 4px 2px 0; }
+  .dc-brush-hint { font-size: 10.5px; color: var(--dc-subtle); margin: 4px 0 10px; }
+  .dc-chart-box .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .dc-chart-box .t { font-size: 15px; font-weight: 600; color: var(--dc-strong); }
+  .dc-chart-box .ct { font-size: 13px; font-weight: 600; color: var(--dc-strong); margin: 14px 0 6px; }
+  .dc-chart-box .ct:first-of-type { margin-top: 0; }
+  /* main chart svgs only — scoped so the brush's context svg keeps
+     its own absolute sizing (a generic .dc-chart-box svg rule here
+     previously overrode the brush height and caused the bleed) */
+  .dc-zoom-chart svg { display: block; width: 100%; height: 228px; }
+  .dc-chk-row { display: flex; gap: 26px; margin-top: 14px; flex-wrap: wrap; }
+  .dc-chk { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--dc-soft); cursor: pointer; }
+  .dc-chk .bx { width: 14px; height: 14px; border: 1.5px solid color-mix(in srgb, var(--dc-strong) 30%, transparent); border-radius: 3px; flex-shrink: 0; }
+
+  /* ── Manual Control: command cards + history table ──────────
+     Section taxonomy + card contract mirror the new DS Manual
+     Control tab (Diagnostics / Water / Admix / Calibration);
+     the two-pane commands-left / history-right layout is kept
+     from the current Hub page. Same --dc-* token layer. */
+  .dc-mc-wrap { display: flex; gap: 26px; align-items: flex-start; }
+  .dc-mc-left { flex: 1.05; min-width: 0; }
+  .dc-mc-right { flex: 1; min-width: 0; }
+
+  .dc-mc-cards { display: flex; flex-direction: column; gap: 12px; margin-bottom: 22px; }
+  .dc-mc-card {
+    background: var(--dc-layer-2);
+    border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-md);
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .dc-mc-card .info { flex: 1; min-width: 0; }
+  .dc-mc-card .cname { font-size: 13px; font-weight: 600; color: var(--dc-strong); margin-bottom: 4px; }
+  .dc-mc-card .cdesc { font-size: 12px; color: var(--dc-soft); line-height: 1.5; }
+  .dc-mc-card .cdesc strong { color: var(--dc-strip-warn-ink); font-weight: 600; }
+  .dc-mc-btn {
+    flex-shrink: 0; min-width: 128px; padding: 9px 16px;
+    border-radius: var(--dc-r-btn); font-size: 12.5px; font-weight: 600;
+    cursor: pointer; font-family: inherit; letter-spacing: .2px; text-align: center;
+    background: var(--dc-blue); border: 1px solid var(--dc-blue); color: #fff;
+  }
+  .dc-mc-btn:active { transform: translateY(1px); }
+  /* Danger tier — destructive commands read differently from routine ones */
+  .dc-mc-btn.danger { background: transparent; border-color: var(--dc-alarm); color: var(--dc-strip-alarm-ink); }
+  .dc-mc-stub { font-size: 12px; color: var(--dc-subtle); padding: 2px 0 18px; }
+
+  /* Section bodies (Water / Admix / Tilt) */
+  .dc-mc-body { display: flex; flex-direction: column; gap: 12px; margin-bottom: 22px; }
+  .dt-drawer-section-hdr.collapsed + .dc-mc-body { display: none; }
+  .dc-input-label { font-size: 11.5px; font-weight: 600; color: var(--dc-soft); margin-bottom: 6px; }
+  .dc-input {
+    width: 100%; background: var(--dc-layer-1);
+    border: 1px solid var(--dc-border); border-radius: var(--dc-r-sm);
+    padding: 10px 12px; font-size: 13px; color: var(--dc-strong);
+    font-family: inherit; outline: none;
+  }
+  .dc-input:focus { border-color: var(--dc-blue); }
+  .dc-input::placeholder { color: var(--dc-subtle); }
+  .dc-dose-row { display: flex; gap: 10px; }
+  .dc-dose-row .dc-input { flex: 1; }
+  .dc-mc-btn:disabled { opacity: .4; cursor: default; }
+  .dc-mc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .dc-mc-grid .dc-mc-btn { min-width: 0; }
+  .dc-mc-btn.ghost { background: transparent; border-color: var(--dc-border); color: var(--dc-defined); }
+
+  /* Tilt calibration */
+  .dc-tilt-head { display: flex; gap: 16px; align-items: flex-start; }
+  .dc-tilt-head .txt { flex: 1; font-size: 12px; color: var(--dc-soft); line-height: 1.55; }
+  .dc-tilt-fig {
+    flex-shrink: 0; width: 168px; height: 74px;
+    background: var(--dc-layer-1); border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-sm);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .dc-tilt-warn { font-size: 12px; font-weight: 600; color: var(--dc-strip-alarm-ink); }
+  .dc-tilt-status { text-align: center; font-size: 12px; color: var(--dc-soft); line-height: 1.6; padding-top: 2px; }
+  .dc-tilt-status b { color: var(--dc-defined); }
+
+  /* History table */
+  .dc-mc-tbl {
+    background: var(--dc-layer-2);
+    border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-md);
+    overflow: hidden;
+  }
+  .dc-mc-thead, .dc-mc-tr {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1.4fr .7fr .9fr;
+    gap: 10px; padding: 11px 14px; align-items: center;
+  }
+  .dc-mc-thead { font-size: 11px; font-weight: 600; color: var(--dc-soft); border-bottom: 1px solid var(--dc-border); }
+  .dc-mc-tr { font-size: 12px; color: var(--dc-defined); }
+  .dc-mc-tr:nth-child(odd) { background: var(--dc-layer-1); }
+  .dc-mc-empty { padding: 34px 0; text-align: center; font-size: 12.5px; color: var(--dc-subtle); }
+  .dc-mc-foot {
+    display: flex; align-items: center; justify-content: flex-end; gap: 20px;
+    padding: 10px 14px; font-size: 11.5px; color: var(--dc-soft);
+    border-top: 1px solid var(--dc-border);
+  }
+  .dc-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 600;
+    border-radius: var(--dc-r-btn); padding: 3px 9px; white-space: nowrap;
+  }
+  .dc-chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .dc-chip.pending { background: var(--dc-strip-warn-bg); color: var(--dc-strip-warn-ink); }
+  .dc-chip.success { background: var(--dc-strip-ok-bg); color: var(--dc-strip-ok-ink); }
+  .dc-chip.failed  { background: var(--dc-strip-alarm-bg); color: var(--dc-strip-alarm-ink); }
+
+  /* ── Truck Log: table left, always-on JSON inspector right ──
+     Diff-scrubber pattern: ArrowUp/Down moves through log rows,
+     the JSON pane re-renders in place, and a pinned line stays
+     highlighted so one field can be compared across messages. */
+  .dc-logs-wrap { display: flex; gap: 22px; align-items: flex-start; }
+  .dc-logs-left { flex: 1.12; min-width: 0; }
+  .dc-logs-right {
+    flex: 1; min-width: 0;
+    background: var(--dc-layer-2);
+    border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-md);
+    padding: 16px; display: flex; flex-direction: column; gap: 12px;
+  }
+  .dc-logs-filters { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .dc-logs-filters .dc-input { flex: 1; min-width: 160px; }
+  .dc-logs-filters select.dc-input { flex: 0 0 auto; width: auto; cursor: pointer; }
+  .dc-input.dc-date {
+    flex: 0 0 auto; width: auto; min-width: 0;
+    color: var(--dc-blue); font-weight: 600; font-size: 12px;
+    color-scheme: dark; cursor: pointer;
+  }
+  .dc-input.dc-date::-webkit-calendar-picker-indicator { filter: invert(.6); cursor: pointer; }
+  .dc-logs-hint { font-size: 11px; color: var(--dc-subtle); margin-bottom: 10px; }
+  .dc-logs-hint b { color: var(--dc-soft); font-weight: 600; }
+
+  .dc-logs-tbl { background: var(--dc-layer-2); border: 1px solid var(--dc-border); border-radius: var(--dc-r-md); overflow: hidden; }
+  .dc-logs-thead, .dc-log-tr {
+    display: grid;
+    grid-template-columns: 1.35fr .55fr 1.05fr .65fr 1.05fr;
+    gap: 10px; padding: 10px 14px; align-items: center;
+  }
+  .dc-logs-thead { font-size: 11px; font-weight: 600; color: var(--dc-soft); border-bottom: 1px solid var(--dc-border); }
+  .dc-logs-scroll { max-height: calc(100vh - 320px); overflow-y: auto; }
+  .dc-log-tr { font-size: 12px; color: var(--dc-defined); cursor: pointer; }
+  .dc-log-tr:nth-child(odd) { background: var(--dc-layer-1); }
+  .dc-log-tr:hover { background: color-mix(in srgb, var(--dc-strong) 8%, transparent); }
+  .dc-log-tr.sel { background: color-mix(in srgb, var(--dc-strong) 16%, transparent); color: var(--dc-strong); }
+  .dc-log-tr .mono, .dc-kvh .mono { font-family: "DM Mono", Consolas, monospace; font-size: 11px; letter-spacing: .3px; }
+  .dc-logs-foot { display: flex; justify-content: flex-end; padding: 9px 14px; font-size: 11.5px; color: var(--dc-soft); border-top: 1px solid var(--dc-border); }
+
+  .dc-logdet-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .dc-logdet-title { font-size: 15px; font-weight: 600; color: var(--dc-strong); }
+  .dc-copy-btn {
+    background: transparent; border: 1px solid var(--dc-border); border-radius: var(--dc-r-sm);
+    color: var(--dc-soft); font-size: 11px; padding: 4px 10px; cursor: pointer; font-family: inherit;
+  }
+  .dc-copy-btn:hover { color: var(--dc-strong); }
+  .dc-kvh { display: grid; grid-template-columns: max-content 1fr; gap: 3px 14px; font-size: 12px; }
+  .dc-kvh .k { color: var(--dc-soft); font-weight: 600; }
+  .dc-kvh .v { color: var(--dc-defined); }
+
+  .dc-json {
+    flex: 1; overflow: auto;
+    background: var(--dc-layer-1);
+    border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-sm);
+    padding: 8px 0;
+    max-height: calc(100vh - 380px);
+    font-family: "DM Mono", Consolas, monospace;
+    font-size: 11.5px; line-height: 1.6;
+  }
+  .dc-json-line { display: flex; gap: 12px; padding: 0 10px; white-space: pre; cursor: pointer; }
+  .dc-json-line:hover { background: color-mix(in srgb, var(--dc-strong) 6%, transparent); }
+  .dc-json-line .ln { width: 24px; text-align: right; color: var(--dc-subtle); flex-shrink: 0; user-select: none; }
+  .dc-json-line.pinned { background: color-mix(in srgb, var(--dc-blue) 24%, transparent); }
+  .dc-json-line.pinned .ln { color: var(--dc-blue); font-weight: 700; }
+  .jk { color: #8ab4f8; }
+  .js { color: #9ccc65; }
+  .jn { color: #ffb74d; }
+  .jb { color: #ce93d8; }
+
+  /* ── Configuration: searchable accordion settings ────────────
+     Structure mirrors dtBuildConfig in the new DS (same section
+     taxonomy + field contract: read-only value that swaps to an
+     input in edit mode). Hub-skinned via the --dc-* tokens. */
+  .dc-cfg-top { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; }
+  .dc-cfg-search {
+    flex: 1; display: flex; align-items: center; gap: 8px;
+    background: var(--dc-layer-2); border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-btn); padding: 9px 14px;
+  }
+  .dc-cfg-search input {
+    flex: 1; background: none; border: none; outline: none;
+    font-size: 13px; color: var(--dc-strong); font-family: inherit;
+  }
+  .dc-cfg-search input::placeholder { color: var(--dc-subtle); }
+  .dc-cfg-count { font-size: 11.5px; color: var(--dc-soft); white-space: nowrap; }
+
+  .dc-acc {
+    background: var(--dc-layer-2); border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-md); margin-bottom: 12px; overflow: hidden;
+  }
+  .dc-acc-hdr { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 18px; cursor: pointer; }
+  .dc-acc-title { font-size: 13.5px; font-weight: 600; color: var(--dc-strong); }
+  .dc-acc-sub { font-size: 11.5px; color: var(--dc-soft); margin-top: 3px; line-height: 1.4; }
+  .dc-acc-chev { color: var(--dc-soft); font-size: 11px; transition: transform .2s; flex-shrink: 0; }
+  .dc-acc:not(.open) .dc-acc-chev { transform: rotate(-90deg); }
+  .dc-acc-body { padding: 2px 18px 18px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 22px; }
+  .dc-acc:not(.open) .dc-acc-body { display: none; }
+  /* Whole-section search hit — used when the query matches the
+     accordion title (e.g. "in-cab display") */
+  .dc-acc.hit-sec { border-color: color-mix(in srgb, var(--dc-blue) 55%, transparent); }
+  .dc-acc.hit-sec .dc-acc-title { color: var(--dc-blue); }
+
+  /* Actions dropdown next to Update */
+  .dc-actions-wrap { position: relative; flex-shrink: 0; }
+  .dc-menu {
+    position: absolute; top: calc(100% + 6px); right: 0; z-index: 25;
+    min-width: 196px; padding: 6px 0;
+    background: var(--dc-layer-1); border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-sm); box-shadow: 0 10px 30px rgba(0,0,0,.45);
+    display: none;
+  }
+  .dc-menu.open { display: block; }
+  .dc-menu-item { padding: 9px 14px; font-size: 12.5px; color: var(--dc-defined); cursor: pointer; white-space: nowrap; }
+  .dc-menu-item:hover { background: var(--dc-layer-2); color: var(--dc-strong); }
+  .dc-menu-item.danger { color: var(--dc-strip-alarm-ink); }
+  .dc-menu-div { height: 1px; background: var(--dc-border); margin: 5px 0; }
+
+  /* Verification chips — same concept as the product's CONFIRM /
+     UNKNOWN tags, dialed way down: tinted text on a faint wash
+     instead of solid fills. */
+  .dc-vchip {
+    display: inline-flex; align-items: center; gap: 4px;
+    margin-left: 8px; padding: 1px 7px; border-radius: 8px;
+    font-size: 9.5px; font-weight: 600; letter-spacing: .4px;
+    text-transform: uppercase; vertical-align: 1px;
+  }
+  .dc-vchip.ok { color: var(--dc-strip-ok-ink); background: var(--dc-strip-ok-bg); }
+  .dc-vchip.unk { color: var(--dc-soft); background: color-mix(in srgb, var(--dc-strong) 8%, transparent); }
+  .dc-cfg-sublbl { grid-column: 1 / -1; font-size: 12px; font-weight: 700; color: var(--dc-strong); padding-top: 6px; }
+
+  .dc-cfg-field label { display: block; font-size: 11.5px; font-weight: 600; color: var(--dc-soft); margin-bottom: 4px; }
+  .dc-cfg-field.hit label { color: var(--dc-blue); }
+  .dc-cfg-ro { font-size: 13px; color: var(--dc-strong); padding: 8px 0; min-height: 18px; }
+  .dc-cfg-field .dc-input, .dc-cfg-field select.dc-input { display: none; }
+  #panel-config.editing .dc-cfg-field .dc-cfg-ro { display: none; }
+  #panel-config.editing .dc-cfg-field .dc-input { display: block; width: 100%; }
+
+  .dc-tgl {
+    width: 34px; height: 18px; border-radius: 10px;
+    background: color-mix(in srgb, var(--dc-strong) 16%, transparent);
+    position: relative; cursor: pointer; margin-top: 6px;
+    opacity: .55; pointer-events: none; transition: background .15s;
+  }
+  .dc-tgl::after {
+    content: ""; position: absolute; top: 2px; left: 2px;
+    width: 14px; height: 14px; border-radius: 50%; background: var(--dc-strong);
+    transition: left .15s;
+  }
+  .dc-tgl.on { background: var(--dc-blue); }
+  .dc-tgl.on::after { left: 18px; background: #fff; }
+  /* Unknown verification state — no reported value, so the toggle
+     reads indeterminate: dimmed, knob centered */
+  .dc-tgl.unk { opacity: .3; }
+  .dc-tgl.unk::after { left: 10px; }
+  #panel-config.editing .dc-tgl { opacity: 1; pointer-events: auto; }
+
+  /* Tilt readout inside Configuration */
+  .dc-cfg-tiltstats { grid-column: 1 / -1; display: flex; gap: 14px; }
+  .dc-tilt-stat {
+    flex: 1; background: var(--dc-layer-1); border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-sm); padding: 10px 14px;
+  }
+  .dc-tilt-stat .l { font-size: 11px; color: var(--dc-soft); margin-bottom: 4px; }
+  .dc-tilt-stat .v { font-size: 17px; font-weight: 700; color: var(--dc-strong); }
+  .dc-tilt-stat .v.unset { color: var(--dc-subtle); }
+  .dc-tilt-stat .v.ok { color: var(--dc-ok); }
+  .dc-cfg-steps { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px; }
+  .dc-cfg-step { display: flex; gap: 10px; font-size: 12px; color: var(--dc-soft); line-height: 1.5; }
+  .dc-cfg-step .n {
+    flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%;
+    border: 1px solid var(--dc-border); color: var(--dc-defined);
+    display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 700;
+  }
+  .dc-cfg-resetrow { grid-column: 1 / -1; display: flex; align-items: center; gap: 16px; justify-content: space-between; border-top: 1px solid var(--dc-border); padding-top: 14px; }
+  .dc-cfg-resetrow .t { font-size: 12.5px; font-weight: 600; color: var(--dc-strong); }
+  .dc-cfg-resetrow .s { font-size: 11.5px; color: var(--dc-soft); margin-top: 3px; line-height: 1.45; }
+
+  /* Pinned to the drawer's bottom edge (the drawer's transform
+     makes it the containing block for fixed descendants), spans
+     the full drawer width, opaque — nothing scrolls under it. */
+  .dc-cfg-savebar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+    display: none; align-items: center; justify-content: space-between; gap: 14px;
+    background: var(--dc-layer-1); border-top: 1px solid var(--dc-border);
+    box-shadow: 0 -8px 22px rgba(0,0,0,.4);
+    padding: 14px 34px;
+  }
+  #panel-config.editing .dc-cfg-savebar { display: flex; }
+  /* Keep the last accordion scrollable above the pinned bar */
+  #panel-config.editing { padding-bottom: 96px; }
+  .dc-cfg-savebar .msg { font-size: 12.5px; color: var(--dc-soft); }
+  .dc-cfg-savebar .btns { display: flex; gap: 10px; }
+
+  /* ============================================================
+     TIMELINE — structure mirrors dtBuildTimeline in the new DS
+     ============================================================ */
+  .dc-daystrip {
+    display: flex; height: 66px;
+    background: var(--dc-layer-2);
+    border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-lg);
+    overflow: hidden; margin-bottom: 18px;
+  }
+  .dc-day {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    border-left: 1px solid var(--dc-border); cursor: pointer; padding: 0;
+  }
+  .dc-day:first-child { border-left: none; }
+  .dc-day-inner { display: flex; align-items: center; gap: 8px; padding: 0; border-radius: var(--dc-r-md); }
+  .dc-day.sel { padding: 4px; }
+  .dc-day.sel .dc-day-inner { background: var(--dc-layer-1); padding: 7px 11px; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+  .dc-day-lbl { font-size: 13px; font-weight: 500; color: var(--dc-strong); line-height: 1.25; white-space: nowrap; }
+  .dc-day-num { font-size: 11px; color: var(--dc-soft); line-height: 1.25; white-space: nowrap; }
+  .dc-badge-ok { width: 8px; height: 8px; border-radius: 50%; background: var(--dc-ok); flex-shrink: 0; }
+  .dc-badge-warn, .dc-badge-alarm {
+    width: 19px; height: 19px; border-radius: 3px; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700;
+  }
+  .dc-badge-warn { background: var(--dc-warn); color: var(--dc-pill-warn-ink); }
+  .dc-badge-alarm { background: var(--dc-alarm); color: #fff; }
+
+  .dc-tl-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .dc-tl-hdr .t { font-size: 15px; font-weight: 600; color: var(--dc-strong); }
+  .dc-tl-hdr .r { display: flex; align-items: center; gap: 8px; }
+  .dc-tl-hdr .dlbl { font-size: 13px; font-weight: 500; color: var(--dc-strong); }
+  .dc-tl-hdr .nbtn {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 1px solid var(--dc-border); background: transparent;
+    color: var(--dc-defined); cursor: pointer; font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .dc-tl-box {
+    background: var(--dc-layer-2);
+    border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-md);
+    padding: 14px 18px;
+  }
+  .dc-tl-grid { display: grid; grid-template-columns: max-content 1fr; }
+  .dc-tl-axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--dc-soft); padding: 0 8px 8px; }
+  .dc-tl-label { height: 52px; display: flex; align-items: center; font-size: 13px; color: var(--dc-strong); padding-right: 16px; white-space: nowrap; }
+  .dc-tl-rows { background: var(--dc-layer-2); border: 1px solid var(--dc-border); border-radius: var(--dc-r-md); overflow: hidden; }
+  .dc-tl-row { height: 52px; display: flex; align-items: center; padding: 0 10px; }
+  .dc-tl-row:nth-child(odd) { background: var(--dc-layer-1); }
+  .dc-tl-track { flex: 1; display: flex; align-items: center; height: 24px; gap: 2px; overflow: hidden; }
+  .dc-seg { border-radius: 5px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .dc-seg.g { background: var(--dc-seg-on); height: 5px; }
+  .dc-seg.x { background: var(--dc-seg-off); height: 5px; }
+  .dc-seg.w, .dc-seg.a, .dc-seg.T { height: 24px; min-width: 40px; cursor: pointer; }
+  .dc-seg.w { background: var(--dc-warn); }
+  .dc-seg.a, .dc-seg.T { background: var(--dc-alarm); }
+  .dc-seg.T { align-self: stretch; height: auto; }
+  .dc-seg .sl { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 600; white-space: nowrap; overflow: hidden; }
+  .dc-seg.w .sl { color: var(--dc-pill-warn-ink); }
+  .dc-seg.a .sl, .dc-seg.T .sl { color: #fff; }
+  .dc-tl-legend { display: flex; gap: 22px; align-items: center; padding: 12px 8px 2px; flex-wrap: wrap; }
+  .dc-tl-legend span { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--dc-strong); }
+  .dc-leg-on { width: 20px; height: 4px; border-radius: 2px; background: var(--dc-seg-on); }
+  .dc-leg-off { width: 20px; height: 4px; border-radius: 2px; background: var(--dc-seg-off); }
+
+</style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo"><span class="pi">&#120587;</span> verifi</div>
+    <div class="loc"><span class="ic">&#128205;</span><span class="txt">Ozinga<br>Chicago</span></div>
+    <nav class="nav">
+      <div class="nav-item"><span class="ic">&#8962;</span>Dashboards</div>
+      <div class="nav-item"><span class="ic">&#9672;</span>My Fleet</div>
+      <div class="nav-item"><span class="ic">&#128202;</span>Production</div>
+      <div class="nav-item"><span class="ic">&#9741;</span>Mixtures</div>
+      <div class="nav-item"><span class="ic">&#9776;</span>Tickets</div>
+      <div class="nav-item active"><span class="ic">&#128269;</span>Diagnostic<br>Center</div>
+      <div class="nav-item"><span class="ic">&#128200;</span>Data Insights</div>
+      <div class="collapse">&#171;</div>
+      <div class="divider"></div>
+      <div class="nav-item"><span class="ic">&#9881;</span>Settings</div>
+      <div class="nav-item"><span class="ic">?</span>Support</div>
+    </nav>
+    <div class="spacer"></div>
+    <div class="avatar">JD</div>
+    <div class="foot">Saint-Gobain&copy;<br>2026 v1.5.0<br>2f45a08d<br>2607231640</div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <h1>Diagnostic Center</h1>
+      <div class="view-toggle"><div class="vt active">&#9636;</div><div class="vt">&#9684;</div></div>
+    </div>
+
+    <div class="content">
+      <div class="filters">
+        <div class="label">Location</div>
+        <div class="select"><span>All Elements</span><span class="caret">&#9660;</span></div>
+        <div class="label">Truck</div>
+        <div class="search">Search Trucks</div>
+        <div class="filter-row"><span class="cb"></span><span class="fic">&#127981;</span><span class="fname">Trucks at plant</span><span>2</span></div>
+        <div class="filter-row"><span class="cb"></span><span class="fic">&#10005;</span><span class="fname">Trucks not at plant</span><span>8</span></div>
+        <div class="filter-row"><span class="cb"></span><span class="fic">&#9673;</span><span class="fname">Ignition on trucks</span><span>8</span></div>
+        <div class="filter-row"><span class="cb"></span><span class="fic">&#9675;</span><span class="fname">Ignition off trucks</span><span>1</span></div>
+        <div class="filter-row"><span class="cb"></span><span class="fic">&#9676;</span><span class="fname">Ignition in progress trucks</span><span>1</span></div>
+      </div>
+
+      <div class="table-area">
+        <div class="tabs">
+          <div class="tab active"><span class="ti">&#8212;</span>10 All</div>
+          <div class="tab alarm"><span class="ti">&#9634;</span>0 Alarm</div>
+          <div class="tab warning"><span class="ti">&#9888;</span>7 Warning</div>
+          <div class="tab"><span class="ti">&#128683;</span>1 Disconnected</div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Truck Name</th><th>System<br>Version</th><th>At Plant</th><th>Alert</th><th>Connection</th><th>Ignition</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="trow" onclick="openDrawer('1219')">
+              <td class="tname">1219</td><td class="ver">V5</td>
+              <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
+              <td class="alert"></td>
+              <td><span class="conn">((&#8226;))</span></td>
+              <td><span class="ign"><span class="dot on"></span> On</span></td>
+            </tr>
+            <tr class="trow" onclick="openDrawer('1341')">
+              <td class="tname">1341</td><td class="ver">V5</td>
+              <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
+              <td class="alert">Flow rate is lower than expected</td>
+              <td><span class="conn">((&#8226;))</span></td>
+              <td><span class="ign"><span class="dot on"></span> On</span></td>
+            </tr>
+            <tr class="trow" onclick="openDrawer('1408')">
+              <td class="tname">1408</td><td class="ver">--</td>
+              <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
+              <td class="alert">Flow rate is lower than expected <span class="plus">&#9888; +1</span></td>
+              <td><span class="conn off">&#128683;</span></td>
+              <td><span class="ign"><span class="dot off"></span> Off</span></td>
+            </tr>
+            <tr class="trow" onclick="openDrawer('1416')">
+              <td class="tname">1416</td><td class="ver">V5</td>
+              <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
+              <td class="alert">Flow rate is lower than expected</td>
+              <td><span class="conn">((&#8226;))</span></td>
+              <td><span class="ign"><span class="dot on"></span> On</span></td>
+            </tr>
+            <tr class="trow" onclick="openDrawer('1894')">
+              <td class="tname">1894</td><td class="ver">V5</td>
+              <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
+              <td class="alert"></td>
+              <td><span class="conn">((&#8226;))</span></td>
+              <td><span class="ign"><span class="dot on"></span> On</span></td>
+            </tr>
+            <tr class="trow" onclick="openDrawer('1921')">
+              <td class="tname">1921</td><td class="ver">V5</td>
+              <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
+              <td class="alert">Flow rate is lower than expected</td>
+              <td><span class="conn">((&#8226;))</span></td>
+              <td><span class="ign"><span class="dot on"></span> On</span></td>
+            </tr>
+            <tr class="trow" onclick="openDrawer('1968')">
+              <td class="tname">1968</td><td class="ver">V5</td>
+              <td><span class="atplant"><span class="fic">&#127981;</span> Yes</span></td>
+              <td class="alert">Flow rate is lower than expected</td>
+              <td><span class="conn">((&#8226;))</span></td>
+              <td><span class="ign"><span class="dot on"></span> On</span></td>
+            </tr>
+            <tr class="trow" onclick="openDrawer('2105')">
+              <td class="tname">2105</td><td class="ver">V5</td>
+              <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
+              <td class="alert">Accelerometer not working</td>
+              <td><span class="conn">((&#8226;))</span></td>
+              <td><span class="ign"><span class="dot prog">&#9676;</span> In-progress</span></td>
+            </tr>
+            <tr class="trow" onclick="openDrawer('2356')">
+              <td class="tname">2356</td><td class="ver">V5</td>
+              <td><span class="atplant"><span class="fic">&#127981;</span> Yes</span></td>
+              <td class="alert"></td>
+              <td><span class="conn">((&#8226;))</span></td>
+              <td><span class="ign"><span class="dot on"></span> On</span></td>
+            </tr>
+            <tr class="trow" onclick="openDrawer('2541')">
+              <td class="tname">2541</td><td class="ver">V5</td>
+              <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
+              <td class="alert">Flow rate is lower than expected</td>
+              <td><span class="conn">((&#8226;))</span></td>
+              <td><span class="ign"><span class="dot on"></span> On</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="pager">
+          <div>Items per page: <span class="ppsel">10 <span style="font-size:9px">&#9660;</span></span></div>
+          <div>1 &#8211; 10 of 10</div>
+          <div class="arrows"><span>&#8249;</span><span>&#8250;</span></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Drawer -->
+  <div class="overlay" id="overlay" onclick="closeDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <div class="d-top">
+      <div class="d-title">
+        <span class="back" onclick="closeDrawer()">&#8857;</span>
+        <button class="d-tnav" onclick="dcNavTruck(-1)" title="Previous truck">&#8249;</button>
+        <span id="dTruckName">TRUCK 1219</span>
+        <button class="d-tnav" onclick="dcNavTruck(1)" title="Next truck">&#8250;</button>
+      </div>
+      <div class="d-actions">
+        <div class="d-act active" id="act-overview" onclick="dcTab('overview')"><span class="ai">&#9638;</span> OVERVIEW</div>
+        <div class="d-act" id="act-timeline" onclick="dcTab('timeline')"><span class="ai">&#8987;</span> TIMELINE</div>
+        <div class="d-act" id="act-manual" onclick="dcTab('manual')"><span class="ai">&#127899;</span> MANUAL CONTROL</div>
+        <div class="d-act" id="act-logs" onclick="dcTab('logs')"><span class="ai">&#128196;</span> TRUCK LOG</div>
+        <div class="d-act" id="act-config" onclick="dcTab('config')"><span class="ai">&#9881;</span> CONFIGURATION</div>
+      </div>
+    </div>
+
+    <!-- ═══ OVERVIEW (new DS component, Hub-skinned) ═══ -->
+    <div class="dc-panel active" id="panel-overview">
+      <div class="dc-ov-wrap">
+
+        <!-- Component cards -->
+        <div class="dc-ov-main">
+          <div class="dt-drawer-section-hdr" onclick="dcToggleSection(this)">
+            <span class="dt-section-chev">&#9660;</span> Measurement Component Status
+          </div>
+          <div class="dt-drawer-cards" id="dc-mcs-cards"></div>
+
+          <div class="dt-drawer-section-hdr" onclick="dcToggleSection(this)">
+            <span class="dt-section-chev">&#9660;</span> V3 FDM
+          </div>
+          <div class="dt-drawer-cards" id="dc-fdm-cards"></div>
+        </div>
+
+        <!-- Merged truck-info panel:
+             legacy Ignition/Errors/Debug + new-DS drawer-side
+             (status header, spec table, actions, fleet map).
+             Duplicated fields (Last Reboot, Code Version, Last
+             System Status, Connectivity, Truck Mode) collapse
+             into single rows. -->
+        <div class="dc-side">
+          <div class="dc-side-card">
+            <div class="dc-side-status">
+              <div class="dc-ss"><span class="k">&#128065; Connectivity</span><span class="v blue" id="dc-ss-conn">Connected</span></div>
+              <div class="dc-ss"><span class="k">&#128246; Truck Mode</span><span class="v" id="dc-ss-mode" style="color:var(--dc-defined);">Live</span></div>
+              <div class="dc-ss"><span class="k">&#9889; Ignition</span><span class="v ok" id="dc-ss-ign"><span class="gdot"></span> ON</span></div>
+            </div>
+          </div>
+
+          <div class="dc-btn-row">
+            <button class="dc-btn ping" onclick="dcRunCommand('Ping Truck')" title="Logs to Manual Control command history">Ping Truck</button>
+          </div>
+
+          <div class="dc-err-row">
+            <div class="dc-err alarms"><span class="eh"><span class="ebox"></span> Alarms</span><span class="ec" id="dc-err-alarms">0</span></div>
+            <div class="dc-err warnings"><span class="eh">&#9888; Warnings</span><span class="ec" id="dc-err-warns">0</span></div>
+          </div>
+
+          <div class="dc-side-card dc-kv" id="dc-kv">
+            <div class="dc-kv-row"><span class="k">TCG ID</span><span class="v mono">210000100000</span></div>
+            <div class="dc-kv-row"><span class="k">Code version</span><span class="v">26.2.3</span></div>
+            <div class="dc-kv-row"><span class="k">Commissioned</span><span class="v">01/14/2020</span></div>
+            <div class="dc-kv-row"><span class="k">Last Connect</span><span class="v" id="dc-kv-connect">Jul 24, 2026, 10:15:14 AM</span></div>
+            <div class="dc-kv-row"><span class="k">Last System Status</span><span class="v">Jul 24, 2026, 10:15:14 AM</span></div>
+            <div class="dc-kv-row"><span class="k">Last Reboot</span><span class="v">Jul 24, 2026, 6:04 AM</span></div>
+            <div class="dc-kv-row"><span class="k">Drum Manufacturer</span><span class="v">Schwing, 2022</span></div>
+            <div class="dc-kv-row"><span class="k">Drum Size</span><span class="v">10yd&sup3;</span></div>
+            <div class="dc-kv-row"><span class="k">Number of Loads</span><span class="v">15,000</span></div>
+          </div>
+
+          <!-- Debug — same card contract as the spec table above -->
+          <div class="dc-side-card">
+            <div class="dc-debug-hd">Debug <span class="dc-live" id="dc-live-badge">LIVE</span></div>
+            <div class="dc-input-label">Debug Mode</div>
+            <select class="dc-input dc-mode-dd" id="dc-debug-mode" onchange="dcSetDebugMode(this.value)">
+              <option>Default</option>
+              <option>15 Minutes</option>
+              <option>30 Minutes</option>
+              <option>60 Minutes</option>
+            </select>
+            <div class="dc-chart-mini" onclick="dcExpandChart('gps')" title="Click to expand">
+              <div class="hd"><span>GPS Satellite</span><span class="ex">&#10530;</span></div>
+              <div id="dc-mini-gps"></div>
+            </div>
+            <div class="dc-chart-mini" onclick="dcExpandChart('delay')" title="Click to expand">
+              <div class="hd"><span>Network Delay</span><span class="ex">&#10530;</span></div>
+              <div id="dc-mini-delay"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══ TIMELINE (new DS component, Hub-skinned) ═══ -->
+    <div class="dc-panel" id="panel-timeline"></div>
+
+    <!-- ═══ MANUAL CONTROL (new DS card contract, Hub two-pane layout) ═══ -->
+    <div class="dc-panel" id="panel-manual">
+      <div class="dc-mc-wrap">
+
+        <!-- Commands -->
+        <div class="dc-mc-left">
+          <div class="dt-drawer-section-hdr" onclick="dcToggleSection(this)">
+            <span class="dt-section-chev">&#9660;</span> Manual Commands
+          </div>
+          <div class="dc-mc-cards">
+            <div class="dc-mc-card">
+              <div class="info">
+                <div class="cname">Ping Truck</div>
+                <div class="cdesc">Request the truck to immediately send System Status and Identity messages</div>
+              </div>
+              <button class="dc-mc-btn" onclick="dcRunCommand('Ping Truck')">Ping Truck</button>
+            </div>
+            <div class="dc-mc-card">
+              <div class="info">
+                <div class="cname">Shut Down</div>
+                <div class="cdesc">Request the truck processor to shutdown</div>
+              </div>
+              <button class="dc-mc-btn danger" onclick="dcRunCommand('Shut Down')">Shut Down</button>
+            </div>
+            <div class="dc-mc-card">
+              <div class="info">
+                <div class="cname">Reset Can Errors</div>
+                <div class="cdesc">Request the truck to reset cumulative CAN errors on all sensors back to 0</div>
+              </div>
+              <button class="dc-mc-btn" onclick="dcRunCommand('Reset Can Errors')">Reset Can Errors</button>
+            </div>
+            <div class="dc-mc-card">
+              <div class="info">
+                <div class="cname">Reset Sensors</div>
+                <div class="cdesc">Request the truck to reset the two pressure sensors. <strong>Only works on truck software version 3.02.022 or above</strong></div>
+              </div>
+              <button class="dc-mc-btn" onclick="dcRunCommand('Reset Sensors')">Reset Sensors</button>
+            </div>
+          </div>
+
+          <!-- Water Addition -->
+          <div class="dt-drawer-section-hdr collapsed" onclick="dcToggleSection(this)">
+            <span class="dt-section-chev">&#9660;</span> Water Addition
+          </div>
+          <div class="dc-mc-body">
+            <div class="dc-mc-card" style="display:block;">
+              <div class="dc-input-label">Add Water (gallons)</div>
+              <div class="dc-dose-row">
+                <input class="dc-input" id="dc-water-amt" type="number" min="0" placeholder="Add Water (gallons)"
+                       oninput="document.getElementById('dc-water-btn').disabled = !this.value">
+                <button class="dc-mc-btn" id="dc-water-btn" disabled
+                        onclick="dcDose('Add Water','dc-water-amt',' gal')">Add Water</button>
+              </div>
+            </div>
+            <div class="dc-mc-grid">
+              <button class="dc-mc-btn" onclick="dcRunCommand('Turn On Water')">Turn On Water</button>
+              <button class="dc-mc-btn ghost" onclick="dcRunCommand('Turn Off Water')">Turn Off Water</button>
+              <button class="dc-mc-btn" onclick="dcRunCommand('Turn On Propulsion')">Turn On Propulsion</button>
+              <button class="dc-mc-btn ghost" onclick="dcRunCommand('Turn Off Propulsion')">Turn Off Propulsion</button>
+              <button class="dc-mc-btn ghost" onclick="dcRunCommand('Reset Flow Error')">Reset Flow Error</button>
+            </div>
+          </div>
+
+          <!-- Admix Addition -->
+          <div class="dt-drawer-section-hdr collapsed" onclick="dcToggleSection(this)">
+            <span class="dt-section-chev">&#9660;</span> Admix Addition
+          </div>
+          <div class="dc-mc-body">
+            <div class="dc-mc-card" style="display:block;">
+              <div class="dc-input-label">Add Admix (ounces)</div>
+              <div class="dc-dose-row">
+                <input class="dc-input" id="dc-admix-amt" type="number" min="0" placeholder="Add Admix (ounces)"
+                       oninput="document.getElementById('dc-admix-btn').disabled = !this.value">
+                <button class="dc-mc-btn" id="dc-admix-btn" disabled
+                        onclick="dcDose('Add Admix','dc-admix-amt',' oz')">Add Admix</button>
+              </div>
+            </div>
+            <div class="dc-mc-grid">
+              <button class="dc-mc-btn" onclick="dcRunCommand('Turn On Admix')">Turn On Admix</button>
+              <button class="dc-mc-btn ghost" onclick="dcRunCommand('Turn Off Admix')">Turn Off Admix</button>
+              <button class="dc-mc-btn" onclick="dcRunCommand('Turn On Propulsion (Admix)')">Turn On Propulsion (Admix)</button>
+              <button class="dc-mc-btn ghost" onclick="dcRunCommand('Turn Off Propulsion (Admix)')">Turn Off Propulsion (Admix)</button>
+              <button class="dc-mc-btn ghost" onclick="dcRunCommand('Reset Flow Error (Admix)')">Reset Flow Error (Admix)</button>
+            </div>
+          </div>
+
+          <!-- Tilt Calibration -->
+          <div class="dt-drawer-section-hdr collapsed" onclick="dcToggleSection(this)">
+            <span class="dt-section-chev">&#9660;</span> Tilt Calibration
+          </div>
+          <div class="dc-mc-body">
+            <div class="dc-mc-card" style="display:block;">
+              <div class="dc-tilt-head">
+                <div class="txt">Park the truck on a level surface. Place the gauge level with the truck frame, facing the same direction as the front of the CWR. Enter the angle in degrees in the box below. Press Calibrate to start the calibration process.</div>
+                <div class="dc-tilt-fig">
+                  <svg width="150" height="56" viewBox="0 0 150 56">
+                    <rect x="4" y="4" width="34" height="15" rx="2" fill="var(--dc-blue)"/>
+                    <text x="21" y="15" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">CWR</text>
+                    <path d="M40 11h12m0 0-4-3m4 3-4 3" stroke="var(--dc-defined)" stroke-width="1.4" fill="none"/>
+                    <rect x="8" y="34" width="134" height="5" rx="2" fill="var(--dc-subtle)"/>
+                    <circle cx="26" cy="46" r="8" fill="none" stroke="var(--dc-soft)" stroke-width="3"/>
+                    <circle cx="124" cy="46" r="8" fill="none" stroke="var(--dc-soft)" stroke-width="3"/>
+                    <rect x="70" y="20" width="38" height="15" rx="3" fill="var(--dc-layer-2)" stroke="var(--dc-border)"/>
+                    <text x="89" y="31" text-anchor="middle" font-size="9" font-weight="700" fill="var(--dc-strong)">-1.5&#176;</text>
+                    <path d="M112 27h26m0 0-4-3m4 3-4 3" stroke="var(--dc-defined)" stroke-width="1.4" stroke-dasharray="3 2" fill="none"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="dc-tilt-warn" style="margin:12px 0;">Important: Wait until the calibration is reported complete before moving the truck!</div>
+              <div class="dc-input-label">Measured Angle (Degrees)</div>
+              <div class="dc-dose-row">
+                <input class="dc-input" id="dc-tilt-amt" type="number" step="0.1" placeholder="Measured Angle (Degrees)"
+                       oninput="document.getElementById('dc-tilt-btn').disabled = !this.value">
+                <button class="dc-mc-btn" id="dc-tilt-btn" disabled onclick="dcCalibrate()">Calibrate</button>
+              </div>
+              <div class="dc-tilt-status" id="dc-tilt-status" style="margin-top:12px;">Not calibrated<br>Baseline Tilt Degrees: &#8211;</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Command history — populates as commands are sent -->
+        <div class="dc-mc-right">
+          <div class="dt-drawer-section-hdr" style="cursor:default;">Command History</div>
+          <div class="dc-mc-tbl">
+            <div class="dc-mc-thead">
+              <span>Date</span><span>Submitter</span><span>Command</span><span>Value</span><span>Status</span>
+            </div>
+            <div id="dc-mc-rows"><div class="dc-mc-empty">No Data</div></div>
+            <div class="dc-mc-foot">
+              <span>Items per page: <b style="color:var(--dc-defined);">100</b> &#9660;</span>
+              <span id="dc-mc-count">0 of 0</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══ CONFIGURATION (new DS accordion contract, Hub-skinned; JS-rendered) ═══ -->
+    <div class="dc-panel" id="panel-config"></div>
+
+    <!-- ═══ TRUCK LOG (raw JSON inspector, always visible) ═══ -->
+    <div class="dc-panel" id="panel-logs">
+      <div class="dc-logs-wrap">
+
+        <!-- Log table -->
+        <div class="dc-logs-left">
+          <div class="dc-logs-filters">
+            <input class="dc-input dc-date" id="dc-log-from" type="datetime-local" title="From" onchange="dcLogsFilterChange()">
+            <input class="dc-input dc-date" id="dc-log-to" type="datetime-local" title="To" onchange="dcLogsFilterChange()">
+            <input class="dc-input" id="dc-log-search" placeholder="Search message type" oninput="dcLogsFilterChange()">
+            <select class="dc-input" id="dc-log-type" onchange="dcLogsFilterChange()">
+              <option value="all">Message Type: All</option>
+              <option value="Event">Event</option>
+              <option value="Identity">Identity</option>
+            </select>
+            <select class="dc-input" id="dc-log-source" onchange="dcLogsFilterChange()">
+              <option value="all">Source: All</option>
+              <option value="TRUCK">TRUCK</option>
+            </select>
+          </div>
+          <div class="dc-logs-hint"><b>&#8593; &#8595;</b> Arrow keys move through logs &#8212; the JSON updates in place. Click a line to pin it and watch that field across messages.</div>
+          <div class="dc-logs-tbl">
+            <div class="dc-logs-thead">
+              <span>Message Time</span><span>Delay</span><span>Mac Id</span><span>Type</span><span>SubType</span>
+            </div>
+            <div class="dc-logs-scroll" id="dc-log-rows"></div>
+            <div class="dc-logs-foot"><span id="dc-log-count">0 of 0</span></div>
+          </div>
+        </div>
+
+        <!-- JSON inspector -->
+        <div class="dc-logs-right">
+          <div class="dc-logdet-top">
+            <div class="dc-logdet-title">Truck logs</div>
+            <button class="dc-copy-btn" onclick="dcCopyLog(this)">Copy JSON</button>
+          </div>
+          <div class="dc-kvh" id="dc-log-kvh"></div>
+          <div class="dc-json" id="dc-json"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══ Chart expand lightbox (fills the drawer) ═══ -->
+    <div class="dc-chart-modal" id="dc-chart-modal" onclick="if(event.target===this)dcCloseChart()">
+      <div class="dc-chart-box" id="dc-chart-box"></div>
+    </div>
+
+  </div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   DATA
+   Card shapes + timeline data are ported 1:1 from the new DS
+   prototype (app-06-desktop-core.js) so real data plugs into the
+   same contract when this migrates.
+══════════════════════════════════════════════════════════════ */
+const TRUCK_ALERTS = {
+  '1219': {}, '1341': { flow: true }, '1408': { flow: true, disconnected: true },
+  '1416': { flow: true }, '1894': {}, '1921': { flow: true }, '1968': { flow: true },
+  '2105': { accel: true }, '2356': {}, '2541': { flow: true }
+};
+
+function mcsCardsFor(num) {
+  const a = TRUCK_ALERTS[num] || {};
+  return [
+    { name:'TCG', label:'Telematics Control Gateway',
+      value: a.disconnected ? 'Offline' : 'Active', big:true,
+      extra:{label:'Status', val: a.disconnected ? 'Disconnected' : 'Connected'},
+      err:'--', fw:'V5', state: a.disconnected ? 'alarm' : 'clean',
+      fault: a.disconnected ? 'No connection to backend' : null },
+    { name:'DPS pressure', label:'Drum Pressure Sensor', value:'196', unit:'psi', startup:2, err:'--' },
+    { name:'CPS', label:'Charge Pressure Sensor', value:'204', unit:'psi', startup:2, err:'--' },
+    { name:'WDS', label:'Water Drum Sensor', value:'12', unit:'rpm', startup:2, err:'--', extra:{label:'Drum Temp', val:'91 \u00B0F'}, fw:'v2.1.4' },
+    { name:'DRS', label:'Drum Rotation Speed', value:'8', unit:'rpm', startup:2, err:'--', fw:'v1.0.8' },
+    { name:'CWR', label:'Cold Weather Relay', value: a.accel ? '--' : '91', unit:'\u00B0F',
+      startup:2, err: a.accel ? '6' : '--', extra:{label:'FW v35.0 \u00B7 Tilt', val: a.accel ? '--' : '1\u00B0'}, fw:'v35.0',
+      state: a.accel ? 'warn' : 'clean', fault: a.accel ? 'Accelerometer not working' : null },
+    { name:'ICD', label:'In-Cab Display', value:'Active', big:true, startup:2, err:'--', extra:{label:'Firmware', val:'v1468'}, fw:'v1468' },
+    { name:'ED', label:'External Display', value:'Active', big:true, startup:2, err:'--', extra:{label:'Firmware', val:'v8195'}, fw:'v8195' },
+  ];
+}
+function fdmCardsFor(num) {
+  const a = TRUCK_ALERTS[num] || {};
+  return [
+    { name:'IOX supply voltage', label:'Onboard Power Supply', value:'12.9', unit:'V', startup:1, err:'--', extra:{label:'Temperature', val:'113 \u00BAF'} },
+    { name:'Water meter flow rate', label:'Active Water flow to drum',
+      value: a.flow ? '9.4' : '17', unit:'gal/min',
+      flowExtra:{ error: a.flow ? 1 : 0, noStop: 0, rate:(a.flow ? '9.4' : '17') + ' gal/min' },
+      state: a.flow ? 'warn' : 'clean', fault: a.flow ? 'Flow rate is lower than expected' : null },
+    { name:'Admix meter flow rate', label:'Admixture Dosing meter', value:'145', unit:'ml/s', flowExtra:{error:0, noStop:0, rate:'142 ml/s'} },
+  ];
+}
+
+/* Timeline day data — ported verbatim from the DS prototype */
+const DC_TIMELINE_DAYS = (() => {
+  const G = (m) => ({ m, t:'g' });
+  const X = (m) => ({ m, t:'x' });
+  const W = (m, l) => ({ m, t:'w', label:l });
+  const A = (m, l) => ({ m, t:'a', label:l });
+  const T = (m, l) => ({ m, t:'T', label:l });
+  const day0 = [[G(500),W(15,'15 m'),G(925)],[G(1440)],[G(1440)],[G(1440)],[G(1440)],[G(1440)],[G(1440)],[G(1440)],[G(1440)]];
+  const day1 = [[G(1440)],[G(480),W(30,'30 m'),G(930)],[G(960),W(15,'15 m'),G(465)],[G(1440)],[G(1440)],[G(1440)],[G(1440)],[G(1440)],[G(1440)]];
+  const day2 = [[G(1440)],[G(1440)],[G(1440)],[G(1440)],[G(1440)],[G(1440)],[G(1440)],[G(600),A(15,'15 m'),G(825)],[G(1440)]];
+  const day3 = [[G(1440)],[G(1440)],[G(1440)],[G(240),A(15,'15 m'),G(60),A(15,'15 m'),G(1110)],[G(1440)],[G(1440)],[G(1440)],[G(240),A(15,'15 m'),G(60),A(15,'15 m'),G(1110)],[G(1440)]];
+  const day4 = [[G(1440)],[G(1440)],[G(1440)],[G(240),A(15,'15 m'),G(60),A(15,'15 m'),G(60),A(15,'15 m'),G(1035)],[G(1440)],[G(1440)],[G(480),W(15,'15 m'),G(945)],[G(240),A(15,'15 m'),G(60),A(15,'15 m'),G(60),A(15,'15 m'),G(1035)],[G(480),W(15,'15 m'),G(945)]];
+  const day5 = [[G(460),W(15,'15 m'),G(965)],[G(460),W(30,'30 m'),G(950)],[G(1440)],[G(240),A(15,'15 m'),G(60),A(15,'15 m'),G(60),A(15,'15 m'),G(60),A(15,'15 m'),G(960)],[G(460),W(15,'15 m'),G(965)],[G(1440)],[G(460),W(15,'15 m'),G(965)],[G(240),A(15,'15 m'),G(60),A(15,'15 m'),G(60),A(15,'15 m'),G(60),A(15,'15 m'),G(960)],[G(460),W(15,'15 m'),G(965)]];
+  const day6 = [
+    [G(460),W(15,'15 m'),G(192),T(300,'5h'),G(54),W(15,'15 m'),X(50),G(46),X(50),G(258)],
+    [G(460),W(30,'30 m'),G(524),X(50),G(46),X(50),G(280)],
+    [G(1134),X(50),G(46),X(50),W(15,'15 m'),G(145)],
+    [G(240),A(15,'15 m'),G(66),A(15,'15 m'),G(66),A(15,'15 m'),G(66),A(15,'15 m'),G(66),A(15,'15 m'),G(74),X(50),G(46),X(50),G(28),A(30,'30 m'),G(583)],
+    [G(448),W(15,'15 m'),G(140),T(270,'4h 30m'),G(82),A(15,'15 m'),X(50),G(46),X(50),G(324)],
+    [G(1134),X(50),G(46),X(50),G(160)],
+    [G(460),W(15,'15 m'),G(240),T(240,'4h'),G(138),X(50),G(46),X(50),G(28),A(30,'30 m'),G(143)],
+    [G(240),A(15,'15 m'),G(66),A(15,'15 m'),G(66),A(15,'15 m'),G(66),A(15,'15 m'),G(66),A(15,'15 m'),G(74),X(50),G(46),X(50),G(28),A(30,'30 m'),G(583)],
+    [A(1440,'24h')],
+  ];
+  return [day0, day1, day2, day3, day4, day5, day6];
+})();
+const DC_DAY_BADGES = ['ok','warn','alarm','alarm','alarm','alarm','alarm'];
+const DC_COMPONENTS = ['Iox / Robotex','Charge','Discharge','Drum','Internal Display','External Display','Bus power','CWR','WDS'];
+
+/* ══════════════════ DRAWER SHELL ══════════════════ */
+const DC_TRUCK_ORDER = ['1219','1341','1408','1416','1894','1921','1968','2105','2356','2541'];
+let dcCurrentTruck = '1219';
+let dcActiveTab = 'overview';
+let dcActiveDay = 6;
+
+function openDrawer(name) {
+  dcCurrentTruck = name;
+  document.getElementById('dTruckName').textContent = 'TRUCK ' + name;
+  buildOverview(name);
+  dcTab('overview');
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('drawer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  dcSyncLiveTimer();
+}
+
+/* Header ‹ › arrows — page through the fleet in table order,
+   drawer stays open on the same tab at the same scroll position */
+function dcNavTruck(dir) {
+  const i = DC_TRUCK_ORDER.indexOf(dcCurrentTruck);
+  const next = DC_TRUCK_ORDER[(i + dir + DC_TRUCK_ORDER.length) % DC_TRUCK_ORDER.length];
+  const drawer = document.getElementById('drawer');
+  const keepScroll = drawer.scrollTop;
+  dcCurrentTruck = next;
+  document.getElementById('dTruckName').textContent = 'TRUCK ' + next;
+  buildOverview(next);          /* refresh cards + side rail for the new truck */
+  dcTab(dcActiveTab);           /* rebuild whichever tab is open, per-truck */
+  drawer.scrollTop = keepScroll;
+  dcSyncLiveTimer();
+}
+function closeDrawer() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('drawer').classList.remove('open');
+  document.body.style.overflow = '';
+  clearInterval(dcLiveTimer);
+  dcLiveTimer = null;
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { if (dcChartOpen) { dcCloseChart(); } else { closeDrawer(); } return; }
+  if (!document.getElementById('drawer').classList.contains('open')) return;
+  if (/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
+  if (dcChartOpen) return; /* freeze nav while a chart is expanded */
+  /* ← → page through trucks on any tab */
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); dcNavTruck(-1); return; }
+  if (e.key === 'ArrowRight') { e.preventDefault(); dcNavTruck(1); return; }
+  /* ↑ ↓ scrub log rows — Truck Log tab only */
+  if (!document.getElementById('panel-logs').classList.contains('active')) return;
+  if (e.key === 'ArrowDown') { e.preventDefault(); dcSelectLog(dcLogsSel + 1); }
+  if (e.key === 'ArrowUp')   { e.preventDefault(); dcSelectLog(dcLogsSel - 1); }
+});
+
+function dcTab(tab, actId) {
+  dcActiveTab = tab;
+  ['overview','timeline','manual','config','logs'].forEach(t => {
+    document.getElementById('panel-' + t).classList.toggle('active', t === tab);
+  });
+  document.querySelectorAll('.d-act').forEach(el => el.classList.remove('active'));
+  const target = actId ? document.getElementById(actId)
+               : document.getElementById('act-' + tab);
+  if (target) target.classList.add('active');
+  if (tab === 'timeline') buildTimeline();
+  if (tab === 'manual') dcRenderHistory();
+  if (tab === 'config') buildConfig(dcCurrentTruck);
+  if (tab === 'logs') buildLogs(dcCurrentTruck);
+}
+function dcToggleSection(hdr) { hdr.classList.toggle('collapsed'); }
+
+/* ══════════════════ OVERVIEW ══════════════════
+   buildCard mirrors the DS prototype's card contract:
+   state → clean | warn | alarm | grey, strip label from fault. */
+function buildCard(card) {
+  const state = card.state || 'clean';
+  const dotColor = state === 'alarm' ? 'var(--dc-alarm)'
+                 : state === 'warn'  ? 'var(--dc-warn)'
+                 : state === 'grey'  ? 'var(--dc-subtle)'
+                 : 'var(--dc-ok)';
+  const stripLabel = state === 'alarm' ? ('Alarm \u00B7 ' + (card.fault || ''))
+                   : state === 'warn'  ? ('Warning \u00B7 ' + (card.fault || ''))
+                   : state === 'grey'  ? 'Not active'
+                   : 'Operating normally';
+  const stripDot = (state === 'alarm' || state === 'warn') ? '<span class="dt-co-card-strip-dot"></span>' : '';
+
+  let metaHtml = '';
+  if (card.extra) metaHtml += `<div class="dt-co-card-meta-row"><span class="dt-co-card-meta-label">${card.extra.label}:</span><span>${card.extra.val}</span></div>`;
+  if (card.startup !== null && card.startup !== undefined) metaHtml += `<div class="dt-co-card-meta-row"><span class="dt-co-card-meta-label">Startup Count:</span><span>${card.startup}</span></div>`;
+  if (card.err !== null && card.err !== undefined) metaHtml += `<div class="dt-co-card-meta-row"><span class="dt-co-card-meta-label">Error Count:</span><span>${card.err}</span></div>`;
+  if (card.flowExtra) {
+    metaHtml += `<div class="dt-co-card-meta-row"><span class="dt-co-card-meta-label">Flow Error:</span><span>${card.flowExtra.error}</span></div>`;
+    metaHtml += `<div class="dt-co-card-meta-row"><span class="dt-co-card-meta-label">No Stop:</span><span>${card.flowExtra.noStop}</span></div>`;
+    metaHtml += `<div class="dt-co-card-meta-row"><span class="dt-co-card-meta-label">Flow Rate</span><span>${card.flowExtra.rate}</span></div>`;
+  }
+  const valueStyle = card.big ? 'font-size:19px;' : '';
+  return `
+    <div class="dt-co-card ${state}">
+      <div class="dt-co-card-body">
+        <div class="dt-co-card-head">
+          <span class="dt-co-card-dot" style="background:${dotColor};"></span>
+          <span class="dt-co-card-name">${card.name}</span>
+          ${card.fw ? `<span class="dt-ver-pill">${card.fw}</span>` : ''}
+        </div>
+        <div class="dt-co-card-value-row">
+          <span class="dt-co-card-value" style="${valueStyle}">${card.value || '\u2014'}</span>
+          ${card.unit ? `<span class="dt-co-card-unit">${card.unit}</span>` : ''}
+        </div>
+        <div class="dt-co-card-desc"><span>${card.label || ''}</span></div>
+        <div class="dt-co-card-meta">${metaHtml}</div>
+      </div>
+      <div class="dt-co-card-strip">${stripDot}<span class="dt-co-card-strip-label">${stripLabel}</span></div>
+    </div>`;
+}
+function buildOverview(num) {
+  document.getElementById('dc-mcs-cards').innerHTML = mcsCardsFor(num).map(buildCard).join('');
+  document.getElementById('dc-fdm-cards').innerHTML = fdmCardsFor(num).map(buildCard).join('');
+
+  /* Merged side panel — status header, error counts, map label */
+  const a = TRUCK_ALERTS[num] || {};
+  const conn = document.getElementById('dc-ss-conn');
+  conn.textContent = a.disconnected ? 'Disconnected' : 'Connected';
+  conn.className = 'v ' + (a.disconnected ? 'bad' : 'blue');
+
+  const ign = document.getElementById('dc-ss-ign');
+  if (num === '2105') {
+    ign.className = 'v'; ign.style.color = 'var(--dc-defined)';
+    ign.innerHTML = '<span class="gdot off"></span> In-progress';
+  } else if (a.disconnected) {
+    ign.className = 'v'; ign.style.color = 'var(--dc-soft)';
+    ign.innerHTML = '<span class="gdot off"></span> OFF';
+  } else {
+    ign.className = 'v ok'; ign.style.color = '';
+    ign.innerHTML = '<span class="gdot"></span> ON';
+  }
+
+  const warnCount = (a.flow ? 1 : 0) + (a.accel ? 1 : 0) + (a.disconnected ? 1 : 0);
+  document.getElementById('dc-err-alarms').textContent = a.disconnected ? 1 : 0;
+  document.getElementById('dc-err-warns').textContent = warnCount;
+  document.getElementById('dc-kv-connect').textContent = a.disconnected ? 'Jul 23, 2026, 4:51:02 PM' : 'Jul 24, 2026, 10:15:14 AM';
+  document.getElementById('dc-debug-mode').value = dcDebugMode[num] || 'Default';
+  dcRenderMiniCharts(num);
+}
+
+/* ══════════════════ TIMELINE ══════════════════ */
+const WARN_ICON  = '<svg width="10" height="10" viewBox="0 0 12 10" fill="currentColor"><path d="M5.54 0c.3 0 .58.17.73.43l4.64 7.9c.15.28.15.6 0 .86-.15.28-.43.43-.73.43H.9c-.32 0-.6-.15-.75-.43-.15-.26-.15-.58 0-.86L4.79.43C4.94.17 5.22 0 5.54 0Zm0 2.75c-.3 0-.51.24-.51.52v2.4c0 .3.21.52.51.52.28 0 .52-.22.52-.52v-2.4c0-.28-.24-.52-.52-.52Zm.69 4.81c0-.37-.32-.69-.69-.69-.39 0-.69.32-.69.69 0 .39.3.69.69.69.37 0 .69-.3.69-.69Z"/></svg>';
+const ALARM_ICON = '<svg width="10" height="10" viewBox="0 0 10 10" fill="white"><path d="M1.38 0h6.87c.76 0 1.38.62 1.38 1.38v6.87c0 .77-.62 1.38-1.38 1.38H1.38C.6 9.63 0 9.02 0 8.25V1.38C0 .62.6 0 1.38 0Zm3.43 2.06c-.3 0-.51.24-.51.52v2.4c0 .3.21.52.51.52.28 0 .52-.22.52-.52v-2.4c0-.28-.24-.52-.52-.52ZM4.13 6.88c0 .38.3.69.69.69.36 0 .68-.31.68-.69 0-.37-.32-.69-.68-.69-.39 0-.69.32-.69.69Z"/></svg>';
+
+function badgeHtml(kind) {
+  if (kind === 'ok') return '<span class="dc-badge-ok"></span>';
+  if (kind === 'warn') return '<span class="dc-badge-warn">' + WARN_ICON + '</span>';
+  return '<span class="dc-badge-alarm">' + ALARM_ICON + '</span>';
+}
+
+function buildTimeline() {
+  const panel = document.getElementById('panel-timeline');
+  const today = new Date();
+  const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  const dayCells = Array.from({length:7}, (_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() - (6 - i));
+    const lbl = i === 6 ? 'Today' : DAY_NAMES[d.getDay()];
+    const num = (d.getMonth()+1) + '/' + d.getDate();
+    return `<div class="dc-day${i === dcActiveDay ? ' sel' : ''}" id="dc-day-${i}" onclick="dcSelectDay(${i})">
+      <div class="dc-day-inner">
+        <div><div class="dc-day-lbl">${lbl}</div><div class="dc-day-num">${num}</div></div>
+        ${badgeHtml(DC_DAY_BADGES[i])}
+      </div>
+    </div>`;
+  }).join('');
+
+  const labels = DC_COMPONENTS.map(n => `<div class="dc-tl-label">${n}</div>`).join('');
+  const axis = `<div class="dc-tl-axis"><span>00:00</span><span>04:00</span><span>08:00</span><span>12:00</span><span>16:00</span><span>20:00</span><span>24:00</span></div>`;
+  const legend = `<div class="dc-tl-legend">
+    <span><span class="dc-leg-on"></span>Ignition on</span>
+    <span><span class="dc-leg-off"></span>Ignition off</span>
+    <span><span class="dc-badge-alarm">${ALARM_ICON}</span>Alarm</span>
+    <span><span class="dc-badge-warn">${WARN_ICON}</span>Warning</span>
+  </div>`;
+
+  panel.innerHTML = `
+    <div class="dc-daystrip">${dayCells}</div>
+    <div class="dc-tl-hdr">
+      <span class="t">Component Status History</span>
+      <div class="r">
+        <span class="dlbl" id="dc-tl-date"></span>
+        <button class="nbtn" onclick="dcTimelineNav(-1)">&#8249;</button>
+        <button class="nbtn" onclick="dcTimelineNav(1)">&#8250;</button>
+      </div>
+    </div>
+    <div class="dc-tl-box">
+      <div class="dc-tl-grid">
+        <div></div><div>${axis}</div>
+        <div style="display:flex;flex-direction:column;">${labels}</div>
+        <div class="dc-tl-rows" id="dc-tl-rows"></div>
+        <div></div><div>${legend}</div>
+      </div>
+    </div>`;
+  dcSelectDay(dcActiveDay);
+}
+
+function dcSelectDay(idx) {
+  dcActiveDay = idx;
+  for (let i = 0; i < 7; i++) {
+    const c = document.getElementById('dc-day-' + i);
+    if (c) c.classList.toggle('sel', i === idx);
+  }
+  const today = new Date();
+  const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const d = new Date(today);
+  d.setDate(today.getDate() - (6 - idx));
+  const lblEl = document.getElementById('dc-tl-date');
+  if (lblEl) lblEl.textContent = (idx === 6 ? 'Today ' : DAY_NAMES[d.getDay()] + ' ') + (d.getMonth()+1) + '/' + d.getDate() + '/' + d.getFullYear();
+  dcRenderRows(idx);
+}
+function dcTimelineNav(dir) {
+  dcSelectDay(Math.max(0, Math.min(6, dcActiveDay + dir)));
+}
+function dcRenderRows(idx) {
+  const container = document.getElementById('dc-tl-rows');
+  if (!container) return;
+  const dayRows = DC_TIMELINE_DAYS[idx] || DC_TIMELINE_DAYS[6];
+  container.innerHTML = dayRows.map(segs => {
+    const track = segs.map((s, si) => {
+      const isLast = si === segs.length - 1;
+      const flexVal = isLast ? '1 1 0' : s.m + ' 0 0';
+      const thin = s.t === 'g' || s.t === 'x';
+      const inner = thin ? '' :
+        `<span class="sl"><span style="display:inline-flex;flex-shrink:0;">${s.t === 'w' ? WARN_ICON : ALARM_ICON}</span><span style="flex-shrink:0;">${s.label}</span></span>`;
+      return `<div class="dc-seg ${s.t}" style="flex:${flexVal};${thin ? 'min-width:0;' : ''}">${inner}</div>`;
+    }).join('');
+    return `<div class="dc-tl-row"><div class="dc-tl-track">${track}</div></div>`;
+  }).join('');
+}
+
+/* ══════════════════ MANUAL CONTROL ══════════════════
+   Per-truck command log. Every command — including Ping Truck
+   on the Overview rail — writes to the same history, so the
+   audit trail is a single source of truth. */
+const dcCmdHistory = {}; /* truck num -> [{date, submitter, cmd, value, status}] */
+let dcCmdSeq = 0;
+
+function dcRunCommand(cmd, value, onDone) {
+  const list = dcCmdHistory[dcCurrentTruck] = dcCmdHistory[dcCurrentTruck] || [];
+  const entry = {
+    id: ++dcCmdSeq,
+    date: new Date().toLocaleString('en-US', { month:'numeric', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit', second:'2-digit' }),
+    submitter: 'JD',
+    cmd: cmd,
+    value: value || '--',
+    status: 'Pending'
+  };
+  list.unshift(entry);
+  dcRenderHistory();
+  /* Simulate truck ack — Pending resolves to Success */
+  setTimeout(() => {
+    entry.status = 'Success';
+    dcRenderHistory();
+    if (onDone) onDone(entry);
+  }, 1400);
+}
+
+/* Dose commands — amount lands in the history Value column */
+function dcDose(cmd, inputId, unit) {
+  const input = document.getElementById(inputId);
+  const amt = input.value;
+  if (!amt) return;
+  dcRunCommand(cmd, amt + unit);
+  input.value = '';
+  input.dispatchEvent(new Event('input'));
+}
+
+/* Tilt calibration — status line resolves with the command */
+function dcCalibrate() {
+  const input = document.getElementById('dc-tilt-amt');
+  const angle = input.value;
+  if (!angle) return;
+  const status = document.getElementById('dc-tilt-status');
+  status.innerHTML = 'Calibrating&hellip; do not move the truck<br>Baseline Tilt Degrees: &#8211;';
+  dcRunCommand('Calibrate Tilt', angle + '\u00B0', () => {
+    dcTiltBase[dcCurrentTruck] = parseFloat(angle);
+    status.innerHTML = 'Calibrated<br>Baseline Tilt Degrees: <b>' + angle + '\u00B0</b>';
+  });
+  input.value = '';
+  input.dispatchEvent(new Event('input'));
+}
+
+function dcRenderHistory() {
+  const rowsEl = document.getElementById('dc-mc-rows');
+  const countEl = document.getElementById('dc-mc-count');
+  if (!rowsEl) return;
+  const list = dcCmdHistory[dcCurrentTruck] || [];
+  if (!list.length) {
+    rowsEl.innerHTML = '<div class="dc-mc-empty">No Data</div>';
+    countEl.textContent = '0 of 0';
+    return;
+  }
+  rowsEl.innerHTML = list.map(e => {
+    const chipClass = e.status === 'Success' ? 'success' : e.status === 'Failed' ? 'failed' : 'pending';
+    return `<div class="dc-mc-tr">
+      <span>${e.date}</span><span>${e.submitter}</span><span>${e.cmd}</span><span>${e.value}</span>
+      <span><span class="dc-chip ${chipClass}">${e.status}</span></span>
+    </div>`;
+  }).join('');
+  countEl.textContent = list.length + ' of ' + list.length;
+}
+
+/* ══════════════════ TRUCK LOG ══════════════════
+   Raw-JSON inspector. The right pane is always visible;
+   ArrowUp/Down scrubs through rows, JSON re-renders in place
+   (scroll position preserved), and a clicked line stays pinned
+   by line number so one field can be tracked across messages. */
+let dcLogsSel = 0;
+let dcLogsPin = null;
+let dcLogsFiltered = [];
+const dcLogsCache = {};
+
+function dcGenLogs(num) {
+  const MAC = '125765328520';
+  const baseLat = 41.804854, baseLng = -87.87957117;
+  const startSec = 1784905702; /* ~Jul 24 2026 10:10 AM */
+  const rows = [];
+  const kinds = ['GPSLocation','ConcreteStatus','GPSLocation','ConcreteStatus','GPSLocation','ConcreteStatus','GPSLocation','GPSLocation','ConcreteStatus','SystemStatus','ConcreteStatus','ConcreteStatus','ConcreteStatus','ConcreteStatus','ConcreteStatus','ConcreteStatus','GPSLocation','SystemStatus'];
+  let sec = startSec;
+  kinds.forEach((sub, i) => {
+    sec -= 60 + (i % 3) * 30;
+    const d = new Date(sec * 1000);
+    const time = ('0'+(d.getMonth()+1)).slice(-2) + '/' + ('0'+d.getDate()).slice(-2) + '/' + d.getFullYear() + ' ' +
+                 d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+    const lat = +(baseLat + i * 0.000814).toFixed(6);
+    const lng = +(baseLng - i * 0.001102).toFixed(8);
+    const base = {
+      message_type: 'Event',
+      time: { seconds: sec, microseconds: 126403 + i * 917 },
+      sender_mac_id: MAC,
+      accountId: '12',
+      truckId: '254',
+      truckName: String(num),
+      pbversion: 4
+    };
+    let event;
+    if (sub === 'GPSLocation') {
+      event = {
+        event_type: 'GPSLocation',
+        lastLoadingTime: { seconds: startSec - 9849, microseconds: 751014 },
+        location: { status: 'VALID', latitude: lat, longitude: lng },
+        lastLoadingLocationId: '57',
+        locationStatus: { status: 'PLANT_OUTSIDE_FENCE', locationId: '57', locationName: '' },
+        gps_location: {
+          deviceStatus: 'OK', positionStatus: 'VALID', satellites: 11 + (i % 4),
+          data: { latitude: lat, longitude: lng, altitude: +(205.5 - i * 0.3).toFixed(1),
+                  secondsSinceEpochUTC: sec - 2, speed: +(5.23 + (i % 5) * 2.4).toFixed(2), course: +(89.11 + i * 3.7).toFixed(2) }
+        }
+      };
+    } else if (sub === 'ConcreteStatus') {
+      event = {
+        event_type: 'ConcreteStatus',
+        lastLoadingTime: { seconds: startSec - 9849, microseconds: 751014 },
+        concrete_status: {
+          slump: { value: +(4.5 - i * 0.05).toFixed(2), unit: 'in' },
+          drumSpeed: { value: +(2.1 + (i % 3) * 0.4).toFixed(1), unit: 'rpm', direction: 'CHARGE' },
+          concreteTemp: { value: 91 - (i % 4), unit: 'F' },
+          loadVolume: { value: 9.5, unit: 'yd3' },
+          waterAddedTotal: { value: 4 + (i % 6), unit: 'gal' },
+          pressure: { charge: 204 - i, drum: 196 - i, unit: 'psi' }
+        }
+      };
+    } else {
+      event = {
+        event_type: 'SystemStatus',
+        system_status: {
+          batteryVoltage: +(12.9 - i * 0.01).toFixed(2),
+          signalStrength: -(62 + (i % 9)),
+          uptimeSeconds: 184230 + i * 111,
+          firmware: '26.2.3',
+          canErrors: 0, freeStorageMb: 1180 - i
+        }
+      };
+    }
+    rows.push({ time, sec, delay: '00:0' + (i % 3), mac: MAC, type: 'Event', sub, source: 'TRUCK',
+                lat: sub === 'GPSLocation' ? lat : null, lng: sub === 'GPSLocation' ? lng : null,
+                json: Object.assign({}, base, { event }) });
+  });
+  return rows;
+}
+
+function dcToLocalInput(sec) {
+  const d = new Date(sec * 1000);
+  const p = n => ('0' + n).slice(-2);
+  return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+function buildLogs(num) {
+  if (!dcLogsCache[num]) dcLogsCache[num] = dcGenLogs(num);
+  dcLogsSel = 0;
+  /* Prefill the range chips from this truck's log span */
+  const secs = dcLogsCache[num].map(r => r.sec);
+  document.getElementById('dc-log-from').value = dcToLocalInput(Math.min.apply(null, secs));
+  document.getElementById('dc-log-to').value = dcToLocalInput(Math.max.apply(null, secs) + 59);
+  dcLogsFilterChange();
+}
+function dcLogsFilterChange() {
+  const all = dcLogsCache[dcCurrentTruck] || [];
+  const q = (document.getElementById('dc-log-search').value || '').toLowerCase();
+  const t = document.getElementById('dc-log-type').value;
+  const src = document.getElementById('dc-log-source').value;
+  const fromV = document.getElementById('dc-log-from').value;
+  const toV = document.getElementById('dc-log-to').value;
+  const fromSec = fromV ? new Date(fromV).getTime() / 1000 : -Infinity;
+  const toSec = toV ? new Date(toV).getTime() / 1000 : Infinity;
+  dcLogsFiltered = all.filter(r =>
+    r.sec >= fromSec && r.sec <= toSec &&
+    (t === 'all' || r.type === t) &&
+    (src === 'all' || r.source === src) &&
+    (!q || r.sub.toLowerCase().includes(q) || r.type.toLowerCase().includes(q))
+  );
+  dcLogsSel = Math.min(dcLogsSel, Math.max(0, dcLogsFiltered.length - 1));
+  dcRenderLogTable();
+  dcRenderLogDetail();
+}
+function dcRenderLogTable() {
+  const rowsEl = document.getElementById('dc-log-rows');
+  rowsEl.innerHTML = dcLogsFiltered.map((r, i) =>
+    `<div class="dc-log-tr${i === dcLogsSel ? ' sel' : ''}" onclick="dcSelectLog(${i})">
+      <span>${r.time}</span><span>${r.delay}</span><span class="mono">${r.mac}</span><span>${r.type}</span><span>${r.sub}</span>
+    </div>`).join('') || '<div class="dc-mc-empty">No Data</div>';
+  document.getElementById('dc-log-count').textContent = dcLogsFiltered.length + ' of ' + dcLogsFiltered.length;
+  const sel = rowsEl.children[dcLogsSel];
+  if (sel && sel.scrollIntoView) sel.scrollIntoView({ block: 'nearest' });
+}
+function dcSelectLog(i) {
+  if (!dcLogsFiltered.length) return;
+  dcLogsSel = Math.max(0, Math.min(dcLogsFiltered.length - 1, i));
+  dcRenderLogTable();
+  dcRenderLogDetail();
+}
+function dcEsc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function dcHiLine(line) {
+  return dcEsc(line).replace(/("(?:[^"\\]|\\.)*")(\s*:)?|(-?\b\d+(?:\.\d+)?\b)|\b(true|false|null)\b/g,
+    (m, str, colon, num, kw) => {
+      if (str) return colon ? `<span class="jk">${str}</span>${colon}` : `<span class="js">${str}</span>`;
+      if (num) return `<span class="jn">${num}</span>`;
+      return `<span class="jb">${kw}</span>`;
+    });
+}
+function dcRenderLogDetail() {
+  const kvhEl = document.getElementById('dc-log-kvh');
+  const jsonEl = document.getElementById('dc-json');
+  const r = dcLogsFiltered[dcLogsSel];
+  if (!r) { kvhEl.innerHTML = ''; jsonEl.innerHTML = '<div class="dc-mc-empty">No Data</div>'; return; }
+  kvhEl.innerHTML =
+    `<span class="k">Truck Name</span><span class="v">${r.json.truckName} (${r.json.truckId})</span>` +
+    (r.lat !== null ? `<span class="k">Latitude</span><span class="v">${r.lat}</span><span class="k">Longitude</span><span class="v">${r.lng}</span>` : '') +
+    `<span class="k">Mac Id</span><span class="v mono">${r.mac}</span>
+     <span class="k">Message Type</span><span class="v">${r.type}</span>
+     <span class="k">Message Sub Type</span><span class="v">${r.sub}</span>
+     <span class="k">Source</span><span class="v">${r.source}</span>
+     <span class="k">Delay</span><span class="v">${r.delay}</span>
+     <span class="k">Date</span><span class="v">${r.time}</span>`;
+  /* Re-render JSON in place — keep scroll position so a pinned
+     line stays exactly where the eye is while scrubbing rows */
+  const keepScroll = jsonEl.scrollTop;
+  const lines = JSON.stringify(r.json, null, 2).split('\n');
+  jsonEl.innerHTML = lines.map((l, i) =>
+    `<div class="dc-json-line${dcLogsPin === i + 1 ? ' pinned' : ''}" onclick="dcPinLine(${i + 1})">
+      <span class="ln">${i + 1}</span><span>${dcHiLine(l)}</span>
+    </div>`).join('');
+  jsonEl.scrollTop = keepScroll;
+}
+function dcPinLine(n) {
+  dcLogsPin = (dcLogsPin === n) ? null : n;
+  dcRenderLogDetail();
+}
+function dcCopyLog(btn) {
+  const r = dcLogsFiltered[dcLogsSel];
+  if (!r) return;
+  navigator.clipboard.writeText(JSON.stringify(r.json, null, 2)).then(() => {
+    btn.textContent = 'Copied';
+    setTimeout(() => { btn.textContent = 'Copy JSON'; }, 1200);
+  });
+}
+
+/* ══════════════════ CONFIGURATION ══════════════════
+   Section taxonomy + field values ported from dtBuildConfig in
+   the new DS. Read-only by default; Update switches to edit mode
+   with a sticky save bar. Saves persist per truck (in memory)
+   and log an "Update Configuration" command to the shared
+   history. Tilt readout reads the baseline set in Manual
+   Control → Tilt Calibration. */
+const dcTiltBase = {}; /* truck -> baseline degrees */
+const dcCfgVals = {};  /* truck -> {fieldId: value} overrides */
+const dcCfgVerify = {}; /* truck -> {fieldId: 'ok'|'unknown'} from Request truck settings */
+const DC_TILT_SENSOR = -0.4;
+
+function dcCfgDefaults(num) {
+  return {
+    name: num, mixer: 'McNeilus', bsc: 'BSC-' + num, contract: 'Cemex AZ',
+    vin: '1HTMM' + num + 'H8524', mode: 'Live', oos: 'In Service',
+    magnets: '2', drumsize: '10', frontdisc: 'on', cwr: 'off',
+    bluewtr: 'on', blueadmix: 'on', metrics: 'on',
+    minbatch: '70', minagit: '2', minmix: '6', maxmix: '15',
+    wtrqc: '25', wtrfdm: '12', admixhose: '30',
+    slumpsec: '0', slumprev: '0', slumpmin: '0', slumpmax: '0',
+    slumpstep: '1 inch', maxslump: '8 inch', minsleave: '5 min', minliters: '5 Liters',
+    dispunits: 'on', noflow: 'on',
+    slumptol: '0.5', initwtr: '0.25', initadmix: '0.25',
+    minwtr: '0', maxwtr: '0.5', minadmix: '0', maxadmix: '0.5',
+    awaydist: '0'
+  };
+}
+const DC_CFG_OPTS = {
+  mixer: ['McNeilus','Oshkosh','Con-Tech'],
+  contract: ['Cemex AZ','Ozinga IL','Holcim MI'],
+  mode: ['Live','Maintenance','Offline'],
+  oos: ['In Service','Out of Service']
+};
+/* Information-section fields: registration data, never verified
+   against the truck */
+const DC_CFG_NO_VERIFY = ['name','mixer','bsc','contract','vin','mode','oos'];
+
+function buildConfig(num) {
+  const v = Object.assign(dcCfgDefaults(num), dcCfgVals[num] || {});
+  /* Verification chips — present only after Request truck settings.
+     Unknown = the truck couldn't report it, so the value shows
+     empty (edit mode still offers the stored value to fix it).
+     Information-section fields are registration data, not
+     truck-reported — they never carry a verification state. */
+  const ver = dcCfgVerify[num] || null;
+  const isUnk = id => !!ver && !DC_CFG_NO_VERIFY.includes(id) && ver[id] === 'unknown';
+  const vchip = id => (!ver || DC_CFG_NO_VERIFY.includes(id)) ? '' :
+    (isUnk(id)
+      ? '<span class="dc-vchip unk">Unknown</span>'
+      : '<span class="dc-vchip ok">&#10003; Confirmed</span>');
+  const fi = (id, label) => `
+    <div class="dc-cfg-field" data-fid="${id}" data-label="${label.toLowerCase()}">
+      <label>${label}${vchip(id)}</label>
+      <div class="dc-cfg-ro">${isUnk(id) ? '' : v[id]}</div>
+      <input class="dc-input" value="${v[id]}">
+    </div>`;
+  const fd = (id, label) => `
+    <div class="dc-cfg-field" data-fid="${id}" data-label="${label.toLowerCase()}">
+      <label>${label}${vchip(id)}</label>
+      <div class="dc-cfg-ro">${isUnk(id) ? '' : v[id]}</div>
+      <select class="dc-input">${(DC_CFG_OPTS[id] || [v[id]]).map(o => `<option${o === v[id] ? ' selected' : ''}>${o}</option>`).join('')}</select>
+    </div>`;
+  const ft = (id, label) => `
+    <div class="dc-cfg-field" data-fid="${id}" data-label="${label.toLowerCase()}">
+      <label>${label}${vchip(id)}</label>
+      <div class="dc-tgl${isUnk(id) ? ' unk' : (v[id] === 'on' ? ' on' : '')}" onclick="this.classList.remove('unk');this.classList.toggle('on')"></div>
+    </div>`;
+  const sl = t => `<div class="dc-cfg-sublbl">${t}</div>`;
+  const acc = (title, sub, body, open) => `
+    <div class="dc-acc${open ? ' open' : ''}" data-title="${title.toLowerCase()}">
+      <div class="dc-acc-hdr" onclick="this.parentElement.classList.toggle('open')">
+        <div><div class="dc-acc-title">${title}</div><div class="dc-acc-sub">${sub}</div></div>
+        <span class="dc-acc-chev">&#9660;</span>
+      </div>
+      <div class="dc-acc-body">${body}</div>
+    </div>`;
+
+  const base = dcTiltBase[num];
+  const hasBase = base !== undefined;
+  const offset = hasBase ? (base - DC_TILT_SENSOR) : null;
+  const tiltBody = `
+    <div class="dc-cfg-tiltstats">
+      <div class="dc-tilt-stat"><div class="l">Sensor Reading</div><div class="v">${DC_TILT_SENSOR}&#176;</div></div>
+      <div class="dc-tilt-stat"><div class="l">Frame Rail Angle</div><div class="v${hasBase ? '' : ' unset'}">${hasBase ? base + '&#176;' : '&#8212;'}</div></div>
+      <div class="dc-tilt-stat"><div class="l">Offset Applied</div><div class="v${hasBase ? ' ok' : ' unset'}">${hasBase ? (offset >= 0 ? '+' : '') + offset.toFixed(1) + '&#176;' : '&#8212;'}</div></div>
+    </div>
+    <div class="dc-cfg-steps">
+      <div class="dc-cfg-step"><span class="n">1</span><span>Park the truck on level ground. Use a digital level gauge on the frame rail to measure the angle.</span></div>
+      <div class="dc-cfg-step"><span class="n">2</span><span>Set the measured frame rail angle in Manual Control &#8594; Tilt Calibration. The system applies the difference between the sensor and the frame as an offset.</span></div>
+    </div>
+    <div class="dc-cfg-resetrow">
+      <div><div class="t">Reset Baseline to Zero</div><div class="s">Use when the unit has drifted out of calibration. Clears the current offset &#8212; then recalibrate from Manual Control.</div></div>
+      <button class="dc-mc-btn ghost" onclick="dcCfgTiltReset()"${hasBase ? '' : ' disabled'}>Reset</button>
+    </div>`;
+
+  document.getElementById('panel-config').innerHTML = `
+    <div class="dc-cfg-top">
+      <div class="dc-cfg-search">
+        <span style="color:var(--dc-subtle);font-size:13px;">&#128269;</span>
+        <input id="dc-cfg-search" placeholder="Search settings&hellip;" oninput="dcCfgSearch(this.value)">
+        <span class="dc-cfg-count" id="dc-cfg-count"></span>
+      </div>
+      <button class="dc-mc-btn ghost" id="dc-cfg-editbtn" onclick="dcCfgEdit()">Update</button>
+      <div class="dc-actions-wrap">
+        <button class="dc-mc-btn" onclick="dcCfgMenuToggle(event)">Actions <span style="font-size:9px;">&#9660;</span></button>
+        <div class="dc-menu" id="dc-cfg-menu">
+          <div class="dc-menu-item" onclick="dcCfgRequestSettings()">Request truck settings</div>
+          <div class="dc-menu-item" onclick="dcCfgMenuCmd('Clone From Truck')">Clone From Truck</div>
+          <div class="dc-menu-div"></div>
+          <div class="dc-menu-item" onclick="dcCfgMenuCmd('Unbind WDS')">Unbind WDS</div>
+          <div class="dc-menu-item danger" onclick="dcCfgMenuCmd('Decommission Truck')">Decommission Truck</div>
+        </div>
+      </div>
+    </div>
+    <div id="dc-cfg-accs">
+      ${acc('Information','Defines how this truck is registered and configured within the system for tracking and reporting.',
+        fi('name','Name') + fd('mixer','Mixer Type') + fi('bsc','Batch System Code') + fd('contract','Contract') + fi('vin','VIN') + fd('mode','Mode') + fd('oos','OOS Reason'), true)}
+      ${acc('Equipment Settings','Manage system-level settings that control how this equipment behaves and reports data.',
+        fi('magnets','Number of Drum Magnets') + fi('drumsize','Drum Size (yd\u00B3)') + ft('frontdisc','Front Discharge') + ft('cwr','CWR Watchdog Enabled') + ft('bluewtr','Using Blue Water Meter') + ft('blueadmix','Using Blue Admix Meter') + ft('metrics','Display Metrics Units'))}
+      ${acc('Mixing Settings','Control how the drum mixes, agitates, and rotates during transit and discharge.',
+        fi('minbatch','Min Batch Revolutions') + fi('minagit','Min Agitation Speed (RPM)') + fi('minmix','Min Mixing Speed (RPM)') + fi('maxmix','Max Mixing Speed (RPM)'))}
+      ${acc('Fluid Hose Length Settings','Define hose lengths used for water and admixture delivery calculations.',
+        fi('wtrqc','Water Hose: Quick Connect to Nozzle (ft)') + fi('wtrfdm','Water Hose: FDM to Quick Connect (ft)') + fi('admixhose','Admix Hose Length (ft)'))}
+      ${acc('Tilt Calibration','Set the inclinometer offset so slump readings are accurate for this truck\u2019s frame angle.', tiltBody)}
+      ${acc('Workability Calculator Settings','Configure the time, rev, and drum speed limits that determine slump validity.',
+        fi('slumpsec','Slump Expiration In Seconds') + fi('slumprev','Slump Expiration In Revs') + fi('slumpmin','Slump Min Mixing Speed') + fi('slumpmax','Slump Max Mixing Speed'))}
+      ${acc('In-Cab Display Settings','Configure what drivers see in the cab, including slump step increments, limits, and display alerts.',
+        sl('Slump Adjustment') + fi('slumpstep','Target Slump Step') + fi('maxslump','Max Slump for Display') +
+        sl('Timing &amp; Operational Thresholds') + fi('minsleave','Minutes to Leave Plant') + fi('minliters','Min Liters for Back Flush') +
+        sl('Display Preferences') + ft('dispunits','Display Units (Imperial)') + ft('noflow','Display No-Flow Errors'))}
+      ${acc('Adjustment Manager Settings','Control how the system adjusts water and admixtures within defined limits.',
+        fi('slumptol','Slump Tolerance (in)') + fi('initwtr','Initial Water Ratio') + fi('initadmix','Initial Admix Ratio') + fi('minwtr','Min Water Ratio') + fi('maxwtr','Max Water Ratio') + fi('minadmix','Min Admix Ratio') + fi('maxadmix','Max Admix Ratio'))}
+      ${acc('Location Monitor Settings','Define how far a truck must move before the system marks it as away.',
+        fi('awaydist','Away Distance Signal Meters'))}
+    </div>
+    <div class="dc-cfg-savebar">
+      <span class="msg">Unsaved changes across all sections</span>
+      <div class="btns">
+        <button class="dc-mc-btn ghost" onclick="dcCfgCancel()">Cancel</button>
+        <button class="dc-mc-btn" onclick="dcCfgSave()">Save changes</button>
+      </div>
+    </div>`;
+  document.getElementById('panel-config').classList.remove('editing');
+}
+
+function dcCfgEdit() {
+  document.getElementById('panel-config').classList.add('editing');
+  document.getElementById('dc-cfg-editbtn').disabled = true;
+  /* Open everything so nothing editable is hidden */
+  document.querySelectorAll('#dc-cfg-accs .dc-acc').forEach(a => a.classList.add('open'));
+}
+function dcCfgCancel() { buildConfig(dcCurrentTruck); }
+function dcCfgSave() {
+  const store = dcCfgVals[dcCurrentTruck] = dcCfgVals[dcCurrentTruck] || {};
+  document.querySelectorAll('#panel-config .dc-cfg-field').forEach(f => {
+    const id = f.dataset.fid;
+    const input = f.querySelector('.dc-input');
+    const tgl = f.querySelector('.dc-tgl');
+    if (input) store[id] = input.value;
+    else if (tgl && !tgl.classList.contains('unk')) store[id] = tgl.classList.contains('on') ? 'on' : 'off';
+    /* toggles still in the unknown state were never touched — keep the stored value */
+  });
+  /* Edited values haven't been re-checked against the truck —
+     clear verification until the next Request truck settings */
+  delete dcCfgVerify[dcCurrentTruck];
+  buildConfig(dcCurrentTruck);
+  dcRunCommand('Update Configuration');
+}
+function dcCfgSearch(q) {
+  q = (q || '').trim().toLowerCase();
+  const countEl = document.getElementById('dc-cfg-count');
+  let hits = 0;
+  document.querySelectorAll('#dc-cfg-accs .dc-acc').forEach((accEl, i) => {
+    /* Section-title match highlights the whole accordion */
+    const secHit = !!q && (accEl.dataset.title || '').includes(q);
+    let accHits = 0;
+    accEl.querySelectorAll('.dc-cfg-field').forEach(f => {
+      const hit = !!q && f.dataset.label.includes(q);
+      f.classList.toggle('hit', hit);
+      if (hit) accHits++;
+    });
+    accEl.classList.toggle('hit-sec', secHit);
+    hits += accHits + (secHit ? 1 : 0);
+    if (q) {
+      const visible = secHit || accHits > 0;
+      accEl.style.display = visible ? '' : 'none';
+      accEl.classList.toggle('open', visible);
+    } else {
+      accEl.style.display = '';
+      accEl.classList.toggle('open', i === 0);
+    }
+  });
+  countEl.textContent = q ? hits + ' match' + (hits === 1 ? '' : 'es') : '';
+}
+
+/* ── Actions menu ── */
+function dcCfgMenuToggle(e) {
+  e.stopPropagation();
+  document.getElementById('dc-cfg-menu').classList.toggle('open');
+}
+function dcCfgMenuClose() {
+  const m = document.getElementById('dc-cfg-menu');
+  if (m) m.classList.remove('open');
+}
+document.addEventListener('click', dcCfgMenuClose);
+function dcCfgMenuCmd(cmd) {
+  dcCfgMenuClose();
+  dcRunCommand(cmd);
+}
+/* Request truck settings — the truck reports back its live values;
+   fields that match show a quiet Confirmed chip, fields the truck
+   couldn't report show Unknown. Seeded per truck. */
+function dcCfgRequestSettings() {
+  dcCfgMenuClose();
+  dcRunCommand('Request Truck Settings', '--', () => {
+    const ids = Object.keys(dcCfgDefaults(dcCurrentTruck)).filter(id => !DC_CFG_NO_VERIFY.includes(id));
+    const r = dcRng(dcSeed(dcCurrentTruck) + 99);
+    const map = {};
+    ids.forEach(id => { map[id] = r() < 0.12 ? 'unknown' : 'ok'; });
+    if (!Object.values(map).includes('unknown')) { map[ids[3]] = 'unknown'; map[ids[9]] = 'unknown'; }
+    dcCfgVerify[dcCurrentTruck] = map;
+    if (dcActiveTab === 'config') buildConfig(dcCurrentTruck);
+  });
+}
+function dcCfgTiltReset() {
+  delete dcTiltBase[dcCurrentTruck];
+  const st = document.getElementById('dc-tilt-status');
+  if (st) st.innerHTML = 'Not calibrated<br>Baseline Tilt Degrees: &#8211;';
+  dcRunCommand('Reset Tilt Baseline');
+  buildConfig(dcCurrentTruck);
+}
+
+/* ══════════════════ DEBUG CHARTS ══════════════════
+   GPS Satellite + Network Delay sparklines in the Overview rail.
+   Series are seeded per truck so paging shows stable, distinct
+   data. Click a mini to expand it into a lightbox with axes and
+   the filter legend from the current product's Sensors view. */
+let dcChartOpen = null;
+const dcDebugMode = {}; /* truck -> mode string */
+const dcChartTick = {}; /* truck -> extra points appended by live refresh */
+let dcLiveTimer = null;
+
+function dcSeed(num) { let h = 0; for (const c of String(num)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h || 1; }
+function dcRng(seed) {
+  return function () {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+/* Series generate 280 + tick points and keep the last 280, so a
+   live refresh scrolls old data left and appends fresh points. */
+function dcGpsSeries(num) {
+  const extra = dcChartTick[num] || 0;
+  const total = 280 + extra;
+  const r = dcRng(dcSeed(num));
+  const pts = [];
+  while (pts.length < total) {
+    if (r() < 0.5) {
+      const n = 20 + Math.floor(r() * 25);
+      for (let k = 0; k < n && pts.length < total; k++) pts.push(12 + r() * 8);
+    } else {
+      const n = 25 + Math.floor(r() * 30);
+      const a = 16 + r() * 3, b = 4 + r() * 2;
+      for (let k = 0; k < n && pts.length < total; k++) pts.push(a + (b - a) * k / n);
+    }
+  }
+  return pts.slice(-280);
+}
+function dcDelaySeries(num) {
+  const extra = dcChartTick[num] || 0;
+  const total = 280 + extra;
+  const r = dcRng(dcSeed(num) + 7);
+  const pts = [];
+  while (pts.length < total) {
+    if (r() < 0.5) {
+      const n = 12 + Math.floor(r() * 35);
+      for (let k = 0; k < n && pts.length < total; k++) pts.push(0);
+    } else {
+      const n = 8 + Math.floor(r() * 22);
+      for (let k = 0; k < n && pts.length < total; k++)
+        pts.push(r() < 0.35 ? 0 : (r() < 0.55 ? 1 : (r() < 0.85 ? 2 : 3)));
+    }
+  }
+  return pts.slice(-280);
+}
+function dcLinePath(pts, max, W, H, y0, x0) {
+  const step = W / (pts.length - 1);
+  let d = '';
+  pts.forEach((v, i) => { d += (i ? 'L' : 'M') + ((x0 || 0) + i * step).toFixed(1) + ' ' + ((y0 || 0) + H - v / max * H).toFixed(1) + ' '; });
+  return `<path d="${d}" fill="none" stroke="var(--dc-blue)" stroke-width="1.4" vector-effect="non-scaling-stroke"/>`;
+}
+function dcSpikePath(pts, max, W, H, y0, x0) {
+  const step = W / (pts.length - 1);
+  let d = '';
+  pts.forEach((v, i) => { if (v > 0) d += 'M' + ((x0 || 0) + i * step).toFixed(1) + ' ' + ((y0 || 0) + H) + 'V' + ((y0 || 0) + H - v / max * H).toFixed(1); });
+  return `<path d="${d}" stroke="var(--dc-blue)" stroke-width="1.6" fill="none" vector-effect="non-scaling-stroke"/>` +
+         `<line x1="${x0 || 0}" y1="${(y0 || 0) + H}" x2="${(x0 || 0) + W}" y2="${(y0 || 0) + H}" stroke="var(--dc-border)"/>`;
+}
+function dcRenderMiniCharts(num) {
+  document.getElementById('dc-mini-gps').innerHTML =
+    `<svg viewBox="0 0 280 54" preserveAspectRatio="none">${dcLinePath(dcGpsSeries(num), 25, 280, 50, 2)}</svg>`;
+  document.getElementById('dc-mini-delay').innerHTML =
+    `<svg viewBox="0 0 280 54" preserveAspectRatio="none">${dcSpikePath(dcDelaySeries(num), 3, 280, 48, 3)}</svg>`;
+}
+/* Lightbox — both charts stacked, like the product's Sensors view.
+   EACH chart has its own brush strip beneath it, so GPS and delay
+   can be zoomed independently: drag the handles to resize the
+   window, drag the window body to pan, double-click a strip to
+   reset that chart. Reset zoom in the header resets both. Hover
+   shows a crosshair + tooltip with the exact date/time and value. */
+const DC_CH = { X0: 44, W: 1040, Y0: 10, H: 170, N: 280 };
+const dcZoom = { gps: { a: 0, b: 1 }, delay: { a: 0, b: 1 } };
+const dcChartCache = {};  /* kind -> {pts, iA} rendered in the open lightbox */
+let dcBrushDrag = null;
+
+function dcZoomIdx(kind) {
+  const z = dcZoom[kind];
+  const iA = Math.round(z.a * (DC_CH.N - 1));
+  const iB = Math.min(DC_CH.N - 1, Math.max(iA + 6, Math.round(z.b * (DC_CH.N - 1))));
+  return { iA, iB };
+}
+function dcChartDate(gi) {
+  const start = new Date(2026, 6, 17, 0, 0);
+  const mins = gi * (7 * 24 * 60) / (DC_CH.N - 1);
+  return new Date(start.getTime() + mins * 60000);
+}
+function dcChartTime(gi) {
+  return dcChartDate(gi).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+/* Main plot svg for one chart, sliced to that chart's own zoom */
+function dcBigChartSVG(kind) {
+  const isGps = kind === 'gps';
+  const full = isGps ? dcGpsSeries(dcCurrentTruck) : dcDelaySeries(dcCurrentTruck);
+  const { iA, iB } = dcZoomIdx(kind);
+  const pts = full.slice(iA, iB + 1);
+  dcChartCache[kind] = { pts, iA };
+  const max = isGps ? 25 : 3;
+  const ticks = isGps ? [0, 5, 10, 15, 20, 25] : [0, 1, 2, 3];
+  const { X0, W, Y0, H } = DC_CH, VBH = 216;
+  const grid = ticks.map(t => {
+    const y = Y0 + H - t / max * H;
+    return `<line x1="${X0}" y1="${y}" x2="${X0 + W}" y2="${y}" stroke="var(--dc-border)"/>` +
+           `<text x="${X0 - 8}" y="${y + 3.5}" text-anchor="end" font-size="11" fill="var(--dc-soft)">${t}</text>`;
+  }).join('');
+  /* Time axis adapts to zoom depth: days when wide, hours when tight */
+  const spanDays = (iB - iA) / (DC_CH.N - 1) * 7;
+  const fmt = d => spanDays > 2.5
+    ? d.toLocaleString('en-US', { month: 'short', day: 'numeric' })
+    : (spanDays > 0.35
+        ? d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric' })
+        : d.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit' }));
+  const TK = 6;
+  const xlabels = Array.from({ length: TK + 1 }, (_, k) => {
+    const gi = iA + (iB - iA) * k / TK;
+    const anchor = k === 0 ? 'start' : (k === TK ? 'end' : 'middle');
+    return `<text x="${X0 + k * (W / TK)}" y="${Y0 + H + 22}" text-anchor="${anchor}" font-size="11" fill="var(--dc-soft)">${fmt(dcChartDate(gi))}</text>`;
+  }).join('');
+  const plot = isGps ? dcLinePath(pts, max, W, H, Y0, X0) : dcSpikePath(pts, max, W, H, Y0, X0);
+  const yUnit = `<text x="12" y="${Y0 + H / 2}" text-anchor="middle" font-size="11" fill="var(--dc-soft)" transform="rotate(-90 12 ${Y0 + H / 2})">${isGps ? 'Count' : 'Minute'}</text>`;
+  const cross = `
+    <line id="dc-cross-${kind}" x1="0" x2="0" y1="${Y0}" y2="${Y0 + H}" stroke="var(--dc-soft)" stroke-dasharray="3 3" visibility="hidden"/>
+    <circle id="dc-dot-${kind}" r="3.5" fill="var(--dc-blue)" stroke="var(--dc-layer-2)" stroke-width="1.5" visibility="hidden"/>`;
+  return `<svg viewBox="0 0 ${X0 + W + 12} ${VBH}" onmousemove="dcChartHover(event,'${kind}')" onmouseleave="dcChartHoverOut('${kind}')">${grid}${yUnit}${plot}${cross}${xlabels}</svg>`;
+}
+/* Full chart block: title, plot, its own brush, day ticks, legend */
+function dcChartBlock(kind) {
+  const isGps = kind === 'gps';
+  const full = isGps ? dcGpsSeries(dcCurrentTruck) : dcDelaySeries(dcCurrentTruck);
+  const ctx = isGps ? dcLinePath(full, 25, 280, 30, 3) : dcSpikePath(full, 3, 280, 28, 4);
+  const days = ['Jul 17','Jul 18','Jul 19','Jul 20','Jul 21','Jul 22','Jul 23'];
+  const chk = t => `<span class="dc-chk"><span class="bx"></span>${t}</span>`;
+  const legend = isGps
+    ? chk('Ignition Off') + chk('Invalid GPS') + chk('Select All')
+    : chk('Cell') + chk('Wifi') + chk('None') + chk('Disconnected') + chk('Select All');
+  return `
+    <div class="ct">${isGps ? 'GPS Satellite' : 'Network Delay'}</div>
+    <div class="dc-zoom-chart" id="dc-zoom-chart-${kind}">${dcBigChartSVG(kind)}</div>
+    <div class="dc-brush" id="dc-brush-${kind}" ondblclick="dcZoomReset('${kind}')" title="Drag handles to zoom this chart">
+      <svg viewBox="0 0 280 36" preserveAspectRatio="none">${ctx}</svg>
+      <div class="dc-brush-win" id="dc-brush-win-${kind}" onmousedown="dcBrushDown(event,'${kind}','pan')">
+        <span class="hdl l" onmousedown="dcBrushDown(event,'${kind}','l')"></span>
+        <span class="hdl r" onmousedown="dcBrushDown(event,'${kind}','r')"></span>
+      </div>
+    </div>
+    <div class="dc-brush-days">${days.map(d => `<span>${d}</span>`).join('')}</div>
+    <div class="dc-chk-row">${legend}</div>`;
+}
+function dcChartHover(e, kind) {
+  const svg = e.currentTarget;
+  const cache = dcChartCache[kind];
+  if (!cache) return;
+  const pts = cache.pts, L = pts.length;
+  const { X0, W, Y0, H } = DC_CH;
+  const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+  const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+  let idx = Math.round((p.x - X0) / W * (L - 1));
+  idx = Math.max(0, Math.min(L - 1, idx));
+  /* delay spikes are thin — snap radius scales with zoom depth */
+  if (kind === 'delay') {
+    const R = Math.max(3, Math.round(L * 0.022));
+    let best = -1, bd = R + 1;
+    for (let k = Math.max(0, idx - R); k <= Math.min(L - 1, idx + R); k++) {
+      if (pts[k] > 0 && Math.abs(k - idx) < bd) { bd = Math.abs(k - idx); best = k; }
+    }
+    if (best >= 0) idx = best;
+  }
+  const v = pts[idx];
+  const gi = cache.iA + idx;
+  const max = kind === 'gps' ? 25 : 3;
+  const x = X0 + idx / (L - 1) * W;
+  const y = Y0 + H - v / max * H;
+  const cross = document.getElementById('dc-cross-' + kind);
+  const dot = document.getElementById('dc-dot-' + kind);
+  cross.setAttribute('x1', x); cross.setAttribute('x2', x); cross.setAttribute('visibility', 'visible');
+  dot.setAttribute('cx', x); dot.setAttribute('cy', y); dot.setAttribute('visibility', 'visible');
+  const tip = document.getElementById('dc-chart-tip');
+  tip.innerHTML = kind === 'gps'
+    ? `<b>${Math.round(v)} satellites</b><br>${dcChartTime(gi)}`
+    : (v > 0 ? `<b>${Math.round(v)} min delay</b><br>${dcChartTime(gi)}`
+             : `No delay &#183; ${dcChartTime(gi)}`);
+  const box = document.getElementById('dc-chart-box');
+  const r = box.getBoundingClientRect();
+  let left = e.clientX - r.left + box.scrollLeft + 16;
+  if (left + 190 > box.clientWidth) left -= 210;
+  tip.style.left = left + 'px';
+  tip.style.top = (e.clientY - r.top + box.scrollTop + 14) + 'px';
+  tip.style.display = 'block';
+}
+function dcChartHoverOut(kind) {
+  const cross = document.getElementById('dc-cross-' + kind);
+  const dot = document.getElementById('dc-dot-' + kind);
+  if (cross) cross.setAttribute('visibility', 'hidden');
+  if (dot) dot.setAttribute('visibility', 'hidden');
+  const tip = document.getElementById('dc-chart-tip');
+  if (tip) tip.style.display = 'none';
+}
+
+/* ── Brush mechanics (per chart) ── */
+function dcBrushSync(kind) {
+  const win = document.getElementById('dc-brush-win-' + kind);
+  if (win) {
+    win.style.left = (dcZoom[kind].a * 100) + '%';
+    win.style.width = ((dcZoom[kind].b - dcZoom[kind].a) * 100) + '%';
+  }
+  const zoomed = k => dcZoom[k].a > 0.001 || dcZoom[k].b < 0.999;
+  const rb = document.getElementById('dc-zoom-reset');
+  if (rb) rb.style.visibility = (zoomed('gps') || zoomed('delay')) ? 'visible' : 'hidden';
+}
+function dcRenderZoomChart(kind) {
+  const c = document.getElementById('dc-zoom-chart-' + kind);
+  if (c) c.innerHTML = dcBigChartSVG(kind);
+}
+function dcBrushDown(e, kind, mode) {
+  e.preventDefault(); e.stopPropagation();
+  const rect = document.getElementById('dc-brush-' + kind).getBoundingClientRect();
+  dcBrushDrag = { kind, mode, startX: e.clientX, a0: dcZoom[kind].a, b0: dcZoom[kind].b, w: rect.width };
+}
+document.addEventListener('mousemove', e => {
+  if (!dcBrushDrag) return;
+  const z = dcZoom[dcBrushDrag.kind];
+  const dx = (e.clientX - dcBrushDrag.startX) / dcBrushDrag.w;
+  const MINW = 0.025; /* ≈ 4 hours minimum window */
+  if (dcBrushDrag.mode === 'l') {
+    z.a = Math.min(Math.max(0, dcBrushDrag.a0 + dx), z.b - MINW);
+  } else if (dcBrushDrag.mode === 'r') {
+    z.b = Math.max(Math.min(1, dcBrushDrag.b0 + dx), z.a + MINW);
+  } else {
+    const w = dcBrushDrag.b0 - dcBrushDrag.a0;
+    z.a = Math.min(Math.max(0, dcBrushDrag.a0 + dx), 1 - w);
+    z.b = z.a + w;
+  }
+  dcBrushSync(dcBrushDrag.kind);
+  dcRenderZoomChart(dcBrushDrag.kind);
+});
+document.addEventListener('mouseup', () => { dcBrushDrag = null; });
+function dcZoomReset(kind) {
+  const kinds = kind ? [kind] : ['gps', 'delay'];
+  kinds.forEach(k => {
+    dcZoom[k].a = 0; dcZoom[k].b = 1;
+    dcBrushSync(k);
+    dcRenderZoomChart(k);
+  });
+  if (!kind) { dcBrushSync('gps'); dcBrushSync('delay'); }
+}
+function dcRenderChartModal() {
+  const live = (dcDebugMode[dcCurrentTruck] || 'Default') !== 'Default';
+  document.getElementById('dc-chart-box').innerHTML = `
+    <div class="top">
+      <span class="t">Debug Sensors &#8212; Truck ${dcCurrentTruck}${live ? ' <span class="dc-live on" style="margin-left:10px;">LIVE</span>' : ''}</span>
+      <span style="display:flex;gap:10px;align-items:center;">
+        <button class="dc-copy-btn" id="dc-zoom-reset" onclick="dcZoomReset()" style="visibility:hidden;">Reset zoom</button>
+        <button class="dc-copy-btn" onclick="dcCloseChart()">Close &#10005;</button>
+      </span>
+    </div>
+    <div class="dc-brush-hint">Each chart has its own range strip &#8212; drag the handles to zoom in on a timeframe, drag the window to pan, double-click a strip to reset that chart.</div>
+    ${dcChartBlock('gps')}
+    ${dcChartBlock('delay')}
+    <div class="dc-chart-tip" id="dc-chart-tip"></div>`;
+  dcBrushSync('gps');
+  dcBrushSync('delay');
+}
+function dcExpandChart() {
+  dcZoom.gps = { a: 0, b: 1 };   /* each open starts at full range */
+  dcZoom.delay = { a: 0, b: 1 };
+  dcChartOpen = true;
+  dcRenderChartModal();
+  document.getElementById('dc-chart-modal').classList.add('open');
+}
+function dcCloseChart() {
+  dcChartOpen = null;
+  document.getElementById('dc-chart-modal').classList.remove('open');
+}
+
+/* ── Debug live mode ──
+   Selecting 15/30/60 Minutes puts the truck in live debug:
+   charts refresh every 15 s, scrolling forward. The selection
+   is a truck command, so it also lands in the shared history. */
+function dcSetDebugMode(mode) {
+  dcDebugMode[dcCurrentTruck] = mode;
+  dcRunCommand('Set Debug Mode', mode);
+  dcSyncLiveTimer();
+  /* Move immediately so the charts visibly react to the selection */
+  if ((mode || 'Default') !== 'Default') dcLiveTick();
+}
+function dcSyncLiveTimer() {
+  clearInterval(dcLiveTimer);
+  dcLiveTimer = null;
+  const live = document.getElementById('drawer').classList.contains('open') &&
+               (dcDebugMode[dcCurrentTruck] || 'Default') !== 'Default';
+  document.getElementById('dc-live-badge').classList.toggle('on', live);
+  /* Product cadence is 15000 ms; the prototype ticks every 3 s so
+     the scrolling motion is obvious in demos */
+  if (live) dcLiveTimer = setInterval(dcLiveTick, 3000);
+}
+function dcLiveTick() {
+  dcChartTick[dcCurrentTruck] = (dcChartTick[dcCurrentTruck] || 0) + 6;
+  dcRenderMiniCharts(dcCurrentTruck);
+  if (dcChartOpen) dcRenderChartModal();
+}
+
+/* Prime overview so the drawer isn't empty on first paint */
+buildOverview('1219');
+</script>
+
+</body>
+</html>

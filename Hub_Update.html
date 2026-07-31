@@ -1347,17 +1347,23 @@
             <svg class="vp-opts-check" id="vp-check-current" width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span>Current State</span>
           </div>
-          <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('current-trinity')">
-            <svg class="vp-opts-check" id="vp-check-current-trinity" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Current State + Trinity</span>
-          </div>
           <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('current-timeline')">
             <svg class="vp-opts-check" id="vp-check-current-timeline" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>+ Timeline</span>
+            <span>Phase 1_ Timeline</span>
+          </div>
+          <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('current-overview')">
+            <svg class="vp-opts-check" id="vp-check-current-overview" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Phase 2_ Overview</span>
           </div>
           <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('final')">
             <svg class="vp-opts-check" id="vp-check-final" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Final</span>
+            <span>Phase 3_ Final</span>
+          </div>
+          <div class="vp-opts-divider"></div>
+          <div class="vp-opts-section-label">Color Change</div>
+          <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('current-trinity')">
+            <svg class="vp-opts-check" id="vp-check-current-trinity" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Current State + Trinity</span>
           </div>
           <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('final-trinity')">
             <svg class="vp-opts-check" id="vp-check-final-trinity" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1397,6 +1403,10 @@
          content stays on the page underneath it — faithful to how
          today's product actually behaves. -->
     <div id="tk-view-timeline" style="display:none;"></div>
+
+    <!-- Timeline_Overview view: the Final overview panel is moved
+         in here (live DOM node, not a copy) and returned on close -->
+    <div id="tk-view-final-ov" style="display:none;"></div>
 
     <div id="tk-view-overview">
     <div class="tk-body">
@@ -1963,7 +1973,7 @@ let dcViewMode = 'current';
 
 function setProtoView(mode) {
   dcViewMode = mode;
-  ['current', 'current-trinity', 'current-timeline', 'final', 'final-trinity'].forEach(m => {
+  ['current', 'current-trinity', 'current-timeline', 'current-overview', 'final', 'final-trinity'].forEach(m => {
     const el = document.getElementById('vp-check-' + m);
     if (el) el.style.opacity = m === mode ? '1' : '0';
   });
@@ -2031,17 +2041,54 @@ function openTakeover(name) {
 
   tkRenderTimeline(a);
   tkView('overview'); /* every open starts on the overview */
-  /* +Timeline mode presents the same takeover as a right-side drawer,
-     and the tab is the NEW timeline — so it's just "TIMELINE" there */
-  const asDrawer = dcViewMode === 'current-timeline';
+  /* Phase views (+Timeline, Timeline_Overview) present the takeover
+     as a right-side drawer; the tab carries the NEW timeline there,
+     so it's just "TIMELINE", and an OVERVIEW tab appears */
+  const asDrawer = tkIsDrawerMode();
   document.getElementById('tk-act-ct-label').textContent = asDrawer ? 'TIMELINE' : 'COMPONENT TIMELINE';
+  document.getElementById('tk-act-ov').style.display = asDrawer ? '' : 'none';
   document.getElementById('takeover').classList.toggle('as-drawer', asDrawer);
   if (asDrawer) document.getElementById('overlay').classList.add('open');
+  if (dcViewMode === 'current-overview') tkMountFinalOverview(name);
+  else tkReturnFinalOverview();
   document.getElementById('takeover').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
+/* Phase views that present the takeover as a drawer */
+function tkIsDrawerMode() {
+  return dcViewMode === 'current-timeline' || dcViewMode === 'current-overview';
+}
+/* Timeline_Overview: relocate the LIVE Final overview panel (and its
+   chart lightbox) into the takeover, so ids, live debug ticks, ping
+   logging and chart expand keep working — no duplicated markup. */
+let dcOvHome = null;
+function tkMountFinalOverview(num) {
+  const panel = document.getElementById('panel-overview');
+  const modal = document.getElementById('dc-chart-modal');
+  const host = document.getElementById('tk-view-final-ov');
+  if (panel.parentElement !== host) {
+    dcOvHome = { parent: panel.parentElement, next: panel.nextElementSibling,
+                 mParent: modal.parentElement, mNext: modal.nextElementSibling };
+    host.appendChild(panel);
+    host.appendChild(modal);
+    panel.classList.add('active');
+  }
+  buildOverview(num);
+}
+function tkReturnFinalOverview() {
+  if (!dcOvHome) return;
+  const panel = document.getElementById('panel-overview');
+  const modal = document.getElementById('dc-chart-modal');
+  const host = document.getElementById('tk-view-final-ov');
+  if (panel.parentElement === host) {
+    dcOvHome.next ? dcOvHome.parent.insertBefore(panel, dcOvHome.next) : dcOvHome.parent.appendChild(panel);
+    dcOvHome.mNext ? dcOvHome.mParent.insertBefore(modal, dcOvHome.mNext) : dcOvHome.mParent.appendChild(modal);
+  }
+  dcOvHome = null;
+}
 function closeTakeover() {
   document.getElementById('takeover').classList.remove('open');
+  tkReturnFinalOverview(); /* send the Final overview panel home */
   if (!document.getElementById('drawer').classList.contains('open')) {
     document.getElementById('overlay').classList.remove('open');
     document.body.style.overflow = '';
@@ -2052,22 +2099,26 @@ function closeTakeover() {
    Back (⊙) steps up a level: timeline -> overview -> close. */
 let tkCurrentView = 'overview';
 function tkView(v) {
-  /* Toggle: clicking COMPONENT TIMELINE while it's open closes it */
-  if (v === 'timeline' && tkCurrentView === 'timeline') v = 'overview';
+  /* In plain Current State, clicking COMPONENT TIMELINE while open
+     closes it (today's toggle quirk). Drawer-mode phase views have
+     real tabs, so no toggle-off there. */
+  if (v === 'timeline' && tkCurrentView === 'timeline' && !tkIsDrawerMode()) v = 'overview';
   tkCurrentView = v;
-  /* +Timeline view: the Final timeline component replaces the old
-     hourly grid, and it's a proper view swap — the overview hides
-     while the timeline shows. Plain Current State keeps today's
-     stack-above-the-overview quirk. */
-  if (v === 'timeline' && dcViewMode === 'current-timeline') {
+  /* Phase views: the Final timeline component replaces the old
+     hourly grid, as a proper view swap. Plain Current State keeps
+     today's stack-above-the-overview quirk. */
+  if (v === 'timeline' && tkIsDrawerMode()) {
     buildTimeline(document.getElementById('tk-view-timeline'));
   }
+  const finalOv = dcViewMode === 'current-overview';
   document.getElementById('tk-view-overview').style.display =
-    (v === 'timeline' && dcViewMode === 'current-timeline') ? 'none' : '';
-  /* The overview stays visible; the timeline stacks above it,
-     exactly like today's product */
+    finalOv ? 'none' : ((v === 'timeline' && dcViewMode === 'current-timeline') ? 'none' : '');
+  document.getElementById('tk-view-final-ov').style.display =
+    (finalOv && v === 'overview') ? '' : 'none';
   document.getElementById('tk-view-timeline').style.display = v === 'timeline' ? '' : 'none';
   document.getElementById('tk-act-ct').classList.toggle('active', v === 'timeline');
+  const ovEl = document.getElementById('tk-act-ov');
+  if (ovEl) ovEl.classList.toggle('active', v === 'overview' && tkIsDrawerMode());
   document.getElementById('takeover').scrollTop = 0;
 }
 function tkBack() {

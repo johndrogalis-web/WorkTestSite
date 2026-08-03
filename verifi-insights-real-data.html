@@ -1590,6 +1590,21 @@
     body:not(.dark) .vi-interp-title { color: #141414; }
     body:not(.dark) .vi-interp-body { color: rgba(20,20,20,0.75); }
     /* Token layer for content the drawer builders inject inline */
+
+    .proof-dot { width:13px; height:13px; border-radius:3px; display:inline-block; position:relative; cursor:help; }
+    .proof-dot.ok  { background:#25c07a; }
+    .proof-dot.bad { background:#ff3b30; opacity:.85; }
+    .proof-dot:hover { transform:scale(1.25); z-index:5; }
+    /* Tooltip is a single fixed-position element (#proof-tip) so it never clips
+       inside the drawer's scroll container or at the panel edges. */
+    #proof-tip {
+      position:fixed; z-index:6000; pointer-events:none; opacity:0; transition:opacity .08s;
+      background:#fff; color:#141414; border:1px solid rgba(0,0,0,0.15); border-radius:8px;
+      padding:8px 10px; font-size:11.5px; font-weight:500; line-height:1.5; white-space:pre; text-align:left;
+      box-shadow:0 6px 20px rgba(0,0,0,.35);
+    }
+    body:not(.dark) #proof-tip { background:#141414; color:#fff; border-color:rgba(255,255,255,0.15); }
+
     .vi-drawer { --dw-hi:#fff; --dw-strong:rgba(229,229,229,0.9); --dw-body:rgba(229,229,229,0.72); --dw-mut:rgba(229,229,229,0.5); --dw-card:rgba(255,255,255,0.02); --dw-bd:rgba(255,255,255,0.08); }
     body:not(.dark) .vi-drawer { --dw-hi:#141414; --dw-strong:rgba(20,20,20,0.88); --dw-body:rgba(20,20,20,0.72); --dw-mut:rgba(20,20,20,0.5); --dw-card:rgba(0,0,0,0.02); --dw-bd:rgba(0,0,0,0.1); }
 
@@ -1773,6 +1788,36 @@
 
     /* Section labels */
 
+
+    /* --- Compact insights card (v2) --- */
+    .kpi-card.kpi-compact { padding: 12px 16px 12px; }
+    .vp-version-opt .vp-version-check { opacity:0; color:#3069e3; font-weight:700; }
+    .vp-version-opt.on .vp-version-check { opacity:1; }
+    .kpi-compact-head { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+    .kpi-compact-context { font-size:12px; color:var(--text-muted); }
+    .kpi-linklike { font:inherit; font-size:12.5px; font-weight:600; color:#3069e3; background:none; border:none;
+      cursor:pointer; padding:2px 0; text-decoration:underline; text-underline-offset:3px; }
+    .kpi-linklike.muted { color:var(--text-muted); text-decoration:none; }
+    .kpi-card.collapsed .kpi-compact-head { margin-bottom:0; }
+    .kpi-rows { display:flex; flex-direction:column; gap:6px; }
+    .kpi-prow { display:flex; align-items:center; gap:16px; padding:10px 14px; border-radius:10px; }
+    body.dark .kpi-prow.bad  { background: linear-gradient(90deg, rgba(255,59,48,0.10), rgba(255,255,255,0.02)); }
+    body.dark .kpi-prow.warn { background: linear-gradient(90deg, rgba(255,186,13,0.10), rgba(255,255,255,0.02)); }
+    body:not(.dark) .kpi-prow.bad  { background: rgba(255,59,48,0.05); border:1px solid rgba(255,59,48,0.25); }
+    body:not(.dark) .kpi-prow.warn { background: rgba(255,186,13,0.07); border:1px solid rgba(255,186,13,0.35); }
+    .kpi-prow .pill { flex-shrink:0; width:104px; text-align:center; font-size:10px; font-weight:700; letter-spacing:.08em;
+      text-transform:uppercase; padding:5px 0; border-radius:999px; color:#fff; }
+    .kpi-prow.bad  .pill { background:#e03c31; }
+    .kpi-prow.warn .pill { background:#e8a512; color:#1a1408; }
+    .kpi-prow .phase { flex-shrink:0; font-size:13.5px; font-weight:700; width:100px; }
+    .kpi-prow .signal { flex:1; font-size:13px; color:var(--text-muted); line-height:1.4; min-width:0; }
+    .kpi-prow .signal strong { color:var(--text-primary, inherit); font-weight:600; }
+    body.dark .kpi-prow .signal strong { color:rgba(229,229,229,0.95); }
+    .kpi-prow .metric { flex-shrink:0; font-size:13.5px; font-weight:700; width:64px; text-align:right; font-variant-numeric:tabular-nums; }
+    .kpi-prow .metric.bad { color:#ff5b52; } .kpi-prow .metric.warn { color:#ffba0d; }
+    .kpi-prow .trend { flex-shrink:0; font-size:11.5px; font-weight:600; width:150px; }
+    .kpi-prow .trend.up { color:#25c07a; } .kpi-prow .trend.down { color:#ff5b52; }
+
     /* --- Compact insight rows (dispatcher format) --- */
     .vi-rows { display:flex; flex-direction:column; gap:6px; }
     .vi-irow { display:flex; align-items:center; gap:18px; padding:12px 18px; border-radius:10px;
@@ -1837,9 +1882,9 @@
     .kpi-card-title { font-size:15px; font-weight:700; margin-bottom:4px; }
     .kpi-card-sub { font-size:12.5px; color:var(--text-muted); max-width:640px; line-height:1.5; }
     .kpi-learn-btn { flex-shrink:0; font:inherit; font-size:12.5px; font-weight:600; padding:8px 14px; border-radius:8px;
-      border:1px solid rgba(48,105,227,0.4); background:rgba(48,105,227,0.1); color:#3069e3; cursor:pointer; white-space:nowrap; }
-    .kpi-learn-btn:hover { background:rgba(48,105,227,0.18); }
-    .kpi-tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+      border:none; background:#3069e3; color:#fff; cursor:pointer; white-space:nowrap; }
+    .kpi-learn-btn:hover { background:#2758c4; }
+    .kpi-tiles { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
     .kpi-tile { border-radius:10px; padding:14px 16px; }
     body.dark .kpi-tile { background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); }
     body:not(.dark) .kpi-tile { background:rgba(0,0,0,0.015); border:1px solid rgba(0,0,0,0.06); }
@@ -1854,8 +1899,9 @@
     .kpi-card-foot { display:flex; align-items:center; gap:12px; margin-top:14px; padding-top:14px; font-size:12.5px; color:var(--text-muted); }
     body.dark .kpi-card-foot { border-top:1px solid rgba(255,255,255,0.06); }
     body:not(.dark) .kpi-card-foot { border-top:1px solid rgba(0,0,0,0.06); }
-    .kpi-csm-link { font:inherit; font-size:12.5px; font-weight:600; background:none; border:none; cursor:pointer;
-      color:#3069e3; padding:0; text-decoration:underline; text-underline-offset:3px; }
+    .kpi-csm-link { font:inherit; font-size:12.5px; font-weight:600; cursor:pointer; white-space:nowrap;
+      border:1px solid rgba(48,105,227,0.4); background:rgba(48,105,227,0.1); color:#3069e3; border-radius:8px; padding:7px 14px; }
+    .kpi-csm-link:hover { background:rgba(48,105,227,0.18); }
     .kpi-highlight-banner { display:none; align-items:center; gap:10px; margin:0 0 14px; padding:10px 16px; border-radius:8px;
       font-size:12.5px; background:rgba(48,105,227,0.1); border:1px solid rgba(48,105,227,0.3); color:inherit; }
     .kpi-highlight-banner.open { display:flex; }
@@ -1993,6 +2039,15 @@
             </span>
             <div class="vp-dark-toggle"><div class="vp-dark-toggle-knob"></div></div>
           </div>
+          <div class="vp-opts-section-label" style="margin-top:8px;">Insights Card Version</div>
+          <div class="vp-opts-row vp-version-opt" data-version="1" onclick="setKpiVersion(1)">
+            <span style="display:flex;align-items:center;gap:8px;flex:1;">Version 1 — tiles</span>
+            <span class="vp-version-check">✓</span>
+          </div>
+          <div class="vp-opts-row vp-version-opt" data-version="2" onclick="setKpiVersion(2)">
+            <span style="display:flex;align-items:center;gap:8px;flex:1;">Version 2 — compact rows</span>
+            <span class="vp-version-check">✓</span>
+          </div>
         </div>
       </div>
     </div>
@@ -2098,28 +2153,9 @@
 
       <!-- VERIFI INSIGHTS PANEL -->
       <!-- ============================== SLUMP-WATER KPI CARD ============================== -->
-      <div class="kpi-card" id="kpi-card">
-        <div class="kpi-card-head">
-          <div>
-            <div class="kpi-brand"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;"><path d="M3 17l5-5 4 4 8-8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 3l.6 1.4L20 5l-1.4.6L18 7l-.6-1.4L16 5l1.4-.6L18 3z" fill="currentColor"/></svg>Verifi Insights <span class="beta">Beta</span></div>
-            <div class="kpi-card-title">Slump-water performance at a glance</div>
-            <div class="kpi-card-sub">Share of Jun 12 loads at Plant 2 landing on-target for slump <strong>and</strong> water at each stage of delivery, measured against each load’s own mix design.</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-            <button class="kpi-learn-btn" id="kpi-learn-btn">Learn how to improve this →</button>
-            <button class="kpi-collapse-btn" id="kpi-collapse-btn" title="Collapse" aria-expanded="true">
-              <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
-          </div>
-        </div>
-        <div id="kpi-card-body">
-          <div class="kpi-tiles" id="kpi-tiles"></div>
-          <div class="kpi-card-foot">
-            <span class="grow">Want to walk through this together?</span>
-            <button class="kpi-csm-link" id="kpi-csm-link">Talk to your CSM →</button>
-          </div>
-        </div>
-      </div>
+      <!-- Rendered by renderKpiCard(): switch between Version 1 (tiles) and
+           Version 2 (compact rows) from Options -> Insights Card Version. -->
+      <div class="kpi-card" id="kpi-card"></div>
 
       <!-- Toolbar -->
       <div class="toolbar">
@@ -2984,31 +3020,42 @@
     // ===================================================================
     const KPI_PHASES = [
       { key: "si", flag: "flagSI", label: "Initial Slump",  pct: 25, n: 69, trend: +7  },
-      { key: "sl", flag: "flagSL", label: "Leave Plant",    pct: 17, n: 54, trend: -4  },
-      { key: "sa", flag: "flagSA", label: "Arrive Site",    pct: 41, n: 61, trend: -3  },
-      { key: "sd", flag: "flagSD", label: "Discharge",      pct: 12, n: 69, trend: -23 }
+      { key: "sl", flag: "flagSL", label: "Leave Plant",    pct: 17, n: 54, trend: -4  }
+      // Arrive Site (41%) and Discharge (12%) intentionally hidden from the tiles:
+      // they can't be acted on while today's loads are still going out. Their story
+      // lives in the "Learn how to improve this" drawer.
     ];
 
-    // Worst mix designs at discharge for this plant, last 60 days of Verifi loads.
-    // Same acceptance math as the tiles; discharge readings pass the data-quality guard.
+    // The three mixes that drove Jun 12 misses at this plant (day-only numbers,
+    // same acceptance math as the tiles).
     const KPI_RECS = [
-      { mix: "COA-360R",  tag: "WET AT THE PLANT",   acc: 6,  n: 16, dslump: 1.76,  dwater: -0.51,
-        what: "Runs wet <strong>with no extra truck water</strong> \u2014 the wetness starts at the plant; check batching and aggregate moisture. Finish quality is at risk.",
-        proof: { kind: "slump", ordered: 5.0, typical: 6.8, unit: "in",
-                 receipt: "Real load, May 26 \u2014 Truck 2475: the customer ordered 5.0 in slump. It discharged at <strong>11.6 in</strong>, with the truck barely touching its water. The wet started at the plant." } },
-      { mix: "C1058200A", tag: "WATER MASKING SLUMP", acc: 11, n: 36, dslump: 0.08,  dwater: 2.19,
-        what: "Slump looks perfect <strong>only because over-allowance water is correcting it</strong> \u2014 that extra water weakens the mix, and a slump chart will never show it. Strength is at risk.",
-        proof: { kind: "water", allowed: 0.0, typical: 2.2, unit: "gal/yd\u00b3",
-                 receipt: "Real load, May 18 \u2014 Truck 2548: this mix design allows <strong>zero</strong> added water. The truck took <strong>6.8 gal/yd\u00b3</strong> \u2014 and slump landed a perfect 6.0 on a 6.0 order. The chart says fine; the mix says weakened." } },
-      { mix: "3000",      tag: "WET + OVER WATER",    acc: 12, n: 57, dslump: 1.73,  dwater: 2.56,
-        what: "Runs wet <strong>and</strong> takes more water than allowed \u2014 the batch starts wet and trucks add more on top. Both strength and finish quality are at risk.",
-        proof: { kind: "water", allowed: 1.3, typical: 3.9, unit: "gal/yd\u00b3",
-                 receipt: "Real load, Jun 9 \u2014 Truck 2367: allowed 0.3 gal/yd\u00b3, took <strong>8.7</strong>. Slump still discharged at 7.1 in on a 5.0 in order. More than the limit, and still wrong." } }
+      { mix: "C1061250F", tag: "WATER FIXES IT ON THE ROAD", acc: 3,  n: 40, dslump: 0.25, dwater: 0.9,
+        what: "Left the plant near target \u2014 then <strong>24 of 40 loads took water past the allowance in transit</strong>. The slump chart says fine; the extra water says weakened.",
+        proof: { kind: "water", allowed: 3.3, typical: 4.2, unit: "gal/yd\u00b3",
+                 receipt: "Real load, 9:33 AM \u2014 Truck 2309: left the plant at <strong>9.25 in on a 7.0 in order</strong> with its water untouched \u2014 then this mix's trucks typically carried 4.2 gal/yd\u00b3 by arrival against a 3.3 allowance." } },
+      { mix: "C1047250",  tag: "LEAVES OFF TARGET",          acc: 50, n: 9,  dslump: 0.75, dwater: 2.3,
+        what: "Half of today's loads pulled away off target \u2014 and trucks closed the gap with <strong>roughly 3\u00d7 the allowed water</strong>. Arrivals look clean only because the road did the batching.",
+        proof: { kind: "water", allowed: 1.2, typical: 3.5, unit: "gal/yd\u00b3",
+                 receipt: "Real load, 7:07 AM \u2014 Truck 2379: left at <strong>7.25 in on a 5.0 in order</strong>. By arrival this mix typically carried 3.5 gal/yd\u00b3 against a 1.2 allowance \u2014 and landed in spec. In spec, but not the mix that was designed." } },
+      { mix: "C1050250W", tag: "LEAVES WET, NEVER CORRECTS", acc: 25, n: 4,  dslump: 2.25, dwater: 0,
+        what: "Left the plant around <strong>7.25 in against 5\u20136 in targets</strong> with no water added \u2014 nothing corrected in transit, so only 1 of 3 measured arrivals landed in spec. The wet starts at batching.",
+        proof: { kind: "slump", ordered: 5.0, typical: 7.25, unit: "in",
+                 receipt: "Real load, 2:12 PM \u2014 Truck 2009: left at <strong>7.75 in on a 5.0 in order</strong>, zero truck water \u2014 and arrived wet. Small order, clear pattern: check the batch, not the driver." } }
     ];
 
     function kpiTileClass(pct) { return pct >= 60 ? "good" : pct >= 40 ? "warn" : "bad"; }
 
-    function buildKpiTilesHTML() {
+    // ===================================================================
+    // Versioned insights card. "1" = tile layout, "2" = compact rows.
+    // Switchable at runtime from Options -> Insights Card Version.
+    // ===================================================================
+    const VI_VERSION_KEY = "vi-card-version";
+    let KPI_VERSION = "2";
+    try { KPI_VERSION = localStorage.getItem(VI_VERSION_KEY) || "2"; } catch {}
+
+    const KPI_BRAND_SVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;"><path d="M3 17l5-5 4 4 8-8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 3l.6 1.4L20 5l-1.4.6L18 7l-.6-1.4L16 5l1.4-.6L18 3z" fill="currentColor"/></svg>`;
+
+    function buildKpiTilesV1() {
       return KPI_PHASES.map(p => {
         const cls = kpiTileClass(p.pct);
         const trendUp = p.trend >= 0;
@@ -3017,41 +3064,112 @@
           <div class="kpi-tile">
             <div class="kpi-tile-label">${p.label}</div>
             <div class="kpi-tile-val ${cls}">${p.pct}%</div>
-            <div class="kpi-tile-cap">on target for slump <strong>and</strong> water · ${p.n.toLocaleString()} loads measured</div>
-            <div class="kpi-tile-trend ${trendUp ? 'up' : 'down'}">${trendUp ? '▲' : '▼'} ${Math.abs(p.trend)} pts vs the prior 30 days</div>
-            <button class="kpi-tile-show" data-phase="${p.key}">Show ${nFlagged} loads driving this →</button>
+            <div class="kpi-tile-cap">on target for slump <strong>and</strong> water \u00b7 ${p.n.toLocaleString()} loads measured</div>
+            <div class="kpi-tile-trend ${trendUp ? 'up' : 'down'}">${trendUp ? '\u25b2' : '\u25bc'} ${Math.abs(p.trend)} pts vs the prior 30 days</div>
+            <button class="kpi-tile-show" data-phase="${p.key}">Show ${nFlagged} loads driving this \u2192</button>
           </div>`;
       }).join("");
     }
 
-    function initKpiCard() {
-      const tiles = document.getElementById("kpi-tiles");
-      if (!tiles) return;
-      tiles.innerHTML = buildKpiTilesHTML();
+    const KPI_SIGNALS = {
+      si: "of ${n} loads left batching on target for slump <strong>and</strong> water \u2014 low, but improving",
+      sl: "of ${n} loads pulled away fully on target \u2014 <strong>water left unbatched gets added on the road</strong>"
+    };
+    function buildKpiRowsV2() {
+      return KPI_PHASES.map(p => {
+        const sev = p.pct < 20 ? "bad" : "warn";
+        const trendUp = p.trend >= 0;
+        const nFlagged = (window.defaultRows || []).filter(r => r[p.flag]).length;
+        const signal = (KPI_SIGNALS[p.key] || "of ${n} loads on target").replace("${n}", p.n);
+        return `
+          <div class="kpi-prow ${sev}">
+            <span class="pill">${sev === "bad" ? "Attention" : "Developing"}</span>
+            <span class="phase">${p.label}</span>
+            <span class="metric ${sev}">${p.pct}%</span>
+            <span class="signal">${signal}</span>
+            <span class="trend ${trendUp ? "up" : "down"}">${trendUp ? "\u25b2 +" : "\u25bc "}${Math.abs(p.trend)} pts vs prior 30 days</span>
+            <button class="kpi-linklike kpi-tile-show" data-phase="${p.key}">Show ${nFlagged} loads</button>
+          </div>`;
+      }).join("");
+    }
 
-      tiles.querySelectorAll(".kpi-tile-show").forEach(btn => {
+    function renderKpiCard() {
+      const card = document.getElementById("kpi-card");
+      if (!card) return;
+      card.classList.remove("collapsed");
+      if (KPI_VERSION === "1") {
+        card.classList.remove("kpi-compact");
+        card.innerHTML = `
+        <div class="kpi-card-head">
+          <div>
+            <div class="kpi-brand">${KPI_BRAND_SVG}Verifi Insights <span class="beta">Beta</span></div>
+            <div class="kpi-card-title">Slump-water performance at a glance</div>
+            <div class="kpi-card-sub">Share of Jun 12 loads at Plant 2 landing on-target for slump <strong>and</strong> water at each stage of delivery, measured against each load\u2019s own mix design.</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+            <button class="kpi-learn-btn" id="kpi-learn-btn">Learn how to improve this \u2192</button>
+            <button class="kpi-collapse-btn" id="kpi-collapse-btn" title="Collapse" aria-expanded="true">
+              <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+        <div id="kpi-card-body">
+          <div class="kpi-tiles">${buildKpiTilesV1()}</div>
+          <div class="kpi-card-foot">
+            <span class="grow">Want to walk through this together?</span>
+            <button class="kpi-csm-link" id="kpi-csm-link">Talk to your CSM \u2192</button>
+          </div>
+        </div>`;
+      } else {
+        card.classList.add("kpi-compact");
+        card.innerHTML = `
+        <div class="kpi-compact-head">
+          <div class="kpi-brand" style="margin-bottom:0;">${KPI_BRAND_SVG}Verifi Insights <span class="beta">Beta</span></div>
+          <span class="kpi-compact-context">Jun 12, 2026 \u00b7 Tex-Mix \u2014 Plant 2 \u00b7 Dispatcher</span>
+          <button class="kpi-csm-link" id="kpi-csm-link">Talk to your CSM \u2192</button>
+          <span style="flex:1;"></span>
+          <button class="kpi-learn-btn" id="kpi-learn-btn">Learn how to improve this \u2192</button>
+          <button class="kpi-linklike muted" id="kpi-collapse-btn" aria-expanded="true">Hide</button>
+        </div>
+        <div id="kpi-card-body">
+          <div class="kpi-rows">${buildKpiRowsV2()}</div>
+        </div>`;
+      }
+      wireKpiCard(card);
+      document.querySelectorAll(".vp-version-opt").forEach(el =>
+        el.classList.toggle("on", el.dataset.version === KPI_VERSION));
+    }
+
+    function setKpiVersion(v) {
+      KPI_VERSION = String(v);
+      try { localStorage.setItem(VI_VERSION_KEY, KPI_VERSION); } catch {}
+      renderKpiCard();
+    }
+
+    function wireKpiCard(card) {
+      card.querySelectorAll(".kpi-tile-show").forEach(btn => {
         btn.addEventListener("click", () => highlightPhaseLoads(btn.dataset.phase));
       });
-
       const learnBtn = document.getElementById("kpi-learn-btn");
       if (learnBtn) learnBtn.addEventListener("click", openLearnDrawer);
-
       const csmBtn = document.getElementById("kpi-csm-link");
       if (csmBtn) csmBtn.addEventListener("click", () =>
         alert("Prototype: this would open a request to your CSM with today's Slump-Water summary attached."));
-
-      const clearBtn = document.getElementById("kpi-highlight-clear");
-      if (clearBtn) clearBtn.addEventListener("click", clearPhaseHighlight);
-
       const collapseBtn = document.getElementById("kpi-collapse-btn");
-      const card = document.getElementById("kpi-card");
-      if (collapseBtn && card) {
+      if (collapseBtn) {
         collapseBtn.addEventListener("click", () => {
           const collapsed = card.classList.toggle("collapsed");
           collapseBtn.setAttribute("aria-expanded", String(!collapsed));
-          collapseBtn.title = collapsed ? "Expand" : "Collapse";
+          if (KPI_VERSION === "2") collapseBtn.textContent = collapsed ? "Show" : "Hide";
+          else collapseBtn.title = collapsed ? "Expand" : "Collapse";
         });
       }
+    }
+
+    function initKpiCard() {
+      renderKpiCard();
+      const clearBtn = document.getElementById("kpi-highlight-clear");
+      if (clearBtn) clearBtn.addEventListener("click", clearPhaseHighlight);
     }
 
     function highlightPhaseLoads(phaseKey) {
@@ -3088,7 +3206,7 @@
 
     function openLearnDrawer() {
       document.getElementById("vi-title").textContent = "How to address this \u2014 Plant 2";
-      document.getElementById("vi-subtitle").textContent = "Tex-Mix \u00b7 based on the last 60 days of Verifi load data at this plant";
+      document.getElementById("vi-subtitle").textContent = "Tex-Mix \u00b7 Plant 2 \u00b7 Jun 12, 2026 loads only";
 
       const recsHTML = KPI_RECS.map(r => `
         <li style="margin-bottom:12px;line-height:1.5;">
@@ -3102,10 +3220,30 @@
         </li>`).join("");
 
       const proofHTML = KPI_RECS.map(r => {
-        const miss = Math.max(1, Math.min(9, Math.round((100 - r.acc) / 10)));
-        const dots = Array.from({ length: 10 }, (_, i) =>
-          `<span style="width:13px;height:13px;border-radius:3px;display:inline-block;background:${i < 10 - miss ? "#25c07a" : "#ff3b30"};opacity:${i < 10 - miss ? 1 : 0.85};"></span>`
-        ).join("");
+        // One dot per real load of this mix today, in the order they went out.
+        // Green = pulled away from the plant on target; red = missed at leave plant.
+        const mixLoads = ((window.defaultRows || []).filter(x => x.mixCode === r.mix)).slice().reverse();
+        const missN = mixLoads.filter(x => x.flagSL).length;
+        const esc = s => String(s || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+        const dots = mixLoads.map(x => {
+          // Same checks that set the flag: slump within \u22122..+1 in of ordered
+          // (when a leave reading exists), and water within 2 gal of the allowance by leave.
+          const tgt = parseFloat(x.ticketedSlump);
+          const wl  = parseFloat(x.waterAtPlant || "0");
+          const mx  = parseFloat(x.allowableWater);
+          const waterOK = (wl - mx) >= -2 && (wl - mx) <= 0;
+          let slumpLine;
+          if (x.leavePlant === "" || x.leavePlant == null) {
+            slumpLine = "Slump: no leave-plant reading captured";
+          } else {
+            const d = parseFloat(x.leavePlant) - tgt;
+            const ok = d >= -2 && d <= 1;
+            slumpLine = `Slump: ${x.leavePlant} in vs ${tgt} in ordered \u2014 ${ok ? "\u2713 in range" : "\u2717 out of range"}`;
+          }
+          const waterLine = `Water by leave: ${wl} / ${mx} gal \u2014 ${waterOK ? "\u2713 in range" : "\u2717 outside range"}`;
+          const tip = `Ticket ${x.tickets} \u00b7 ${x.time} \u00b7 Truck ${x.truck}\nDriver: ${x.driver}\nMix: ${x.mixCode}\n${slumpLine}\n${waterLine}`;
+          return `<span class="proof-dot ${x.flagSL ? "bad" : "ok"}" data-tip="${esc(tip)}"></span>`;
+        }).join("");
         const b = r.proof;
         const maxV = Math.max(b.kind === "water" ? b.allowed : b.ordered, b.typical, 0.1);
         const bar = (label, val, color) => `
@@ -3121,8 +3259,8 @@
           <div style="border:1px solid var(--dw-bd);background:var(--dw-card);border-radius:12px;padding:14px 16px;margin-bottom:10px;">
             <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:9px;">
               <strong style="color:var(--dw-hi);font-size:13px;">Mix ${r.mix}</strong>
-              <span style="display:inline-flex;gap:3px;">${dots}</span>
-              <span style="font-size:12px;color:var(--dw-body);">about <strong style="color:#ff5b52;">${miss} out of every 10 loads miss</strong></span>
+              <span style="display:inline-flex;gap:3px;flex-wrap:wrap;max-width:520px;">${dots}</span>
+              <span style="font-size:12px;color:var(--dw-body);"><strong style="color:#ff5b52;">${missN} of ${mixLoads.length} loads missed</strong> leaving the plant \u2014 hover any square for the ticket, driver, and mix</span>
             </div>
             <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:9px;">${bars}</div>
             <div style="font-size:12px;color:var(--dw-body);line-height:1.5;border-left:2px solid rgba(48,105,227,0.5);padding-left:10px;">${b.receipt}</div>
@@ -3132,28 +3270,29 @@
       document.getElementById("vi-body").innerHTML = `
         <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(48,105,227,0.08);border:1px solid rgba(48,105,227,0.2);border-radius:10px;font-size:12px;color:var(--dw-body);line-height:1.45;">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;color:rgba(48,105,227,0.8)"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M8 7v4M8 5.5v.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-          <span><strong style="color:var(--dw-strong)">How we got this:</strong> every Verifi load at this plant is checked against its own mix design \u2014 slump vs the ticketed target, water vs the max the design allows. The mixes below miss the most, most often. Nothing here is estimated.</span>
+          <span><strong style="color:var(--dw-strong)">How we got this:</strong> all 69 of today's Verifi loads at this plant, each checked against its own mix design \u2014 slump vs the ticketed target, water vs the max the design allows. Nothing here is estimated, and nothing is older than this morning.</span>
         </div>
 
         <div class="vi-section-label">What Today's Numbers Say</div>
         <div class="vi-interpretation">
-          <div class="vi-interp-title">Water, not slump, is what's missing \u2014 and it's worst at discharge</div>
+          <div class="vi-interp-title">Only 17% of today's loads pulled away fully on target \u2014 and the road is covering for it</div>
           <div class="vi-interp-body">
-            Slump at arrival is strong (97% of measurable loads within band). But only about 1 in 5 loads stayed inside
-            the water allowance through discharge, so just 12% finish fully on target \u2014 down 23 points from the prior 30 days.
-            Water added beyond the allowance raises the water-cement ratio and reduces strength, and it never shows on a slump chart.
+            Slump leaving the plant was in band on 61% of loads, but water is the real miss: most loads either left off
+            target or took water beyond the allowance in transit to get right. What leaves wrong gets fixed with water on
+            the road \u2014 and that extra water raises the water-cement ratio and reduces strength without ever showing
+            on a slump chart. The three mixes below drove almost all of it today.
           </div>
         </div>
 
         <div style="font-size:14px;font-weight:700;color:var(--dw-hi);display:flex;align-items:center;gap:8px;margin-top:2px;">\u2691 Top 3 actions for your plant</div>
-        <div style="font-size:12.5px;color:var(--dw-body);margin:4px 0 10px;">The worst mix designs at <strong style="color:var(--dw-strong);">discharge</strong> \u2014 the three to talk about first.</div>
+        <div style="font-size:12.5px;color:var(--dw-body);margin:4px 0 10px;">The three mixes that drove today's misses \u2014 in the order to talk about them.</div>
         <ul style="margin:0;padding-left:20px;">${recsHTML}</ul>
 
         <div class="vi-divider"></div>
         <div style="font-size:14px;font-weight:700;color:var(--dw-hi);display:flex;align-items:center;gap:8px;">Don't just take our word for it \u2014 here's our work</div>
-        <div style="font-size:12.5px;color:var(--dw-body);margin:4px 0 12px;">Every dot below is real loads from your trucks. Green landed on target; red missed.</div>
+        <div style="font-size:12.5px;color:var(--dw-body);margin:4px 0 12px;">Every dot below is one of today's real loads. Green pulled away fully on target; red missed.</div>
         ${proofHTML}
-        <div style="font-size:12px;color:var(--dw-mut);line-height:1.5;margin-top:2px;">That's the whole method: your loads, checked against your own mix designs. If you want to see the load-by-load detail behind any of these \u2014 or what fixing them is worth \u2014 that's a conversation for your CSM below.</div>
+        <div style="font-size:12px;color:var(--dw-mut);line-height:1.5;margin-top:2px;">That's the whole method: today's loads, checked against your own mix designs. If you want to see the load-by-load detail behind any of these \u2014 or what fixing them is worth \u2014 that's a conversation for your CSM below.</div>
 
         <div style="margin-top:8px;padding:16px 18px;border:1px solid rgba(48,105,227,0.3);background:rgba(48,105,227,0.08);border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
           <div>
@@ -3164,6 +3303,39 @@
         </div>`;
       document.getElementById("vi-overlay").classList.add("open");
       document.getElementById("vi-drawer").classList.add("open");
+      wireProofDotTips();
+    }
+
+    // Shared fixed tooltip for the proof dots — positioned per hover and clamped
+    // to the viewport so it can't be cut off by the drawer's edges or scrolling.
+    function wireProofDotTips() {
+      let tip = document.getElementById("proof-tip");
+      if (!tip) {
+        tip = document.createElement("div");
+        tip.id = "proof-tip";
+        document.body.appendChild(tip);
+      }
+      const body = document.getElementById("vi-body");
+      if (!body || body.__dotTipsWired) return;
+      body.__dotTipsWired = true;
+      body.addEventListener("mouseover", (e) => {
+        const dot = e.target.closest(".proof-dot");
+        if (!dot) return;
+        tip.textContent = dot.dataset.tip || "";
+        tip.style.opacity = "1";
+        const r = dot.getBoundingClientRect();
+        const tw = tip.offsetWidth, th = tip.offsetHeight;
+        let left = r.left + r.width / 2 - tw / 2;
+        left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+        let top = r.top - th - 9;
+        if (top < 8) top = r.bottom + 9; // flip below when near the top edge
+        tip.style.left = left + "px";
+        tip.style.top = top + "px";
+      });
+      body.addEventListener("mouseout", (e) => {
+        if (e.target.closest && e.target.closest(".proof-dot")) tip.style.opacity = "0";
+      });
+      body.addEventListener("scroll", () => { tip.style.opacity = "0"; }, { passive: true });
     }
 
     function openInsightsDrawer(orderId, row) {

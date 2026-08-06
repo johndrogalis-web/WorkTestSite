@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorkTestSite — Prototype Index</title>
+<style>
+  :root{
+    /* Trinity dark-mode tokens (verifi-trinity-prototyping skill) */
+    --base:        #171614;
+    --layer-1:     #211f1c;
+    --layer-2:     #2f2d28;
+    --strong:      #ffffff;
+    --defined:     #e5e5e5de;
+    --soft:        #e5e5e5bf;
+    --subtle:      #e5e5e566;
+    --border:      #e5e5e51f;
+    --border-mid:  rgba(229,229,229,0.25);
+    --blue:        #6492f1;
+    --blue-link:   #6492f1;
+    --select:      #e3f200;
+    --on-select:   #000000;
+    --red:         #d70100;
+    --amber:       #ffba0d;
+
+    --radius-sm:   4px;
+    --radius-md:   16px;
+    --radius-lg:   20px;
+    --radius-pill: 32px;
+
+    --font:        'ABC Repro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --font-mono:   'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--base);
+    color:var(--defined);
+    font-family:var(--font);
+    -webkit-font-smoothing:antialiased;
+  }
+  header{
+    padding:32px 40px 20px;
+    border-bottom:1px solid var(--border);
+  }
+  header h1{
+    margin:0 0 6px;
+    font-size:24px;
+    font-weight:500;
+    color:var(--strong);
+    letter-spacing:-0.01em;
+  }
+  header p{
+    margin:0;
+    color:var(--soft);
+    font-size:13px;
+    max-width:640px;
+    line-height:1.5;
+  }
+  .header-row{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:24px;
+  }
+  .verifi-logo{
+    color:var(--strong);
+    flex-shrink:0;
+    margin-top:4px;
+  }
+  header code{
+    font-family:var(--font-mono);
+    background:var(--layer-2);
+    padding:1px 6px;
+    border-radius:var(--radius-sm);
+    border:1px solid var(--border);
+    font-size:12px;
+  }
+  main{
+    padding:32px 40px 60px;
+    max-width:1200px;
+    margin:0 auto;
+  }
+  .section-label{
+    font-size:11px;
+    font-weight:500;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--soft);
+    margin:0 0 14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .section-label .count{
+    background:var(--layer-2);
+    border:1px solid var(--border);
+    border-radius:var(--radius-pill);
+    padding:1px 8px;
+    font-size:10px;
+    font-family:var(--font-mono);
+    color:var(--soft);
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+    gap:14px;
+    margin-bottom:36px;
+  }
+  .card{
+    position:relative;
+    background:var(--layer-1);
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    padding:16px 16px 14px;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease, transform .1s ease;
+    text-decoration:none;
+    color:inherit;
+    display:flex;
+    flex-direction:column;
+    min-height:118px;
+  }
+  .card:hover{
+    background:var(--layer-2);
+    border-color:var(--border-mid);
+    transform:translateY(-1px);
+  }
+  .card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:8px;
+    margin-bottom:8px;
+  }
+  .card-title{
+    font-size:14.5px;
+    font-weight:500;
+    line-height:1.3;
+    letter-spacing:-0.005em;
+    color:var(--strong);
+  }
+  .star-btn{
+    background:none;
+    border:none;
+    cursor:pointer;
+    font-size:17px;
+    line-height:1;
+    padding:2px;
+    color:var(--border-mid);
+    flex-shrink:0;
+    transition:color .15s ease, transform .1s ease;
+  }
+  .star-btn:hover{ transform:scale(1.15); }
+  /* Extension: star uses --select (lime) as a personal selection-state marker,
+     not a CTA — consistent with dialect rule that --select marks chosen/active items. */
+  .star-btn.active{ color:var(--select); }
+  .card-desc{
+    font-size:12.5px;
+    color:var(--soft);
+    line-height:1.5;
+    flex-grow:1;
+  }
+  .card-path{
+    margin-top:10px;
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    color:var(--subtle);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .empty-hint{
+    grid-column:1/-1;
+    color:var(--soft);
+    font-size:12.5px;
+    padding:18px;
+    border:1px dashed var(--border);
+    border-radius:var(--radius-md);
+    text-align:center;
+  }
+  footer{
+    text-align:center;
+    color:var(--subtle);
+    font-size:11px;
+    padding:20px 0 40px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <div class="header-copy">
+      <h1>WorkTestSite Prototype Index</h1>
+      <p>Click a card to open the prototype in a new tab. Star the ones you're actively using — starred cards float to the top and stick around on <em>this browser</em> (stars are per computer, not shared).</p>
+    </div>
+    <svg class="verifi-logo" width="72" height="18" viewBox="0 0 96 24" aria-label="Verifi">
+      <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="currentColor"/>
+    </svg>
+  </div>
+</header>
+
+<main>
+  <div class="section-label">Starred <span class="count" id="starred-count">0</span></div>
+  <div class="grid" id="starred-grid"></div>
+
+  <div class="section-label">All Prototypes <span class="count" id="all-count">0</span></div>
+  <div class="grid" id="all-grid"></div>
+</main>
+
+<footer>Stars are stored in this browser's localStorage. Clearing browser data resets them.</footer>
+
+<script>
+  const BASE = "https://johndrogalis-web.github.io/WorkTestSite/";
+  const STORAGE_KEY = "worktestsite_starred_v1";
+
+  const prototypes = [
+    {
+      id: "trinity-dc",
+      title: "Trinity Diagnostic Center",
+      desc: "Full updated Trinity Diagnostic Center — the current source of truth for this build.",
+      path: "Trinity_dc"
+    },
+    {
+      id: "driver-app",
+      title: "Driver App",
+      desc: "Prototype of the Driver App experience.",
+      path: "DriverAPP/verifi_driver_load"
+    },
+    {
+      id: "cards",
+      title: "Manual Control (Cards)",
+      desc: "First prototype of Manual Control and all its states.",
+      path: "Cards"
+    },
+    {
+      id: "hub-update",
+      title: "Hub Update",
+      desc: "A phased approach for the Diagnostic Center if Trinity were built out in phases.",
+      path: "Hub_Update.html"
+    },
+    {
+      id: "load-reports",
+      title: "Load Reports — UI Cleanup",
+      desc: "Cleaned-up UI for Load Reports, table tightened to show more data.",
+      path: "load-reports.html"
+    },
+    {
+      id: "load-reports-mobile",
+      title: "Load Reports — Mobile",
+      desc: "Cleaned-up mobile table layout for the current Hub.",
+      path: "load-reports-mobile.html#ticketing"
+    },
+    {
+      id: "logs-test",
+      title: "Log Report Types",
+      desc: "Focused prototype of different log report types, testing whether a structured view can replace raw JSON.",
+      path: "logs-test"
+    },
+    {
+      id: "slump-override",
+      title: "Slump Override",
+      desc: "Simple prototype for Slump Override.",
+      path: "slump-override.html"
+    },
+    {
+      id: "verifi-insights",
+      title: "Verifi Insights — First Pass",
+      desc: "The first attempt at bringing insight into the Hub.",
+      path: "verifi-insights"
+    },
+    {
+      id: "verifi-insights-real-data",
+      title: "Verifi Insights — Real Data",
+      desc: "Updated Insights panel built hand-in-hand with Nathan, using real data.",
+      path: "verifi-insights-real-data.html"
+    }
+  ];
+
+  function getStars(){
+    try{
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    }catch(e){
+      return [];
+    }
+  }
+  function setStars(arr){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+  }
+  function toggleStar(id, e){
+    e.preventDefault();
+    e.stopPropagation();
+    let stars = getStars();
+    if(stars.includes(id)){
+      stars = stars.filter(s => s !== id);
+    } else {
+      stars.push(id);
+    }
+    setStars(stars);
+    render();
+  }
+
+  function makeCard(item, starred){
+    const a = document.createElement("a");
+    a.className = "card";
+    a.href = BASE + item.path;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+
+    const top = document.createElement("div");
+    top.className = "card-top";
+
+    const title = document.createElement("div");
+    title.className = "card-title";
+    title.textContent = item.title;
+
+    const star = document.createElement("button");
+    star.className = "star-btn" + (starred ? " active" : "");
+    star.innerHTML = starred ? "★" : "☆";
+    star.setAttribute("aria-label", starred ? "Unstar" : "Star");
+    star.onclick = (e) => toggleStar(item.id, e);
+
+    top.appendChild(title);
+    top.appendChild(star);
+
+    const desc = document.createElement("div");
+    desc.className = "card-desc";
+    desc.textContent = item.desc;
+
+    const path = document.createElement("div");
+    path.className = "card-path";
+    path.textContent = item.path;
+
+    a.appendChild(top);
+    a.appendChild(desc);
+    a.appendChild(path);
+    return a;
+  }
+
+  function render(){
+    const stars = getStars();
+    const starredGrid = document.getElementById("starred-grid");
+    const allGrid = document.getElementById("all-grid");
+    starredGrid.innerHTML = "";
+    allGrid.innerHTML = "";
+
+    const starredItems = prototypes.filter(p => stars.includes(p.id));
+    const restItems = prototypes.filter(p => !stars.includes(p.id));
+
+    if(starredItems.length === 0){
+      const hint = document.createElement("div");
+      hint.className = "empty-hint";
+      hint.textContent = "Nothing starred yet — click the ☆ on any card below.";
+      starredGrid.appendChild(hint);
+    } else {
+      starredItems.forEach(item => starredGrid.appendChild(makeCard(item, true)));
+    }
+
+    restItems.forEach(item => allGrid.appendChild(makeCard(item, false)));
+
+    document.getElementById("starred-count").textContent = starredItems.length;
+    document.getElementById("all-count").textContent = restItems.length;
+  }
+
+  render();
+</script>
+
+</body>
+</html>

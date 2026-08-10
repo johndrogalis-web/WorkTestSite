@@ -262,14 +262,42 @@ function App({onRestart}) {
   const [installForm, setInstallForm] = useState(null); // {reason, unit, by}
   const [moveForm, setMoveForm] = useState(null);       // {intent, unit, by, dest}
   const [creator, setCreator] = useState(null);
-  const [draft, setDraft] = useState({ customer:"AZ Materials — Plant 12", trucks:3, measure:"Spark", water:"v5 Temperate", admix:"None", addons:{}, labor:"3rd Party", reqDate:"07/21/26", model:"Lease", contact:"R. Alvarez", phone:"(602) 555-0144", liftgate:true, hours:"6a–2p M–F", priority:"Medium", specialReq:"", hubContract:"HC-2019-044 — AZ Materials (active)", surveyFile:null });
+  const [draft, setDraft] = useState({ customer:"AZ Materials — Plant 12", trucks:3, measure:"Spark", water:"v5 Temperate", admix:"None", addons:{}, labor:"3rd Party", reqDate:"07/21/26", model:"Lease", contact:"R. Alvarez", phone:"(602) 555-0144", liftgate:true, hours:"6a–2p M–F", priority:"Medium", specialReq:"", hubContract:"HC-2019-044 — AZ Materials (active)", surveyFile:null,
+    multiLoc:false,
+    locations:[ // NEW (Aug 10 kickoff) — up to 3 ship-to locations on ONE order when it's the same account/contract, e.g. Salem + Eugene. Different account or contract = still a separate order (Klauke).
+      { name:"Plant 12 — Phoenix AZ", trucks:3, truckNos:"", truckNosUnknown:true, contact:"R. Alvarez", phone:"(602) 555-0144", liftgate:true, hours:"6a–2p M–F", reqDate:"07/21/26", hubContract:"HC-2019-044 — AZ Materials (active)" },
+    ] });
   const [deferDate, setDeferDate] = useState("08/14/26");
   const [deferReason, setDeferReason] = useState("");
   const [shipPanel, setShipPanel] = useState(false);   // Mark Shipped opens shipment-details first (John, July 28)
   const [shipFile, setShipFile] = useState(null);      // simulated file attach
   const [tracking, setTracking] = useState("");
+  const [locShip, setLocShip] = useState({});           // NEW (Aug 10) — per-location {file, tracking, complete:null|true|false, dropShip, deferDate, deferReason}; Klauke: each split shipment needs its own packing list + tracking AND its own complete/incomplete answer
+  const patchLocShip = (i, patch) => setLocShip(s => ({...s, [i]: {...(s[i]||{}), ...patch}}));
+  const locShipRowOK = (r) => r && r.file && (r.tracking||"").trim() && (r.complete===true || (r.complete===false && (r.deferDate||"").trim() && (r.deferReason||"").trim() && (r.foNow===false || (r.foNow===true && r.foFile && (r.foTracking||"").trim())))) && (!r.dropShip || (r.dsFile && (r.dsTracking||"").trim())); // incomplete → defer fields + a follow-on answer: add its new tracking NOW, or "not now" (deferral stays open; John, Aug 10)
+  const locShipReady = (fields) => !fields?.multiLoc || fields.locations.every((_,i) => locShipRowOK(locShip[i]));
+  /* NEW (Aug 10) — FOLLOW-ON SHIPMENT for the deferred portion of an incomplete shipment. Klauke (40:55): SC "needs the ability to go back and add new packing list and tracking to this part of the order." Each follow-on gets its OWN packing list + tracking # (a new shipment, not an edit of the first), and completing it is when the remaining units create (July 24, 26:02 — unshipped portion's units are NOT created until it actually ships). Keyed by shipment: location index for multi-loc, or "single". */
+  const [followOn, setFollowOn] = useState({});          // {key: {file, tracking, done}}
+  const patchFollowOn = (k, patch) => setFollowOn(f => ({...f, [k]: {...(f[k]||{}), ...patch}}));
+  const [foNowS, setFoNowS] = useState(null);            // single-loc: follow-on now (true) / not now (false) — must answer when shipment incomplete (John, Aug 10)
+  const [foFileS, setFoFileS] = useState(null);
+  const [foTrackingS, setFoTrackingS] = useState("");
+  const submitFollowOn = (k, label, defer) => {
+    const r = followOn[k]||{};
+    patchFollowOn(k,{done:true});
+    addLog("Supply Chain", `FOLLOW-ON SHIPMENT — ${label}: deferred portion ("${defer.deferReason||"—"}", was due ${defer.deferDate||"—"}) now shipped. 📎 ${r.file||"packing-list_ORD-1042-followon.pdf"} + NEW tracking ${(r.tracking||"").trim()||"1Z999AA10199999999"} — its own shipment number, not an edit of the original (Klauke, Aug 10, 40:55). Shipment for ${label} is now COMPLETE.`);
+    addLog("System", `Remaining units for the deferred portion CREATE NOW — units for an unshipped portion are only created when it actually ships (July 24, 26:02). Register-in-Hub prompt fires for the new IDs.`);
+    addLog("System", `New tracking populated → FSM (${fields.fsm}) + FST (${fields.fst}) NOTIFIED with the follow-on tracking info (Ariel, Aug 10, 42:19).`);
+  };
   const sysSummary = (d) => [d.measure, d.water, d.admix].filter(v=>v!=="None").join(" + ") || "Upgrade (Measure: none)";
   const approver = creator === "CSM" ? "FSM" : "CSM";
+  /* NEW (Aug 10 kickoff) — multi-location ship-to. Reverses the July 24 "one order = one ship-to" rule after Klauke's Salem/Eugene example: same account + same contract, split across up to 3 locations, stays ONE order. Different account/contract = still a separate order/case. Everything that varies is per-location (truck count, contact, liftgate/hours, on-site date, hub contract); system/mix/add-ons stay whole-order (Ariel/Anca, same call). */
+  const addLocation = () => setDraft(d => d.locations.length>=3 ? d : ({...d, locations:[...d.locations, { name:"", trucks:0, truckNos:"", truckNosUnknown:true, contact:"", phone:"", liftgate:true, hours:"", reqDate:d.reqDate, hubContract:d.hubContract }]}));
+  const removeLocation = (i) => setDraft(d => ({...d, locations: d.locations.filter((_,ix)=>ix!==i)}));
+  const patchLocation = (i, patch) => setDraft(d => ({...d, locations: d.locations.map((l,ix)=> ix===i ? {...l, ...patch} : l)}));
+  const locTotalTrucks = (d) => d.multiLoc ? d.locations.reduce((s,l)=>s+(+l.trucks||0),0) : d.trucks;
+  const locAllocated = (d) => d.locations.reduce((s,l)=>s+(+l.trucks||0),0);
+  const locAllocOK = (d) => !d.multiLoc || (locAllocated(d) === (+d.trucks||0) && d.trucks > 0); // per-location counts must reconcile against the order total — the "confirm" step (John, Aug 10)
 
   /* order state */
   const [created, setCreated] = useState(false);
@@ -306,8 +334,10 @@ function App({onRestart}) {
   const [noBillReason, setNoBillReason] = useState("Replacement unit — on us"); // default reason for per-COLI no-bills
   const [installClosed, setInstallClosed] = useState(false);
   const [equipGathered, setEquipGathered] = useState(false); // case-level, ONE step at end of installs (July 24, James K)
-  const [shipComplete, setShipComplete] = useState(true);    // Mark-Shipped: shipment complete? (July 24)
+  const [shipComplete, setShipComplete] = useState(null);   // Mark-Shipped: MANDATORY binary complete/incomplete — null until SC picks one (Klauke, Aug 10 — was a default-checked checkbox, July 24)
   const [dropShip, setDropShip] = useState(false);           // Mark-Shipped: drop-ship included? (July 24)
+  const [dsFile, setDsFile] = useState(null);                // NEW (Aug 10) — supplier packing list for the drop shipment
+  const [dsTracking, setDsTracking] = useState("");          // NEW (Aug 10) — supplier tracking # for the drop shipment; required when dropShip checked (Klauke, July 24 23:35)
   const [ret, setRet] = useState({ parts:true, unit:"", stage:0 });
   const retShippedBack = ret.stage>=3, retReceived = ret.stage>=5;
   const [midCases, setMidCases] = useState([]);   // Verifi Install: upgrade / brownfield
@@ -356,9 +386,11 @@ function App({onRestart}) {
   const submitOrder = () => {
     const who = ["CSM","FSM"].includes(role) ? role : "CSM";
     const t = TERRITORY[draft.customer];
-    setFields({...draft, system: sysSummary(draft), csm:"Dana R. (CSM)", fsm:t.fsm, fst:t.fst, loc:t.loc}); setCreated(true); setShowOrderForm(false); setCreator(who);
+    const trucks = locTotalTrucks(draft);
+    setFields({...draft, trucks, system: sysSummary(draft), csm:"Dana R. (CSM)", fsm:t.fsm, fst:t.fst, loc:t.loc}); setCreated(true); setShowOrderForm(false); setCreator(who);
     const picked = Object.keys(draft.addons).filter(k=>draft.addons[k]);
     addLog(who, `ORD-1042 created via dynamic form — the form IS the case (1:1 replacement of MIN-00006). System: ${sysSummary(draft)}. Add-ons (whole install, James K July 27): ${picked.length?picked.join(", "):"none"}. Account/location selected → auto-pulled ${t.fsm} + ${t.fst}. Creator (${who}) approval recorded; ${who==="CSM"?"FSM":"CSM"} approves next. Desired on-site: ${draft.reqDate}. Labor (${draft.labor}) flagged to Finance (Jim) for the IO — submit early, approval takes weeks (July 24).${draft.specialReq ? ` Special request: "${draft.specialReq}".` : ""} — Spec §2.2–2.3`);
+    if (draft.multiLoc) addLog(who, `ONE order, ${draft.locations.length} ship-to locations (same account/contract — Aug 10 kickoff): ` + draft.locations.map(l=>`${l.name||"(unnamed)"} · ${l.trucks} trucks · on-site ${l.reqDate}`).join(" | ") + `. Total ${trucks} trucks. System/mix/add-ons are the same across all locations; SC will need a separate packing list + tracking number per location at Mark Shipped. — build-thread (Aug 10)`);
   };
 
   /* ── Phase 0 ── */
@@ -382,10 +414,21 @@ function App({onRestart}) {
   const setEst     = () => { setEstDate("07/14/26"); addLog("Supply Chain","ACKNOWLEDGED order (first SC touch — team sees SC has it, July 24 14:13) + estimated SHIP date set: 07/14/26 (pre-filled from desired on-site " + fields.reqDate + ", SC-editable — a ship date, not an arrive date; transit time on top. July 24 14:36–16:45). Team notified of estimate. — Spec §3.1"); };
   const markShipped = () => {
     setShipped(true); setHubTask(true); setShipPanel(false);
-    addLog("Supply Chain", `Shipment details captured: 📎 ${shipFile||"packing-list_ORD-1042.pdf"} attached + tracking ${tracking.trim()||"1Z999AA10123456784"}. Docs live on the case — submitting fires the register-units-in-Hub prompt next (July 28).`);
+    if (fields.multiLoc) {
+      fields.locations.forEach((l,i) => { const r = locShip[i]||{}; addLog("Supply Chain", `${l.name||"Location "+(i+1)} (${l.trucks} trucks): 📎 ${r.file||`packing-list_ORD-1042-${i+1}.pdf`} attached + tracking ${(r.tracking||"").trim()||"1Z999AA1012345678"+i}. Shipment ${r.complete===false ? `INCOMPLETE — deferred items get new date ${r.deferDate} + reason "${r.deferReason}" (required fields; Bruschi notified to review the actual-ship parts list)` : "COMPLETE"}.${r.dropShip ? ` DROP-SHIP included — supplier ships direct (bulky items); no workflow trigger, but it's a separate shipment with its OWN supplier docs: 📎 ${r.dsFile||"supplier-packing-list.pdf"} + supplier tracking ${(r.dsTracking||"").trim()||"—"} (Klauke, July 24 23:35 + Aug 10).` : ""} — Aug 10: each ship-to location is its own shipment with its own binary.`);
+        if (r.complete===false && r.foNow===true) { setFollowOn(f=>({...f,[String(i)]:{file:r.foFile, tracking:r.foTracking, done:true}})); addLog("Supply Chain", `${l.name||"Location "+(i+1)}: follow-on shipment recorded AT Mark Shipped — 📎 ${r.foFile} + NEW tracking ${(r.foTracking||"").trim()} for the deferred items (its own shipment number; Klauke 40:55). Remaining units create when it ships; deferral closed.`); }
+        else if (r.complete===false) addLog("System", `${l.name||"Location "+(i+1)}: follow-on info NOT available yet ("not now") — deferral stays OPEN in the per-shipment status list until SC records the new packing list + tracking there.`);
+      });
+      addLog("System", `Tracking populated → FSM (${fields.fsm}) + FST (${fields.fst}) NOTIFIED with the tracking info for every shipment — warehouse AND supplier drop-ship tracking where present — "hey, you have a tracking date, here it is" (Ariel, Aug 10, 42:19).`);
+    } else {
+      addLog("Supply Chain", `Shipment details captured: 📎 ${shipFile||"packing-list_ORD-1042.pdf"} attached + tracking ${tracking.trim()||"1Z999AA10123456784"}. Docs live on the case — submitting fires the register-units-in-Hub prompt next (July 28).`);
+      if (shipComplete===false && foNowS===true) { setFollowOn(f=>({...f,single:{file:foFileS, tracking:foTrackingS, done:true}})); addLog("Supply Chain", `Follow-on shipment recorded AT Mark Shipped — 📎 ${foFileS} + NEW tracking ${foTrackingS.trim()} for the deferred items (its own shipment number; Klauke 40:55). Remaining units create when it ships; deferral closed.`); }
+      else if (shipComplete===false) addLog("System", `Follow-on info NOT available yet ("not now") — deferral stays OPEN in the per-shipment status list until SC records the new packing list + tracking there.`);
+      addLog("System", `Tracking populated → FSM (${fields.fsm}) + FST (${fields.fst}) NOTIFIED with the tracking info (Ariel, Aug 10, 42:19).`);
+    }
     setUnits(us=>[...us, ...NEW_UNIT_IDS.map(id => ({ id, truck:"—", status:"shipped", waiting:0 })), { id:SPARE_UNIT_ID, truck:"—", status:"spare", waiting:0 }]);
-    addLog("Supply Chain","Mark Shipped → 4 unit IDs CREATED in Salesforce per the Unit ID Generator convention (U-[YY][MM][hardware][ISO][lease][seq] — e.g. " + NEW_UNIT_IDS[0] + " = 2026, July, V5, US, Lease, #007, continuing the running-log sequence from the generator sheet): 3 installs + 1 over-order. The over-ordered system gets a unit ID with an EXPECTED SPARE flag instead of a truck number — so billing does NOT auto-bill it on purchase customers; it ships back (or stays as agreed spare) via the return flow (July 16, 54:38–56:31). Docs uploaded (packing list w/ tracking); ship date field set." + (shipComplete ? " Shipment COMPLETE — everything for this truck count is self-contained (July 24, 28:05)." : ` PARTIAL shipment (intentional short-ship): deferred items get a NEW DATE (${deferDate}) + reason ("${deferReason.trim()||"short parts — defer to next shipment"}") so the field knows what's coming when (July 16, 29:09–29:54; July 24, 24:00–28:21). Installation Specialist (Bruschi) NOTIFIED of the shortage → reviews the actual-ship parts list and confirms (July 16, 20:48–31:00).`) + (dropShip ? " DROP-SHIP included — supplier ships direct to customer (bulky items); supplier packing list + tracking required (July 24, 23:35)." : "") + " — Spec §3.2");
-    if (!shipComplete) addLog("System","Units for the unshipped portion are NOT created yet — partial to one location = create only those units now (July 24, 26:02).");
+    addLog("Supply Chain","Mark Shipped → 4 unit IDs CREATED in Salesforce per the Unit ID Generator convention (U-[YY][MM][hardware][ISO][lease][seq] — e.g. " + NEW_UNIT_IDS[0] + " = 2026, July, V5, US, Lease, #007, continuing the running-log sequence from the generator sheet): 3 installs + 1 over-order. The over-ordered system gets a unit ID with an EXPECTED SPARE flag instead of a truck number — so billing does NOT auto-bill it on purchase customers; it ships back (or stays as agreed spare) via the return flow (July 16, 54:38–56:31). Docs uploaded (packing list w/ tracking); ship date field set." + (fields.multiLoc ? " Shipment status logged per location above." : (shipComplete!==false ? " Shipment COMPLETE — everything for this truck count is self-contained (July 24, 28:05)." : ` Shipment INCOMPLETE (intentional short-ship): deferred items get a NEW DATE (${deferDate}) + reason ("${deferReason.trim()||"short parts — defer to next shipment"}") so the field knows what's coming when (July 16, 29:09–29:54; July 24, 24:00–28:21). Installation Specialist (Bruschi) NOTIFIED of the shortage → reviews the actual-ship parts list and confirms (July 16, 20:48–31:00).`)) + (!fields.multiLoc && dropShip ? ` DROP-SHIP included — supplier ships direct to customer (bulky items, e.g. fluid hose); no workflow trigger, but it's a separate shipment with its OWN supplier docs: 📎 ${dsFile||"supplier-packing-list_ORD-1042.pdf"} + supplier tracking ${dsTracking.trim()||"—"} (Klauke, July 24 23:35 + Aug 10 — corrected from "FYI only": the flag triggers nothing, the supplier shipment still carries required tracking).` : "") + " — Spec §3.2");
+    if (!fields.multiLoc && shipComplete===false) addLog("System","Units for the unshipped portion are NOT created yet — partial to one location = create only those units now (July 24, 26:02).");
     addLog("System","Excess Return Order RO-311 auto-created (over-ship policy). Field-team FYI: incoming installs, NO TRUCKS ASSIGNED YET — trucks confirmed as they arrive, inside the install flow. — build-thread rule");
     addLog("System","TASK → Supply Chain: ⚠ ACTION REQUIRED — register units in Hub before equipment arrives on site (the install case can't spawn without Hub sync). — Spec §3.3 (spec language: \"LOUD\", July 16 — renamed for UX July 28)");
   };
@@ -645,7 +688,7 @@ function App({onRestart}) {
     if (!estDate) return { who:"Supply Chain", text:"Set estimated ship date. (Finance: IO in parallel.)", tone:"info", roles:["Supply Chain"], label:"Set estimated ship date", run: jump("order", setEst), tab:"order", key:"est" };
     if (!shipped) {
       if (!shipPanel) return { who:"Supply Chain", text:"Mark Shipped — opens the shipment details prompt (docs + tracking first).", tone:"info", roles:["Supply Chain"], label:"Mark Shipped…", run: jump("order", ()=>setShipPanel(true)), tab:"order", key:"ship" };
-      return { who:"You", text:"Attach the packing list + enter the tracking number, then Submit shipment — units create in Salesforce and the Hub prompt fires.", tone:"warn", roles:["Supply Chain"], manual:true, tab:"order", key:"ship" };
+      return { who:"You", text:"Attach the packing list + enter the tracking number + pick shipment complete OR incomplete (mandatory binary — incomplete needs a defer date + reason), then Submit shipment — units create in Salesforce and the Hub prompt fires.", tone:"warn", roles:["Supply Chain"], manual:true, tab:"order", key:"ship" };
     }
     if (hubTask) return { who:"Supply Chain", text:"⚠ ACTION REQUIRED — register units in Hub before equipment arrives on site.", tone:"err", roles:["Supply Chain"], label:"Register units in Hub", run: jump("order", createHub), tab:"order", key:"hub" };
     if (colis.length && !installSchedule && colis.some(c=>c.status==="Not Started")) return { who:"FSM or CSM", text:"Confirm schedule-lite (team & open-date) before the checklist.", tone:"info", roles:["FSM","CSM"], label:"Confirm team & open-date", run: jump("install", scheduleInstall), tab:"install", key:"sched-order" };
@@ -1127,29 +1170,84 @@ function App({onRestart}) {
                   <span style={{fontSize:12, color:C.sub}}>* Account</span>
                   <select value={draft.customer} onChange={e=>{const v=e.target.value; setDraft(d=>({...d,customer:v})); addLog("System", `Account "${v}" selected → auto-pulled ${TERRITORY[v].fsm} + ${TERRITORY[v].fst} + ship-to location.`);}} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4}}>{Object.keys(TERRITORY).map(a=><option key={a}>{a}</option>)}</select>
                   <span style={{fontSize:12, color:C.sub}}>Location (ship-to)</span>
-                  <span style={{display:"inline-flex", alignItems:"center", gap:6, fontSize:12}}><select value={draft.locKind||"plant"} onChange={e=>setDraft(d=>({...d,locKind:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, fontSize:12}}><option value="plant">Plant location</option><option value="ship">Ship location</option><option value="custom">Other on account</option></select> <span>{TERRITORY[draft.customer].loc}</span><Why author="Spec note" initial="S">Ship-to defaults to the account’s plant location BUT the CSM must be able to change it to a ship location on the account, not just plants (Ariel, July 16 review). Amicus: lookup filtered by account, with plant/ship/other kinds. DECIDED July 24 (7:55–8:25, Ariel + James K): ONE order = ONE ship-to location. 100 trucks to 3 plants = 3 separate orders — SC deals with each shipping location independently anyway. No multi-location logic inside a single case.</Why></span>
+                  <span style={{display:"inline-flex", alignItems:"center", gap:6, fontSize:12, flexWrap:"wrap"}}>
+                    {!draft.multiLoc && <React.Fragment><select value={draft.locKind||"plant"} onChange={e=>setDraft(d=>({...d,locKind:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, fontSize:12}}><option value="plant">Plant location</option><option value="ship">Ship location</option><option value="custom">Other on account</option></select> <span>{TERRITORY[draft.customer].loc}</span></React.Fragment>}
+                    {!draft.multiLoc
+                      ? <button onClick={()=>setDraft(d=>({...d,multiLoc:true}))} style={{display:"inline-flex", alignItems:"center", gap:7, padding:"7px 14px", background:C.infoBg, border:`1.5px solid ${C.link}`, borderRadius:6, color:C.link, fontSize:13, fontWeight:700, cursor:"pointer"}}>
+                          <span style={{fontSize:15, lineHeight:1}}>📍</span> ＋ Ship to multiple locations
+                          <span style={{fontWeight:400, fontSize:11, color:C.sub}}>· split one order across up to 3 sites (same account &amp; contract)</span>
+                        </button>
+                      : <span style={{display:"inline-flex", alignItems:"center", gap:8, padding:"7px 14px", background:C.okBg, border:`1.5px solid ${C.ok}`, borderRadius:6, fontSize:13}}>
+                          <b style={{color:C.ok}}>📍 Multi-location shipping ON</b>
+                          <span style={{fontSize:11, color:C.sub}}>({draft.locations.length} of 3 locations)</span>
+                          <button onClick={()=>setDraft(d=>({...d,multiLoc:false}))} style={{border:"none", background:"none", color:C.link, fontSize:12, cursor:"pointer", textDecoration:"underline", padding:0}}>switch back to single location</button>
+                        </span>}
+                    <Why author="Spec note" initial="S">REVERSED Aug 10 (Ariel + James K + Anca; supersedes the July 24 decision below). Klauke's example: 100-some trucks split between Salem and Eugene — two parts of the SAME account/region — should be ONE order, not two, because the leftover equipment all ships back together to close out one IO. The line that still forces a NEW order/case: different account, or different contract (e.g. Tennessee vs Texas hub contracts) — different teams work those, so keep them separate. Capped at 3 locations per order (Lieber/LaCroix: "3 is the max we'd ever split one install"). Per-location: truck count, delivery contact, liftgate/hours, desired on-site date, hub contract. Whole-order (not split): system/mix/add-ons — Anca confirmed those stay the same across an order or it isn't the same contract. Supply Chain needs one packing-list + tracking pair PER location (Klauke) — see Mark Shipped below.<br/><br/><i>Prior note (July 24, 7:55–8:25): "ONE order = ONE ship-to location... No multi-location logic inside a single case." — superseded above.</i></Why>
+                  </span>
                   <span style={{fontSize:12, color:C.sub}}>Primary FSM · Assigned FST</span>
                   <span style={{fontSize:12}}>{TERRITORY[draft.customer].fsm} · {TERRITORY[draft.customer].fst}<Why>FSM + Assigned FST are auto-pulled from the account/location territory — never typed by the creator. Build as territory-driven assignment (Spec §2.2, v1.4).</Why></span>
+                  {!draft.multiLoc && <React.Fragment>
                   <span style={{fontSize:12, color:C.sub}}>Delivery contact / phone</span>
                   <span><input value={draft.contact} onChange={e=>setDraft(d=>({...d,contact:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:130}} /> <input value={draft.phone} onChange={e=>setDraft(d=>({...d,phone:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:130}} /></span>
                   <span style={{fontSize:12, color:C.sub}}>Liftgate · receiving hours</span>
                   <span style={{fontSize:12}}><label><input type="checkbox" checked={draft.liftgate} onChange={e=>setDraft(d=>({...d,liftgate:e.target.checked}))}/> liftgate required</label> · <input value={draft.hours} onChange={e=>setDraft(d=>({...d,hours:e.target.value}))} style={{padding:4, border:`1px solid ${C.border}`, borderRadius:4, width:110}} /></span>
-                  <span style={{fontSize:12, color:C.sub}}>* Truck count</span>
-                  <span style={{display:"inline-flex", alignItems:"center", gap:6}}><input type="number" value={draft.trucks} disabled={draft.trucksUnknown} onChange={e=>setDraft(d=>({...d,trucks:+e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:80, background:draft.trucksUnknown?"#F4F4F4":"#fff"}} /><label style={{fontSize:11, color:"#666"}}><input type="checkbox" checked={!!draft.trucksUnknown} onChange={e=>setDraft(d=>({...d,trucksUnknown:e.target.checked}))}/> unknown at order</label></span>
+                  </React.Fragment>}
+                  <span style={{fontSize:12, color:C.sub}}>* {draft.multiLoc ? "Total truck count (order)" : "Truck count"}</span>
+                  <span style={{display:"inline-flex", alignItems:"center", gap:6}}><input type="number" value={draft.trucks} disabled={draft.trucksUnknown} onChange={e=>setDraft(d=>({...d,trucks:+e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:80, background:draft.trucksUnknown?"#F4F4F4":"#fff"}} /><label style={{fontSize:11, color:"#666"}}><input type="checkbox" checked={!!draft.trucksUnknown} onChange={e=>setDraft(d=>({...d,trucksUnknown:e.target.checked}))} disabled={draft.multiLoc}/> unknown at order</label>{draft.multiLoc && <Why author="Spec note" initial="S">In multi-location mode this is the ORDER total — the confirmation target. The per-location counts below must add up to exactly this number before the order can be created (John, Aug 10). "Unknown at order" is disabled here: you can't split an unknown quantity across locations.</Why>}</span>
+                  {draft.multiLoc && <React.Fragment>
+                  <span style={{fontSize:12, color:C.sub, alignSelf:"flex-start", paddingTop:6}}>* Ship-to locations</span>
+                  <div style={{border:`1px solid ${C.border}`, borderRadius:5, overflow:"hidden"}}>
+                    {draft.locations.map((l,i) => (
+                      <div key={i} style={{padding:"8px 10px", borderBottom:`1px solid ${C.borderLt}`, background: i%2?"#FAFAFA":"#fff"}}>
+                        <div style={{display:"flex", flexWrap:"wrap", gap:8, alignItems:"center", marginBottom:6}}>
+                          <span style={{fontSize:11, fontWeight:700, color:C.sub, width:16}}>{i+1}.</span>
+                          <input placeholder="Location name / address" value={l.name} onChange={e=>patchLocation(i,{name:e.target.value})} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:200, fontSize:12}} />
+                          <label style={{fontSize:11, color:"#666", fontWeight:700}}>Units <input type="number" min="0" value={l.trucks} onChange={e=>patchLocation(i,{trucks:+e.target.value})} style={{padding:4, border:`1px solid ${C.border}`, borderRadius:4, width:55, fontSize:12, marginLeft:3, fontWeight:400}}/></label>
+                          <label style={{fontSize:11, color:"#666"}}>On-site <input value={l.reqDate} onChange={e=>patchLocation(i,{reqDate:e.target.value})} style={{padding:4, border:`1px solid ${C.border}`, borderRadius:4, width:70, fontSize:12, marginLeft:3}}/></label>
+                          <select value={l.hubContract} onChange={e=>patchLocation(i,{hubContract:e.target.value})} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, fontSize:12, width:170}}><option>HC-2019-044 — AZ Materials (active)</option><option>HC-2023-102 — AZ Materials West (active)</option></select>
+                          {draft.locations.length>1 && <button onClick={()=>removeLocation(i)} style={{marginLeft:"auto", border:"none", background:"none", color:C.err, fontSize:12, cursor:"pointer"}}>✕ remove</button>}
+                        </div>
+                        <div style={{display:"flex", flexWrap:"wrap", gap:8, alignItems:"center", paddingLeft:24}}>
+                          <input placeholder="Delivery contact" value={l.contact} onChange={e=>patchLocation(i,{contact:e.target.value})} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:120, fontSize:12}} />
+                          <input placeholder="Phone" value={l.phone} onChange={e=>patchLocation(i,{phone:e.target.value})} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:110, fontSize:12}} />
+                          <label style={{fontSize:11, color:"#666"}}><input type="checkbox" checked={l.liftgate} onChange={e=>patchLocation(i,{liftgate:e.target.checked})}/> liftgate</label>
+                          <input placeholder="Receiving hours" value={l.hours} onChange={e=>patchLocation(i,{hours:e.target.value})} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:95, fontSize:12}} />
+                          <input placeholder="Truck #s (e.g. 4471, 4472)" value={l.truckNos||""} disabled={l.truckNosUnknown} onChange={e=>patchLocation(i,{truckNos:e.target.value})} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:160, fontSize:12, background:l.truckNosUnknown?"#F4F4F4":"#fff"}} />
+                          <label style={{fontSize:11, color:"#666"}}><input type="checkbox" checked={!!l.truckNosUnknown} onChange={e=>patchLocation(i,{truckNosUnknown:e.target.checked})}/> unknown</label>
+                        </div>
+                      </div>
+                    ))}
+                    <div style={{padding:"8px 10px", background: locAllocOK(draft) ? C.okBg : C.warnBg, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:8}}>
+                      <button onClick={addLocation} disabled={draft.locations.length>=3} style={{border:`1px solid ${C.border}`, borderRadius:4, background:"#fff", padding:"3px 10px", fontSize:12, cursor: draft.locations.length>=3?"not-allowed":"pointer", opacity: draft.locations.length>=3?.5:1}}>＋ Add location {draft.locations.length>=3 ? "(max 3)" : ""}</button>
+                      <span style={{fontSize:12, fontWeight:700, color: locAllocOK(draft) ? C.ok : C.warn}}>
+                        {locAllocOK(draft)
+                          ? `✓ ${locAllocated(draft)} of ${draft.trucks} units allocated — confirmed`
+                          : `✗ ${locAllocated(draft)} of ${draft.trucks||0} units allocated — ${locAllocated(draft) > (+draft.trucks||0) ? "over by " + (locAllocated(draft)-(+draft.trucks||0)) : (+draft.trucks||0)-locAllocated(draft) + " remaining"}`}
+                      </span>
+                      <Why author="Spec note" initial="S">Per-location breakdown with a total-unit confirmation (John, Aug 10): the order carries one total truck count; each location gets its share; the bar reconciles the two and blocks Create order until they match exactly. Universal across all locations: site survey, install options (Measure/Water/Admix + add-ons), contract on file, Lease/Sale — one order, one contract, one system config (Anca). Per-location: units, truck #s, delivery contact, liftgate/hours, on-site date, hub contract.</Why>
+                    </div>
+                  </div>
+                  </React.Fragment>}
+                  {!draft.multiLoc && <React.Fragment>
                   <span style={{fontSize:12, color:C.sub}}>Truck number(s)</span>
-                  <span style={{display:"inline-flex", alignItems:"center", gap:6}}><input value={draft.truckNos||""} disabled={draft.truckNosUnknown} placeholder="e.g. 4471, 4472, 4473" onChange={e=>setDraft(d=>({...d,truckNos:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:200, background:draft.truckNosUnknown?"#F4F4F4":"#fff"}} /><label style={{fontSize:11, color:"#666"}}><input type="checkbox" checked={!!draft.truckNosUnknown} onChange={e=>setDraft(d=>({...d,truckNosUnknown:e.target.checked}))}/> unknown at order</label><Why author="Spec note" initial="S">Truck # at ordering can be known OR unknown — Ariel (July 16 review). Known: entered now, stamped at COLI create, compared to stamp at complete (data-flow verify). Unknown: field stays blank at order and gets set later when SC/FSM confirms; the stamped-at-complete comparison then anchors to whatever was set. Amicus: nullable at order, required by the time COLI moves to Work Complete. PENDING (James K): at-scale entry (168-truck Cemex) and multi-location orders — per-truck vs bulk still open.</Why></span>
+                  <span style={{display:"inline-flex", alignItems:"center", gap:6}}><input value={draft.truckNos||""} disabled={draft.truckNosUnknown} placeholder="e.g. 4471, 4472, 4473" onChange={e=>setDraft(d=>({...d,truckNos:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:200, background:draft.truckNosUnknown?"#F4F4F4":"#fff"}} /><label style={{fontSize:11, color:"#666"}}><input type="checkbox" checked={!!draft.truckNosUnknown} onChange={e=>setDraft(d=>({...d,truckNosUnknown:e.target.checked}))}/> unknown at order</label><Why author="Spec note" initial="S">Truck # at ordering can be known OR unknown — Ariel (July 16 review). Known: entered now, stamped at COLI create, compared to stamp at complete (data-flow verify). Unknown: field stays blank at order and gets set later when SC/FSM confirms; the stamped-at-complete comparison then anchors to whatever was set. Amicus: nullable at order, required by the time COLI moves to Work Complete. Multi-location orders: truck #s moved INTO each location row (Aug 10) — the trucks physically live at a location, so the numbers belong there.</Why></span>
+                  </React.Fragment>}
                   <span style={{fontSize:12, color:C.sub}}>* Site survey</span>
                   <span style={{display:"inline-flex", alignItems:"center", gap:6}}>{draft.surveyFile ? <Chip tone="ok">📎 {draft.surveyFile}</Chip> : <Btn role={role} setRole={setRole} tone="neutral" onClick={()=>setDraft(d=>({...d, surveyFile:"site-survey_AZ-Plant12.pdf"}))}>Attach survey</Btn>}<Why author="Spec note" initial="S">Survey upload is REQUIRED before the order can be placed — for ALL install types, including expansions/upgrades (July 16, 26:30–28:37; LJ overruled the upgrade exemption at 28:37). Real build: file upload or link field on the case. The bigger onboarding-case vision (surveys→parts→contract→install linked) is explicitly out of scope for v1.</Why></span>
                   <span style={{fontSize:12, color:C.sub}}>Contract on file</span>
                   <span style={{display:"inline-flex", alignItems:"center", gap:6}}><Chip tone="ok">✓ MSA-2024-118 — auto-checked from account</Chip><Why author="Spec note" initial="S">Contract-on-file check happens at order creation (July 16, 26:30) — pulled from the account, not attached by the creator. No contract → the downstream contract-signing gate blocks release anyway; this surfaces it early instead of at the RM/Finance gate.</Why></span>
                   <span style={{fontSize:12, color:C.sub}}>* Install labor (proposed)</span>
                   <select value={draft.labor} onChange={e=>setDraft(d=>({...d,labor:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:150}}><option>Verifi</option><option>Customer</option><option>3rd Party</option></select>
+                  {!draft.multiLoc && <React.Fragment>
                   <span style={{fontSize:12, color:C.sub}}>* Desired on-site date</span>
                   <input value={draft.reqDate} onChange={e=>setDraft(d=>({...d,reqDate:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:130}} />
+                  </React.Fragment>}
                   <span style={{fontSize:12, color:C.sub}}>Lease / Sale · Priority</span>
                   <span style={{display:"inline-flex", alignItems:"center", gap:6}}><span style={{fontSize:13, fontWeight:700}}>{draft.model}</span><Chip tone="ok">from contract on account</Chip><Why author="Spec note" initial="S">Lease vs Sale is NOT a dropdown — it reads from the contract on the account (Ariel, July 16 review). Amicus: lookup off the account’s active contract, not a picker on the form.</Why> <select value={draft.priority} onChange={e=>setDraft(d=>({...d,priority:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:110}}><option>Low</option><option>Medium</option><option>High</option></select></span>
+                  {!draft.multiLoc && <React.Fragment>
                   <span style={{fontSize:12, color:C.sub}}>Hub contract</span>
                   <span style={{display:"inline-flex", alignItems:"center", gap:6}}><select value={draft.hubContract} onChange={e=>{const v=e.target.value; setDraft(d=>({...d,hubContract:v})); if(v==="— request new hub contract —") addLog("System","New hub contract requested → Command Center creates it; contract draft→official transition prompts Finance (Jim) to create the SAP payer (July 24, 28:32–30:25).");}} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:230}}><option>HC-2019-044 — AZ Materials (active)</option><option>HC-2023-102 — AZ Materials West (active)</option><option>— request new hub contract —</option></select><Why author="Spec note" initial="S">Units must carry a hub contract soon — pick from the account’s current hub contracts (Salesforce knows them), or request a new one → routes to Command Center, and the payer prompt goes to Finance when the contract goes draft→official (Ariel, July 24, 28:32).</Why></span>
+                  </React.Fragment>}
                   <span style={{fontSize:12, color:C.sub}}>Special requests</span>
                   <span style={{display:"inline-flex", alignItems:"center", gap:6}}><input value={draft.specialReq} placeholder="one-off notes for supply chain" onChange={e=>setDraft(d=>({...d,specialReq:e.target.value}))} style={{padding:5, border:`1px solid ${C.border}`, borderRadius:4, width:260}} /><Why author="Spec note" initial="S">Free-text special requests happen on occasion — give the creator the chance to note them on the order (James K, July 24, 9:52).</Why></span>
                 </div>
@@ -1183,7 +1281,7 @@ function App({onRestart}) {
                     </div></React.Fragment>; })()}
                 </div>
                 <div style={{marginTop:12}}>
-                  {draft.measure!=="None" ? <Btn role={role} setRole={setRole} tone="ok" big disabled={!draft.surveyFile} onClick={submitOrder}>Create order{!draft.surveyFile && " — attach survey first"}</Btn> : <Chip tone="warn">Select a Measure option to create a New Unit order</Chip>}<Why>Creating the order records the creator's approval automatically — whichever of CSM/FSM didn't create it approves next (dual approval, Spec §2.3). Survey attachment is a hard gate (July 16, LJ). When Measure = None the Create button is replaced by the chip: that's the upgrade path, whose existing-unit selection flow is stage 2 — jargon stays here in the pin, the UI just says what to do.</Why>
+                  {draft.measure!=="None" ? <Btn role={role} setRole={setRole} tone="ok" big disabled={!draft.surveyFile || !locAllocOK(draft)} onClick={submitOrder}>Create order{!draft.surveyFile ? " — attach survey first" : !locAllocOK(draft) ? " — location units must total " + (draft.trucks||0) : ""}</Btn> : <Chip tone="warn">Select a Measure option to create a New Unit order</Chip>}<Why>Creating the order records the creator's approval automatically — whichever of CSM/FSM didn't create it approves next (dual approval, Spec §2.3). Survey attachment is a hard gate (July 16, LJ). Multi-location orders add a second hard gate (Aug 10): the per-location unit counts must sum to the order total before Create enables. When Measure = None the Create button is replaced by the chip: that's the upgrade path, whose existing-unit selection flow is stage 2 — jargon stays here in the pin, the UI just says what to do.</Why>
                   <Btn role={role} setRole={setRole} tone="neutral" onClick={()=>setShowOrderForm(false)}>Cancel</Btn>
                 </div>
                 <Note>Over-ship is policy — supply chain intentionally ships spares beyond truck count; the excess Return Order handles the difference. Account/location drives FSM + FST assignment; they are pulled, never typed.</Note>
@@ -1319,15 +1417,29 @@ function App({onRestart}) {
               </Card>
               <Card title="Order fields — field-level approval machine (pre-ship)" hot={hot("fields")||hot("approve")||hot("im")} just={just("fields","approve","im")} spot="fields approve im" coach={GUIDE} badge={<span style={{display:"inline-flex", alignItems:"center", gap:4}}><Chip tone={approvalDone?"ok":"warn"}>{approvalDone?"approved":"in approval"}</Chip><Why>Every field has an edit control because the whole order is field-editable pre-ship by CSM/FSM: any edit flags that field and BOTH must re-approve it, with full history — the field-level re-approval machine (Spec §2.4). Post-ship, edits become notify-only. The 🔒 on buttons is simulator role-gating, not a real Salesforce button state — in production, profiles simply hide actions from non-owners.</Why></span>}>
                 {fieldRow("Account", fields.customer)}
-                {fieldRow("Location (ship-to)", fields.loc)}
+                {!fields.multiLoc && fieldRow("Location (ship-to)", fields.loc)}
+                {fields.multiLoc && <div style={{padding:"6px 0", borderBottom:`1px solid ${C.borderLt}`}}>
+                  <div style={{fontSize:12, color:C.sub, marginBottom:4}}>Ship-to locations ({fields.locations.length}) — total {fields.trucks} units confirmed <Why author="Spec note" initial="S">Multi-location order (Aug 10): per-location breakdown lives on the order. Universal fields (survey, install options, contract, lease/sale) apply to every location; everything below is location-specific.</Why></div>
+                  {fields.locations.map((l,i)=>(
+                    <div key={i} style={{fontSize:12, padding:"3px 0 3px 12px", display:"flex", gap:10, flexWrap:"wrap"}}>
+                      <b>{i+1}. {l.name||"(unnamed)"}</b>
+                      <span><Chip tone="info">{l.trucks} units</Chip></span>
+                      <span style={{color:C.sub}}>on-site {l.reqDate}</span>
+                      <span style={{color:C.sub}}>{l.contact} · {l.phone}</span>
+                      <span style={{color:C.sub}}>{l.liftgate?"liftgate":"no liftgate"} · {l.hours}</span>
+                      <span style={{color:C.sub}}>{l.hubContract.split(" — ")[0]}</span>
+                      <span style={{color:C.sub}}>trucks: {l.truckNosUnknown ? "unknown at order" : (l.truckNos||"—")}</span>
+                    </div>
+                  ))}
+                </div>}
                 {fieldRow("Primary CSM", fields.csm)}
                 {fieldRow("Primary FSM · Assigned FST", fields.fsm + " · " + fields.fst)}
-                {fieldRow("Delivery contact", fields.contact + " · " + fields.phone)}
-                {fieldRow("Liftgate · receiving hours", (fields.liftgate?"Liftgate required":"No liftgate") + " · " + fields.hours)}
-                {fieldRow("Truck count", fields.trucks + (fields.trucks>40 ? "  (>40 → Finance, >20 → RM)" : fields.trucks>20 ? "  (>20 → RM gate)" : ""), editTrucks)}
+                {!fields.multiLoc && fieldRow("Delivery contact", fields.contact + " · " + fields.phone)}
+                {!fields.multiLoc && fieldRow("Liftgate · receiving hours", (fields.liftgate?"Liftgate required":"No liftgate") + " · " + fields.hours)}
+                {fieldRow(fields.multiLoc ? "Total truck count" : "Truck count", fields.trucks + (fields.trucks>40 ? "  (>40 → Finance, >20 → RM)" : fields.trucks>20 ? "  (>20 → RM gate)" : ""), editTrucks)}
                 {fieldRow("System type", fields.system)}
                 {fieldRow("Install labor", fields.labor, editLabor)}
-                {fieldRow("Desired install / on-site", fields.reqDate)}
+                {!fields.multiLoc && fieldRow("Desired install / on-site", fields.reqDate)}
                 {fieldRow("Lease / Sale · Priority", fields.model + " · " + fields.priority)}
                 {fieldRow("Install options", Object.keys(fields.addons||{}).filter(k=>fields.addons[k]).join(" · ") || "none selected")}
                 <div style={{marginTop:8}}>
@@ -1369,21 +1481,96 @@ function App({onRestart}) {
                 {atSC && !estDate && <Btn role={role} setRole={setRole} need="Supply Chain" onClick={setEst}>Acknowledge + set estimated ship date</Btn>}
                 {atSC && estDate && !shipped && !shipPanel && <span style={{display:"inline-flex", alignItems:"center", gap:8}}><Btn role={role} setRole={setRole} need="Supply Chain" tone="ok" onClick={()=>setShipPanel(true)}>Mark Shipped…</Btn><span style={{fontSize:11, color:C.sub}}>opens shipment details — docs + tracking first, then units create</span></span>}
                 {atSC && estDate && !shipped && shipPanel && <div data-spot="ship" style={{border:`1px solid ${C.ok}`, borderRadius:6, padding:"8px 10px", margin:"6px 0", background:"#F4FBF5"}}>
-                  <div style={{fontSize:11, fontWeight:700, color:C.sub, letterSpacing:.5, textTransform:"uppercase", marginBottom:6}}>Shipment details — required before units create<Why author="Spec note" initial="S">Mark Shipped prompts for the shipment info FIRST (John, July 28): packing list/docs attached (simulated here — real build is a file upload) + tracking number. Submitting the shipment is what fires the register-units-in-Hub prompt. The two checkboxes are James K’s (July 24, 27:57–28:32): "shipment complete?" unchecked = intentional partial (split locations or shorts held back); "drop-ship included?" = bulky items direct from supplier — either flag means the field needs every follow-on tracking + date (24:00). Partial-to-one-location = create only those units now (26:02); shorts get a NEW DATE + REASON and Bruschi is notified to confirm (July 16, 29:09–29:54).</Why></div>
+                  <div style={{fontSize:11, fontWeight:700, color:C.sub, letterSpacing:.5, textTransform:"uppercase", marginBottom:6}}>Shipment details — required before units create<Why author="Spec note" initial="S">Mark Shipped prompts for the shipment info FIRST (John, July 28): packing list/docs attached (simulated here — real build is a file upload) + tracking number. Submitting the shipment is what fires the register-units-in-Hub prompt. CORRECTED Aug 10 (Klauke, 39:10–41:28): three valid outcomes — ship complete from warehouse, ship complete PLUS a drop shipment, or ship incomplete. So the control is a MANDATORY BINARY (complete / incomplete — must pick one), and "incomplete" reveals REQUIRED extra fields: new date + reason (e.g. "partial shipment of first 75"). The drop-ship checkbox is standalone and OPTIONAL — it triggers nothing, it just alerts the field team to expect a supplier-direct shipment (bulky items like fluid hose). The old July 24 model (drop-ship as a state alongside complete) conflated the two — a drop shipment goes at the SAME time as the warehouse shipment, it's not a shortage. Incomplete shipments notify Bruschi to review the actual-ship parts list (July 16, 29:09–31:00). When tracking populates, the FSM + FST on file are NOTIFIED with it (Ariel, Aug 10, 42:19).</Why></div>
+                  {fields.multiLoc && <div style={{marginBottom:8}}>
+                    <div style={{fontSize:11, color:C.sub, marginBottom:6}}>{fields.locations.length} ship-to locations — each is its own shipment: packing list + tracking # + a complete/incomplete answer (Klauke, Aug 10).</div>
+                    {fields.locations.map((l,i) => { const r = locShip[i]||{}; return (
+                      <div key={i} style={{padding:"6px 0", borderTop: i>0?`1px solid ${C.borderLt}`:"none"}}>
+                        <div style={{display:"flex", alignItems:"center", gap:10, flexWrap:"wrap", fontSize:12}}>
+                          <span style={{fontWeight:700, width:150}}>{l.name||"Location "+(i+1)} <span style={{fontWeight:400, color:C.sub}}>({l.trucks} trucks)</span></span>
+                          <span>{r.file ? <Chip tone="ok">📎 {r.file}</Chip> : <Btn role={role} setRole={setRole} tone="neutral" onClick={()=>patchLocShip(i,{file:`packing-list_ORD-1042-${i+1}.pdf`})}>Attach docs</Btn>}</span>
+                          <span style={{display:"inline-flex", alignItems:"center", gap:5}}>Tracking # <input value={r.tracking||""} placeholder="1Z999AA10123456784" onChange={e=>patchLocShip(i,{tracking:e.target.value})} style={{width:150, padding:4, border:`1px solid ${C.border}`, borderRadius:4, fontSize:12}}/></span>
+                        </div>
+                        <div style={{display:"flex", alignItems:"center", gap:12, flexWrap:"wrap", fontSize:11, color:"#666", paddingLeft:150, marginTop:4}}>
+                          <span style={{fontWeight:700, color: r.complete==null ? C.warn : C.sub}}>* Pick one:</span>
+                          <label><input type="radio" name={"shipbin-"+i} checked={r.complete===true} onChange={()=>patchLocShip(i,{complete:true})}/> shipment complete</label>
+                          <label><input type="radio" name={"shipbin-"+i} checked={r.complete===false} onChange={()=>patchLocShip(i,{complete:false})}/> shipment incomplete</label>
+                          <label style={{marginLeft:8}}><input type="checkbox" checked={!!r.dropShip} onChange={e=>patchLocShip(i,{dropShip:e.target.checked})}/> drop-ship included <span style={{color:"#999"}}>(no workflow trigger — but needs its own supplier tracking)</span></label>
+                          {r.dropShip && <span style={{display:"inline-flex", alignItems:"center", gap:6}}>
+                            <span>{r.dsFile ? <Chip tone="ok">📎 {r.dsFile}</Chip> : <Btn role={role} setRole={setRole} tone="neutral" onClick={()=>patchLocShip(i,{dsFile:`supplier-packing-list_ORD-1042-${i+1}.pdf`})}>Attach supplier packing list</Btn>}</span>
+                            * supplier tracking # <input value={r.dsTracking||""} placeholder="e.g. FDX-778812345" onChange={e=>patchLocShip(i,{dsTracking:e.target.value})} style={{width:140, padding:3, border:`1px solid ${(r.dsTracking||"").trim()?C.border:C.warn}`, borderRadius:4, fontSize:11}}/>
+                          </span>}
+                          {r.complete===false && <span style={{display:"inline-flex", alignItems:"center", gap:6}}>* defer to <input value={r.deferDate||""} placeholder="08/14/26" onChange={e=>patchLocShip(i,{deferDate:e.target.value})} style={{width:78, padding:3, border:`1px solid ${(r.deferDate||"").trim()?C.border:C.warn}`, borderRadius:4, fontSize:11}}/> * reason <input value={r.deferReason||""} placeholder="e.g. short 30 of 100 — partial first shipment" onChange={e=>patchLocShip(i,{deferReason:e.target.value})} style={{width:220, padding:3, border:`1px solid ${(r.deferReason||"").trim()?C.border:C.warn}`, borderRadius:4, fontSize:11}}/></span>}
+                        </div>
+                        {r.complete===false && <div style={{marginLeft:150, marginTop:6, padding:"7px 10px", border:`1px solid ${C.warn}`, borderLeft:`3px solid ${C.warn}`, borderRadius:4, background:C.warnBg, fontSize:11, color:"#666"}}>
+                          <div style={{fontWeight:700, color:C.warn, marginBottom:4}}>⚠ Follow-on shipment — the deferred items ship separately and need their OWN new tracking #<Why author="Spec note" initial="S">Surfaces the moment "shipment incomplete" is picked so the user sees what the deferral means right where they created it (John, Aug 10). The second shipment gets its own packing list + NEW tracking number (Klauke, 40:55). SC may not have that info yet at first-ship — "Not now" is allowed; the deferral then stays OPEN in the per-shipment status list after submit until the follow-on is recorded there.</Why></div>
+                          <span style={{fontWeight:700, color: r.foNow==null ? C.warn : C.sub}}>* Add it:</span>
+                          <label style={{marginLeft:8}}><input type="radio" name={"fonow-"+i} checked={r.foNow===true} onChange={()=>patchLocShip(i,{foNow:true})}/> now — I have the info</label>
+                          <label style={{marginLeft:8}}><input type="radio" name={"fonow-"+i} checked={r.foNow===false} onChange={()=>patchLocShip(i,{foNow:false})}/> not now — record later (deferral stays open)</label>
+                          {r.foNow===true && <span style={{display:"inline-flex", alignItems:"center", gap:6, marginLeft:10}}>
+                            <span>{r.foFile ? <Chip tone="ok">📎 {r.foFile}</Chip> : <Btn role={role} setRole={setRole} tone="neutral" onClick={()=>patchLocShip(i,{foFile:`packing-list_ORD-1042-followon-${i+1}.pdf`})}>Attach packing list</Btn>}</span>
+                            * new tracking # <input value={r.foTracking||""} placeholder="1Z999AA10199999999" onChange={e=>patchLocShip(i,{foTracking:e.target.value})} style={{width:150, padding:3, border:`1px solid ${(r.foTracking||"").trim()?C.border:C.warn}`, borderRadius:4, fontSize:11}}/>
+                          </span>}
+                        </div>}
+                      </div>
+                    );})}
+                  </div>}
                   <div style={{display:"flex", alignItems:"center", gap:12, flexWrap:"wrap", fontSize:12}}>
+                    {!fields.multiLoc && <React.Fragment>
                     <span>{shipFile ? <Chip tone="ok">📎 {shipFile}</Chip> : <Btn role={role} setRole={setRole} tone="neutral" onClick={()=>setShipFile("packing-list_ORD-1042.pdf")}>Attach packing list / docs</Btn>}</span>
                     <span style={{display:"inline-flex", alignItems:"center", gap:5}}>Tracking # <input value={tracking} placeholder="1Z999AA10123456784" onChange={e=>setTracking(e.target.value)} style={{width:170, padding:4, border:`1px solid ${C.border}`, borderRadius:4, fontSize:12}}/></span>
-                    <label style={{fontSize:11, color:"#666"}}><input type="checkbox" checked={shipComplete} onChange={e=>setShipComplete(e.target.checked)}/> shipment complete</label>
-                    <label style={{fontSize:11, color:"#666"}}><input type="checkbox" checked={dropShip} onChange={e=>setDropShip(e.target.checked)}/> drop-ship included</label>
-                    {!shipComplete && <span style={{display:"inline-flex", alignItems:"center", gap:6, fontSize:11, color:"#666"}}>defer to <input value={deferDate} onChange={e=>setDeferDate(e.target.value)} style={{width:78, padding:3, border:`1px solid ${C.border}`, borderRadius:4, fontSize:11}}/> reason <input value={deferReason} placeholder="e.g. short ICD cables, defer 1 month" onChange={e=>setDeferReason(e.target.value)} style={{width:210, padding:3, border:`1px solid ${C.border}`, borderRadius:4, fontSize:11}}/></span>}
+                    <span style={{fontWeight:700, fontSize:11, color: shipComplete==null ? C.warn : C.sub}}>* Pick one:</span>
+                    <label style={{fontSize:11, color:"#666"}}><input type="radio" name="shipbin" checked={shipComplete===true} onChange={()=>setShipComplete(true)}/> shipment complete</label>
+                    <label style={{fontSize:11, color:"#666"}}><input type="radio" name="shipbin" checked={shipComplete===false} onChange={()=>setShipComplete(false)}/> shipment incomplete</label>
+                    <label style={{fontSize:11, color:"#666"}}><input type="checkbox" checked={dropShip} onChange={e=>setDropShip(e.target.checked)}/> drop-ship included <span style={{color:"#999"}}>(no workflow trigger — but needs its own supplier tracking)</span></label>
+                    {dropShip && <span style={{display:"inline-flex", alignItems:"center", gap:6, fontSize:11, color:"#666"}}>
+                      <span>{dsFile ? <Chip tone="ok">📎 {dsFile}</Chip> : <Btn role={role} setRole={setRole} tone="neutral" onClick={()=>setDsFile("supplier-packing-list_ORD-1042.pdf")}>Attach supplier packing list</Btn>}</span>
+                      * supplier tracking # <input value={dsTracking} placeholder="e.g. FDX-778812345" onChange={e=>setDsTracking(e.target.value)} style={{width:140, padding:3, border:`1px solid ${dsTracking.trim()?C.border:C.warn}`, borderRadius:4, fontSize:11}}/>
+                    </span>}
+                    {shipComplete===false && <span style={{display:"inline-flex", alignItems:"center", gap:6, fontSize:11, color:"#666"}}>* defer to <input value={deferDate} onChange={e=>setDeferDate(e.target.value)} style={{width:78, padding:3, border:`1px solid ${deferDate.trim()?C.border:C.warn}`, borderRadius:4, fontSize:11}}/> * reason <input value={deferReason} placeholder="e.g. short ICD cables, defer 1 month" onChange={e=>setDeferReason(e.target.value)} style={{width:210, padding:3, border:`1px solid ${deferReason.trim()?C.border:C.warn}`, borderRadius:4, fontSize:11}}/></span>}
+                    </React.Fragment>}
                   </div>
+                  {!fields.multiLoc && shipComplete===false && <div style={{marginTop:6, padding:"7px 10px", border:`1px solid ${C.warn}`, borderLeft:`3px solid ${C.warn}`, borderRadius:4, background:C.warnBg, fontSize:11, color:"#666"}}>
+                    <div style={{fontWeight:700, color:C.warn, marginBottom:4}}>⚠ Follow-on shipment — the deferred items ship separately and need their OWN new tracking #<Why author="Spec note" initial="S">Surfaces the moment "shipment incomplete" is picked so the user sees what the deferral means right where they created it (John, Aug 10). The second shipment gets its own packing list + NEW tracking number (Klauke, 40:55). SC may not have that info yet — "Not now" is allowed; the deferral then stays OPEN in the per-shipment status list after submit until recorded there.</Why></div>
+                    <span style={{fontWeight:700, color: foNowS==null ? C.warn : C.sub}}>* Add it:</span>
+                    <label style={{marginLeft:8}}><input type="radio" name="fonow-s" checked={foNowS===true} onChange={()=>setFoNowS(true)}/> now — I have the info</label>
+                    <label style={{marginLeft:8}}><input type="radio" name="fonow-s" checked={foNowS===false} onChange={()=>setFoNowS(false)}/> not now — record later (deferral stays open)</label>
+                    {foNowS===true && <span style={{display:"inline-flex", alignItems:"center", gap:6, marginLeft:10}}>
+                      <span>{foFileS ? <Chip tone="ok">📎 {foFileS}</Chip> : <Btn role={role} setRole={setRole} tone="neutral" onClick={()=>setFoFileS("packing-list_ORD-1042-followon.pdf")}>Attach packing list</Btn>}</span>
+                      * new tracking # <input value={foTrackingS} placeholder="1Z999AA10199999999" onChange={e=>setFoTrackingS(e.target.value)} style={{width:150, padding:3, border:`1px solid ${foTrackingS.trim()?C.border:C.warn}`, borderRadius:4, fontSize:11}}/>
+                    </span>}
+                  </div>}
                   <div style={{marginTop:8, display:"flex", gap:8, alignItems:"center"}}>
-                    <Btn role={role} setRole={setRole} need="Supply Chain" tone="ok" disabled={!shipFile || !tracking.trim()} title={!shipFile||!tracking.trim()?"Attach docs + enter tracking first":""} onClick={markShipped}>Submit shipment — units create next</Btn>
+                    <Btn role={role} setRole={setRole} need="Supply Chain" tone="ok" disabled={fields.multiLoc ? !locShipReady(fields) : (!shipFile || !tracking.trim() || shipComplete===null || (shipComplete===false && (!deferDate.trim() || !deferReason.trim() || foNowS===null || (foNowS===true && (!foFileS || !foTrackingS.trim())))) || (dropShip && (!dsFile || !dsTracking.trim())))} title={(fields.multiLoc ? !locShipReady(fields) : (!shipFile||!tracking.trim()||shipComplete===null||(shipComplete===false && (!deferDate.trim()||!deferReason.trim()||foNowS===null||(foNowS===true && (!foFileS||!foTrackingS.trim()))))||(dropShip && (!dsFile||!dsTracking.trim())))) ? "Every shipment needs docs, tracking, and a complete/incomplete answer (incomplete → defer fields + follow-on now/not-now; drop-ship → supplier docs + tracking)" : ""} onClick={markShipped}>Submit shipment{fields.multiLoc?"s":""} — units create next</Btn>
                     <Btn role={role} setRole={setRole} tone="neutral" onClick={()=>setShipPanel(false)}>Cancel</Btn>
                   </div>
                 </div>}
                 {hubTask && <Note tone="err"><b>⚠ ACTION REQUIRED</b> — register units in Hub before equipment arrives on site. These are the IDs to register (from the generator running log):<span style={{display:"flex", gap:6, flexWrap:"wrap", margin:"6px 0"}}>{units.map(u=><Chip key={u.id} tone={u.status==="spare"?"warn":"info"}>{u.id}{u.status==="spare"?" · expected spare":""}</Chip>)}</span><Btn role={role} setRole={setRole} need="Supply Chain" tone="err" onClick={createHub}>Register units in Hub</Btn><Why author="Spec note" initial="S">The July 16 spec called this task "LOUD" — the intent was a can't-miss blocking banner, because the install case can't auto-create until Hub sync sees the units. Renamed "ACTION REQUIRED" July 28 for UX; same behavior.</Why></Note>}
                 {shipped && <Note tone="neutral">Units arrive with NO trucks assigned — field-team FYI list; trucks confirmed as they arrive inside the install flow.</Note>}
+                {shipped && <div style={{border:`1px solid ${C.border}`, borderRadius:6, margin:"6px 0", overflow:"hidden"}}>
+                  <div style={{padding:"6px 10px", background:"#EAF0F6", fontSize:11, fontWeight:700, color:C.sub, letterSpacing:.5, textTransform:"uppercase", display:"flex", alignItems:"center", gap:6}}>Shipments — per-location status<Why author="Spec note" initial="S">Post-submit recap, one row per shipment, so every deferral stays visibly ANCHORED to the shipment it belongs to (John, Aug 10 — the floating deferral panel lost that reference). An INCOMPLETE shipment keeps its follow-on capture nested right under its own row: when the deferred portion ships, SC records it here with its OWN packing list + NEW tracking number — a new shipment, not an edit of the original (Klauke, 40:55). Completing the follow-on creates the remaining units (July 24, 26:02) and fires the FSM/FST tracking notification (Ariel, 42:19).</Why></div>
+                  {(fields.multiLoc ? fields.locations.map((l,i)=>({key:String(i), label:(l.name||"Location "+(i+1)) + " (" + l.trucks + " trucks)", r:locShip[i]||{}})) : [{key:"single", label:"ORD-1042 — " + fields.loc, r:{file:shipFile, tracking, complete:shipComplete, dropShip, dsFile, dsTracking, deferDate, deferReason}}]).map(s => {
+                    const fo = followOn[s.key]||{}; const isIncomplete = s.r.complete===false; const foDone = !!fo.done;
+                    return (
+                      <div key={s.key} style={{padding:"7px 10px", borderTop:`1px solid ${C.borderLt}`, background: isIncomplete && !foDone ? C.warnBg : "#fff"}}>
+                        <div style={{display:"flex", alignItems:"center", gap:10, flexWrap:"wrap", fontSize:12}}>
+                          <b style={{minWidth:150}}>{s.label}</b>
+                          <Chip tone={isIncomplete ? (foDone ? "ok" : "warn") : "ok"}>{isIncomplete ? (foDone ? "completed via follow-on" : "incomplete — deferral open") : "complete"}</Chip>
+                          <span style={{color:C.sub, fontSize:11}}>📎 {s.r.file||"—"} · trk {(s.r.tracking||"").trim()||"—"}</span>
+                          {s.r.dropShip && <span style={{color:C.sub, fontSize:11}}>+ drop-ship: 📎 {s.r.dsFile||"—"} · supplier trk {(s.r.dsTracking||"").trim()||"—"}</span>}
+                        </div>
+                        {isIncomplete && !foDone && <div style={{display:"flex", alignItems:"center", gap:10, flexWrap:"wrap", fontSize:12, marginTop:6, paddingLeft:14, borderLeft:`3px solid ${C.warn}`}}>
+                          <span style={{fontSize:11, color:C.warn, fontWeight:700}}>⚠ Deferred from THIS shipment:</span>
+                          <span style={{color:C.sub, fontSize:11}}>"{s.r.deferReason||"—"}" · due {s.r.deferDate||"—"}</span>
+                          <span>{fo.file ? <Chip tone="ok">📎 {fo.file}</Chip> : <Btn role={role} setRole={setRole} tone="neutral" onClick={()=>patchFollowOn(s.key,{file:`packing-list_ORD-1042-followon-${s.key}.pdf`})}>Attach packing list</Btn>}</span>
+                          <span style={{display:"inline-flex", alignItems:"center", gap:5}}>New tracking # <input value={fo.tracking||""} placeholder="1Z999AA10199999999" onChange={e=>patchFollowOn(s.key,{tracking:e.target.value})} style={{width:150, padding:4, border:`1px solid ${(fo.tracking||"").trim()?C.border:C.warn}`, borderRadius:4, fontSize:12}}/></span>
+                          <Btn role={role} setRole={setRole} need="Supply Chain" tone="ok" disabled={!fo.file || !(fo.tracking||"").trim()} title={!fo.file||!(fo.tracking||"").trim()?"Attach docs + enter the new tracking # first":""} onClick={()=>submitFollowOn(s.key, s.label, {deferDate:s.r.deferDate, deferReason:s.r.deferReason})}>Ship deferred items — complete shipment</Btn>
+                        </div>}
+                        {isIncomplete && foDone && <div style={{fontSize:11, color:C.ok, marginTop:4, paddingLeft:14}}>✓ Follow-on shipped: 📎 {fo.file} · trk {(fo.tracking||"").trim()} — remaining units created, FSM/FST notified.</div>}
+                      </div>
+                    );
+                  })}
+                </div>}
                 {shipped && fields.labor!=="Customer" && !laborDone && <Btn role={role} setRole={setRole} need="Supply Chain" tone="ok" onClick={processLabor}>Process labor ({fields.labor})</Btn>}
                 {retReceived && ioClosed && (laborDone || fields.labor==="Customer") && !scClosed && <Btn role={role} setRole={setRole} need="Supply Chain" tone="ok" onClick={closeSC}>Close SC order</Btn>}
                 <Note tone="neutral">Every Supply-Chain-owned action lives here now, one owner, one card. Detailed tracker view stays on the SC dashboard tab.</Note>

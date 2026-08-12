@@ -1,0 +1,1438 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1920" />
+  <title>Verifi — Returned Concrete</title>
+
+  <!-- Fonts: Inter for everything, matching the Insights prototype -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Apply saved theme before paint to avoid a flash of the wrong theme. -->
+  <script>
+    (function () {
+      var t = "dark";
+      try { t = localStorage.getItem("data-insights-theme") || "dark"; } catch {}
+      document.documentElement.classList.add(t === "dark" ? "theme-dark" : "theme-light");
+    })();
+  </script>
+
+  <style>
+    /* =======================================================================
+       Prototype top bar (vp-) — same control strip as the other prototypes.
+       ======================================================================= */
+    :root { --vp-bar-h: 44px; }
+    .vp-bar {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: var(--vp-bar-h);
+      background: rgba(20,18,16,0.97);
+      color: #fff;
+      display: flex; align-items: center;
+      padding: 0 16px;
+      z-index: 1000;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      font-family: var(--font-sans);
+    }
+    .vp-brand { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; }
+    .vp-tag {
+      font-size: 10px; font-weight: 500;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.4px; text-transform: uppercase;
+      padding: 2px 6px;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px;
+    }
+    .vp-right-cluster { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .vp-pills { display: flex; gap: 2px; background: rgba(255,255,255,0.08); border-radius: 8px; padding: 2px; }
+    .vp-pill {
+      font-size: 12px; font-weight: 500; letter-spacing: -0.24px;
+      color: rgba(255,255,255,0.6); padding: 4px 10px; border-radius: 6px;
+      border: 0; background: transparent; cursor: pointer; font-family: inherit;
+      transition: background 0.15s, color 0.15s;
+    }
+    .vp-pill:hover { color: #fff; }
+    .vp-pill.active { background: rgba(255,255,255,0.15); color: #fff; }
+
+    /* Full-screen "coming soon" state for Mobile/Tablet viewports */
+    .coming-soon {
+      display: none;
+      position: fixed; top: var(--vp-bar-h); left: 0; right: 0; bottom: 0;
+      background: var(--bg-page); z-index: 900;
+      align-items: center; justify-content: center; text-align: center;
+    }
+    .coming-soon.show { display: flex; }
+    .cs-inner { max-width: 420px; padding: 24px; }
+    .cs-inner .logo { width: 96px; margin: 0 auto 28px; color: var(--text-strong); }
+    .cs-inner .logo path { fill: currentColor; }
+    .cs-device {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-muted); border: 1px solid var(--border-soft); border-radius: 999px;
+      padding: 5px 14px; margin-bottom: 18px;
+    }
+    .cs-inner h1 { font-size: 26px; font-weight: 700; color: var(--text-strong); margin-bottom: 10px; }
+    .cs-inner p { font-size: 14px; line-height: 1.6; color: var(--text-muted); margin-bottom: 26px; }
+    .cs-back {
+      background: transparent; border: 1px solid var(--preset-border); border-radius: 6px;
+      color: var(--text-strong); font-family: inherit; font-size: 13px; font-weight: 600;
+      padding: 10px 18px; cursor: pointer; transition: background 120ms ease;
+    }
+    .cs-back:hover { background: var(--nav-hover); }
+    .vp-opts-wrap { position: relative; }
+    .vp-opts-btn {
+      display: flex; align-items: center; gap: 6px; padding: 5px 10px;
+      background: rgba(255,255,255,0.08); color: #fff; border-radius: 8px;
+      border: 0; cursor: pointer; font-size: 12px; font-weight: 500;
+      letter-spacing: -0.24px; font-family: inherit; transition: background 0.15s;
+    }
+    .vp-opts-btn:hover { background: rgba(255,255,255,0.14); }
+    .vp-opts-dd {
+      position: absolute; top: calc(100% + 6px); right: 0; min-width: 200px;
+      background: #1a1917; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      padding: 6px; display: none; z-index: 1100;
+    }
+    .vp-opts-dd.open { display: block; }
+    .vp-opt-row {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; padding: 8px 10px; border-radius: 8px; border: 0;
+      background: transparent; color: #fff; font-size: 13px; font-weight: 500;
+      font-family: inherit; cursor: pointer;
+    }
+    .vp-opt-row:hover { background: rgba(255,255,255,0.06); }
+    .vp-switch {
+      width: 34px; height: 20px; border-radius: 10px;
+      background: rgba(255,255,255,0.2); position: relative; transition: background 0.15s;
+    }
+    .vp-switch::after {
+      content: ""; position: absolute; top: 2px; left: 2px;
+      width: 16px; height: 16px; border-radius: 50%; background: #fff;
+      transition: left 0.15s;
+    }
+    .vp-switch.on { background: #4a9eda; }
+    .vp-switch.on::after { left: 16px; }
+
+    /* ===================================================================
+       Theme tokens — lifted from verifi-insights-real-data.html so this
+       page sits in the same product family.
+       =================================================================== */
+    :root, .theme-light {
+      --bg-page:           #ffffff;
+      --bg-sidebar:        #ecf1f3;
+      --bg-table:          #ffffff;
+      --row-even:          #ffffff;
+      --row-even-hover:    #f2f5f7;
+      --row-odd:           #eef1f4;
+      --row-odd-hover:     #e2e8ee;
+      --toolbar-btn-bg:    #b8c5d6;
+      --toolbar-btn-fg:    #1a1a1a;
+      --toolbar-btn-hover: #a8b6c8;
+      --preset-border:     #6b7178;
+      --border-steel:      #d1d5db;
+      --border-soft:       rgba(0, 0, 0, 0.10);
+      --bg-popover:        #ffffff;
+      --text-strong:       #1a1a1a;
+      --text-muted:        #6b7178;
+      --text-cell:         #1a1a1a;
+      --accent-blue:       #0965a3;
+      --btn-blue:          #1667d9;
+      --btn-blue-hover:    #1257ba;
+      --nav-hover:         rgba(0, 0, 0, 0.04);
+      --row-selected:      rgba(9, 101, 163, 0.12);
+      --row-selected-edge: #0965a3;
+      --chart-red:         #9e1b32;
+      --chart-orange:      #e0642f;
+      --chart-green:       #bccd6b;
+      --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    .theme-dark {
+      --bg-page:           #26282b;
+      --bg-sidebar:        #26282b;
+      --bg-table:          #26282b;
+      --row-even:          #26282b;
+      --row-even-hover:    #34373b;
+      --row-odd:           #1c1c1e;
+      --row-odd-hover:     #2a2a2d;
+      --toolbar-btn-bg:    rgba(255,255,255,0.10);
+      --toolbar-btn-fg:    var(--text-strong);
+      --toolbar-btn-hover: rgba(255,255,255,0.18);
+      --preset-border:     var(--border-soft);
+      --border-steel:      #a8aeb5;
+      --border-soft:       rgba(168, 174, 181, 0.20);
+      --bg-popover:        #1c1c1e;
+      --text-strong:       #ffffff;
+      --text-muted:        #a8aeb5;
+      --text-cell:         #ededed;
+      --accent-blue:       #4a9eda;
+      --btn-blue:          #1667d9;
+      --btn-blue-hover:    #2a79ea;
+      --nav-hover:         rgba(255, 255, 255, 0.04);
+      --row-selected:      rgba(74, 158, 218, 0.16);
+      --row-selected-edge: #4a9eda;
+      --chart-red:         #9e1b32;
+      --chart-orange:      #e0642f;
+      --chart-green:       #bccd6b;
+    }
+
+    * { box-sizing: border-box; margin: 0; }
+    html, body { height: 100%; }
+    body {
+      background: var(--bg-page);
+      color: var(--text-strong);
+      font-family: var(--font-sans);
+      padding-top: var(--vp-bar-h);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* =======================================================================
+       App shell
+       ======================================================================= */
+    .app { display: grid; grid-template-columns: 96px 1fr; min-height: calc(100vh - var(--vp-bar-h)); }
+
+    .sidebar {
+      background: var(--bg-sidebar);
+      display: flex; flex-direction: column; align-items: stretch;
+      padding: 24px 0 12px;
+      position: sticky; top: var(--vp-bar-h);
+      height: calc(100vh - var(--vp-bar-h));
+      width: 96px;
+      overflow-y: auto;
+    }
+    .logo { width: 60px; height: auto; margin: 0 auto 22px; color: var(--text-strong); display: block; flex-shrink: 0; }
+    .logo path { fill: currentColor; }
+
+    .region-header {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 4px 6px 14px; color: var(--text-strong);
+      border-bottom: 1px solid var(--border-soft); margin-bottom: 10px; flex-shrink: 0;
+    }
+    .region-header .icon { width: 20px; height: 20px; display: block; }
+    .region-header .label { font-size: 11.5px; font-weight: 700; text-align: center; line-height: 1.25; }
+
+    .nav-item {
+      width: 100%; padding: 10px 6px;
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      color: var(--text-muted); text-decoration: none;
+      font-size: 11.5px; font-weight: 500; cursor: pointer; position: relative;
+      text-align: center; line-height: 1.25; flex-shrink: 0;
+      transition: color 120ms ease, background 120ms ease;
+    }
+    .nav-item .icon { width: 21px; height: 21px; color: currentColor; display: block; }
+    .nav-item .icon path, .nav-item .icon rect, .nav-item .icon circle { fill: currentColor; }
+    .nav-item .icon.stroke path, .nav-item .icon.stroke circle { fill: none; stroke: currentColor; }
+    .nav-item:hover { color: var(--text-strong); background: var(--nav-hover); }
+    .nav-item.active { color: var(--text-strong); font-weight: 700; }
+    .nav-item.active::before {
+      content: ""; position: absolute; left: 0; top: 8px; bottom: 8px;
+      width: 3px; background: var(--text-strong); border-radius: 0 2px 2px 0;
+    }
+    .sidebar .collapse {
+      padding: 12px 6px; text-align: center; color: var(--text-muted);
+      cursor: pointer; font-size: 16px; border-bottom: 1px solid var(--border-soft);
+      margin-bottom: 8px; flex-shrink: 0;
+    }
+    .sidebar .spacer { flex: 1 1 auto; min-height: 8px; }
+    .sidebar .foot {
+      padding: 10px 4px 0; text-align: center; color: var(--text-muted);
+      font-size: 9px; line-height: 1.6; flex-shrink: 0;
+    }
+    .avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 1.5px solid var(--text-muted); color: var(--text-strong);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600; margin: 8px auto 4px; flex-shrink: 0;
+    }
+
+    /* ---------------- Main column ---------------- */
+    .main {
+      padding: 28px 36px 20px;
+      min-width: 0; overflow: hidden;
+      height: calc(100vh - var(--vp-bar-h));
+      display: flex; flex-direction: column;
+    }
+
+    /* Top tabs: Returned Loads | Uptime — centered over their halves like the product */
+    .tabs {
+      display: grid; grid-template-columns: 1fr 1fr;
+      margin-bottom: 20px; flex-shrink: 0;
+    }
+    .tab {
+      font-size: 21px; font-weight: 600; letter-spacing: 0.02em;
+      color: var(--text-muted); padding-bottom: 12px; cursor: pointer;
+      position: relative; text-align: center; transition: color 120ms ease;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .tab:hover { color: var(--text-strong); }
+    .tab.active { color: var(--text-strong); font-weight: 700; }
+    .tab.active::after {
+      content: ""; position: absolute; left: 0; right: 0; bottom: -1px;
+      height: 3px; background: var(--accent-blue); border-radius: 2px;
+    }
+
+    /* =======================================================================
+       RETURNED LOADS — 50/50 table + map split
+       ======================================================================= */
+    #returned-view { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+
+    .split {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+      flex: 1 1 auto; min-height: 0;
+    }
+    .split-left { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+    .split-right { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+
+    /* Filters — compacted into two rows so the table keeps its height */
+    .filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 20px; margin-bottom: 14px; flex-shrink: 0; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field > label { font-size: 11.5px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.02em; }
+    .control {
+      display: inline-flex; align-items: center; gap: 10px;
+      border: 1px solid var(--preset-border); border-radius: 6px;
+      background: transparent; color: var(--text-strong);
+      font-size: 13px; font-weight: 500; font-family: inherit;
+      padding: 8px 12px; cursor: pointer; height: 38px;
+    }
+    .control .icon { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+    .control .sep { width: 1px; height: 16px; background: var(--border-soft); }
+    .seg {
+      display: inline-flex; border: 1px solid var(--preset-border); border-radius: 6px;
+      overflow: hidden; height: 38px;
+    }
+    .seg button {
+      border: 0; background: transparent; color: var(--text-muted);
+      font-size: 12.5px; font-weight: 500; font-family: inherit;
+      padding: 0 14px; cursor: pointer; display: flex; align-items: center; gap: 6px;
+      border-left: 1px solid var(--border-soft);
+      transition: background 120ms ease, color 120ms ease;
+    }
+    .seg button:first-child { border-left: 0; }
+    .seg button:hover { color: var(--text-strong); background: var(--nav-hover); }
+    .seg button.active { color: var(--text-strong); font-weight: 600; background: var(--nav-hover); }
+    .seg button.active .icon { display: block; }
+    .seg .icon { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; display: none; }
+    .filters .push { margin-left: auto; }
+
+    /* Billing settings group — visually distinct from filters */
+    .settings-box {
+      border: 1px solid var(--border-soft); border-radius: 8px;
+      padding: 10px 14px 14px; margin-bottom: 14px; flex-shrink: 0;
+    }
+    .settings-cap {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 10px;
+    }
+    .settings-cap .icon { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+    .settings-cap span { font-weight: 500; text-transform: none; letter-spacing: 0; }
+    .settings-row { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: flex-end; }
+    .settings-row .field { align-items: flex-start; }
+    .settings-row .field > label { display: flex; align-items: center; gap: 6px; }
+
+    select.control-select {
+      appearance: none; -webkit-appearance: none;
+      min-width: 96px; padding-right: 30px;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23888e95' stroke-width='2' stroke-linecap='round'><path d='m6 9 6 6 6-6'/></svg>");
+      background-repeat: no-repeat; background-position: right 9px center;
+    }
+    select.control-select option { background: var(--bg-popover); color: var(--text-strong); }
+
+    .btn-sm { padding: 9px 14px; font-size: 12px; height: 38px; }
+    .btn-outline {
+      background: transparent; border: 1px solid var(--btn-blue); color: var(--accent-blue);
+    }
+    .btn-outline:hover { background: rgba(22,103,217,0.12); }
+
+    /* Info tooltip */
+    .info-tip {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 1px solid var(--text-muted); color: var(--text-muted);
+      font-size: 9px; font-weight: 700; font-style: normal; cursor: help;
+      position: relative; flex-shrink: 0;
+    }
+    .info-tip:hover, .info-tip:focus { color: var(--text-strong); border-color: var(--text-strong); outline: none; }
+    .tip-pop {
+      display: none; position: absolute; bottom: calc(100% + 8px); left: 50%;
+      transform: translateX(-50%); width: 250px; z-index: 50;
+      background: var(--bg-popover); color: var(--text-cell);
+      border: 1px solid var(--border-soft); border-radius: 8px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+      padding: 10px 12px; font-size: 11.5px; font-weight: 500; line-height: 1.5;
+      text-transform: none; letter-spacing: 0; white-space: normal; text-align: left;
+    }
+    .info-tip:hover .tip-pop, .info-tip:focus .tip-pop { display: block; }
+
+    /* Empty state + toast */
+    .empty-row td {
+      text-align: center; padding: 28px 12px !important;
+      color: var(--text-muted); font-size: 13px;
+    }
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: var(--bg-popover); color: var(--text-strong);
+      border: 1px solid var(--border-soft); border-radius: 8px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+      padding: 12px 18px; font-size: 13px; font-weight: 600; z-index: 1200;
+      opacity: 0; pointer-events: none; transition: opacity 180ms ease;
+    }
+    .toast.show { opacity: 1; }
+
+    /* =======================================================================
+       INVOICE — modal preview + print styles
+       ======================================================================= */
+    .inv-overlay {
+      display: none; position: fixed; inset: 0; z-index: 1300;
+      background: rgba(0,0,0,0.55); overflow-y: auto; padding: 40px 20px;
+    }
+    .inv-overlay.show { display: block; }
+    .inv-frame { max-width: 760px; margin: 0 auto; }
+    .inv-toolbar {
+      display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 12px;
+    }
+    .inv-toolbar .btn-blue { box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+    .inv-toolbar .btn-ghost {
+      background: rgba(255,255,255,0.12); color: #fff; border: 0; border-radius: 4px;
+      font-family: inherit; font-size: 13px; font-weight: 700; padding: 10px 18px; cursor: pointer;
+    }
+    .inv-toolbar .btn-ghost:hover { background: rgba(255,255,255,0.2); }
+
+    /* The document itself is always light — it's paper. */
+    .inv-doc {
+      background: #ffffff; color: #1a1a1a; border-radius: 6px;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.45);
+      padding: 44px 48px; margin-bottom: 28px;
+      font-family: var(--font-sans);
+    }
+    .inv-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
+    .inv-head .logo { width: 84px; margin: 0; color: #1a1a1a; }
+    .inv-head .logo path { fill: currentColor; }
+    .inv-meta { text-align: right; font-size: 12px; line-height: 1.7; color: #6b7178; }
+    .inv-meta .no { font-size: 15px; font-weight: 700; color: #1a1a1a; letter-spacing: 0.02em; }
+    .inv-title { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #6b7178; margin-bottom: 2px; }
+    .inv-parties { display: flex; gap: 60px; margin-bottom: 26px; }
+    .inv-parties .p .t { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9aa1a8; margin-bottom: 4px; }
+    .inv-parties .p .n { font-size: 14px; font-weight: 700; }
+    .inv-parties .p .d { font-size: 12px; color: #6b7178; line-height: 1.55; }
+    table.inv-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+    table.inv-table th {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      color: #6b7178; text-align: left; padding: 8px 8px;
+      border-bottom: 2px solid #1a1a1a;
+    }
+    table.inv-table th.num, table.inv-table td.num { text-align: right; }
+    table.inv-table td { font-size: 12px; padding: 9px 8px; border-bottom: 1px solid #e4e7ea; vertical-align: top; }
+    table.inv-table td .d { display: block; font-size: 10.5px; color: #9aa1a8; margin-top: 1px; }
+    .inv-totals { display: flex; justify-content: flex-end; margin-top: 12px; }
+    .inv-totals table { font-size: 12.5px; }
+    .inv-totals td { padding: 4px 0 4px 40px; text-align: right; }
+    .inv-totals .grand td { font-size: 15px; font-weight: 700; border-top: 2px solid #1a1a1a; padding-top: 8px; }
+    .inv-foot { margin-top: 26px; padding-top: 14px; border-top: 1px solid #e4e7ea; font-size: 10.5px; color: #9aa1a8; line-height: 1.6; }
+    .inv-doc + .inv-doc { page-break-before: always; }
+
+    @media print {
+      body { padding-top: 0; }
+      body > *:not(.inv-overlay) { display: none !important; }
+      .inv-overlay { position: static; background: none; padding: 0; overflow: visible; }
+      .inv-toolbar { display: none; }
+      .inv-doc { box-shadow: none; border-radius: 0; margin: 0; padding: 24px 8px; }
+    }
+    .icon-btn {
+      width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 50%; background: var(--toolbar-btn-bg); border: 0;
+      color: var(--toolbar-btn-fg); cursor: pointer;
+      transition: background 120ms ease;
+    }
+    .icon-btn:hover { background: var(--toolbar-btn-hover); }
+    .icon-btn .icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* Sub-tabs: Full Loads / Partial Loads */
+    .subtabs { display: flex; gap: 28px; border-bottom: 1px solid var(--border-soft); margin-bottom: 0; flex-shrink: 0; }
+    .subtab {
+      font-size: 13.5px; font-weight: 600; letter-spacing: 0.04em;
+      color: var(--text-muted); padding: 8px 2px 10px; cursor: pointer; position: relative;
+    }
+    .subtab:hover { color: var(--text-strong); }
+    .subtab.active { color: var(--text-strong); }
+    .subtab.active::after {
+      content: ""; position: absolute; left: 0; right: 0; bottom: -1px;
+      height: 2.5px; background: var(--accent-blue); border-radius: 2px;
+    }
+
+    /* Table */
+    .table-wrap {
+      background: var(--bg-table); border-radius: 0 0 6px 6px;
+      overflow: auto; flex: 1 1 auto; min-height: 0;
+    }
+    table.report { border-collapse: separate; border-spacing: 0; width: 100%; font-family: var(--font-sans); }
+    table.report thead th {
+      position: sticky; top: 0; z-index: 2;
+      background: var(--bg-table);
+      font-size: 11px; font-weight: 600; color: var(--text-muted);
+      text-align: left; padding: 10px 10px; line-height: 1.3;
+      border-bottom: 1px solid var(--border-steel);
+      white-space: normal;
+    }
+    table.report thead th.num, table.report td.num { text-align: right; }
+    table.report tbody td {
+      font-size: 12.5px; font-weight: 500; color: var(--text-cell);
+      padding: 9px 10px; line-height: 1.35; vertical-align: top;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    table.report tbody tr { cursor: pointer; }
+    table.report tbody tr:nth-child(odd) td { background: var(--row-odd); }
+    table.report tbody tr:nth-child(even) td { background: var(--row-even); }
+    table.report tbody tr:nth-child(odd):hover td { background: var(--row-odd-hover); }
+    table.report tbody tr:nth-child(even):hover td { background: var(--row-even-hover); }
+    table.report tbody tr.selected td { background: var(--row-selected) !important; }
+    table.report tbody tr.selected td:first-child { box-shadow: inset 3px 0 0 var(--row-selected-edge); }
+    table.report .ticket { font-weight: 600; }
+    table.report .sub { display: block; font-size: 10.5px; color: var(--text-muted); font-weight: 500; margin-top: 1px; }
+    table.report .gmt { font-size: 9px; color: var(--text-muted); font-weight: 500; margin-left: 3px; letter-spacing: 0.02em; }
+    .dump-chip {
+      display: inline-block; font-size: 9.5px; font-weight: 700; letter-spacing: 0.04em;
+      color: #b3261e; border: 1px solid #b3261e; border-radius: 4px;
+      padding: 1px 5px; margin-top: 3px;
+    }
+
+    /* =======================================================================
+       MAP PANEL — the fix. Always-on 50% map, legend, three pins, trail.
+       ======================================================================= */
+    .map-panel {
+      display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0;
+      border: 1px solid var(--border-soft); border-radius: 8px; overflow: hidden;
+    }
+
+    /* Journey receipt strip — Nathan's "receipt": proof of the return + why we bill */
+    .receipt {
+      display: flex; align-items: stretch; gap: 0;
+      background: var(--bg-table);
+      border-bottom: 1px solid var(--border-soft);
+      padding: 10px 14px; flex-shrink: 0;
+    }
+    .receipt .step { flex: 1 1 0; min-width: 0; padding: 0 12px 0 0; position: relative; }
+    .receipt .step + .step { padding-left: 14px; border-left: 1px solid var(--border-soft); }
+    .receipt .k { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+    .receipt .k .swatch { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .receipt .v { font-size: 13px; font-weight: 600; color: var(--text-strong); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .receipt .m { font-size: 10.5px; color: var(--text-muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .receipt .bill { flex: 0 0 auto; padding-left: 16px; border-left: 1px solid var(--border-soft); text-align: right; }
+    .receipt .bill .v { font-size: 17px; font-weight: 700; }
+
+    .map-stage { position: relative; flex: 1 1 auto; min-height: 0; background: #e9e5dc; }
+    .map-stage svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+    /* Legend — pinned, always visible. This is the missing piece from the bug. */
+    .legend {
+      position: absolute; top: 12px; right: 12px; z-index: 5;
+      background: rgba(255,255,255,0.96); color: #1a1a1a;
+      border: 1px solid rgba(0,0,0,0.12); border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+      padding: 10px 12px; font-size: 11.5px; font-weight: 500;
+      min-width: 168px;
+    }
+    .legend .row { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+    .legend .row .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; border: 1.5px solid rgba(0,0,0,0.25); }
+    .legend .row .dot.sm { width: 7px; height: 7px; border: 0; }
+    .legend .row .dot.hollow { background: transparent !important; border: 2px solid #d93025; }
+    .legend .hd { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #6b7178; padding: 6px 0 2px; }
+    .legend .hd:first-child { padding-top: 0; }
+
+    .map-ticket-chip {
+      position: absolute; top: 12px; left: 12px; z-index: 5;
+      background: rgba(28,28,30,0.9); color: #fff;
+      border-radius: 6px; padding: 6px 10px;
+      font-size: 12px; font-weight: 600;
+    }
+    .map-ticket-chip span { color: rgba(255,255,255,0.6); font-weight: 500; }
+
+    /* SVG map internals */
+    .rd { stroke: #ffffff; fill: none; stroke-linecap: round; }
+    .rd-casing { stroke: #d8d2c4; fill: none; stroke-linecap: round; }
+    .hwy { stroke: #a9c2e8; fill: none; stroke-linecap: round; }
+    .hwy-casing { stroke: #7d9cc9; fill: none; stroke-linecap: round; }
+    .park { fill: #cfe3c0; }
+    .desert { fill: #ede5d0; }
+    .maplabel { font-family: var(--font-sans); font-size: 13px; font-weight: 500; fill: #7a7466; }
+    .maplabel.big { font-size: 17px; font-weight: 600; fill: #5f594c; }
+    .pin-label {
+      font-family: var(--font-sans); font-size: 10.5px; font-weight: 700; fill: #1a1a1a;
+      paint-order: stroke; stroke: rgba(255,255,255,0.9); stroke-width: 3px; stroke-linejoin: round;
+    }
+    .trail-line { fill: none; stroke: rgba(60,64,67,0.35); stroke-width: 2; stroke-dasharray: 1 6; stroke-linecap: round; }
+
+    /* =======================================================================
+       UPTIME VIEW
+       ======================================================================= */
+    #uptime-view { display: none; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+    .uptime-head { flex-shrink: 0; }
+    .uptime-head h2 { font-size: 19px; font-weight: 700; margin-bottom: 14px; }
+    .uptime-meta { font-size: 13px; font-weight: 600; color: var(--text-muted); line-height: 1.7; margin: 14px 0 18px; }
+    .uptime-meta b { color: var(--text-strong); }
+
+    .chart-shell { flex: 1 1 auto; min-height: 420px; display: flex; flex-direction: column; }
+    .chart-area {
+      position: relative; flex: 1 1 auto; min-height: 360px;
+      margin-left: 64px; margin-right: 8px;
+    }
+    .chart-grid { position: absolute; inset: 0; }
+    .chart-grid .gl { position: absolute; left: 0; right: 0; height: 1px; background: var(--border-soft); }
+    .chart-grid .gl span {
+      position: absolute; left: -36px; top: -7px; width: 30px;
+      text-align: right; font-size: 10.5px; color: var(--text-muted); font-weight: 500;
+    }
+    .y-title {
+      position: absolute; left: -62px; top: 50%;
+      transform: rotate(-90deg) translateX(50%); transform-origin: left center;
+      font-size: 10.5px; font-weight: 600; color: var(--text-muted); white-space: nowrap;
+    }
+    .bars { position: absolute; inset: 0; display: flex; align-items: flex-end; }
+    .bar-slot { flex: 1 1 0; display: flex; justify-content: center; align-items: flex-end; height: 100%; position: relative; }
+    .bar { width: 62%; max-width: 96px; border-radius: 1px 1px 0 0; position: relative; }
+    .bar .val {
+      position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+      margin-bottom: 4px; font-size: 11px; font-weight: 700; color: var(--text-strong); white-space: nowrap;
+    }
+    .group-divider { position: absolute; top: 0; bottom: -58px; width: 1px; background: var(--border-soft); }
+    .x-axis { display: flex; margin-left: 64px; margin-right: 8px; border-top: 1px solid var(--border-steel); flex-shrink: 0; }
+    .x-slot { flex: 1 1 0; text-align: center; padding: 8px 4px 0; font-size: 11px; font-weight: 600; color: var(--text-cell); line-height: 1.3; }
+    .x-groups { display: flex; margin-left: 64px; margin-right: 8px; flex-shrink: 0; padding-bottom: 8px; }
+    .x-group { text-align: center; padding-top: 10px; font-size: 11.5px; font-weight: 700; color: var(--text-muted); }
+
+    .uptime-actions { display: flex; gap: 14px; padding: 14px 0 4px; flex-shrink: 0; }
+    .btn-blue {
+      background: var(--btn-blue); color: #fff; border: 0; border-radius: 4px;
+      font-family: inherit; font-size: 13px; font-weight: 700; letter-spacing: 0.03em;
+      padding: 10px 18px; cursor: pointer; transition: background 120ms ease;
+    }
+    .btn-blue:hover { background: var(--btn-blue-hover); }
+  </style>
+</head>
+<body>
+
+  <!-- SVG icon sprite -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z" fill="currentColor"/></symbol>
+      <symbol id="i-dashboards" viewBox="0 0 24 24"><path d="M21 19.9998C21 20.265 20.8946 20.5194 20.7071 20.7069C20.5196 20.8944 20.2652 20.9998 20 20.9998H4C3.73478 20.9998 3.48043 20.8944 3.29289 20.7069C3.10536 20.5194 3 20.265 3 19.9998V9.48978C2.99989 9.3374 3.03462 9.187 3.10152 9.05008C3.16841 8.91317 3.26572 8.79335 3.386 8.69978L11.386 2.47778C11.5615 2.34123 11.7776 2.26709 12 2.26709C12.2224 2.26709 12.4385 2.34123 12.614 2.47778L20.614 8.69978C20.7343 8.79335 20.8316 8.91317 20.8985 9.05008C20.9654 9.187 21.0001 9.3374 21 9.48978V19.9998ZM19 18.9998V9.97778L12 4.53378L5 9.97778V18.9998H19Z" fill="currentColor"/></symbol>
+      <symbol id="i-fleet" viewBox="0 0 24 24"><path d="M2 5l6-2 8 2 6-2v16l-6 2-8-2-6 2V5zm6 0v14l8 2V7L8 5zm-2 .35L4 6v13.5l2-.66V5.35zm14 13.3V5.15l-2 .66v13.34l2-.5z" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/></symbol>
+      <symbol id="i-production" viewBox="0 0 24 24"><path d="M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm1 2v14h14V5H5zm3 8h2v4H8v-4zm4-4h2v8h-2V9zm4 2h2v6h-2v-6z" fill="currentColor"/></symbol>
+      <symbol id="i-mixtures" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm3.5-12.5a3 3 0 0 0-4.24 4.24l-3.06 3.06 1.41 1.41 3.06-3.06a3 3 0 0 0 4.24-4.24l-1.42 1.42-1.41-1.41 1.42-1.42Z" fill="currentColor"/></symbol>
+      <symbol id="i-tickets" viewBox="0 0 24 24"><path d="M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm1 2v12h14V6H5zm2 2h2v2H7V8zm4 0h6v2h-6V8zm-4 4h2v2H7v-2zm4 0h6v2h-6v-2zm-4 4h2v2H7v-2zm4 0h6v2h-6v-2z" fill="currentColor"/></symbol>
+      <symbol id="i-diagnostic" viewBox="0 0 24 24"><path d="M11 4a7 7 0 1 0 4.18 12.61l4.1 4.1 1.42-1.42-4.1-4.1A7 7 0 0 0 11 4Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm-3 5h1.5l1-2 2 4 1-2H14" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-insights" viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 8-8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 8h4v4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 3l.6 1.4L20 5l-1.4.6L18 7l-.6-1.4L16 5l1.4-.6L18 3z" fill="currentColor"/></symbol>
+      <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Zm7.4-2.5a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V19a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.56-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06A2 2 0 1 1 7.08 2.1l.06.06a1.7 1.7 0 0 0 1.87.34h.08A1.7 1.7 0 0 0 10.12 1H10.2a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.08a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51.87Z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-support" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M9.3 9.3a2.8 2.8 0 0 1 5.4 1c0 1.8-2.7 2.2-2.7 3.7" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/><circle cx="12" cy="17.3" r="1.1" fill="currentColor"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
+      <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.4" fill="currentColor" stroke="none"/></symbol>
+      <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></symbol>
+    </defs>
+  </svg>
+
+  <!-- Prototype top bar -->
+  <div class="vp-bar">
+    <div class="vp-brand">Verifi Hub <span class="vp-tag">Prototype</span></div>
+    <div class="vp-right-cluster">
+      <div class="vp-pills">
+        <button class="vp-pill" data-vp="Mobile">Mobile</button>
+        <button class="vp-pill" data-vp="Tablet">Tablet</button>
+        <button class="vp-pill active" data-vp="Desktop">Desktop</button>
+      </div>
+      <div class="vp-opts-wrap" id="vp-opts-wrap">
+        <button class="vp-opts-btn" id="vp-opts-btn">Options <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="vp-opts-dd" id="vp-opts-dd" onclick="event.stopPropagation()">
+          <button class="vp-opt-row" id="theme-toggle-row">Dark mode <span class="vp-switch on" id="theme-switch"></span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Coming-soon screen for Mobile/Tablet viewport pills -->
+  <div class="coming-soon" id="coming-soon">
+    <div class="cs-inner">
+      <svg class="logo" viewBox="0 0 96 24" xmlns="http://www.w3.org/2000/svg" aria-label="verifi">
+        <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z"/>
+      </svg>
+      <div><span class="cs-device" id="cs-device">Mobile</span></div>
+      <h1>Coming soon</h1>
+      <p id="cs-copy">This prototype hasn't been built for this viewport yet. Switch back to Desktop to keep exploring Data Insights.</p>
+      <button class="cs-back" id="cs-back">Back to Desktop</button>
+    </div>
+  </div>
+
+  <div class="app">
+
+    <!-- ============================== SIDEBAR ============================== -->
+    <aside class="sidebar" aria-label="Primary">
+      <svg class="logo" viewBox="0 0 96 24" xmlns="http://www.w3.org/2000/svg" aria-label="verifi">
+        <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z"/>
+      </svg>
+
+      <div class="region-header">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-pin"/></svg>
+        <div class="label">Cemex<br>Arizona</div>
+      </div>
+
+      <a class="nav-item"><svg class="icon"><use href="#i-dashboards"/></svg><span>Dashboards</span></a>
+      <a class="nav-item"><svg class="icon"><use href="#i-fleet"/></svg><span>My Fleet</span></a>
+      <a class="nav-item"><svg class="icon"><use href="#i-production"/></svg><span>Production</span></a>
+      <a class="nav-item"><svg class="icon"><use href="#i-mixtures"/></svg><span>Mixtures</span></a>
+      <a class="nav-item"><svg class="icon"><use href="#i-tickets"/></svg><span>Tickets</span></a>
+      <a class="nav-item"><svg class="icon stroke"><use href="#i-diagnostic"/></svg><span>Diagnostic<br>Center</span></a>
+      <a class="nav-item active"><svg class="icon stroke"><use href="#i-insights"/></svg><span>Data Insights</span></a>
+      <div class="collapse" title="Collapse sidebar">&laquo;</div>
+
+      <div class="spacer"></div>
+
+      <a class="nav-item"><svg class="icon stroke"><use href="#i-settings"/></svg><span>Settings</span></a>
+      <a class="nav-item"><svg class="icon stroke"><use href="#i-support"/></svg><span>Support</span></a>
+      <div class="avatar">JD</div>
+      <div class="foot">Saint-Gobain&copy;<br>2026 v1.5.2<br>f30ee661<br>2608061610</div>
+    </aside>
+
+    <!-- ============================== MAIN ============================== -->
+    <main class="main">
+
+      <div class="tabs">
+        <div class="tab active" id="tab-returned">Returned Loads</div>
+        <div class="tab" id="tab-uptime">Uptime</div>
+      </div>
+
+      <!-- ==================== RETURNED LOADS ==================== -->
+      <div id="returned-view">
+
+        <!-- 50/50: filters + table left, map right — restored from legacy -->
+        <div class="split">
+
+          <div class="split-left">
+            <div class="filters">
+              <div class="field">
+                <label>Date Range</label>
+                <button class="control">
+                  8/11/2026 <span style="color:var(--text-muted)">&ndash;</span> 8/11/2026
+                  <span class="sep"></span>
+                  <svg class="icon"><use href="#i-calendar"/></svg>
+                  <svg class="icon"><use href="#i-dots"/></svg>
+                </button>
+              </div>
+              <div class="field">
+                <label>Customer</label>
+                <select class="control control-select" id="customer-filter"><option value="">All Customers</option></select>
+              </div>
+              <div class="push" style="display:flex; gap:10px; align-self:flex-end;">
+                <button class="btn-blue btn-sm" id="dl-all">Download All Data</button>
+                <button class="btn-blue btn-sm btn-outline" id="dl-invoice">Download Invoice</button>
+              </div>
+            </div>
+
+            <!-- Billing settings — set once by the producer; these change what's
+                 billable, not just what's shown. Per Nathan: not filters. -->
+            <div class="settings-box">
+              <div class="settings-cap">
+                <svg class="icon" viewBox="0 0 24 24"><use href="#i-settings"/></svg>
+                Billing Settings <span>set once &middot; affects what's billable</span>
+              </div>
+              <div class="settings-row">
+                <div class="field">
+                  <label>Max No. Pours
+                    <span class="info-tip" tabindex="0">i
+                      <span class="tip-pop">We recommend 2 pours or fewer &mdash; every stop-and-start of the drum reduces the accuracy of the returned-volume prediction. Loads with more pours than this are excluded from billing.</span>
+                    </span>
+                  </label>
+                  <select class="control control-select" id="set-pours">
+                    <option value="0">0</option><option value="1">1</option><option value="2" selected>2</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Volume Accuracy Buffer
+                    <span class="info-tip" tabindex="0">i
+                      <span class="tip-pop">A conservative billing cushion, in yd&sup3;, subtracted from every returned amount before billing. Reflects how much you trust the estimate &mdash; loads that fall to zero or below drop out of billing entirely.</span>
+                    </span>
+                  </label>
+                  <select class="control control-select" id="set-buffer">
+                    <option value="0" selected>0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Round Returned Concrete To Nearest
+                    <span class="info-tip" tabindex="0">i
+                      <span class="tip-pop">How returned volume is reported to your customer &mdash; billed per whole, half, or quarter yard, or the exact measured amount. Always rounds down.</span>
+                    </span>
+                  </label>
+                  <div class="seg" id="round-seg">
+                    <button data-round="1">Whole Yd</button>
+                    <button data-round="0.5">Half Yd</button>
+                    <button data-round="0.25">Quarter Yd</button>
+                    <button data-round="0" class="active"><svg class="icon"><use href="#i-check"/></svg>None</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="subtabs">
+              <div class="subtab" id="st-full">Full Loads</div>
+              <div class="subtab active" id="st-partial">Partial Loads</div>
+            </div>
+            <div class="table-wrap">
+              <table class="report">
+                <thead>
+                  <tr>
+                    <th style="width:12%">Ticket Number</th>
+                    <th style="width:14%">Load Date</th>
+                    <th style="width:26%">Customer</th>
+                    <th style="width:14%">Return Location</th>
+                    <th class="num" style="width:9%">Load Size</th>
+                    <th class="num" style="width:10%">Returned</th>
+                    <th class="num" style="width:6%">Pours</th>
+                    <th class="num" style="width:9%">Amount To Bill</th>
+                  </tr>
+                </thead>
+                <tbody id="loads-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="split-right">
+            <div class="map-panel">
+              <!-- Receipt strip: the map is proof — batched, poured, discharged, billed -->
+              <div class="receipt" id="receipt"></div>
+              <div class="map-stage">
+                <div class="map-ticket-chip" id="map-chip"></div>
+                <svg id="map-svg" viewBox="0 0 1000 720" preserveAspectRatio="xMidYMid meet" aria-label="Load journey map">
+                  <!-- ======= static basemap: schematic Tucson / Phoenix corridor ======= -->
+                  <rect x="-800" y="-800" width="2600" height="2400" fill="#f2eee4"/>
+                  <!-- desert + park shading -->
+                  <path class="desert" d="M0 0h1000v170c-140 40-260 10-380 60S380 300 240 280 60 340 0 320Z" opacity="0.7"/>
+                  <path class="park" d="M760 40c80-20 190-30 240-10v220c-90 30-170-10-230-60s-60-110-10-150Z" opacity="0.85"/>
+                  <path class="park" d="M40 430c60-30 150-20 180 30s10 130-50 150-140-10-160-70 0-90 30-110Z" opacity="0.8"/>
+                  <path class="park" d="M860 480c60-10 120 10 140 60v180H820c-30-70-20-120 40-140Z" opacity="0.8"/>
+                  <!-- I-10 diagonal -->
+                  <path class="hwy-casing" stroke-width="9" d="M-20 120 C 200 200, 340 330, 460 470 S 700 700, 820 740"/>
+                  <path class="hwy" stroke-width="6" d="M-20 120 C 200 200, 340 330, 460 470 S 700 700, 820 740"/>
+                  <!-- Hwy 77 north-south -->
+                  <path class="hwy-casing" stroke-width="8" d="M600 -20 C 590 120, 620 260, 580 400 S 560 620, 590 740"/>
+                  <path class="hwy" stroke-width="5" d="M600 -20 C 590 120, 620 260, 580 400 S 560 620, 590 740"/>
+                  <!-- arterials -->
+                  <path class="rd-casing" stroke-width="6" d="M120 240 H 880"/><path class="rd" stroke-width="4" d="M120 240 H 880"/>
+                  <path class="rd-casing" stroke-width="6" d="M60 420 H 940"/><path class="rd" stroke-width="4" d="M60 420 H 940"/>
+                  <path class="rd-casing" stroke-width="6" d="M60 560 H 900"/><path class="rd" stroke-width="4" d="M60 560 H 900"/>
+                  <path class="rd-casing" stroke-width="6" d="M250 100 V 680"/><path class="rd" stroke-width="4" d="M250 100 V 680"/>
+                  <path class="rd-casing" stroke-width="6" d="M430 60 V 700"/><path class="rd" stroke-width="4" d="M430 60 V 700"/>
+                  <path class="rd-casing" stroke-width="6" d="M760 160 V 700"/><path class="rd" stroke-width="4" d="M760 160 V 700"/>
+                  <!-- labels -->
+                  <text class="maplabel big" x="470" y="450">Tucson</text>
+                  <text class="maplabel" x="560" y="180">Oro Valley</text>
+                  <text class="maplabel" x="150" y="180">Marana</text>
+                  <text class="maplabel" x="780" y="380">Catalina Foothills</text>
+                  <text class="maplabel" x="300" y="640">Green Valley</text>
+                  <text class="maplabel" x="700" y="620">Vail</text>
+                  <!-- ======= dynamic journey layer ======= -->
+                  <g id="journey-layer"></g>
+                </svg>
+                <!-- Legend: batch plant / job site / discharge + trail meaning -->
+                <div class="legend">
+                  <div class="hd">Locations</div>
+                  <div class="row"><span class="dot" style="background:#f4b400"></span> Batch Plant</div>
+                  <div class="row"><span class="dot" style="background:#34a853"></span> Job Site</div>
+                  <div class="row"><span class="dot" style="background:#d93025"></span> Discharge &mdash; Return Plant</div>
+                  <div class="row"><span class="dot hollow"></span> Discharge &mdash; Dump Site</div>
+                  <div class="row"><span class="dot" style="background:#d93025; box-shadow:0 0 0 2.5px #f4b400;"></span> Batch &amp; Discharge (same plant)</div>
+                  <div class="hd">Trail</div>
+                  <div class="row"><span class="dot sm" style="background:#0f8f80"></span> Plant &rarr; Job breadcrumbs</div>
+                  <div class="row"><span class="dot sm" style="background:#e8710a"></span> Return trip breadcrumbs</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ==================== UPTIME ==================== -->
+      <div id="uptime-view">
+        <div class="uptime-head">
+          <h2>Uptime Insight for Cemex Arizona</h2>
+          <div class="filters" style="margin-bottom:0;">
+            <div class="field">
+              <label>Date Range</label>
+              <button class="control">
+                8/11/2026 <span style="color:var(--text-muted)">&ndash;</span> 8/11/2026
+                <span class="sep"></span>
+                <svg class="icon"><use href="#i-calendar"/></svg>
+                <svg class="icon"><use href="#i-dots"/></svg>
+              </button>
+            </div>
+            <button class="icon-btn" title="Refresh" style="align-self:flex-end;"><svg class="icon"><use href="#i-refresh"/></svg></button>
+          </div>
+          <div class="uptime-meta">
+            Ghost mode loads (excluded): <b>0</b><br>
+            Loads included in report: <b>13169</b><br>
+            Loads with temperature: <b>97%</b>
+          </div>
+        </div>
+
+        <div class="chart-shell">
+          <div class="chart-area" id="chart-area">
+            <div class="y-title">Percent of Loads</div>
+            <div class="chart-grid" id="chart-grid"></div>
+            <div class="bars" id="chart-bars"></div>
+          </div>
+          <div class="x-axis" id="chart-xaxis"></div>
+          <div class="x-groups" id="chart-xgroups"></div>
+        </div>
+
+        <div class="uptime-actions">
+          <button class="btn-blue">Download Data By Trucks</button>
+          <button class="btn-blue">Download Data By Loads</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    // ===================================================================
+    // Theme + prototype chrome
+    // ===================================================================
+    const root = document.documentElement;
+    const sw = document.getElementById("theme-switch");
+    function setTheme(dark) {
+      root.classList.toggle("theme-dark", dark);
+      root.classList.toggle("theme-light", !dark);
+      sw.classList.toggle("on", dark);
+      try { localStorage.setItem("data-insights-theme", dark ? "dark" : "light"); } catch {}
+    }
+    sw.classList.toggle("on", root.classList.contains("theme-dark"));
+    document.getElementById("theme-toggle-row").addEventListener("click", () =>
+      setTheme(!root.classList.contains("theme-dark")));
+    const optsBtn = document.getElementById("vp-opts-btn");
+    const optsDd = document.getElementById("vp-opts-dd");
+    optsBtn.addEventListener("click", (e) => { e.stopPropagation(); optsDd.classList.toggle("open"); });
+    document.addEventListener("click", () => optsDd.classList.remove("open"));
+    const csScreen = document.getElementById("coming-soon");
+    const csDevice = document.getElementById("cs-device");
+    function setViewport(name) {
+      document.querySelectorAll(".vp-pill").forEach(x =>
+        x.classList.toggle("active", x.dataset.vp === name));
+      if (name === "Desktop") {
+        csScreen.classList.remove("show");
+      } else {
+        csDevice.textContent = name;
+        csScreen.classList.add("show");
+      }
+    }
+    document.querySelectorAll(".vp-pill").forEach(p =>
+      p.addEventListener("click", () => setViewport(p.dataset.vp)));
+    document.getElementById("cs-back").addEventListener("click", () => setViewport("Desktop"));
+    document.querySelectorAll("#round-seg button").forEach(b => b.addEventListener("click", () => {
+      document.querySelectorAll("#round-seg button").forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+    }));
+
+    // ===================================================================
+    // Top tabs
+    // ===================================================================
+    const tabReturned = document.getElementById("tab-returned");
+    const tabUptime = document.getElementById("tab-uptime");
+    const returnedView = document.getElementById("returned-view");
+    const uptimeView = document.getElementById("uptime-view");
+    function showTab(which) {
+      const r = which === "returned";
+      tabReturned.classList.toggle("active", r);
+      tabUptime.classList.toggle("active", !r);
+      returnedView.style.display = r ? "flex" : "none";
+      uptimeView.style.display = r ? "none" : "flex";
+      if (!r) buildChart(); // (re)layout on show
+    }
+    tabReturned.addEventListener("click", () => showTab("returned"));
+    tabUptime.addEventListener("click", () => showTab("uptime"));
+
+    // ===================================================================
+    // RETURNED LOADS — data
+    // Route geometries are keyed per load. Each journey carries the three
+    // locations Arish asked for (plant / job / discharge) plus outbound and
+    // return legs for the breadcrumb trail. Times drive the receipt strip.
+    // ===================================================================
+    const LOADS = {
+      partial: [
+        { ticket:"49604962", customer:"Old Pueblo Construction", order:"1029", loadT:"11:16 AM", recvT:"11:19 AM", date:"08/11/2026",
+          ret:"Pima", addr:"35 East Quail Crossing Boulevard, Green Valley", size:7, returned:3.89, pours:1, bill:3.89,
+          dischargeType:"plant", batchT:"10:31 AM", arriveT:"10:52 AM",
+          plant:[430,560], plantName:"Pima Plant", job:[330,655], jobName:"E Quail Crossing Blvd",
+          out:"M430 560 C 400 585, 370 600, 355 625 S 335 645, 330 655", back:"M330 655 C 350 640, 385 615, 400 595 S 420 575, 430 560" },
+        { ticket:"49604869", customer:"Sonoran Homes", order:"1367", loadT:"10:36 AM", recvT:"10:37 AM", date:"08/11/2026",
+          ret:"Aqua Fria Ready Mix", addr:"Cactus & Loop 303, Surprise", size:7, returned:2.87, pours:2, bill:2.87,
+          dischargeType:"plant", batchT:"9:48 AM", arriveT:"10:07 AM",
+          plant:[150,120], plantName:"Aqua Fria Plant", job:[95,62], jobName:"Cactus & Loop 303",
+          out:"M150 120 C 130 105, 115 90, 105 78 S 98 68, 95 62", back:"M95 62 C 105 75, 118 92, 130 104 S 142 114, 150 120" },
+        { ticket:"49604878", customer:"Pantano Contracting", order:"1228", loadT:"10:30 AM", recvT:"10:33 AM", date:"08/11/2026",
+          ret:"San Tan", addr:"1223 E Pecos Rd, Gilbert", size:10.5, returned:2.84, pours:1, bill:2.84,
+          dischargeType:"plant", batchT:"9:40 AM", arriveT:"9:58 AM",
+          plant:[760,300], plantName:"San Tan Plant", job:[875,240], jobName:"E Pecos Rd",
+          out:"M760 300 C 795 285, 830 268, 850 255 S 868 246, 875 240", back:"M875 240 C 860 252, 830 270, 805 283 S 778 294, 760 300" },
+        { ticket:"49604845", customer:"Rincon Structures", order:"1296", loadT:"10:24 AM", recvT:"10:26 AM", date:"08/11/2026",
+          ret:"Apex", addr:"Tangerine Rd & N Innovation Pk Dr, Oro Valley **TC", size:6, returned:3.18, pours:2, bill:3.18,
+          dischargeType:"plant", batchT:"9:22 AM", arriveT:"9:47 AM",
+          plant:[255,242], plantName:"Apex Plant", job:[600,160], jobName:"Tangerine & Innovation Pk",
+          out:"M255 242 C 330 238, 400 240, 455 225 S 545 185, 600 160", back:"M600 160 C 555 190, 500 220, 440 238 S 330 246, 255 242" },
+        { ticket:"49604840", customer:"Rincon Structures", order:"1199", loadT:"10:16 AM", recvT:"10:20 AM", date:"08/11/2026",
+          ret:"Apex", addr:"6011 N La Cholla Blvd, Tucson *, TC@85", size:10.5, returned:5.75, pours:1, bill:5.75,
+          dischargeType:"plant", batchT:"9:15 AM", arriveT:"9:38 AM",
+          plant:[255,242], plantName:"Apex Plant", job:[430,420], jobName:"N La Cholla Blvd",
+          out:"M255 242 C 300 290, 350 340, 390 380 S 418 408, 430 420", back:"M430 420 C 412 400, 375 358, 340 320 S 285 268, 255 242" },
+        { ticket:"49604799", customer:"Old Pueblo Construction", order:"6002", loadT:"10:02 AM", recvT:"10:04 AM", date:"08/11/2026",
+          ret:"Pima", addr:"14787 East Sands Ranch Road, Vail CONF* **CARD ON FILE", size:5, returned:3.59, pours:1, bill:3.59,
+          dischargeType:"dump", batchT:"9:04 AM", arriveT:"9:31 AM",
+          plant:[430,560], plantName:"Pima Plant", job:[705,635], jobName:"E Sands Ranch Rd",
+          out:"M430 560 C 510 585, 590 605, 645 618 S 690 630, 705 635", back:"M705 635 C 665 628, 600 615, 545 600 S 470 575, 445 566",
+          dump:[445,566], dumpName:"Pima Dump Site" },
+        { ticket:"49604791", customer:"Catalina Paving", order:"1257", loadT:"09:55 AM", recvT:"09:58 AM", date:"08/11/2026",
+          ret:"San Tan", addr:"Terrace Rd & Hwy 24, Sacaton, 5 gallons ** INVENTORY", size:10, returned:4.92, pours:2, bill:4.92,
+          dischargeType:"plant", batchT:"9:02 AM", arriveT:"9:26 AM",
+          plant:[760,300], plantName:"San Tan Plant", job:[850,440], jobName:"Terrace Rd & Hwy 24",
+          out:"M760 300 C 800 335, 828 370, 842 400 S 850 428, 850 440", back:"M850 440 C 845 415, 830 380, 810 350 S 780 315, 760 300" }
+      ],
+      full: [
+        { ticket:"49604712", customer:"Marana Builders", order:"1188", loadT:"09:12 AM", recvT:"09:15 AM", date:"08/11/2026",
+          ret:"Apex", addr:"W Ina Rd & N Thornydale Rd, Marana", size:9, returned:9.0, pours:0, bill:9.0,
+          dischargeType:"plant", batchT:"8:20 AM", arriveT:"8:44 AM",
+          plant:[255,242], plantName:"Apex Plant", job:[190,160], jobName:"Ina & Thornydale",
+          out:"M255 242 C 235 215, 218 192, 205 178 S 195 166, 190 160", back:"M190 160 C 200 172, 215 190, 230 210 S 248 233, 255 242" },
+        { ticket:"49604688", customer:"Pantano Contracting", order:"6014", loadT:"08:47 AM", recvT:"08:51 AM", date:"08/11/2026",
+          ret:"Pima", addr:"S Houghton Rd & E Valencia Rd, Tucson", size:10.5, returned:10.5, pours:0, bill:10.5,
+          dischargeType:"plant", batchT:"7:55 AM", arriveT:"8:19 AM",
+          plant:[430,560], plantName:"Pima Plant", job:[640,540], jobName:"Houghton & Valencia",
+          out:"M430 560 C 495 552, 560 546, 600 542 S 628 540, 640 540", back:"M640 540 C 610 544, 555 550, 505 555 S 450 559, 430 560" }
+      ]
+    };
+
+    const PIN = { plant:"#f4b400", job:"#34a853", discharge:"#d93025" };
+    const CRUMB = { out:"#0f8f80", back:"#e8710a" };
+    const SVGNS = "http://www.w3.org/2000/svg";
+
+    let currentSet = "partial";
+    let selectedTicket = "49604845"; // default to the Apex / order 1296 load, matching the screenshot
+
+    // Billing settings (Nathan: producer-side, set once — they change what's
+    // billable, not just what's shown) + the one real filter besides dates.
+    const settings = { maxPours: 2, buffer: 0, round: 0 };
+    let customerFilter = "";
+
+    // Effective bill after buffer + rounding (always rounds down).
+    // Returns null when the load drops out of billing entirely.
+    function effectiveBill(r) {
+      let b = r.returned - settings.buffer;
+      if (b <= 0) return null;
+      if (settings.round > 0) b = Math.floor(b / settings.round) * settings.round;
+      if (b <= 0) return null;
+      return b;
+    }
+    function visibleRows() {
+      return LOADS[currentSet].filter(r =>
+        r.pours <= settings.maxPours &&
+        (!customerFilter || r.customer === customerFilter) &&
+        effectiveBill(r) !== null
+      );
+    }
+
+    // ---------------- table ----------------
+    const tbody = document.getElementById("loads-tbody");
+    function renderTable() {
+      const rows = visibleRows();
+      tbody.innerHTML = "";
+      if (!rows.length) {
+        const tr = document.createElement("tr");
+        tr.className = "empty-row";
+        tr.innerHTML = '<td colspan="8">No billable loads match the current settings and filters.</td>';
+        tbody.appendChild(tr);
+        renderJourney(null);
+        return;
+      }
+      if (!rows.some(r => r.ticket === selectedTicket)) selectedTicket = rows[0].ticket;
+      rows.forEach(r => {
+        const bill = effectiveBill(r);
+        const tr = document.createElement("tr");
+        if (r.ticket === selectedTicket) tr.classList.add("selected");
+        tr.innerHTML =
+          '<td class="ticket">' + r.ticket + '</td>' +
+          '<td>' + r.loadT + '<span class="gmt">GMT-7</span><span class="sub">' + r.date + ' &middot; Order ' + r.order + '</span></td>' +
+          '<td>' + r.customer + '<span class="sub" title="' + r.addr.replace(/"/g, "&quot;") + '">' + r.addr + '</span></td>' +
+          '<td>' + r.ret + (r.dischargeType === "dump" ? '<br><span class="dump-chip">DUMP SITE</span>' : '') + '</td>' +
+          '<td class="num">' + r.size + ' yd&sup3;</td>' +
+          '<td class="num">' + r.returned.toFixed(2) + ' yd&sup3;</td>' +
+          '<td class="num">' + r.pours + '</td>' +
+          '<td class="num"><b>' + bill.toFixed(2) + ' yd&sup3;</b></td>';
+        tr.addEventListener("click", () => { selectedTicket = r.ticket; renderTable(); renderJourney(); });
+        tbody.appendChild(tr);
+      });
+      renderJourney();
+    }
+
+    // ---------------- settings + filter wiring ----------------
+    document.getElementById("set-pours").addEventListener("change", e => {
+      settings.maxPours = +e.target.value; renderTable();
+    });
+    document.getElementById("set-buffer").addEventListener("change", e => {
+      settings.buffer = +e.target.value; renderTable();
+    });
+    document.querySelectorAll("#round-seg button").forEach(b => b.addEventListener("click", () => {
+      document.querySelectorAll("#round-seg button").forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      settings.round = +b.dataset.round; renderTable();
+    }));
+    const custSel = document.getElementById("customer-filter");
+    [...new Set([].concat(LOADS.partial, LOADS.full).map(r => r.customer))].sort().forEach(c => {
+      const o = document.createElement("option"); o.value = c; o.textContent = c; custSel.appendChild(o);
+    });
+    custSel.addEventListener("change", e => { customerFilter = e.target.value; renderTable(); });
+
+    // ---------------- downloads (prototype stubs) ----------------
+    const toast = document.createElement("div");
+    toast.className = "toast"; document.body.appendChild(toast);
+    let toastTimer;
+    function showToast(msg) {
+      toast.textContent = msg; toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+    }
+    document.getElementById("dl-all").addEventListener("click", () =>
+      showToast("Prototype \u2014 would export all full + partial loads for the selected date range."));
+
+    // ---------------- invoice generation ----------------
+    // Grouped per customer from all billable loads (full + partial), using
+    // the live billing settings. Rate is an example — producer-configured.
+    const INV_RATE = 92.50; // $/yd³, example rate
+    const VERIFI_LOGO = document.querySelector(".cs-inner .logo").outerHTML;
+
+    function billableByCustomer() {
+      const all = [].concat(LOADS.partial, LOADS.full)
+        .filter(r => r.pours <= settings.maxPours && effectiveBill(r) !== null)
+        .filter(r => !customerFilter || r.customer === customerFilter);
+      const by = {};
+      all.forEach(r => { (by[r.customer] = by[r.customer] || []).push(r); });
+      return by;
+    }
+
+    function invoiceDoc(customer, rows, seq) {
+      const money = n => "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      let vol = 0, amt = 0;
+      const lines = rows.map(r => {
+        const b = effectiveBill(r), line = b * INV_RATE;
+        vol += b; amt += line;
+        return '<tr>' +
+          '<td>' + r.ticket + '<span class="d">Order ' + r.order + ' &middot; ' + r.date + ' ' + r.loadT + '</span></td>' +
+          '<td>' + r.jobName + '<span class="d">' + r.addr + '</span></td>' +
+          '<td>' + (r.dischargeType === "dump" ? "Dump Site" : "Return Plant") + '<span class="d">' + r.ret + '</span></td>' +
+          '<td class="num">' + b.toFixed(2) + ' yd&sup3;</td>' +
+          '<td class="num">' + money(INV_RATE) + '</td>' +
+          '<td class="num">' + money(line) + '</td></tr>';
+      }).join("");
+      return '<div class="inv-doc">' +
+        '<div class="inv-head">' + VERIFI_LOGO +
+          '<div class="inv-meta"><div class="inv-title">Returned Concrete Invoice</div>' +
+          '<div class="no">RC-20260811-' + String(seq).padStart(3, "0") + '</div>' +
+          'Service period: 8/11/2026 &ndash; 8/11/2026<br>Issued: 8/12/2026</div></div>' +
+        '<div class="inv-parties">' +
+          '<div class="p"><div class="t">From</div><div class="n">Cemex Arizona</div>' +
+            '<div class="d">Verifi Returned Concrete Program<br>Tucson, AZ</div></div>' +
+          '<div class="p"><div class="t">Bill To</div><div class="n">' + customer + '</div>' +
+            '<div class="d">' + rows.length + ' returned load' + (rows.length === 1 ? '' : 's') + ' this period</div></div></div>' +
+        '<table class="inv-table"><thead><tr>' +
+          '<th>Ticket</th><th>Job Site</th><th>Discharged At</th>' +
+          '<th class="num">Billable Volume</th><th class="num">Rate / yd&sup3;</th><th class="num">Amount</th>' +
+        '</tr></thead><tbody>' + lines + '</tbody></table>' +
+        '<div class="inv-totals"><table>' +
+          '<tr><td>Total returned volume</td><td>' + vol.toFixed(2) + ' yd&sup3;</td></tr>' +
+          (settings.buffer > 0 ? '<tr><td>Volume accuracy buffer applied</td><td>&minus;' + settings.buffer.toFixed(2) + ' yd&sup3; per load</td></tr>' : '') +
+          '<tr class="grand"><td>Amount due</td><td>' + money(amt) + '</td></tr>' +
+        '</table></div>' +
+        '<div class="inv-foot">Returned volumes are measured by Verifi drum telemetry' +
+          (settings.round > 0 ? ', rounded down to the nearest ' + (settings.round === 1 ? 'whole' : settings.round === 0.5 ? 'half' : 'quarter') + ' yard' : '') +
+          (settings.buffer > 0 ? ', less a ' + settings.buffer + ' yd&sup3; accuracy buffer per load' : '') +
+          '. Rate shown is an example &mdash; billing rates are set per producer contract. ' +
+          'Full route and discharge proof for each ticket is available in the Verifi Hub.</div>' +
+        '</div>';
+    }
+
+    function buildInvoices() {
+      const by = billableByCustomer();
+      const names = Object.keys(by).sort();
+      if (!names.length) { showToast("No billable loads to invoice under the current settings."); return null; }
+      return names.map((c, i) => invoiceDoc(c, by[c], i + 1)).join("");
+    }
+
+    // Modal
+    const invOverlay = document.createElement("div");
+    invOverlay.className = "inv-overlay";
+    invOverlay.innerHTML = '<div class="inv-frame">' +
+      '<div class="inv-toolbar">' +
+        '<button class="btn-blue" id="inv-print">Print / Save as PDF</button>' +
+        '<button class="btn-blue" id="inv-dl">Download File</button>' +
+        '<button class="btn-ghost" id="inv-close">Close</button>' +
+      '</div><div id="inv-body"></div></div>';
+    document.body.appendChild(invOverlay);
+    const invBody = document.getElementById("inv-body");
+    invOverlay.addEventListener("click", e => { if (e.target === invOverlay) invOverlay.classList.remove("show"); });
+    document.getElementById("inv-close").addEventListener("click", () => invOverlay.classList.remove("show"));
+    document.getElementById("inv-print").addEventListener("click", () => window.print());
+    document.getElementById("inv-dl").addEventListener("click", () => {
+      const css = document.querySelector("style").textContent;
+      const html = "<!doctype html><html><head><meta charset='utf-8'><title>Returned Concrete Invoice</title>" +
+        "<link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap' rel='stylesheet'>" +
+        "<style>" + css + " body{background:#e8e8e8;padding:32px 16px;} .inv-frame{max-width:760px;margin:0 auto;}</style>" +
+        "</head><body><div class='inv-frame'>" + invBody.innerHTML + "</div></body></html>";
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+      a.download = "returned-concrete-invoice-" + (customerFilter ? customerFilter.toLowerCase().replace(/\s+/g, "-") : "all-customers") + "-20260811.html";
+      a.click();
+      URL.revokeObjectURL(a.href);
+      showToast("Invoice file downloaded.");
+    });
+
+    document.getElementById("dl-invoice").addEventListener("click", () => {
+      const docs = buildInvoices();
+      if (!docs) return;
+      invBody.innerHTML = docs;
+      invOverlay.classList.add("show");
+      invOverlay.scrollTop = 0;
+    });
+
+    // ---------------- sub-tabs ----------------
+    const stFull = document.getElementById("st-full");
+    const stPartial = document.getElementById("st-partial");
+    function setSubtab(which) {
+      currentSet = which;
+      selectedTicket = null;
+      stFull.classList.toggle("active", which === "full");
+      stPartial.classList.toggle("active", which === "partial");
+      renderTable();
+    }
+    stFull.addEventListener("click", () => setSubtab("full"));
+    stPartial.addEventListener("click", () => setSubtab("partial"));
+
+    // ---------------- map journey ----------------
+    function el(tag, attrs) {
+      const n = document.createElementNS(SVGNS, tag);
+      for (const k in attrs) n.setAttribute(k, attrs[k]);
+      return n;
+    }
+    // Drop breadcrumb dots along an SVG path. Sizes scale with zoom (s).
+    function crumbs(layer, d, color, s) {
+      const p = el("path", { d: d });
+      layer.appendChild(p); // must be in DOM for getTotalLength
+      const len = p.getTotalLength();
+      const n = Math.max(5, Math.floor(len / (26 * s)));
+      for (let i = 1; i < n; i++) {
+        const pt = p.getPointAtLength((len / n) * i);
+        layer.appendChild(el("circle", { cx: pt.x, cy: pt.y, r: 4 * s, fill: color, stroke: "rgba(0,0,0,0.25)", "stroke-width": 0.75 * s }));
+      }
+      p.remove();
+    }
+    // Pin with label. mode: "solid" | "hollow" (dump site) | "dual" (batch + discharge same plant)
+    function pin(layer, xy, color, label, s, mode, labelBelow) {
+      mode = mode || "solid";
+      const g = el("g", {});
+      if (mode === "dual") {
+        g.appendChild(el("circle", { cx: xy[0], cy: xy[1], r: 13 * s, fill: PIN.plant, stroke: "rgba(0,0,0,0.35)", "stroke-width": 1.5 * s }));
+        g.appendChild(el("circle", { cx: xy[0], cy: xy[1], r: 8 * s, fill: PIN.discharge }));
+        g.appendChild(el("circle", { cx: xy[0], cy: xy[1], r: 2.6 * s, fill: "rgba(255,255,255,0.95)" }));
+      } else if (mode === "hollow") {
+        g.appendChild(el("circle", { cx: xy[0], cy: xy[1], r: 11 * s, fill: "rgba(255,255,255,0.9)", stroke: color, "stroke-width": 3 * s }));
+        g.appendChild(el("circle", { cx: xy[0], cy: xy[1], r: 3.5 * s, fill: color }));
+      } else {
+        g.appendChild(el("circle", { cx: xy[0], cy: xy[1], r: 11 * s, fill: color, stroke: "rgba(0,0,0,0.35)", "stroke-width": 1.5 * s }));
+        g.appendChild(el("circle", { cx: xy[0], cy: xy[1], r: 3.5 * s, fill: "rgba(255,255,255,0.95)" }));
+      }
+      const t = el("text", {
+        x: xy[0],
+        y: labelBelow ? xy[1] + 27 * s : xy[1] - 18 * s,
+        "text-anchor": "middle", "class": "pin-label"
+      });
+      t.style.fontSize = (11 * s) + "px";
+      t.style.strokeWidth = (3 * s) + "px";
+      t.textContent = label;
+      g.appendChild(t);
+      layer.appendChild(g);
+    }
+
+    const mapSvg = document.getElementById("map-svg");
+    const mapStage = document.querySelector(".map-stage");
+    const journeyLayer = document.getElementById("journey-layer");
+    const receipt = document.getElementById("receipt");
+    const mapChip = document.getElementById("map-chip");
+
+    // Fit the viewBox to the journey so the route always fills the panel —
+    // no click-to-enlarge needed. Extra right padding keeps the route clear
+    // of the legend overlay; extra top padding clears the ticket chip.
+    function fitViewBox(bbox) {
+      let x = bbox.x - 90, y = bbox.y - 110;
+      let w = bbox.width + 90 + 210;  // legend lives top-right
+      let h = bbox.height + 110 + 80;
+      // don't zoom in past ~2.5x — keeps neighborhood context around short routes
+      if (w < 400) { x -= (400 - w) / 2; w = 400; }
+      if (h < 280) { y -= (280 - h) / 2; h = 280; }
+      // match the panel's aspect ratio so "meet" fills it edge to edge
+      const cw = mapStage.clientWidth || 1, ch = mapStage.clientHeight || 1;
+      const target = cw / ch;
+      if (w / h < target) { const nw = h * target; x -= (nw - w) / 2; w = nw; }
+      else { const nh = w / target; y -= (nh - h) / 2; h = nh; }
+      mapSvg.setAttribute("viewBox", x + " " + y + " " + w + " " + h);
+      // scale factor that keeps journey elements a constant size ON SCREEN:
+      // an element sized (px * s) in map units renders at ~px CSS pixels.
+      return w / cw;
+    }
+
+    function renderJourney(forceEmpty) {
+      const r = forceEmpty === null ? null
+        : LOADS[currentSet].find(x => x.ticket === selectedTicket);
+      journeyLayer.innerHTML = "";
+      if (!r) {
+        mapSvg.setAttribute("viewBox", "0 0 1000 720");
+        mapChip.innerHTML = "No load selected";
+        receipt.innerHTML = '<div class="step"><div class="k">Journey</div>' +
+          '<div class="v" style="color:var(--text-muted); font-weight:500;">Select a load to see its route, discharge proof, and billing.</div></div>';
+        return;
+      }
+
+      // full trail first (per the Jira expected behavior) — also drives the fit
+      const outPath = el("path", { d: r.out, class: "trail-line" });
+      const backPath = el("path", { d: r.back, class: "trail-line" });
+      journeyLayer.appendChild(outPath);
+      journeyLayer.appendChild(backPath);
+      const b1 = outPath.getBBox(), b2 = backPath.getBBox();
+      const x0 = Math.min(b1.x, b2.x), y0 = Math.min(b1.y, b2.y);
+      const x1 = Math.max(b1.x + b1.width, b2.x + b2.width);
+      const y1 = Math.max(b1.y + b1.height, b2.y + b2.height);
+      const s = Math.min(2.5, Math.max(0.4, fitViewBox({ x: x0, y: y0, width: x1 - x0, height: y1 - y0 })));
+      outPath.style.strokeWidth = (2 * s) + "px";
+      backPath.style.strokeWidth = (2 * s) + "px";
+
+      // breadcrumbs: outbound then return
+      crumbs(journeyLayer, r.out, CRUMB.out, s);
+      crumbs(journeyLayer, r.back, CRUMB.back, s);
+
+      // the three locations Arish asked for: plant / job / discharge
+      const dischargeName = r.dischargeType === "dump" ? r.dumpName : r.plantName;
+      pin(journeyLayer, r.job, PIN.job, r.jobName, s);
+      if (r.dischargeType === "dump") {
+        pin(journeyLayer, r.plant, PIN.plant, r.plantName, s);
+        pin(journeyLayer, r.dump, PIN.discharge, "Discharge · " + r.dumpName, s, "hollow", true);
+      } else {
+        // discharged back at the origin plant — one dual pin, one label
+        pin(journeyLayer, r.plant, PIN.discharge, r.plantName + " · Batch & Discharge", s, "dual");
+      }
+
+      // truck's final position chip (order number, like the product map)
+      const tp = r.dischargeType === "dump" ? r.dump : r.plant;
+      const chip = el("g", {});
+      chip.appendChild(el("rect", { x: tp[0] + 16 * s, y: tp[1] - 11 * s, width: 50 * s, height: 22 * s, rx: 4 * s, fill: "#1c1c1e", opacity: 0.9 }));
+      const ct = el("text", { x: tp[0] + 41 * s, y: tp[1] + 4 * s, "text-anchor": "middle",
+        "font-family": "Inter, sans-serif", "font-weight": "700", fill: "#fff" });
+      ct.style.fontSize = (12 * s) + "px";
+      ct.textContent = r.order;
+      chip.appendChild(ct);
+      journeyLayer.appendChild(chip);
+
+      // ticket chip on the map
+      mapChip.innerHTML = "Ticket " + r.ticket + " <span>&middot; Order " + r.order + " &middot; " + r.ret + "</span>";
+
+      // receipt strip — the "why we're billing you" story in one line
+      const bill = effectiveBill(r);
+      const poured = (r.size - r.returned).toFixed(2);
+      receipt.innerHTML =
+        '<div class="step"><div class="k"><span class="swatch" style="background:' + PIN.plant + '"></span>Batched</div>' +
+          '<div class="v">' + r.batchT + ' &middot; ' + r.size + ' yd&sup3;</div><div class="m">' + r.plantName + '</div></div>' +
+        '<div class="step"><div class="k"><span class="swatch" style="background:' + PIN.job + '"></span>Poured</div>' +
+          '<div class="v">' + poured + ' yd&sup3; &middot; ' + r.pours + ' pour' + (r.pours === 1 ? '' : 's') + '</div>' +
+          '<div class="m">Arrived ' + r.arriveT + ' &middot; ' + r.jobName + '</div></div>' +
+        '<div class="step"><div class="k"><span class="swatch" style="background:' + PIN.discharge + '"></span>Discharged</div>' +
+          '<div class="v">' + r.recvT + ' &middot; ' + r.returned.toFixed(2) + ' yd&sup3;</div>' +
+          '<div class="m">' + dischargeName + (r.dischargeType === "dump" ? ' (dump site)' : '') + '</div></div>' +
+        '<div class="bill"><div class="k">Bill ' + r.customer + '</div><div class="v">' + (bill === null ? '—' : bill.toFixed(2) + ' yd&sup3;') + '</div></div>';
+    }
+
+    // ===================================================================
+    // UPTIME chart
+    // ===================================================================
+    const CHART = [
+      { label:"Measure<br>Equipment",    val:0.3,  color:"var(--chart-red)",    group:"Equipment 1.4%" },
+      { label:"Manage<br>Equipment",     val:1.1,  color:"var(--chart-red)",    group:"Equipment 1.4%" },
+      { label:"No Ticket",               val:8.0,  color:"var(--chart-red)",    group:"Ticket 8.0%" },
+      { label:"Small Load",              val:1.7,  color:"var(--chart-red)",    group:"Out Of Scope 2.8%" },
+      { label:"Build-Up",                val:1.1,  color:"var(--chart-red)",    group:"Out Of Scope 2.8%" },
+      { label:"No Slump<br>Curve",       val:0.3,  color:"var(--chart-red)",    group:"Mix Code 20.7%" },
+      { label:"Measure<br>Instructions", val:5.9,  color:"var(--chart-red)",    group:"Mix Code 20.7%" },
+      { label:"Manage<br>Instructions",  val:14.6, color:"var(--chart-orange)", group:"Mix Code 20.7%" },
+      { label:"Measure<br>Only",         val:0.0,  color:"var(--chart-red)",    group:"Up-Time 67.1%" },
+      { label:"No Management<br>Needed", val:14.0, color:"var(--chart-orange)", group:"Up-Time 67.1%" },
+      { label:"Management<br>Incomplete",val:9.7,  color:"var(--chart-red)",    group:"Up-Time 67.1%" },
+      { label:"Verifi<br>Managed",       val:43.4, color:"var(--chart-green)",  group:"Up-Time 67.1%" }
+    ];
+    const CHART_MAX = 44;
+    let chartBuilt = false;
+
+    function buildChart() {
+      if (chartBuilt) return;
+      chartBuilt = true;
+
+      const grid = document.getElementById("chart-grid");
+      for (let v = 0; v <= CHART_MAX; v += 2) {
+        const gl = document.createElement("div");
+        gl.className = "gl";
+        gl.style.bottom = (v / CHART_MAX * 100) + "%";
+        gl.innerHTML = "<span>" + v + "</span>";
+        grid.appendChild(gl);
+      }
+
+      const bars = document.getElementById("chart-bars");
+      const xaxis = document.getElementById("chart-xaxis");
+      CHART.forEach((c, i) => {
+        const slot = document.createElement("div");
+        slot.className = "bar-slot";
+        const bar = document.createElement("div");
+        bar.className = "bar";
+        bar.style.height = Math.max(0.3, c.val / CHART_MAX * 100) + "%";
+        bar.style.background = c.val === 0 ? "transparent" : c.color;
+        bar.innerHTML = '<div class="val">' + c.val.toFixed(1) + '%</div>';
+        slot.appendChild(bar);
+        // group dividers where the group changes
+        if (i > 0 && CHART[i - 1].group !== c.group) {
+          const gd = document.createElement("div");
+          gd.className = "group-divider";
+          gd.style.left = "0";
+          slot.appendChild(gd);
+        }
+        bars.appendChild(slot);
+
+        const xs = document.createElement("div");
+        xs.className = "x-slot";
+        xs.innerHTML = c.label;
+        xaxis.appendChild(xs);
+      });
+
+      // group labels sized by how many bars each spans
+      const xg = document.getElementById("chart-xgroups");
+      const groups = [];
+      CHART.forEach(c => {
+        const last = groups[groups.length - 1];
+        if (last && last.name === c.group) last.n++;
+        else groups.push({ name: c.group, n: 1 });
+      });
+      groups.forEach(g => {
+        const d = document.createElement("div");
+        d.className = "x-group";
+        d.style.flex = g.n + " 1 0";
+        d.textContent = g.name;
+        xg.appendChild(d);
+      });
+    }
+
+    // ---------------- boot ----------------
+    renderTable();
+  </script>
+</body>
+</html>

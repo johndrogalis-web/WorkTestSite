@@ -397,6 +397,32 @@
       font-family: inherit; font-size: 13px; font-weight: 700; padding: 10px 18px; cursor: pointer;
     }
     .inv-toolbar .btn-ghost:hover { background: rgba(255,255,255,0.2); }
+    .inv-rate {
+      display: flex; align-items: center; gap: 12px; margin-right: auto;
+      background: #1c2b45; border: 1.5px solid var(--btn-blue); border-radius: 6px;
+      padding: 6px 8px 6px 14px; box-shadow: 0 2px 12px rgba(22,103,217,0.35);
+    }
+    .inv-rate .inv-rate-lbl { display: flex; flex-direction: column; line-height: 1.25; }
+    .inv-rate .inv-rate-lbl b { color: #fff; font-size: 13px; font-weight: 700; }
+    .inv-rate .inv-rate-lbl span { color: rgba(255,255,255,0.6); font-size: 10.5px; font-weight: 500; }
+    .inv-rate .inv-rate-field {
+      display: flex; align-items: center;
+      background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.3); border-radius: 5px;
+      padding: 0 4px 0 10px;
+    }
+    .inv-rate .inv-rate-field .cur { color: #fff; font-size: 15px; font-weight: 700; }
+    .inv-rate input {
+      width: 86px; background: transparent; color: #fff; border: 0;
+      font-family: var(--font-sans); font-size: 16px; font-weight: 700;
+      padding: 8px 6px;
+    }
+    .inv-rate input:focus { outline: none; }
+    .inv-rate .inv-rate-field:focus-within { border-color: #4a9eda; }
+    @keyframes rate-pulse {
+      0%, 100% { box-shadow: 0 2px 12px rgba(22,103,217,0.35); }
+      50% { box-shadow: 0 0 0 5px rgba(22,103,217,0.45); }
+    }
+    .inv-overlay.show .inv-rate { animation: rate-pulse 1s ease 2; }
 
     /* The document itself is always light — it's paper. */
     .inv-doc {
@@ -1104,8 +1130,8 @@
 
     // ---------------- invoice generation ----------------
     // Grouped per customer from all billable loads (full + partial), using
-    // the live billing settings. Rate is an example — producer-configured.
-    const INV_RATE = 92.50; // $/yd³, example rate
+    // the live billing settings. Rate is producer-set in the invoice preview.
+    let invRate = 92.50; // $/yd³ default — editable in the preview
     const VERIFI_LOGO = document.querySelector(".cs-inner .logo").outerHTML;
 
     function billableByCustomer() {
@@ -1121,14 +1147,14 @@
       const money = n => "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       let vol = 0, amt = 0;
       const lines = rows.map(r => {
-        const b = effectiveBill(r), line = b * INV_RATE;
+        const b = effectiveBill(r), line = b * invRate;
         vol += b; amt += line;
         return '<tr>' +
           '<td>' + r.ticket + '<span class="d">Order ' + r.order + ' &middot; ' + r.date + ' ' + r.loadT + '</span></td>' +
           '<td>' + r.jobName + '<span class="d">' + r.addr + '</span></td>' +
           '<td>' + (r.dischargeType === "dump" ? "Dump Site" : "Return Plant") + '<span class="d">' + r.ret + '</span></td>' +
           '<td class="num">' + b.toFixed(2) + ' yd&sup3;</td>' +
-          '<td class="num">' + money(INV_RATE) + '</td>' +
+          '<td class="num">' + money(invRate) + '</td>' +
           '<td class="num">' + money(line) + '</td></tr>';
       }).join("");
       return '<div class="inv-doc">' +
@@ -1153,7 +1179,7 @@
         '<div class="inv-foot">Returned volumes are measured by Verifi drum telemetry' +
           (settings.round > 0 ? ', rounded down to the nearest ' + (settings.round === 1 ? 'whole' : settings.round === 0.5 ? 'half' : 'quarter') + ' yard' : '') +
           (settings.buffer > 0 ? ', less a ' + settings.buffer + ' yd&sup3; accuracy buffer per load' : '') +
-          '. Rate shown is an example &mdash; billing rates are set per producer contract. ' +
+          '. Rate of ' + money(invRate) + '/yd&sup3; entered by producer at time of invoicing. ' +
           'Full route and discharge proof for each ticket is available in the Verifi Hub.</div>' +
         '</div>';
     }
@@ -1170,6 +1196,8 @@
     invOverlay.className = "inv-overlay";
     invOverlay.innerHTML = '<div class="inv-frame">' +
       '<div class="inv-toolbar">' +
+        '<label class="inv-rate"><span class="inv-rate-lbl"><b>Your Rate</b><span>per yd&sup3; returned</span></span>' +
+          '<span class="inv-rate-field"><span class="cur">$</span><input type="number" id="inv-rate" min="0" step="0.25" value="92.50"></span></label>' +
         '<button class="btn-blue" id="inv-print">Print / Save as PDF</button>' +
         '<button class="btn-blue" id="inv-dl">Download File</button>' +
         '<button class="btn-ghost" id="inv-close">Close</button>' +
@@ -1178,6 +1206,12 @@
     const invBody = document.getElementById("inv-body");
     invOverlay.addEventListener("click", e => { if (e.target === invOverlay) invOverlay.classList.remove("show"); });
     document.getElementById("inv-close").addEventListener("click", () => invOverlay.classList.remove("show"));
+    document.getElementById("inv-rate").addEventListener("input", e => {
+      const v = parseFloat(e.target.value);
+      invRate = isNaN(v) || v < 0 ? 0 : v;
+      const docs = buildInvoices();
+      if (docs) invBody.innerHTML = docs;
+    });
     document.getElementById("inv-print").addEventListener("click", () => window.print());
     document.getElementById("inv-dl").addEventListener("click", () => {
       const css = document.querySelector("style").textContent;

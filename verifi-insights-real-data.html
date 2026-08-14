@@ -3849,7 +3849,7 @@
       let trendCap = "Click a bar to drill in.";
       if (worstChild && bestChild && worstChild[0] !== bestChild[0]) {
         const riseFromBest = Math.round(100 * (worstChild[1].ppy - bestChild[1].ppy) / bestChild[1].ppy);
-        trendCap = `You beat the market \u2014 and the trend inside the walls needs watching: ${worstChild[1].label} runs ${riseFromBest}% more waste per yd\u00b3 than ${bestChild[1].label} ($${worstChild[1].ppy.toFixed(2)} vs $${bestChild[1].ppy.toFixed(2)}). Bar heights are scaled to the range shown (not zero) so small moves stay visible; the chip on each bar is its change vs the ${childGrain} before it. Click a bar to ${barsAreChildren ? "drill in" : "switch " + childGrain + "s"}.`;
+        trendCap = `You run cheaper than most Verifi accounts \u2014 and the trend inside the walls needs watching: ${worstChild[1].label} runs ${riseFromBest}% more waste per yd\u00b3 than ${bestChild[1].label} ($${worstChild[1].ppy.toFixed(2)} vs $${bestChild[1].ppy.toFixed(2)}). Bar heights are scaled to the range shown (not zero) so small moves stay visible; the chip on each bar is its change vs the ${childGrain} before it. Click a bar to ${barsAreChildren ? "drill in" : "switch " + childGrain + "s"}.`;
       }
       const benchLine = P.gapDollars != null ? `<div class="dbw-bench">Top ${P.pctCheaper}% of Verifi accounts by cost</div>` : "";
       const prior = execPriorSibling(curId);
@@ -3863,26 +3863,26 @@
           <div class="dbw-section">${P.label} \u00b7 The value Verifi delivered</div>
           <div class="dbw-grid" style="grid-template-columns:repeat(3,1fr);">
             <div class="dbw-card">
-              <div class="dbw-q">Cheaper than the market</div>
+              <div class="dbw-q">Cheaper than most Verifi accounts</div>
               <div class="dbw-money-big" style="color:#25c07a;">${P.gapDollars != null ? fmt$(P.gapDollars) : "\u2014"}</div>
-              <div class="dbw-cap">You ran at <strong>$${P.ppy.toFixed(2)}/yd\u00b3</strong> of waste vs a <strong>$${P.medPpy.toFixed(2)}</strong> median across Verifi accounts \u2014 on ${P.volume.toLocaleString()} yd\u00b3 delivered.</div>
+              <div class="dbw-cap">You ran at <strong>$${P.ppy.toFixed(2)}/yd\u00b3</strong> of waste vs the <strong>$${P.medPpy.toFixed(2)}</strong> median Verifi account \u2014 on ${P.volume.toLocaleString()} yd\u00b3 delivered.</div>
               ${benchLine}
               ${ppyLine}
-              <button class="dbw-see-btn" onclick="openExecDrawer()">See the ${grain} \u2192</button>
+              <button class="dbw-see-btn" onclick="openExecDrawer()">See the breakdown \u2192</button>
             </div>
             <div class="dbw-card">
               <div class="dbw-q">Loads saved on the road</div>
               <div class="dbw-big ok">${P.corrected.toLocaleString()}</div>
               <div class="dbw-cap">of ${P.measured.toLocaleString()} measured loads left a plant off target and <strong>arrived in spec</strong> because Verifi managed the correction in transit \u2014 ${P.correctedVol.toLocaleString()} yd\u00b3 of concrete.</div>
               ${corrLine}
-              <button class="dbw-see-btn" onclick="openExecDrawer()">See the ${grain} \u2192</button>
+              <button class="dbw-see-btn" onclick="openExecDrawer()">See the breakdown \u2192</button>
             </div>
             <div class="dbw-card">
               <div class="dbw-q">Concrete that came back</div>
               <div class="dbw-big bad">${P.retLoads.toLocaleString()}</div>
               <div class="dbw-cap">loads batched, hauled, and refused \u2014 <strong>${fmt$(P.retCost)}</strong> of material and trips that delivered nothing.</div>
               ${retLine}
-              <button class="dbw-see-btn" onclick="openExecDrawer()">See the ${grain} \u2192</button>
+              <button class="dbw-see-btn" onclick="openExecDrawer()">See the breakdown \u2192</button>
             </div>
           </div>
 
@@ -3936,31 +3936,31 @@
         body = `
           <div class="vi-brandpanel">
             <div class="vb-brand" style="color:var(--dw-hi);">${VERIFI_LOGO_SVG}<span style="opacity:.35;margin:0 4px;">|</span><span style="color:#3069e3;display:flex;align-items:center;gap:6px;">${KPI_BRAND_SVG}Insights <span class="beta">Beta</span></span><span class="tagline">\u00b7 What your data is worth</span></div>
-            <div class="vb-title">You beat the market on cost \u2014 watch the internal trend</div>
-            <div class="vb-body">${S.label}: waste came to ${fmt$(S.totalCost)} \u2014 $${S.ppy.toFixed(2)} per yd\u00b3 delivered, <strong style="color:#25c07a;">cheaper than ${100 - S.pctCheaper}% of Verifi accounts</strong> \u2014 measured the same way, on the same checks, across every producer running Verifi. Against the ${S.prior}, cost per yd\u00b3 went ${priorDir} ($${S.priorPpy.toFixed(2)} \u2192 $${S.ppy.toFixed(2)}). The edge over the market is real; the direction inside the walls is the thing to manage.</div>
+            <div class="vb-title">You run cheaper than most Verifi accounts \u2014 watch the internal trend</div>
+            <div class="vb-body">${S.label}: <strong style="color:var(--dw-hi);">${fmt$(S.totalCost)} in waste</strong> \u2014 <strong style="color:#25c07a;">cheaper than ${100 - S.pctCheaper}% of Verifi accounts</strong>, but ${priorDir} from $${S.priorPpy.toFixed(2)}/yd\u00b3 in the ${S.prior}. The numbers below say where the money went; the list under them says who to talk to.</div>
           </div>
 
           <div class="vi-section-label">The ${execGrainName(S.grain)} in four numbers</div>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;">
-            <div style="border:1px solid var(--dw-bd);background:var(--dw-card);border-radius:12px;padding:14px 16px;">
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px;align-items:stretch;">
+            <div style="border:1px solid var(--dw-bd);background:var(--dw-card);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:5px;">
               <div style="font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dw-mut);">Total waste</div>
-              <div style="font-size:22px;font-weight:800;color:#eb6834;font-variant-numeric:tabular-nums;">${fmt$(S.totalCost)}</div>
-              <div style="font-size:11.5px;color:var(--dw-mut);line-height:1.4;">${fmt$(S.lostCost)} held-truck time + ${fmt$(S.retCost)} returned concrete</div>
+              <div style="font-size:18px;font-weight:800;color:#eb6834;font-variant-numeric:tabular-nums;white-space:nowrap;">${fmt$(S.totalCost)}</div>
+              <div style="font-size:11.5px;color:var(--dw-mut);line-height:1.4;">${fmt$(S.lostCost)} held trucks + ${fmt$(S.retCost)} returned</div>
             </div>
-            <div style="border:1px solid var(--dw-bd);background:var(--dw-card);border-radius:12px;padding:14px 16px;">
+            <div style="border:1px solid var(--dw-bd);background:var(--dw-card);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:5px;">
               <div style="font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dw-mut);">Returned loads</div>
-              <div style="font-size:22px;font-weight:800;color:#eb6834;font-variant-numeric:tabular-nums;">${S.retLoads.toLocaleString()}</div>
-              <div style="font-size:11.5px;color:var(--dw-mut);line-height:1.4;">batched, hauled, refused \u2014 zero value delivered</div>
+              <div style="font-size:18px;font-weight:800;color:#eb6834;font-variant-numeric:tabular-nums;white-space:nowrap;">${S.retLoads.toLocaleString()}</div>
+              <div style="font-size:11.5px;color:var(--dw-mut);line-height:1.4;">batched and hauled, zero value delivered</div>
             </div>
-            <div style="border:1px solid var(--dw-bd);background:var(--dw-card);border-radius:12px;padding:14px 16px;">
-              <div style="font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dw-mut);">vs the market</div>
-              <div style="font-size:22px;font-weight:800;color:#25c07a;font-variant-numeric:tabular-nums;">\u2212$${(S.medPpy - S.ppy).toFixed(2)}/yd\u00b3</div>
+            <div style="border:1px solid var(--dw-bd);background:var(--dw-card);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:5px;">
+              <div style="font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dw-mut);">vs Verifi accounts</div>
+              <div style="font-size:18px;font-weight:800;color:#25c07a;font-variant-numeric:tabular-nums;white-space:nowrap;">\u25bc $${(S.medPpy - S.ppy).toFixed(2)}/yd\u00b3</div>
               <div style="font-size:11.5px;color:var(--dw-mut);line-height:1.4;">${fmt$(S.gapDollars)} below the median Verifi account</div>
             </div>
-            <div style="border:1px solid var(--dw-bd);background:var(--dw-card);border-radius:12px;padding:14px 16px;">
+            <div style="border:1px solid var(--dw-bd);background:var(--dw-card);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:5px;">
               <div style="font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dw-mut);">vs ${S.prior}</div>
-              <div style="font-size:22px;font-weight:800;color:${S.ppy >= S.priorPpy ? "#ff5b52" : "#25c07a"};font-variant-numeric:tabular-nums;">${S.ppy >= S.priorPpy ? "+" : "\u2212"}$${Math.abs(S.ppy - S.priorPpy).toFixed(2)}/yd\u00b3</div>
-              <div style="font-size:11.5px;color:var(--dw-mut);line-height:1.4;">waste per yd\u00b3 moved $${S.priorPpy.toFixed(2)} \u2192 $${S.ppy.toFixed(2)} on your own baseline</div>
+              <div style="font-size:18px;font-weight:800;color:${S.ppy >= S.priorPpy ? "#ff5b52" : "#25c07a"};font-variant-numeric:tabular-nums;white-space:nowrap;">${S.ppy >= S.priorPpy ? "\u25b2 +" : "\u25bc \u2212"}$${Math.abs(S.ppy - S.priorPpy).toFixed(2)}/yd\u00b3</div>
+              <div style="font-size:11.5px;color:var(--dw-mut);line-height:1.4;">moved $${S.priorPpy.toFixed(2)} \u2192 $${S.ppy.toFixed(2)} on your own baseline</div>
             </div>
           </div>
 
@@ -3983,51 +3983,59 @@
           </table>`;
           })()}
 
-          <div class="vi-section-label">Where the quarter's quality stands</div>
-          <div style="font-size:12.5px;color:var(--dw-body);line-height:1.5;margin-bottom:14px;">
-            30% of Q2's measurable loads finished discharge fully on target. The gap between the best plant (Plant 24, 44%) and the worst (Plant 12, 20%) is the size of the opportunity \u2014 if the bottom five ran like the average, the June cost curve bends back down.
-          </div>
-
           ${(() => {
             const act = EXEC_ACTIONS[EXEC_TPATH[EXEC_TPATH.length - 1]];
             const wp = S.worst && S.worst.length ? S.worst[0] : null;
             const wpIdx = wp ? EXEC_DRILL.findIndex(p => p.plant === wp[0]) : -1;
             // biggest mover among children
             const kids = (EXEC_TREE[EXEC_TPATH[EXEC_TPATH.length - 1]] || []).map(id => EXEC_PERIODS[id]).filter(p => p && p.ppy != null);
+            const leanCard = (num, name, tag, stat, why, talk, extra) => `
+            <div style="border:1px solid var(--dw-bd);border-left:3px solid #eb6834;background:var(--dw-card);border-radius:10px;padding:12px 14px;margin-bottom:10px;">
+              <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:13px;">
+                <strong style="color:var(--dw-hi);white-space:nowrap;">${num}. ${name}</strong>
+                <span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.05em;color:#eb6834;border:1px solid rgba(235,104,52,.4);border-radius:4px;padding:1px 6px;white-space:nowrap;">${tag}</span>
+                <span style="color:var(--dw-body);font-size:12.5px;">${stat}</span>
+              </div>
+              <div style="font-size:12.5px;color:var(--dw-mut);margin-top:4px;line-height:1.45;">${why}</div>
+              <div style="display:flex;gap:8px;align-items:baseline;margin-top:9px;padding-top:9px;border-top:1px solid var(--dw-bd);">
+                <span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.06em;color:#fff;background:#3069e3;border-radius:4px;padding:2px 7px;">TALK TO</span>
+                <span style="font-size:12.5px;color:var(--dw-strong);line-height:1.45;">${talk}</span>
+              </div>
+              ${extra || ""}
+            </div>`;
             let mover = "";
             if (kids.length >= 2) {
-              let worstK = kids[0], prevOf = {};
+              let worstK = kids[0];
               for (let i = 1; i < kids.length; i++) if (kids[i].ppy > worstK.ppy) worstK = kids[i];
               const bestK = kids.reduce((a, b) => (b.ppy < a.ppy ? b : a));
-              if (worstK !== bestK) mover = `
-              <li style="margin-bottom:12px;line-height:1.5;">
-                <div style="font-size:13px;color:var(--dw-strong);"><strong style="color:var(--dw-hi);">3. ${worstK.label}</strong><span style="color:var(--dw-mut);"> \u2014 </span><strong style="color:#eb6834;letter-spacing:.03em;">THE EXPENSIVE ${execGrainName(worstK.grain).toUpperCase()}</strong><span style="color:var(--dw-body);"> \u00b7 $${worstK.ppy.toFixed(2)}/yd\u00b3 vs $${bestK.ppy.toFixed(2)} in ${bestK.label}</span></div>
-                <div style="font-size:12.5px;font-style:italic;color:var(--dw-body);margin-top:2px;">Something changed between ${bestK.short} and ${worstK.short} \u2014 volume mix, site behavior, or plant discipline. The gap is real money at your volumes.</div>
-                <div style="font-size:12.5px;margin-top:4px;color:var(--dw-strong);"><strong style="color:#3069e3;">Who to talk to:</strong> your operations lead \u2014 make ${worstK.label} the first agenda item of the next ops review, and click its bar on the dashboard to see it broken down.</div>
-              </li>`;
+              if (worstK !== bestK) mover = leanCard(3, worstK.label,
+                `THE EXPENSIVE ${execGrainName(worstK.grain).toUpperCase()}`,
+                `$${worstK.ppy.toFixed(2)}/yd\u00b3 vs $${bestK.ppy.toFixed(2)} in ${bestK.label}`,
+                `Something changed between ${bestK.short} and ${worstK.short} \u2014 volume mix, site behavior, or plant discipline. Real money at your volumes.`,
+                `Your operations lead \u2014 make ${worstK.label} the first agenda item of the next ops review.`);
             }
             return `
-          <div style="font-size:14px;font-weight:700;color:var(--dw-hi);display:flex;align-items:center;gap:8px;margin-top:2px;">\u2691 Where to lean \u2014 the conversations to have</div>
-          <div style="font-size:12.5px;color:var(--dw-body);margin:4px 0 10px;">Each of these has a name attached. Data you can do something with, in the order to do it.</div>
-          <ul style="margin:0 0 14px;padding-left:20px;">
-            ${wp ? `
-            <li style="margin-bottom:12px;line-height:1.5;">
-              <div style="font-size:13px;color:var(--dw-strong);"><strong style="color:var(--dw-hi);">1. ${wp[0]}</strong><span style="color:var(--dw-mut);"> \u2014 </span><strong style="color:#eb6834;letter-spacing:.03em;">WORST PLANT IN THE PERIOD</strong><span style="color:var(--dw-body);"> \u00b7 ${wp[1]}% of loads finished on target vs ${S.avgAcc}% company average</span></div>
-              <div style="font-size:12.5px;font-style:italic;color:var(--dw-body);margin-top:2px;">If ${wp[0]} ran at the company average, the cost curve bends \u2014 this is the highest-leverage single site you have.</div>
-              <div style="font-size:12.5px;margin-top:4px;color:var(--dw-strong);"><strong style="color:#3069e3;">Who to talk to:</strong> ${wp[0]}'s plant manager and QC lead. Ask what changed and which mixes are driving it${wpIdx >= 0 ? " \u2014 the drill below names them" : ""}.</div>
-              ${wpIdx >= 0 ? `<div style="margin-top:6px;"><button class="kpi-linklike" style="padding-left:0;" onclick="openExecDrawer(${wpIdx})">Open ${wp[0]} \u2014 worst mixes, trucks, drivers \u2192</button></div>` : ""}
-            </li>` : ""}
-            ${act ? `
-            <li style="margin-bottom:12px;line-height:1.5;">
-              <div style="font-size:13px;color:var(--dw-strong);"><strong style="color:var(--dw-hi);">2. ${act.name}</strong><span style="color:var(--dw-mut);"> \u2014 </span><strong style="color:#eb6834;letter-spacing:.03em;">${act.retCost > act.timeCost ? "RETURNS PROBLEM" : "TRUCKS HELD ON SITE"}</strong><span style="color:var(--dw-body);"> \u00b7 costliest customer: ${"$"}${act.total.toLocaleString()} (${"$"}${act.timeCost.toLocaleString()} held-truck time, ${"$"}${act.retCost.toLocaleString()} returns \u00b7 ${act.retLoads} loads back)</span></div>
-              <div style="font-size:12.5px;font-style:italic;color:var(--dw-body);margin-top:2px;">${act.retCost > act.timeCost ? "The money is in refused loads \u2014 order accuracy and pour-readiness, not driving." : "The money is trucks waiting on their sites \u2014 unload readiness and truck spacing, not batching."}</div>
-              <div style="font-size:12.5px;margin-top:4px;color:var(--dw-strong);"><strong style="color:#3069e3;">Who to talk to:</strong> whoever owns the ${act.name} relationship \u2014 dispatch lead plus the account manager. ${act.retCost > act.timeCost ? "Ask for pour-readiness confirmation before batching their orders." : "Ask their site supers what a truck waits on after it arrives."}</div>
-            </li>` : ""}
+          <div style="font-size:14px;font-weight:700;color:var(--dw-hi);display:flex;align-items:center;gap:8px;margin-top:2px;margin-bottom:10px;">\u2691 Where to lean \u2014 three conversations, in order</div>
+            ${wp ? leanCard(1, wp[0], "WORST PLANT",
+              `${wp[1]}% of loads on target vs ${S.avgAcc}% company average`,
+              `Highest-leverage single site \u2014 if it ran at the company average, the cost curve bends.`,
+              `${wp[0]}'s plant manager and QC lead. Ask which mixes are driving it${wpIdx >= 0 ? " \u2014 the drill below names them" : ""}.`,
+              wpIdx >= 0 ? `<div style="margin-top:8px;"><button class="kpi-linklike" style="padding-left:0;" onclick="openExecDrawer(${wpIdx})">Open ${wp[0]} \u2014 worst mixes, trucks, drivers \u2192</button></div>` : "") : ""}
+            ${act ? leanCard(2, act.name,
+              act.retCost > act.timeCost ? "RETURNS PROBLEM" : "TRUCKS HELD ON SITE",
+              `costliest customer \u00b7 $${act.total.toLocaleString()} ($${act.timeCost.toLocaleString()} held-truck + $${act.retCost.toLocaleString()} returns, ${act.retLoads} loads back)`,
+              act.retCost > act.timeCost ? "Refused loads \u2014 order accuracy and pour-readiness, not driving." : "Trucks waiting on their sites \u2014 unload readiness and truck spacing, not batching.",
+              `Dispatch lead plus the ${act.name} account manager. ${act.retCost > act.timeCost ? "Ask for pour-readiness confirmation before batching their orders." : "Ask their site supers what a truck waits on after it arrives."}`) : ""}
             ${mover}
-          </ul>
-          ` + `          <div class="exec-list-row" onclick="openExecDrawer('plants')" style="justify-content:space-between;">
-            <span class="n" style="flex:1;">Explore plant by plant \u2014 down to mix, truck, and driver <span style="font-weight:400;color:var(--dw-mut);font-size:11px;">(full quarter)</span></span>
-            <span class="go">\u203a</span>
+          ` + `          <div onclick="openExecDrawer('plants')" onmouseover="this.style.borderColor='#3069e3'" onmouseout="this.style.borderColor='var(--dw-bd)'" style="cursor:pointer;border:1px solid var(--dw-bd);background:var(--dw-card);border-radius:10px;padding:13px 14px;display:flex;align-items:center;gap:14px;transition:border-color .15s;">
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:13px;">
+                <strong style="color:var(--dw-hi);">Every dollar above traces to a name</strong>
+                <span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--dw-mut);border:1px solid var(--dw-bd);border-radius:4px;padding:1px 6px;white-space:nowrap;">FULL ${execGrainName(S.grain).toUpperCase()}</span>
+              </div>
+              <div style="font-size:12.5px;color:var(--dw-mut);margin-top:4px;line-height:1.45;">Nothing on this page is an estimate you have to take on faith \u2014 open any number and follow it to the <span style="color:var(--dw-body);">plant, mix, truck, and driver</span> behind it. The same detail your team runs on.</div>
+            </div>
+            <button onclick="event.stopPropagation();openExecDrawer('plants')" style="flex-shrink:0;font:inherit;font-size:12.5px;font-weight:600;padding:9px 16px;border:none;border-radius:8px;background:#3069e3;color:#fff;cursor:pointer;white-space:nowrap;">See for yourself \u2192</button>
           </div>`;
           })()}`;
       } else if (path === "plants") {

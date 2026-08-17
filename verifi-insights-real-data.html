@@ -75,6 +75,12 @@
     .vp-pill:hover { color: #fff; }
     .vp-pill.active { background: rgba(255,255,255,0.15); color: #fff; }
     .vp-opts-wrap { position: relative; }
+    .spec-tok { font-family:'DM Mono',ui-monospace,monospace; font-size:.88em; color:#8ab4ff; background:rgba(48,105,227,.14); border:1px solid rgba(48,105,227,.25); border-radius:4px; padding:0 4px; white-space:nowrap; }
+    /* Spec mode: token names are longer than the values they replace, so big
+       numbers drop to a wrappable size instead of overflowing their cards. */
+    .spec-on .dbw-money-big, .spec-on .dbw-big { font-size:15px !important; white-space:normal !important; line-height:1.4; word-break:break-word; }
+    .spec-on .dbw-money-big .spec-tok, .spec-on .dbw-big .spec-tok { font-size:12px; }
+    #spec-toggle.on { color:#8ab4ff; border-color:rgba(48,105,227,.55); background:rgba(48,105,227,.12); }
     .vp-opts-btn {
       display: flex; align-items: center; gap: 6px;
       padding: 5px 10px;
@@ -2240,6 +2246,7 @@
     </div>
 
     <div class="vp-right-cluster">
+      <button class="vp-opts-btn" id="spec-toggle" onclick="toggleSpecMode()" title="Show rule variables instead of values (Version 4 surfaces)" style="font-family:'DM Mono',ui-monospace,monospace;">{&thinsp;}&nbsp;Spec</button>
       <div class="vp-opts-wrap" id="vp-opts-wrap">
         <button class="vp-opts-btn" onclick="vpOptsToggle()">Options</button>
         <div class="vp-opts-dd" id="vp-opts-dd" onclick="event.stopPropagation()">
@@ -3636,6 +3643,19 @@
 
     // ---- Login ----
     // ---- Dashboard version: 1 = narrated, 2 = data-first (template-scalable) ----
+    // Spec mode: renders rule variables as {tokens} in place of live values on the
+    // Version 4 surface and role drawers, so devs can read what's template vs data.
+    let SPEC_MODE = false;
+    function V(name, val) { return SPEC_MODE ? `<span class="spec-tok">{${name}}</span>` : val; }
+    function toggleSpecMode() {
+      SPEC_MODE = !SPEC_MODE;
+      document.documentElement.classList.toggle("spec-on", SPEC_MODE);
+      const b = document.getElementById("spec-toggle");
+      if (b) b.classList.toggle("on", SPEC_MODE);
+      applyDashVersion();
+      const dr = document.getElementById("vi-drawer");
+      if (dr && dr.classList.contains("open")) renderExecDrawer();
+    }
     const DASH_KEY = "vi-dash-version-2"; // key bumped so the v4 default applies even where an older build stored a choice
     let DASH_VERSION = "4";
     try { DASH_VERSION = localStorage.getItem(DASH_KEY) || "4"; } catch {}
@@ -3834,12 +3854,12 @@
 
       // QC: absolute on-target rate. Ops: held-truck cost direction. Sales: returns direction.
       const qcTone = P.avgAcc >= 35 ? "ok" : P.avgAcc >= 25 ? "warn" : "bad";
-      const qcPill = pill(qcTone, qcTone === "ok" ? "STEADY" : qcTone === "warn" ? "WATCH" : "NEEDS ATTENTION");
+      const qcPill = pill(qcTone, SPEC_MODE ? "{qc_status}" : qcTone === "ok" ? "STEADY" : qcTone === "warn" ? "WATCH" : "NEEDS ATTENTION");
       const opsRising = last && prev ? last.lostCost > prev.lostCost : false;
-      const opsPill = pill(opsRising ? "warn" : "ok", opsRising ? "RISING" : "STEADY");
+      const opsPill = pill(opsRising ? "warn" : "ok", SPEC_MODE ? "{ops_status}" : opsRising ? "RISING" : "STEADY");
       const salesRising = last && prev ? last.retLoads > prev.retLoads : false;
       const salesJump = last && prev && prev.retLoads > 0 && last.retLoads / prev.retLoads >= 1.5;
-      const salesPill = pill(salesJump ? "bad" : salesRising ? "warn" : "ok", salesJump ? "NEEDS ATTENTION" : salesRising ? "RISING" : "STEADY");
+      const salesPill = pill(salesJump ? "bad" : salesRising ? "warn" : "ok", SPEC_MODE ? "{sales_status}" : salesJump ? "NEEDS ATTENTION" : salesRising ? "RISING" : "STEADY");
 
       const roleCard = (role, pillHTML, bigHTML, bigColor, capHTML, rows, firstConv, btnLabel, btnClick) => `
             <div class="dbw-card" style="display:flex;flex-direction:column;">
@@ -3862,45 +3882,45 @@
       const qcCard = roleCard(
         "Head of Quality",
         qcPill,
-        `${P.avgAcc}%`,
+        `${V("on_target_pct", P.avgAcc)}%`,
         P.avgAcc >= 35 ? "#25c07a" : P.avgAcc >= 25 ? "#ffba0d" : "#ff5b52",
         `of measured loads finished discharge fully on target \u2014 slump and water, checked on every load.`,
         [
-          bp ? ["Best plant", `${bp[0]} \u00b7 ${bp[1]}%`] : null,
-          wp ? ["Worst plant", `${wp[0]} \u00b7 ${wp[1]}%`] : null,
-          ["Saved in transit", `${P.corrected.toLocaleString()} loads`],
+          bp ? ["Best plant", `${V("best_plant_id", bp[0])} \u00b7 ${V("best_plant_pct", bp[1])}%`] : null,
+          wp ? ["Worst plant", `${V("worst_plant_id", wp[0])} \u00b7 ${V("worst_plant_pct", wp[1])}%`] : null,
+          ["Saved in transit", `${V("corrected_loads", P.corrected.toLocaleString())} loads`],
         ].filter(Boolean),
-        wp ? `${wp[0]}'s QC lead \u2014 which mixes miss at discharge. The drill names them, down to the load.` : `The plant list \u2014 the drill names the mixes, down to the load.`,
+        wp ? `${V("worst_plant_id", wp[0])}'s QC lead \u2014 which mixes miss at discharge. The drill names them, down to the load.` : `The plant list \u2014 the drill names the mixes, down to the load.`,
         "Open the quality story",
         "openRoleDrawer('qc')");
 
       const opsCard = roleCard(
         "Head of Operations",
         opsPill,
-        fmt$(P.lostCost),
+        V("held_truck_cost", fmt$(P.lostCost)),
         "#eb6834",
-        `of held-truck time \u2014 trucks waiting to discharge. Priced at $120/truck-hour; the meter runs on site, not in the plant.`,
+        `of held-truck time \u2014 trucks waiting to discharge. Priced at $${V("truck_hour_rate", "120")}/truck-hour; the meter runs on site, not in the plant.`,
         [
-          act ? ["Costliest site", `${act.name}`] : null,
-          act ? ["Held there", fmt$(act.timeCost)] : null,
-          last && prev ? [`${last.short} vs ${prev.short}`, `${last.lostCost > prev.lostCost ? "\u25b2" : "\u25bc"} ${fmt$(Math.abs(last.lostCost - prev.lostCost))}`] : null,
+          act ? ["Costliest site", `${V("customer_name", act.name)}`] : null,
+          act ? ["Held there", V("customer_held_cost", fmt$(act.timeCost))] : null,
+          last && prev ? [`${V("last_period", last.short)} vs ${V("prev_period", prev.short)}`, `${last.lostCost > prev.lostCost ? "\u25b2" : "\u25bc"} ${V("held_cost_delta", fmt$(Math.abs(last.lostCost - prev.lostCost)))}`] : null,
         ].filter(Boolean),
-        act ? `Dispatch lead \u2014 what a truck waits on after it arrives at ${act.name}. Spacing and unload readiness, not batching.` : `Dispatch lead \u2014 truck spacing and unload readiness.`,
+        act ? `Dispatch lead \u2014 what a truck waits on after it arrives at ${V("customer_name", act.name)}. Spacing and unload readiness, not batching.` : `Dispatch lead \u2014 truck spacing and unload readiness.`,
         "Open the operations story",
         "openRoleDrawer('ops')");
 
       const salesCard = roleCard(
         "Head of Sales",
         salesPill,
-        act ? fmt$(act.total) : `${P.retLoads.toLocaleString()}`,
+        act ? V("customer_total_cost", fmt$(act.total)) : `${V("returned_loads", P.retLoads.toLocaleString())}`,
         "#ff5b52",
-        act ? `of this ${execGrainName(P.grain)}'s waste sits with one customer \u2014 <strong>${act.name}</strong>. Concentrated waste is recoverable waste: it's an account conversation, not a fleet problem.` : `loads refused at the gate \u2014 ${fmt$(P.retCost)} of material and trips.`,
+        act ? `of this ${V("grain", execGrainName(P.grain))}'s waste sits with one customer \u2014 <strong>${V("customer_name", act.name)}</strong>. Concentrated waste is recoverable waste: it's an account conversation, not a fleet problem.` : `loads refused at the gate \u2014 ${V("returns_cost", fmt$(P.retCost))} of material and trips.`,
         [
-          act ? ["Their loads back", `${act.retLoads} \u00b7 ${fmt$(act.retCost)}`] : null,
-          act ? ["Trucks held on their sites", fmt$(act.timeCost)] : null,
-          last && prev ? [`Returns, ${last.short} vs ${prev.short}`, `${last.retLoads > prev.retLoads ? "\u25b2" : "\u25bc"} ${Math.abs(last.retLoads - prev.retLoads).toLocaleString()} loads`] : null,
+          act ? ["Their loads back", `${V("customer_returned_loads", act.retLoads)} \u00b7 ${V("customer_returns_cost", fmt$(act.retCost))}`] : null,
+          act ? ["Trucks held on their sites", V("customer_held_cost", fmt$(act.timeCost))] : null,
+          last && prev ? [`Returns, ${V("last_period", last.short)} vs ${V("prev_period", prev.short)}`, `${last.retLoads > prev.retLoads ? "\u25b2" : "\u25bc"} ${V("returned_loads_delta", Math.abs(last.retLoads - prev.retLoads).toLocaleString())} loads`] : null,
         ].filter(Boolean),
-        act ? `The ${act.name} account manager \u2014 pour-readiness confirmed before batching. Protects the margin and the relationship.` : `Account managers on the top return accounts.`,
+        act ? `The ${V("customer_name", act.name)} account manager \u2014 pour-readiness confirmed before batching. Protects the margin and the relationship.` : `Account managers on the top return accounts.`,
         "Open the customer story",
         "openRoleDrawer('sales')");
 
@@ -3908,9 +3928,9 @@
             <div style="grid-column:1 / span 2;border:1px solid rgba(48,105,227,0.35);background:rgba(48,105,227,0.07);border-radius:12px;padding:13px 16px;display:flex;align-items:center;gap:14px;">
               <div style="flex:1;min-width:0;">
                 <div style="font-size:13px;font-weight:700;color:var(--dw-hi);">Quality and Operations share this one</div>
-                <div style="font-size:12px;color:var(--dw-body);line-height:1.5;margin-top:3px;">Quality names what's missing at ${wp[0]} \u2014 the mixes and the loads. The crews, trucks, and drivers who close it report to Operations. One drill, one set of facts, so both walk in with the same page \u2014 nobody's audit, everybody's win: if ${wp[0]} runs at the company average, the cost curve bends.</div>
+                <div style="font-size:12px;color:var(--dw-body);line-height:1.5;margin-top:3px;">Quality names what's missing at ${V("worst_plant_id", wp[0])} \u2014 the mixes and the loads. The crews, trucks, and drivers who close it report to Operations. One drill, one set of facts, so both walk in with the same page \u2014 nobody's audit, everybody's win: if ${V("worst_plant_id", wp[0])} runs at the company average, the cost curve bends.</div>
               </div>
-              <button class="dbw-see-btn" style="flex-shrink:0;margin:0;" onclick="openExecDrawer(${Math.max(wpIdx, 0)})">Open ${wp[0]} together \u2192</button>
+              <button class="dbw-see-btn" style="flex-shrink:0;margin:0;" onclick="openExecDrawer(${Math.max(wpIdx, 0)})">Open ${V("worst_plant_id", wp[0])} together \u2192</button>
             </div>` : "";
 
       el.innerHTML = execValueCardsHTML(P, curId, false) + `
@@ -3961,23 +3981,23 @@
 
       if (role === "qc") {
         return brand(
-          `${S.avgAcc}% of measured loads finished fully on target \u2014 the plant gap is the lever`,
-          `${S.label}: Verifi measured <strong style="color:var(--dw-hi);">${S.measured.toLocaleString()}</strong> of ${S.loads.toLocaleString()} loads at discharge. ${bp && wp ? `Best plant ${bp[0]} runs <strong style="color:#25c07a;">${bp[1]}%</strong>; worst plant ${wp[0]} runs <strong style="color:#ff5b52;">${wp[1]}%</strong>.` : ""} Every finding below is tagged by owner \u2014 <strong style="color:#3069e3;">quality issues</strong> are yours, <strong style="color:#ffba0d;">operations issues</strong> are theirs, <strong style="color:#25c07a;">shared</strong> always means the two of you together \u2014 anything the evidence can't assign to Quality or Operations carries no tag at all.`
+          `${V("on_target_pct", S.avgAcc)}% of measured loads finished fully on target \u2014 the plant gap is the lever`,
+          `${V("period_label", S.label)}: Verifi measured <strong style="color:var(--dw-hi);">${V("measured_loads", S.measured.toLocaleString())}</strong> of ${V("total_loads", S.loads.toLocaleString())} loads at discharge. ${bp && wp ? `Best plant ${V("best_plant_id", bp[0])} runs <strong style="color:#25c07a;">${V("best_plant_pct", bp[1])}%</strong>; worst plant ${V("worst_plant_id", wp[0])} runs <strong style="color:#ff5b52;">${V("worst_plant_pct", wp[1])}%</strong>.` : ""} Every finding below is tagged by owner \u2014 <strong style="color:#3069e3;">quality issues</strong> are yours, <strong style="color:#ffba0d;">operations issues</strong> are theirs, <strong style="color:#25c07a;">shared</strong> always means the two of you together \u2014 anything the evidence can't assign to Quality or Operations carries no tag at all.`
         ) + grid4([
-          execStatCard("On target at discharge", `${S.avgAcc}%`, S.avgAcc >= 35 ? "#25c07a" : S.avgAcc >= 25 ? "#ffba0d" : "#ff5b52", `of ${S.measured.toLocaleString()} measured loads \u2014 slump and water, every load`),
-          execStatCard("Saved in transit", S.corrected.toLocaleString(), "#25c07a", `left off target, arrived in spec \u2014 ${S.correctedVol.toLocaleString()} yd\u00b3 Verifi corrected on the road`),
-          bp ? execStatCard("Best plant", `${bp[1]}%`, "#25c07a", `${bp[0]} \u2014 proof the targets are hittable with today's mixes`) : "",
-          wp ? execStatCard("Worst plant", `${wp[1]}%`, "#ff5b52", `${wp[0]} \u2014 the gap to the average is the opportunity`) : "",
-        ]) + monthRow(`On-target rate \u2014 ${childG} by ${childG}`, p => tdc(`${p.avgAcc}%`, p.avgAcc >= 35 ? "#25c07a" : p.avgAcc >= 25 ? "#ffba0d" : "#ff5b52"))
+          execStatCard("On target at discharge", `${V("on_target_pct", S.avgAcc)}%`, S.avgAcc >= 35 ? "#25c07a" : S.avgAcc >= 25 ? "#ffba0d" : "#ff5b52", `of ${V("measured_loads", S.measured.toLocaleString())} measured loads \u2014 slump and water, every load`),
+          execStatCard("Saved in transit", V("corrected_loads", S.corrected.toLocaleString()), "#25c07a", `left off target, arrived in spec \u2014 ${V("corrected_vol_yd3", S.correctedVol.toLocaleString())} yd\u00b3 Verifi corrected on the road`),
+          bp ? execStatCard("Best plant", `${V("best_plant_pct", bp[1])}%`, "#25c07a", `${V("best_plant_id", bp[0])} \u2014 proof the targets are hittable with today's mixes`) : "",
+          wp ? execStatCard("Worst plant", `${V("worst_plant_pct", wp[1])}%`, "#ff5b52", `${V("worst_plant_id", wp[0])} \u2014 the gap to the average is the opportunity`) : "",
+        ]) + monthRow(`On-target rate \u2014 ${childG} by ${childG}`, p => tdc(`${V("child_on_target_pct", p.avgAcc)}%`, p.avgAcc >= 35 ? "#25c07a" : p.avgAcc >= 25 ? "#ffba0d" : "#ff5b52"))
         + leanHead
-        + (wp ? execLeanCard(1, wp[0], "quality", `worst plant \u2014 ${wp[1]}% on target vs ${S.avgAcc}% company average`,
+        + (wp ? execLeanCard(1, V("worst_plant_id", wp[0]), "quality", `worst plant \u2014 ${V("worst_plant_pct", wp[1])}% on target vs ${V("on_target_pct", S.avgAcc)}% company average`,
             `Highest-leverage single site \u2014 if it ran at the company average, the cost curve bends.`,
-            `${wp[0]}'s QC lead. Ask which mixes miss at discharge \u2014 the drill names them, down to the load.`,
+            `${V("worst_plant_id", wp[0])}'s QC lead. Ask which mixes miss at discharge \u2014 the drill names them, down to the load.`,
             (wpIdx >= 0 ? `<div style="margin-top:8px;"><button class="kpi-linklike" style="padding-left:0;" onclick="openExecDrawer(${wpIdx})">Open ${wp[0]} \u2014 worst mixes, trucks, drivers \u2192</button></div>` : "")
             + execSharedInset(`Any fix here runs through crews who report to Operations \u2014 one shared review of this drill with the Head of Ops before either side talks to them, with your quality fixes already claimed.`, true)) : "")
-        + (wMix ? execLeanCard(2, `Mix ${wMix.mix}`,
+        + (wMix ? execLeanCard(2, `Mix ${V("mix_id", wMix.mix)}`,
             execMixCause(wMix) === "practice" ? "ops" : "quality",
-            `${wMix.acc}% on target across ${wMix.n.toLocaleString()} loads at ${wp[0]}`,
+            `${V("mix_on_target_pct", wMix.acc)}% on target across ${V("mix_loads", wMix.n.toLocaleString())} loads at ${V("worst_plant_id", wp[0])}`,
             execMixCause(wMix) === "practice"
               ? `On target on average but still missing loads \u2014 the design holds; the consistency around it doesn't. This one is Operations' to run; your part is the evidence, already attached.`
               : `A systematic slump or water bias, whoever hauls it \u2014 the design is the question, not the drivers. This one is homework you assign yourself, on the same page that hands work to Operations.`,
@@ -3991,16 +4011,16 @@
 
       if (role === "ops") {
         return brand(
-          `${fmt$(S.lostCost)} of held-truck time \u2014 the meter runs on site, not in the plant`,
-          `${S.label}: trucks waiting to discharge cost <strong style="color:var(--dw-hi);">${fmt$(S.lostCost)}</strong> at $120/truck-hour, and ${S.retLoads.toLocaleString()} refused loads were hauled both ways for nothing. Every finding below is tagged by owner \u2014 <strong style="color:#3069e3;">quality issues</strong> come off your plate, and you own only the <strong style="color:#ffba0d;">operations issues</strong> the evidence proves. Accountable for what's yours, not everything by default.`
+          `${V("held_truck_cost", fmt$(S.lostCost))} of held-truck time \u2014 the meter runs on site, not in the plant`,
+          `${V("period_label", S.label)}: trucks waiting to discharge cost <strong style="color:var(--dw-hi);">${V("held_truck_cost", fmt$(S.lostCost))}</strong> at $${V("truck_hour_rate", "120")}/truck-hour, and ${V("returned_loads", S.retLoads.toLocaleString())} refused loads were hauled both ways for nothing. Every finding below is tagged by owner \u2014 <strong style="color:#3069e3;">quality issues</strong> come off your plate, and you own only the <strong style="color:#ffba0d;">operations issues</strong> the evidence proves. Accountable for what's yours, not everything by default.`
         ) + grid4([
-          execStatCard("Held-truck time", fmt$(S.lostCost), "#eb6834", `trucks waiting to discharge \u2014 the largest slice of the ${grainName}'s waste`),
-          execStatCard("Hauled back empty", S.retLoads.toLocaleString(), "#ff5b52", `refused loads \u2014 trucks and drivers spent, zero value delivered`),
-          act ? execStatCard("Costliest site", fmt$(act.timeCost), "#eb6834", `${act.name} \u2014 held-truck time on their sites alone`) : "",
-          last && prev ? execStatCard(`${last.short} vs ${prev.short}`, `${last.lostCost > prev.lostCost ? "\u25b2 +" : "\u25bc \u2212"}${fmt$(Math.abs(last.lostCost - prev.lostCost))}`, last.lostCost > prev.lostCost ? "#ff5b52" : "#25c07a", `held-truck cost, ${childG} over ${childG} \u2014 the direction to manage`) : "",
-        ]) + monthRow(`Held-truck cost \u2014 ${childG} by ${childG}`, p => tdc(fmt$(p.lostCost), last && p.lostCost === Math.max(...kids.map(k => k.lostCost)) ? "#ff5b52" : "var(--dw-strong)"))
+          execStatCard("Held-truck time", V("held_truck_cost", fmt$(S.lostCost)), "#eb6834", `trucks waiting to discharge \u2014 the largest slice of the ${grainName}'s waste`),
+          execStatCard("Hauled back empty", V("returned_loads", S.retLoads.toLocaleString()), "#ff5b52", `refused loads \u2014 trucks and drivers spent, zero value delivered`),
+          act ? execStatCard("Costliest site", V("customer_held_cost", fmt$(act.timeCost)), "#eb6834", `${V("customer_name", act.name)} \u2014 held-truck time on their sites alone`) : "",
+          last && prev ? execStatCard(`${V("last_period", last.short)} vs ${V("prev_period", prev.short)}`, `${last.lostCost > prev.lostCost ? "\u25b2 +" : "\u25bc \u2212"}${V("held_cost_delta", fmt$(Math.abs(last.lostCost - prev.lostCost)))}`, last.lostCost > prev.lostCost ? "#ff5b52" : "#25c07a", `held-truck cost, ${childG} over ${childG} \u2014 the direction to manage`) : "",
+        ]) + monthRow(`Held-truck cost \u2014 ${childG} by ${childG}`, p => tdc(V("child_held_truck_cost", fmt$(p.lostCost)), last && p.lostCost === Math.max(...kids.map(k => k.lostCost)) ? "#ff5b52" : "var(--dw-strong)"))
         + leanHead
-        + (act ? execLeanCard(1, act.name, "ops", `trucks held on site \u2014 ${fmt$(act.timeCost)} of held-truck time \u00b7 ${act.retLoads} loads back`,
+        + (act ? execLeanCard(1, V("customer_name", act.name), "ops", `trucks held on site \u2014 ${V("customer_held_cost", fmt$(act.timeCost))} of held-truck time \u00b7 ${V("customer_returned_loads", act.retLoads)} loads back`,
             `The money is trucks waiting on their sites \u2014 unload readiness and truck spacing, not batching.`,
             `Your dispatch lead. Ask their site supers what a truck waits on after it arrives \u2014 then set spacing to match.`) : "")
         + (wp ? (() => {
@@ -4008,8 +4028,8 @@
             const nDesign = causes.filter(c => c === "design").length;
             const nPractice = causes.filter(c => c === "practice").length;
             const noneYours = causes.length > 0 && nPractice === 0;
-            return execLeanCard(2, wp[0], noneYours ? "quality" : nDesign === 0 ? "ops" : "shared",
-              `worst plant \u2014 ${wp[1]}% on target \u00b7 ${nDesign} of ${causes.length} problem ${causes.length === 1 ? "mix tags" : "mixes tag"} quality, ${nPractice} tag operations`,
+            return execLeanCard(2, V("worst_plant_id", wp[0]), noneYours ? "quality" : nDesign === 0 ? "ops" : "shared",
+              `worst plant \u2014 ${V("worst_plant_pct", wp[1])}% on target \u00b7 ${V("quality_tagged_count", nDesign)} of ${V("problem_mix_count", causes.length)} problem ${causes.length === 1 ? "mix tags" : "mixes tag"} quality, ${V("ops_tagged_count", nPractice)} tag operations`,
               noneYours
                 ? `Every problem mix here tags as a quality issue \u2014 nothing at this plant lands on your crews. The tags are your receipt: only what's provably yours is yours, and this ${execGrainName(execCur().grain)} that's none of it.`
                 : `The quality-tagged misses come off your plate before this conversation starts. What's left arrives cheap: specific trucks, specific mixes, after the design was ruled out \u2014 a coaching conversation, not a defense of your plant.`,
@@ -4025,20 +4045,20 @@
 
       // sales
       return brand(
-        act ? `${fmt$(act.total)} of the ${grainName}'s waste sits with one customer` : `${S.retLoads.toLocaleString()} loads refused at the gate`,
-        `${S.label}: ${act ? `<strong style="color:var(--dw-hi);">${act.name}</strong> accounts for <strong style="color:var(--dw-hi);">${fmt$(act.total)}</strong> of waste across ${act.loads.toLocaleString()} loads \u2014 and concentrated waste is recoverable waste: it's an account conversation, not a fleet problem.` : ""} Every refused load is also a customer standing at a pour that didn't go to plan. The numbers below say where the money sits; the list under them says who to talk to.`
+        act ? `${V("customer_total_cost", fmt$(act.total))} of the ${grainName}'s waste sits with one customer` : `${V("returned_loads", S.retLoads.toLocaleString())} loads refused at the gate`,
+        `${V("period_label", S.label)}: ${act ? `<strong style="color:var(--dw-hi);">${V("customer_name", act.name)}</strong> accounts for <strong style="color:var(--dw-hi);">${V("customer_total_cost", fmt$(act.total))}</strong> of waste across ${V("customer_loads", act.loads.toLocaleString())} loads \u2014 and concentrated waste is recoverable waste: it's an account conversation, not a fleet problem.` : ""} Every refused load is also a customer standing at a pour that didn't go to plan. The numbers below say where the money sits; the list under them says who to talk to.`
       ) + grid4([
-        act ? execStatCard("Costliest customer", fmt$(act.total), "#ff5b52", `${act.name} \u2014 held-truck time plus returns, one account`) : "",
-        act ? execStatCard("Their loads back", `${act.retLoads}`, "#ff5b52", `${fmt$(act.retCost)} of refused concrete on this account alone`) : "",
-        execStatCard("All returns", S.retLoads.toLocaleString(), "#eb6834", `${fmt$(S.retCost)} across every account \u2014 each one a customer conversation`),
-        last && prev ? execStatCard(`Returns, ${last.short} vs ${prev.short}`, `${last.retLoads > prev.retLoads ? "\u25b2 +" : "\u25bc \u2212"}${Math.abs(last.retLoads - prev.retLoads).toLocaleString()}`, last.retLoads > prev.retLoads ? "#ff5b52" : "#25c07a", `refused loads, ${childG} over ${childG} \u2014 get ahead of it before invoices become disputes`) : "",
-      ]) + monthRow(`Returned loads \u2014 ${childG} by ${childG}`, p => tdc(p.retLoads.toLocaleString(), last && p.retLoads === Math.max(...kids.map(k => k.retLoads)) ? "#ff5b52" : "var(--dw-strong)"))
+        act ? execStatCard("Costliest customer", V("customer_total_cost", fmt$(act.total)), "#ff5b52", `${V("customer_name", act.name)} \u2014 held-truck time plus returns, one account`) : "",
+        act ? execStatCard("Their loads back", `${V("customer_returned_loads", act.retLoads)}`, "#ff5b52", `${V("customer_returns_cost", fmt$(act.retCost))} of refused concrete on this account alone`) : "",
+        execStatCard("All returns", V("returned_loads", S.retLoads.toLocaleString()), "#eb6834", `${V("returns_cost", fmt$(S.retCost))} across every account \u2014 each one a customer conversation`),
+        last && prev ? execStatCard(`Returns, ${V("last_period", last.short)} vs ${V("prev_period", prev.short)}`, `${last.retLoads > prev.retLoads ? "\u25b2 +" : "\u25bc \u2212"}${V("returned_loads_delta", Math.abs(last.retLoads - prev.retLoads).toLocaleString())}`, last.retLoads > prev.retLoads ? "#ff5b52" : "#25c07a", `refused loads, ${childG} over ${childG} \u2014 get ahead of it before invoices become disputes`) : "",
+      ]) + monthRow(`Returned loads \u2014 ${childG} by ${childG}`, p => tdc(V("child_returned_loads", p.retLoads.toLocaleString()), last && p.retLoads === Math.max(...kids.map(k => k.retLoads)) ? "#ff5b52" : "var(--dw-strong)"))
       + leanHead
-      + (act ? execLeanCard(1, act.name, null, `costliest customer \u2014 ${fmt$(act.total)} total \u00b7 ${act.retLoads} loads back (${fmt$(act.retCost)})`,
+      + (act ? execLeanCard(1, V("customer_name", act.name), null, `costliest customer \u2014 ${V("customer_total_cost", fmt$(act.total))} total \u00b7 ${V("customer_returned_loads", act.retLoads)} loads back (${V("customer_returns_cost", fmt$(act.retCost))})`,
           `One account, a measurable slice of the ${grainName}'s waste \u2014 and the fix protects the relationship as much as the margin.`,
-          `The ${act.name} account manager. Pour-readiness confirmed before batching their orders \u2014 framed as protecting their schedule, not policing it.`,
+          `The ${V("customer_name", act.name)} account manager. Pour-readiness confirmed before batching their orders \u2014 framed as protecting their schedule, not policing it.`,
           execSharedInset(`Agree the readiness rule with the Head of Operations before the account call \u2014 the promise only sticks if dispatch runs it on every order.`, false)) : "")
-      + (last && prev && last.retLoads > prev.retLoads ? execLeanCard(2, `${last.label}`, null, `returns rising \u2014 ${last.retLoads.toLocaleString()} refused loads vs ${prev.retLoads.toLocaleString()} in ${prev.short}`,
+      + (last && prev && last.retLoads > prev.retLoads ? execLeanCard(2, `${V("last_period_label", last.label)}`, null, `returns rising \u2014 ${V("last_returned_loads", last.retLoads.toLocaleString())} refused loads vs ${V("prev_returned_loads", prev.retLoads.toLocaleString())} in ${V("prev_period", prev.short)}`,
           `A rising return count reaches customers before it reaches this dashboard \u2014 account managers should hear it from you first.`,
           `Your account managers on the top return accounts \u2014 a readiness call before the next pour beats a credit memo after it.`) : "")
 
@@ -4089,7 +4109,7 @@
     function execLeanCard(num, name, owner, stat, why, talk, extra) {
       const o = owner ? EXEC_OWNERS[owner] : null;
       const a = o ? o.c : "var(--dw-bd)";
-      const chip = o ? `<span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.05em;color:${o.c};border:1px solid ${o.bd};border-radius:4px;padding:1px 6px;white-space:nowrap;">${o.label}</span>` : "";
+      const chip = o ? `<span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.05em;color:${o.c};border:1px solid ${o.bd};border-radius:4px;padding:1px 6px;white-space:nowrap;">${SPEC_MODE ? "{owner_tag}" : o.label}</span>` : "";
       return `
             <div style="border:1px solid var(--dw-bd);border-left:3px solid ${a};background:var(--dw-card);border-radius:10px;padding:12px 14px;margin-bottom:10px;">
               <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:13px;">
@@ -4121,9 +4141,12 @@
 
     // Shared stat card for drawer "in four numbers" rows.
     function execStatCard(label, valueHTML, color, cap) {
+      const vStyle = SPEC_MODE
+        ? "font-size:12px;font-weight:700;line-height:1.4;word-break:break-word;"
+        : "font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;";
       return `<div style="border:1px solid var(--dw-bd);background:var(--dw-card);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:5px;">
               <div style="font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dw-mut);">${label}</div>
-              <div style="font-size:18px;font-weight:800;color:${color};font-variant-numeric:tabular-nums;white-space:nowrap;">${valueHTML}</div>
+              <div style="${vStyle}color:${color};">${valueHTML}</div>
               <div style="font-size:11.5px;color:var(--dw-mut);line-height:1.4;">${cap}</div>
             </div>`;
     }
@@ -4131,35 +4154,35 @@
     // Shared: the three value cards used by Dashboard v3 and v4.
     function execValueCardsHTML(P, curId, withButtons = true) {
       const seeBtn = withButtons ? `<button class="dbw-see-btn" onclick="openExecDrawer()">See the breakdown \u2192</button>` : "";
-      const benchLine = P.gapDollars != null ? `<div class="dbw-bench">Top ${P.pctCheaper}% of Verifi accounts by cost</div>` : "";
+      const benchLine = P.gapDollars != null ? `<div class="dbw-bench">Top ${V("pct_cheaper", P.pctCheaper)}% of Verifi accounts by cost</div>` : "";
       const prior = execPriorSibling(curId);
       const ppyDelta = P.priorPpy != null ? P.ppy - P.priorPpy : null;
       const ppyLine = ppyDelta == null ? "" :
-        `<div class="dbw-trend ${ppyDelta > 0.02 ? "down" : "up"}">${ppyDelta > 0 ? "\u25b2 +" : "\u25bc \u2212"}$${Math.abs(ppyDelta).toFixed(2)}/yd\u00b3 vs ${P.prior}</div>`;
-      const corrLine = prior ? `<div class="dbw-trend ${P.corrected >= prior.corrected ? "up" : "down"}">${P.corrected >= prior.corrected ? "\u25b2 +" : "\u25bc \u2212"}${Math.abs(P.corrected - prior.corrected).toLocaleString()} vs ${prior.short}</div>` : "";
-      const retLine = prior ? `<div class="dbw-trend ${P.retLoads <= prior.retLoads ? "up" : "down"}">${P.retLoads > prior.retLoads ? "\u25b2 +" : "\u25bc \u2212"}${Math.abs(P.retLoads - prior.retLoads).toLocaleString()} vs ${prior.short}</div>` : "";
+        `<div class="dbw-trend ${ppyDelta > 0.02 ? "down" : "up"}">${ppyDelta > 0 ? "\u25b2 +" : "\u25bc \u2212"}$${V("waste_per_yd3_delta", Math.abs(ppyDelta).toFixed(2))}/yd\u00b3 vs ${V("prior_period", P.prior)}</div>`;
+      const corrLine = prior ? `<div class="dbw-trend ${P.corrected >= prior.corrected ? "up" : "down"}">${P.corrected >= prior.corrected ? "\u25b2 +" : "\u25bc \u2212"}${V("corrected_delta", Math.abs(P.corrected - prior.corrected).toLocaleString())} vs ${V("prior_period_short", prior.short)}</div>` : "";
+      const retLine = prior ? `<div class="dbw-trend ${P.retLoads <= prior.retLoads ? "up" : "down"}">${P.retLoads > prior.retLoads ? "\u25b2 +" : "\u25bc \u2212"}${V("returned_loads_delta", Math.abs(P.retLoads - prior.retLoads).toLocaleString())} vs ${V("prior_period_short", prior.short)}</div>` : "";
       return `
-          <div class="dbw-section">${P.label} \u00b7 The value Verifi delivered</div>
+          <div class="dbw-section">${V("period_label", P.label)} \u00b7 The value Verifi delivered</div>
           <div class="dbw-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));">
             <div class="dbw-card">
               <div class="dbw-q">Cheaper than most Verifi accounts</div>
-              <div class="dbw-money-big" style="color:#25c07a;">${P.gapDollars != null ? fmt$(P.gapDollars) : "\u2014"}</div>
-              <div class="dbw-cap">You ran at <strong>$${P.ppy.toFixed(2)}/yd\u00b3</strong> of waste vs the <strong>$${P.medPpy.toFixed(2)}</strong> median Verifi account \u2014 on ${P.volume.toLocaleString()} yd\u00b3 delivered.</div>
+              <div class="dbw-money-big" style="color:#25c07a;">${P.gapDollars != null ? V("benchmark_gap_dollars", fmt$(P.gapDollars)) : "\u2014"}</div>
+              <div class="dbw-cap">You ran at <strong>$${V("waste_per_yd3", P.ppy.toFixed(2))}/yd\u00b3</strong> of waste vs the <strong>$${V("benchmark_median_per_yd3", P.medPpy.toFixed(2))}</strong> median Verifi account \u2014 on ${V("volume_yd3", P.volume.toLocaleString())} yd\u00b3 delivered.</div>
               ${benchLine}
               ${ppyLine}
               ${seeBtn}
             </div>
             <div class="dbw-card">
               <div class="dbw-q">Loads saved on the road</div>
-              <div class="dbw-big ok">${P.corrected.toLocaleString()}</div>
-              <div class="dbw-cap">of ${P.measured.toLocaleString()} measured loads left a plant off target and <strong>arrived in spec</strong> because Verifi managed the correction in transit \u2014 ${P.correctedVol.toLocaleString()} yd\u00b3 of concrete.</div>
+              <div class="dbw-big ok">${V("corrected_loads", P.corrected.toLocaleString())}</div>
+              <div class="dbw-cap">of ${V("measured_loads", P.measured.toLocaleString())} measured loads left a plant off target and <strong>arrived in spec</strong> because Verifi managed the correction in transit \u2014 ${V("corrected_vol_yd3", P.correctedVol.toLocaleString())} yd\u00b3 of concrete.</div>
               ${corrLine}
               ${seeBtn}
             </div>
             <div class="dbw-card">
               <div class="dbw-q">Concrete that came back</div>
-              <div class="dbw-big bad">${P.retLoads.toLocaleString()}</div>
-              <div class="dbw-cap">loads batched, hauled, and refused \u2014 <strong>${fmt$(P.retCost)}</strong> of material and trips that delivered nothing.</div>
+              <div class="dbw-big bad">${V("returned_loads", P.retLoads.toLocaleString())}</div>
+              <div class="dbw-cap">loads batched, hauled, and refused \u2014 <strong>${V("returns_cost", fmt$(P.retCost))}</strong> of material and trips that delivered nothing.</div>
               ${retLine}
               ${seeBtn}
             </div>

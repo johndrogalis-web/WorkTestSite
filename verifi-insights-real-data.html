@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=1920" />
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
   <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
-  <title>Verifi — Insights</title>
+  <title>Verifi — Insights · Executive (v3 / v4 / v5)</title>
 
   <!-- Fonts: Inter for everything per the Figma spec -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -327,6 +327,17 @@
       flex: 1 1 auto;
       min-height: 0;
       overflow: visible;
+    }
+    /* The dashboard surface now runs past the fold (chart section under the
+       desk board), and .main clips overflow — so this view scrolls itself.
+       Negative margins keep the gutters while letting the scrollbar sit at
+       the window edge, same trick as #ticket-view. */
+    #dashboard-view {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      margin: -32px -40px -24px;
+      padding: 32px 40px 48px;
     }
 
     /* Tabs row */
@@ -1617,6 +1628,25 @@
     .vi-drawer { --dw-hi:#fff; --dw-strong:rgba(229,229,229,0.9); --dw-body:rgba(229,229,229,0.72); --dw-mut:rgba(229,229,229,0.5); --dw-card:rgba(255,255,255,0.02); --dw-bd:rgba(255,255,255,0.08); }
     body:not(.dark) .vi-drawer { --dw-hi:#141414; --dw-strong:rgba(20,20,20,0.88); --dw-body:rgba(20,20,20,0.72); --dw-mut:rgba(20,20,20,0.5); --dw-card:rgba(0,0,0,0.02); --dw-bd:rgba(0,0,0,0.1); }
 
+    /* Owner chip \u2014 solid pill, mode-flipped like Trinity phase pills:
+       dark mode = light tint fill + near-black text; light mode = solid color + white text.
+       Outline-only chips were unreadable on the dark card. */
+    .exl-chip { display:inline-flex; align-items:center; flex-shrink:0; font-size:10px; font-weight:700;
+      letter-spacing:.05em; border-radius:32px; padding:3px 10px; white-space:nowrap; border:none; }
+    .exl-chip.q { background:#cfe0ff; color:#12305f; }
+    .exl-chip.o { background:#ffe7ab; color:#3d2c00; }
+    .exl-chip.s { background:#bdf0d8; color:#08361f; }
+    body:not(.dark) .exl-chip.q { background:#3069e3; color:#fff; }
+    body:not(.dark) .exl-chip.o { background:#ffba0d; color:#241900; }
+    body:not(.dark) .exl-chip.s { background:#25c07a; color:#fff; }
+
+    /* Secondary action \u2014 outline pill, Trinity's quiet default button. */
+    .exl-btn { font:inherit; font-size:12.5px; font-weight:600; color:var(--dw-hi);
+      background:transparent; border:1px solid rgba(48,105,227,0.55); border-radius:32px;
+      padding:8px 16px; cursor:pointer; white-space:normal; text-align:left; max-width:100%;
+      display:inline-block; line-height:1.4; transition:border-color .15s, background .15s; }
+    .exl-btn:hover { border-color:#3069e3; background:rgba(48,105,227,0.08); }
+
     .vi-drawer {
       position: fixed;
       top: 44px; right: 0; bottom: 0;
@@ -1905,6 +1935,41 @@
     body:not(.dark) .ep-row.good { background:rgba(37,192,122,0.1); }
     body:not(.dark) .ep-row.mid { background:rgba(0,0,0,0.04); }
     body:not(.dark) .ep-row.bad { background:rgba(255,59,48,0.08); }
+
+    /* --- Dashboard v5: connected desks — visible wires between the silos --- */
+    .va-item { border-radius:10px; padding:10px 12px; margin-top:8px; border:1px solid; }
+    body.dark .va-item { border-color:rgba(255,255,255,0.09); background:rgba(255,255,255,0.02); }
+    body:not(.dark) .va-item { border-color:rgba(0,0,0,0.1); background:rgba(0,0,0,0.015); }
+    .va-item .ah { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; font-size:12.5px; }
+    .va-item .ah strong { font-weight:700; }
+    .va-worth { margin-left:auto; font-size:12px; font-weight:800; color:#25c07a; font-variant-numeric:tabular-nums; white-space:nowrap; }
+    .va-item .aw { font-size:11.5px; color:var(--text-muted); line-height:1.45; margin-top:3px; }
+    .va-do { flex-shrink:0; font-size:9.5px; font-weight:700; letter-spacing:.06em; color:#fff; background:#3069e3; border-radius:4px; padding:2px 7px; white-space:nowrap; }
+    .vc5-board { position:relative; }
+    .vc5-wires { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; z-index:3; }
+    .vc5-wires .wgroup { opacity:0; transition:opacity .18s ease; pointer-events:none; }
+    .vc5-wires .wgroup.show { opacity:1; }
+    .vc5-wires .wgroup.show .wlab { pointer-events:auto; }
+    .vc5-wires path.wire { fill:none; stroke-width:2; }
+    .vc5-wires path.wire.buildable { stroke-dasharray:5 6; stroke-width:1.5; opacity:.55; }
+    .vc5-wires .wlab { pointer-events:auto; cursor:pointer; }
+    .vc5-wires .wlab rect { rx:10; }
+    .vc5-wires .wlab text { font-size:10.5px; font-weight:700; letter-spacing:.02em; }
+    .vc5-port { display:flex; justify-content:space-between; gap:10px; font-size:12px; align-items:center;
+      border-radius:6px; padding:4px 7px; margin:0 -7px; border:1px solid transparent; }
+    .vc5-port .pk { color:var(--text-muted); display:flex; align-items:center; gap:6px; }
+    .vc5-port .pv { font-weight:600; text-align:right; font-variant-numeric:tabular-nums; }
+    .vc5-port .pd { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .vc5-port.wired { cursor:pointer; }
+    body.dark .vc5-port.wired { background:rgba(48,105,227,0.08); border-color:rgba(48,105,227,0.35); }
+    body:not(.dark) .vc5-port.wired { background:rgba(48,105,227,0.06); border-color:rgba(48,105,227,0.35); }
+    .vc5-hint { font-size:10px; color:var(--text-muted); }
+    .vc5-port.va-glow { border-color:#3069e3 !important; box-shadow:0 0 0 2px rgba(48,105,227,0.35); }
+    .vc5-row { display:flex; flex-direction:column; gap:6px; }
+    .vc5-row .dbw-big { font-size:32px; margin-top:0; }
+    .vc5-threads { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+    .vc5-threads .va-item { margin-top:0; }
+    @media (max-width: 1500px) { .vc5-threads { grid-template-columns:1fr; } }
     #exec-scope-menu { position:fixed; z-index:6000; min-width:250px; border-radius:10px; padding:6px;
       background:#26241f; border:1px solid rgba(255,255,255,0.12); box-shadow:0 10px 34px rgba(0,0,0,0.5); }
     body:not(.dark) #exec-scope-menu { background:#fff; border-color:rgba(0,0,0,0.12); }
@@ -2246,7 +2311,7 @@
     </div>
 
     <div class="vp-right-cluster">
-      <button class="vp-opts-btn" id="spec-toggle" onclick="toggleSpecMode()" title="Show rule variables instead of values (Version 4 surfaces)" style="font-family:'DM Mono',ui-monospace,monospace;">{&thinsp;}&nbsp;Spec</button>
+      <button class="vp-opts-btn" id="spec-toggle" onclick="toggleSpecMode()" title="Show rule variables instead of values (Version 4 and 5 surfaces)" style="font-family:'DM Mono',ui-monospace,monospace;">{&thinsp;}&nbsp;Spec</button>
       <div class="vp-opts-wrap" id="vp-opts-wrap">
         <button class="vp-opts-btn" onclick="vpOptsToggle()">Options</button>
         <div class="vp-opts-dd" id="vp-opts-dd" onclick="event.stopPropagation()">
@@ -2270,20 +2335,16 @@
             <span class="vp-version-check">✓</span>
           </div>
           <div class="vp-opts-section-label" style="margin-top:8px;">Dashboard Version</div>
-          <div class="vp-opts-row vp-dash-opt" data-dash="1" onclick="setDashVersion(1)">
-            <span style="display:flex;align-items:center;gap:8px;flex:1;">Version 1 — narrated</span>
-            <span class="vp-version-check">✓</span>
-          </div>
-          <div class="vp-opts-row vp-dash-opt" data-dash="2" onclick="setDashVersion(2)">
-            <span style="display:flex;align-items:center;gap:8px;flex:1;">Version 2 — data-first</span>
-            <span class="vp-version-check">✓</span>
-          </div>
           <div class="vp-opts-row vp-dash-opt" data-dash="3" onclick="setDashVersion(3)">
             <span style="display:flex;align-items:center;gap:8px;flex:1;">Version 3 — executive</span>
             <span class="vp-version-check">✓</span>
           </div>
           <div class="vp-opts-row vp-dash-opt" data-dash="4" onclick="setDashVersion(4)">
             <span style="display:flex;align-items:center;gap:8px;flex:1;">Version 4 — executive 2</span>
+            <span class="vp-version-check">✓</span>
+          </div>
+          <div class="vp-opts-row vp-dash-opt" data-dash="5" onclick="setDashVersion(5)">
+            <span style="display:flex;align-items:center;gap:8px;flex:1;">Version 5 — connected desks</span>
             <span class="vp-version-check">✓</span>
           </div>
         </div>
@@ -2375,106 +2436,9 @@
         </div>
         <div class="db-note" id="db-note-scope">Same checks as the daily cards on Load Reports and Batch Assistant &mdash; slump vs the ticketed target, water vs each mix design's allowance &mdash; rolled up across the week. Every card opens into a detail drawer, same as the daily views.</div>
 
-        <div id="dash-v1">
+        
 
-        <div class="dbw-section">For your QC Manager &mdash; Batching</div>
-        <div class="dbw-card">
-          <div class="dbw-row" style="align-items:center;">
-            <div class="dbw-main" style="flex:1;">
-              <div class="dbw-q">Is concrete leaving our plants right?</div>
-              <div class="dbw-big warn">45%</div>
-              <div class="dbw-cap">of this week's loads left batching on target for slump <strong>and</strong> water &#183; 6,801 loads scored</div>
-            </div>
-            <div class="dbw-side">
-              <div class="dbw-bench">Top 30% of Verifi accounts</div>
-              <div class="dbw-trend up">&#9650; +5 pts vs the prior week</div>
-            </div>
-            <button class="dbw-see-btn" onclick="openWeeklyDrawer('batch')">See what's driving this &#8594;</button>
-          </div>
-        </div>
-
-        <div class="dbw-section">For your Operations Manager &mdash; Delivery &amp; cost</div>
-        <div class="dbw-grid2">
-          <div class="dbw-card">
-            <div class="dbw-q">Is quality holding through the pour?</div>
-            <div class="dbw-big bad">28%</div>
-            <div class="dbw-cap">of measurable loads finished discharge on target for slump <strong>and</strong> water</div>
-            <div class="dbw-phases">
-              <span class="ph"><span class="pl">Initial</span><span class="pv warn">45%</span></span><span class="arr">&#8594;</span>
-              <span class="ph"><span class="pl">Leave</span><span class="pv warn">35%</span></span><span class="arr">&#8594;</span>
-              <span class="ph"><span class="pl">Arrive</span><span class="pv ok">59%</span></span><span class="arr">&#8594;</span>
-              <span class="ph"><span class="pl">Discharge</span><span class="pv bad">28%</span></span>
-            </div>
-            <div class="dbw-bench">Bottom 42% of Verifi accounts</div>
-            <div class="dbw-trend up">&#9650; +2 pts vs the prior week</div>
-            <button class="dbw-see-btn" onclick="openWeeklyDrawer('delivery')">See what's driving this &#8594;</button>
-          </div>
-          <div class="dbw-card">
-            <div class="dbw-q">What is this costing us?</div>
-            <div class="dbw-money-big">$165,913</div>
-            <div class="dbw-cap"><strong>$118,414</strong> of truck time above a typical 38-minute stop, plus <strong>$47,499</strong> of returned concrete &mdash; 155 loads came back and produced nothing.</div>
-            <div class="dbw-bench">Top 43% of Verifi accounts by cost ($/yd&#179;)</div>
-            <div class="dbw-trend down">&#9650; +$23,360 vs the prior week</div>
-            <button class="dbw-see-btn" onclick="openWeeklyDrawer('cost')">See what's driving this &#8594;</button>
-          </div>
-        </div>
-
-        <div class="dbw-csm-band">
-          <div>
-            <div class="t1">Want the rest of this story?</div>
-            <div class="t2">The drawers tell you who to talk to and what to fix this week. Your Customer Success Manager owns the bigger picture &mdash; how these patterns move across months, what each fix is worth in dollars, and whether the process itself needs to change.</div>
-          </div>
-          <button class="go" onclick="alert('Prototype: this would open a request to your CSM with this week\u2019s summary attached.')">Talk to your CSM &#8594;</button>
-        </div>
-
-        </div><!-- /dash-v1 -->
-
-        <!-- Dashboard Version 2: data-first. Every string below is a fixed label or a
-             computed number/tag — nothing needs narrative generation, so it scales to
-             any account/week straight from the pipeline. -->
-        <div id="dash-v2" style="display:none;">
-          <div class="dbw-section">QC &#183; Batching</div>
-          <div class="dbw-card">
-            <div class="dbw-row" style="align-items:center;">
-              <div class="dbw-main" style="flex:1;">
-                <div class="dbw-q">Loads fully on target at batching</div>
-                <div class="dbw-big warn">45%</div>
-                <div class="dbw-cap">slump 71% &#183; water 61% &#183; 6,801 of 7,326 loads scored</div>
-              </div>
-              <div class="dbw-side">
-                <div class="dbw-bench">Top 30% of Verifi accounts</div>
-                <div class="dbw-trend up">&#9650; +5 pts vs prior week</div>
-              </div>
-              <button class="dbw-see-btn" onclick="openWeeklyDrawer('batch')">Details &#8594;</button>
-            </div>
-          </div>
-
-          <div class="dbw-section">Operations &#183; Delivery &amp; cost</div>
-          <div class="dbw-grid2">
-            <div class="dbw-card">
-              <div class="dbw-q">Loads fully on target at discharge</div>
-              <div class="dbw-big bad">28%</div>
-              <div class="dbw-cap">slump 64% &#183; water 37% &#183; 7,118 loads measured</div>
-              <div class="dbw-phases">
-                <span class="ph"><span class="pl">Initial</span><span class="pv warn">45%</span></span><span class="arr">&#8594;</span>
-                <span class="ph"><span class="pl">Leave</span><span class="pv warn">35%</span></span><span class="arr">&#8594;</span>
-                <span class="ph"><span class="pl">Arrive</span><span class="pv ok">59%</span></span><span class="arr">&#8594;</span>
-                <span class="ph"><span class="pl">Discharge</span><span class="pv bad">28%</span></span>
-              </div>
-              <div class="dbw-bench">Bottom 42% of Verifi accounts</div>
-              <div class="dbw-trend up">&#9650; +2 pts vs prior week</div>
-              <button class="dbw-see-btn" onclick="openWeeklyDrawer('delivery')">Details &#8594;</button>
-            </div>
-            <div class="dbw-card">
-              <div class="dbw-q">Modeled cost this week</div>
-              <div class="dbw-money-big">$165,913</div>
-              <div class="dbw-cap">lost time $118,414 &#183; returned concrete $47,499 &#183; 155 loads sent back</div>
-              <div class="dbw-bench">Top 43% of Verifi accounts by cost ($/yd&#179;)</div>
-              <div class="dbw-trend down">&#9650; +$23,360 vs prior week</div>
-              <button class="dbw-see-btn" onclick="openWeeklyDrawer('cost')">Details &#8594;</button>
-            </div>
-          </div>
-        </div><!-- /dash-v2 -->
+        
 
         <!-- Dashboard Version 3: executive. Value Verifi delivers + plant health,
              with a drill-down drawer: company -> plant -> mix -> truck/driver. -->
@@ -2485,7 +2449,13 @@
              status cards (QC / Operations / Sales) with a QC-Ops bridge. -->
         <div id="dash-v4" style="display:none;"></div><!-- /dash-v4 -->
 
-        <div class="dbw-foot">Benchmarks compare Verifi accounts with meaningful volume in the same period. Every number is built from loads Verifi measured automatically &mdash; slump and water on every load, no clipboards. Cost rates ($120/truck-hour, $25/yd&#179; returned) are editable assumptions, not invoices &mdash; your CSM can re-price them against your actuals.</div>
+        <!-- Dashboard Version 5: value chain. Built from the Adam Glod interview
+             (Aug 18, 2026): QC -> Batching -> Operations -> Sales left-to-right,
+             one live cascade traced across desks, forward-looking dollar levers
+             with explicit fix-owner vs credit-destination attribution. -->
+        <div id="dash-v5" style="display:none;"></div><!-- /dash-v5 -->
+
+
       </div>
 
       <div id="report-view">
@@ -3656,28 +3626,30 @@
       const dr = document.getElementById("vi-drawer");
       if (dr && dr.classList.contains("open")) renderExecDrawer();
     }
-    const DASH_KEY = "vi-dash-version-2"; // key bumped so the v4 default applies even where an older build stored a choice
-    let DASH_VERSION = "4";
-    try { DASH_VERSION = localStorage.getItem(DASH_KEY) || "4"; } catch {}
+    const DASH_KEY = "vi-dash-version-3"; // key bumped: this build ships v3/v4/v5 only, defaulting to the new value-chain view
+    let DASH_VERSION = "5";
+    try { DASH_VERSION = localStorage.getItem(DASH_KEY) || "5"; } catch {}
+    if (!["3","4","5"].includes(DASH_VERSION)) DASH_VERSION = "5";
     function applyDashVersion() {
-      const mounts = { "1": "dash-v1", "2": "dash-v2", "3": "dash-v3", "4": "dash-v4" };
+      const mounts = { "3": "dash-v3", "4": "dash-v4", "5": "dash-v5" };
       Object.entries(mounts).forEach(([v, id]) => {
         const el = document.getElementById(id);
         if (el) el.style.display = DASH_VERSION === v ? "" : "none";
       });
       if (DASH_VERSION === "3") renderExecSurface();
       if (DASH_VERSION === "4") renderExec2Surface();
+      if (DASH_VERSION === "5") renderExec5Surface();
       document.querySelectorAll(".vp-dash-opt").forEach(el =>
         el.classList.toggle("on", el.dataset.dash === DASH_VERSION));
       const chip = document.getElementById("db-chip-scope");
       const upd = document.getElementById("db-updated-scope");
       const note = document.getElementById("db-note-scope");
       if (chip && upd && note) {
-        if (DASH_VERSION === "3" || DASH_VERSION === "4") {
+        if (DASH_VERSION === "3" || DASH_VERSION === "4" || DASH_VERSION === "5") {
           const P = execCur();
           chip.innerHTML = EXEC_TPATH.map((id, i) =>
             i === EXEC_TPATH.length - 1
-              ? `<span style="font-weight:700;">${EXEC_PERIODS[id].short}</span>`
+              ? execCalHTML(id)
               : `<span style="cursor:pointer;color:#3069e3;text-decoration:underline;text-underline-offset:3px;" onclick="execNavTo(${i})">${EXEC_PERIODS[id].short}</span>`
           ).join('<span style="opacity:.5;margin:0 6px;">\u203a</span>') +
           `<span style="opacity:.55;margin-left:10px;font-weight:400;">${P.label}</span>`;
@@ -3822,6 +3794,104 @@
       execPersist(); renderExecSurface(); applyDashVersion();
     }
     function execPersist() { try { localStorage.setItem(EXEC_PATH_KEY, JSON.stringify(EXEC_TPATH)); } catch {} }
+    function execJumpTo(pid) { // period dropdown: jump anywhere in the tree
+      if (!EXEC_PERIODS[pid]) return;
+      const path = [pid];
+      let cur = pid, found = true;
+      while (cur !== "Q2" && found) {
+        found = false;
+        for (const parent in EXEC_TREE) {
+          if (EXEC_TREE[parent].includes(cur)) { path.unshift(parent); cur = parent; found = true; break; }
+        }
+      }
+      EXEC_TPATH = path;
+      execPersist(); renderExecSurface(); applyDashVersion();
+    }
+    function execPeriodOptionsHTML(curId) { // flattened tree, indented, for the chip dropdown
+      const pad = "\u00a0\u00a0\u00a0";
+      let out = "";
+      const walk = (id, depth) => {
+        const p = EXEC_PERIODS[id];
+        if (!p) return;
+        out += `<option value="${id}" ${id === curId ? "selected" : ""}>${pad.repeat(depth)}${p.label}</option>`;
+        (EXEC_TREE[id] || []).forEach(k => walk(k, depth + 1));
+      };
+      walk("Q2", 0);
+      return out;
+    }
+
+    // ---- Calendar period picker -----------------------------------------
+    // "Today" in this prototype = the latest day with data (Jun 30, 2026).
+    let EXEC_CAL_OPEN = false;
+    function execCalToggle(ev) {
+      if (ev) ev.stopPropagation();
+      EXEC_CAL_OPEN = !EXEC_CAL_OPEN;
+      const pop = document.getElementById("exec-cal-pop");
+      if (pop) pop.style.display = EXEC_CAL_OPEN ? "block" : "none";
+    }
+    document.addEventListener("click", (e) => {
+      if (!EXEC_CAL_OPEN) return;
+      const pop = document.getElementById("exec-cal-pop");
+      const btn = document.getElementById("exec-cal-btn");
+      if (pop && !pop.contains(e.target) && e.target !== btn && !(btn && btn.contains(e.target))) {
+        EXEC_CAL_OPEN = false; pop.style.display = "none";
+      }
+    });
+    function execCalPick(pid) {
+      EXEC_CAL_OPEN = false;
+      execJumpTo(pid);
+    }
+    function execWeekIdFor(dayId) { // containing week for a day id
+      for (const parent in EXEC_TREE) {
+        if (parent.startsWith("W") && EXEC_TREE[parent].includes(dayId)) return parent;
+      }
+      return null;
+    }
+    function execCalHTML(curId) {
+      const pad2 = n => String(n).padStart(2, "0");
+      const preset = (label, pid) => EXEC_PERIODS[pid]
+        ? `<button onclick="execCalPick('${pid}')" style="font:inherit;font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:999px;border:1px solid ${pid === curId ? "#3069e3" : "rgba(255,255,255,0.18)"};background:${pid === curId ? "rgba(48,105,227,0.18)" : "transparent"};color:inherit;cursor:pointer;">${label}</button>` : "";
+      // presets anchored to the latest data day
+      const todayId = "D2026-06-30";
+      const presets = preset("Today", todayId) + preset("This week", execWeekIdFor(todayId) || "") +
+        preset("This month", "2026-06") + preset("This quarter", "Q2");
+
+      let months = "";
+      [[2026, 4, "April"], [2026, 5, "May"], [2026, 6, "June"]].forEach(([yr, mo, name]) => {
+        const moId = `${yr}-${pad2(mo)}`;
+        const first = new Date(yr, mo - 1, 1);
+        const days = new Date(yr, mo, 0).getDate();
+        let cells = "";
+        for (let i = 0; i < first.getDay(); i++) cells += `<span></span>`;
+        for (let d = 1; d <= days; d++) {
+          const dayId = `D${yr}-${pad2(mo)}-${pad2(d)}`;
+          const has = !!EXEC_PERIODS[dayId];
+          cells += has
+            ? `<button onclick="execCalPick('${dayId}')" title="${EXEC_PERIODS[dayId].label}" style="font:inherit;font-size:11px;padding:3px 0;border:none;border-radius:6px;background:${dayId === curId ? "#3069e3" : "transparent"};color:${dayId === curId ? "#fff" : "inherit"};cursor:pointer;">${d}</button>`
+            : `<span style="font-size:11px;padding:3px 0;opacity:.25;text-align:center;">${d}</span>`;
+        }
+        // week shortcut buttons for this month's weeks
+        const weekBtns = (EXEC_TREE[moId] || []).map(wid =>
+          `<button onclick="execCalPick('${wid}')" style="font:inherit;font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:999px;border:1px solid ${wid === curId ? "#3069e3" : "rgba(255,255,255,0.14)"};background:${wid === curId ? "rgba(48,105,227,0.18)" : "transparent"};color:inherit;cursor:pointer;">${EXEC_PERIODS[wid].short}</button>`).join("");
+        months += `<div style="min-width:196px;">
+            <button onclick="execCalPick('${moId}')" title="View all of ${name}" style="font:inherit;font-size:12.5px;font-weight:700;border:none;background:${moId === curId ? "rgba(48,105,227,0.18)" : "transparent"};border-radius:6px;padding:3px 8px;color:${moId === curId ? "#6da2ff" : "inherit"};cursor:pointer;margin-bottom:4px;">${name} ${yr}</button>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center;">
+              ${["S","M","T","W","T","F","S"].map(w => `<span style="font-size:9.5px;opacity:.5;font-weight:700;">${w}</span>`).join("")}
+              ${cells}
+            </div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;">${weekBtns}</div>
+          </div>`;
+      });
+
+      return `<div style="position:relative;display:inline-block;">
+          <button id="exec-cal-btn" onclick="execCalToggle(event)" style="font:inherit;font-size:inherit;font-weight:700;background:transparent;color:inherit;border:1px solid rgba(255,255,255,0.18);border-radius:8px;padding:3px 10px;cursor:pointer;">${EXEC_PERIODS[curId].short} <span style="opacity:.6;font-weight:400;">\u25be</span></button>
+          <div id="exec-cal-pop" style="display:${EXEC_CAL_OPEN ? "block" : "none"};position:absolute;top:calc(100% + 8px);left:0;z-index:400;background:#201e1c;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.5);width:max-content;max-width:min(680px,90vw);" onclick="event.stopPropagation()">
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">${presets}</div>
+            <div style="display:flex;gap:18px;flex-wrap:wrap;">${months}</div>
+            <div style="font-size:10.5px;opacity:.5;margin-top:10px;">Click a day, a week chip, or a month name. Data runs Apr\u2013Jun 2026; \u201cToday\u201d is the latest day with data.</div>
+          </div>
+        </div>`;
+    }
     function execPriorSibling(curId) {
       for (const parent in EXEC_TREE) {
         const kids = EXEC_TREE[parent];
@@ -3890,7 +3960,7 @@
           wp ? ["Worst plant", `${V("worst_plant_id", wp[0])} \u00b7 ${V("worst_plant_pct", wp[1])}%`] : null,
           ["Saved in transit", `${V("corrected_loads", P.corrected.toLocaleString())} loads`],
         ].filter(Boolean),
-        wp ? `${V("worst_plant_id", wp[0])}'s QC lead \u2014 which mixes miss at discharge. The drill names them, down to the load.` : `The plant list \u2014 the drill names the mixes, down to the load.`,
+        wp ? `Your Head of Quality \u2014 which mixes are driving ${V("worst_plant_id", wp[0])}, design or crews. The drill names them, down to the load.` : `Your Head of Quality \u2014 the drill names the mixes, down to the load.`,
         "Open the quality story",
         "openRoleDrawer('qc')");
 
@@ -3899,13 +3969,13 @@
         opsPill,
         V("held_truck_cost", fmt$(P.lostCost)),
         "#eb6834",
-        `of held-truck time \u2014 trucks waiting to discharge. Priced at $${V("truck_hour_rate", "120")}/truck-hour; the meter runs on site, not in the plant.`,
+        `paid to trucks sitting at job sites, waiting to unload \u2014 at $${V("truck_hour_rate", "120")}/truck-hour. The waiting happens at the site, not the plant.`,
         [
           act ? ["Costliest site", `${V("customer_name", act.name)}`] : null,
           act ? ["Held there", V("customer_held_cost", fmt$(act.timeCost))] : null,
           last && prev ? [`${V("last_period", last.short)} vs ${V("prev_period", prev.short)}`, `${last.lostCost > prev.lostCost ? "\u25b2" : "\u25bc"} ${V("held_cost_delta", fmt$(Math.abs(last.lostCost - prev.lostCost)))}`] : null,
         ].filter(Boolean),
-        act ? `Dispatch lead \u2014 what a truck waits on after it arrives at ${V("customer_name", act.name)}. Spacing and unload readiness, not batching.` : `Dispatch lead \u2014 truck spacing and unload readiness.`,
+        act ? `Your Head of Operations \u2014 what a truck waits on after it arrives at ${V("customer_name", act.name)}. Spacing and readiness, not batching.` : `Your Head of Operations \u2014 truck spacing and unload readiness.`,
         "Open the operations story",
         "openRoleDrawer('ops')");
 
@@ -3920,7 +3990,7 @@
           act ? ["Trucks held on their sites", V("customer_held_cost", fmt$(act.timeCost))] : null,
           last && prev ? [`Returns, ${V("last_period", last.short)} vs ${V("prev_period", prev.short)}`, `${last.retLoads > prev.retLoads ? "\u25b2" : "\u25bc"} ${V("returned_loads_delta", Math.abs(last.retLoads - prev.retLoads).toLocaleString())} loads`] : null,
         ].filter(Boolean),
-        act ? `The ${V("customer_name", act.name)} account manager \u2014 pour-readiness confirmed before batching. Protects the margin and the relationship.` : `Account managers on the top return accounts.`,
+        act ? `Your Head of Sales \u2014 pour-readiness confirmed before batching ${V("customer_name", act.name)}'s orders. Protects the margin and the relationship.` : `Your Head of Sales \u2014 get ahead of the top return accounts.`,
         "Open the customer story",
         "openRoleDrawer('sales')");
 
@@ -3960,29 +4030,35 @@
       const grainName = execGrainName(S.grain);
       const childG = kids.length ? execGrainName(kids[0].grain) : "";
 
-      const monthRow = (label, cell) => kids.length < 2 ? "" : `
-          <div class="vi-section-label">${label}</div>
-          <table style="width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:14px;">
-            <thead><tr>${kids.map(p => `<th style="text-align:center;padding:6px 10px;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--dw-mut);border-bottom:1px solid var(--dw-bd);">${p.short}</th>`).join("")}</tr></thead>
-            <tbody><tr>${kids.map(cell).join("")}</tr></tbody>
-          </table>`;
+      // Removed per John's request (Aug 18): the period-by-period strip is out of
+      // the role drawers for now. Restore by reinstating the template below.
+      const monthRow = (label, cell) => "";
       const tdc = (txt, color) => `<td style="text-align:center;padding:9px 10px;font-weight:600;font-variant-numeric:tabular-nums;color:${color};">${txt}</td>`;
 
+      // Glanceable drawer header: facts as label/value pairs, not prose.
+      const fact = (k, vHTML, color) => `<span style="display:inline-flex;flex-direction:column;gap:1px;"><span style="font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dw-mut);">${k}</span><span style="font-size:15px;font-weight:800;color:${color || "var(--dw-hi)"};font-variant-numeric:tabular-nums;white-space:nowrap;">${vHTML}</span></span>`;
+      const facts = arr => `<div style="display:flex;gap:26px;flex-wrap:wrap;align-items:flex-end;margin-top:2px;">${arr.filter(Boolean).join("")}</div>`;
+      const tagLegend = pairs => `<div style="font-size:10.5px;color:var(--dw-mut);margin-top:9px;">Tags on the findings below: ${pairs.map(([c, w, m]) => `<strong style="color:${c};">${w}</strong> = ${m}`).join(" · ")}</div>`;
       const brand = (title, bodyHTML) => `
           <div class="vi-brandpanel">
             <div class="vb-brand" style="color:var(--dw-hi);">${VERIFI_LOGO_SVG}<span style="opacity:.35;margin:0 4px;">|</span><span style="color:#3069e3;display:flex;align-items:center;gap:6px;">${KPI_BRAND_SVG}Insights <span class="beta">Beta</span></span><span class="tagline">\u00b7 What your data is worth</span></div>
             <div class="vb-title">${title}</div>
             <div class="vb-body">${bodyHTML}</div>
           </div>`;
-      const grid4 = (cards) => `
-          <div class="vi-section-label">The ${grainName} in four numbers</div>
-          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px;align-items:stretch;">${cards.join("")}</div>`;
-      const leanHead = `<div style="font-size:14px;font-weight:700;color:var(--dw-hi);display:flex;align-items:center;gap:8px;margin-top:2px;margin-bottom:10px;">\u2691 Where to lean \u2014 the conversations to have</div>`;
+      // Removed per John's request (Aug 18): the "in four numbers" stat grid is out
+      // of the role drawers for now; the brand panel headline carries the numbers.
+      const grid4 = (cards) => "";
+      const leanHead = `<div style="font-size:14px;font-weight:700;color:var(--dw-hi);display:flex;align-items:center;gap:8px;margin-top:2px;margin-bottom:10px;">\u2691 Where to lean \u2014 who to call, what to ask</div>`;
 
       if (role === "qc") {
         return brand(
           `${V("on_target_pct", S.avgAcc)}% of measured loads finished fully on target \u2014 the plant gap is the lever`,
-          `${V("period_label", S.label)}: Verifi measured <strong style="color:var(--dw-hi);">${V("measured_loads", S.measured.toLocaleString())}</strong> of ${V("total_loads", S.loads.toLocaleString())} loads at discharge. ${bp && wp ? `Best plant ${V("best_plant_id", bp[0])} runs <strong style="color:#25c07a;">${V("best_plant_pct", bp[1])}%</strong>; worst plant ${V("worst_plant_id", wp[0])} runs <strong style="color:#ff5b52;">${V("worst_plant_pct", wp[1])}%</strong>.` : ""} Every finding below is tagged by owner \u2014 <strong style="color:#3069e3;">quality issues</strong> are yours, <strong style="color:#ffba0d;">operations issues</strong> are theirs, <strong style="color:#25c07a;">shared</strong> always means the two of you together \u2014 anything the evidence can't assign to Quality or Operations carries no tag at all.`
+          facts([
+            fact("Measured", `${V("measured_loads", S.measured.toLocaleString())} <span style="font-size:11px;font-weight:600;color:var(--dw-mut);">/ ${V("total_loads", S.loads.toLocaleString())}</span>`),
+            bp ? fact("Best plant", `${V("best_plant_id", bp[0])} · ${V("best_plant_pct", bp[1])}%`, "#25c07a") : null,
+            wp ? fact("Worst plant", `${V("worst_plant_id", wp[0])} · ${V("worst_plant_pct", wp[1])}%`, "#ff5b52") : null,
+            fact("Saved in transit", `${V("corrected_loads", S.corrected.toLocaleString())} loads`, "#25c07a"),
+          ]) + tagLegend([["#3069e3", "QUALITY", "Head of Quality's fix"], ["#ffba0d", "OPERATIONS", "Head of Operations' fix"], ["#25c07a", "SHARED", "bring both heads together"]])
         ) + grid4([
           execStatCard("On target at discharge", `${V("on_target_pct", S.avgAcc)}%`, S.avgAcc >= 35 ? "#25c07a" : S.avgAcc >= 25 ? "#ffba0d" : "#ff5b52", `of ${V("measured_loads", S.measured.toLocaleString())} measured loads \u2014 slump and water, every load`),
           execStatCard("Saved in transit", V("corrected_loads", S.corrected.toLocaleString()), "#25c07a", `left off target, arrived in spec \u2014 ${V("corrected_vol_yd3", S.correctedVol.toLocaleString())} yd\u00b3 Verifi corrected on the road`),
@@ -3990,54 +4066,72 @@
           wp ? execStatCard("Worst plant", `${V("worst_plant_pct", wp[1])}%`, "#ff5b52", `${V("worst_plant_id", wp[0])} \u2014 the gap to the average is the opportunity`) : "",
         ]) + monthRow(`On-target rate \u2014 ${childG} by ${childG}`, p => tdc(`${V("child_on_target_pct", p.avgAcc)}%`, p.avgAcc >= 35 ? "#25c07a" : p.avgAcc >= 25 ? "#ffba0d" : "#ff5b52"))
         + leanHead
-        + (wp ? execLeanCard(1, V("worst_plant_id", wp[0]), "quality", `worst plant \u2014 ${V("worst_plant_pct", wp[1])}% on target vs ${V("on_target_pct", S.avgAcc)}% company average`,
-            `Highest-leverage single site \u2014 if it ran at the company average, the cost curve bends.`,
-            `${V("worst_plant_id", wp[0])}'s QC lead. Ask which mixes miss at discharge \u2014 the drill names them, down to the load.`,
-            (wpIdx >= 0 ? `<div style="margin-top:8px;"><button class="kpi-linklike" style="padding-left:0;" onclick="openExecDrawer(${wpIdx})">Open ${wp[0]} \u2014 worst mixes, trucks, drivers \u2192</button></div>` : "")
-            + execSharedInset(`Any fix here runs through crews who report to Operations \u2014 one shared review of this drill with the Head of Ops before either side talks to them, with your quality fixes already claimed.`, true)) : "")
-        + (wMix ? execLeanCard(2, `Mix ${V("mix_id", wMix.mix)}`,
+        + (wp ? execLeanCard2(1, V("worst_plant_id", wp[0]), "quality", "worst plant",
+            execLeanBar("Company average", `${V("on_target_pct", S.avgAcc)}%`, S.avgAcc, Math.max(S.avgAcc, wp[1]) * 1.25, "var(--dw-mut)")
+            + execLeanBar(V("worst_plant_id", wp[0]), `${V("worst_plant_pct", wp[1])}%`, wp[1], Math.max(S.avgAcc, wp[1]) * 1.25, "#ff5b52"),
+            `Bring ${V("worst_plant_id", wp[0])} to the company average and most of the ${execGrainName(S.grain)}'s quality gap closes.`,
+            `Call the Head of Quality`,
+            `Which mixes are driving it \u2014 and does the design move, or the target?`,
+            `Quality + Ops review the drill as one before either talks to the plant \u2014 the fixes run through crews who report to Ops.`,
+            (wpIdx >= 0 ? `<button class="exl-btn" onclick="openExecDrawer(${wpIdx})">Open ${wp[0]} \u2014 worst mixes, tagged by owner \u2192</button>` : "")) : "")
+        + (wMix ? execLeanCard2(2, `Mix ${V("mix_id", wMix.mix)}`,
             execMixCause(wMix) === "practice" ? "ops" : "quality",
-            `${V("mix_on_target_pct", wMix.acc)}% on target across ${V("mix_loads", wMix.n.toLocaleString())} loads at ${V("worst_plant_id", wp[0])}`,
+            `worst mix at ${V("worst_plant_id", wp[0])}`,
+            execLeanBar("Company average", `${V("on_target_pct", S.avgAcc)}%`, S.avgAcc, Math.max(S.avgAcc, wMix.acc) * 1.25, "var(--dw-mut)")
+            + execLeanBar(`Mix ${wMix.mix}`, `${V("mix_on_target_pct", wMix.acc)}%`, wMix.acc, Math.max(S.avgAcc, wMix.acc) * 1.25, "#ff5b52"),
             execMixCause(wMix) === "practice"
-              ? `On target on average but still missing loads \u2014 the design holds; the consistency around it doesn't. This one is Operations' to run; your part is the evidence, already attached.`
-              : `A systematic slump or water bias, whoever hauls it \u2014 the design is the question, not the drivers. This one is homework you assign yourself, on the same page that hands work to Operations.`,
+              ? `${V("mix_loads", wMix.n.toLocaleString())} loads \u2014 on target on average, but the consistency around it slips. The design holds; how it's run doesn't.`
+              : `${V("mix_loads", wMix.n.toLocaleString())} loads missing in the same direction, whoever hauls it \u2014 a design problem, not a driver problem.`,
+            execMixCause(wMix) === "practice" ? `Call the Head of Operations` : `Call the Head of Quality`,
             execMixCause(wMix) === "practice"
-              ? `The Head of Operations \u2014 this finding is theirs to run; your part is the evidence, already attached.`
-              : `Your mix designer, with this drill open. Confirm whether the target or the design moves first.`,
-            wpIdx >= 0 ? `<div style="margin-top:8px;"><button class="kpi-linklike" style="padding-left:0;" onclick="openExecDrawer(${wpIdx}, 0)">Open Mix ${wMix.mix} \u2014 trucks and drivers \u2192</button></div>` : "") : "")
+              ? `Mix ${V("mix_id", wMix.mix)} misses on consistency, not design \u2014 what's the plan for the crews running it?`
+              : `Does the target move or the design \u2014 and when does the corrected version ship?`,
+            null,
+            wpIdx >= 0 ? `<button class="exl-btn" onclick="openExecDrawer(${wpIdx})">Open ${wp[0]} \u2014 the mix in context \u2192</button>` : "") : "")
 
         + execExploreCardHTML(S);
       }
 
       if (role === "ops") {
         return brand(
-          `${V("held_truck_cost", fmt$(S.lostCost))} of held-truck time \u2014 the meter runs on site, not in the plant`,
-          `${V("period_label", S.label)}: trucks waiting to discharge cost <strong style="color:var(--dw-hi);">${V("held_truck_cost", fmt$(S.lostCost))}</strong> at $${V("truck_hour_rate", "120")}/truck-hour, and ${V("returned_loads", S.retLoads.toLocaleString())} refused loads were hauled both ways for nothing. Every finding below is tagged by owner \u2014 <strong style="color:#3069e3;">quality issues</strong> come off your plate, and you own only the <strong style="color:#ffba0d;">operations issues</strong> the evidence proves. Accountable for what's yours, not everything by default.`
+          `Trucks sat waiting to unload at job sites \u2014 that time cost ${V("held_truck_cost", fmt$(S.lostCost))}`,
+          facts([
+            fact("Trucks waiting, cost", V("held_truck_cost", fmt$(S.lostCost)), "#eb6834"),
+            fact("Refused loads", V("returned_loads", S.retLoads.toLocaleString()), "#ff5b52"),
+            act ? fact("Costliest site", `${V("customer_name", act.name.split(" ").slice(0, 2).join(" "))} · ${V("customer_held_cost", fmt$(act.timeCost))}`) : null,
+            fact("Rate", `$${V("truck_hour_rate", "120")}/truck-hr`),
+          ]) + tagLegend([["#3069e3", "QUALITY", "Head of Quality's fix"], ["#ffba0d", "OPERATIONS", "Head of Operations' fix — only what the evidence proves"]])
         ) + grid4([
           execStatCard("Held-truck time", V("held_truck_cost", fmt$(S.lostCost)), "#eb6834", `trucks waiting to discharge \u2014 the largest slice of the ${grainName}'s waste`),
           execStatCard("Hauled back empty", V("returned_loads", S.retLoads.toLocaleString()), "#ff5b52", `refused loads \u2014 trucks and drivers spent, zero value delivered`),
-          act ? execStatCard("Costliest site", V("customer_held_cost", fmt$(act.timeCost)), "#eb6834", `${V("customer_name", act.name)} \u2014 held-truck time on their sites alone`) : "",
+          act ? execStatCard("Costliest site", V("customer_held_cost", fmt$(act.timeCost)), "#eb6834", `${V("customer_name", act.name)} \u2014 truck waiting time on their sites alone`) : "",
           last && prev ? execStatCard(`${V("last_period", last.short)} vs ${V("prev_period", prev.short)}`, `${last.lostCost > prev.lostCost ? "\u25b2 +" : "\u25bc \u2212"}${V("held_cost_delta", fmt$(Math.abs(last.lostCost - prev.lostCost)))}`, last.lostCost > prev.lostCost ? "#ff5b52" : "#25c07a", `held-truck cost, ${childG} over ${childG} \u2014 the direction to manage`) : "",
         ]) + monthRow(`Held-truck cost \u2014 ${childG} by ${childG}`, p => tdc(V("child_held_truck_cost", fmt$(p.lostCost)), last && p.lostCost === Math.max(...kids.map(k => k.lostCost)) ? "#ff5b52" : "var(--dw-strong)"))
         + leanHead
-        + (act ? execLeanCard(1, V("customer_name", act.name), "ops", `trucks held on site \u2014 ${V("customer_held_cost", fmt$(act.timeCost))} of held-truck time \u00b7 ${V("customer_returned_loads", act.retLoads)} loads back`,
-            `The money is trucks waiting on their sites \u2014 unload readiness and truck spacing, not batching.`,
-            `Your dispatch lead. Ask their site supers what a truck waits on after it arrives \u2014 then set spacing to match.`) : "")
+        + (act ? execLeanCard2(1, V("customer_name", act.name), "ops", "costliest site",
+            execLeanBar("All sites", V("held_truck_cost", fmt$(S.lostCost)), S.lostCost, S.lostCost * 1.15, "var(--dw-mut)")
+            + execLeanBar(V("customer_name", act.name.split(" ").slice(0, 2).join(" ")), V("customer_held_cost", fmt$(act.timeCost)), act.timeCost, S.lostCost * 1.15, "#eb6834"),
+            `Trucks billed by the hour, parked on one customer's sites \u2014 a scheduling fix, not an equipment one.`,
+            `Call the Head of Operations`,
+            `What do our trucks wait on at ${V("customer_name", act.name)}'s sites after they arrive \u2014 and what changes the spacing?`,
+            null, "") : "")
         + (wp ? (() => {
             const causes = wpDrill ? wpDrill.mixes.map(execMixCause) : [];
             const nDesign = causes.filter(c => c === "design").length;
             const nPractice = causes.filter(c => c === "practice").length;
             const noneYours = causes.length > 0 && nPractice === 0;
-            return execLeanCard(2, V("worst_plant_id", wp[0]), noneYours ? "quality" : nDesign === 0 ? "ops" : "shared",
-              `worst plant \u2014 ${V("worst_plant_pct", wp[1])}% on target \u00b7 ${V("quality_tagged_count", nDesign)} of ${V("problem_mix_count", causes.length)} problem ${causes.length === 1 ? "mix tags" : "mixes tag"} quality, ${V("ops_tagged_count", nPractice)} tag operations`,
+            return execLeanCard2(2, V("worst_plant_id", wp[0]), noneYours ? "quality" : nDesign === 0 ? "ops" : "shared", "worst plant",
+              execLeanBar("Company average", `${V("on_target_pct", S.avgAcc)}%`, S.avgAcc, Math.max(S.avgAcc, wp[1]) * 1.25, "var(--dw-mut)")
+              + execLeanBar(V("worst_plant_id", wp[0]), `${V("worst_plant_pct", wp[1])}%`, wp[1], Math.max(S.avgAcc, wp[1]) * 1.25, "#ff5b52"),
               noneYours
-                ? `Every problem mix here tags as a quality issue \u2014 nothing at this plant lands on your crews. The tags are your receipt: only what's provably yours is yours, and this ${execGrainName(execCur().grain)} that's none of it.`
-                : `The quality-tagged misses come off your plate before this conversation starts. What's left arrives cheap: specific trucks, specific mixes, after the design was ruled out \u2014 a coaching conversation, not a defense of your plant.`,
+                ? `Every problem mix here tags as mix design \u2014 the crews are not the cause. Progress waits on Quality's fixes.`
+                : `${V("quality_tagged_count", nDesign)} of ${V("problem_mix_count", causes.length)} problem mixes tag design (Quality), ${V("ops_tagged_count", nPractice)} tag consistency (Operations) \u2014 the split is already made.`,
+              noneYours ? `Call the Head of Quality` : `Call the Head of Operations`,
               noneYours
-                ? `${wp[0]}'s plant manager \u2014 make sure the crews hear it from you first: these misses are mix design, not them. Quality already has the homework.`
-                : `${wp[0]}'s plant manager, with the drill open \u2014 work the ${nPractice} operations-tagged ${nPractice === 1 ? "mix" : "mixes"}; the quality-tagged ones are Quality's homework, not your crews'.`,
-              (wpIdx >= 0 ? `<div style="margin-top:8px;"><button class="kpi-linklike" style="padding-left:0;" onclick="openExecDrawer(${wpIdx})">Open ${wp[0]} \u2014 mixes tagged by fix owner \u2192</button></div>` : "")
-              + execSharedInset(`Quality has the mix evidence on this plant \u2014 review the drill together before either side talks to the crews. Every quality-tagged mix they fix cuts your waste number without your crews lifting a finger.`, true));
+                ? `${wp[0]}'s misses all tag mix design \u2014 when do corrected designs land, and what should Operations hold until then?`
+                : `${V("ops_tagged_count", nPractice)} of ${wp[0]}'s problem mixes sit with the crews \u2014 what's the plan on those, separate from Quality's design work?`,
+              `Quality + Operations, this drill open \u2014 design mixes to Quality, consistency mixes to Operations, settled before anyone talks to the crews.`,
+              (wpIdx >= 0 ? `<button class="exl-btn" onclick="openExecDrawer(${wpIdx})">Open ${wp[0]} \u2014 mixes tagged by fix owner \u2192</button>` : ""));
           })() : "")
 
         + execExploreCardHTML(S);
@@ -4046,21 +4140,33 @@
       // sales
       return brand(
         act ? `${V("customer_total_cost", fmt$(act.total))} of the ${grainName}'s waste sits with one customer` : `${V("returned_loads", S.retLoads.toLocaleString())} loads refused at the gate`,
-        `${V("period_label", S.label)}: ${act ? `<strong style="color:var(--dw-hi);">${V("customer_name", act.name)}</strong> accounts for <strong style="color:var(--dw-hi);">${V("customer_total_cost", fmt$(act.total))}</strong> of waste across ${V("customer_loads", act.loads.toLocaleString())} loads \u2014 and concentrated waste is recoverable waste: it's an account conversation, not a fleet problem.` : ""} Every refused load is also a customer standing at a pour that didn't go to plan. The numbers below say where the money sits; the list under them says who to talk to.`
+        facts([
+            act ? fact("Costliest customer", `${V("customer_name", act.name.split(" ").slice(0, 2).join(" "))} · ${V("customer_total_cost", fmt$(act.total))}`, "#ff5b52") : null,
+            act ? fact("Their loads back", `${V("customer_returned_loads", act.retLoads)} · ${V("customer_returns_cost", fmt$(act.retCost))}`, "#ff5b52") : null,
+            fact("All returns", `${V("returned_loads", S.retLoads.toLocaleString())} loads · ${V("returns_cost", fmt$(S.retCost))}`, "#eb6834"),
+          ]) + `<div style="font-size:10.5px;color:var(--dw-mut);margin-top:9px;">Concentrated waste is recoverable waste — an account conversation, not a fleet problem.</div>`
       ) + grid4([
-        act ? execStatCard("Costliest customer", V("customer_total_cost", fmt$(act.total)), "#ff5b52", `${V("customer_name", act.name)} \u2014 held-truck time plus returns, one account`) : "",
+        act ? execStatCard("Costliest customer", V("customer_total_cost", fmt$(act.total)), "#ff5b52", `${V("customer_name", act.name)} \u2014 truck waiting time plus returns, one account`) : "",
         act ? execStatCard("Their loads back", `${V("customer_returned_loads", act.retLoads)}`, "#ff5b52", `${V("customer_returns_cost", fmt$(act.retCost))} of refused concrete on this account alone`) : "",
         execStatCard("All returns", V("returned_loads", S.retLoads.toLocaleString()), "#eb6834", `${V("returns_cost", fmt$(S.retCost))} across every account \u2014 each one a customer conversation`),
         last && prev ? execStatCard(`Returns, ${V("last_period", last.short)} vs ${V("prev_period", prev.short)}`, `${last.retLoads > prev.retLoads ? "\u25b2 +" : "\u25bc \u2212"}${V("returned_loads_delta", Math.abs(last.retLoads - prev.retLoads).toLocaleString())}`, last.retLoads > prev.retLoads ? "#ff5b52" : "#25c07a", `refused loads, ${childG} over ${childG} \u2014 get ahead of it before invoices become disputes`) : "",
       ]) + monthRow(`Returned loads \u2014 ${childG} by ${childG}`, p => tdc(V("child_returned_loads", p.retLoads.toLocaleString()), last && p.retLoads === Math.max(...kids.map(k => k.retLoads)) ? "#ff5b52" : "var(--dw-strong)"))
       + leanHead
-      + (act ? execLeanCard(1, V("customer_name", act.name), null, `costliest customer \u2014 ${V("customer_total_cost", fmt$(act.total))} total \u00b7 ${V("customer_returned_loads", act.retLoads)} loads back (${V("customer_returns_cost", fmt$(act.retCost))})`,
-          `One account, a measurable slice of the ${grainName}'s waste \u2014 and the fix protects the relationship as much as the margin.`,
-          `The ${V("customer_name", act.name)} account manager. Pour-readiness confirmed before batching their orders \u2014 framed as protecting their schedule, not policing it.`,
-          execSharedInset(`Agree the readiness rule with the Head of Operations before the account call \u2014 the promise only sticks if dispatch runs it on every order.`, false)) : "")
-      + (last && prev && last.retLoads > prev.retLoads ? execLeanCard(2, `${V("last_period_label", last.label)}`, null, `returns rising \u2014 ${V("last_returned_loads", last.retLoads.toLocaleString())} refused loads vs ${V("prev_returned_loads", prev.retLoads.toLocaleString())} in ${V("prev_period", prev.short)}`,
-          `A rising return count reaches customers before it reaches this dashboard \u2014 account managers should hear it from you first.`,
-          `Your account managers on the top return accounts \u2014 a readiness call before the next pour beats a credit memo after it.`) : "")
+      + (act ? execLeanCard2(1, V("customer_name", act.name), null, "costliest customer",
+          execLeanBar("Trucks held", V("customer_held_cost", fmt$(act.timeCost)), act.timeCost, Math.max(act.timeCost, act.retCost) * 1.25, "#eb6834")
+          + execLeanBar("Loads returned", V("customer_returns_cost", fmt$(act.retCost)), act.retCost, Math.max(act.timeCost, act.retCost) * 1.25, "#ff5b52"),
+          `One account carries ${V("customer_total_cost", fmt$(act.total))} of the ${grainName}'s waste \u2014 a relationship risk before it's a margin problem.`,
+          `Call the Head of Sales`,
+          `What is ${V("customer_name", act.name)} telling us about the refused loads \u2014 and can we confirm pour-readiness before batching their orders?`,
+          `Sales + Operations \u2014 a readiness promise only holds if dispatch runs it on every order. Agree the rule before the account call.`,
+          "") : "")
+      + (last && prev && last.retLoads > prev.retLoads ? execLeanCard2(2, `${V("last_period_label", last.label)}`, null, "returns rising",
+          execLeanBar(V("prev_period", prev.short), `${V("prev_returned_loads", prev.retLoads.toLocaleString())}`, prev.retLoads, Math.max(prev.retLoads, last.retLoads) * 1.25, "var(--dw-mut)")
+          + execLeanBar(V("last_period", last.short), `${V("last_returned_loads", last.retLoads.toLocaleString())}`, last.retLoads, Math.max(prev.retLoads, last.retLoads) * 1.25, "#ff5b52"),
+          `Refused loads, ${childG} over ${childG}. Customers feel a rising return count before any dashboard shows it \u2014 better they hear from us first.`,
+          `Call the Head of Sales`,
+          `Which accounts are driving the rise \u2014 and who has called them before their next pour?`,
+          null, "") : "")
 
       + execExploreCardHTML(S);
     }
@@ -4080,6 +4186,65 @@
     }
     const EXEC_CAUSE_NOTE = `<div style="font-size:11px;color:var(--dw-mut);line-height:1.5;margin:2px 0 12px;">Owner tags are modeled: a systematic slump or water bias reads as a <strong>quality issue</strong> (mix design); on target on average but still missing loads reads as an <strong>operations issue</strong> (consistency). Prototype heuristic \u2014 production classifies against per-truck haul counts.</div>`;
 
+    // Worst-to-median opportunity (Adam, Aug 18): "if you could bring the lowest
+    // performers to the current median... you would save $45,000 a month."
+    // Forward-looking, dollarized, action-oriented -- and deliberately NOT an
+    // alarm: green, framed as a prize. Model: median on-target % across all
+    // plants; lifting every below-median plant to the median removes
+    // (measured x gap) missed loads, each priced at this customer's own Q2
+    // waste per missed load (total waste / total misses). Prototype heuristic;
+    // production prices misses from per-load cost joins.
+    function execOpportunityMath() {
+      const accs = EXEC_DRILL.map(p => p.acc).sort((a, b) => a - b);
+      const median = accs[Math.floor(accs.length / 2)];
+      const qP = EXEC_PERIODS["Q2"];
+      const totalMisses = EXEC_DRILL.reduce((s, p) => s + p.measured * (1 - p.acc / 100), 0);
+      const costPerMiss = qP.totalCost / Math.max(1, totalMisses);
+      const below = EXEC_DRILL
+        .map((p, i) => ({ plant: p.plant, acc: p.acc, idx: i, perMo: p.measured * (median - p.acc) / 100 * costPerMiss / 3 }))
+        .filter(p => p.acc < median)
+        .sort((a, b) => b.perMo - a.perMo);
+      if (!below.length) return null;
+      return { median, costPerMiss, below, perMo: below.reduce((s, p) => s + p.perMo, 0),
+               fmt: v => v >= 1000 ? `$${(v / 1000).toFixed(1)}K` : `$${Math.round(v)}` };
+    }
+    // Parked per John (Aug 19): the full-width drawer version of this card is out —
+    // the opportunity lives as a pinned quick-read card on the main surface instead.
+    // Restore by re-appending execOpportunityCardHTML(S) before execExploreCardHTML(S).
+    function execOpportunityCardHTML(S) {
+      const o = execOpportunityMath();
+      if (!o) return "";
+      const { median, costPerMiss, below, perMo, fmt: fmtK } = o;
+      const top = below.slice(0, 3);
+      const rest = below.length - top.length;
+      return `
+            <div style="border:1px solid rgba(37,192,122,.35);border-left:3px solid #25c07a;background:rgba(37,192,122,.05);border-radius:10px;margin-bottom:10px;overflow:hidden;">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;padding:11px 14px;border-bottom:1px solid rgba(37,192,122,.25);">
+                <strong style="color:var(--dw-hi);">The goal worth setting \u2014 worst plants to your own median</strong>
+                <span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.05em;color:#25c07a;border:1px solid rgba(37,192,122,.45);border-radius:4px;padding:1px 6px;white-space:nowrap;">${SPEC_MODE ? "{forward_tag}" : "FORWARD-LOOKING"}</span>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;align-items:stretch;">
+                <div style="flex:1 1 240px;min-width:0;padding:12px 16px;border-right:1px solid rgba(37,192,122,.25);display:flex;flex-direction:column;justify-content:center;">
+                  <div style="font-size:12.5px;color:var(--dw-body);line-height:1.5;">Bring your ${V("below_median_count", below.length)} below-median plants up to your current median \u2014 ${V("median_on_target_pct", median)}% of loads fully on target, a bar half your plants already clear \u2014 and you'd save about</div>
+                  <div style="font-size:26px;font-weight:800;color:#25c07a;font-variant-numeric:tabular-nums;margin-top:4px;">${V("opportunity_per_month", fmtK(perMo))}<span style="font-size:13px;font-weight:700;color:var(--dw-body);"> / month</span></div>
+                  <div style="font-size:11px;color:var(--dw-mut);line-height:1.45;margin-top:4px;">No new targets, no best-in-class benchmark \u2014 just the bottom half running like your own middle already does.</div>
+                </div>
+                <div style="flex:1.2 1 260px;min-width:0;padding:12px 16px;">
+                  <div style="font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--dw-hi);margin-bottom:8px;">Where the money sits</div>
+                  ${top.map(p => `
+                  <div class="exec-list-row" onclick="openExecDrawer(${p.idx})" style="padding:7px 2px;">
+                    <span class="n">${p.plant}</span>
+                    <span class="m">${p.acc}% on target \u00b7 ${median - p.acc} pts below the median</span>
+                    <span class="v" style="color:#25c07a;">${fmtK(p.perMo)}/mo</span>
+                    <span class="go">\u203a</span>
+                  </div>`).join("")}
+                  ${rest > 0 ? `<div style="font-size:11.5px;color:var(--dw-mut);margin-top:6px;">+ ${rest} more below-median plants \u2014 <span style="color:#3069e3;cursor:pointer;text-decoration:underline;" onclick="openExecDrawer('plants')">see all plants</span></div>` : ""}
+                </div>
+              </div>
+              <div style="padding:8px 14px;border-top:1px solid rgba(37,192,122,.25);font-size:10.5px;color:var(--dw-mut);line-height:1.45;">* Modeled from your own numbers, not a promise: your Q2 waste \u00f7 your Q2 missed loads = ${V("cost_per_missed_load", "$" + Math.round(costPerMiss))} per missed load, applied to each plant's gap to the median. Your costs per plant will differ.</div>
+            </div>`;
+    }
+
     // Shared explore card: entry into the full plant list from any drawer.
     function execExploreCardHTML(S) {
       return `          <div onclick="openExecDrawer('plants')" onmouseover="this.style.borderColor='#3069e3'" onmouseout="this.style.borderColor='var(--dw-bd)'" style="cursor:pointer;border:1px solid var(--dw-bd);background:var(--dw-card);border-radius:10px;padding:13px 14px;display:flex;align-items:center;gap:14px;transition:border-color .15s;">
@@ -4088,13 +4253,13 @@
                 <strong style="color:var(--dw-hi);">Every dollar above traces to a name</strong>
                 <span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--dw-mut);border:1px solid var(--dw-bd);border-radius:4px;padding:1px 6px;white-space:nowrap;">FULL ${execGrainName(S.grain).toUpperCase()}</span>
               </div>
-              <div style="font-size:12.5px;color:var(--dw-mut);margin-top:4px;line-height:1.45;">Nothing on this page is an estimate you have to take on faith \u2014 open any number and follow it to the <span style="color:var(--dw-body);">plant, mix, truck, and driver</span> behind it. The same detail your team runs on.</div>
+              <div style="font-size:12.5px;color:var(--dw-mut);margin-top:4px;line-height:1.45;">Nothing on this page is an estimate you have to take on faith \u2014 open any number and follow it to the <span style="color:var(--dw-body);">plant and mix \u2014 and your desk heads can follow it to the truck and driver in their own dashboards</span> behind it. The same detail your team runs on.</div>
             </div>
             <button onclick="event.stopPropagation();openExecDrawer('plants')" style="flex-shrink:0;font:inherit;font-size:12.5px;font-weight:600;padding:9px 16px;border:none;border-radius:8px;background:#3069e3;color:#fff;cursor:pointer;white-space:nowrap;">See for yourself \u2192</button>
           </div>`;
     }
 
-    // Shared lean card: problem header, one-line why, TALK TO chip. accent tints the left border and tag.
+    // Shared lean card: problem header, one-line why, CALL + ASK rows. accent tints the left border and tag.
     // One owner taxonomy everywhere: quality / ops / sales / shared.
     const EXEC_OWNERS = {
       quality: { label: "QUALITY ISSUE",    c: "#3069e3", bd: "rgba(48,105,227,.45)" },
@@ -4106,10 +4271,61 @@
       if (!o) return "";
       return `<span style="flex-shrink:0;font-size:${small ? "9px" : "10px"};font-weight:700;letter-spacing:.05em;color:${o.c};border:1px solid ${o.bd};border-radius:4px;padding:1px 6px;white-space:nowrap;">${o.label}</span>`;
     }
-    function execLeanCard(num, name, owner, stat, why, talk, extra) {
+    // v2 lean card (piloting on the QC worst-plant card): same facts, built to scan.
+    // Numbers move into a two-bar comparison; words sit in a fixed label rail
+    // (WHY / CALL / ASK / TOGETHER) so the eye jumps rows instead of reading prose.
+    function execLeanBar(label, valLabel, val, max, color) {
+      const w = Math.max(4, Math.min(100, (val / max) * 100));
+      return `<div style="display:flex;align-items:center;gap:10px;">
+                <span style="width:96px;flex-shrink:0;font-size:10.5px;color:var(--dw-mut);text-align:right;">${label}</span>
+                <div style="flex:1;height:8px;background:var(--dw-bd);border-radius:4px;overflow:hidden;"><div style="width:${w}%;height:100%;background:${color};border-radius:4px;"></div></div>
+                <span style="min-width:42px;flex-shrink:0;font-size:12.5px;font-weight:800;color:${color};font-variant-numeric:tabular-nums;">${valLabel}</span>
+              </div>`;
+    }
+    // v2 lean card, two-column per John's concept (Aug 18): left = WHAT'S HAPPENING
+    // (bars, one line, and the drill button since the drill IS the detail of what's
+    // happening), right = WHAT TO DO (Call headline + quoted Ask). TOGETHER is a
+    // full-width strip across the bottom so the cross-department ask can't be skimmed past.
+    function execLeanCard2(num, name, owner, tag, barsHTML, why, call, ask, together, linkHTML) {
+      const o = owner ? EXEC_OWNERS[owner] : null;
+      const a = o ? o.c : "var(--dw-bd)";
+      const chipCls = { quality: "q", ops: "o", shared: "s" }[owner] || "";
+      const chip = o ? `<span class="exl-chip ${chipCls}">${SPEC_MODE ? "{owner_tag}" : o.label}</span>` : "";
+      const colLabel = t => `<div style="font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--dw-hi);margin-bottom:10px;">${t}</div>`;
+      return `
+            <div style="border:1px solid var(--dw-bd);border-left:3px solid ${a};background:var(--dw-card);border-radius:10px;margin-bottom:10px;overflow:hidden;">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;padding:11px 14px;border-bottom:1px solid var(--dw-bd);">
+                <strong style="color:var(--dw-hi);white-space:nowrap;">${num}. ${name} \u2014 ${tag}</strong>
+                ${chip}
+              </div>
+              <div style="display:flex;flex-wrap:wrap;align-items:stretch;">
+                <div style="flex:1 1 230px;min-width:0;padding:12px 14px;border-right:1px solid var(--dw-bd);display:flex;flex-direction:column;">
+                  ${colLabel("What's happening")}
+                  ${barsHTML ? `<div style="display:flex;flex-direction:column;gap:6px;">${barsHTML}</div>` : ""}
+                  ${why ? `<div style="font-size:12.5px;color:var(--dw-body);line-height:1.5;margin-top:10px;">${why}</div>` : ""}
+                  ${linkHTML ? `<div style="margin-top:12px;">${linkHTML}</div>` : ""}
+                </div>
+                <div style="flex:1.2 1 260px;min-width:0;padding:12px 16px;">
+                  ${colLabel("What to do")}
+                  <div style="font-size:15.5px;font-weight:800;color:var(--dw-hi);line-height:1.3;">${call}</div>
+                  ${ask ? `<div style="margin-top:9px;padding-left:10px;border-left:2px solid ${a};font-size:12.5px;font-style:italic;color:var(--dw-strong);line-height:1.5;">\u201c${ask}\u201d</div>` : ""}
+                  ${together ? `<div style="margin-top:11px;padding:8px 11px;border:1px solid rgba(37,192,122,.3);background:rgba(37,192,122,.07);border-radius:8px;font-size:12px;color:var(--dw-body);line-height:1.6;"><span class="exl-chip s" style="margin-right:7px;vertical-align:baseline;">Together:</span>${together}</div>` : ""}
+                </div>
+              </div>
+            </div>`;
+    }
+
+    // Exec grammar: WHY = one line of stakes, CALL = which desk head to phone,
+    // ASK = the question ready to say aloud. The exec never talks below head level.
+    function execLeanCard(num, name, owner, stat, why, call, ask, extra) {
       const o = owner ? EXEC_OWNERS[owner] : null;
       const a = o ? o.c : "var(--dw-bd)";
       const chip = o ? `<span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.05em;color:${o.c};border:1px solid ${o.bd};border-radius:4px;padding:1px 6px;white-space:nowrap;">${SPEC_MODE ? "{owner_tag}" : o.label}</span>` : "";
+      const askRow = ask ? `
+              <div style="display:flex;gap:8px;align-items:baseline;margin-top:6px;">
+                <span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--dw-mut);border:1px solid var(--dw-bd);border-radius:4px;padding:2px 7px;">ASK</span>
+                <span style="font-size:12.5px;color:var(--dw-body);font-style:italic;line-height:1.45;">\u201c${ask}\u201d</span>
+              </div>` : "";
       return `
             <div style="border:1px solid var(--dw-bd);border-left:3px solid ${a};background:var(--dw-card);border-radius:10px;padding:12px 14px;margin-bottom:10px;">
               <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:13px;">
@@ -4119,9 +4335,10 @@
               </div>
               <div style="font-size:12.5px;color:var(--dw-mut);margin-top:4px;line-height:1.45;">${why}</div>
               <div style="display:flex;gap:8px;align-items:baseline;margin-top:9px;padding-top:9px;border-top:1px solid var(--dw-bd);">
-                <span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.06em;color:#fff;background:#3069e3;border-radius:4px;padding:2px 7px;">TALK TO</span>
-                <span style="font-size:12.5px;color:var(--dw-strong);line-height:1.45;">${talk}</span>
+                <span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.06em;color:#fff;background:#3069e3;border-radius:4px;padding:2px 7px;">CALL</span>
+                <span style="font-size:12.5px;font-weight:600;color:var(--dw-strong);line-height:1.45;">${call}</span>
               </div>
+              ${askRow}
               ${extra || ""}
             </div>`;
     }
@@ -4134,7 +4351,7 @@
       const chipColor = tinted ? "#25c07a" : "var(--dw-mut)";
       const chipBd = tinted ? "rgba(37,192,122,.45)" : "var(--dw-bd)";
       return `<div style="margin-top:9px;padding:9px 11px;border:1px solid ${bd};background:${bg};border-radius:8px;display:flex;gap:8px;align-items:baseline;">
-                <span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.06em;color:${chipColor};border:1px solid ${chipBd};border-radius:4px;padding:1px 6px;white-space:nowrap;">TALK TOGETHER FIRST</span>
+                <span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.06em;color:${chipColor};border:1px solid ${chipBd};border-radius:4px;padding:1px 6px;white-space:nowrap;">BRING TOGETHER</span>
                 <span style="font-size:12px;color:var(--dw-body);line-height:1.45;">${text}</span>
               </div>`;
     }
@@ -4167,7 +4384,7 @@
             <div class="dbw-card">
               <div class="dbw-q">Cheaper than most Verifi accounts</div>
               <div class="dbw-money-big" style="color:#25c07a;">${P.gapDollars != null ? V("benchmark_gap_dollars", fmt$(P.gapDollars)) : "\u2014"}</div>
-              <div class="dbw-cap">You ran at <strong>$${V("waste_per_yd3", P.ppy.toFixed(2))}/yd\u00b3</strong> of waste vs the <strong>$${V("benchmark_median_per_yd3", P.medPpy.toFixed(2))}</strong> median Verifi account \u2014 on ${V("volume_yd3", P.volume.toLocaleString())} yd\u00b3 delivered.</div>
+              <div class="dbw-cap">You ran at <strong>$${V("waste_per_yd3", (P.ppy || 0).toFixed(2))}/yd\u00b3</strong> of waste vs the <strong>$${V("benchmark_median_per_yd3", P.medPpy != null ? P.medPpy.toFixed(2) : "\u2014")}</strong> median Verifi account \u2014 on ${V("volume_yd3", P.volume.toLocaleString())} yd\u00b3 delivered.</div>
               ${benchLine}
               ${ppyLine}
               ${seeBtn}
@@ -4261,8 +4478,575 @@
     }
 
 
+
+    // ---- Dashboard v5: connected desks, with the wires drawn on the page ----
+    // John's brief (Aug 18, round 3): each team sees its own section; the VIP is
+    // the one who can see the whole picture. So the connections cannot live
+    // inside chips you have to read -- they are LINES ON THE MAIN PAGE, drawn
+    // between the silos, visible before any interaction.
+    //
+    // Solid blue wires = joins that exist in this extract (measured):
+    //   1. the problem mix's loads <-> the trucks & drivers hauling it (QC <-> Ops)
+    //   2. the account's held time <-> the account's returns (Ops <-> Sales)
+    // Dashed grey wire = a join that is NOT in this extract but is almost
+    // certainly buildable from ticket-level data (every ticket carries plant,
+    // mix, truck, customer, timestamps) -- the ask for the data science team,
+    // drawn as a promise, not a number.
+
+    let VC5_LIT = null;
+    let VC5_PIN = null; // wire pinned open by click
+    let VC5_ALL = false; // touch-safe: show every wire at once
+    function vc5ToggleAll() {
+      VC5_ALL = !VC5_ALL;
+      VC5_PIN = null;
+      document.querySelectorAll(".vc5-wires .wgroup").forEach(g => g.classList.toggle("show", VC5_ALL));
+      const b = document.getElementById("vc5-showall");
+      if (b) { b.textContent = VC5_ALL ? "Hide connections" : "Show connections"; b.classList.toggle("on", VC5_ALL); }
+    }
+    function vc5Ping(ent) {
+      VC5_LIT = VC5_LIT === ent ? null : ent;
+      document.querySelectorAll("[data-ent]").forEach(n =>
+        n.classList.toggle("va-glow", VC5_LIT !== null && n.dataset.ent === VC5_LIT));
+    }
+    function vc5WireShow(gid, on) { // hover in/out
+      if (VC5_ALL || VC5_PIN) return; // show-all or a pinned wire wins over hover
+      document.querySelectorAll(".vc5-wires .wgroup").forEach(g =>
+        g.classList.toggle("show", on && g.dataset.wgroup === gid));
+    }
+    function vc5WirePin(gid) { // click a wired row: pin / unpin its wire
+      if (VC5_ALL) { vc5Ping(gid); return; } // in show-all, taps just light endpoints
+      VC5_PIN = VC5_PIN === gid ? null : gid;
+      document.querySelectorAll(".vc5-wires .wgroup").forEach(g =>
+        g.classList.toggle("show", g.dataset.wgroup === VC5_PIN));
+      vc5Ping(gid); // light both ends too
+    }
+
+    let VC5_WIRES = [];
+    function vc5DrawWires() {
+      const board = document.getElementById("vc5-board");
+      const svg = document.getElementById("vc5-wires");
+      if (!board || !svg) return;
+      const br = board.getBoundingClientRect();
+      if (!br.width) return; // not laid out yet
+      svg.setAttribute("viewBox", `0 0 ${br.width} ${br.height}`);
+      let out = "";
+      VC5_WIRES.forEach((wr, wi) => {
+        const a = board.querySelector(`[data-wire="${wr.a}"]`);
+        const b = board.querySelector(`[data-wire="${wr.b}"]`);
+        if (!a || !b) return;
+        const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+        const stacked = rb.top >= ra.bottom || ra.top >= rb.bottom; // cards wrapped vertically
+        let x1, y1, x2, y2, path;
+        if (!stacked) { // side by side: leave right edge, enter left edge
+          x1 = ra.right - br.left; y1 = ra.top + ra.height / 2 - br.top;
+          x2 = rb.left - br.left;  y2 = rb.top + rb.height / 2 - br.top;
+          if (wr.arc) { // long wire: dip below the cards instead of crossing the middle one
+            const dip = br.height - 8;
+            path = `M ${x1 - ra.width} ${ra.bottom - br.top} C ${x1 - ra.width} ${dip}, ${x2 + rb.width} ${dip}, ${x2 + rb.width} ${rb.bottom - br.top}`;
+          } else {
+            const mx = (x1 + x2) / 2;
+            path = `M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`;
+          }
+        } else { // stacked: leave bottom, enter top
+          x1 = ra.left + ra.width / 2 - br.left; y1 = ra.bottom - br.top;
+          x2 = rb.left + rb.width / 2 - br.left; y2 = rb.top - br.top;
+          const my = (y1 + y2) / 2;
+          path = `M ${x1} ${y1} C ${x1} ${my}, ${x2} ${my}, ${x2} ${y2}`;
+        }
+        // midpoint label
+        const lx = wr.arc && !stacked ? br.width / 2 : (x1 + x2) / 2;
+        const ly = wr.arc && !stacked ? br.height - 10 : (y1 + y2) / 2;
+        const tw = wr.label.length * 6.1 + 22;
+        const gid = wr.ent || `wire-${wi}`;
+        out += `<g class="wgroup ${VC5_ALL || VC5_PIN === gid ? "show" : ""}" data-wgroup="${gid}">`;
+        out += `<path class="wire ${wr.buildable ? "buildable" : ""}" d="${path}" stroke="${wr.color}"/>`;
+        out += `<g class="wlab" onclick="${wr.buildable ? "" : `vc5Ping('${wr.ent}')`}">
+          <rect x="${lx - tw / 2}" y="${ly - 11}" width="${tw}" height="22" fill="${wr.buildable ? "var(--bg-card, #201e1c)" : wr.color}" stroke="${wr.color}" stroke-width="1" opacity="${wr.buildable ? "0.95" : "1"}"/>
+          <text x="${lx}" y="${ly + 4}" text-anchor="middle" fill="${wr.buildable ? wr.color : "#fff"}">${wr.label}</text></g>`;
+        out += `</g>`;
+      });
+      svg.innerHTML = out;
+    }
+    window.addEventListener("resize", () => vc5DrawWires());
+
+    // ---- Pinned quick-read row (small cards) ----------------------------
+    // Two card types per the design discussion: "alarm" cards (workhorse mix,
+    // pinned plant) always show current status and ignore the period picker;
+    // "trend/dollar" cards (opportunity, red chain, returns) follow it.
+    // Mix-card customization: preset lens or a specific mix, set via the gear.
+    let EXEC_MIX_MODE = { type: "preset", key: "volume" };
+    let EXEC_MIX_OPEN = false;
+    function execMixAggAll() {
+      const agg = {};
+      EXEC_DRILL.forEach(pl => pl.mixes.forEach(m => {
+        if (!agg[m.mix]) agg[m.mix] = { mix: m.mix, n: 0, accSum: 0, plants: 0 };
+        agg[m.mix].n += m.n; agg[m.mix].accSum += m.acc * m.n; agg[m.mix].plants += 1;
+      }));
+      return Object.values(agg)
+        .map(a => ({ mix: a.mix, n: a.n, plants: a.plants, acc: Math.round(a.accSum / a.n) }))
+        .sort((a, b) => b.n - a.n);
+    }
+    const EXEC_MIX_PRESETS = {
+      volume: { label: "Highest volume", title: "Your highest-volume mix",
+        pick: list => list[0] },
+      worst: { label: "Lowest on target", title: "Your lowest-performing mix",
+        pick: list => list.filter(m => m.n >= 150).sort((a, b) => a.acc - b.acc)[0] },
+      best: { label: "Best on target", title: "Your best-performing mix",
+        pick: list => list.filter(m => m.n >= 150).sort((a, b) => b.acc - a.acc)[0] },
+      widest: { label: "Used at most plants", title: "Your most widely used mix",
+        pick: list => [...list].sort((a, b) => b.plants - a.plants)[0] }
+    };
+    function execMixResolve() {
+      const list = execMixAggAll();
+      if (EXEC_MIX_MODE.type === "mix") {
+        const m = list.find(x => x.mix === EXEC_MIX_MODE.mix) || list[0];
+        return { m, title: "A mix you're watching" };
+      }
+      const p = EXEC_MIX_PRESETS[EXEC_MIX_MODE.key] || EXEC_MIX_PRESETS.volume;
+      return { m: p.pick(list) || list[0], title: p.title };
+    }
+    function execMixSet(type, val, ev) {
+      if (ev) ev.stopPropagation();
+      EXEC_MIX_MODE = type === "mix" ? { type: "mix", mix: val } : { type: "preset", key: val };
+      EXEC_MIX_OPEN = false;
+      renderExec5Surface();
+    }
+    function execMixGearToggle(ev) {
+      if (ev) ev.stopPropagation();
+      EXEC_MIX_OPEN = !EXEC_MIX_OPEN;
+      const pop = document.getElementById("exec-mix-pop");
+      if (pop) pop.style.display = EXEC_MIX_OPEN ? "block" : "none";
+    }
+    document.addEventListener("click", (e) => {
+      if (!EXEC_MIX_OPEN) return;
+      const pop = document.getElementById("exec-mix-pop");
+      if (pop && !pop.contains(e.target)) { EXEC_MIX_OPEN = false; pop.style.display = "none"; }
+    });
+    function execMixGearHTML() {
+      const list = execMixAggAll().slice(0, 10);
+      const isPreset = k => EXEC_MIX_MODE.type === "preset" && EXEC_MIX_MODE.key === k;
+      const isMix = m => EXEC_MIX_MODE.type === "mix" && EXEC_MIX_MODE.mix === m;
+      const row = (on, label, sub, click) =>
+        `<button onclick="${click}" style="display:flex;justify-content:space-between;gap:12px;width:100%;text-align:left;font:inherit;font-size:12px;padding:6px 8px;border:none;border-radius:6px;background:${on ? "rgba(48,105,227,0.18)" : "transparent"};color:inherit;cursor:pointer;">
+           <span style="font-weight:${on ? "700" : "500"};">${label}</span><span style="opacity:.55;">${sub}</span></button>`;
+      return `<div style="position:absolute;top:10px;right:10px;">
+          <button onclick="execMixGearToggle(event)" title="Customize this card" aria-label="Customize this card" style="font-size:18px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;padding:4px;line-height:1;">\u2699</button>
+          <div id="exec-mix-pop" style="display:${EXEC_MIX_OPEN ? "block" : "none"};position:absolute;top:calc(100% + 6px);right:0;z-index:400;background:#201e1c;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px;box-shadow:0 12px 32px rgba(0,0,0,0.5);width:250px;" onclick="event.stopPropagation()">
+            <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;">Show me</div>
+            ${Object.entries(EXEC_MIX_PRESETS).map(([k, p]) => row(isPreset(k), p.label, "", `execMixSet('preset','${k}',event)`)).join("")}
+            <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin:10px 0 4px;">Or pick a mix</div>
+            <div style="max-height:190px;overflow:auto;">
+              ${list.map(m => row(isMix(m.mix), `Mix ${m.mix}`, `${m.n.toLocaleString()} loads`, `execMixSet('mix','${m.mix}',event)`)).join("")}
+            </div>
+          </div>
+        </div>`;
+    }
+    let EXEC_PIN_UPDATED = "8:54 AM";
+    function execPinRefresh(ev) {
+      if (ev) ev.stopPropagation();
+      // Prototype: stamp the current time; the real build re-queries here.
+      const now = new Date();
+      let h = now.getHours(); const ap = h >= 12 ? "PM" : "AM"; h = h % 12 || 12;
+      EXEC_PIN_UPDATED = `${h}:${String(now.getMinutes()).padStart(2, "0")} ${ap}`;
+      renderExec5Surface();
+    }
+
+    function execPrevSibling(curId) {
+      for (const parent in EXEC_TREE) {
+        const kids = EXEC_TREE[parent];
+        const i = kids.indexOf(curId);
+        if (i > 0) return EXEC_PERIODS[kids[i - 1]] || null;
+      }
+      return null;
+    }
+
+    function execWorkhorseMix() {
+      const agg = {};
+      EXEC_DRILL.forEach(pl => pl.mixes.forEach(m => {
+        if (!agg[m.mix]) agg[m.mix] = { mix: m.mix, n: 0, accSum: 0, plants: 0 };
+        agg[m.mix].n += m.n; agg[m.mix].accSum += m.acc * m.n; agg[m.mix].plants += 1;
+      }));
+      let top = null;
+      Object.values(agg).forEach(a => { if (!top || a.n > top.n) top = a; });
+      return top ? { mix: top.mix, n: top.n, plants: top.plants, acc: Math.round(top.accSum / top.n) } : null;
+    }
+
+    // Tolerance window, not a binary — "normal body temperature" rule.
+    function execStatus(acc, avg) {
+      const r = avg > 0 ? acc / avg : 0;
+      if (r >= 0.85) return { c: "#25c07a", t: "in its normal range" };
+      if (r >= 0.6) return { c: "#e8a33d", t: "below its normal range" };
+      return { c: "#e05252", t: "well below normal" };
+    }
+
+    function execPinCard(tag, tagColor, title, num, numColor, sub, foot, gearHTML, onClick) {
+      const clickHandlers = onClick ? `onclick="${onClick}" onmouseenter="this.style.borderColor='rgba(48,105,227,0.5)'" onmouseleave="this.style.borderColor=''"` : "";
+      // One structure for every card (John, Aug 19): name up top, number, one
+      // caption, action pinned to the bottom edge. No centered floating content.
+      return `<div class="dbw-card" ${clickHandlers} style="padding:18px;gap:7px;justify-content:flex-start;min-height:152px;${onClick ? "cursor:pointer;" : ""}">
+          ${gearHTML || ""}
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:${tagColor};position:absolute;top:14px;left:18px;right:40px;">${tag}</div>
+          <div style="height:16px;"></div>
+          ${title ? `<div style="font-size:15px;font-weight:700;">${title}</div>` : ""}
+          <div style="font-size:26px;font-weight:800;color:${numColor};line-height:1.15;display:flex;align-items:center;">${num}</div>
+          <div style="font-size:13px;color:var(--text-muted);line-height:1.5;">${sub}</div>
+          ${foot ? `<div style="font-size:12px;font-weight:600;margin-top:auto;padding-top:10px;display:flex;justify-content:space-between;align-items:baseline;gap:10px;">${foot}</div>` : ""}
+        </div>`;
+    }
+
+    // Plant-card customization: same gear pattern as the mix card.
+    // Presets are lenses; or pick a specific plant from the list.
+    let EXEC_PLANT_MODE = { type: "plant", plant: "Plant 24" };
+    let EXEC_PLANT_OPEN = false;
+    const EXEC_PLANT_PRESETS = {
+      busiest: { label: "Highest volume", title: "Your highest-volume plant",
+        pick: list => [...list].sort((a, b) => b.loads - a.loads)[0] },
+      worst: { label: "Lowest on target", title: "Your lowest-performing plant",
+        pick: list => [...list].sort((a, b) => a.acc - b.acc)[0] },
+      best: { label: "Best on target", title: "Your best-performing plant",
+        pick: list => [...list].sort((a, b) => b.acc - a.acc)[0] }
+    };
+    function execPlantResolve() {
+      const list = EXEC_DRILL;
+      if (EXEC_PLANT_MODE.type === "plant") {
+        const p = list.find(x => x.plant === EXEC_PLANT_MODE.plant) || list[0];
+        return { p, title: "A plant you're watching" };
+      }
+      const pr = EXEC_PLANT_PRESETS[EXEC_PLANT_MODE.key] || EXEC_PLANT_PRESETS.busiest;
+      return { p: pr.pick(list) || list[0], title: pr.title };
+    }
+    function execPlantSet(type, val, ev) {
+      if (ev) ev.stopPropagation();
+      EXEC_PLANT_MODE = type === "plant" ? { type: "plant", plant: val } : { type: "preset", key: val };
+      EXEC_PLANT_OPEN = false;
+      renderExec5Surface();
+    }
+    function execPlantGearToggle(ev) {
+      if (ev) ev.stopPropagation();
+      EXEC_PLANT_OPEN = !EXEC_PLANT_OPEN;
+      const pop = document.getElementById("exec-plant-pop");
+      if (pop) pop.style.display = EXEC_PLANT_OPEN ? "block" : "none";
+    }
+    document.addEventListener("click", (e) => {
+      if (!EXEC_PLANT_OPEN) return;
+      const pop = document.getElementById("exec-plant-pop");
+      if (pop && !pop.contains(e.target)) { EXEC_PLANT_OPEN = false; pop.style.display = "none"; }
+    });
+    function execPlantGearHTML() {
+      const list = [...EXEC_DRILL].sort((a, b) => b.loads - a.loads);
+      const isPreset = k => EXEC_PLANT_MODE.type === "preset" && EXEC_PLANT_MODE.key === k;
+      const isPlant = p => EXEC_PLANT_MODE.type === "plant" && EXEC_PLANT_MODE.plant === p;
+      const row = (on, label, sub, click) =>
+        `<button onclick="${click}" style="display:flex;justify-content:space-between;gap:12px;width:100%;text-align:left;font:inherit;font-size:12px;padding:6px 8px;border:none;border-radius:6px;background:${on ? "rgba(48,105,227,0.18)" : "transparent"};color:inherit;cursor:pointer;">
+           <span style="font-weight:${on ? "700" : "500"};">${label}</span><span style="opacity:.55;">${sub}</span></button>`;
+      return `<div style="position:absolute;top:10px;right:10px;">
+          <button onclick="execPlantGearToggle(event)" title="Customize this card" aria-label="Customize this card" style="font-size:18px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;padding:4px;line-height:1;">\u2699</button>
+          <div id="exec-plant-pop" style="display:${EXEC_PLANT_OPEN ? "block" : "none"};position:absolute;top:calc(100% + 6px);right:0;z-index:400;background:#201e1c;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px;box-shadow:0 12px 32px rgba(0,0,0,0.5);width:250px;" onclick="event.stopPropagation()">
+            <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;">Show me</div>
+            ${Object.entries(EXEC_PLANT_PRESETS).map(([k, p]) => row(isPreset(k), p.label, "", `execPlantSet('preset','${k}',event)`)).join("")}
+            <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin:10px 0 4px;">Or pick a plant</div>
+            <div style="max-height:190px;overflow:auto;">
+              ${list.map(p => row(isPlant(p.plant), p.plant, `${p.loads.toLocaleString()} loads`, `execPlantSet('plant','${p.plant.replace(/'/g, "\\'")}',event)`)).join("")}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    /* Parked live-card logic — restore one card at a time as we finalize each.
+    // 3) Worst-to-median opportunity — follows the period (modeled ~)
+    const worstAccs = (P.worst || []).map(w => w[1]);
+    const worstAvg = worstAccs.length ? worstAccs.reduce((a, b) => a + b, 0) / worstAccs.length : 0;
+    const uplift = P.avgAcc > 0 ? Math.max(0, (P.avgAcc - worstAvg) / P.avgAcc) : 0;
+    const oppDollars = Math.round((P.lostCost / Math.max(1, P.plants)) * worstAccs.length * uplift);
+    // 4) Red chain: wpD = worst plant drill; redMixes = wpD.mixes.filter(m => m.acc <= 15);
+    //    share = redMixes loads / wpD.loads; customer = EXEC_ACTIONS[curId].name
+    // 5) Returns: P.retCost, P.retLoads, delta vs execPrevSibling(curId).retLoads
+    */
+
+    function execPinnedRowHTML(P, curId) {
+      const plantSel = execPlantResolve();
+      const pinDrill = plantSel.p;
+      const companyAvg = EXEC_PERIODS["Q2"].avgAcc;
+
+      // 1) Highest-volume mix — snapshot with a visible age + manual refresh
+      // (no live-feed promise; the prototype fakes the refresh with a new timestamp).
+      const upd = `<span>${EXEC_PIN_UPDATED}</span>
+        <button onclick="execPinRefresh(event)" title="Refresh" style="font:inherit;font-size:10px;font-weight:700;letter-spacing:.02em;border:none;background:transparent;color:var(--text-muted);cursor:pointer;padding:0 0 0 6px;text-decoration:underline;text-underline-offset:2px;">Refresh</button>`;
+      const sel = execMixResolve();
+      const whM = sel.m;
+      const whS = whM ? execStatus(whM.acc, companyAvg) : null;
+      const whCard = whM ? execPinCard(sel.title, "var(--text-muted)", "",
+        `<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${whS.c};margin-right:8px;flex-shrink:0;"></span>${whM.acc}% on target`,
+        "inherit",
+        `Mix ${whM.mix} \u2014 ${whM.n.toLocaleString()} loads across ${whM.plants} plant${whM.plants === 1 ? "" : "s"}. It's ${whS.t}.`,
+        `<span style="color:#3069e3;">Open the mix story \u2192</span><span style="font-size:10.5px;font-weight:600;color:var(--text-muted);white-space:nowrap;">Updated ${upd}</span>`,
+        execMixGearHTML(), `openMixDrawer('${whM.mix.replace(/'/g, "\\'")}', event)`) : "";
+
+      // 2) Watched plant — same snapshot + refresh treatment
+      const pinS = execStatus(pinDrill.acc, companyAvg);
+      const pinCard = execPinCard(`${plantSel.title}`, "var(--text-muted)", "",
+        `<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${pinS.c};margin-right:8px;flex-shrink:0;"></span>${pinDrill.acc}% on target`,
+        "inherit",
+        `${pinDrill.plant} \u2014 ${pinDrill.loads.toLocaleString()} loads. Your company average is ${companyAvg}%; it's ${pinS.t}.`,
+        `<span style="color:#3069e3;">Open ${pinDrill.plant} \u2192</span><span style="font-size:10.5px;font-weight:600;color:var(--text-muted);white-space:nowrap;">Updated ${upd}</span>`,
+        execPlantGearHTML(), `openExecDrawer(${EXEC_DRILL.findIndex(pl => pl.plant === pinDrill.plant)})`);
+
+      // Cards 3-5: coming soon — placeholders hold the layout while we finalize
+      // each card's math and copy one at a time. Live versions are parked in
+      // execPinCardLive* below (unused) so nothing is lost.
+      const soon = (title, hint) => `<div class="dbw-card" style="padding:14px 16px;gap:4px;opacity:.55;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);">Coming soon</div>
+          <div style="font-size:13px;font-weight:700;">${title}</div>
+          <div style="font-size:22px;font-weight:800;line-height:1.1;filter:blur(6px);user-select:none;">$00,000</div>
+          <div style="font-size:11.5px;color:var(--text-muted);line-height:1.45;">${hint}</div>
+        </div>`;
+      // 3) Worst plants -> your median — LIVE (John, Aug 19). The worst-to-median
+      // opportunity is a pinned quick read up top, not a drawer card. Same math
+      // as execOpportunityMath; click-through opens the full plant list.
+      const opp = execOpportunityMath();
+      const oppCard = opp ? execPinCard(
+        `Gap to your median`, "var(--text-muted)",
+        "",
+        `Save ${V("opportunity_per_month", opp.fmt(opp.perMo))} / month`,
+        "inherit",
+        `by lifting your ${V("below_median_count", opp.below.length)} below-median plants to your own median of ${V("median_on_target_pct", opp.median)}% \u2014 ~$${V("cost_per_missed_load", Math.round(opp.costPerMiss))} per missed load.`,
+        `<span style="color:#3069e3;">See the ${V("below_median_count", opp.below.length)} plants holding it \u2192</span><span style="font-size:10.5px;font-weight:600;color:var(--text-muted);white-space:nowrap;">Modeled on Q2</span>`,
+        "", "openExecDrawer('plants', null, 'median')")
+        : soon("Worst plants \u2192 your median", "What the gap between your bottom plants and your own median is worth, in dollars.");
+      // 4) Top contractors by volume (John, Aug 19): the accounts we run the
+      // most loads for. DATA GAP: the embedded extract has no loads-by-customer
+      // ranking — EXEC_ACTIONS only carries the costliest account per window,
+      // so any volume ordering built from it would be invented (it undercounts
+      // everyone who wasn't costliest that day). Do NOT rank from cost data.
+      // Fill EXEC_TOP_CONTRACTORS from a Q2 loads-by-customer extract (data
+      // scientist ask: "total loads per customer, Q2 2026, top 5") and the card
+      // goes live automatically. Figma "Top contractors" (Trinity-Design-
+      // Overview node 2190-51967) is the CONCEPT ONLY — styled to the pinned-
+      // card skeleton, not the Figma visual.
+      // Filled Aug 19 from data.js: Tex-Mix account, Q2 2026 (Apr 1 - Jun 30),
+      // count of load rows per customer field — 84,225 rows total, 916 distinct
+      // customers. Real extract, not estimated. Top 5 kept; card shows 3.
+      const EXEC_TOP_CONTRACTORS = [
+        ["Keystone Concrete Placement", 6236],
+        ["Perry Homes Llc", 4916],
+        ["Kent Companies Texas Llc", 4751],
+        ["Baker Concrete Construction", 3131],
+        ["Big Tex Foundations", 3016]
+      ];
+      const chainCard = EXEC_TOP_CONTRACTORS ? `<div class="dbw-card" onclick="openRoleDrawer('sales')" onmouseenter="this.style.borderColor='rgba(48,105,227,0.5)'" onmouseleave="this.style.borderColor=''" style="padding:18px;gap:7px;justify-content:flex-start;min-height:152px;cursor:pointer;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);position:absolute;top:14px;left:18px;right:40px;">Top contractors</div>
+          <div style="height:16px;"></div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            ${EXEC_TOP_CONTRACTORS.slice(0, 3).map(([name, loads], i) => `
+            <div style="display:flex;align-items:baseline;gap:8px;">
+              <span style="font-size:12px;font-weight:600;color:var(--text-muted);width:12px;flex-shrink:0;font-variant-numeric:tabular-nums;">${i + 1}</span>
+              <span style="font-size:13.5px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${V("customer_name", name)}</span>
+              <span style="font-size:11px;font-weight:600;color:var(--text-muted);white-space:nowrap;font-variant-numeric:tabular-nums;">${V("customer_loads", loads.toLocaleString())} loads</span>
+            </div>`).join("")}
+          </div>
+          <div style="font-size:13px;color:var(--text-muted);line-height:1.5;">The accounts you ran the most loads for this quarter.</div>
+          <div style="font-size:12px;font-weight:600;margin-top:auto;padding-top:10px;display:flex;justify-content:space-between;align-items:baseline;gap:10px;"><span style="color:#3069e3;">Open the customer story \u2192</span><span style="font-size:10.5px;font-weight:600;color:var(--text-muted);white-space:nowrap;">Q2 2026</span></div>
+        </div>` : soon("Top contractors", "The accounts you run the most loads for, ranked. Waiting on the loads-by-customer extract.");
+      // "Concrete that came back" placeholder removed (John, Aug 19). Restore by
+      // re-adding: const retCard = soon("Concrete that came back", "Returned loads
+      // for the period, in dollars, with the trend vs the prior period.");
+
+      return `<div class="dbw-section">Pinned \u2014 quick reads before the story</div>
+        <div class="dbw-grid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:18px;">
+          ${whCard}${pinCard}${oppCard}${chainCard}
+        </div>`;
+    }
+
+    // ---- Raw-load chart extracts (computed Aug 19 from data.js: Tex-Mix, Q2 2026) ----
+    // Histogram: discharge slump miss (sd) per measured load, rounded to the
+    // nearest inch for display, tails clamped at ±5. 84,007 loads with a
+    // discharge reading; 41,678 (49.6%) within ±1.0 in exactly.
+    const EXEC_SLUMP_HIST = { total: 84007, within: 41678, bins: [[-5,861],[-4,181],[-3,327],[-2,647],[-1,4430],[0,27009],[1,20713],[2,14641],[3,9061],[4,3323],[5,2814]] };
+    // Plant door vs discharge: per plant, loads carrying BOTH a plant-door slump
+    // reading (leave-plant, falling back to initial) and a discharge reading.
+    // [name, n, % off target (>1 in) at the door, % off target at discharge].
+    // Top 10 of the 25 drill plants by comparable loads. Names as the drill
+    // extract spells them — including the dirty "Plant Plant 1".
+    const EXEC_DOOR_DISCHARGE = [["Plant 10",5165,41,60],["Plant 24",4597,27,47],["Plant 17",4363,46,31],["Plant Plant 1",4308,48,43],["Plant 07",3903,57,44],["Plant 19",3842,46,44],["Plant 1",3779,50,50],["Plant 14",3567,36,58],["Plant 06",3439,52,42],["Plant 15",3143,37,56]];
+
+    function execChartsHTML() {
+      // Chart 1: where discharge slump landed
+      const H = EXEC_SLUMP_HIST;
+      const maxBin = Math.max(...H.bins.map(b => b[1]));
+      const winPct = (100 * H.within / H.total).toFixed(1);
+      const fmtC = v => v >= 1000 ? (v / 1000).toFixed(1) + "K" : v;
+      const histCols = H.bins.map(([bin, v]) => {
+        const inWin = bin >= -1 && bin <= 1;
+        const hpx = Math.max(3, Math.round(120 * v / maxBin));
+        const lbl = bin === -5 ? "\u2264-5" : bin === 5 ? "\u22655" : (bin > 0 ? "+" + bin : String(bin));
+        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;min-width:0;">
+            <span style="font-size:10px;font-weight:600;color:var(--text-muted);font-variant-numeric:tabular-nums;">${fmtC(v)}</span>
+            <div style="width:100%;max-width:46px;height:${hpx}px;border-radius:4px 4px 0 0;background:${inWin ? "#3069e3" : "rgba(122,132,153,0.28)"};"></div>
+            <span style="font-size:10.5px;color:var(--text-muted);font-variant-numeric:tabular-nums;">${lbl}</span>
+          </div>`;
+      }).join("");
+
+      // Chart 2: plant door vs discharge, 10 busiest plants
+      const better = EXEC_DOOR_DISCHARGE.filter(p => p[3] < p[2]).length;
+      const worse = EXEC_DOOR_DISCHARGE.filter(p => p[3] > p[2]).length;
+      const pairCols = EXEC_DOOR_DISCHARGE.map(([name, n, door, dis]) => `
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;min-width:0;" title="${name} \u00b7 ${n.toLocaleString()} comparable loads">
+            <div style="display:flex;align-items:flex-end;gap:3px;height:118px;">
+              <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;"><span style="font-size:9.5px;font-weight:600;color:var(--text-muted);font-variant-numeric:tabular-nums;">${door}</span><div style="width:16px;height:${Math.round(door * 1.55)}px;border-radius:3px 3px 0 0;background:rgba(122,162,240,0.55);"></div></div>
+              <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;"><span style="font-size:9.5px;font-weight:600;color:var(--text-muted);font-variant-numeric:tabular-nums;">${dis}</span><div style="width:16px;height:${Math.round(dis * 1.55)}px;border-radius:3px 3px 0 0;background:#3069e3;"></div></div>
+            </div>
+            <span style="font-size:10px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">${name.replace("Plant Plant", "Plant")}</span>
+          </div>`).join("");
+
+      return `
+        <div class="dbw-section" style="margin-top:0;">The shape of the quarter \u2014 two views from the raw loads</div>
+        <div class="dbw-grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-bottom:18px;">
+          <div class="dbw-card" style="padding:18px 20px;">
+            <div class="dbw-q">Where discharge slump landed</div>
+            <div style="font-size:15px;font-weight:700;margin:2px 0 14px;">${V("slump_within_pct", winPct)}% of ${V("slump_measured", H.total.toLocaleString())} measured loads landed within \u00b11 in of target</div>
+            <div style="display:flex;align-items:flex-end;gap:6px;">${histCols}</div>
+            <div style="font-size:10.5px;color:var(--text-muted);line-height:1.5;margin-top:12px;">Inches from the ticketed slump target at discharge, rounded to the nearest inch; tails grouped at \u00b15. Slump only \u2014 the fully-on-target number up top also requires water inside the design allowance, which is why it reads lower.</div>
+          </div>
+          <div class="dbw-card" style="padding:18px 20px;">
+            <div class="dbw-q">Plant door vs discharge \u2014 your 10 busiest plants</div>
+            <div style="font-size:15px;font-weight:700;margin:2px 0 6px;">${better} of 10 land closer to target at discharge than they left the plant \u2014 ${worse} land further off</div>
+            <div style="display:flex;align-items:center;gap:14px;font-size:10.5px;color:var(--text-muted);margin-bottom:10px;">
+              <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:rgba(122,162,240,0.55);"></span>% off target leaving the plant</span>
+              <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#3069e3;"></span>% off target at discharge</span>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:8px;">${pairCols}</div>
+            <div style="font-size:10.5px;color:var(--text-muted);line-height:1.5;margin-top:12px;">Off target = more than 1 in from the ticketed slump. Only loads measured at both points are counted. Where the right bar is taller, the gap opened in transit \u2014 a thread for Quality and Operations together, not either alone.</div>
+          </div>
+        </div>`;
+    }
+
+    function renderExec5Surface() {
+      const el = document.getElementById("dash-v5");
+      if (!el) return;
+      const P = execCur();
+      const curId = EXEC_TPATH[EXEC_TPATH.length - 1];
+      const act = EXEC_ACTIONS[curId];
+      const grain = execGrainName(P.grain);
+      const wp = P.worst && P.worst.length ? P.worst[0] : null;
+      const bp = P.best && P.best.length ? P.best[0] : null;
+      const wpIdx = wp ? EXEC_DRILL.findIndex(pl => pl.plant === wp[0]) : -1;
+      const wpDrill = wpIdx >= 0 ? EXEC_DRILL[wpIdx] : null;
+      const wMix = wpDrill && wpDrill.mixes.length ? wpDrill.mixes[0] : null;
+      const mixTrucks = wMix ? wMix.trucks.slice(0, 2) : [];
+      const kids = (EXEC_TREE[curId] || []).map(id => EXEC_PERIODS[id]).filter(p => p && p.ppy != null);
+      const last = kids.length >= 2 ? kids[kids.length - 1] : null;
+      const prev = kids.length >= 2 ? kids[kids.length - 2] : null;
+
+      // modeled "worth" (real counts x footnoted rates) -- the only modeled figures
+      const offDis = Math.max(1, Math.round(P.measured * (1 - P.avgAcc / 100)));
+      const costPerOffLoad = P.totalCost / offDis;
+      const mixWorth = wMix ? wMix.n * Math.max(0, (P.avgAcc - wMix.acc) / 100) * costPerOffLoad : 0;
+      const siteWorth = act ? act.timeCost * 0.5 : 0;
+
+      const entMix = wMix ? `mix-${wp[0]}-${wMix.mix}`.replace(/\s+/g, "") : null;
+      const entAcct = act ? `acct-${act.name}`.replace(/\s+/g, "") : null;
+
+      // the wires this render will draw
+      VC5_WIRES = [];
+      if (entMix) VC5_WIRES.push({ a: "mix-qc", b: "mix-ops", ent: entMix, color: "#3069e3", label: `same mix \u00b7 ${wMix.mix} \u2014 ${wMix.n.toLocaleString()} loads` });
+      if (entAcct) VC5_WIRES.push({ a: "acct-ops", b: "acct-sales", ent: entAcct, color: "#3069e3", label: `same account \u00b7 ${act.name.split(" ").slice(0, 2).join(" ")}` });
+      if (entMix && entAcct) VC5_WIRES.push({ a: "qc-card", b: "sales-card", arc: true, buildable: true, ent: "ghost-join", color: "#8a8a8a", label: "mix \u2192 customer join: buildable from ticket data \u2014 ask data science" });
+
+      const pill = (tone, label) => `<span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.06em;border-radius:4px;padding:2px 8px;white-space:nowrap;${
+        tone === "bad" ? "color:#ff5b52;border:1px solid rgba(255,91,82,.45);" :
+        tone === "warn" ? "color:#ffba0d;border:1px solid rgba(255,186,13,.45);" :
+        "color:#25c07a;border:1px solid rgba(37,192,122,.45);"}">${label}</span>`;
+      const qcTone = P.avgAcc >= 35 ? "ok" : P.avgAcc >= 25 ? "warn" : "bad";
+      const opsRising = last && prev ? last.lostCost > prev.lostCost : false;
+      const salesRising = last && prev ? last.retLoads > prev.retLoads : false;
+      const toneLbl = t => t === "ok" ? "STEADY" : t === "warn" ? "WATCH" : "NEEDS ATTENTION";
+
+      // a "port" is a row a wire plugs into: dot matches the wire color
+      const port = (wire, ent, k, v, wired) => `
+                <div class="vc5-port ${wired ? "wired" : ""}" ${wire ? `data-wire="${wire}"` : ""} ${ent ? `data-ent="${ent}"` : ""}
+                  ${wired && ent ? `onmouseenter="vc5WireShow('${ent}', true)" onmouseleave="vc5WireShow('${ent}', false)" onclick="vc5WirePin('${ent}')" title="Hover to see the wire · click to pin it"` : ""}>
+                  <span class="pk">${wired ? `<span class="pd" style="background:#3069e3;"></span>` : ""}${k}</span><span class="pv">${v}</span>
+                </div>`;
+
+      const action = (doLabel, titleHTML, worth, why) => `
+              <div class="va-item">
+                <div class="ah"><span class="va-do">${doLabel}</span><strong>${titleHTML}</strong><span class="va-worth">${worth ? `\u2248 ${V("action_worth", fmt$(worth))} / ${grain}` : ""}</span></div>
+                <div class="aw">${why}</div>
+              </div>`;
+
+      const card = (wireId, role, pillHTML, big, bigColor, cap, portsHTML, actionsHTML, btnLabel, btnClick) => `
+            <div class="dbw-card vc5-row" data-wire="${wireId}">
+              <div style="display:flex;align-items:center;gap:10px;padding-right:150px;">
+                <div class="dbw-q" style="margin:0;">${role}</div>
+                ${pillHTML}
+              </div>
+              <div class="dbw-big" style="color:${bigColor};">${big}</div>
+              <div class="dbw-cap">${cap}</div>
+              <div style="display:flex;flex-direction:column;gap:3px;margin-top:6px;">${portsHTML}</div>
+              <div class="vc5-threads">${actionsHTML}</div>
+              <button class="dbw-see-btn" onclick="${btnClick}">${btnLabel} \u2192</button>
+            </div>`;
+
+      const qcCard = card("qc-card", "Head of Quality", "", /* pill removed per John, Aug 18 */
+        `${V("on_target_pct", P.avgAcc)}%`, qcTone === "ok" ? "#25c07a" : qcTone === "warn" ? "#ffba0d" : "#ff5b52",
+        `of measured loads finished discharge fully in the window \u2014 slump and water, every load.`,
+        (bp ? port(null, null, "Best plant", `${bp[0]} \u00b7 ${bp[1]}%`) : "") +
+        (wp ? port(null, null, "Worst plant", `${wp[0]} \u00b7 ${wp[1]}%`) : "") +
+        (wMix ? port("mix-qc", entMix, "Its worst mix", `${wMix.mix} \u00b7 ${V("mix_on_target_pct", wMix.acc)}% on target`, true) : ""),
+        (wMix ? action("THREAD \u00b7 QUALITY", `Design or drivers on ${wMix.mix}?`, mixWorth,
+          `${wMix.n.toLocaleString()} loads miss the same direction \u2014 a pattern only Quality can rule on. The drill holds the evidence, mix by mix.`) : "") +
+        (wp && bp ? action("THREAD \u00b7 QUALITY", `What's ${bp[0]} doing right?`, 0,
+          `${bp[1]}% vs ${wp[0]}'s ${wp[1]}% \u2014 same mixes, same window. The gap is the story.`) : ""),
+        "Open the quality story", "openRoleDrawer('qc')");
+
+      const opsCard = card("ops-card", "Head of Operations", "", /* pill removed per John, Aug 18 */
+        V("held_truck_cost", fmt$(P.lostCost)), "inherit", /* cost is a fact, not an alarm — trend rows carry the color */
+        `paid to trucks sitting at job sites, waiting to unload ($${V("truck_hour_rate", "120")}/truck-hour).`,
+        (wMix ? port("mix-ops", entMix, "Hauling that mix", `trucks ${mixTrucks.map(t => t.truck).join(", ")}`, true) : "") +
+        (act ? port("acct-ops", entAcct, "Costliest site", `${act.name.split(" ").slice(0, 2).join(" ")} \u00b7 ${fmt$(act.timeCost)} held`, true) : "") +
+        (last && prev ? port(null, null, `${last.short} vs ${prev.short}`, `${last.lostCost > prev.lostCost ? "\u25b2" : "\u25bc"} ${fmt$(Math.abs(last.lostCost - prev.lostCost))}`) : ""),
+        (act ? action("THREAD \u00b7 OPS", `What are trucks waiting on at ${act.name.split(" ").slice(0, 2).join(" ")}?`, siteWorth,
+          `The clock starts after the truck arrives \u2014 whatever the answer is, it lives at the site, not the plant. Same account is Sales' biggest line, one wire over.`) : "") +
+        (wMix ? action("THREAD \u00b7 OPS", `Trucks ${mixTrucks.map(t => t.truck).join(" & ")} keep showing up on ${wMix.mix}`, 0,
+          `Whether that's a coaching story or a mix story depends on Quality's ruling \u2014 worth knowing which before anyone talks to the crews.`) : ""),
+        "Open the operations story", "openRoleDrawer('ops')");
+
+      const salesCard = card("sales-card", "Head of Sales", "", /* pill removed per John, Aug 18 */
+        act ? V("customer_total_cost", fmt$(act.total)) : V("returned_loads", P.retLoads.toLocaleString()), "inherit", /* cost is a fact, not an alarm */
+        act ? `of this ${grain}'s waste sits with one customer. Concentrated waste is recoverable waste.` : `loads refused at the gate.`,
+        (act ? port("acct-sales", entAcct, "That customer", `${act.name.split(" ").slice(0, 2).join(" ")} \u00b7 ${act.retLoads} loads back`, true) : "") +
+        (act ? port(null, null, "Returns cost there", fmt$(act.retCost)) : "") +
+        (last && prev ? port(null, null, `Returns, ${last.short} vs ${prev.short}`, `${last.retLoads > prev.retLoads ? "\u25b2" : "\u25bc"} ${Math.abs(last.retLoads - prev.retLoads).toLocaleString()} loads`) : ""),
+        (act ? action("THREAD \u00b7 SALES", `Does ${act.name.split(" ").slice(0, 2).join(" ")} confirm pour-readiness before we batch?`, 0,
+          `${act.retLoads} loads went back \u2014 a readiness rule would show up on this card and the Operations card at once.`) : "") +
+        (last && prev && last.retLoads > prev.retLoads ? action("THREAD \u00b7 SALES", `Returns rose ${(last.retLoads - prev.retLoads).toLocaleString()} loads, ${prev.short} to ${last.short}`, 0,
+          `Customers feel it before dashboards show it \u2014 the account managers may already be hearing about it.`) : ""),
+        "Open the customer story", "openRoleDrawer('sales')");
+
+      el.innerHTML = execPinnedRowHTML(P, curId) + `
+          <div class="dbw-section" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <span>${V("period_label", P.label)} \u2014 each desk sees its column; the wires are yours</span>
+            <button id="vc5-showall" class="${VC5_ALL ? "on" : ""}" onclick="vc5ToggleAll()" style="font:inherit;font-size:11px;font-weight:600;letter-spacing:0;text-transform:none;padding:5px 12px;border:1px solid rgba(48,105,227,0.5);border-radius:999px;background:transparent;color:#3069e3;cursor:pointer;white-space:nowrap;">${VC5_ALL ? "Hide connections" : "Show connections"}</button>
+          </div>
+          <div class="vc5-board" id="vc5-board" style="padding-bottom:24px;">
+            <div class="dbw-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;gap:22px;">
+              ${qcCard}
+              ${opsCard}
+              ${salesCard}
+            </div>
+            <svg class="vc5-wires" id="vc5-wires"></svg>
+          </div>` + execChartsHTML();
+
+      requestAnimationFrame(() => vc5DrawWires());
+      if (VC5_LIT) { const lit = VC5_LIT; VC5_LIT = null; vc5Ping(lit); }
+      if (VC5_PIN) requestAnimationFrame(() => document.querySelectorAll(".vc5-wires .wgroup").forEach(g => g.classList.toggle("show", g.dataset.wgroup === VC5_PIN)));
+      if (VC5_ALL) requestAnimationFrame(() => document.querySelectorAll(".vc5-wires .wgroup").forEach(g => g.classList.add("show")));
+    }
+
     // Drill drawer: company -> plant -> mix (trucks & drivers). Breadcrumb + back.
     let EXEC_PATH = null; // null = quarter overview; "plants" = list; [pi] plant; [pi,mi] mix
+    let EXEC_FROM_LIST = false; // breadcrumb shows "All plants" only when the user navigated through the list
+    let EXEC_PLANTS_HILITE = null; // 'median' = mark below-median plants (set by the Save $/month card)
     let EXEC_ROLE = null; // null = generic exec drawer; "qc" | "ops" | "sales" = role story at level 0
     const EXEC_ROLE_META = {
       qc:    { crumb: "Quality overview",    title: "the quality story" },
@@ -4279,9 +5063,36 @@
       document.getElementById("vi-overlay").classList.add("open");
       document.getElementById("vi-drawer").classList.add("open");
     }
-    function openExecDrawer(level, mixIdx) {
+    function openMixDrawer(mixName, ev, sub) {
+      if (ev) ev.stopPropagation();
+      EXEC_ROLE = null;
+      EXEC_PATH = { mixview: mixName, sub: sub || null };
+      const SS = execCur();
+      document.getElementById("vi-title").textContent = "Mix " + mixName + " \u2014 what's happening, who to call";
+      document.getElementById("vi-subtitle").textContent = "Tex-Mix \u00b7 discharge acceptance (slump and water) \u00b7 costs modeled at $120/truck-hour, $25/yd\u00b3 returned";
+      renderExecDrawer();
+      document.getElementById("vi-overlay").classList.add("open");
+      document.getElementById("vi-drawer").classList.add("open");
+    }
+    function openMixDrawerCurrent(ev) { execMixResolve().m && openMixDrawer(execMixResolve().m.mix, ev); }
+    function openPlantDrawerCurrent(ev) {
+      if (ev) ev.stopPropagation();
+      const p = execPlantResolve().p;
+      const idx = EXEC_DRILL.findIndex(pl => pl.plant === p.plant);
+      if (idx >= 0) openExecDrawer(idx);
+    }
+    function openExecDrawer(level, mixIdx, hilite) {
       if (level == null) EXEC_ROLE = null; // top-level open resets to the generic story; drilling keeps the role
-      EXEC_PATH = level == null ? null : (level === "plants" ? "plants" : (mixIdx == null ? [level] : [level, mixIdx]));
+      // Highlight mode for the plants list (John, Aug 19): arriving from the
+      // "Save $/month" pinned card marks the below-median plants. Sticks while
+      // the drawer stays open; cleared on close.
+      if (level === "plants" && hilite) EXEC_PLANTS_HILITE = hilite;
+      // Depth capped at the mix list (John + Adam, Aug 18): the exec calls the desk
+      // head rather than digging to trucks/drivers -- that depth lives in the QC/Ops
+      // persona dashboards. mixIdx is ignored; the level-2 renderer stays in the
+      // codebase for an easy restore if users ask for it back.
+      EXEC_FROM_LIST = level === "plants" ? true : (Array.isArray(EXEC_PATH) ? EXEC_FROM_LIST : EXEC_PATH === "plants");
+      EXEC_PATH = level == null ? null : (level === "plants" ? "plants" : [level]);
       const SS = execCur();
       document.getElementById("vi-title").textContent = SS.label + " \u2014 " + (EXEC_ROLE ? EXEC_ROLE_META[EXEC_ROLE].title : "the big picture, then the detail");
       document.getElementById("vi-subtitle").textContent = "Tex-Mix \u00b7 discharge acceptance (slump and water) \u00b7 costs modeled at $120/truck-hour, $25/yd\u00b3 returned";
@@ -4294,7 +5105,14 @@
       const rootLabel = EXEC_ROLE ? EXEC_ROLE_META[EXEC_ROLE].crumb : "Quarter overview";
       const rootClick = EXEC_ROLE ? `openRoleDrawer('${EXEC_ROLE}')` : "openExecDrawer()";
       const crumbBits = [`<span class="${path == null ? "cur" : "c"}" onclick="${rootClick}">${rootLabel}</span>`];
-      if (path != null) crumbBits.push(`<span>\u203a</span><span class="${path === "plants" ? "cur" : "c"}" onclick="openExecDrawer('plants')">All plants</span>`);
+      if (path && path.mixview) {
+        // The mix is its own story, not a deeper page of the period drawer:
+        // its crumb roots at the mix (same pattern as the role drawers).
+        crumbBits.length = 0;
+        crumbBits.push(`<span class="${path.sub ? "c" : "cur"}" onclick="openMixDrawer('${path.mixview.replace(/'/g, "\\'")}')">Mix ${path.mixview} overview</span>`);
+        if (path.sub === "plants") crumbBits.push(`<span>\u203a</span><span class="cur">Plants running it</span>`);
+      }
+      if (path === "plants" || (Array.isArray(path) && EXEC_FROM_LIST)) crumbBits.push(`<span>\u203a</span><span class="${path === "plants" ? "cur" : "c"}" onclick="openExecDrawer('plants')">All plants</span>`);
       if (Array.isArray(path)) {
         crumbBits.push(`<span>\u203a</span><span class="${path.length === 1 ? "cur" : "c"}" onclick="openExecDrawer(${path[0]})">${EXEC_DRILL[path[0]].plant}</span>`);
         if (path.length === 2) crumbBits.push(`<span>\u203a</span><span class="cur">Mix ${EXEC_DRILL[path[0]].mixes[path[1]].mix}</span>`);
@@ -4312,7 +5130,7 @@
           <div class="vi-brandpanel">
             <div class="vb-brand" style="color:var(--dw-hi);">${VERIFI_LOGO_SVG}<span style="opacity:.35;margin:0 4px;">|</span><span style="color:#3069e3;display:flex;align-items:center;gap:6px;">${KPI_BRAND_SVG}Insights <span class="beta">Beta</span></span><span class="tagline">\u00b7 What your data is worth</span></div>
             <div class="vb-title">You run cheaper than most Verifi accounts \u2014 watch the internal trend</div>
-            <div class="vb-body">${S.label}: <strong style="color:var(--dw-hi);">${fmt$(S.totalCost)} in waste</strong> \u2014 <strong style="color:#25c07a;">cheaper than ${100 - S.pctCheaper}% of Verifi accounts</strong>, but ${priorDir} from $${S.priorPpy.toFixed(2)}/yd\u00b3 in the ${S.prior}. The numbers below say where the money went; the list under them says who to talk to.</div>
+            <div class="vb-body">${S.label}: <strong style="color:var(--dw-hi);">${fmt$(S.totalCost)} in waste</strong> \u2014 <strong style="color:#25c07a;">cheaper than ${100 - S.pctCheaper}% of Verifi accounts</strong>${S.priorPpy != null ? `, but ${priorDir} from $${S.priorPpy.toFixed(2)}/yd\u00b3 in the ${S.prior}` : ""}. The numbers below say where the money went; the list under them says who to talk to.</div>
           </div>
 
           <div class="vi-section-label">The ${execGrainName(S.grain)} in four numbers</div>
@@ -4329,13 +5147,13 @@
             </div>
             <div style="border:1px solid var(--dw-bd);background:var(--dw-card);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:5px;">
               <div style="font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dw-mut);">vs Verifi accounts</div>
-              <div style="font-size:18px;font-weight:800;color:#25c07a;font-variant-numeric:tabular-nums;white-space:nowrap;">\u25bc $${(S.medPpy - S.ppy).toFixed(2)}/yd\u00b3</div>
-              <div style="font-size:11.5px;color:var(--dw-mut);line-height:1.4;">${fmt$(S.gapDollars)} below the median Verifi account</div>
+              <div style="font-size:18px;font-weight:800;color:#25c07a;font-variant-numeric:tabular-nums;white-space:nowrap;">${S.medPpy != null ? `\u25bc $${(S.medPpy - S.ppy).toFixed(2)}/yd\u00b3` : "\u2014"}</div>
+              <div style="font-size:11.5px;color:var(--dw-mut);line-height:1.4;">${S.gapDollars != null ? `${fmt$(S.gapDollars)} below the median Verifi account` : "not enough volume this period to benchmark"}</div>
             </div>
             <div style="border:1px solid var(--dw-bd);background:var(--dw-card);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:5px;">
               <div style="font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dw-mut);">vs ${S.prior}</div>
-              <div style="font-size:18px;font-weight:800;color:${S.ppy >= S.priorPpy ? "#ff5b52" : "#25c07a"};font-variant-numeric:tabular-nums;white-space:nowrap;">${S.ppy >= S.priorPpy ? "\u25b2 +" : "\u25bc \u2212"}$${Math.abs(S.ppy - S.priorPpy).toFixed(2)}/yd\u00b3</div>
-              <div style="font-size:11.5px;color:var(--dw-mut);line-height:1.4;">moved $${S.priorPpy.toFixed(2)} \u2192 $${S.ppy.toFixed(2)} on your own baseline</div>
+              <div style="font-size:18px;font-weight:800;color:${S.priorPpy != null && S.ppy >= S.priorPpy ? "#ff5b52" : "#25c07a"};font-variant-numeric:tabular-nums;white-space:nowrap;">${S.priorPpy != null ? `${S.ppy >= S.priorPpy ? "\u25b2 +" : "\u25bc \u2212"}$${Math.abs(S.ppy - S.priorPpy).toFixed(2)}/yd\u00b3` : "\u2014"}</div>
+              <div style="font-size:11.5px;color:var(--dw-mut);line-height:1.4;">${S.priorPpy != null ? `moved $${S.priorPpy.toFixed(2)} \u2192 $${S.ppy.toFixed(2)} on your own baseline` : "no prior period to compare"}</div>
             </div>
           </div>
 
@@ -4369,54 +5187,171 @@
               let worstK = kids[0];
               for (let i = 1; i < kids.length; i++) if (kids[i].ppy > worstK.ppy) worstK = kids[i];
               const bestK = kids.reduce((a, b) => (b.ppy < a.ppy ? b : a));
-              if (worstK !== bestK) mover = execLeanCard(3, worstK.label,
+              if (worstK !== bestK) mover = execLeanCard2(3, worstK.label,
                 "ops",
-                `the expensive ${execGrainName(worstK.grain)} \u2014 $${worstK.ppy.toFixed(2)}/yd\u00b3 vs $${bestK.ppy.toFixed(2)} in ${bestK.label}`,
-                `Something changed between ${bestK.short} and ${worstK.short} \u2014 volume mix, site behavior, or plant discipline. Real money at your volumes.`,
-                `Your operations lead \u2014 make ${worstK.label} the first agenda item of the next ops review.`);
+                `the expensive ${execGrainName(worstK.grain)}, $/yd\u00b3`,
+                execLeanBar(bestK.short, `$${bestK.ppy.toFixed(2)}`, bestK.ppy, Math.max(bestK.ppy, worstK.ppy) * 1.25, "var(--dw-mut)")
+                + execLeanBar(worstK.short, `$${worstK.ppy.toFixed(2)}`, worstK.ppy, Math.max(bestK.ppy, worstK.ppy) * 1.25, "#ff5b52"),
+                `Something changed between ${bestK.short} and ${worstK.short} \u2014 and at these volumes, cents per yard is real money.`,
+                `Call the Head of Operations`,
+                `What changed between ${bestK.short} and ${worstK.short} \u2014 volume mix, site behavior, or plant discipline?`,
+                null, "");
             }
             return `
-          <div style="font-size:14px;font-weight:700;color:var(--dw-hi);display:flex;align-items:center;gap:8px;margin-top:2px;margin-bottom:10px;">\u2691 Where to lean \u2014 three conversations, in order</div>
-            ${wp ? execLeanCard(1, wp[0], "quality",
-              `worst plant \u2014 ${wp[1]}% of loads on target vs ${S.avgAcc}% company average`,
-              `Highest-leverage single site \u2014 if it ran at the company average, the cost curve bends.`,
-              `${wp[0]}'s plant manager and QC lead. Ask which mixes are driving it${wpIdx >= 0 ? " \u2014 the drill below names them" : ""}.`,
-              wpIdx >= 0 ? `<div style="margin-top:8px;"><button class="kpi-linklike" style="padding-left:0;" onclick="openExecDrawer(${wpIdx})">Open ${wp[0]} \u2014 worst mixes, trucks, drivers \u2192</button></div>` : "") : ""}
-            ${act ? execLeanCard(2, act.name,
+          <div style="font-size:14px;font-weight:700;color:var(--dw-hi);display:flex;align-items:center;gap:8px;margin-top:2px;margin-bottom:10px;">\u2691 Where to lean \u2014 three calls, in order</div>
+            ${wp ? execLeanCard2(1, wp[0], "quality", "worst plant",
+              execLeanBar("Company average", `${S.avgAcc}%`, S.avgAcc, Math.max(S.avgAcc, wp[1]) * 1.25, "var(--dw-mut)")
+              + execLeanBar(wp[0], `${wp[1]}%`, wp[1], Math.max(S.avgAcc, wp[1]) * 1.25, "#ff5b52"),
+              `Bring ${wp[0]} to the company average and the cost curve bends.`,
+              `Call the Head of Quality`,
+              `Which mixes are driving ${wp[0]} \u2014 and is the fix the design or the crews?`,
               null,
-              `costliest customer \u2014 ${act.retCost > act.timeCost ? "a returns problem" : "trucks held on site"} \u00b7 $${act.total.toLocaleString()} ($${act.timeCost.toLocaleString()} held-truck + $${act.retCost.toLocaleString()} returns, ${act.retLoads} loads back)`,
-              act.retCost > act.timeCost ? "Refused loads \u2014 order accuracy and pour-readiness, not driving." : "Trucks waiting on their sites \u2014 unload readiness and truck spacing, not batching.",
-              `Dispatch lead plus the ${act.name} account manager. ${act.retCost > act.timeCost ? "Ask for pour-readiness confirmation before batching their orders." : "Ask their site supers what a truck waits on after it arrives."}`) : ""}
+              wpIdx >= 0 ? `<button class="exl-btn" onclick="openExecDrawer(${wpIdx})">Open ${wp[0]} \u2014 worst mixes, tagged by owner \u2192</button>` : "") : ""}
+            ${act ? execLeanCard2(2, act.name, null, "costliest customer",
+              execLeanBar("Trucks held", fmt$(act.timeCost), act.timeCost, Math.max(act.timeCost, act.retCost) * 1.25, "#eb6834")
+              + execLeanBar("Loads returned", fmt$(act.retCost), act.retCost, Math.max(act.timeCost, act.retCost) * 1.25, "#ff5b52"),
+              act.retCost > act.timeCost
+                ? `${fmt$(act.total)} on one account, mostly refused loads \u2014 order accuracy and pour-readiness, not driving.`
+                : `${fmt$(act.total)} on one account, mostly trucks waiting on their sites \u2014 unload readiness and truck spacing, not batching.`,
+              act.retCost > act.timeCost ? `Call the Head of Sales` : `Call the Head of Operations`,
+              act.retCost > act.timeCost
+                ? `Can we confirm pour-readiness before batching ${act.name}'s orders \u2014 and who calls them first?`
+                : `What do our trucks wait on at ${act.name}'s sites after they arrive?`,
+              act.retCost > act.timeCost
+                ? `Sales + Operations \u2014 the readiness promise only holds if dispatch runs it on every order.`
+                : null,
+              "") : ""}
             ${mover}
           ` + execExploreCardHTML(S);
           })()}`;
       } else if (path === "plants") {
+        const hil = EXEC_PLANTS_HILITE === "median" ? execOpportunityMath() : null;
+        const hilByPlant = hil ? Object.fromEntries(hil.below.map(b => [b.plant, b])) : {};
+        const medianDividerAfter = hil ? hil.below.length : -1;
         body = `
+          ${hil ? `
+          <div class="vi-interpretation" style="margin-bottom:14px;border-color:rgba(37,192,122,.35);">
+            <div class="vi-interp-title">The ${hil.fmt(hil.perMo)}/month goal \u2014 these ${hil.below.length} plants</div>
+            <div class="vi-interp-body">Each highlighted plant shows what lifting it to your median of ${hil.median}% is worth. The plants below the line already clear that bar \u2014 they're the proof it's reachable.</div>
+          </div>` : ""}
           <div class="vi-section-label">25 plants, worst first \u2014 click a plant to drill in</div>
-          ${EXEC_DRILL.map((p, i) => `
-            <div class="exec-list-row" onclick="openExecDrawer(${i})">
+          ${EXEC_DRILL.map((p, i) => {
+            const h = hilByPlant[p.plant];
+            return `
+            <div class="exec-list-row" onclick="openExecDrawer(${i})" style="${h ? "border-left:3px solid #25c07a;background:rgba(37,192,122,.05);" : ""}">
               <span class="n">${p.plant}</span>
-              <span class="m">${p.loads.toLocaleString()} loads \u00b7 ${p.measured.toLocaleString()} measured at discharge</span>
+              <span class="m">${p.loads.toLocaleString()} loads \u00b7 ${p.measured.toLocaleString()} measured at discharge${h ? ` \u00b7 <strong style="color:#25c07a;">${hil.fmt(h.perMo)}/mo at the median</strong>` : ""}</span>
               <span class="v" style="color:${p.acc >= 35 ? "#25c07a" : p.acc >= 25 ? "#ffba0d" : "#ff5b52"};">${p.acc}%</span>
               <span class="go">\u203a</span>
-            </div>`).join("")}`;
+            </div>
+            ${hil && i === medianDividerAfter - 1 ? `
+            <div style="display:flex;align-items:center;gap:10px;margin:8px 0;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#25c07a;">
+              <span style="flex:1;height:1px;background:rgba(37,192,122,.35);"></span>
+              <span>Your median \u2014 ${hil.median}% \u00b7 the bar the plants above are being lifted to</span>
+              <span style="flex:1;height:1px;background:rgba(37,192,122,.35);"></span>
+            </div>` : ""}`;
+          }).join("")}`;
+      } else if (path && path.mixview) {
+        // Mix drawer, two levels, same grammar as the period overview (John, Aug 19):
+        // level 0 = what's happening to THIS mix at the top, who to call under it,
+        // nothing else; level "plants" = the dig-in list of plants running it.
+        const mixName = path.mixview;
+        const mixSafe = mixName.replace(/'/g, "\\'");
+        const rows = EXEC_DRILL
+          .map(pl => ({ plant: pl.plant, m: pl.mixes.find(mm => mm.mix === mixName) }))
+          .filter(r => r.m)
+          .sort((a, b) => a.m.acc - b.m.acc);
+        const totalLoads = rows.reduce((s, r) => s + r.m.n, 0);
+        const wAcc = totalLoads ? Math.round(rows.reduce((s, r) => s + r.m.acc * r.m.n, 0) / totalLoads) : 0;
+        const wSlump = totalLoads ? rows.reduce((s, r) => s + r.m.dslump * r.m.n, 0) / totalLoads : 0;
+        const wWater = totalLoads ? rows.reduce((s, r) => s + r.m.dwater * r.m.n, 0) / totalLoads : 0;
+        const cause = execMixCause({ dslump: wSlump, dwater: wWater });
+        const S = execCur();
+        const worstRow = rows[0], bestRow = rows[rows.length - 1];
+        const spread = rows.length > 1 ? bestRow.m.acc - worstRow.m.acc : 0;
+        const fmtIn = v => `${v > 0 ? "+" : v < 0 ? "\u2212" : ""}${Math.abs(v).toFixed(1)} in`;
+        const fmtGal = v => `${v > 0 ? "+" : v < 0 ? "\u2212" : ""}${Math.abs(v).toFixed(1)} gal/yd\u00b3`;
+        if (path.sub === "plants") {
+          // ---- Level 1: the dig-in \u2014 plants running this mix, worst first ----
+          body = `
+          <div class="vi-interpretation" style="margin-bottom:14px;">
+            <div class="vi-interp-title">${rows.length} plant${rows.length === 1 ? "" : "s"} run ${mixName} \u2014 ${totalLoads.toLocaleString()} measured loads</div>
+            <div class="vi-interp-body">Sorted worst to best on target. If this mix works fine at some plants and not others, the fix is local \u2014 crews or conditions at the plants near the bottom, not the mix design itself.</div>
+          </div>
+          <div class="vi-section-label">${mixName} by plant</div>
+          ${rows.map(r => `
+            <div class="exec-list-row" style="cursor:default;">
+              <span class="n">${r.plant}</span>
+              <span class="m">${r.m.n.toLocaleString()} measured \u00b7 slump ${r.m.dslump > 0 ? "+" : ""}${r.m.dslump} in \u00b7 water ${r.m.dwater > 0 ? "+" : ""}${r.m.dwater} gal/yd\u00b3</span>
+              <span class="v" style="color:${r.m.acc >= 35 ? "#25c07a" : r.m.acc >= 20 ? "#ffba0d" : "#ff5b52"};">${r.m.acc}%</span>
+            </div>`).join("")}
+          <div style="margin-top:10px;padding:12px 14px;border:1px solid var(--dw-bd);background:var(--dw-card);border-radius:10px;">
+            <div style="font-size:12.5px;font-weight:600;color:var(--dw-strong);">This is as deep as this view goes \u2014 on purpose.</div>
+            <div style="font-size:11.5px;color:var(--dw-mut);line-height:1.45;margin-top:2px;">Truck- and driver-level detail for any of these plants lives in the Quality dashboard.</div>
+          </div>`;
+        } else {
+          // ---- Level 0: the mix overview \u2014 hero, four numbers, who to call ----
+          const owner = cause === "design" ? "quality" : "ops";
+          const heroLine = cause === "design"
+            ? `Loads miss in the same direction whoever hauls it \u2014 the design moves this number, not the crews.`
+            : `On target on average, yet loads still miss \u2014 how it's run moves this number, not how it's designed.`;
+          const leanWhy = cause === "design"
+            ? `${totalLoads.toLocaleString()} loads with a systematic bias \u2014 a design problem, not a driver problem.`
+            : `${totalLoads.toLocaleString()} loads, no systematic bias, still missing \u2014 a consistency problem, not a design problem.`;
+          const leanCall = cause === "design" ? `Call the Head of Quality` : `Call the Head of Operations`;
+          const leanAsk = cause === "design"
+            ? `Does the target move or the design \u2014 and when does the corrected version ship?`
+            : `What runs differently on ${mixName} loads \u2014 crews, timing, or site conditions?`;
+          const together = spread >= 15
+            ? `It runs at ${bestRow.m.acc}% at ${bestRow.plant} and ${worstRow.m.acc}% at ${worstRow.plant} \u2014 that gap is local practice. Quality + Ops settle design vs plant before anyone talks to the crews.`
+            : null;
+          body = `
+          <div class="vi-brandpanel">
+            <div class="vb-brand" style="color:var(--dw-hi);">${VERIFI_LOGO_SVG}<span style="opacity:.35;margin:0 4px;">|</span><span style="color:#3069e3;display:flex;align-items:center;gap:6px;">${KPI_BRAND_SVG}Insights <span class="beta">Beta</span></span><span class="tagline">\u00b7 What your data is worth</span></div>
+            <div class="vb-title" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">Mix ${mixName} \u2014 ${wAcc}% of measured loads finish fully on target ${execCauseChip(cause)}</div>
+            <div class="vb-body">${S.label}: <strong style="color:var(--dw-hi);">${totalLoads.toLocaleString()} measured loads</strong> across ${rows.length} plant${rows.length === 1 ? "" : "s"}, vs a company average of ${S.avgAcc}%. ${heroLine} The numbers below say what's off; the card under them says who to talk to.</div>
+          </div>
+
+          <div class="vi-section-label">The mix in four numbers</div>
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px;align-items:stretch;">
+            ${execStatCard("Measured loads", totalLoads.toLocaleString(), "var(--dw-hi)", `across ${rows.length} plant${rows.length === 1 ? "" : "s"} this ${execGrainName(S.grain)}`)}
+            ${execStatCard("Fully on target", `${wAcc}%`, wAcc >= 35 ? "#25c07a" : wAcc >= 20 ? "#ffba0d" : "#ff5b52", `company average ${S.avgAcc}%`)}
+            ${execStatCard("Typical slump miss", fmtIn(wSlump), Math.abs(wSlump) >= 1.0 ? "#ff5b52" : "var(--dw-hi)", `vs the ticketed target`)}
+            ${execStatCard("Typical water", fmtGal(wWater), Math.abs(wWater) >= 2.0 ? "#ff5b52" : "var(--dw-hi)", `vs the design allowance`)}
+          </div>
+
+          <div style="font-size:14px;font-weight:700;color:var(--dw-hi);display:flex;align-items:center;gap:8px;margin-top:2px;margin-bottom:10px;">\u2691 Where to lean \u2014 who to call, what to ask</div>
+          ${execLeanCard2(1, `Mix ${mixName}`, owner,
+            cause === "design" ? "the design, not the drivers" : "consistency, not design",
+            execLeanBar("Company average", `${S.avgAcc}%`, S.avgAcc, Math.max(S.avgAcc, wAcc) * 1.25, "var(--dw-mut)")
+            + execLeanBar(`Mix ${mixName}`, `${wAcc}%`, Math.max(wAcc, 1), Math.max(S.avgAcc, wAcc) * 1.25, wAcc >= 35 ? "#25c07a" : wAcc >= 20 ? "#ffba0d" : "#ff5b52"),
+            leanWhy, leanCall, leanAsk, together,
+            `<button class="exl-btn" onclick="openMixDrawer('${mixSafe}', event, 'plants')">Open the ${rows.length} plant${rows.length === 1 ? "" : "s"} running ${mixName} \u2192</button>`)}
+          ${EXEC_CAUSE_NOTE}`;
+        }
       } else if (path.length === 1) {
         const p = EXEC_DRILL[path[0]];
         body = `
           <div class="vi-interpretation" style="margin-bottom:14px;">
             <div class="vi-interp-title">${p.plant} \u2014 ${p.acc}% of loads finished fully on target in Q2</div>
-            <div class="vi-interp-body">${p.loads.toLocaleString()} loads this quarter, ${p.measured.toLocaleString()} measurable at discharge. The mixes below drive most of the misses \u2014 click one to see which trucks and drivers carry it.</div>
+            <div class="vi-interp-body">${p.loads.toLocaleString()} loads this quarter, ${p.measured.toLocaleString()} measurable at discharge. The mixes below drive most of the misses \u2014 enough to know who to call.</div>
           </div>
           <div class="vi-section-label">Worst mixes at ${p.plant} \u2014 each tagged with who owns the fix</div>
-          ${p.mixes.map((m, i) => `
-            <div class="exec-list-row" onclick="openExecDrawer(${path[0]}, ${i})">
+          ${p.mixes.map(m => `
+            <div class="exec-list-row" style="cursor:default;">
               <span class="n">Mix ${m.mix}</span>
               ${execCauseChip(execMixCause(m), true)}
               <span class="m">${m.n.toLocaleString()} measured \u00b7 slump ${m.dslump > 0 ? "+" : ""}${m.dslump} in \u00b7 water ${m.dwater > 0 ? "+" : ""}${m.dwater} gal/yd\u00b3</span>
               <span class="v" style="color:${m.acc >= 35 ? "#25c07a" : m.acc >= 20 ? "#ffba0d" : "#ff5b52"};">${m.acc}%</span>
-              <span class="go">\u203a</span>
             </div>`).join("")}
-          ${EXEC_CAUSE_NOTE}`;
+          ${EXEC_CAUSE_NOTE}
+          <div style="margin-top:10px;padding:12px 14px;border:1px solid var(--dw-bd);background:var(--dw-card);border-radius:10px;display:flex;align-items:center;gap:14px;">
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:12.5px;font-weight:600;color:var(--dw-strong);">This is as deep as this view goes \u2014 on purpose.</div>
+              <div style="font-size:11.5px;color:var(--dw-mut);line-height:1.45;margin-top:2px;">Truck- and driver-level detail lives where the work does: the Quality and Operations dashboards. Your desk heads see it there every day.</div>
+            </div>
+            <button onclick="alert('Prototype: this would deep-link into the Quality dashboard at ${p.plant}, already filtered to these mixes.')" style="flex-shrink:0;font:inherit;font-size:12px;font-weight:600;padding:8px 14px;border:1px solid rgba(48,105,227,0.5);border-radius:8px;background:transparent;color:#3069e3;cursor:pointer;white-space:nowrap;">Open in Quality dashboard \u2192</button>
+          </div>`;
       } else {
         const p = EXEC_DRILL[path[0]], m = p.mixes[path[1]];
         body = `
@@ -4451,7 +5386,7 @@
         <div style="margin-top:12px;padding:16px 18px;border:1px solid rgba(48,105,227,0.3);background:rgba(48,105,227,0.08);border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
           <div>
             <div style="font-size:13px;font-weight:600;color:var(--dw-strong);margin-bottom:3px;">Want this turned into a plan?</div>
-            <div style="font-size:12px;color:var(--dw-mut);line-height:1.45;">Your Customer Success Manager can take any level of this \u2014 quarter, plant, mix, or driver \u2014 and turn it into targets and a rollout.</div>
+            <div style="font-size:12px;color:var(--dw-mut);line-height:1.45;">Your Customer Success Manager can take any level of this \u2014 quarter, plant, or mix \u2014 and turn it into targets and a rollout.</div>
           </div>
           <button onclick="alert('Prototype: this would open a request to your CSM with this drill-down attached.')" style="flex-shrink:0;font:inherit;font-size:12.5px;font-weight:600;padding:9px 16px;border:none;border-radius:8px;background:#3069e3;color:#fff;cursor:pointer;">Talk to your CSM \u2192</button>
         </div>`;
@@ -5044,6 +5979,7 @@
     }
 
     function closeInsightsDrawer() {
+      EXEC_PLANTS_HILITE = null; // goal highlight is per-visit, not sticky
       document.getElementById("vi-overlay").classList.remove("open");
       document.getElementById("vi-drawer").classList.remove("open");
     }

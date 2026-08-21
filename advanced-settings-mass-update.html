@@ -730,6 +730,20 @@ table.hist td.dim{color:var(--muted)}
 }
 .seg button.active{background:var(--blue);color:#fff}
 .seg.seg-scope button.active{background:var(--panel-3);color:var(--text)}
+.fix-pick{width:100%}
+.fix-picklist{
+  max-height:220px;overflow-y:auto;
+  border:1px solid var(--border-soft);border-radius:8px;
+  padding:4px;
+}
+.fix-pick-row{
+  display:flex;align-items:center;gap:11px;
+  padding:8px 10px;border-radius:6px;cursor:pointer;user-select:none;
+  font-size:13px;
+}
+.fix-pick-row:hover{background:var(--panel-2)}
+.fpr-name{flex:1;font-weight:500}
+.fpr-val{color:var(--muted);font-size:12px}
 
 /* expanded per-truck table */
 .detail{display:none;padding:0 18px 16px 18px}
@@ -2015,13 +2029,24 @@ function openFix(sid){
   const r = rollup(s);
   const maj = r.groups[0] ? r.groups[0].value : s.def;
   const hasDrift = r.distinct.length>1 || r.noVal>0;
-  fix = {sid, value: maj, scope: hasDrift ? 'diff' : 'all'};
+  fix = {sid, value: maj, scope: hasDrift ? 'diff' : 'all', custom: new Set()};
   renderFixModal();
   document.getElementById('fixBackdrop').classList.add('visible');
 }
 function closeFix(){ fix=null; document.getElementById('fixBackdrop').classList.remove('visible'); }
 function setFixValue(v){ if(fix){ fix.value = v; renderFixModal(); } }
-function setFixScope(sc){ if(fix){ fix.scope = sc; renderFixModal(); } }
+function setFixScope(sc){
+  if(!fix) return;
+  fix.scope = sc;
+  if(sc==='custom') fix.custom = new Set(fixDiffTids());   // pre-check the drifted trucks
+  renderFixModal();
+}
+function toggleFixTruck(tid){
+  if(!fix) return;
+  fix.custom.has(tid) ? fix.custom.delete(tid) : fix.custom.add(tid);
+  renderFixTruckList();
+  refreshFixImpact();
+}
 
 function buildFixControl(s){
   if(s.type==='toggle'){
@@ -2044,7 +2069,9 @@ function fixDiffTids(){
   });
 }
 function fixTargets(){
-  return fix.scope==='all' ? [...selected] : fixDiffTids();
+  if(fix.scope==='all') return [...selected];
+  if(fix.scope==='custom') return [...fix.custom];
+  return fixDiffTids();
 }
 function refreshFixImpact(){
   const s = SETTINGS.find(x=>x.id===fix.sid);
@@ -2056,13 +2083,18 @@ function refreshFixImpact(){
     impact = `<span style="color:var(--amber)">Enter a target value.</span>`;
   } else if(fix.scope==='diff'){
     impact = `<b>${diff.length}</b> of ${selected.size} selected trucks currently differ from <b class="newval">${fmtVal(s, fix.value)}</b> and will be updated. Matching trucks are left untouched.`;
+  } else if(fix.scope==='custom'){
+    const names = targets.length<=3 ? ` (${targets.map(truckName).join(', ')})` : '';
+    impact = targets.length===0
+      ? `<span style="color:var(--amber)">Pick at least one truck below.</span>`
+      : `<b>${targets.length}</b> chosen truck${targets.length===1?'':'s'}${names} will be pushed <b class="newval">${fmtVal(s, fix.value)}</b>.`;
   } else {
     impact = `All <b>${selected.size}</b> selected trucks will be pushed <b class="newval">${fmtVal(s, fix.value)}</b>${diff.length<selected.size?` (${selected.size-diff.length} already match and will be re-stamped)`:''}.`;
   }
   document.getElementById('fixImpact').innerHTML = impact;
   const btn = document.getElementById('fixConfirmBtn');
   btn.disabled = !valid || targets.length===0;
-  btn.textContent = targets.length>0 ? `Update ${targets.length} truck${targets.length===1?'':'s'}` : 'All trucks already match';
+  btn.textContent = targets.length>0 ? `Update ${targets.length} truck${targets.length===1?'':'s'}` : (fix.scope==='custom' ? 'Pick trucks to update' : 'All trucks already match');
 }
 function renderFixModal(){
   const s = SETTINGS.find(x=>x.id===fix.sid);
@@ -2076,15 +2108,45 @@ function renderFixModal(){
         <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text);font-weight:700">New value</label>
         ${buildFixControl(s)}
       </div>
-      <div style="display:flex;align-items:center;gap:12px">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text);font-weight:700">Apply to</label>
         <div class="seg seg-scope">
           <button class="${fix.scope==='diff'?'active':''}" onclick="setFixScope('diff')">Only trucks that differ (${diff.length})</button>
           <button class="${fix.scope==='all'?'active':''}" onclick="setFixScope('all')">All selected (${selected.size})</button>
+          <button class="${fix.scope==='custom'?'active':''}" onclick="setFixScope('custom')">Choose trucks</button>
         </div>
       </div>
+      ${fix.scope==='custom'?`
+      <div class="fix-pick">
+        <div class="search-box" style="margin-bottom:8px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6370" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="fixTruckSearch" type="text" placeholder="Search trucks" oninput="renderFixTruckList()">
+          <button class="clear-x" onclick="document.getElementById('fixTruckSearch').value='';renderFixTruckList()">×</button>
+        </div>
+        <div class="fix-picklist" id="fixTruckList"></div>
+      </div>`:''}
     </div>`;
+  if(fix.scope==='custom') renderFixTruckList();
   refreshFixImpact();
+}
+function renderFixTruckList(){
+  const box = document.getElementById('fixTruckList');
+  if(!box || !fix) return;
+  const s = SETTINGS.find(x=>x.id===fix.sid);
+  const q = (document.getElementById('fixTruckSearch')?.value||'').toLowerCase();
+  const CHECK = '<svg viewBox="0 0 12 12" fill="none"><path d="M2 6.5 4.8 9 10 3.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const tids = [...selected]
+    .filter(tid=>!q || truckName(tid).toLowerCase().includes(q))
+    .sort((a,b)=>truckName(a).localeCompare(truckName(b), undefined, {numeric:true}));
+  box.innerHTML = tids.map(tid=>{
+    const e = state[tid][fix.sid];
+    const sel = fix.custom.has(tid);
+    return `<div class="fix-pick-row" onclick="toggleFixTruck('${tid}')">
+      <div class="cb ${sel?'checked':''}">${CHECK}</div>
+      <span class="fpr-name">${truckName(tid)}</span>
+      <span class="fpr-val">${e.value===null?'no value':fmtVal(s, e.value)}</span>
+    </div>`;
+  }).join('') || `<div style="padding:10px;color:var(--faint);font-size:12px">No matching trucks</div>`;
 }
 function sendFix(){
   const sid = fix.sid;

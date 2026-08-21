@@ -2028,8 +2028,7 @@ function openFix(sid){
   const s = SETTINGS.find(x=>x.id===sid);
   const r = rollup(s);
   const maj = r.groups[0] ? r.groups[0].value : s.def;
-  const hasDrift = r.distinct.length>1 || r.noVal>0;
-  fix = {sid, value: maj, scope: hasDrift ? 'diff' : 'all', custom: new Set()};
+  fix = {sid, value: maj, scope: 'custom', custom: new Set(fixDiffTidsFor(sid, maj))};
   renderFixModal();
   document.getElementById('fixBackdrop').classList.add('visible');
 }
@@ -2062,16 +2061,15 @@ function buildFixControl(s){
   }
   return `<input class="num-input" type="number" step="any" value="${fix.value}" oninput="if(fix){fix.value=this.value===''?'':parseFloat(this.value);refreshFixImpact()}">`;
 }
-function fixDiffTids(){
+function fixDiffTidsFor(sid, value){
   return [...selected].filter(tid=>{
-    const e = state[tid][fix.sid];
-    return e.value===null || JSON.stringify(e.value)!==JSON.stringify(fix.value);
+    const e = state[tid][sid];
+    return e.value===null || JSON.stringify(e.value)!==JSON.stringify(value);
   });
 }
+function fixDiffTids(){ return fixDiffTidsFor(fix.sid, fix.value); }
 function fixTargets(){
-  if(fix.scope==='all') return [...selected];
-  if(fix.scope==='custom') return [...fix.custom];
-  return fixDiffTids();
+  return fix.scope==='all' ? [...selected] : [...fix.custom];
 }
 function refreshFixImpact(){
   const s = SETTINGS.find(x=>x.id===fix.sid);
@@ -2081,10 +2079,8 @@ function refreshFixImpact(){
   let impact;
   if(!valid){
     impact = `<span style="color:var(--amber)">Enter a target value.</span>`;
-  } else if(fix.scope==='diff'){
-    impact = `<b>${diff.length}</b> of ${selected.size} selected trucks currently differ from <b class="newval">${fmtVal(s, fix.value)}</b> and will be updated. Matching trucks are left untouched.`;
   } else if(fix.scope==='custom'){
-    const names = targets.length<=3 ? ` (${targets.map(truckName).join(', ')})` : '';
+    const names = targets.length<=3 && targets.length>0 ? ` (${targets.map(truckName).join(', ')})` : '';
     impact = targets.length===0
       ? `<span style="color:var(--amber)">Pick at least one truck below.</span>`
       : `<b>${targets.length}</b> chosen truck${targets.length===1?'':'s'}${names} will be pushed <b class="newval">${fmtVal(s, fix.value)}</b>.`;
@@ -2111,9 +2107,8 @@ function renderFixModal(){
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text);font-weight:700">Apply to</label>
         <div class="seg seg-scope">
-          <button class="${fix.scope==='diff'?'active':''}" onclick="setFixScope('diff')">Only trucks that differ (${diff.length})</button>
-          <button class="${fix.scope==='all'?'active':''}" onclick="setFixScope('all')">All selected (${selected.size})</button>
           <button class="${fix.scope==='custom'?'active':''}" onclick="setFixScope('custom')">Choose trucks</button>
+          <button class="${fix.scope==='all'?'active':''}" onclick="setFixScope('all')">All selected (${selected.size})</button>
         </div>
       </div>
       ${fix.scope==='custom'?`

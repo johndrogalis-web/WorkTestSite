@@ -408,6 +408,83 @@ body{
 }
 .drawer-count{flex:1;font-size:12.5px;color:var(--muted)}
 
+/* ---------- compare view ---------- */
+.cmp-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.cmp-chip{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:12.5px;font-weight:600;
+  background:var(--grey-chip);color:var(--text);
+  border:1px solid var(--border);
+  padding:7px 12px;border-radius:18px;
+}
+.cmp-chip button{
+  background:none;border:none;color:inherit;cursor:pointer;
+  font-size:14px;line-height:1;padding:0;font-family:inherit;opacity:.7;
+}
+.cmp-chip button:hover{opacity:1}
+.cmp-add-wrap{position:relative}
+.cmp-add-btn{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--panel-2);border:1px dashed var(--border);color:var(--muted);
+  font-family:inherit;font-size:12.5px;font-weight:600;
+  padding:8px 14px;border-radius:18px;cursor:pointer;
+}
+.cmp-add-btn:hover{color:var(--text);border-color:var(--faint)}
+.cmp-pop{
+  position:absolute;top:calc(100% + 8px);left:0;width:340px;max-height:420px;
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.45);
+  display:none;flex-direction:column;z-index:60;
+}
+.cmp-pop.open{display:flex}
+.cmp-pop-search{padding:12px 12px 10px;border-bottom:1px solid var(--border-soft)}
+.cmp-pop-list{overflow-y:auto;padding:6px 8px 10px}
+.cmp-pop-sec{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);padding:10px 6px 4px}
+.cmp-pop-item{
+  display:flex;align-items:center;gap:8px;
+  width:100%;padding:8px 8px;border-radius:6px;border:0;background:transparent;
+  color:var(--text);font-family:inherit;font-size:13px;font-weight:500;
+  cursor:pointer;text-align:left;
+}
+.cmp-pop-item:hover{background:var(--panel-2)}
+.cmp-pop-item .type-tag{margin-left:auto}
+.cmp-hint{color:var(--faint);font-size:13px;padding:24px;border:1px dashed var(--border);border-radius:var(--radius);text-align:center}
+
+.cmp-table-wrap{background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:auto;max-height:calc(100vh - 320px)}
+table.cmp{width:100%;border-collapse:separate;border-spacing:0;min-width:520px}
+table.cmp th{
+  position:sticky;top:0;background:var(--panel-2);z-index:2;
+  text-align:left;padding:12px 14px;border-bottom:1px solid var(--border);
+  font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;
+  vertical-align:top;
+}
+table.cmp th.truck-col, table.cmp td.truck-col{
+  position:sticky;left:0;background:var(--panel-2);z-index:3;min-width:170px;
+  border-right:1px solid var(--border);
+}
+table.cmp td.truck-col{background:var(--panel);font-weight:600;font-size:13px;z-index:1}
+table.cmp td{padding:10px 14px;border-bottom:1px solid var(--border-soft);font-size:13px;color:var(--text)}
+table.cmp tr:last-child td{border-bottom:none}
+.cmp-head-name{font-size:12px;font-weight:700;color:var(--text);text-transform:none;letter-spacing:0}
+.cmp-head-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;align-items:center}
+.fix-btn{
+  background:var(--blue);border:none;color:#fff;
+  font-family:inherit;font-size:10.5px;font-weight:700;
+  padding:4px 10px;border-radius:12px;cursor:pointer;letter-spacing:.02em;
+}
+.fix-btn:hover{background:var(--blue-hi)}
+td.cell-out{background:var(--amber-tint);color:var(--amber);font-weight:700}
+td.cell-nv{color:var(--faint);font-style:italic}
+td .cell-pend{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--amber);margin-left:8px;animation:pulse 1.4s infinite;vertical-align:middle}
+table.cmp td.cmp-cell{cursor:pointer}
+table.cmp td.cmp-cell:hover{box-shadow:inset 0 0 0 1px var(--border)}
+.cell-caret{display:inline-block;color:var(--faint);font-size:9px;margin-right:7px;transition:transform .15s;vertical-align:1px}
+td.cmp-cell:hover .cell-caret{color:var(--muted)}
+td.cmp-cell.hist-on .cell-caret{transform:rotate(90deg);color:var(--blue-hi)}
+tr.cmp-hist td{padding:0 !important;background:var(--hist-bg)}
+.cmp-hist-inner{padding:10px 16px 14px}
+.cmp-hist-inner .hist-title{padding-top:2px}
+
 /* settings search toolbar */
 .settings-toolbar{display:flex;align-items:center;gap:14px;margin-bottom:16px}
 .settings-toolbar .search-box{max-width:380px;flex:1}
@@ -676,7 +753,8 @@ table.tt td.dim{color:var(--muted)}
       <button class="vp-opts-btn" onclick="toggleOpts(event)">Options <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
       <div class="vp-opts-dd" id="vpOptsDd" onclick="event.stopPropagation()">
         <div class="vp-dd-label">View</div>
-        <button class="vp-opt-row active" id="vwRowSetting" onclick="setViewMode('setting')">Setting focused <span class="vp-check">✓</span></button>
+        <button class="vp-opt-row active" id="vwRowCompare" onclick="setViewMode('compare')">Compare <span class="vp-check">✓</span></button>
+        <button class="vp-opt-row" id="vwRowSetting" onclick="setViewMode('setting')">Setting focused <span class="vp-check">✓</span></button>
         <button class="vp-opt-row" id="vwRowTruck" onclick="setViewMode('truck')">Truck focused <span class="vp-check">✓</span></button>
         <div class="vp-dd-div"></div>
         <button class="vp-opt-row" onclick="toggleTheme()">Dark mode <span class="vp-switch" id="themeSwitch"></span></button>
@@ -743,6 +821,25 @@ table.tt td.dim{color:var(--muted)}
     </div>
     <div id="sections"></div>
     <div id="truckFocus" style="display:none"></div>
+    <div id="compareFocus" style="display:none">
+      <div class="cmp-toolbar">
+        <div class="cmp-add-wrap">
+          <button class="cmp-add-btn" onclick="toggleCmpPop(event)">＋ Add setting</button>
+          <div class="cmp-pop" id="cmpPop" onclick="event.stopPropagation()">
+            <div class="cmp-pop-search">
+              <div class="search-box">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6370" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <input id="cmpSearch" type="text" placeholder="Search settings" oninput="renderCmpPop()">
+                <button class="clear-x" onclick="document.getElementById('cmpSearch').value='';renderCmpPop()">×</button>
+              </div>
+            </div>
+            <div class="cmp-pop-list" id="cmpPopList"></div>
+          </div>
+        </div>
+        <span id="cmpChips" style="display:contents"></span>
+      </div>
+      <div id="compareTable"></div>
+    </div>
   </main>
 </div>
 
@@ -793,6 +890,21 @@ table.tt td.dim{color:var(--muted)}
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- Make-consistent modal (Compare view) -->
+<div class="modal-backdrop" id="fixBackdrop">
+  <div class="modal">
+    <h2 id="fixTitle">Make consistent</h2>
+    <div class="sub" id="fixSub"></div>
+    <div class="sf-like" id="fixControl" style="display:flex;align-items:center;gap:12px;margin:6px 0 4px">
+    </div>
+    <div class="sub" id="fixImpact" style="margin-top:14px"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeFix()">Cancel</button>
+      <button class="btn btn-primary" id="fixConfirmBtn" onclick="sendFix()">Update</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ============ DATA MODEL ============ */
@@ -1390,7 +1502,11 @@ let viewMode = 'setting';                 // 'setting' = sections view · 'truck
 let openTrucks = new Set();
 let truckAccShown = 15;
 
-function renderActive(){ viewMode==='setting' ? renderSections() : renderTruckFocus(); }
+function renderActive(){
+  if(viewMode==='setting') renderSections();
+  else if(viewMode==='truck') renderTruckFocus();
+  else renderCompare();
+}
 
 function setViewMode(m){
   viewMode = m;
@@ -1398,11 +1514,13 @@ function setViewMode(m){
   document.getElementById('summaryBar').style.display = settingView?'flex':'none';
   if(!settingView) document.getElementById('settingsToolbar').style.display = 'none';
   document.getElementById('sections').style.display = settingView?'block':'none';
-  document.getElementById('truckFocus').style.display = settingView?'none':'block';
+  document.getElementById('truckFocus').style.display = m==='truck'?'block':'none';
+  document.getElementById('compareFocus').style.display = m==='compare'?'block':'none';
   document.getElementById('vwRowSetting').classList.toggle('active', settingView);
-  document.getElementById('vwRowTruck').classList.toggle('active', !settingView);
+  document.getElementById('vwRowTruck').classList.toggle('active', m==='truck');
+  document.getElementById('vwRowCompare').classList.toggle('active', m==='compare');
   document.getElementById('vpOptsDd').classList.remove('open');
-  if(settingView) closeDrawer();
+  if(m!=='truck') closeDrawer();
   renderAll();
 }
 
@@ -1418,6 +1536,11 @@ function toggleTruckCard(tid){
   renderTruckFocus();
 }
 function showMoreTrucks(){ truckAccShown += 15; renderTruckFocus(); }
+function toggleTfHist(tid, sid){
+  const key = tid+':'+sid+':tf';
+  openHistory.has(key)?openHistory.delete(key):openHistory.add(key);
+  renderTruckFocus();
+}
 
 function renderTruckFocus(){
   const box = document.getElementById('truckFocus');
@@ -1449,12 +1572,31 @@ function renderTruckFocus(){
           }
           const e = state[tid][s.id];
           const st = STATUS_MAP[e.status];
-          return `<div class="tc-row">
-            <span class="n">${s.name}${s.unit?`<span class="setting-unit">${s.unit}</span>`:''}</span>
+          const hKey = tid+':'+s.id+':tf';
+          const hOpen = openHistory.has(hKey);
+          let row = `<div class="tc-row" style="cursor:pointer" onclick="toggleTfHist('${tid}','${s.id}')" title="View change history">
+            <span class="n"><span class="hist-caret" style="${hOpen?'transform:rotate(90deg);display:inline-block':''}">▶</span> ${s.name}${s.unit?`<span class="setting-unit">${s.unit}</span>`:''}</span>
             <span class="meta">${e.lastUpdated?`${e.lastUpdated} · ${e.submitter}`:''}</span>
             <span class="val">${fmtVal(s, e.value)}</span>
             <span class="status-cell ${st.cls}" style="min-width:96px"><span class="dot"></span>${st.label}</span>
           </div>`;
+          if(hOpen){
+            const hist = getHistory(tid, s.id);
+            row += `<div class="cmp-hist-inner" style="background:var(--hist-bg);border-radius:6px;margin:2px 0 8px">
+              <div class="hist-title">Change history</div>
+              ${hist.length===0
+                ? `<div style="color:var(--faint);font-size:12.5px;padding:4px 0">No history — this setting has never reported a value for this truck.</div>`
+                : `<table class="hist">${hist.map((h,i)=>`
+                    <tr>
+                      <td style="font-weight:600;width:120px">${fmtVal(s, h.value)}</td>
+                      <td class="dim" style="width:130px">${h.date}</td>
+                      <td class="dim">${h.submitter}</td>
+                      <td class="dim" style="width:70px">${h.source}</td>
+                      <td style="width:80px;text-align:right">${i===0?'<span class="hist-current">Current</span>':''}</td>
+                    </tr>`).join('')}</table>`}
+            </div>`;
+          }
+          return row;
         }).join('');
         return `<div class="tc-sec-label">${sec.name}</div>${rows}`;
       }).join('');
@@ -1481,6 +1623,238 @@ function renderTruckFocus(){
       <button class="show-more" onclick="showMoreTrucks()">Show ${Math.min(15, tids.length-truckAccShown)} more trucks</button>
       <span class="showing-count">Showing ${page.length} of ${tids.length}</span>
     </div>`:''}`;
+}
+
+/* ---- compare view: load specific settings, scan all trucks, fix drift ---- */
+let compareSettings = ['front_discharge'];   // sensible demo default
+let compareShown = 25;
+let fix = null;   // {sid, value}
+
+function toggleCmpPop(e){
+  e.stopPropagation();
+  const p = document.getElementById('cmpPop');
+  p.classList.toggle('open');
+  if(p.classList.contains('open')) renderCmpPop();
+}
+document.addEventListener('click', ()=>{ const p=document.getElementById('cmpPop'); if(p) p.classList.remove('open'); });
+
+function renderCmpPop(){
+  const q = (document.getElementById('cmpSearch').value||'').toLowerCase();
+  const list = document.getElementById('cmpPopList');
+  list.innerHTML = SECTIONS.map(sec=>{
+    const items = SETTINGS.filter(s=>s.sec===sec.id && !s.locked && s.functional!==false
+      && !compareSettings.includes(s.id) && (!q || s.name.toLowerCase().includes(q)));
+    if(items.length===0) return '';
+    return `<div class="cmp-pop-sec">${sec.name}</div>` + items.map(s=>
+      `<button class="cmp-pop-item" onclick="addCompareSetting('${s.id}')">${s.name}<span class="type-tag">${typeLabel(s)}</span></button>`
+    ).join('');
+  }).join('') || `<div style="padding:14px;color:var(--faint);font-size:12.5px">No matching settings</div>`;
+}
+function addCompareSetting(sid){
+  compareSettings.push(sid);
+  document.getElementById('cmpPop').classList.remove('open');
+  document.getElementById('cmpSearch').value='';
+  renderCompare();
+}
+function removeCompareSetting(sid){
+  compareSettings = compareSettings.filter(x=>x!==sid);
+  renderCompare();
+}
+function showMoreCompare(){ compareShown += 25; renderCompare(); }
+function toggleCmpHist(tid, sid){
+  const key = tid+':'+sid+':cmp';
+  const wasOpen = openHistory.has(key);
+  // one history row per truck at a time
+  compareSettings.forEach(s=>openHistory.delete(tid+':'+s+':cmp'));
+  if(!wasOpen) openHistory.add(key);
+  renderCompare();
+}
+
+function renderCompare(){
+  // loaded-setting chips
+  document.getElementById('cmpChips').innerHTML = compareSettings.map(sid=>{
+    const s = SETTINGS.find(x=>x.id===sid);
+    return `<span class="cmp-chip">${s.name}${s.unit?` (${s.unit})`:''} <button onclick="removeCompareSetting('${sid}')" title="Remove">×</button></span>`;
+  }).join('');
+
+  const box = document.getElementById('compareTable');
+  if(selected.size===0){
+    box.innerHTML = `<div class="cmp-hint">Select trucks on the left (or a whole contract) to load them into the comparison.</div>`;
+    return;
+  }
+  if(compareSettings.length===0){
+    box.innerHTML = `<div class="cmp-hint">Add one or more settings above to compare them across the ${selected.size} selected trucks.</div>`;
+    return;
+  }
+
+  const cols = compareSettings.map(sid=>{
+    const s = SETTINGS.find(x=>x.id===sid);
+    const r = rollup(s);
+    let majKey = null, split = false;
+    if(r.distinct.length===1){ majKey = r.groups[0].key; }
+    else if(r.groups.length>1 && r.groups[0].tids.length===r.groups[1].tids.length){ split = true; }
+    else if(r.groups.length>0){ majKey = r.groups[0].key; }
+    const mismatch = r.entries.length - (majKey ? r.groups.find(g=>g.key===majKey).tids.length : 0);
+    return {s, r, majKey, split, mismatch};
+  });
+
+  // outliers-first row sort
+  const tids = [...selected];
+  const isOutlierRow = tid => cols.some(c=>{
+    const e = state[tid][c.s.id];
+    if(e.value===null) return true;
+    return c.majKey && JSON.stringify(e.value)!==c.majKey && c.r.distinct.length>1;
+  });
+  const sorted = [...tids.filter(isOutlierRow), ...tids.filter(t=>!isOutlierRow(t))];
+  const page = sorted.slice(0, compareShown);
+
+  const header = `<tr><th class="truck-col">Truck</th>` + cols.map(c=>{
+    let chip;
+    if(c.split) chip = `<span class="v-chip exc"><span class="dot"></span>Split — no majority</span>`;
+    else if(c.r.distinct.length<=1 && c.r.noVal===0) chip = `<span class="v-chip uniform"><span class="dot"></span>All: ${fmtVal(c.s, c.r.groups[0]?.value)}</span>`;
+    else chip = `<span class="v-chip exc"><span class="dot"></span>${c.mismatch} of ${c.r.entries.length} differ</span>`;
+    return `<th><div class="cmp-head-name">${c.s.name}${c.s.unit?` <span class="setting-unit">${c.s.unit}</span>`:''}</div>
+      <div class="cmp-head-meta">${chip}<button class="fix-btn" onclick="openFix('${c.s.id}')">Update</button></div></th>`;
+  }).join('') + `</tr>`;
+
+  const rows = page.map(tid=>{
+    const cells = cols.map(c=>{
+      const e = state[tid][c.s.id];
+      const hOpen = openHistory.has(tid+':'+c.s.id+':cmp');
+      let cls = 'cmp-cell' + (hOpen?' hist-on':'');
+      if(e.value===null) cls += ' cell-nv';
+      else if(c.majKey && JSON.stringify(e.value)!==c.majKey && c.r.distinct.length>1) cls += ' cell-out';
+      const pend = e.status==='pending' ? `<span class="cell-pend" title="Pending truck confirmation"></span>` : '';
+      return `<td class="${cls}" onclick="toggleCmpHist('${tid}','${c.s.id}')" title="View change history"><span class="cell-caret">▶</span>${e.value===null?'no value':fmtVal(c.s, e.value)}${pend}</td>`;
+    }).join('');
+    let out = `<tr><td class="truck-col">${truckName(tid)}</td>${cells}</tr>`;
+    // expanded history row for this truck, if any of its loaded settings is open
+    const openSid = compareSettings.find(sid=>openHistory.has(tid+':'+sid+':cmp'));
+    if(openSid){
+      const hs = SETTINGS.find(x=>x.id===openSid);
+      const hist = getHistory(tid, openSid);
+      out += `<tr class="cmp-hist"><td colspan="${cols.length+1}"><div class="cmp-hist-inner">
+        <div class="hist-title">Change history — ${truckName(tid)} · ${hs.name}</div>
+        ${hist.length===0
+          ? `<div style="color:var(--faint);font-size:12.5px;padding:4px 0">No history — this setting has never reported a value for this truck.</div>`
+          : `<table class="hist">${hist.map((h,i)=>`
+              <tr>
+                <td style="font-weight:600;width:120px">${fmtVal(hs, h.value)}</td>
+                <td class="dim" style="width:130px">${h.date}</td>
+                <td class="dim">${h.submitter}</td>
+                <td class="dim" style="width:70px">${h.source}</td>
+                <td style="width:80px;text-align:right">${i===0?'<span class="hist-current">Current</span>':''}</td>
+              </tr>`).join('')}</table>`}
+      </div></td></tr>`;
+    }
+    return out;
+  }).join('');
+
+  box.innerHTML = `<div class="cmp-table-wrap"><table class="cmp">${header}${rows}</table></div>
+    ${sorted.length>compareShown?`<div class="show-more-wrap">
+      <button class="show-more" onclick="showMoreCompare()">Show ${Math.min(25, sorted.length-compareShown)} more trucks</button>
+      <span class="showing-count">Showing ${page.length} of ${sorted.length} · mismatched trucks first · click any value for its change history</span>
+    </div>`:`<div class="show-more-wrap"><span class="showing-count">Showing all ${sorted.length} · mismatched trucks first · click any value for its change history</span></div>`}`;
+}
+
+/* ---- update from Compare (drift-only or all selected) ---- */
+function openFix(sid){
+  const s = SETTINGS.find(x=>x.id===sid);
+  const r = rollup(s);
+  const maj = r.groups[0] ? r.groups[0].value : s.def;
+  const hasDrift = r.distinct.length>1 || r.noVal>0;
+  fix = {sid, value: maj, scope: hasDrift ? 'diff' : 'all'};
+  renderFixModal();
+  document.getElementById('fixBackdrop').classList.add('visible');
+}
+function closeFix(){ fix=null; document.getElementById('fixBackdrop').classList.remove('visible'); }
+function setFixValue(v){ if(fix){ fix.value = v; renderFixModal(); } }
+function setFixScope(sc){ if(fix){ fix.scope = sc; renderFixModal(); } }
+
+function buildFixControl(s){
+  if(s.type==='toggle'){
+    return `<div class="seg">
+      <button class="${fix.value===true?'active':''}" onclick="setFixValue(true)">On</button>
+      <button class="${fix.value===false?'active':''}" onclick="setFixValue(false)">Off</button>
+    </div>`;
+  }
+  if(s.type==='select'){
+    return `<select class="sel-input" onchange="setFixValue(this.value)">
+      ${s.options.map(o=>`<option value="${o}" ${fix.value===o?'selected':''}>${o}</option>`).join('')}
+    </select>`;
+  }
+  return `<input class="num-input" type="number" step="any" value="${fix.value}" oninput="if(fix){fix.value=this.value===''?'':parseFloat(this.value);refreshFixImpact()}">`;
+}
+function fixDiffTids(){
+  return [...selected].filter(tid=>{
+    const e = state[tid][fix.sid];
+    return e.value===null || JSON.stringify(e.value)!==JSON.stringify(fix.value);
+  });
+}
+function fixTargets(){
+  return fix.scope==='all' ? [...selected] : fixDiffTids();
+}
+function refreshFixImpact(){
+  const s = SETTINGS.find(x=>x.id===fix.sid);
+  const diff = fixDiffTids();
+  const targets = fixTargets();
+  const valid = fix.value!=='' && fix.value!==null && fix.value!==undefined && !(typeof fix.value==='number'&&isNaN(fix.value));
+  let impact;
+  if(!valid){
+    impact = `<span style="color:var(--amber)">Enter a target value.</span>`;
+  } else if(fix.scope==='diff'){
+    impact = `<b>${diff.length}</b> of ${selected.size} selected trucks currently differ from <b class="newval">${fmtVal(s, fix.value)}</b> and will be updated. Matching trucks are left untouched.`;
+  } else {
+    impact = `All <b>${selected.size}</b> selected trucks will be pushed <b class="newval">${fmtVal(s, fix.value)}</b>${diff.length<selected.size?` (${selected.size-diff.length} already match and will be re-stamped)`:''}.`;
+  }
+  document.getElementById('fixImpact').innerHTML = impact;
+  const btn = document.getElementById('fixConfirmBtn');
+  btn.disabled = !valid || targets.length===0;
+  btn.textContent = targets.length>0 ? `Update ${targets.length} truck${targets.length===1?'':'s'}` : 'All trucks already match';
+}
+function renderFixModal(){
+  const s = SETTINGS.find(x=>x.id===fix.sid);
+  const diff = fixDiffTids();
+  document.getElementById('fixTitle').textContent = `Update — ${s.name}`;
+  document.getElementById('fixSub').innerHTML =
+    `Push a value to the selected trucks. Each updated truck shows <b style="color:var(--amber)">Pending</b> until it reports the new value back.`;
+  document.getElementById('fixControl').innerHTML =
+    `<div style="display:flex;flex-direction:column;gap:14px;width:100%">
+      <div style="display:flex;align-items:center;gap:12px">
+        <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--blue-hi);font-weight:700">New value</label>
+        ${buildFixControl(s)}
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--blue-hi);font-weight:700">Apply to</label>
+        <div class="seg">
+          <button class="${fix.scope==='diff'?'active':''}" onclick="setFixScope('diff')">Only trucks that differ (${diff.length})</button>
+          <button class="${fix.scope==='all'?'active':''}" onclick="setFixScope('all')">All selected (${selected.size})</button>
+        </div>
+      </div>
+    </div>`;
+  refreshFixImpact();
+}
+function sendFix(){
+  const sid = fix.sid;
+  const targets = fixTargets();
+  const val = fix.value;
+  const now = 'Aug 20, 2026';
+  targets.forEach(tid=>{
+    state[tid][sid] = {...state[tid][sid], status:'pending', source:'Hub', submitter:'You', pendingValue: val};
+  });
+  targets.forEach((tid,i)=>{
+    const delay = (i===targets.length-1 && targets.length>2) ? 9000 : 1500 + Math.random()*4500;
+    setTimeout(()=>{
+      const e = state[tid][sid];
+      state[tid][sid] = {value:e.pendingValue, lastUpdated:now, source:'Hub', submitter:'You', status:'confirmed'};
+      getHistory(tid, sid).unshift({value:e.pendingValue, date:now, submitter:'You', source:'Hub'});
+      renderMain();
+    }, delay);
+  });
+  const n = targets.length;
+  closeFix();
+  renderMain();
+  showToast(`Consistency update sent to ${n} truck${n===1?'':'s'} — awaiting confirmation`);
 }
 
 /* ---- mass-update drawer ---- */
@@ -1649,14 +2023,15 @@ function showToast(msg){
 /* ============ MASTER RENDER ============ */
 function renderMain(){
   if(viewMode==='setting'){ renderSummary(); renderSections(); }
-  else {
+  else if(viewMode==='truck'){
     renderTruckFocus();
     if(document.getElementById('drawerBackdrop').classList.contains('open')) renderDrawerList();
   }
+  else { renderCompare(); }
   refreshStageBar();
 }
 function renderAll(){ renderTrucks(); renderMain(); }
-renderAll();
+setViewMode('compare');
 
 /* ============ PROTOTYPE CHROME: options, viewport, theme ============ */
 function toggleOpts(e){

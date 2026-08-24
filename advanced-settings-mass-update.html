@@ -859,7 +859,7 @@ table.tt td.dim{color:var(--muted)}
     <svg class="vp-logo" viewBox="0 0 96 24" xmlns="http://www.w3.org/2000/svg" aria-label="verifi">
       <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z"/>
     </svg>
-    <span class="vp-tag">Advanced Settings</span>
+    <span class="vp-tag">Advanced Settings · Compare</span>
   </div>
   <div class="vp-right-cluster">
     <div class="vp-pills">
@@ -870,10 +870,9 @@ table.tt td.dim{color:var(--muted)}
     <div class="vp-opts-wrap" id="vpOptsWrap">
       <button class="vp-opts-btn" onclick="toggleOpts(event)">Options <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
       <div class="vp-opts-dd" id="vpOptsDd" onclick="event.stopPropagation()">
-        <div class="vp-dd-label">View</div>
-        <button class="vp-opt-row active" id="vwRowCompare" onclick="setViewMode('compare')">Compare <span class="vp-check">✓</span></button>
-        <button class="vp-opt-row" id="vwRowSetting" onclick="setViewMode('setting')">Setting focused <span class="vp-check">✓</span></button>
-        <button class="vp-opt-row" id="vwRowTruck" onclick="setViewMode('truck')">Truck focused <span class="vp-check">✓</span></button>
+        <div class="vp-dd-label">Update Modal</div>
+        <button class="vp-opt-row" id="verV1" onclick="setModalVersion('v1')">V1 — Type &amp; typed value <span class="vp-check">✓</span></button>
+        <button class="vp-opt-row active" id="verV2" onclick="setModalVersion('v2')">V2 — Predefined input <span class="vp-check">✓</span></button>
         <div class="vp-dd-div"></div>
         <button class="vp-opt-row" onclick="toggleTheme()">Dark mode <span class="vp-switch" id="themeSwitch"></span></button>
       </div>
@@ -990,19 +989,8 @@ table.tt td.dim{color:var(--muted)}
 
   <!-- MAIN -->
   <main class="main" id="main">
-    <div class="summary-bar" id="summaryBar"></div>
-    <div class="settings-toolbar" id="settingsToolbar" style="display:none">
-      <div class="search-box">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6370" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input id="settingSearch" type="text" placeholder="Search settings (e.g. slump, drum, admix)" oninput="settingQuery=this.value.toLowerCase();renderSections()">
-        <button class="clear-x" onclick="document.getElementById('settingSearch').value='';settingQuery='';renderSections()">×</button>
-      </div>
-      <span class="setting-count" id="settingCount"></span>
-      <button class="pill-toggle" id="issuesBtn" onclick="toggleIssuesOnly()">Only settings with issues</button>
-    </div>
-    <div id="sections"></div>
-    <div id="truckFocus" style="display:none"></div>
-    <div id="compareFocus" style="display:none">
+        
+        <div id="compareFocus">
       <div class="cmp-toolbar">
         <div class="cmp-select-wrap">
           <div class="cmp-label">Settings</div>
@@ -1038,33 +1026,7 @@ table.tt td.dim{color:var(--muted)}
   </div><!-- /hub-body -->
 </div><!-- /hub-shell -->
 
-<!-- Mass-update drawer (Truck focused view) -->
-<div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()">
-  <aside class="drawer" onclick="event.stopPropagation()">
-    <div class="drawer-head">
-      <div>
-        <div class="drawer-title">Mass update</div>
-        <div class="drawer-sub" id="drawerSub"></div>
-      </div>
-      <button class="drawer-x" onclick="closeDrawer()">×</button>
-    </div>
-    <div class="drawer-search">
-      <div class="search-box">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6370" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input id="drawerSearch" type="text" placeholder="Search settings" oninput="renderDrawerList()">
-        <button class="clear-x" onclick="document.getElementById('drawerSearch').value='';renderDrawerList()">×</button>
-      </div>
-    </div>
-    <div class="drawer-list" id="drawerList"></div>
-    <div class="drawer-foot">
-      <span class="drawer-count" id="drawerCount"></span>
-      <button class="btn btn-ghost" onclick="closeDrawer()">Close</button>
-      <button class="btn btn-primary" id="drawerReviewBtn" onclick="openModal()">Review &amp; send</button>
-    </div>
-  </aside>
-</div>
-
-<!-- Logs drawer (Compare view) -->
+ (Compare view) -->
 <div class="drawer-backdrop" id="logsBackdrop" onclick="closeLogs()">
   <aside class="drawer" onclick="event.stopPropagation()">
     <div class="drawer-head">
@@ -1080,26 +1042,6 @@ table.tt td.dim{color:var(--muted)}
       <button class="btn btn-ghost" onclick="closeLogs()">Close</button>
     </div>
   </aside>
-</div>
-
-<!-- STAGED FOOTER -->
-<div class="stage-bar" id="stageBar">
-  <div class="info" id="stageInfo"></div>
-  <button class="btn btn-ghost" onclick="discardStaged()">Discard changes</button>
-  <button class="btn btn-primary" id="reviewBtn" onclick="openModal()">Review &amp; send update</button>
-</div>
-
-<!-- MODAL -->
-<div class="modal-backdrop" id="modalBackdrop">
-  <div class="modal">
-    <h2>Confirm mass update</h2>
-    <div class="sub" id="modalSub"></div>
-    <table class="tt" id="modalTable"></table>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" id="confirmBtn" onclick="sendUpdate()">Send update</button>
-    </div>
-  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1290,16 +1232,6 @@ TRUCKS.forEach((t,ti)=>{
 
 /* UI state */
 let selected = new Set(['t3','t4','t6','t8','t10']); // preselect Cemex Phoenix trucks for demo
-let staged = {};        // settingId -> newValue
-let openRows = new Set();
-let collapsedSections = new Set();
-let settingQuery = '';
-let openHistory = new Set();   // "truckId:settingId"
-let rowFilter = {};            // settingId -> {kind:'value', key:JSONval} | {kind:'novalue'}
-let detailShown = {};          // settingId -> rows shown (pagination)
-let issuesOnly = false;        // show only settings with mixed/missing/pending
-const PAGE = 15;
-let collapsedGroups = new Set(['Cemex Arizona']);
 
 /* ---- change history (lazy, deterministic) ---- */
 const histCache = {};
@@ -1330,11 +1262,6 @@ function getHistory(tid, sid){
   }
   histCache[key]=out;
   return out;
-}
-function toggleHistory(tid, sid){
-  const key = tid+':'+sid;
-  openHistory.has(key)?openHistory.delete(key):openHistory.add(key);
-  renderActive();
 }
 
 /* ============ RENDER: TRUCK LIST ============ */
@@ -1403,79 +1330,14 @@ function rollup(s){
 function truckName(tid){ return TRUCKS.find(x=>x.id===tid).name; }
 
 /* ============ RENDER: SUMMARY ============ */
-function renderSummary(){
-  const bar = document.getElementById('summaryBar');
-  if(selected.size===0){
-    bar.innerHTML = `<div class="summary-count"><span class="label">Trucks selected</span><span class="num">0</span></div>
-    <div class="empty-hint">Select trucks on the left to load their current configuration.</div>`;
-    return;
-  }
-  let mixed=0, pendingSettings=0, novalSettings=0, confirmedSettings=0;
-  SETTINGS.filter(s=>s.functional!==false && !s.locked).forEach(s=>{
-    const r = rollup(s);
-    if(r.distinct.length>1) mixed++;
-    if(r.pending>0) pendingSettings++;
-    else if(r.confirmed>0 && r.confirmed===r.entries.length) confirmedSettings++;
-    if(r.noVal>0) novalSettings++;
-  });
-  bar.innerHTML = `
-    <div class="summary-count"><span class="label">Trucks selected</span><span class="num">${selected.size}</span></div>
-    <div class="summary-chips">
-      <span class="sum-chip mixed clickable ${issuesOnly?'active-filter':''}" onclick="toggleIssuesOnly()" title="Show only settings with issues"><span class="dot"></span>${mixed} settings mixed across fleet</span>
-      <span class="sum-chip novalue clickable ${issuesOnly?'active-filter':''}" onclick="toggleIssuesOnly()" title="Show only settings with issues"><span class="dot"></span>${novalSettings} settings with missing values</span>
-      ${pendingSettings>0?`<span class="sum-chip pending"><span class="dot"></span>${pendingSettings} settings awaiting truck confirmation</span>`:''}
-      ${confirmedSettings>0?`<span class="sum-chip confirmed"><span class="dot"></span>${confirmedSettings} settings confirmed fleet-wide</span>`:''}
-    </div>`;
-}
+
 
 /* ============ RENDER: SECTIONS ============ */
 const GEAR = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>`;
 const CHEV = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m18 15-6-6-6 6"/></svg>`;
 const INFO_ICON = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1" stroke-linecap="round"/></svg>`;
 
-function renderSections(){
-  const root = document.getElementById('sections');
-  const toolbar = document.getElementById('settingsToolbar');
-  if(selected.size===0){ root.innerHTML=''; toolbar.style.display='none'; return; }
-  toolbar.style.display='flex';
 
-  const visibleSettings = SETTINGS.filter(s=>
-    (!settingQuery || s.name.toLowerCase().includes(settingQuery)) &&
-    (!issuesOnly || settingHasIssue(s))
-  );
-  document.getElementById('settingCount').textContent =
-    (settingQuery||issuesOnly) ? `${visibleSettings.length} of ${SETTINGS.length} settings` : `${SETTINGS.length} settings`;
-  const issuesBtn = document.getElementById('issuesBtn');
-  if(issuesBtn){
-    issuesBtn.className = 'pill-toggle' + (issuesOnly?' active':'');
-    issuesBtn.textContent = issuesOnly ? 'Showing issues only' : 'Only settings with issues';
-  }
-
-  let html = '';
-
-  html += `<div class="sec-cols">`;
-  SECTIONS.forEach(sec=>{
-    const settings = visibleSettings.filter(s=>s.sec===sec.id);
-    if(settings.length===0) return;
-    const stagedCount = settings.filter(s=>staged[s.id]!==undefined).length;
-    const collapsed = settingQuery ? false : collapsedSections.has(sec.id);
-    html += `<div class="section-card ${collapsed?'collapsed':''}" id="sec-${sec.id}">
-      <div class="section-head" onclick="toggleSection('${sec.id}')">
-        <span class="gear">${GEAR}</span>
-        <div class="section-title-wrap"><span class="section-title">${sec.name}</span></div>
-        <div class="section-meta">
-          ${stagedCount>0?`<span class="staged-pill">${stagedCount} staged</span>`:''}
-          <div class="section-chevron">${CHEV}</div>
-        </div>
-      </div>
-      <div class="section-body">
-        ${settings.map(renderSettingRow).join('')}
-      </div>
-    </div>`;
-  });
-  html += `</div>`;
-  root.innerHTML = html;
-}
 
 const LOCK = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`;
 
@@ -1486,351 +1348,26 @@ const STATUS_MAP = {
   confirmed:{cls:'confirmed',label:'Confirmed'}
 };
 
-function buildControl(s){
-  if(s.type==='toggle'){
-    const v = staged[s.id];
-    return `<div class="seg">
-      <button class="${v===true?'active':''}" onclick="event.stopPropagation();setStagedValue('${s.id}', true)">On</button>
-      <button class="${v===false?'active':''}" onclick="event.stopPropagation();setStagedValue('${s.id}', false)">Off</button>
-    </div>`;
-  }
-  if(s.type==='select'){
-    const v = staged[s.id];
-    return `<select class="sel-input" onclick="event.stopPropagation()" onchange="setStagedValue('${s.id}', this.value); refreshStageBarOnly()">
-      <option value="" ${v===''?'selected':''} disabled>Select…</option>
-      ${s.options.map(o=>`<option value="${o}" ${v===o?'selected':''}>${o}</option>`).join('')}
-    </select>`;
-  }
-  const v = staged[s.id];
-  return `<input class="num-input" type="number" step="any" value="${v!==undefined&&v!==''?v:''}" placeholder="Enter value${s.unit?' ('+s.unit+')':''}"
-    onclick="event.stopPropagation()" oninput="setStagedValue('${s.id}', this.value===''?'':parseFloat(this.value)); refreshStageBarOnly()">`;
-}
 
-function buildFleetChips(s, r){
-  let chips = '';
-  const isStaged = staged[s.id]!==undefined;
-  if(isStaged) chips += `<span class="v-chip stagedchip"><span class="dot"></span>Staged → ${fmtVal(s, staged[s.id])}</span>`;
-  if(r.pending>0) chips += `<span class="v-chip pending"><span class="dot"></span>${r.pending} pending</span>`;
-  if(r.confirmed>0) chips += `<span class="v-chip confirmed"><span class="dot"></span>${r.confirmed} confirmed</span>`;
-  const f = rowFilter[s.id];
-  if(r.withVal.length>0){
-    if(r.distinct.length===1){
-      chips += `<span class="v-chip uniform"><span class="dot"></span>All: ${fmtVal(s, r.groups[0].value)}</span>`;
-    } else if(r.groups.length>1 && r.groups[0].tids.length===r.groups[1].tids.length){
-      chips += r.groups.map(g=>{
-        const act = f && f.kind==='value' && f.key===g.key ? 'active-filter':'';
-        return `<span class="v-chip exc clickable ${act}" onclick="event.stopPropagation();filterRow('${s.id}','value','${g.key.replace(/'/g,"\\'")}')"><span class="dot"></span>Split · ${g.tids.length} → ${fmtVal(s,g.value)}</span>`;
-      }).join('');
-    } else {
-      const maj = r.groups[0];
-      chips += `<span class="v-chip uniform"><span class="dot"></span>Most: ${fmtVal(s, maj.value)} · ${maj.tids.length}</span>`;
-      r.groups.slice(1).forEach(g=>{
-        const act = f && f.kind==='value' && f.key===g.key ? 'active-filter':'';
-        const label = g.tids.length<=3
-          ? `${g.tids.map(truckName).join(', ')} → ${fmtVal(s,g.value)}`
-          : `${g.tids.length} trucks → ${fmtVal(s,g.value)}`;
-        chips += `<span class="v-chip exc clickable ${act}" onclick="event.stopPropagation();filterRow('${s.id}','value','${g.key.replace(/'/g,"\\'")}')"><span class="dot"></span>${label}</span>`;
-      });
-    }
-  }
-  if(r.noVal>0){
-    const act = f && f.kind==='novalue' ? 'active-filter':'';
-    const label = r.noValTids.length<=3
-      ? `${r.noValTids.map(truckName).join(', ')} → no value`
-      : `${r.noVal} no value`;
-    chips += `<span class="v-chip novalue clickable ${act}" onclick="event.stopPropagation();filterRow('${s.id}','novalue','')"><span class="dot"></span>${label}</span>`;
-  }
-  return chips;
-}
 
-function buildDetailTable(s, r){
-  const allNoValue = r.noVal===r.entries.length && r.entries.length>0;
-  const f = rowFilter[s.id];
-  let detailTrucks = r.trucks;
-  let filterLabel = '';
-  if(f){
-    if(f.kind==='novalue'){ detailTrucks = r.noValTids; filterLabel = 'No value'; }
-    else {
-      const g = r.groups.find(x=>x.key===f.key);
-      detailTrucks = g ? g.tids : [];
-      filterLabel = g ? fmtVal(s, g.value) : '';
-    }
-  }
-  const shown = detailShown[s.id] || PAGE;
-  const pageTrucks = detailTrucks.slice(0, shown);
-  return `
-    ${allNoValue?`<div class="warn-banner">No value was reported for ${s.name.toUpperCase().replace(/ /g,'_')} by any of the ${r.entries.length} selected trucks in the last 90 days. Confirm the trucks have reported since the setting was applied.</div>`:''}
-    ${f?`<div class="filter-bar">Filtered: ${filterLabel} · ${detailTrucks.length} truck${detailTrucks.length===1?'':'s'} <button onclick="event.stopPropagation();clearRowFilter('${s.id}')">Clear filter</button></div>`:''}
-    <table class="tt">
-      <tr><th>Truck Name</th><th>Current Value</th><th>Last Updated</th><th>Submitter</th><th>Source</th><th>Status</th></tr>
-      ${pageTrucks.map(tid=>{
-        const t = TRUCKS.find(x=>x.id===tid);
-        const e = state[tid][s.id];
-        const st = STATUS_MAP[e.status];
-        const hKey = tid+':'+s.id;
-        const hOpen = openHistory.has(hKey);
-        let rows = `<tr class="truck-click ${hOpen?'hist-open':''}" onclick="event.stopPropagation();toggleHistory('${tid}','${s.id}')" title="View change history">
-          <td style="font-weight:600"><span class="hist-caret">▶</span>${t.name}</td>
-          <td>${fmtVal(s, e.value)}</td>
-          <td class="dim">${e.lastUpdated||'—'}</td>
-          <td class="dim">${e.submitter||'—'}</td>
-          <td class="dim">${e.source||'—'}</td>
-          <td><span class="status-cell ${st.cls}"><span class="dot"></span>${st.label}</span></td>
-        </tr>`;
-        if(hOpen){
-          const hist = getHistory(tid, s.id);
-          rows += `<tr><td class="hist-cell" colspan="6">
-            <div class="hist-title">Change history — ${t.name}</div>
-            ${hist.length===0
-              ? `<div style="color:var(--faint);font-size:12.5px;padding:4px 0">No history — this setting has never reported a value for this truck.</div>`
-              : `<table class="hist">${hist.map((h,i)=>`
-                  <tr>
-                    <td style="font-weight:600;width:120px">${fmtVal(s, h.value)}</td>
-                    <td class="dim" style="width:130px">${h.date}</td>
-                    <td class="dim">${h.submitter}</td>
-                    <td class="dim" style="width:70px">${h.source}</td>
-                    <td style="width:80px;text-align:right">${i===0?'<span class="hist-current">Current</span>':''}</td>
-                  </tr>`).join('')}</table>`}
-          </td></tr>`;
-        }
-        return rows;
-      }).join('')}
-    </table>
-    ${detailTrucks.length>shown?`<div class="show-more-wrap">
-      <button class="show-more" onclick="event.stopPropagation();showMore('${s.id}')">Show ${Math.min(PAGE, detailTrucks.length-shown)} more</button>
-      <span class="showing-count">Showing ${pageTrucks.length} of ${detailTrucks.length}</span>
-    </div>`:(detailTrucks.length>PAGE?`<div class="show-more-wrap"><span class="showing-count">Showing all ${detailTrucks.length}</span></div>`:'')}`;
-}
 
-function renderSettingRow(s){
-  // locked identity fields: read only, expandable, never stageable
-  if(s.locked){
-    const r = rollup(s);
-    const isOpen = openRows.has(s.id);
-    const single = selected.size===1;
-    let middle;
-    if(single){
-      const e = state[[...selected][0]][s.id];
-      middle = `<div class="inline-val"><span class="val">${fmtVal(s, e.value)}</span><span class="meta">Read only</span></div>`;
-    } else {
-      const chip = r.distinct.length===1
-        ? `<span class="v-chip uniform"><span class="dot"></span>All: ${fmtVal(s, JSON.parse(r.distinct[0]))}</span>`
-        : `<span class="v-chip novalue"><span class="dot"></span>${r.distinct.length} values across ${selected.size} trucks</span>`;
-      middle = `<div class="value-chips">${chip}</div>`;
-    }
-    const lShown = detailShown[s.id] || PAGE;
-    const lPage = r.trucks.slice(0, lShown);
-    const detail = `<table class="tt">
-      <tr><th>Truck Name</th><th>Value</th></tr>
-      ${lPage.map(tid=>{
-        const t = TRUCKS.find(x=>x.id===tid);
-        return `<tr><td style="font-weight:600">${t.name}</td><td class="dim">${fmtVal(s, state[tid][s.id].value)}</td></tr>`;
-      }).join('')}
-    </table>
-    ${r.trucks.length>lShown?`<div class="show-more-wrap">
-      <button class="show-more" onclick="event.stopPropagation();showMore('${s.id}')">Show ${Math.min(PAGE, r.trucks.length-lShown)} more</button>
-      <span class="showing-count">Showing ${lPage.length} of ${r.trucks.length}</span>
-    </div>`:''}`;
-    return `<div class="setting-row ${isOpen?'open':''}" id="row-${s.id}">
-      <div class="setting-main" onclick="toggleRow('${s.id}')">
-        <div class="cb disabled" style="display:flex;color:var(--faint)" title="Read only — set per truck on the truck's Configuration page">${LOCK}</div>
-        <div class="setting-name" style="color:var(--muted)">${s.name}</div>
-        <span class="readonly-tag">Read only</span>
-        ${middle}
-        <span class="row-chevron">${CHEV}</span>
-      </div>
-      <div class="detail">${detail}</div>
-    </div>`;
-  }
 
-  // non-functional: flagged, dimmed, not stageable, not expandable
-  if(s.functional===false){
-    return `<div class="setting-row nonfunc" id="row-${s.id}">
-      <div class="setting-main">
-        <div class="cb disabled" title="Not functional — cannot be updated"></div>
-        <div class="setting-name">${s.name}</div>
-        <span class="type-tag">${typeLabel(s)}</span>
-        <div class="value-chips"><span class="nonfunc-tag">Not functional · pending removal</span></div>
-        <span class="row-chevron" style="visibility:hidden">${CHEV}</span>
-      </div>
-    </div>`;
-  }
 
-  const r = rollup(s);
-  const isStaged = staged[s.id]!==undefined;
-  const isOpen = openRows.has(s.id);
-  const single = selected.size===1;
 
-  // middle content: rollup chips (multi) or inline value (single truck)
-  let middle = '';
-  if(single){
-    const tid = [...selected][0];
-    const e = state[tid][s.id];
-    const statusChip =
-      e.status==='pending'   ? `<span class="v-chip pending"><span class="dot"></span>Pending</span>` :
-      e.status==='confirmed' ? `<span class="v-chip confirmed"><span class="dot"></span>Confirmed</span>` : '';
-    middle = `<div class="inline-val">
-      ${isStaged?`<span class="v-chip stagedchip"><span class="dot"></span>Staged → ${fmtVal(s, staged[s.id])}</span>`:''}
-      ${statusChip}
-      <span class="val">${fmtVal(s, e.value)}</span>
-      <span class="meta">${e.value===null?'No value reported':`Updated ${e.lastUpdated} · ${e.submitter}`}</span>
-    </div>`;
-  } else {
-    middle = `<div class="value-chips">${buildFleetChips(s, r)}</div>`;
-  }
 
-  // staged input control (shared with setting-focused view)
-  let control = buildControl(s);
-
-  // detail table (shared with setting-focused view)
-  const detail = buildDetailTable(s, r);
-
-  return `<div class="setting-row ${isStaged?'staged':''} ${isOpen?'open':''}" id="row-${s.id}">
-    <div class="setting-main" onclick="toggleRow('${s.id}')">
-      <div class="cb ${isStaged?'checked':''}" onclick="event.stopPropagation();toggleStage('${s.id}')" title="Stage for update">
-        <svg viewBox="0 0 12 12" fill="none"><path d="M2 6.5 4.8 9 10 3.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div>
-      <div class="setting-name">${s.name}${s.unit?`<span class="setting-unit">${s.unit}</span>`:''}</div>
-      <span class="type-tag">${typeLabel(s)}</span>
-      ${middle}
-      <span class="row-chevron">${CHEV}</span>
-    </div>
-    <div class="stage-input">
-      <label>New value</label>
-      ${control}
-      <span style="color:var(--faint);font-size:12px">applies to ${selected.size} selected truck${selected.size===1?'':'s'}</span>
-    </div>
-    <div class="detail">${detail}</div>
-  </div>`;
-}
 
 /* ============ INTERACTIONS ============ */
-let viewMode = 'setting';                 // 'setting' = sections view · 'truck' = per-truck accordions
-let openTrucks = new Set();
-let truckAccShown = 15;
 
-function renderActive(){
-  if(viewMode==='setting') renderSections();
-  else if(viewMode==='truck') renderTruckFocus();
-  else renderCompare();
-}
 
-function setViewMode(m){
-  viewMode = m;
-  const settingView = m==='setting';
-  document.getElementById('summaryBar').style.display = settingView?'flex':'none';
-  if(!settingView) document.getElementById('settingsToolbar').style.display = 'none';
-  document.getElementById('sections').style.display = settingView?'block':'none';
-  document.getElementById('truckFocus').style.display = m==='truck'?'block':'none';
-  document.getElementById('compareFocus').style.display = m==='compare'?'block':'none';
-  document.getElementById('vwRowSetting').classList.toggle('active', settingView);
-  document.getElementById('vwRowTruck').classList.toggle('active', m==='truck');
-  document.getElementById('vwRowCompare').classList.toggle('active', m==='compare');
-  document.getElementById('vpOptsDd').classList.remove('open');
-  if(m!=='truck') closeDrawer();
-  renderAll();
-}
+
+
 
 /* ---- truck-focused view: one accordion per selected truck ---- */
-const INFO_HEAD_FIELDS = [
-  {label:'Unit', sid:'ro_unit'},
-  {label:'Mixer Type', sid:'ro_mixer'},
-  {label:'Mode', sid:'mode'},
-  {label:'OOS Reason', sid:'oos_reason'},
-];
-function toggleTruckCard(tid){
-  openTrucks.has(tid)?openTrucks.delete(tid):openTrucks.add(tid);
-  renderTruckFocus();
-}
-function showMoreTrucks(){ truckAccShown += 15; renderTruckFocus(); }
-function toggleTfHist(tid, sid){
-  const key = tid+':'+sid+':tf';
-  openHistory.has(key)?openHistory.delete(key):openHistory.add(key);
-  renderTruckFocus();
-}
 
-function renderTruckFocus(){
-  const box = document.getElementById('truckFocus');
-  if(selected.size===0){
-    box.innerHTML = `<div class="tf-toolbar"><span class="tf-count">Select trucks on the left to load their configuration.</span></div>`;
-    return;
-  }
-  const tids = [...selected];
-  const page = tids.slice(0, truckAccShown);
 
-  const cards = page.map(tid=>{
-    const t = TRUCKS.find(x=>x.id===tid);
-    const open = openTrucks.has(tid);
-    const info = INFO_HEAD_FIELDS.map(f=>{
-      const s = SETTINGS.find(x=>x.id===f.sid);
-      const e = state[tid][f.sid];
-      const warn = (f.sid==='mode' && e.value!=='Live') || (f.sid==='oos_reason' && e.value!=='None');
-      return `<div class="tc-field"><span class="k">${f.label}</span><span class="v ${warn?'warn':''}">${fmtVal(s, e.value)}</span></div>`;
-    }).join('');
-    const noValCount = SETTINGS.filter(s=>!s.locked && s.functional!==false && state[tid][s.id].value===null).length;
-    const pendCount = SETTINGS.filter(s=>state[tid][s.id].status==='pending').length;
 
-    let body = '';
-    if(open){
-      body = SECTIONS.filter(sec=>sec.id!=='information').map(sec=>{
-        const rows = SETTINGS.filter(s=>s.sec===sec.id).map(s=>{
-          if(s.functional===false){
-            return `<div class="tc-row"><span class="n dimmed">${s.name}</span><span class="nonfunc-tag">Not functional</span></div>`;
-          }
-          const e = state[tid][s.id];
-          const st = STATUS_MAP[e.status];
-          const hKey = tid+':'+s.id+':tf';
-          const hOpen = openHistory.has(hKey);
-          let row = `<div class="tc-row" style="cursor:pointer" onclick="toggleTfHist('${tid}','${s.id}')" title="View change history">
-            <span class="n"><span class="hist-caret" style="${hOpen?'transform:rotate(90deg);display:inline-block':''}">▶</span> ${s.name}${s.unit?`<span class="setting-unit">${s.unit}</span>`:''}</span>
-            <span class="meta">${e.lastUpdated?`${e.lastUpdated} · ${e.submitter}`:''}</span>
-            <span class="val">${fmtVal(s, e.value)}</span>
-            <span class="status-cell ${st.cls}" style="min-width:96px"><span class="dot"></span>${st.label}</span>
-          </div>`;
-          if(hOpen){
-            const hist = getHistory(tid, s.id);
-            row += `<div class="cmp-hist-inner" style="background:var(--hist-bg);border-radius:6px;margin:2px 0 8px">
-              <div class="hist-title">Change history</div>
-              ${hist.length===0
-                ? `<div style="color:var(--faint);font-size:12.5px;padding:4px 0">No history — this setting has never reported a value for this truck.</div>`
-                : `<table class="hist">${hist.map((h,i)=>`
-                    <tr>
-                      <td style="font-weight:600;width:120px">${fmtVal(s, h.value)}</td>
-                      <td class="dim" style="width:130px">${h.date}</td>
-                      <td class="dim">${h.submitter}</td>
-                      <td class="dim" style="width:70px">${h.source}</td>
-                      <td style="width:80px;text-align:right">${i===0?'<span class="hist-current">Current</span>':''}</td>
-                    </tr>`).join('')}</table>`}
-            </div>`;
-          }
-          return row;
-        }).join('');
-        return `<div class="tc-sec-label">${sec.name}</div>${rows}`;
-      }).join('');
-    }
 
-    return `<div class="truck-card ${open?'open':''}">
-      <div class="tc-head" onclick="toggleTruckCard('${tid}')">
-        <div><div class="tc-name">${t.name}</div><div class="tc-contract">${t.contract}</div></div>
-        <div class="tc-info">${info}</div>
-        ${pendCount>0?`<span class="v-chip pending"><span class="dot"></span>${pendCount} pending</span>`:''}
-        ${noValCount>0?`<span class="v-chip novalue"><span class="dot"></span>${noValCount} no value</span>`:''}
-        <div class="tc-chevron">${CHEV}</div>
-      </div>
-      <div class="tc-body">${body}</div>
-    </div>`;
-  }).join('');
 
-  box.innerHTML = `<div class="tf-toolbar">
-      <span class="tf-count"><b>${selected.size}</b> truck${selected.size===1?'':'s'} selected</span>
-      <button class="btn btn-primary tf-update-btn" onclick="openDrawer()">Update trucks (${selected.size})</button>
-    </div>
-    ${cards}
-    ${tids.length>truckAccShown?`<div class="show-more-wrap">
-      <button class="show-more" onclick="showMoreTrucks()">Show ${Math.min(15, tids.length-truckAccShown)} more trucks</button>
-      <span class="showing-count">Showing ${page.length} of ${tids.length}</span>
-    </div>`:''}`;
-}
 
 /* ---- compare view: load specific settings, scan all trucks, fix drift ---- */
 let compareSettings = ['front_discharge'];   // sensible demo default
@@ -2024,30 +1561,16 @@ function renderCompare(){
 }
 
 /* ---- update from Compare (drift-only or all selected) ---- */
-function openFix(sid){
-  const s = SETTINGS.find(x=>x.id===sid);
-  const r = rollup(s);
-  const maj = r.groups[0] ? r.groups[0].value : s.def;
-  fix = {sid, value: maj, scope: 'custom', custom: new Set(fixDiffTidsFor(sid, maj))};
-  renderFixModal();
-  document.getElementById('fixBackdrop').classList.add('visible');
+let modalVersion = 'v2';   // 'v1' = Type dropdown + typed value (current HUB) · 'v2' = predefined input per setting type
+function setModalVersion(v){
+  modalVersion = v;
+  document.getElementById('verV1').classList.toggle('active', v==='v1');
+  document.getElementById('verV2').classList.toggle('active', v==='v2');
+  document.getElementById('vpOptsDd').classList.remove('open');
+  if(fix) renderFixModal();
 }
-function closeFix(){ fix=null; document.getElementById('fixBackdrop').classList.remove('visible'); }
 function setFixValue(v){ if(fix){ fix.value = v; renderFixModal(); } }
-function setFixScope(sc){
-  if(!fix) return;
-  fix.scope = sc;
-  if(sc==='custom') fix.custom = new Set(fixDiffTids());   // pre-check the drifted trucks
-  renderFixModal();
-}
-function toggleFixTruck(tid){
-  if(!fix) return;
-  fix.custom.has(tid) ? fix.custom.delete(tid) : fix.custom.add(tid);
-  renderFixTruckList();
-  refreshFixImpact();
-}
-
-function buildFixControl(s){
+function buildFixControlV2(s){
   if(s.type==='toggle'){
     return `<div class="seg">
       <button class="${fix.value===true?'active':''}" onclick="setFixValue(true)">On</button>
@@ -2061,51 +1584,134 @@ function buildFixControl(s){
   }
   return `<input class="num-input" type="number" step="any" value="${fix.value}" oninput="if(fix){fix.value=this.value===''?'':parseFloat(this.value);refreshFixImpact()}">`;
 }
+function fixParsed(){
+  if(modalVersion==='v1') return parseFixValue();
+  const v = fix.value;
+  const ok = v!=='' && v!==null && v!==undefined && !(typeof v==='number'&&isNaN(v));
+  return ok ? {ok:true, value:v} : {ok:false, err:'Enter a target value.'};
+}
+const FIX_TYPES = ['Float','Integer','String','Boolean','Long'];
+function inferFixType(s){
+  if(s.type==='toggle') return 'Boolean';
+  if(s.type==='select') return 'String';
+  const nums = [s.def, s.alt].filter(v=>typeof v==='number');
+  return nums.every(Number.isInteger) ? 'Integer' : 'Float';
+}
+function openFix(sid){
+  const s = SETTINGS.find(x=>x.id===sid);
+  const r = rollup(s);
+  const maj = r.groups[0] ? r.groups[0].value : s.def;
+  fix = {sid, raw:'', type: inferFixType(s), value: maj, scope:'custom', custom: new Set(fixDiffTidsFor(sid, maj))};
+  renderFixModal();
+  document.getElementById('fixBackdrop').classList.add('visible');
+}
+function closeFix(){ fix=null; document.getElementById('fixBackdrop').classList.remove('visible'); }
+function setFixType(t){ if(fix){ fix.type = t; refreshFixImpact(); } }
+function setFixRaw(v){ if(fix){ fix.raw = v; refreshFixImpact(); } }
+function parseFixValue(){
+  const raw = (fix.raw||'').trim();
+  if(raw==='') return {ok:false, err:'Enter a value.'};
+  if(fix.type==='Boolean'){
+    if(/^(true|on|1|yes)$/i.test(raw)) return {ok:true, value:true};
+    if(/^(false|off|0|no)$/i.test(raw)) return {ok:true, value:false};
+    return {ok:false, err:'Boolean expects true/false (or on/off).'};
+  }
+  if(fix.type==='Integer' || fix.type==='Long'){
+    const n = Number(raw);
+    if(isNaN(n)) return {ok:false, err:fix.type+' expects a number.'};
+    if(!Number.isInteger(n)) return {ok:false, err:fix.type+' expects a whole number.'};
+    return {ok:true, value:n};
+  }
+  if(fix.type==='Float'){
+    const n = Number(raw);
+    if(isNaN(n)) return {ok:false, err:'Float expects a number.'};
+    return {ok:true, value:n};
+  }
+  return {ok:true, value:raw}; // String
+}
+function fmtParsed(s, v){
+  if(typeof v==='boolean') return v?'On':'Off';
+  if(typeof v==='number') return v + (s.unit?' '+s.unit:'');
+  return v;
+}
+function setFixScope(sc){
+  if(!fix) return;
+  fix.scope = sc;
+  if(sc==='custom'){
+    const s = SETTINGS.find(x=>x.id===fix.sid);
+    const r = rollup(s);
+    const maj = r.groups[0] ? r.groups[0].value : s.def;
+    fix.custom = new Set(fixDiffTidsFor(fix.sid, maj));   // pre-check trucks drifted from the majority
+  }
+  renderFixModal();
+}
+function toggleFixTruck(tid){
+  if(!fix) return;
+  fix.custom.has(tid) ? fix.custom.delete(tid) : fix.custom.add(tid);
+  renderFixTruckList();
+  refreshFixImpact();
+}
+
 function fixDiffTidsFor(sid, value){
   return [...selected].filter(tid=>{
     const e = state[tid][sid];
     return e.value===null || JSON.stringify(e.value)!==JSON.stringify(value);
   });
 }
-function fixDiffTids(){ return fixDiffTidsFor(fix.sid, fix.value); }
+function fixDiffTids(){
+  const p = fixParsed();
+  return p.ok ? fixDiffTidsFor(fix.sid, p.value) : [];
+}
 function fixTargets(){
   return fix.scope==='all' ? [...selected] : [...fix.custom];
 }
 function refreshFixImpact(){
   const s = SETTINGS.find(x=>x.id===fix.sid);
-  const diff = fixDiffTids();
   const targets = fixTargets();
-  const valid = fix.value!=='' && fix.value!==null && fix.value!==undefined && !(typeof fix.value==='number'&&isNaN(fix.value));
+  const p = fixParsed();
   let impact;
-  if(!valid){
-    impact = `<span style="color:var(--amber)">Enter a target value.</span>`;
+  if(!p.ok){
+    impact = `<span style="color:var(--amber)">${p.err}</span>`;
   } else if(fix.scope==='custom'){
     const names = targets.length<=3 && targets.length>0 ? ` (${targets.map(truckName).join(', ')})` : '';
     impact = targets.length===0
       ? `<span style="color:var(--amber)">Pick at least one truck below.</span>`
-      : `<b>${targets.length}</b> chosen truck${targets.length===1?'':'s'}${names} will be pushed <b class="newval">${fmtVal(s, fix.value)}</b>.`;
+      : `<b>${targets.length}</b> chosen truck${targets.length===1?'':'s'}${names} will be pushed <b class="newval">${fmtParsed(s, p.value)}</b>.`;
   } else {
-    impact = `All <b>${selected.size}</b> selected trucks will be pushed <b class="newval">${fmtVal(s, fix.value)}</b>${diff.length<selected.size?` (${selected.size-diff.length} already match and will be re-stamped)`:''}.`;
+    const diff = fixDiffTidsFor(fix.sid, p.value);
+    impact = `All <b>${selected.size}</b> selected trucks will be pushed <b class="newval">${fmtParsed(s, p.value)}</b>${diff.length<selected.size?` (${selected.size-diff.length} already match and will be re-stamped)`:''}.`;
   }
   document.getElementById('fixImpact').innerHTML = impact;
   const btn = document.getElementById('fixConfirmBtn');
-  btn.disabled = !valid || targets.length===0;
+  btn.disabled = !p.ok || targets.length===0;
   btn.textContent = targets.length>0 ? `Update ${targets.length} truck${targets.length===1?'':'s'}` : (fix.scope==='custom' ? 'Pick trucks to update' : 'All trucks already match');
 }
 function renderFixModal(){
   const s = SETTINGS.find(x=>x.id===fix.sid);
-  const diff = fixDiffTids();
   document.getElementById('fixTitle').textContent = `Update — ${s.name}`;
   document.getElementById('fixSub').innerHTML =
     `Push a value to the selected trucks. Each updated truck shows <b style="color:var(--text)">Pending</b> until it reports the new value back.`;
+  const valueRows = modalVersion==='v1'
+    ? `<div style="display:flex;align-items:center;gap:12px">
+        <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text);font-weight:700;min-width:70px">Type</label>
+        <select class="sel-input" onchange="setFixType(this.value)">
+          ${FIX_TYPES.map(t=>`<option value="${t}" ${fix.type===t?'selected':''}>${t}</option>`).join('')}
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text);font-weight:700;min-width:70px">Value</label>
+        <input class="num-input" type="text" style="width:220px" value="${(fix.raw||'').replace(/"/g,'&quot;')}" placeholder="Enter value${s.unit?' ('+s.unit+')':''}"
+          oninput="setFixRaw(this.value)">
+      </div>`
+    : `<div style="display:flex;align-items:center;gap:12px">
+        <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text);font-weight:700;min-width:70px">New value</label>
+        ${buildFixControlV2(s)}
+      </div>`;
   document.getElementById('fixControl').innerHTML =
     `<div style="display:flex;flex-direction:column;gap:14px;width:100%">
-      <div style="display:flex;align-items:center;gap:12px">
-        <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text);font-weight:700">New value</label>
-        ${buildFixControl(s)}
-      </div>
+      ${valueRows}
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-        <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text);font-weight:700">Apply to</label>
+        <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text);font-weight:700;min-width:70px">Apply to</label>
         <div class="seg seg-scope">
           <button class="${fix.scope==='custom'?'active':''}" onclick="setFixScope('custom')">Choose trucks</button>
           <button class="${fix.scope==='all'?'active':''}" onclick="setFixScope('all')">All selected (${selected.size})</button>
@@ -2146,7 +1752,9 @@ function renderFixTruckList(){
 function sendFix(){
   const sid = fix.sid;
   const targets = fixTargets();
-  const val = fix.value;
+  const p = fixParsed();
+  if(!p.ok) return;
+  const val = p.value;
   const now = 'Aug 20, 2026';
   targets.forEach(tid=>{
     state[tid][sid] = {...state[tid][sid], status:'pending', source:'Hub', submitter:'You', pendingValue: val};
@@ -2167,158 +1775,32 @@ function sendFix(){
 }
 
 /* ---- mass-update drawer ---- */
-function openDrawer(){
-  document.getElementById('drawerBackdrop').classList.add('open');
-  renderDrawerList();
-}
-function closeDrawer(){
-  const b = document.getElementById('drawerBackdrop');
-  if(b) b.classList.remove('open');
-}
-function renderDrawerList(){
-  const q = (document.getElementById('drawerSearch').value||'').toLowerCase();
-  document.getElementById('drawerSub').textContent =
-    `${selected.size} truck${selected.size===1?'':'s'} selected · pick the settings to change`;
-  const list = document.getElementById('drawerList');
-  list.innerHTML = SECTIONS.map(sec=>{
-    const items = SETTINGS.filter(s=>s.sec===sec.id && !s.locked && s.functional!==false && (!q || s.name.toLowerCase().includes(q)));
-    if(items.length===0) return '';
-    return `<div class="dr-sec-label">${sec.name}</div>` + items.map(s=>{
-      const isStaged = staged[s.id]!==undefined;
-      return `<div class="dr-item">
-        <div class="dr-item-main" onclick="toggleStage('${s.id}')">
-          <div class="cb ${isStaged?'checked':''}"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6.5 4.8 9 10 3.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-          <span class="dr-name">${s.name}${s.unit?`<span class="setting-unit">${s.unit}</span>`:''}</span>
-          <span class="type-tag">${typeLabel(s)}</span>
-        </div>
-        ${isStaged?`<div class="dr-input"><label>New value</label>${buildControl(s)}</div>`:''}
-      </div>`;
-    }).join('');
-  }).join('');
-  const n = Object.keys(staged).length;
-  document.getElementById('drawerCount').textContent = n===0 ? 'No settings staged yet' : `${n} setting${n===1?'':'s'} staged`;
-  document.getElementById('drawerReviewBtn').disabled = !stagedValid();
-}
 
-function toggleSection(id){
-  collapsedSections.has(id)?collapsedSections.delete(id):collapsedSections.add(id);
-  document.getElementById('sec-'+id).classList.toggle('collapsed');
-}
-function toggleRow(id){
-  openRows.has(id)?openRows.delete(id):openRows.add(id);
-  document.getElementById('row-'+id).classList.toggle('open');
-}
-function filterRow(sid, kind, key){
-  const cur = rowFilter[sid];
-  if(cur && cur.kind===kind && (kind==='novalue' || cur.key===key)){
-    delete rowFilter[sid]; // toggle off
-  } else {
-    rowFilter[sid] = kind==='novalue' ? {kind:'novalue'} : {kind:'value', key:key};
-  }
-  delete detailShown[sid];
-  openRows.add(sid);
-  renderActive();
-}
-function clearRowFilter(sid){ delete rowFilter[sid]; delete detailShown[sid]; renderActive(); }
-function showMore(sid){ detailShown[sid] = (detailShown[sid]||PAGE) + PAGE; renderActive(); }
-function toggleIssuesOnly(){ issuesOnly = !issuesOnly; renderSections(); }
-function settingHasIssue(s){
-  if(s.locked || s.functional===false) return false;
-  const r = rollup(s);
-  return r.distinct.length>1 || r.noVal>0 || r.pending>0;
-}
-function toggleStage(id){
-  if(staged[id]!==undefined){ delete staged[id]; }
-  else {
-    const s = SETTINGS.find(x=>x.id===id);
-    staged[id] = s.type==='toggle' ? true : '';
-  }
-  renderMain();
-}
+
+
+
+
+
+
+
+
+
+
+
 function typeLabel(s){ return s.type==='toggle'?'Toggle':(s.type==='select'?'Dropdown':'Number'); }
-function setStagedValue(id, v){
-  staged[id]=v;
-  const s = SETTINGS.find(x=>x.id===id);
-  if(s.type==='toggle'){ renderMain(); }
-}
-function discardStaged(){ staged={}; renderMain(); }
 
-function stagedValid(){
-  const ids = Object.keys(staged);
-  if(ids.length===0) return false;
-  return ids.every(id=>{
-    const v = staged[id];
-    return v!=='' && v!==undefined && v!==null && !(typeof v==='number' && isNaN(v));
-  });
-}
 
-function refreshStageBar(){
-  const bar = document.getElementById('stageBar');
-  const ids = Object.keys(staged);
-  if(ids.length===0 || selected.size===0){ bar.classList.remove('visible'); return; }
-  bar.classList.add('visible');
-  const incomplete = ids.filter(id=>staged[id]===''||staged[id]===undefined||(typeof staged[id]==='number'&&isNaN(staged[id]))).length;
-  document.getElementById('stageInfo').innerHTML =
-    `<b>${ids.length}</b> setting${ids.length===1?'':'s'} staged · will be pushed to <b>${selected.size}</b> truck${selected.size===1?'':'s'}` +
-    (incomplete>0?` · <span style="color:var(--amber)">${incomplete} missing a value</span>`:'');
-  document.getElementById('reviewBtn').disabled = !stagedValid();
-  // keep drawer footer in sync when it's open (typing doesn't rerender its list)
-  const db = document.getElementById('drawerBackdrop');
-  if(db && db.classList.contains('open')){
-    const n = ids.length;
-    document.getElementById('drawerCount').textContent = n===0 ? 'No settings staged yet' : `${n} setting${n===1?'':'s'} staged`;
-    document.getElementById('drawerReviewBtn').disabled = !stagedValid();
-  }
-}
-function refreshStageBarOnly(){ refreshStageBar(); }
+
+
+
+
+
 
 /* ============ MODAL + SEND ============ */
-function openModal(){
-  if(!stagedValid()) return;
-  const ids = Object.keys(staged);
-  document.getElementById('modalSub').innerHTML =
-    `You're about to push <b>${ids.length} setting change${ids.length===1?'':'s'}</b> to <b>${selected.size} truck${selected.size===1?'':'s'}</b>. Each truck applies the change on its next check-in; status will show <b style="color:var(--amber)">Pending</b> until the truck reports the new value back, then <b style="color:var(--green)">Confirmed</b>.`;
-  document.getElementById('modalTable').innerHTML =
-    `<tr><th>Setting</th><th>Section</th><th>New Value</th></tr>` +
-    ids.map(id=>{
-      const s = SETTINGS.find(x=>x.id===id);
-      const sec = SECTIONS.find(x=>x.id===s.sec);
-      return `<tr><td style="font-weight:600">${s.name}</td><td class="dim">${sec.name}</td><td class="newval">${fmtVal(s, staged[id])}</td></tr>`;
-    }).join('');
-  document.getElementById('confirmBtn').textContent = `Send to ${selected.size} truck${selected.size===1?'':'s'}`;
-  document.getElementById('modalBackdrop').classList.add('visible');
-}
-function closeModal(){ document.getElementById('modalBackdrop').classList.remove('visible'); }
 
-function sendUpdate(){
-  const ids = Object.keys(staged);
-  const trucks = [...selected];
-  const now = 'Aug 20, 2026';
-  ids.forEach(id=>{
-    trucks.forEach(tid=>{
-      state[tid][id] = {...state[tid][id], status:'pending', source:'Hub', submitter:'You', pendingValue: staged[id]};
-    });
-  });
-  // simulate trucks confirming at staggered intervals; one straggler
-  trucks.forEach((tid,i)=>{
-    const delay = (i===trucks.length-1) ? 9000 : 1500 + Math.random()*4500;
-    setTimeout(()=>{
-      ids.forEach(id=>{
-        const e = state[tid][id];
-        state[tid][id] = {value:e.pendingValue, lastUpdated:now, source:'Hub', submitter:'You', status:'confirmed'};
-        const h = getHistory(tid, id);
-        h.unshift({value:e.pendingValue, date:now, submitter:'You', source:'Hub'});
-      });
-      renderMain();
-    }, delay);
-  });
-  const n = trucks.length;
-  staged = {};
-  closeModal();
-  closeDrawer();
-  renderMain();
-  showToast(`Update sent to ${n} truck${n===1?'':'s'} — awaiting confirmation`);
-}
+
+
+
 
 let toastTimer;
 function showToast(msg){
@@ -2330,17 +1812,9 @@ function showToast(msg){
 }
 
 /* ============ MASTER RENDER ============ */
-function renderMain(){
-  if(viewMode==='setting'){ renderSummary(); renderSections(); }
-  else if(viewMode==='truck'){
-    renderTruckFocus();
-    if(document.getElementById('drawerBackdrop').classList.contains('open')) renderDrawerList();
-  }
-  else { renderCompare(); }
-  refreshStageBar();
-}
+function renderMain(){ renderCompare(); }
 function renderAll(){ renderTrucks(); renderMain(); }
-setViewMode('compare');
+renderAll();
 
 function toggleNavCollapse(){ document.body.classList.toggle('nav-collapsed'); }
 

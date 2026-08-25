@@ -517,6 +517,22 @@ body.nav-collapsed .menu-col{display:none}
 }
 .cmp-pop-item:hover{background:var(--panel-2)}
 .cmp-pop-item .type-tag{margin-left:auto;text-transform:none;letter-spacing:0}
+.cust-rm{
+  color:var(--faint);font-size:15px;line-height:1;padding:2px 6px;border-radius:5px;margin-left:4px;
+}
+.cust-rm:hover{color:var(--text);background:var(--panel-3)}
+.cmp-pop-add{
+  display:flex;align-items:center;gap:10px;
+  width:100%;padding:11px 12px;border:0;border-top:1px solid var(--border-soft);
+  background:transparent;color:var(--blue-hi);
+  font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-align:left;
+}
+.cmp-pop-add:hover{background:var(--panel-2)}
+.custom-tag{
+  font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  background:var(--muted);color:var(--bg);
+  padding:2px 8px;border-radius:9px;margin-left:8px;vertical-align:middle;
+}
 .cmp-hint{color:var(--faint);font-size:13px;padding:24px;border:1px dashed var(--border);border-radius:var(--radius);text-align:center}
 
 .cmp-table-wrap{background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:auto;max-height:calc(100vh - 340px)}
@@ -1014,6 +1030,7 @@ table.tt td.dim{color:var(--muted)}
               <button class="clear-all" onclick="clearCompareSettings()">Clear All</button>
             </div>
             <div class="cmp-pop-list" id="cmpPopList"></div>
+            <button class="cmp-pop-add" onclick="openCustomSetting()">＋ Add a setting not in HUB…</button>
           </div>
         </div>
       </div>
@@ -1045,6 +1062,31 @@ table.tt td.dim{color:var(--muted)}
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- Add custom setting modal (settings not yet in HUB) -->
+<div class="modal-backdrop" id="customBackdrop">
+  <div class="modal" style="width:520px">
+    <h2>Add a setting not in HUB</h2>
+    <div class="sub">A one-off push for settings being tested on trucks. Nothing is created in HUB — the setting may still change name or type before it ships. Remove it from this view when the test is done; trucks that don't recognize it keep reporting <b style="color:var(--text)">no value</b>.</div>
+    <div style="display:flex;flex-direction:column;gap:14px;margin:6px 0 4px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text);font-weight:700;min-width:100px">Setting name</label>
+        <input class="num-input" type="text" id="custName" style="width:260px" placeholder="e.g. DRUM_TORQUE_LIMIT" oninput="refreshCustomValid()">
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text);font-weight:700;min-width:100px">Type</label>
+        <select class="sel-input" id="custType">
+          <option>Float</option><option>Integer</option><option>String</option><option>Boolean</option><option>Long</option>
+        </select>
+      </div>
+      <div class="sub" id="custErr" style="margin:0"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeCustomSetting()">Cancel</button>
+      <button class="btn btn-primary" id="custAddBtn" onclick="addCustomSetting()" disabled>Add setting</button>
+    </div>
+  </div>
+</div>
 
 <!-- Make-consistent modal (Compare view) -->
 <div class="modal-backdrop" id="fixBackdrop">
@@ -1095,9 +1137,10 @@ const SECTIONS = [
   {id:'loadtrans', name:'Load Transition Settings'},
   {id:'location', name:'Location Monitor Settings'},
   {id:'advanced', name:'Advanced Settings'},
+  {id:'custom', name:'Custom — Not in HUB'},
 ];
 
-const SETTINGS = [
+let SETTINGS = [
   // Information — identity fields are locked (read only); Mode & OOS Reason are mass-settable
   {id:'ro_contract', sec:'information', name:'Contract', type:'text', locked:true},
   {id:'ro_unit', sec:'information', name:'Unit', type:'text', locked:true},
@@ -1242,7 +1285,7 @@ function getHistory(tid, sid){
   const e = state[tid][sid];
   const seed = hash(key+':hist');
   const out = [];
-  if(e.value!==null){
+  if(e.value!==null && !s.custom){
     out.push({value:e.value, date:e.lastUpdated, submitter:e.submitter, source:e.source});
     const older = 1 + Math.floor(rnd(seed)*3); // 1–3 older entries
     for(let i=0;i<older;i++){
@@ -1369,6 +1412,51 @@ const STATUS_MAP = {
 
 
 
+/* ---- custom settings: not yet in HUB, manually added for testing ---- */
+function openCustomSetting(){
+  document.getElementById('cmpPop').classList.remove('open');
+  document.getElementById('custName').value='';
+  document.getElementById('custErr').innerHTML='';
+  document.getElementById('custAddBtn').disabled=true;
+  document.getElementById('customBackdrop').classList.add('visible');
+}
+function closeCustomSetting(){ document.getElementById('customBackdrop').classList.remove('visible'); }
+function refreshCustomValid(){
+  const name = document.getElementById('custName').value.trim();
+  const dup = SETTINGS.some(s=>s.name.toLowerCase()===name.toLowerCase());
+  document.getElementById('custErr').innerHTML = dup ? `<span style="color:var(--amber)">A setting with that name already exists.</span>` : '';
+  document.getElementById('custAddBtn').disabled = name.length===0 || dup;
+}
+function removeCustomSetting(id){
+  const s = SETTINGS.find(x=>x.id===id);
+  if(!s || !s.custom) return;
+  SETTINGS = SETTINGS.filter(x=>x.id!==id);
+  compareSettings = compareSettings.filter(x=>x!==id);
+  TRUCKS.forEach(t=>{ delete state[t.id][id]; });
+  Object.keys(histCache).forEach(k=>{ if(k.endsWith(':'+id)) delete histCache[k]; });
+  renderCmpPop();
+  renderCompare();
+  showToast(`"${s.name}" removed — one-off setting cleared from this view.`);
+}
+function addCustomSetting(){
+  const name = document.getElementById('custName').value.trim();
+  const hubType = document.getElementById('custType').value;
+  if(!name) return;
+  const typeMap = {Boolean:'toggle', Integer:'number', Float:'number', Long:'number', String:'text'};
+  const id = 'cust_' + name.toLowerCase().replace(/[^a-z0-9]+/g,'_');
+  if(SETTINGS.some(s=>s.id===id || s.name.toLowerCase()===name.toLowerCase())){ refreshCustomValid(); return; }
+  const s = {id, sec:'custom', name, type: typeMap[hubType], hubType, custom:true,
+             def: hubType==='Boolean' ? false : (hubType==='String' ? '' : 0)};
+  SETTINGS.push(s);
+  TRUCKS.forEach(t=>{
+    state[t.id][id] = {value:null, lastUpdated:null, source:null, submitter:null, status:'novalue'};
+  });
+  if(!compareSettings.includes(id)) compareSettings.push(id);
+  closeCustomSetting();
+  renderCompare();
+  showToast(`"${name}" added — not in HUB yet. Push a value with Update.`);
+}
+
 /* ---- compare view: load specific settings, scan all trucks, fix drift ---- */
 let compareSettings = ['front_discharge'];   // sensible demo default
 let cmpPageSize = 100;
@@ -1390,9 +1478,10 @@ function renderCmpPop(){
   const eligible = SETTINGS.filter(s=>!s.locked && s.functional!==false && (!q || s.name.toLowerCase().includes(q)));
   const renderItems = arr => arr.map(s=>{
     const sel = compareSettings.includes(s.id);
+    const rm = s.custom ? `<span class="cust-rm" onclick="event.stopPropagation();removeCustomSetting('${s.id}')" title="Remove one-off setting">×</span>` : '';
     return `<button class="cmp-pop-item" onclick="toggleCompareSetting('${s.id}')">
       <div class="cb ${sel?'checked':''}">${CHECK}</div>
-      ${s.name}${s.unit?` (${s.unit})`:''}<span class="type-tag">${typeLabel(s)}</span>
+      ${s.name}${s.unit?` (${s.unit})`:''}<span class="type-tag">${typeLabel(s)}</span>${rm}
     </button>`;
   }).join('');
   const items = eligible; // pool for the All Settings checkbox below
@@ -1515,7 +1604,9 @@ function renderCompare(){
 
   const header = `<tr><th class="truck-col">Truck</th>` + cols.map(c=>{
     let stat;
-    if(c.split){
+    if(c.r.noVal===c.r.entries.length){
+      stat = `<span class="cmp-stat">${c.r.entries.length} Trucks<span class="sep">|</span>No values reported yet</span>`;
+    } else if(c.split){
       stat = `<span class="cmp-stat">${c.r.entries.length} Trucks<span class="sep">|</span>Split — No Majority</span>`;
     } else if(c.r.distinct.length<=1 && c.r.noVal===0){
       stat = `<span class="cmp-stat">${c.r.entries.length} Trucks<span class="sep">|</span>All Match: <b>${fmtVal(c.s, c.r.groups[0]?.value)}</b></span>`;
@@ -1523,7 +1614,7 @@ function renderCompare(){
       const nv = c.r.noVal>0 ? `<span class="sep">|</span>No Value: <b>${c.r.noVal}</b>` : '';
       stat = `<span class="cmp-stat">${c.r.entries.length} Trucks<span class="sep">|</span>Differ: <b>${c.mismatch} of ${c.r.entries.length}</b>${nv}</span>`;
     }
-    return `<th><div class="cmp-head-name">${c.s.name}${c.s.unit?` <span class="setting-unit">${c.s.unit}</span>`:''}</div>
+    return `<th><div class="cmp-head-name">${c.s.name}${c.s.unit?` <span class="setting-unit">${c.s.unit}</span>`:''}${c.s.custom?`<span class="custom-tag">Not in HUB</span>`:''}</div>
       <div class="cmp-head-meta"><button class="fix-btn" onclick="openFix('${c.s.id}')">Update</button>${stat}</div></th>`;
   }).join('') + `<th class="logs-col">Logs</th></tr>`;
 
@@ -1582,6 +1673,9 @@ function buildFixControlV2(s){
       ${s.options.map(o=>`<option value="${o}" ${fix.value===o?'selected':''}>${o}</option>`).join('')}
     </select>`;
   }
+  if(s.type==='text'){
+    return `<input class="num-input" type="text" style="width:220px" value="${String(fix.value??'').replace(/"/g,'&quot;')}" placeholder="Enter value" oninput="if(fix){fix.value=this.value;refreshFixImpact()}">`;
+  }
   return `<input class="num-input" type="number" step="any" value="${fix.value}" oninput="if(fix){fix.value=this.value===''?'':parseFloat(this.value);refreshFixImpact()}">`;
 }
 function fixParsed(){
@@ -1592,6 +1686,7 @@ function fixParsed(){
 }
 const FIX_TYPES = ['Float','Integer','String','Boolean','Long'];
 function inferFixType(s){
+  if(s.hubType) return s.hubType;
   if(s.type==='toggle') return 'Boolean';
   if(s.type==='select') return 'String';
   const nums = [s.def, s.alt].filter(v=>typeof v==='number');
@@ -1787,7 +1882,7 @@ function sendFix(){
 
 
 
-function typeLabel(s){ return s.type==='toggle'?'Toggle':(s.type==='select'?'Dropdown':'Number'); }
+function typeLabel(s){ if(s.hubType) return s.hubType; return s.type==='toggle'?'Toggle':(s.type==='select'?'Dropdown':(s.type==='text'?'String':'Number')); }
 
 
 

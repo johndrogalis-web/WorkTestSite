@@ -521,6 +521,32 @@ body.nav-collapsed .menu-col{display:none}
   color:var(--faint);font-size:15px;line-height:1;padding:2px 6px;border-radius:5px;margin-left:4px;
 }
 .cust-rm:hover{color:var(--text);background:var(--panel-3)}
+.cust-hint{color:var(--faint);font-size:12.5px;padding:12px 4px}
+.cust-nomatch{
+  color:var(--text);font-size:12.5px;line-height:1.5;
+  border:1px solid var(--border);border-radius:8px;padding:12px 14px;
+  background:var(--panel-2);
+}
+.cust-match{
+  display:flex;align-items:center;gap:10px;width:100%;
+  padding:10px 12px;border-radius:8px;border:1px solid transparent;background:transparent;
+  color:var(--text);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-align:left;
+}
+.cust-match:hover{background:var(--panel-2)}
+.cust-match.sel{border-color:var(--blue-hi);background:var(--blue-tint)}
+.cust-match:disabled{opacity:.5;cursor:default}
+.cust-match .type-tag{margin-left:auto}
+.cm-loaded{font-size:10.5px;color:var(--faint)}
+.href-row{
+  display:flex;align-items:center;gap:12px;
+  padding:9px 12px;border:1px solid var(--border-soft);border-radius:8px;
+  background:var(--panel-2);
+}
+.href-name{
+  font-family:'SF Mono',Consolas,monospace;font-size:12.5px;color:var(--text);flex:1;
+  user-select:all;
+}
+.href-copy{padding:5px 14px;font-size:11.5px}
 .cmp-pop-add{
   display:flex;align-items:center;gap:10px;
   width:100%;padding:11px 12px;border:0;border-top:1px solid var(--border-soft);
@@ -890,6 +916,7 @@ table.tt td.dim{color:var(--muted)}
         <button class="vp-opt-row" id="verV1" onclick="setModalVersion('v1')">V1 — Type &amp; typed value <span class="vp-check">✓</span></button>
         <button class="vp-opt-row active" id="verV2" onclick="setModalVersion('v2')">V2 — Predefined input <span class="vp-check">✓</span></button>
         <div class="vp-dd-div"></div>
+        <button class="vp-opt-row" onclick="openHiddenRef()">Hidden setting names</button>
         <button class="vp-opt-row" onclick="toggleTheme()">Dark mode <span class="vp-switch" id="themeSwitch"></span></button>
       </div>
     </div>
@@ -1030,7 +1057,7 @@ table.tt td.dim{color:var(--muted)}
               <button class="clear-all" onclick="clearCompareSettings()">Clear All</button>
             </div>
             <div class="cmp-pop-list" id="cmpPopList"></div>
-            <button class="cmp-pop-add" onclick="openCustomSetting()">＋ Add a setting not in HUB…</button>
+            <button class="cmp-pop-add" id="cmpPopAdd" style="display:none" onclick="openCustomSetting()">＋ Find a hidden setting…</button>
           </div>
         </div>
       </div>
@@ -1063,27 +1090,34 @@ table.tt td.dim{color:var(--muted)}
 
 <div class="toast" id="toast"></div>
 
-<!-- Add custom setting modal (settings not yet in HUB) -->
-<div class="modal-backdrop" id="customBackdrop">
+<!-- Hidden setting names reference (demo cheat sheet) -->
+<div class="modal-backdrop" id="hiddenRefBackdrop">
   <div class="modal" style="width:520px">
-    <h2>Add a setting not in HUB</h2>
-    <div class="sub">A one-off push for settings being tested on trucks. Nothing is created in HUB — the setting may still change name or type before it ships. Remove it from this view when the test is done; trucks that don't recognize it keep reporting <b style="color:var(--text)">no value</b>.</div>
-    <div style="display:flex;flex-direction:column;gap:14px;margin:6px 0 4px">
-      <div style="display:flex;align-items:center;gap:12px">
-        <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text);font-weight:700;min-width:100px">Setting name</label>
-        <input class="num-input" type="text" id="custName" style="width:260px" placeholder="e.g. DRUM_TORQUE_LIMIT" oninput="refreshCustomValid()">
+    <h2>Hidden setting names</h2>
+    <div class="sub">These are the names in the mock database for the "Find a hidden setting" lookup (V1 modal only). Copy one to demo a match; anything else demos the no-match callout.</div>
+    <div id="hiddenRefList" style="display:flex;flex-direction:column;gap:6px;margin:6px 0 4px"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeHiddenRef()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden setting lookup (reported by firmware, not listed in HUB) -->
+<div class="modal-backdrop" id="customBackdrop">
+  <div class="modal" style="width:560px">
+    <h2>Find a hidden setting</h2>
+    <div class="sub">Some settings are reported by truck firmware but not listed in HUB. Search the database by the firmware name — if trucks report it, it loads into this view with their current values.</div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin:6px 0 4px">
+      <div class="search-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6370" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="text" id="custName" placeholder="e.g. DRUM_TORQUE_LIMIT" oninput="renderHiddenMatches()">
+        <button class="clear-x" onclick="document.getElementById('custName').value='';renderHiddenMatches()">×</button>
       </div>
-      <div style="display:flex;align-items:center;gap:12px">
-        <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text);font-weight:700;min-width:100px">Type</label>
-        <select class="sel-input" id="custType">
-          <option>Float</option><option>Integer</option><option>String</option><option>Boolean</option><option>Long</option>
-        </select>
-      </div>
-      <div class="sub" id="custErr" style="margin:0"></div>
+      <div id="custMatches"></div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeCustomSetting()">Cancel</button>
-      <button class="btn btn-primary" id="custAddBtn" onclick="addCustomSetting()" disabled>Add setting</button>
+      <button class="btn btn-primary" id="custAddBtn" onclick="addCustomSetting()" disabled>Load setting</button>
     </div>
   </div>
 </div>
@@ -1137,7 +1171,7 @@ const SECTIONS = [
   {id:'loadtrans', name:'Load Transition Settings'},
   {id:'location', name:'Location Monitor Settings'},
   {id:'advanced', name:'Advanced Settings'},
-  {id:'custom', name:'Custom — Not in HUB'},
+  {id:'custom', name:'Hidden — Not in HUB'},
 ];
 
 let SETTINGS = [
@@ -1232,46 +1266,39 @@ TRUCKS.forEach((t,ti)=>{
     'Mixer Type': MIXERS[Math.floor(rnd(iseed)*MIXERS.length)],
     'VIN': rnd(iseed+9)<0.5?'—':'1HTMM'+String(100000+Math.floor(rnd(iseed+11)*899999))
   };
-  SETTINGS.forEach(s=>{
-    const seed = hash(t.id+':'+s.id);
-    const r = rnd(seed);
-    const big = t.id.startsWith('az');   // bulk of the fleet: mostly uniform, few outliers
-    let entry;
-    if(s.locked){
-      entry = {value: t.info[LOCKED_MAP[s.id]], lastUpdated:null, source:null, submitter:null, status:'reported'};
-    } else if(s.type==='select'){
-      const r2 = rnd(seed+3);
-      const defP = big ? 0.985 : 0.8;
-      const val = r2 < defP ? s.def : s.options[1 + Math.floor(rnd(seed+5)*(s.options.length-1))];
-      const source = rnd(seed+13) < 0.4 ? 'Truck' : 'Hub';
-      entry = {
-        value: val,
-        lastUpdated: DATES[Math.floor(rnd(seed+7)*DATES.length)],
-        source: source,
-        submitter: source==='Hub' ? SUBMITTERS[Math.floor(rnd(seed+21)*SUBMITTERS.length)] : 'Truck (device)',
-        status:'reported'
-      };
-    } else if(s.functional===false || r < (big?0.015:0.12)){
-      entry = {value:null, lastUpdated:null, source:null, submitter:null, status:'novalue'};
-    } else {
-      let val;
-      const defP = big ? 0.96 : (s.type==='toggle' ? 0.72 : 0.7);
-      const rv = rnd(seed+1);
-      if(s.type==='toggle'){ val = rv < defP ? s.def : !s.def; }
-      else { val = rv < defP ? s.def : s.alt; }
-      const fromHub = rnd(seed+13) >= 0.7 ? false : true; // Truck 70%, Hub 30%... keep prior split
-      const source = rnd(seed+13) < 0.7 ? 'Truck' : 'Hub';
-      entry = {
-        value: val,
-        lastUpdated: DATES[Math.floor(rnd(seed+7)*DATES.length)],
-        source: source,
-        submitter: source==='Hub' ? SUBMITTERS[Math.floor(rnd(seed+21)*SUBMITTERS.length)] : 'Truck (device)',
-        status:'reported'
-      };
-    }
-    state[t.id][s.id]=entry;
-  });
+  SETTINGS.forEach(s=>{ state[t.id][s.id] = genEntry(t, s); });
 });
+
+/* one truck+setting entry — deterministic; reused for hidden settings loaded later */
+function genEntry(t, s){
+  const seed = hash(t.id+':'+s.id);
+  const r = rnd(seed);
+  const big = t.id.startsWith('az');   // bulk of the fleet: mostly uniform, few outliers
+  if(s.locked){
+    return {value: t.info[LOCKED_MAP[s.id]], lastUpdated:null, source:null, submitter:null, status:'reported'};
+  }
+  if(s.type==='select'){
+    const r2 = rnd(seed+3);
+    const defP = big ? 0.985 : 0.8;
+    const val = r2 < defP ? s.def : s.options[1 + Math.floor(rnd(seed+5)*(s.options.length-1))];
+    const source = rnd(seed+13) < 0.4 ? 'Truck' : 'Hub';
+    return {value: val, lastUpdated: DATES[Math.floor(rnd(seed+7)*DATES.length)], source,
+      submitter: source==='Hub' ? SUBMITTERS[Math.floor(rnd(seed+21)*SUBMITTERS.length)] : 'Truck (device)', status:'reported'};
+  }
+  const nvP = s.hidden ? (big?0.06:0.25) : (big?0.015:0.12);   // hidden settings: more trucks don't report them
+  if(s.functional===false || r < nvP){
+    return {value:null, lastUpdated:null, source:null, submitter:null, status:'novalue'};
+  }
+  let val;
+  const defP = big ? 0.96 : (s.type==='toggle' ? 0.72 : 0.7);
+  const rv = rnd(seed+1);
+  if(s.type==='toggle'){ val = rv < defP ? s.def : !s.def; }
+  else if(s.type==='text'){ val = rv < defP ? s.def : s.alt; }
+  else { val = rv < defP ? s.def : s.alt; }
+  const source = rnd(seed+13) < 0.7 ? 'Truck' : 'Hub';
+  return {value: val, lastUpdated: DATES[Math.floor(rnd(seed+7)*DATES.length)], source,
+    submitter: source==='Hub' ? SUBMITTERS[Math.floor(rnd(seed+21)*SUBMITTERS.length)] : 'Truck (device)', status:'reported'};
+}
 
 /* UI state */
 let selected = new Set(['t3','t4','t6','t8','t10']); // preselect Cemex Phoenix trucks for demo
@@ -1285,7 +1312,7 @@ function getHistory(tid, sid){
   const e = state[tid][sid];
   const seed = hash(key+':hist');
   const out = [];
-  if(e.value!==null && !s.custom){
+  if(e.value!==null && !s.noFakeHistory){
     out.push({value:e.value, date:e.lastUpdated, submitter:e.submitter, source:e.source});
     const older = 1 + Math.floor(rnd(seed)*3); // 1–3 older entries
     for(let i=0;i<older;i++){
@@ -1412,20 +1439,82 @@ const STATUS_MAP = {
 
 
 
-/* ---- custom settings: not yet in HUB, manually added for testing ---- */
+/* ---- hidden settings: reported by truck firmware but not listed in HUB ----
+   Lookup-only: typing must match a setting that already exists in the database.
+   No match = no trucks report it, and we say so. */
+const HIDDEN_SETTINGS = [
+  {id:'hid_drum_torque_limit',   name:'DRUM_TORQUE_LIMIT',        type:'number', hubType:'Float',   def:340,  alt:365},
+  {id:'hid_can_termination',     name:'CAN_TERMINATION_ENABLED',  type:'toggle', hubType:'Boolean', def:true},
+  {id:'hid_telemetry_buffer',    name:'TELEMETRY_BUFFER_SIZE',    type:'number', hubType:'Integer', def:512,  alt:1024},
+  {id:'hid_gps_reboot_interval', name:'GPS_REBOOT_INTERVAL',      type:'number', hubType:'Long',    def:86400, alt:43200},
+  {id:'hid_fw_channel',          name:'FW_UPDATE_CHANNEL',        type:'text',   hubType:'String',  def:'stable', alt:'beta'},
+];
+function openHiddenRef(){
+  document.getElementById('vpOptsDd').classList.remove('open');
+  document.getElementById('hiddenRefList').innerHTML = HIDDEN_SETTINGS.map(h=>`
+    <div class="href-row">
+      <code class="href-name">${h.name}</code>
+      <span class="type-tag">${h.hubType}</span>
+      <button class="btn btn-ghost href-copy" onclick="copyHiddenName('${h.name}', this)">Copy</button>
+    </div>`).join('');
+  document.getElementById('hiddenRefBackdrop').classList.add('visible');
+}
+function closeHiddenRef(){ document.getElementById('hiddenRefBackdrop').classList.remove('visible'); }
+function copyHiddenName(name, btn){
+  const done = ()=>{ btn.textContent='Copied'; setTimeout(()=>{ btn.textContent='Copy'; }, 1200); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(name).then(done, done);
+  } else {
+    const ta=document.createElement('textarea'); ta.value=name; document.body.appendChild(ta);
+    ta.select(); try{document.execCommand('copy')}catch(e){} document.body.removeChild(ta); done();
+  }
+}
+let hiddenPick = null;
 function openCustomSetting(){
   document.getElementById('cmpPop').classList.remove('open');
   document.getElementById('custName').value='';
-  document.getElementById('custErr').innerHTML='';
-  document.getElementById('custAddBtn').disabled=true;
+  hiddenPick = null;
+  renderHiddenMatches();
   document.getElementById('customBackdrop').classList.add('visible');
 }
 function closeCustomSetting(){ document.getElementById('customBackdrop').classList.remove('visible'); }
-function refreshCustomValid(){
-  const name = document.getElementById('custName').value.trim();
-  const dup = SETTINGS.some(s=>s.name.toLowerCase()===name.toLowerCase());
-  document.getElementById('custErr').innerHTML = dup ? `<span style="color:var(--amber)">A setting with that name already exists.</span>` : '';
-  document.getElementById('custAddBtn').disabled = name.length===0 || dup;
+function pickHidden(id){
+  hiddenPick = HIDDEN_SETTINGS.find(h=>h.id===id) || null;
+  if(hiddenPick) document.getElementById('custName').value = hiddenPick.name;
+  renderHiddenMatches();
+}
+function renderHiddenMatches(){
+  const q = document.getElementById('custName').value.trim().toLowerCase();
+  const box = document.getElementById('custMatches');
+  const already = id => SETTINGS.some(s=>s.id===id);
+  if(hiddenPick && hiddenPick.name.toLowerCase()!==q) hiddenPick = null;   // typing again clears the pick
+  const matches = q==='' ? [] : HIDDEN_SETTINGS.filter(h=>h.name.toLowerCase().includes(q));
+  if(q===''){
+    box.innerHTML = `<div class="cust-hint">Type the setting name from firmware to search the database.</div>`;
+  } else if(matches.length===0){
+    box.innerHTML = `<div class="cust-nomatch">No trucks report a setting named &ldquo;${document.getElementById('custName').value.trim()}&rdquo;. Check the firmware name — nothing matching exists in the database.</div>`;
+  } else {
+    box.innerHTML = matches.map(h=>{
+      const loaded = already(h.id);
+      const sel = hiddenPick && hiddenPick.id===h.id;
+      return `<button class="cust-match ${sel?'sel':''}" ${loaded?'disabled':''} onclick="pickHidden('${h.id}')">
+        <span class="cm-name">${h.name}</span>
+        <span class="type-tag">${h.hubType}</span>
+        ${loaded?`<span class="cm-loaded">Already loaded</span>`:''}
+      </button>`;
+    }).join('');
+  }
+  document.getElementById('custAddBtn').disabled = !(hiddenPick && !already(hiddenPick.id));
+}
+function addCustomSetting(){
+  if(!hiddenPick || SETTINGS.some(s=>s.id===hiddenPick.id)) return;
+  const s = {...hiddenPick, sec:'custom', custom:true, hidden:true};
+  SETTINGS.push(s);
+  TRUCKS.forEach(t=>{ state[t.id][s.id] = genEntry(t, s); });
+  if(!compareSettings.includes(s.id)) compareSettings.push(s.id);
+  closeCustomSetting();
+  renderCompare();
+  showToast(`"${s.name}" matched in the database — loaded into the view.`);
 }
 function removeCustomSetting(id){
   const s = SETTINGS.find(x=>x.id===id);
@@ -1438,24 +1527,7 @@ function removeCustomSetting(id){
   renderCompare();
   showToast(`"${s.name}" removed — one-off setting cleared from this view.`);
 }
-function addCustomSetting(){
-  const name = document.getElementById('custName').value.trim();
-  const hubType = document.getElementById('custType').value;
-  if(!name) return;
-  const typeMap = {Boolean:'toggle', Integer:'number', Float:'number', Long:'number', String:'text'};
-  const id = 'cust_' + name.toLowerCase().replace(/[^a-z0-9]+/g,'_');
-  if(SETTINGS.some(s=>s.id===id || s.name.toLowerCase()===name.toLowerCase())){ refreshCustomValid(); return; }
-  const s = {id, sec:'custom', name, type: typeMap[hubType], hubType, custom:true,
-             def: hubType==='Boolean' ? false : (hubType==='String' ? '' : 0)};
-  SETTINGS.push(s);
-  TRUCKS.forEach(t=>{
-    state[t.id][id] = {value:null, lastUpdated:null, source:null, submitter:null, status:'novalue'};
-  });
-  if(!compareSettings.includes(id)) compareSettings.push(id);
-  closeCustomSetting();
-  renderCompare();
-  showToast(`"${name}" added — not in HUB yet. Push a value with Update.`);
-}
+function addCustomSetting_removed(){}
 
 /* ---- compare view: load specific settings, scan all trucks, fix drift ---- */
 let compareSettings = ['front_discharge'];   // sensible demo default
@@ -1658,6 +1730,9 @@ function setModalVersion(v){
   document.getElementById('verV1').classList.toggle('active', v==='v1');
   document.getElementById('verV2').classList.toggle('active', v==='v2');
   document.getElementById('vpOptsDd').classList.remove('open');
+  // hidden-setting lookup is a V1-only workflow (raw Type & typed value world)
+  document.getElementById('cmpPopAdd').style.display = v==='v1' ? '' : 'none';
+  if(v!=='v1') closeCustomSetting();
   if(fix) renderFixModal();
 }
 function setFixValue(v){ if(fix){ fix.value = v; renderFixModal(); } }

@@ -1,0 +1,1859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Settings — Fleet Configuration</title>
+<script>
+  (function(){
+    var t = "dark";
+    try { t = localStorage.getItem("adv-settings-theme") || "dark"; } catch(e) {}
+    document.documentElement.classList.add(t === "dark" ? "theme-dark" : "theme-light");
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root, .theme-dark{
+  --bg:#222426;
+  --panel:#222426;
+  --panel-2:#2b2d30;
+  --panel-3:#35373b;
+  --dropdown-bg:#1C1C1E;
+  --row-light:#222426;
+  --row-dark:#1C1C1E;
+  --border:#262c36;
+  --border-soft:#1e232b;
+  --text:#e9ecf1;
+  --muted:#8b93a1;
+  --faint:#5b6370;
+  --blue:#1668e3;
+  --blue-hi:#2f80f2;
+  --blue-tint:rgba(47,128,242,.12);
+  --pink:#ef3e6d;
+  --amber:#f2b544;
+  --amber-tint:rgba(242,181,68,.12);
+  --green:#3ecf8e;
+  --green-tint:rgba(62,207,142,.12);
+  --grey-chip:#2a303a;
+  --hover-row:rgba(255,255,255,.015);
+  --stagebar-bg:rgba(20,23,29,.97);
+  --hist-bg:rgba(0,0,0,.18);
+  --radius:10px;
+  --radius-sm:7px;
+}
+.theme-light{
+  --bg:#f4f6f8;
+  --panel:#ffffff;
+  --panel-2:#eef1f4;
+  --panel-3:#e2e8ee;
+  --dropdown-bg:#ffffff;
+  --row-light:#ffffff;
+  --row-dark:#eef1f4;
+  --border:#d1d5db;
+  --border-soft:rgba(0,0,0,.10);
+  --text:#1a1a1a;
+  --muted:#6b7178;
+  --faint:#8a919c;
+  --blue:#1667d9;
+  --blue-hi:#0965a3;
+  --blue-tint:rgba(9,101,163,.10);
+  --pink:#d81b60;
+  --amber:#9a6700;
+  --amber-tint:rgba(154,103,0,.10);
+  --green:#0f7a52;
+  --green-tint:rgba(15,122,82,.10);
+  --grey-chip:#e6eaef;
+  --hover-row:rgba(0,0,0,.03);
+  --stagebar-bg:rgba(255,255,255,.97);
+  --hist-bg:rgba(0,0,0,.04);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-size:14px;
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+  padding-top:44px;
+}
+
+/* ---------- prototype top bar (always dark, matches other Verifi protos) ---------- */
+.vp-bar{
+  position:fixed;top:0;left:0;right:0;height:44px;
+  background:rgba(20,18,16,.97);color:#fff;
+  display:flex;align-items:center;padding:0 16px;
+  z-index:1000;border-bottom:1px solid rgba(255,255,255,.12);
+}
+.vp-brand{display:flex;align-items:center;gap:10px}
+.vp-logo{width:56px;height:14px}
+.vp-logo path{fill:#fff}
+.vp-tag{
+  font-size:10px;font-weight:500;color:rgba(255,255,255,.55);
+  letter-spacing:.4px;text-transform:uppercase;
+  padding:2px 6px;border:1px solid rgba(255,255,255,.15);border-radius:4px;
+}
+.vp-right-cluster{margin-left:auto;display:flex;align-items:center;gap:12px}
+.vp-pills{display:flex;gap:2px;background:rgba(255,255,255,.08);border-radius:8px;padding:2px}
+.vp-pill{
+  font-size:12px;font-weight:500;letter-spacing:-.24px;
+  color:rgba(255,255,255,.6);padding:4px 10px;border-radius:6px;
+  border:0;background:transparent;cursor:pointer;font-family:inherit;
+  transition:background .15s,color .15s;
+}
+.vp-pill:hover{color:#fff}
+.vp-pill.active{background:rgba(255,255,255,.15);color:#fff}
+.vp-opts-btn{
+  display:flex;align-items:center;gap:6px;padding:5px 10px;
+  background:rgba(255,255,255,.08);color:#fff;border-radius:8px;
+  border:0;cursor:pointer;font-size:12px;font-weight:500;
+  letter-spacing:-.24px;font-family:inherit;transition:background .15s;
+}
+.vp-opts-btn:hover{background:rgba(255,255,255,.14)}
+.vp-opts-wrap{position:relative}
+.vp-opts-dd{
+  position:absolute;top:calc(100% + 6px);right:0;min-width:210px;
+  background:#1a1917;border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.4);
+  padding:6px;display:none;z-index:1100;
+}
+.vp-opts-dd.open{display:block}
+.vp-dd-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.4);padding:6px 10px 4px}
+.vp-dd-div{height:1px;background:rgba(255,255,255,.1);margin:6px 4px}
+.vp-opt-row{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;padding:8px 10px;border-radius:8px;border:0;
+  background:transparent;color:#fff;font-size:13px;font-weight:500;
+  font-family:inherit;cursor:pointer;
+}
+.vp-opt-row:hover{background:rgba(255,255,255,.06)}
+.vp-check{color:#4a9eda;font-weight:700;visibility:hidden}
+.vp-opt-row.active .vp-check{visibility:visible}
+.vp-switch{
+  width:34px;height:20px;border-radius:10px;
+  background:rgba(255,255,255,.2);position:relative;transition:background .15s;flex-shrink:0;
+}
+.vp-switch::after{
+  content:"";position:absolute;top:2px;left:2px;
+  width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s;
+}
+.vp-switch.on{background:#4a9eda}
+.vp-switch.on::after{left:16px}
+
+/* ---------- coming-soon overlay (Mobile / Tablet viewports) ---------- */
+.coming-soon{
+  display:none;position:fixed;top:44px;left:0;right:0;bottom:0;
+  background:var(--bg);z-index:900;
+  align-items:center;justify-content:center;text-align:center;
+}
+.coming-soon.show{display:flex}
+.cs-inner{max-width:420px;padding:24px}
+.cs-inner .cs-logo{width:96px;margin:0 auto 28px;display:block}
+.cs-inner .cs-logo path{fill:var(--text)}
+.cs-device{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);border:1px solid var(--border);border-radius:999px;
+  padding:5px 14px;margin-bottom:18px;
+}
+.cs-inner h1{font-size:26px;font-weight:700;color:var(--text);margin-bottom:10px}
+.cs-inner p{font-size:14px;line-height:1.6;color:var(--muted);margin-bottom:26px}
+.cs-back{
+  background:transparent;border:1px solid var(--border);border-radius:6px;
+  color:var(--text);font-family:inherit;font-size:13px;font-weight:600;
+  padding:10px 18px;cursor:pointer;transition:background .12s;
+}
+.cs-back:hover{background:var(--hover-row)}
+
+/* ---------- HUB shell: icon rail + settings menu ---------- */
+:root{--navw:304px}
+body.nav-collapsed{--navw:72px}
+.hub-shell{display:flex;flex-direction:column;height:calc(100vh - 44px)}
+.hub-brand{padding:16px 0 12px 20px;border-bottom:1px solid var(--border-soft);flex-shrink:0}
+.hub-brand svg{width:64px;height:16px;display:block}
+.hub-brand path{fill:var(--text)}
+.hub-body{display:flex;flex:1;min-height:0}
+.icon-rail{
+  width:72px;flex-shrink:0;
+  border-right:1px solid var(--border-soft);
+  display:flex;flex-direction:column;align-items:center;
+  padding:10px 6px;overflow-y:auto;
+}
+.ir-item{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  width:100%;padding:9px 2px;border-radius:8px;cursor:pointer;
+  color:var(--muted);text-align:center;
+}
+.ir-item:hover{background:var(--panel-2);color:var(--text)}
+.ir-item.active{background:var(--panel-3);color:var(--text)}
+.ir-item svg{width:17px;height:17px}
+.ir-label{font-size:8.5px;font-weight:600;line-height:1.25}
+.ir-div{width:70%;height:1px;background:var(--border-soft);margin:7px 0;flex-shrink:0}
+.ir-avatar{
+  width:32px;height:32px;border-radius:50%;
+  border:1.5px solid var(--faint);color:var(--text);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;margin:8px 0 6px;
+}
+.ir-foot{font-size:7.5px;color:var(--faint);text-align:center;line-height:1.6;margin-top:4px}
+
+.menu-col{
+  width:232px;flex-shrink:0;
+  border-right:1px solid var(--border-soft);
+  padding:14px 10px 20px;overflow-y:auto;
+}
+body.nav-collapsed .menu-col{display:none}
+.mc-brand{padding:2px 10px 16px}
+.mc-brand svg{width:58px;height:15px}
+.mc-brand path{fill:var(--text)}
+.mc-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;border-radius:8px;cursor:pointer;
+  color:var(--muted);font-size:13px;font-weight:500;
+  position:relative;
+}
+.mc-item:hover{background:var(--panel-2);color:var(--text)}
+.mc-item svg{width:16px;height:16px;flex-shrink:0}
+.mc-item .chev{margin-left:auto;font-size:10px;color:var(--faint)}
+.mc-sub{padding-left:14px}
+.mc-item.active{color:var(--text);font-weight:700}
+.mc-item.active::before{
+  content:'';position:absolute;left:-10px;top:6px;bottom:6px;width:3px;
+  background:var(--blue-hi);border-radius:2px;
+}
+.app-col{flex:1;display:flex;flex-direction:column;min-width:0}
+
+/* ---------- header ---------- */
+.app-header{
+  display:flex;align-items:center;gap:16px;
+  padding:18px 28px;
+  border-bottom:1px solid var(--border-soft);
+}
+.logo{
+  width:52px;height:52px;border-radius:8px;
+  background:var(--blue);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.logo svg{width:30px;height:30px}
+.app-title{font-size:26px;font-weight:800;letter-spacing:-.3px}
+.app-sub{font-size:12px;color:var(--muted);margin-top:2px;font-weight:500}
+
+/* ---------- layout ---------- */
+.layout{display:flex;flex:1;min-height:0}
+
+/* ---------- left rail ---------- */
+.rail{
+  width:296px;flex-shrink:0;
+  border-right:2px solid rgba(100,146,241,.55);
+  display:flex;flex-direction:column;
+  padding:20px 0 0 0;
+}
+.rail-inner{padding:0 20px}
+.search-box{
+  display:flex;align-items:center;gap:8px;
+  background:var(--dropdown-bg);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:10px 12px;
+}
+.search-box input{
+  flex:1;background:none;border:none;outline:none;
+  color:var(--text);font-family:inherit;font-size:13px;
+}
+.search-box input::placeholder{color:var(--faint)}
+.search-box .clear-x{color:var(--faint);cursor:pointer;font-size:15px;line-height:1;background:none;border:none}
+.search-box .clear-x:hover{color:var(--text)}
+
+.rail-controls{
+  display:flex;align-items:center;justify-content:space-between;
+  margin:18px 0 10px;
+  padding-bottom:12px;
+  border-bottom:2px solid var(--border);
+}
+.all-trucks{
+  display:flex;align-items:center;gap:10px;
+  font-weight:600;font-size:13.5px;cursor:pointer;user-select:none;
+}
+.clear-all{
+  background:none;border:none;color:var(--muted);
+  font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;
+}
+.clear-all:hover{color:var(--text)}
+
+.truck-list{flex:1;overflow-y:auto;padding:4px 20px 20px}
+.truck-row{
+  display:flex;align-items:center;gap:13px;
+  padding:11px 6px;border-radius:6px;cursor:pointer;user-select:none;
+}
+.truck-row:hover{background:var(--panel-2)}
+.truck-name{font-size:13.5px;color:var(--defined,#e5e5e5);font-weight:400;letter-spacing:.01em}
+.truck-row.hidden{display:none}
+
+/* checkboxes */
+.cb{
+  width:17px;height:17px;flex-shrink:0;
+  border:1.5px solid var(--faint);border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  background:transparent;transition:all .12s;
+}
+.cb svg{width:11px;height:11px;opacity:0}
+.cb.checked{background:var(--blue);border-color:var(--blue)}
+.cb.checked svg{opacity:1}
+.cb.pink.checked, .cb.pink.partial{background:var(--pink);border-color:var(--pink)}
+.cb.partial{background:var(--pink);border-color:var(--pink)}
+.cb.partial::after{content:'';width:8px;height:2px;background:#fff;border-radius:1px}
+.cb.partial svg{display:none}
+
+/* ---------- main ---------- */
+.main{flex:1;overflow-y:auto;padding:24px 32px 140px;scroll-behavior:smooth}
+
+/* summary bar */
+.summary-bar{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  background:var(--panel);
+  border:1px solid var(--border-soft);
+  border-radius:var(--radius);
+  padding:16px 20px;
+  margin-bottom:22px;
+}
+.summary-count{display:flex;flex-direction:column;gap:2px;padding-right:18px;border-right:1px solid var(--border)}
+.summary-count .label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.summary-count .num{font-size:20px;font-weight:700}
+.summary-chips{display:flex;gap:8px;flex-wrap:wrap;flex:1}
+.sum-chip{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:12px;font-weight:600;
+  padding:6px 12px;border-radius:20px;
+  background:var(--grey-chip);color:var(--muted);
+}
+.sum-chip .dot{width:7px;height:7px;border-radius:50%}
+.sum-chip.mixed{background:var(--amber-tint);color:var(--amber)}
+.sum-chip.mixed .dot{background:var(--amber)}
+.sum-chip.pending{background:var(--amber-tint);color:var(--amber)}
+.sum-chip.pending .dot{background:var(--amber);animation:pulse 1.4s infinite}
+.sum-chip.confirmed{background:var(--green-tint);color:var(--green)}
+.sum-chip.confirmed .dot{background:var(--green)}
+.sum-chip.novalue .dot{background:var(--faint)}
+.empty-hint{color:var(--faint);font-size:13px}
+
+/* contract groups in rail */
+.group-head{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 6px 8px;margin-top:6px;
+  cursor:pointer;user-select:none;
+  border-bottom:1px solid var(--border-soft);
+}
+.group-name{flex:1;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.group-count{font-size:11px;color:var(--faint);font-weight:600}
+.group-chev{color:var(--faint);transition:transform .15s;display:flex}
+.truck-group.collapsed .group-chev{transform:rotate(180deg)}
+.truck-group.collapsed .truck-row{display:none}
+
+/* clickable exception chips */
+.v-chip.clickable{cursor:pointer;transition:filter .1s}
+.v-chip.clickable:hover{filter:brightness(1.35)}
+.v-chip.exc{background:var(--amber-tint);color:var(--amber)}
+.v-chip.exc .dot{background:var(--amber)}
+.v-chip.active-filter{outline:1.5px solid currentColor}
+
+/* detail filter + pagination */
+.filter-bar{
+  display:flex;align-items:center;gap:10px;
+  font-size:12px;font-weight:600;color:var(--amber);
+  background:var(--amber-tint);
+  padding:8px 12px;border-radius:6px;margin-bottom:10px;
+}
+.filter-bar button{
+  background:none;border:1px solid var(--amber);color:var(--amber);
+  font-family:inherit;font-size:11px;font-weight:700;
+  padding:3px 10px;border-radius:12px;cursor:pointer;
+}
+.show-more-wrap{display:flex;align-items:center;gap:12px;padding:10px 0 0}
+.show-more{
+  background:var(--panel-3);border:1px solid var(--border);color:var(--text);
+  font-family:inherit;font-size:12px;font-weight:600;
+  padding:7px 16px;border-radius:16px;cursor:pointer;
+}
+.show-more:hover{border-color:var(--faint)}
+.showing-count{font-size:11.5px;color:var(--faint)}
+
+/* issues-only toggle */
+.pill-toggle{
+  background:var(--panel-2);border:1px solid var(--border);color:var(--muted);
+  font-family:inherit;font-size:12.5px;font-weight:600;
+  padding:9px 16px;border-radius:20px;cursor:pointer;white-space:nowrap;
+}
+.pill-toggle.active{background:var(--amber-tint);border-color:var(--amber);color:var(--amber)}
+.sum-chip.clickable{cursor:pointer}
+.sum-chip.clickable:hover{filter:brightness(1.3)}
+.sum-chip.active-filter{outline:1.5px solid currentColor}
+
+/* ---------- truck-focused view: accordions + drawer ---------- */
+.tf-toolbar{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.tf-count{font-size:13.5px;color:var(--muted)}
+.tf-count b{color:var(--text);font-weight:700}
+.tf-update-btn{margin-left:auto}
+
+.truck-card{
+  background:var(--panel);border:1px solid var(--border-soft);
+  border-radius:var(--radius);margin-bottom:12px;overflow:hidden;
+}
+.tc-head{
+  display:flex;align-items:center;gap:16px;
+  padding:14px 20px;cursor:pointer;user-select:none;flex-wrap:wrap;
+}
+.tc-head:hover{background:var(--hover-row)}
+.tc-name{font-size:15px;font-weight:700;min-width:150px}
+.tc-contract{font-size:11px;color:var(--faint);font-weight:500;margin-top:1px}
+.tc-info{display:flex;gap:22px;flex:1;flex-wrap:wrap}
+.tc-field{display:flex;flex-direction:column;gap:1px}
+.tc-field .k{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);font-weight:700}
+.tc-field .v{font-size:12.5px;font-weight:600;color:var(--text)}
+.tc-field .v.warn{color:var(--amber)}
+.tc-chevron{
+  width:28px;height:28px;border-radius:50%;background:var(--panel-3);
+  display:flex;align-items:center;justify-content:center;color:var(--muted);
+  transition:transform .18s;flex-shrink:0;
+}
+.truck-card.open .tc-chevron{transform:rotate(180deg)}
+.tc-body{display:none;border-top:1px solid var(--border-soft);padding:6px 20px 16px}
+.truck-card.open .tc-body{display:block}
+.tc-sec-label{
+  font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--faint);padding:14px 0 6px;border-bottom:1px solid var(--border-soft);margin-bottom:2px;
+}
+.tc-row{
+  display:flex;align-items:center;gap:12px;
+  padding:7px 0;border-bottom:1px solid var(--border-soft);font-size:12.5px;
+}
+.tc-row:last-child{border-bottom:none}
+.tc-row .n{flex:1;font-weight:500;color:var(--text)}
+.tc-row .n.dimmed{color:var(--faint)}
+.tc-row .val{font-weight:700;min-width:110px;text-align:right}
+.tc-row .meta{color:var(--faint);font-size:11.5px;min-width:190px;text-align:right}
+
+/* drawer */
+.drawer-backdrop{
+  position:fixed;inset:0;background:rgba(5,7,10,.5);
+  display:none;z-index:80;
+}
+.drawer-backdrop.open{display:block}
+.drawer{
+  position:fixed;top:44px;right:0;bottom:0;width:440px;max-width:92vw;
+  background:var(--panel);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  box-shadow:-12px 0 32px rgba(0,0,0,.35);
+}
+.drawer-head{display:flex;align-items:flex-start;gap:12px;padding:20px 22px 14px}
+.drawer-title{font-size:17px;font-weight:800}
+.drawer-sub{font-size:12px;color:var(--muted);margin-top:3px}
+.drawer-x{
+  margin-left:auto;background:none;border:none;color:var(--muted);
+  font-size:22px;line-height:1;cursor:pointer;font-family:inherit;
+}
+.drawer-x:hover{color:var(--text)}
+.drawer-search{padding:0 22px 12px;border-bottom:1px solid var(--border-soft)}
+.drawer-list{flex:1;overflow-y:auto;padding:8px 22px 16px}
+.dr-sec-label{
+  font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--faint);padding:14px 0 6px;
+}
+.dr-item{border-bottom:1px solid var(--border-soft);padding:9px 0}
+.dr-item-main{display:flex;align-items:center;gap:11px;cursor:pointer;user-select:none}
+.dr-name{flex:1;font-size:13px;font-weight:500}
+.dr-input{display:flex;align-items:center;gap:10px;padding:10px 0 4px 28px}
+.dr-input label{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--blue-hi);font-weight:700}
+.drawer-foot{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 22px;border-top:1px solid var(--border);
+}
+.drawer-count{flex:1;font-size:12.5px;color:var(--muted)}
+
+/* ---------- compare view ---------- */
+.cmp-toolbar{margin-bottom:18px}
+.cmp-select-wrap{position:relative;width:100%}
+.cmp-label{
+  font-size:11px;font-weight:700;letter-spacing:.06em;
+  color:var(--muted);margin-bottom:8px;
+}
+.cmp-field{
+  display:flex;align-items:center;gap:10px;
+  width:100%;min-height:44px;
+  background:var(--dropdown-bg);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:10px 14px;cursor:pointer;
+  color:var(--muted);
+}
+.cmp-field:hover{border-color:var(--faint)}
+.cmp-field-text{flex:1;font-size:13.5px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmp-field-text.placeholder{color:var(--faint)}
+.cmp-pop{
+  position:absolute;top:calc(100% + 6px);left:0;right:0;max-height:420px;
+  background:var(--dropdown-bg);border:1px solid var(--border);
+  border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.45);
+  display:none;flex-direction:column;z-index:60;
+}
+.cmp-pop.open{display:flex}
+.cmp-pop-search{padding:12px 12px 10px;border-bottom:1px solid var(--border-soft)}
+.cmp-pop-controls{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 12px;border-bottom:1px solid var(--border-soft);
+}
+.cmp-pop-list{overflow-y:auto;padding:6px 8px 10px}
+.cmp-pop-head{
+  font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--faint);padding:12px 10px 6px;
+  border-bottom:1px solid var(--border-soft);margin-bottom:4px;
+}
+.cmp-pop-item{
+  display:flex;align-items:center;gap:12px;
+  width:100%;padding:10px 10px;border-radius:6px;border:0;background:transparent;
+  color:var(--text);font-family:inherit;font-size:12.5px;font-weight:500;
+  cursor:pointer;text-align:left;
+  text-transform:uppercase;letter-spacing:.03em;
+}
+.cmp-pop-item:hover{background:var(--panel-2)}
+.cmp-pop-item .type-tag{margin-left:auto;text-transform:none;letter-spacing:0}
+.cmp-hint{color:var(--faint);font-size:13px;padding:24px;border:1px dashed var(--border);border-radius:var(--radius);text-align:center}
+
+.cmp-table-wrap{background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:auto;max-height:calc(100vh - 340px)}
+table.cmp{width:100%;border-collapse:separate;border-spacing:0;min-width:520px}
+table.cmp th{
+  position:sticky;top:0;background:var(--row-light);z-index:2;
+  text-align:left;padding:12px 16px;border-bottom:1px solid var(--border);
+  font-size:12px;color:var(--muted);font-weight:600;
+  vertical-align:top;white-space:nowrap;min-width:184px;
+}
+table.cmp th.truck-col, table.cmp td.truck-col{
+  position:sticky;left:0;background:var(--row-light);z-index:3;min-width:170px;
+  border-right:1px solid var(--border);white-space:nowrap;
+}
+table.cmp td.truck-col{background:inherit;font-weight:600;font-size:13px;z-index:1}
+table.cmp td{padding:11px 16px;border-bottom:1px solid var(--border-soft);font-size:13px;color:var(--text);white-space:nowrap}
+table.cmp tbody tr:nth-child(even){background:var(--row-light)}
+table.cmp tbody tr:nth-child(odd){background:var(--row-dark)}
+table.cmp tr:last-child td{border-bottom:none}
+table.cmp th.logs-col, table.cmp td.logs-col{text-align:right;width:84px;min-width:84px}
+.logs-btn{
+  background:transparent;border:1px solid var(--border);color:var(--blue-hi);
+  font-family:inherit;font-size:11.5px;font-weight:600;
+  padding:5px 13px;border-radius:14px;cursor:pointer;
+}
+.logs-btn:hover{border-color:var(--blue-hi)}
+.cmp-head-name{font-size:12.5px;font-weight:700;color:var(--text);white-space:nowrap}
+.cmp-head-meta{display:flex;align-items:center;gap:14px;margin-top:6px}
+.cmp-stat{display:flex;align-items:center;font-size:12px;color:var(--muted);font-weight:500;white-space:nowrap}
+.cmp-stat b{color:var(--text);font-weight:700;margin:0 3px}
+.cmp-stat .sep{color:var(--faint);margin:0 8px;font-weight:400}
+.fix-btn{
+  background:var(--blue);border:none;color:#fff;
+  font-family:inherit;font-size:10.5px;font-weight:700;
+  padding:4px 10px;border-radius:12px;cursor:pointer;letter-spacing:.02em;
+}
+.fix-btn:hover{background:var(--blue-hi)}
+td.cell-out{background:var(--amber-tint) !important;color:var(--amber);font-weight:700}
+td.cell-nv{color:var(--faint);font-style:italic}
+td .cell-pend{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--amber);margin-left:8px;animation:pulse 1.4s infinite;vertical-align:middle}
+
+/* hub-style paginator */
+.cmp-pager{
+  display:flex;align-items:center;justify-content:flex-end;gap:22px;
+  padding:12px 6px 0;font-size:12.5px;color:var(--muted);
+}
+.cmp-pager .sort-note{margin-right:auto;color:var(--faint);font-size:11.5px}
+.cmp-pager select{
+  background:transparent;border:none;border-bottom:1px solid var(--muted);
+  color:var(--text);font-family:inherit;font-size:12.5px;font-weight:600;
+  padding:2px 4px;cursor:pointer;outline:none;
+}
+.cmp-pager select option{background:var(--panel);color:var(--text)}
+.pg-btn{
+  background:none;border:none;color:var(--muted);cursor:pointer;
+  display:flex;align-items:center;padding:4px;font-family:inherit;
+}
+.pg-btn:hover{color:var(--text)}
+.pg-btn:disabled{color:var(--border);cursor:default}
+tr.cmp-hist td{padding:0 !important;background:var(--hist-bg)}
+.cmp-hist-inner{padding:10px 16px 14px}
+.cmp-hist-inner .hist-title{padding-top:2px}
+
+/* settings search toolbar */
+.settings-toolbar{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.settings-toolbar .search-box{max-width:380px;flex:1}
+.setting-count{font-size:12px;color:var(--faint);font-weight:500}
+
+/* non-functional settings (flagged, pending removal) */
+.setting-row.nonfunc .setting-name{color:var(--faint)}
+.setting-row.nonfunc .setting-main{cursor:default}
+.nonfunc-tag{
+  font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  background:var(--amber-tint);color:var(--amber);
+  padding:3px 9px;border-radius:10px;flex-shrink:0;
+}
+.cb.disabled{border-color:var(--border);background:var(--panel-2);cursor:not-allowed}
+
+/* single-truck inline value */
+.inline-val{display:flex;align-items:baseline;gap:10px;justify-content:flex-end;flex:1;min-width:0}
+.inline-val .val{font-weight:700;font-size:13.5px}
+.inline-val .meta{font-size:11.5px;color:var(--faint);white-space:nowrap}
+
+/* history drill-in */
+tr.truck-click{cursor:pointer}
+tr.truck-click:hover td{background:rgba(255,255,255,.02)}
+.hist-caret{display:inline-block;transition:transform .15s;color:var(--faint);margin-right:7px;font-size:10px}
+tr.hist-open .hist-caret{transform:rotate(90deg)}
+td.hist-cell{padding:0 12px 12px 26px !important;background:var(--hist-bg)}
+.hist-title{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:10px 0 6px}
+table.hist{width:100%;border-collapse:collapse}
+table.hist td{padding:6px 10px;font-size:12.5px;border-bottom:1px solid var(--border-soft);color:var(--text)}
+table.hist tr:last-child td{border-bottom:none}
+table.hist td.dim{color:var(--muted)}
+.hist-current{color:var(--blue-hi);font-weight:700;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase}
+
+/* section cards — masonry columns so short cards don't leave gaps */
+.sec-cols{columns:2;column-gap:16px}
+.section-card{
+  background:var(--panel);
+  border:1px solid var(--border-soft);
+  border-radius:var(--radius);
+  overflow:hidden;
+  min-width:0;
+  break-inside:avoid;
+  margin-bottom:16px;
+}
+.section-card.full{column-span:all}
+@media (max-width:1500px){ .sec-cols{columns:1} }
+.section-head{
+  display:flex;align-items:center;gap:12px;
+  padding:16px 20px;cursor:pointer;user-select:none;
+}
+.section-head .gear{color:var(--muted);display:flex}
+.section-title-wrap{flex:1}
+.section-title{font-size:16px;font-weight:700;display:inline-block}
+.section-title::after{content:'';display:block;height:3px;width:60%;min-width:56px;background:var(--blue);border-radius:2px;margin-top:5px}
+.section-meta{display:flex;align-items:center;gap:8px}
+.staged-pill{
+  font-size:11px;font-weight:700;
+  background:var(--blue-tint);color:var(--blue-hi);
+  padding:4px 10px;border-radius:12px;
+}
+.section-chevron{
+  width:30px;height:30px;border-radius:50%;
+  background:var(--panel-3);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--muted);transition:transform .18s;
+}
+.section-card.collapsed .section-chevron{transform:rotate(180deg)}
+.section-card.collapsed .section-body{display:none}
+.readonly-tag{
+  font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--grey-chip);color:var(--muted);
+  padding:4px 10px;border-radius:12px;
+}
+
+/* setting rows */
+.section-body{border-top:1px solid var(--border-soft)}
+.setting-row{border-bottom:1px solid var(--border-soft)}
+.setting-row:last-child{border-bottom:none}
+.setting-main{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 18px;cursor:pointer;
+}
+.setting-main:hover{background:var(--hover-row)}
+.setting-name{font-weight:600;font-size:13px;flex:1;min-width:0}
+.setting-unit{color:var(--faint);font-weight:500;font-size:12px;margin-left:5px}
+.type-tag{
+  font-size:10.5px;font-weight:600;letter-spacing:.04em;
+  color:var(--faint);
+  border:1px solid var(--border);
+  padding:2.5px 8px;border-radius:10px;flex-shrink:0;
+}
+.value-chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+.v-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11.5px;font-weight:600;
+  padding:4px 10px;border-radius:12px;
+  background:var(--grey-chip);color:var(--text);
+}
+.v-chip .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.v-chip.uniform .dot{background:var(--blue-hi)}
+.v-chip.mixed{background:var(--amber-tint);color:var(--amber)}
+.v-chip.mixed .dot{background:var(--amber)}
+.v-chip.novalue{color:var(--muted)}
+.v-chip.novalue .dot{background:var(--faint)}
+.v-chip.pending{background:var(--amber-tint);color:var(--amber)}
+.v-chip.pending .dot{background:var(--amber);animation:pulse 1.4s infinite}
+.v-chip.confirmed{background:var(--green-tint);color:var(--green)}
+.v-chip.confirmed .dot{background:var(--green)}
+.v-chip.stagedchip{background:var(--blue-tint);color:var(--blue-hi)}
+.v-chip.stagedchip .dot{background:var(--blue-hi)}
+.row-chevron{color:var(--faint);transition:transform .15s;flex-shrink:0}
+.setting-row.open .row-chevron{transform:rotate(180deg)}
+
+/* staged input area */
+.stage-input{
+  display:none;
+  align-items:center;gap:12px;flex-wrap:wrap;
+  padding:12px 18px 14px 47px;
+  background:rgba(47,128,242,.05);
+  border-top:1px dashed rgba(47,128,242,.25);
+}
+.setting-row.staged .stage-input{display:flex}
+.stage-input label{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--blue-hi);font-weight:700}
+.num-input{
+  background:var(--panel-2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--text);
+  font-family:inherit;font-size:13px;
+  padding:8px 12px;width:180px;outline:none;
+}
+.num-input:focus{border-color:var(--blue-hi)}
+.sel-input{
+  background:var(--dropdown-bg);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--text);
+  font-family:inherit;font-size:13px;
+  padding:8px 12px;width:220px;outline:none;cursor:pointer;
+}
+.sel-input:focus{border-color:var(--blue-hi)}
+/* toggle segmented */
+.seg{display:inline-flex;background:var(--panel-2);border:1px solid var(--border);border-radius:20px;padding:3px}
+.seg button{
+  background:none;border:none;color:var(--muted);
+  font-family:inherit;font-size:12px;font-weight:600;
+  padding:6px 18px;border-radius:16px;cursor:pointer;
+}
+.seg button.active{background:var(--blue);color:#fff}
+.seg.seg-scope button.active{background:var(--panel-3);color:var(--text)}
+.fix-pick{width:100%}
+.fix-picklist{
+  max-height:220px;overflow-y:auto;
+  border:1px solid var(--border-soft);border-radius:8px;
+  padding:4px;
+}
+.fix-pick-row{
+  display:flex;align-items:center;gap:11px;
+  padding:8px 10px;border-radius:6px;cursor:pointer;user-select:none;
+  font-size:13px;
+}
+.fix-pick-row:hover{background:var(--panel-2)}
+.fpr-name{flex:1;font-weight:500}
+.fpr-val{color:var(--muted);font-size:12px}
+
+/* expanded per-truck table */
+.detail{display:none;padding:0 18px 16px 18px}
+.setting-row.open .detail{display:block}
+.warn-banner{
+  display:flex;align-items:center;
+  border-left:3px solid var(--amber);
+  background:rgba(242,181,68,.06);
+  color:var(--text);
+  font-size:12.5px;font-weight:500;
+  padding:11px 14px;border-radius:0 6px 6px 0;
+  margin-bottom:12px;
+}
+table.tt{width:100%;border-collapse:collapse}
+table.tt th{
+  text-align:left;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);font-weight:700;
+  padding:8px 12px;border-bottom:1px solid var(--border);
+}
+table.tt td{
+  padding:9px 12px;font-size:13px;
+  border-bottom:1px solid var(--border-soft);
+  color:var(--text);
+}
+table.tt tr:last-child td{border-bottom:none}
+table.tt td.dim{color:var(--muted)}
+.status-cell{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600}
+.status-cell .dot{width:7px;height:7px;border-radius:50%}
+.status-cell.reported{color:var(--muted)}
+.status-cell.reported .dot{background:var(--faint)}
+.status-cell.novalue{color:var(--muted)}
+.status-cell.novalue .dot{background:var(--faint)}
+.status-cell.pending{color:var(--amber)}
+.status-cell.pending .dot{background:var(--amber);animation:pulse 1.4s infinite}
+.status-cell.confirmed{color:var(--green)}
+.status-cell.confirmed .dot{background:var(--green)}
+
+/* info (read-only) table wrapper */
+.info-wrap{padding:6px 20px 18px;overflow-x:auto}
+
+/* sticky footer bar */
+.stage-bar{
+  position:fixed;left:calc(296px + var(--navw));right:0;bottom:0;
+  background:var(--stagebar-bg);
+  border-top:1px solid var(--border);
+  backdrop-filter:blur(8px);
+  display:none;
+  align-items:center;gap:18px;
+  padding:16px 32px;
+  z-index:40;
+}
+.stage-bar.visible{display:flex}
+.stage-bar .info{flex:1;font-size:13.5px;color:var(--muted)}
+.stage-bar .info b{color:var(--text);font-weight:700}
+.btn{
+  font-family:inherit;font-size:13.5px;font-weight:600;
+  border-radius:22px;padding:11px 24px;cursor:pointer;border:none;
+  transition:background .12s;
+}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue-hi)}
+.btn-primary:disabled{background:var(--panel-3);color:var(--faint);cursor:not-allowed}
+.btn-ghost{background:none;color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);border-color:var(--faint)}
+
+/* modal */
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(5,7,10,.7);
+  display:none;align-items:center;justify-content:center;z-index:100;
+}
+.modal-backdrop.visible{display:flex}
+.modal{
+  width:640px;max-width:92vw;max-height:84vh;overflow-y:auto;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:26px 28px;
+}
+.modal h2{font-size:19px;font-weight:800;margin-bottom:6px}
+.modal .sub{color:var(--muted);font-size:13px;line-height:1.55;margin-bottom:18px}
+.modal .sub b{color:var(--text)}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
+.newval{color:var(--blue-hi);font-weight:700}
+
+/* toast */
+.toast{
+  position:fixed;bottom:96px;right:28px;z-index:120;
+  background:var(--panel-3);
+  border:1px solid var(--border);
+  border-left:3px solid var(--green);
+  border-radius:8px;
+  padding:14px 18px;
+  font-size:13px;font-weight:600;
+  display:flex;align-items:center;gap:10px;
+  opacity:0;transform:translateY(8px);
+  transition:all .25s;pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateY(0)}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* scrollbars */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:var(--panel-3);border-radius:5px}
+::-webkit-scrollbar-track{background:transparent}
+</style>
+</head>
+<body>
+
+<!-- Prototype top bar -->
+<div class="vp-bar">
+  <div class="vp-brand">
+    <svg class="vp-logo" viewBox="0 0 96 24" xmlns="http://www.w3.org/2000/svg" aria-label="verifi">
+      <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z"/>
+    </svg>
+    <span class="vp-tag">Advanced Settings · Compare</span>
+  </div>
+  <div class="vp-right-cluster">
+    <div class="vp-pills">
+      <button class="vp-pill" id="vpRowMobile" onclick="setViewport('Mobile')">Mobile</button>
+      <button class="vp-pill" id="vpRowTablet" onclick="setViewport('Tablet')">Tablet</button>
+      <button class="vp-pill active" id="vpRowDesktop" onclick="setViewport('Desktop')">Desktop</button>
+    </div>
+    <div class="vp-opts-wrap" id="vpOptsWrap">
+      <button class="vp-opts-btn" onclick="toggleOpts(event)">Options <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="vp-opts-dd" id="vpOptsDd" onclick="event.stopPropagation()">
+        <div class="vp-dd-label">Update Modal</div>
+        <button class="vp-opt-row" id="verV1" onclick="setModalVersion('v1')">V1 — Type &amp; typed value <span class="vp-check">✓</span></button>
+        <button class="vp-opt-row active" id="verV2" onclick="setModalVersion('v2')">V2 — Predefined input <span class="vp-check">✓</span></button>
+        <div class="vp-dd-div"></div>
+        <button class="vp-opt-row" onclick="toggleTheme()">Dark mode <span class="vp-switch" id="themeSwitch"></span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Coming-soon overlay for Tablet / Mobile viewports -->
+<div class="coming-soon" id="comingSoon">
+  <div class="cs-inner">
+    <svg class="cs-logo" viewBox="0 0 96 24" xmlns="http://www.w3.org/2000/svg" aria-label="verifi">
+      <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z"/>
+    </svg>
+    <div><span class="cs-device" id="csDevice">Tablet</span></div>
+    <h1>Coming soon</h1>
+    <p>This prototype hasn't been built for this viewport yet. Switch back to Desktop to keep exploring Advanced Settings.</p>
+    <button class="cs-back" onclick="setViewport('Desktop')">Back to Desktop</button>
+  </div>
+</div>
+
+<div class="hub-shell">
+
+  <div class="hub-brand">
+    <svg viewBox="0 0 96 24" xmlns="http://www.w3.org/2000/svg" aria-label="verifi">
+      <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z"/>
+    </svg>
+  </div>
+
+  <div class="hub-body">
+
+  <!-- HUB icon rail -->
+  <nav class="icon-rail">
+    <div class="ir-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+      <span class="ir-label">Cemex<br>Arizona</span>
+    </div>
+    <div class="ir-div"></div>
+    <div class="ir-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/></svg><span class="ir-label">Dashboards</span></div>
+    <div class="ir-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="8" width="7" height="7" rx="1"/><rect x="13" y="5" width="7" height="10" rx="1"/><path d="M6 19h12"/></svg><span class="ir-label">My Fleet</span></div>
+    <div class="ir-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 20V10M12 20V4M19 20v-7"/></svg><span class="ir-label">Production</span></div>
+    <div class="ir-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3.5 2"/></svg><span class="ir-label">Mixtures</span></div>
+    <div class="ir-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="6" width="16" height="12" rx="2"/><path d="M8 10h8M8 14h5"/></svg><span class="ir-label">Tickets</span></div>
+    <div class="ir-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5"/><path d="M11 8.5v2.5l1.8 1"/></svg><span class="ir-label">Diagnostic<br>Center</span></div>
+    <div class="ir-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m4 16 5-5 4 4 7-8"/><path d="M16 7h4v4"/></svg><span class="ir-label">Data Insights</span></div>
+    <div class="ir-div"></div>
+    <div class="ir-item" onclick="toggleNavCollapse()" title="Collapse menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m11 7-5 5 5 5M18 7l-5 5 5 5"/></svg>
+    </div>
+    <div class="ir-div"></div>
+    <div class="ir-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.9 2.8v-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.9h.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.9-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.9l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1h.2a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z"/></svg><span class="ir-label">Settings</span></div>
+    <div class="ir-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.4 2.3c-.8.3-.9 1-.9 1.7M12 17h.01"/></svg><span class="ir-label">Support</span></div>
+    <div class="ir-avatar">JD</div>
+    <div class="ir-foot">Saint-Gobain©<br>2026 v1.6.0<br>f648aaf5<br>2608201510</div>
+  </nav>
+
+  <!-- HUB settings menu -->
+  <nav class="menu-col">
+    <div class="mc-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>My Profile</div>
+    <div class="mc-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><circle cx="16.5" cy="9.5" r="2.2"/><path d="M4 19c1-3 3-4.5 5-4.5s4 1.5 5 4.5M14.5 15c2 0 3.8 1.2 4.8 4"/></svg>Customers Accounts<span class="chev">▸</span></div>
+    <div class="mc-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="8" r="3"/><path d="M4 19c1-3 3-4.5 6-4.5M16 14l1.2 1.2L20 12.5"/></svg>Users and Permissions<span class="chev">▸</span></div>
+    <div class="mc-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 16V7h10v9M13 10h4l3 3v3"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="16.5" cy="17.5" r="1.6"/></svg>Trucks<span class="chev">▾</span></div>
+    <div class="mc-sub">
+      <div class="mc-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 16V7h10v9M13 10h4l3 3v3"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="16.5" cy="17.5" r="1.6"/></svg>Trucks</div>
+      <div class="mc-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 17a4 4 0 1 1 .6-7.9A5 5 0 0 1 17 8a4 4 0 0 1 1 7.9"/><path d="M12 12v6m0 0 2.2-2.2M12 18l-2.2-2.2"/></svg>Software Updates</div>
+      <div class="mc-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>Drivers</div>
+      <div class="mc-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="6" width="16" height="13" rx="2"/><path d="M4 10h16M9 6V4h6v2"/></svg>Packages</div>
+      <div class="mc-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="13" height="14" rx="2"/><path d="M20 8v8"/></svg>TCG</div>
+      <div class="mc-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M9 10h.01M15 10h.01M9 15c1 .8 2 1.2 3 1.2s2-.4 3-1.2"/></svg>Device Group</div>
+      <div class="mc-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Mixer Types</div>
+      <div class="mc-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 8h6M9 12h4"/></svg>Units</div>
+      <div class="mc-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l4 4v14H7Z"/><path d="M14 3v4h4M10 12h5M10 16h5"/></svg>Logs</div>
+      <div class="mc-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 6h11v8H8l-3 3ZM16 9h3v10l-2-2h-6"/></svg>Drivers Messages</div>
+      <div class="mc-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 15v3h16v-3"/><rect x="7" y="8" width="2.4" height="2.4" rx="0.5"/><rect x="10.8" y="6" width="2.4" height="2.4" rx="0.5"/><rect x="14.6" y="8" width="2.4" height="2.4" rx="0.5"/><path d="M6.5 13.5c1.5 1.4 3.4 2.1 5.5 2.1s4-.7 5.5-2.1"/></svg>Advanced Settings</div>
+      <div class="mc-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 5V3M12 21v-2M5 12H3M21 12h-2M6.5 6.5 5 5M19 19l-1.5-1.5M17.5 6.5 19 5M5 19l1.5-1.5"/></svg>Manufacturer</div>
+      <div class="mc-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 17a4 4 0 1 1 .6-7.9A5 5 0 0 1 17 8a4 4 0 0 1 1 7.9"/><path d="M9 16h6"/></svg>Software Version</div>
+    </div>
+    <div class="mc-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 8h6M9 12h6M9 16h6"/></svg>Jobs</div>
+    <div class="mc-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.5 2.5 2.5 13.5 0 16M12 4c-2.5 2.5-2.5 13.5 0 16"/></svg>Multilang<span class="chev">▸</span></div>
+    <div class="mc-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 5V3M12 21v-2M5 12H3M21 12h-2"/></svg>Others<span class="chev">▸</span></div>
+  </nav>
+
+  <div class="app-col">
+
+<header class="app-header">
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 15v3h16v-3" stroke="#fff" stroke-width="2" stroke-linecap="round"/><rect x="7" y="8" width="2.6" height="2.6" rx="0.6" fill="#fff"/><rect x="10.7" y="6" width="2.6" height="2.6" rx="0.6" fill="#fff"/><rect x="14.4" y="8" width="2.6" height="2.6" rx="0.6" fill="#fff"/><path d="M6.5 13.5c1.5 1.4 3.4 2.1 5.5 2.1s4-.7 5.5-2.1" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+  </div>
+  <div>
+    <div class="app-title">Advanced Settings</div>
+    <div class="app-sub">Fleet configuration &amp; mass update</div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- LEFT RAIL -->
+  <aside class="rail">
+    <div class="rail-inner" id="truckRailHead">
+      <div class="search-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6370" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="truckSearch" type="text" placeholder="Search Trucks" oninput="filterTrucks()">
+        <button class="clear-x" onclick="clearSearch()">×</button>
+      </div>
+      <div class="rail-controls">
+        <div class="all-trucks" onclick="toggleAll()">
+          <div class="cb pink" id="allCb"></div>
+          <span>All Trucks</span>
+        </div>
+        <button class="clear-all" onclick="clearSelection()">Clear All</button>
+      </div>
+    </div>
+    <div class="truck-list" id="truckList"></div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main" id="main">
+        
+        <div id="compareFocus">
+      <div class="cmp-toolbar">
+        <div class="cmp-select-wrap">
+          <div class="cmp-label">Settings</div>
+          <div class="cmp-field" onclick="toggleCmpPop(event)">
+            <span id="cmpFieldText" class="cmp-field-text"></span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+          <div class="cmp-pop" id="cmpPop" onclick="event.stopPropagation()">
+            <div class="cmp-pop-search">
+              <div class="search-box">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6370" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <input id="cmpSearch" type="text" placeholder="Search settings" oninput="renderCmpPop()">
+                <button class="clear-x" onclick="document.getElementById('cmpSearch').value='';renderCmpPop()">×</button>
+              </div>
+            </div>
+            <div class="cmp-pop-controls">
+              <div class="all-trucks" onclick="toggleAllCompareSettings()">
+                <div class="cb pink" id="cmpAllCb"></div>
+                <span>All Settings</span>
+              </div>
+              <button class="clear-all" onclick="clearCompareSettings()">Clear All</button>
+            </div>
+            <div class="cmp-pop-list" id="cmpPopList"></div>
+          </div>
+        </div>
+      </div>
+      <div id="compareTable"></div>
+    </div>
+  </main>
+</div>
+
+  </div><!-- /app-col -->
+  </div><!-- /hub-body -->
+</div><!-- /hub-shell -->
+
+ (Compare view) -->
+<div class="drawer-backdrop" id="logsBackdrop" onclick="closeLogs()">
+  <aside class="drawer" onclick="event.stopPropagation()">
+    <div class="drawer-head">
+      <div>
+        <div class="drawer-title" id="logsTitle">Logs</div>
+        <div class="drawer-sub" id="logsSub"></div>
+      </div>
+      <button class="drawer-x" onclick="closeLogs()">×</button>
+    </div>
+    <div class="drawer-list" id="logsBody"></div>
+    <div class="drawer-foot">
+      <span class="drawer-count"></span>
+      <button class="btn btn-ghost" onclick="closeLogs()">Close</button>
+    </div>
+  </aside>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Make-consistent modal (Compare view) -->
+<div class="modal-backdrop" id="fixBackdrop">
+  <div class="modal">
+    <h2 id="fixTitle">Make consistent</h2>
+    <div class="sub" id="fixSub"></div>
+    <div class="sf-like" id="fixControl" style="display:flex;align-items:center;gap:12px;margin:6px 0 4px">
+    </div>
+    <div class="sub" id="fixImpact" style="margin-top:14px"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeFix()">Cancel</button>
+      <button class="btn btn-primary" id="fixConfirmBtn" onclick="sendFix()">Update</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ DATA MODEL ============ */
+
+const TRUCKS = [
+  {id:'t1',  name:'21452', contract:'Cemex Arizona'},
+  {id:'t2',  name:'21477', contract:'Cemex Arizona'},
+  {id:'t3',  name:'23863', contract:'Cemex Arizona'},
+  {id:'t4',  name:'23865', contract:'Cemex Arizona'},
+  {id:'t5',  name:'23866', contract:'Cemex Arizona'},
+  {id:'t6',  name:'23868', contract:'Cemex Arizona'},
+  {id:'t7',  name:'23909', contract:'Cemex Arizona'},
+  {id:'t8',  name:'24071', contract:'Cemex Arizona'},
+  {id:'t9',  name:'24083', contract:'Cemex Arizona'},
+  {id:'t10', name:'24085', contract:'Cemex Arizona'},
+  {id:'t11', name:'24089', contract:'Cemex Arizona'},
+  {id:'t12', name:'24103', contract:'Cemex Arizona'},
+];
+// Remainder of the 175-truck Cemex Arizona fleet (mostly uniform, few outliers)
+for(let i=1;i<=163;i++){
+  TRUCKS.push({id:'az'+i, name:String(25000+i), contract:'Cemex Arizona'});
+}
+
+
+const SECTIONS = [
+  {id:'information', name:'Information'},
+  {id:'equipment', name:'Equipment Settings'},
+  {id:'mixing', name:'Mixing Settings'},
+  {id:'workability', name:'Workability Calculator Settings'},
+  {id:'incab', name:'In-Cab Display Settings'},
+  {id:'adjust', name:'Adjustment Manager Settings'},
+  {id:'hose', name:'Fluid Hose Length Settings'},
+  {id:'loadtrans', name:'Load Transition Settings'},
+  {id:'location', name:'Location Monitor Settings'},
+  {id:'advanced', name:'Advanced Settings'},
+];
+
+const SETTINGS = [
+  // Information — identity fields are locked (read only); Mode & OOS Reason are mass-settable
+  {id:'ro_contract', sec:'information', name:'Contract', type:'text', locked:true},
+  {id:'ro_unit', sec:'information', name:'Unit', type:'text', locked:true},
+  {id:'ro_mixer', sec:'information', name:'Mixer Type', type:'text', locked:true},
+  {id:'ro_vin', sec:'information', name:'VIN', type:'text', locked:true},
+  {id:'mode', sec:'information', name:'Mode', type:'select', options:['Live','Ghost','Maintenance'], def:'Live'},
+  {id:'oos_reason', sec:'information', name:'Out of Service Reason', type:'select',
+    options:['None','Admix Delivery Issue','Air Pressure Issue','Component Down','Cable Issue','Customer Mechanic Covering','Valve Stuck Open','Water Delivery Issue','Other'], def:'None'},
+  // Equipment
+  {id:'drum_magnets', sec:'equipment', name:'Number of Drum Magnets', type:'number', def:2, alt:3},
+  {id:'drum_size', sec:'equipment', name:'Drum Size', type:'number', unit:'yd³', def:11, alt:10},
+  {id:'blue_water_meter', sec:'equipment', name:'Using Blue Water Meter', type:'toggle', def:true},
+  {id:'blue_admix_meter', sec:'equipment', name:'Using Blue Admix Meter', type:'toggle', def:false},
+  {id:'front_discharge', sec:'equipment', name:'Front Discharge', type:'toggle', def:false},
+  {id:'cwr_watch', sec:'equipment', name:'CWR Watch Enabled', type:'toggle', def:true},
+  {id:'ed_watch', sec:'equipment', name:'Ed Watch Enabled', type:'toggle', def:true},
+  {id:'btds_drum_speed', sec:'equipment', name:'BTDS is Source of Drum Speed', type:'toggle', def:false},
+  {id:'icd_tablet', sec:'equipment', name:'ICD Tablet', type:'toggle', def:true},
+  {id:'water_prop_pump', sec:'equipment', name:'Water Propulsion Diaphragm Pump', type:'toggle', def:false},
+  {id:'legacy_cwr', sec:'equipment', name:'Legacy CWR Mode', type:'toggle', def:false, functional:false},
+  // Mixing
+  {id:'min_batch_revs', sec:'mixing', name:'Default Minimum Batch Revolutions', type:'number', def:70, alt:80},
+  {id:'min_agitation', sec:'mixing', name:'Minimum Agitation Speed', type:'number', unit:'RPM', def:2, alt:3},
+  {id:'min_mixing', sec:'mixing', name:'Minimum Mixing Speed', type:'number', unit:'RPM', def:10, alt:12},
+  {id:'max_mixing', sec:'mixing', name:'Maximum Mixing Speed', type:'number', unit:'RPM', def:18, alt:20},
+  // Workability
+  {id:'slump_exp_sec', sec:'workability', name:'Slump Expiration in Seconds', type:'number', unit:'sec', def:90, alt:120},
+  {id:'slump_exp_revs', sec:'workability', name:'Slump Expiration in Revs', type:'number', def:8, alt:10},
+  {id:'slump_min_rpm', sec:'workability', name:'Slump Min Drum Speed RPM', type:'number', unit:'RPM', def:2, alt:2},
+  {id:'slump_max_rpm', sec:'workability', name:'Slump Max Drum Speed RPM', type:'number', unit:'RPM', def:6, alt:8},
+  // In-Cab
+  {id:'min_leave_plant', sec:'incab', name:'Minutes to Leave Plant', type:'number', unit:'min', def:8, alt:10},
+  {id:'display_metric', sec:'incab', name:'Display Metric Units', type:'toggle', def:false},
+  {id:'display_noflow', sec:'incab', name:'Display No Flow Errors', type:'toggle', def:true},
+  {id:'slump_step_metric', sec:'incab', name:'Target Slump Step Mm Metric', type:'number', unit:'mm', def:10, alt:5},
+  {id:'slump_step_english', sec:'incab', name:'Target Slump Step Mm English', type:'number', unit:'mm', def:13, alt:13},
+  {id:'max_slump_display', sec:'incab', name:'Max Slump Mm For Display', type:'number', unit:'mm', def:230, alt:255},
+  {id:'min_backflush', sec:'incab', name:'Min Liters For Back Flush', type:'number', unit:'L', def:15, alt:20},
+  {id:'beta_metrics', sec:'incab', name:'Display Beta Metrics', type:'toggle', def:false, functional:false},
+  // Adjustment Manager
+  {id:'slump_tolerance', sec:'adjust', name:'Slump Tolerance', type:'number', unit:'mm', def:13, alt:25},
+  {id:'init_water_ratio', sec:'adjust', name:'Initial Water Adaptation Ratio', type:'number', def:1.0, alt:0.8},
+  {id:'init_admix_ratio', sec:'adjust', name:'Initial Admix Adaptation Ratio', type:'number', def:1.0, alt:1.2},
+  {id:'min_water_ratio', sec:'adjust', name:'Min Water Adaptation Ratio', type:'number', def:0.5, alt:0.4},
+  {id:'max_water_ratio', sec:'adjust', name:'Max Water Adaptation Ratio', type:'number', def:2.0, alt:1.8},
+  {id:'min_admix_ratio', sec:'adjust', name:'Min Admix Adaptation Ratio', type:'number', def:0.5, alt:0.5},
+  {id:'max_admix_ratio', sec:'adjust', name:'Max Admix Adaptation Ratio', type:'number', def:2.0, alt:2.5},
+  // Fluid Hose
+  {id:'admix_hose_len', sec:'hose', name:'Admix Hose Length', type:'number', unit:'in', def:240, alt:264},
+  {id:'water_fdm_qc', sec:'hose', name:'Water Length FDM to Quick Connect', type:'number', unit:'in', def:120, alt:132},
+  {id:'water_qc_nozzle', sec:'hose', name:'Water Length Quick Connect to Nozzle', type:'number', unit:'in', def:96, alt:110},
+  // Load Transition
+  {id:'revs_postbatch', sec:'loadtrans', name:'Revs Before Post Batch Mixing Finishes For Valid Slump', type:'number', def:30, alt:40},
+  {id:'revs_slump_rpm', sec:'loadtrans', name:'Revs Within Slump RPM Range For Valid Slump', type:'number', def:3, alt:4},
+  {id:'max_load_size', sec:'loadtrans', name:'Max Load Size Cubic Meters', type:'number', unit:'m³', def:8.0, alt:9.5},
+  // Location Monitor
+  {id:'away_distance', sec:'location', name:'Away Distance Signal Meters', type:'number', unit:'m', def:150, alt:200},
+  // Advanced (deep/hidden settings — placeholder examples of the buried tier)
+  {id:'telemetry_interval', sec:'advanced', name:'Telemetry Reporting Interval', type:'number', unit:'sec', def:60, alt:120, tier:'advanced'},
+  {id:'can_polling_rate', sec:'advanced', name:'CAN Bus Polling Rate', type:'number', unit:'ms', def:250, alt:500, tier:'advanced'},
+  {id:'debug_logging', sec:'advanced', name:'Debug Logging Enabled', type:'toggle', def:false, tier:'advanced'},
+  {id:'sensor_cal_offset', sec:'advanced', name:'Sensor Calibration Offset', type:'number', def:0.0, alt:0.5, tier:'advanced'},
+  {id:'watchdog_threshold', sec:'advanced', name:'Watchdog Restart Threshold', type:'number', def:3, alt:5, tier:'advanced'},
+];
+
+// Read-only Information fields per truck (Mode & OOS Reason moved to Operational Status)
+const INFO_FIELDS = ['Contract','Unit','Mixer Type','VIN'];
+const MIXERS = ['Beck','Cemen Tech','Con-Tech','Go Mixer'];
+const MODES = ['Live','Ghost','Maintenance'];
+
+/* deterministic pseudo-random per truck+setting */
+function hash(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h+s.charCodeAt(i))|0}return Math.abs(h)}
+function rnd(seed){const x=Math.sin(seed)*10000;return x-Math.floor(x)}
+
+const DATES = ['Jun 2, 2026','Jun 18, 2026','Jul 4, 2026','Jul 22, 2026','Aug 1, 2026','Aug 9, 2026','Aug 14, 2026','Aug 18, 2026'];
+const SUBMITTERS = ['A. Rivera','M. Chen','D. Okafor','S. Patel','K. Novak'];
+
+const LOCKED_MAP = {ro_contract:'Contract', ro_unit:'Unit', ro_mixer:'Mixer Type', ro_vin:'VIN'};
+
+// state[truckId][settingId] = {value, lastUpdated, source, submitter, status}
+const state = {};
+TRUCKS.forEach((t,ti)=>{
+  state[t.id]={};
+  // read-only info (built first so locked settings can seed from it)
+  const iseed = hash(t.id+':info');
+  t.info = {
+    'Contract': t.contract,
+    'Unit': 'U-2'+String(3000+ti*37)+'QQLAGT',
+    'Mixer Type': MIXERS[Math.floor(rnd(iseed)*MIXERS.length)],
+    'VIN': rnd(iseed+9)<0.5?'—':'1HTMM'+String(100000+Math.floor(rnd(iseed+11)*899999))
+  };
+  SETTINGS.forEach(s=>{
+    const seed = hash(t.id+':'+s.id);
+    const r = rnd(seed);
+    const big = t.id.startsWith('az');   // bulk of the fleet: mostly uniform, few outliers
+    let entry;
+    if(s.locked){
+      entry = {value: t.info[LOCKED_MAP[s.id]], lastUpdated:null, source:null, submitter:null, status:'reported'};
+    } else if(s.type==='select'){
+      const r2 = rnd(seed+3);
+      const defP = big ? 0.985 : 0.8;
+      const val = r2 < defP ? s.def : s.options[1 + Math.floor(rnd(seed+5)*(s.options.length-1))];
+      const source = rnd(seed+13) < 0.4 ? 'Truck' : 'Hub';
+      entry = {
+        value: val,
+        lastUpdated: DATES[Math.floor(rnd(seed+7)*DATES.length)],
+        source: source,
+        submitter: source==='Hub' ? SUBMITTERS[Math.floor(rnd(seed+21)*SUBMITTERS.length)] : 'Truck (device)',
+        status:'reported'
+      };
+    } else if(s.functional===false || r < (big?0.015:0.12)){
+      entry = {value:null, lastUpdated:null, source:null, submitter:null, status:'novalue'};
+    } else {
+      let val;
+      const defP = big ? 0.96 : (s.type==='toggle' ? 0.72 : 0.7);
+      const rv = rnd(seed+1);
+      if(s.type==='toggle'){ val = rv < defP ? s.def : !s.def; }
+      else { val = rv < defP ? s.def : s.alt; }
+      const fromHub = rnd(seed+13) >= 0.7 ? false : true; // Truck 70%, Hub 30%... keep prior split
+      const source = rnd(seed+13) < 0.7 ? 'Truck' : 'Hub';
+      entry = {
+        value: val,
+        lastUpdated: DATES[Math.floor(rnd(seed+7)*DATES.length)],
+        source: source,
+        submitter: source==='Hub' ? SUBMITTERS[Math.floor(rnd(seed+21)*SUBMITTERS.length)] : 'Truck (device)',
+        status:'reported'
+      };
+    }
+    state[t.id][s.id]=entry;
+  });
+});
+
+/* UI state */
+let selected = new Set(['t3','t4','t6','t8','t10']); // preselect Cemex Phoenix trucks for demo
+
+/* ---- change history (lazy, deterministic) ---- */
+const histCache = {};
+function getHistory(tid, sid){
+  const key = tid+':'+sid;
+  if(histCache[key]) return histCache[key];
+  const s = SETTINGS.find(x=>x.id===sid);
+  const e = state[tid][sid];
+  const seed = hash(key+':hist');
+  const out = [];
+  if(e.value!==null){
+    out.push({value:e.value, date:e.lastUpdated, submitter:e.submitter, source:e.source});
+    const older = 1 + Math.floor(rnd(seed)*3); // 1–3 older entries
+    for(let i=0;i<older;i++){
+      const r2 = rnd(seed + i*17 + 5);
+      let v;
+      if(s.type==='toggle') v = r2<0.5 ? s.def : !s.def;
+      else if(s.type==='select') v = s.options[Math.floor(r2*s.options.length)];
+      else v = r2<0.5 ? s.def : s.alt;
+      const fromHub = rnd(seed+i*29+9) < 0.55;
+      out.push({
+        value: v,
+        date: DATES[Math.max(0, Math.floor(rnd(seed+i*7)*DATES.length) - (i+2))] || 'May 12, 2026',
+        submitter: fromHub ? SUBMITTERS[Math.floor(rnd(seed+i*31)*SUBMITTERS.length)] : 'Truck (device)',
+        source: fromHub ? 'Hub' : 'Truck'
+      });
+    }
+  }
+  histCache[key]=out;
+  return out;
+}
+
+/* ============ RENDER: TRUCK LIST ============ */
+const TRUCKS_SORTED = () => [...TRUCKS].sort((a,b)=>a.name.localeCompare(b.name, undefined, {numeric:true}));
+
+function renderTrucks(){
+  const list = document.getElementById('truckList');
+  const q = document.getElementById('truckSearch').value.toLowerCase();
+  const CHECK = '<svg viewBox="0 0 12 12" fill="none"><path d="M2 6.5 4.8 9 10 3.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  list.innerHTML = TRUCKS_SORTED()
+    .filter(t=>!q || t.name.toLowerCase().includes(q))
+    .map(t=>{
+      const checked = selected.has(t.id)?'checked':'';
+      return `<div class="truck-row" onclick="toggleTruck('${t.id}')" title="${t.contract}">
+        <div class="cb ${checked}">${CHECK}</div>
+        <div class="truck-name">${t.name}</div>
+      </div>`;
+    }).join('');
+  // All Trucks state reflects the visible (search-filtered) pool
+  const pool = TRUCKS.filter(t=>!q || t.name.toLowerCase().includes(q));
+  const selInPool = pool.filter(t=>selected.has(t.id)).length;
+  const allCb = document.getElementById('allCb');
+  allCb.className = 'cb pink' + (pool.length>0 && selInPool===pool.length?' checked':(selected.size>0?' partial':''));
+  allCb.innerHTML = (pool.length>0 && selInPool===pool.length) ? CHECK : '';
+}
+function toggleTruck(id){ selected.has(id)?selected.delete(id):selected.add(id); renderAll(); }
+function toggleAll(){
+  const q = document.getElementById('truckSearch').value.toLowerCase();
+  const pool = TRUCKS.filter(t=>!q || t.name.toLowerCase().includes(q));
+  const allSel = pool.length>0 && pool.every(t=>selected.has(t.id));
+  pool.forEach(t=> allSel ? selected.delete(t.id) : selected.add(t.id));
+  renderAll();
+}
+function clearSelection(){ selected.clear(); renderAll(); }
+function filterTrucks(){ renderTrucks(); }
+function clearSearch(){ document.getElementById('truckSearch').value=''; renderTrucks(); }
+
+/* ============ ROLLUP LOGIC ============ */
+function fmtVal(s, v){
+  if(v===null||v===undefined) return '—';
+  if(s.type==='toggle') return v?'On':'Off';
+  if(s.type==='select'||s.type==='text') return v;
+  return v + (s.unit?' '+s.unit:'');
+}
+function rollup(s){
+  const trucks = [...selected];
+  const entries = trucks.map(tid=>state[tid][s.id]);
+  const withVal = entries.filter(e=>e.value!==null);
+  const noVal = entries.length - withVal.length;
+  const pending = entries.filter(e=>e.status==='pending').length;
+  const confirmed = entries.filter(e=>e.status==='confirmed').length;
+  const distinct = [...new Set(withVal.map(e=>JSON.stringify(e.value)))];
+  // group trucks by value, largest first
+  const byVal = {};
+  const noValTids = [];
+  trucks.forEach(tid=>{
+    const e = state[tid][s.id];
+    if(e.value===null){ noValTids.push(tid); return; }
+    const k = JSON.stringify(e.value);
+    (byVal[k]=byVal[k]||[]).push(tid);
+  });
+  const groups = Object.entries(byVal).map(([key,tids])=>({key, value:JSON.parse(key), tids}))
+    .sort((a,b)=>b.tids.length-a.tids.length);
+  return {entries, withVal, noVal, pending, confirmed, distinct, trucks, groups, noValTids};
+}
+function truckName(tid){ return TRUCKS.find(x=>x.id===tid).name; }
+
+/* ============ RENDER: SUMMARY ============ */
+
+
+/* ============ RENDER: SECTIONS ============ */
+const GEAR = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>`;
+const CHEV = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m18 15-6-6-6 6"/></svg>`;
+const INFO_ICON = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1" stroke-linecap="round"/></svg>`;
+
+
+
+const LOCK = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`;
+
+const STATUS_MAP = {
+  reported:{cls:'reported',label:'Reported'},
+  novalue:{cls:'novalue',label:'No value'},
+  pending:{cls:'pending',label:'Pending'},
+  confirmed:{cls:'confirmed',label:'Confirmed'}
+};
+
+
+
+
+
+
+
+
+
+/* ============ INTERACTIONS ============ */
+
+
+
+
+
+/* ---- truck-focused view: one accordion per selected truck ---- */
+
+
+
+
+
+
+/* ---- compare view: load specific settings, scan all trucks, fix drift ---- */
+let compareSettings = ['front_discharge'];   // sensible demo default
+let cmpPageSize = 100;
+let cmpPage = 1;
+let fix = null;   // {sid, value}
+
+function toggleCmpPop(e){
+  e.stopPropagation();
+  const p = document.getElementById('cmpPop');
+  p.classList.toggle('open');
+  if(p.classList.contains('open')) renderCmpPop();
+}
+document.addEventListener('click', ()=>{ const p=document.getElementById('cmpPop'); if(p) p.classList.remove('open'); });
+
+function renderCmpPop(){
+  const q = (document.getElementById('cmpSearch').value||'').toLowerCase();
+  const list = document.getElementById('cmpPopList');
+  const CHECK = '<svg viewBox="0 0 12 12" fill="none"><path d="M2 6.5 4.8 9 10 3.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const eligible = SETTINGS.filter(s=>!s.locked && s.functional!==false && (!q || s.name.toLowerCase().includes(q)));
+  const renderItems = arr => arr.map(s=>{
+    const sel = compareSettings.includes(s.id);
+    return `<button class="cmp-pop-item" onclick="toggleCompareSetting('${s.id}')">
+      <div class="cb ${sel?'checked':''}">${CHECK}</div>
+      ${s.name}${s.unit?` (${s.unit})`:''}<span class="type-tag">${typeLabel(s)}</span>
+    </button>`;
+  }).join('');
+  const items = eligible; // pool for the All Settings checkbox below
+  // Basic settings grouped by their ConfigurationBreakdown section, Advanced last
+  const groupsHtml = SECTIONS.map(sec=>{
+    const inSec = eligible.filter(s=>s.sec===sec.id);
+    if(inSec.length===0) return '';
+    return `<div class="cmp-pop-head">${sec.name}</div>` + renderItems(inSec);
+  }).join('');
+  list.innerHTML = groupsHtml || `<div style="padding:14px;color:var(--faint);font-size:12.5px">No matching settings</div>`;
+
+  // All Settings checkbox reflects the search-scoped pool, like the truck rail
+  const selInPool = items.filter(s=>compareSettings.includes(s.id)).length;
+  const allCb = document.getElementById('cmpAllCb');
+  allCb.className = 'cb pink' + (items.length>0 && selInPool===items.length ? ' checked' : (compareSettings.length>0 ? ' partial' : ''));
+  allCb.innerHTML = (items.length>0 && selInPool===items.length) ? CHECK : '';
+}
+function toggleAllCompareSettings(){
+  const q = (document.getElementById('cmpSearch').value||'').toLowerCase();
+  const pool = SETTINGS.filter(s=>!s.locked && s.functional!==false && (!q || s.name.toLowerCase().includes(q)));
+  const allSel = pool.length>0 && pool.every(s=>compareSettings.includes(s.id));
+  if(allSel){
+    compareSettings = compareSettings.filter(id=>!pool.some(s=>s.id===id));
+  } else {
+    pool.forEach(s=>{ if(!compareSettings.includes(s.id)) compareSettings.push(s.id); });
+  }
+  renderCmpPop();
+  renderCompare();
+}
+function clearCompareSettings(){
+  compareSettings = [];
+  renderCmpPop();
+  renderCompare();
+}
+function toggleCompareSetting(sid){
+  if(compareSettings.includes(sid)) compareSettings = compareSettings.filter(x=>x!==sid);
+  else compareSettings.push(sid);
+  renderCmpPop();          // stays open for multi-select
+  renderCompare();
+}
+function removeCompareSetting(sid){
+  compareSettings = compareSettings.filter(x=>x!==sid);
+  renderCompare();
+}
+function cmpSetPageSize(v){ cmpPageSize = parseInt(v,10); cmpPage = 1; renderCompare(); }
+function cmpPrev(){ if(cmpPage>1){ cmpPage--; renderCompare(); } }
+function cmpNext(){ cmpPage++; renderCompare(); }
+
+/* logs drawer: full change history for one truck across the loaded settings */
+function openLogs(tid){
+  const t = TRUCKS.find(x=>x.id===tid);
+  document.getElementById('logsTitle').textContent = `Logs — ${t.name}`;
+  document.getElementById('logsSub').textContent =
+    compareSettings.length===1 ? '1 setting loaded' : `${compareSettings.length} settings loaded`;
+  document.getElementById('logsBody').innerHTML = compareSettings.map(sid=>{
+    const s = SETTINGS.find(x=>x.id===sid);
+    const hist = getHistory(tid, sid);
+    return `<div class="dr-sec-label">${s.name}${s.unit?` (${s.unit})`:''}</div>
+      ${hist.length===0
+        ? `<div style="color:var(--faint);font-size:12.5px;padding:2px 0 10px">No history — this setting has never reported a value for this truck.</div>`
+        : `<table class="hist" style="margin-bottom:10px">${hist.map((h,i)=>`
+            <tr>
+              <td style="font-weight:600;width:110px">${fmtVal(s, h.value)}</td>
+              <td class="dim" style="width:120px">${h.date}</td>
+              <td class="dim">${h.submitter}</td>
+              <td class="dim" style="width:60px">${h.source}</td>
+              <td style="width:70px;text-align:right">${i===0?'<span class="hist-current">Current</span>':''}</td>
+            </tr>`).join('')}</table>`}`;
+  }).join('');
+  document.getElementById('logsBackdrop').classList.add('open');
+}
+function closeLogs(){
+  const b = document.getElementById('logsBackdrop');
+  if(b) b.classList.remove('open');
+}
+
+function renderCompare(){
+  // Settings field reflects the current multi-selection
+  const ft = document.getElementById('cmpFieldText');
+  if(compareSettings.length===0){
+    ft.textContent = 'Select settings to compare';
+    ft.className = 'cmp-field-text placeholder';
+  } else {
+    ft.textContent = compareSettings.map(sid=>{
+      const s = SETTINGS.find(x=>x.id===sid);
+      return s.name + (s.unit?` (${s.unit})`:'');
+    }).join(', ');
+    ft.className = 'cmp-field-text';
+  }
+
+  const box = document.getElementById('compareTable');
+  if(selected.size===0){
+    box.innerHTML = `<div class="cmp-hint">Select trucks on the left (or a whole contract) to load them into the comparison.</div>`;
+    return;
+  }
+  if(compareSettings.length===0){
+    box.innerHTML = `<div class="cmp-hint">Add one or more settings above to compare them across the ${selected.size} selected trucks.</div>`;
+    return;
+  }
+
+  const cols = compareSettings.map(sid=>{
+    const s = SETTINGS.find(x=>x.id===sid);
+    const r = rollup(s);
+    let majKey = null, split = false;
+    if(r.distinct.length===1){ majKey = r.groups[0].key; }
+    else if(r.groups.length>1 && r.groups[0].tids.length===r.groups[1].tids.length){ split = true; }
+    else if(r.groups.length>0){ majKey = r.groups[0].key; }
+    const mismatch = r.entries.length - (majKey ? r.groups.find(g=>g.key===majKey).tids.length : 0);
+    return {s, r, majKey, split, mismatch};
+  });
+
+  // outliers-first row sort
+  const tids = [...selected];
+  const isOutlierRow = tid => cols.some(c=>{
+    const e = state[tid][c.s.id];
+    if(e.value===null) return true;
+    return c.majKey && JSON.stringify(e.value)!==c.majKey && c.r.distinct.length>1;
+  });
+  const sorted = [...tids.filter(isOutlierRow), ...tids.filter(t=>!isOutlierRow(t))];
+
+  const header = `<tr><th class="truck-col">Truck</th>` + cols.map(c=>{
+    let stat;
+    if(c.split){
+      stat = `<span class="cmp-stat">${c.r.entries.length} Trucks<span class="sep">|</span>Split — No Majority</span>`;
+    } else if(c.r.distinct.length<=1 && c.r.noVal===0){
+      stat = `<span class="cmp-stat">${c.r.entries.length} Trucks<span class="sep">|</span>All Match: <b>${fmtVal(c.s, c.r.groups[0]?.value)}</b></span>`;
+    } else {
+      const nv = c.r.noVal>0 ? `<span class="sep">|</span>No Value: <b>${c.r.noVal}</b>` : '';
+      stat = `<span class="cmp-stat">${c.r.entries.length} Trucks<span class="sep">|</span>Differ: <b>${c.mismatch} of ${c.r.entries.length}</b>${nv}</span>`;
+    }
+    return `<th><div class="cmp-head-name">${c.s.name}${c.s.unit?` <span class="setting-unit">${c.s.unit}</span>`:''}</div>
+      <div class="cmp-head-meta"><button class="fix-btn" onclick="openFix('${c.s.id}')">Update</button>${stat}</div></th>`;
+  }).join('') + `<th class="logs-col">Logs</th></tr>`;
+
+  // hub-style pagination
+  const total = sorted.length;
+  const maxPage = Math.max(1, Math.ceil(total / cmpPageSize));
+  if(cmpPage > maxPage) cmpPage = maxPage;
+  const start = (cmpPage-1)*cmpPageSize;
+  const pageRows = sorted.slice(start, start + cmpPageSize);
+
+  const rows = pageRows.map(tid=>{
+    const cells = cols.map(c=>{
+      const e = state[tid][c.s.id];
+      let cls = '';
+      if(e.value===null) cls = 'cell-nv';
+      else if(c.majKey && JSON.stringify(e.value)!==c.majKey && c.r.distinct.length>1) cls = 'cell-out';
+      const pend = e.status==='pending' ? `<span class="cell-pend" title="Pending truck confirmation"></span>` : '';
+      return `<td class="${cls}">${e.value===null?'no value':fmtVal(c.s, e.value)}${pend}</td>`;
+    }).join('');
+    return `<tr><td class="truck-col">${truckName(tid)}</td>${cells}<td class="logs-col"><button class="logs-btn" onclick="openLogs('${tid}')">Logs</button></td></tr>`;
+  }).join('');
+
+  box.innerHTML = `<div class="cmp-table-wrap"><table class="cmp">${header}<tbody>${rows}</tbody></table></div>
+    <div class="cmp-pager">
+      <span class="sort-note">Mismatched trucks first</span>
+      <span>Items per page:
+        <select onchange="cmpSetPageSize(this.value)">
+          ${[25,50,100].map(n=>`<option value="${n}" ${cmpPageSize===n?'selected':''}>${n}</option>`).join('')}
+        </select>
+      </span>
+      <span>${total===0?'0':start+1} – ${Math.min(start+cmpPageSize, total)} of ${total}</span>
+      <button class="pg-btn" onclick="cmpPrev()" ${cmpPage<=1?'disabled':''}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m15 6-6 6 6 6"/></svg></button>
+      <button class="pg-btn" onclick="cmpNext()" ${cmpPage>=maxPage?'disabled':''}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>
+    </div>`;
+}
+
+/* ---- update from Compare (drift-only or all selected) ---- */
+let modalVersion = 'v2';   // 'v1' = Type dropdown + typed value (current HUB) · 'v2' = predefined input per setting type
+function setModalVersion(v){
+  modalVersion = v;
+  document.getElementById('verV1').classList.toggle('active', v==='v1');
+  document.getElementById('verV2').classList.toggle('active', v==='v2');
+  document.getElementById('vpOptsDd').classList.remove('open');
+  if(fix) renderFixModal();
+}
+function setFixValue(v){ if(fix){ fix.value = v; renderFixModal(); } }
+function buildFixControlV2(s){
+  if(s.type==='toggle'){
+    return `<div class="seg">
+      <button class="${fix.value===true?'active':''}" onclick="setFixValue(true)">On</button>
+      <button class="${fix.value===false?'active':''}" onclick="setFixValue(false)">Off</button>
+    </div>`;
+  }
+  if(s.type==='select'){
+    return `<select class="sel-input" onchange="setFixValue(this.value)">
+      ${s.options.map(o=>`<option value="${o}" ${fix.value===o?'selected':''}>${o}</option>`).join('')}
+    </select>`;
+  }
+  return `<input class="num-input" type="number" step="any" value="${fix.value}" oninput="if(fix){fix.value=this.value===''?'':parseFloat(this.value);refreshFixImpact()}">`;
+}
+function fixParsed(){
+  if(modalVersion==='v1') return parseFixValue();
+  const v = fix.value;
+  const ok = v!=='' && v!==null && v!==undefined && !(typeof v==='number'&&isNaN(v));
+  return ok ? {ok:true, value:v} : {ok:false, err:'Enter a target value.'};
+}
+const FIX_TYPES = ['Float','Integer','String','Boolean','Long'];
+function inferFixType(s){
+  if(s.type==='toggle') return 'Boolean';
+  if(s.type==='select') return 'String';
+  const nums = [s.def, s.alt].filter(v=>typeof v==='number');
+  return nums.every(Number.isInteger) ? 'Integer' : 'Float';
+}
+function openFix(sid){
+  const s = SETTINGS.find(x=>x.id===sid);
+  const r = rollup(s);
+  const maj = r.groups[0] ? r.groups[0].value : s.def;
+  fix = {sid, raw:'', type: inferFixType(s), value: maj, scope:'custom', custom: new Set(fixDiffTidsFor(sid, maj))};
+  renderFixModal();
+  document.getElementById('fixBackdrop').classList.add('visible');
+}
+function closeFix(){ fix=null; document.getElementById('fixBackdrop').classList.remove('visible'); }
+function setFixType(t){ if(fix){ fix.type = t; refreshFixImpact(); } }
+function setFixRaw(v){ if(fix){ fix.raw = v; refreshFixImpact(); } }
+function parseFixValue(){
+  const raw = (fix.raw||'').trim();
+  if(raw==='') return {ok:false, err:'Enter a value.'};
+  if(fix.type==='Boolean'){
+    if(/^(true|on|1|yes)$/i.test(raw)) return {ok:true, value:true};
+    if(/^(false|off|0|no)$/i.test(raw)) return {ok:true, value:false};
+    return {ok:false, err:'Boolean expects true/false (or on/off).'};
+  }
+  if(fix.type==='Integer' || fix.type==='Long'){
+    const n = Number(raw);
+    if(isNaN(n)) return {ok:false, err:fix.type+' expects a number.'};
+    if(!Number.isInteger(n)) return {ok:false, err:fix.type+' expects a whole number.'};
+    return {ok:true, value:n};
+  }
+  if(fix.type==='Float'){
+    const n = Number(raw);
+    if(isNaN(n)) return {ok:false, err:'Float expects a number.'};
+    return {ok:true, value:n};
+  }
+  return {ok:true, value:raw}; // String
+}
+function fmtParsed(s, v){
+  if(typeof v==='boolean') return v?'On':'Off';
+  if(typeof v==='number') return v + (s.unit?' '+s.unit:'');
+  return v;
+}
+function setFixScope(sc){
+  if(!fix) return;
+  fix.scope = sc;
+  if(sc==='custom'){
+    const s = SETTINGS.find(x=>x.id===fix.sid);
+    const r = rollup(s);
+    const maj = r.groups[0] ? r.groups[0].value : s.def;
+    fix.custom = new Set(fixDiffTidsFor(fix.sid, maj));   // pre-check trucks drifted from the majority
+  }
+  renderFixModal();
+}
+function toggleFixTruck(tid){
+  if(!fix) return;
+  fix.custom.has(tid) ? fix.custom.delete(tid) : fix.custom.add(tid);
+  renderFixTruckList();
+  refreshFixImpact();
+}
+
+function fixDiffTidsFor(sid, value){
+  return [...selected].filter(tid=>{
+    const e = state[tid][sid];
+    return e.value===null || JSON.stringify(e.value)!==JSON.stringify(value);
+  });
+}
+function fixDiffTids(){
+  const p = fixParsed();
+  return p.ok ? fixDiffTidsFor(fix.sid, p.value) : [];
+}
+function fixTargets(){
+  return fix.scope==='all' ? [...selected] : [...fix.custom];
+}
+function refreshFixImpact(){
+  const s = SETTINGS.find(x=>x.id===fix.sid);
+  const targets = fixTargets();
+  const p = fixParsed();
+  let impact;
+  if(!p.ok){
+    impact = `<span style="color:var(--amber)">${p.err}</span>`;
+  } else if(fix.scope==='custom'){
+    const names = targets.length<=3 && targets.length>0 ? ` (${targets.map(truckName).join(', ')})` : '';
+    impact = targets.length===0
+      ? `<span style="color:var(--amber)">Pick at least one truck below.</span>`
+      : `<b>${targets.length}</b> chosen truck${targets.length===1?'':'s'}${names} will be pushed <b class="newval">${fmtParsed(s, p.value)}</b>.`;
+  } else {
+    const diff = fixDiffTidsFor(fix.sid, p.value);
+    impact = `All <b>${selected.size}</b> selected trucks will be pushed <b class="newval">${fmtParsed(s, p.value)}</b>${diff.length<selected.size?` (${selected.size-diff.length} already match and will be re-stamped)`:''}.`;
+  }
+  document.getElementById('fixImpact').innerHTML = impact;
+  const btn = document.getElementById('fixConfirmBtn');
+  btn.disabled = !p.ok || targets.length===0;
+  btn.textContent = targets.length>0 ? `Update ${targets.length} truck${targets.length===1?'':'s'}` : (fix.scope==='custom' ? 'Pick trucks to update' : 'All trucks already match');
+}
+function renderFixModal(){
+  const s = SETTINGS.find(x=>x.id===fix.sid);
+  document.getElementById('fixTitle').textContent = `Update — ${s.name}`;
+  document.getElementById('fixSub').innerHTML =
+    `Push a value to the selected trucks. Each updated truck shows <b style="color:var(--text)">Pending</b> until it reports the new value back.`;
+  const valueRows = modalVersion==='v1'
+    ? `<div style="display:flex;align-items:center;gap:12px">
+        <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text);font-weight:700;min-width:70px">Type</label>
+        <select class="sel-input" onchange="setFixType(this.value)">
+          ${FIX_TYPES.map(t=>`<option value="${t}" ${fix.type===t?'selected':''}>${t}</option>`).join('')}
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text);font-weight:700;min-width:70px">Value</label>
+        <input class="num-input" type="text" style="width:220px" value="${(fix.raw||'').replace(/"/g,'&quot;')}" placeholder="Enter value${s.unit?' ('+s.unit+')':''}"
+          oninput="setFixRaw(this.value)">
+      </div>`
+    : `<div style="display:flex;align-items:center;gap:12px">
+        <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text);font-weight:700;min-width:70px">New value</label>
+        ${buildFixControlV2(s)}
+      </div>`;
+  document.getElementById('fixControl').innerHTML =
+    `<div style="display:flex;flex-direction:column;gap:14px;width:100%">
+      ${valueRows}
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text);font-weight:700;min-width:70px">Apply to</label>
+        <div class="seg seg-scope">
+          <button class="${fix.scope==='custom'?'active':''}" onclick="setFixScope('custom')">Choose trucks</button>
+          <button class="${fix.scope==='all'?'active':''}" onclick="setFixScope('all')">All selected (${selected.size})</button>
+        </div>
+      </div>
+      ${fix.scope==='custom'?`
+      <div class="fix-pick">
+        <div class="search-box" style="margin-bottom:8px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6370" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="fixTruckSearch" type="text" placeholder="Search trucks" oninput="renderFixTruckList()">
+          <button class="clear-x" onclick="document.getElementById('fixTruckSearch').value='';renderFixTruckList()">×</button>
+        </div>
+        <div class="fix-picklist" id="fixTruckList"></div>
+      </div>`:''}
+    </div>`;
+  if(fix.scope==='custom') renderFixTruckList();
+  refreshFixImpact();
+}
+function renderFixTruckList(){
+  const box = document.getElementById('fixTruckList');
+  if(!box || !fix) return;
+  const s = SETTINGS.find(x=>x.id===fix.sid);
+  const q = (document.getElementById('fixTruckSearch')?.value||'').toLowerCase();
+  const CHECK = '<svg viewBox="0 0 12 12" fill="none"><path d="M2 6.5 4.8 9 10 3.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const tids = [...selected]
+    .filter(tid=>!q || truckName(tid).toLowerCase().includes(q))
+    .sort((a,b)=>truckName(a).localeCompare(truckName(b), undefined, {numeric:true}));
+  box.innerHTML = tids.map(tid=>{
+    const e = state[tid][fix.sid];
+    const sel = fix.custom.has(tid);
+    return `<div class="fix-pick-row" onclick="toggleFixTruck('${tid}')">
+      <div class="cb ${sel?'checked':''}">${CHECK}</div>
+      <span class="fpr-name">${truckName(tid)}</span>
+      <span class="fpr-val">${e.value===null?'no value':fmtVal(s, e.value)}</span>
+    </div>`;
+  }).join('') || `<div style="padding:10px;color:var(--faint);font-size:12px">No matching trucks</div>`;
+}
+function sendFix(){
+  const sid = fix.sid;
+  const targets = fixTargets();
+  const p = fixParsed();
+  if(!p.ok) return;
+  const val = p.value;
+  const now = 'Aug 20, 2026';
+  targets.forEach(tid=>{
+    state[tid][sid] = {...state[tid][sid], status:'pending', source:'Hub', submitter:'You', pendingValue: val};
+  });
+  targets.forEach((tid,i)=>{
+    const delay = (i===targets.length-1 && targets.length>2) ? 9000 : 1500 + Math.random()*4500;
+    setTimeout(()=>{
+      const e = state[tid][sid];
+      state[tid][sid] = {value:e.pendingValue, lastUpdated:now, source:'Hub', submitter:'You', status:'confirmed'};
+      getHistory(tid, sid).unshift({value:e.pendingValue, date:now, submitter:'You', source:'Hub'});
+      renderMain();
+    }, delay);
+  });
+  const n = targets.length;
+  closeFix();
+  renderMain();
+  showToast(`Consistency update sent to ${n} truck${n===1?'':'s'} — awaiting confirmation`);
+}
+
+/* ---- mass-update drawer ---- */
+
+
+
+
+
+
+
+
+
+
+
+
+function typeLabel(s){ return s.type==='toggle'?'Toggle':(s.type==='select'?'Dropdown':'Number'); }
+
+
+
+
+
+
+
+
+/* ============ MODAL + SEND ============ */
+
+
+
+
+
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 5000);
+}
+
+/* ============ MASTER RENDER ============ */
+function renderMain(){ renderCompare(); }
+function renderAll(){ renderTrucks(); renderMain(); }
+renderAll();
+
+function toggleNavCollapse(){ document.body.classList.toggle('nav-collapsed'); }
+
+/* ============ PROTOTYPE CHROME: options, viewport, theme ============ */
+function toggleOpts(e){
+  e.stopPropagation();
+  document.getElementById('vpOptsDd').classList.toggle('open');
+}
+document.addEventListener('click', ()=>{
+  document.getElementById('vpOptsDd').classList.remove('open');
+});
+
+let currentViewport = 'Desktop';
+function setViewport(vp){
+  currentViewport = vp;
+  ['Desktop','Tablet','Mobile'].forEach(v=>{
+    document.getElementById('vpRow'+v).classList.toggle('active', v===vp);
+  });
+  const cs = document.getElementById('comingSoon');
+  if(vp==='Desktop'){ cs.classList.remove('show'); }
+  else {
+    document.getElementById('csDevice').textContent = vp;
+    cs.classList.add('show');
+  }
+  document.getElementById('vpOptsDd').classList.remove('open');
+}
+
+const rootEl = document.documentElement;
+function syncThemeSwitch(){
+  document.getElementById('themeSwitch').classList.toggle('on', rootEl.classList.contains('theme-dark'));
+}
+function toggleTheme(){
+  const dark = !rootEl.classList.contains('theme-dark');
+  rootEl.classList.toggle('theme-dark', dark);
+  rootEl.classList.toggle('theme-light', !dark);
+  syncThemeSwitch();
+  try { localStorage.setItem('adv-settings-theme', dark ? 'dark' : 'light'); } catch(e) {}
+}
+syncThemeSwitch();
+</script>
+</body>
+</html>

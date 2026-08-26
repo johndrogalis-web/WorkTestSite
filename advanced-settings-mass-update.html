@@ -1953,6 +1953,16 @@ function renderMain(){ renderCompare(); }
 function renderAll(){ renderTrucks(); renderMain(); }
 renderAll();
 
+// shareable version URLs: ?version=v1 / ?version=v2 (also ?v=1 or #v1)
+(function(){
+  try{
+    const params = new URLSearchParams(location.search);
+    const raw = (params.get('version') || params.get('v') || location.hash.replace('#','') || '').toLowerCase();
+    if(raw==='v1' || raw==='1') setPageVersion('v1');
+    else if(raw==='v2' || raw==='2') setPageVersion('v2');
+  }catch(e){}
+})();
+
 function toggleNavCollapse(){ document.body.classList.toggle('nav-collapsed'); }
 
 /* ============ PROTOTYPE CHROME: options, viewport, theme ============ */

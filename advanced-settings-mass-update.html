@@ -1603,6 +1603,12 @@ function setPageVersion(v){
   document.getElementById('verP1').classList.toggle('active', v==='v1');
   document.getElementById('verP2').classList.toggle('active', v==='v2');
   document.getElementById('vpOptsDd').classList.remove('open');
+  // keep the URL shareable: address bar always reflects the current version
+  try{
+    const url = new URL(location.href);
+    url.searchParams.set('version', v);
+    history.replaceState(null, '', url);
+  }catch(e){}
   if(v==='v1'){
     // advanced settings don't exist in V1 — unload any that are on screen
     compareSettings = compareSettings.filter(sid=>{

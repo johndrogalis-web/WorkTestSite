@@ -578,7 +578,38 @@ table.cmp td{padding:11px 16px;border-bottom:1px solid var(--border-soft);font-s
 table.cmp tbody tr:nth-child(even){background:var(--row-light)}
 table.cmp tbody tr:nth-child(odd){background:var(--row-dark)}
 table.cmp tr:last-child td{border-bottom:none}
-table.cmp th.logs-col, table.cmp td.logs-col{text-align:right;width:84px;min-width:84px}
+table.cmp th.logs-col, table.cmp td.logs-col{
+  text-align:right;width:84px;min-width:84px;
+  position:sticky;right:0;z-index:3;
+  border-left:1px solid var(--border);
+  box-shadow:-6px 0 10px -6px rgba(0,0,0,.5);
+}
+table.cmp th.logs-col{background:var(--row-light);z-index:4}
+table.cmp td.logs-col{background:inherit}
+.logs-csv-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-top:10px;font-size:12px;color:var(--muted);
+}
+.logs-csv-btn{padding:6px 14px;font-size:11.5px;white-space:nowrap}
+.cmp-colfilter{margin-top:10px;max-width:340px}
+.cmp-colfilter .search-box{padding:8px 12px}
+.cmp-nudge{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  background:var(--panel-2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:10px 14px;margin-bottom:12px;
+  font-size:12.5px;color:var(--muted);
+}
+.cmp-nudge b{color:var(--text)}
+.cmp-nudge-btn{padding:6px 14px;font-size:11.5px;white-space:nowrap}
+.cmp-nofilter{
+  color:var(--muted);font-size:13px;padding:20px;border:1px dashed var(--border);
+  border-radius:var(--radius);text-align:center;
+}
+.cmp-nofilter button{
+  background:none;border:none;color:var(--blue-hi);font-family:inherit;font-size:13px;
+  font-weight:600;cursor:pointer;padding:0 4px;
+}
 .logs-btn{
   background:transparent;border:1px solid var(--border);color:var(--blue-hi);
   font-family:inherit;font-size:11.5px;font-weight:600;
@@ -912,11 +943,10 @@ table.tt td.dim{color:var(--muted)}
     <div class="vp-opts-wrap" id="vpOptsWrap">
       <button class="vp-opts-btn" onclick="toggleOpts(event)">Options <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
       <div class="vp-opts-dd" id="vpOptsDd" onclick="event.stopPropagation()">
-        <div class="vp-dd-label">Update Modal</div>
-        <button class="vp-opt-row" id="verV1" onclick="setModalVersion('v1')">V1 — Type &amp; typed value <span class="vp-check">✓</span></button>
-        <button class="vp-opt-row active" id="verV2" onclick="setModalVersion('v2')">V2 — Predefined input <span class="vp-check">✓</span></button>
+        <div class="vp-dd-label">Version</div>
+        <button class="vp-opt-row" id="verP1" onclick="setPageVersion('v1')">Version 1 <span class="vp-check">✓</span></button>
+        <button class="vp-opt-row active" id="verP2" onclick="setPageVersion('v2')">Version 2 <span class="vp-check">✓</span></button>
         <div class="vp-dd-div"></div>
-        <button class="vp-opt-row" onclick="openHiddenRef()">Hidden setting names</button>
         <button class="vp-opt-row" onclick="toggleTheme()">Dark mode <span class="vp-switch" id="themeSwitch"></span></button>
       </div>
     </div>
@@ -1057,7 +1087,13 @@ table.tt td.dim{color:var(--muted)}
               <button class="clear-all" onclick="clearCompareSettings()">Clear All</button>
             </div>
             <div class="cmp-pop-list" id="cmpPopList"></div>
-            <button class="cmp-pop-add" id="cmpPopAdd" style="display:none" onclick="openCustomSetting()">＋ Find a hidden setting…</button>
+          </div>
+          <div class="cmp-colfilter" id="cmpColFilterWrap" style="display:none">
+            <div class="search-box">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6370" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <input id="cmpColFilter" type="text" placeholder="Filter loaded settings" oninput="setColFilter(this.value)">
+              <button class="clear-x" onclick="clearColFilter()">×</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1090,37 +1126,6 @@ table.tt td.dim{color:var(--muted)}
 
 <div class="toast" id="toast"></div>
 
-<!-- Hidden setting names reference (demo cheat sheet) -->
-<div class="modal-backdrop" id="hiddenRefBackdrop">
-  <div class="modal" style="width:520px">
-    <h2>Hidden setting names</h2>
-    <div class="sub">These are the names in the mock database for the "Find a hidden setting" lookup (V1 modal only). Copy one to demo a match; anything else demos the no-match callout.</div>
-    <div id="hiddenRefList" style="display:flex;flex-direction:column;gap:6px;margin:6px 0 4px"></div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeHiddenRef()">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- Hidden setting lookup (reported by firmware, not listed in HUB) -->
-<div class="modal-backdrop" id="customBackdrop">
-  <div class="modal" style="width:560px">
-    <h2>Find a hidden setting</h2>
-    <div class="sub">Some settings are reported by truck firmware but not listed in HUB. Search the database by the firmware name — if trucks report it, it loads into this view with their current values.</div>
-    <div style="display:flex;flex-direction:column;gap:12px;margin:6px 0 4px">
-      <div class="search-box">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6370" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input type="text" id="custName" placeholder="e.g. DRUM_TORQUE_LIMIT" oninput="renderHiddenMatches()">
-        <button class="clear-x" onclick="document.getElementById('custName').value='';renderHiddenMatches()">×</button>
-      </div>
-      <div id="custMatches"></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeCustomSetting()">Cancel</button>
-      <button class="btn btn-primary" id="custAddBtn" onclick="addCustomSetting()" disabled>Load setting</button>
-    </div>
-  </div>
-</div>
 
 <!-- Make-consistent modal (Compare view) -->
 <div class="modal-backdrop" id="fixBackdrop">
@@ -1171,7 +1176,6 @@ const SECTIONS = [
   {id:'loadtrans', name:'Load Transition Settings'},
   {id:'location', name:'Location Monitor Settings'},
   {id:'advanced', name:'Advanced Settings'},
-  {id:'custom', name:'Hidden — Not in HUB'},
 ];
 
 let SETTINGS = [
@@ -1439,95 +1443,17 @@ const STATUS_MAP = {
 
 
 
-/* ---- hidden settings: reported by truck firmware but not listed in HUB ----
-   Lookup-only: typing must match a setting that already exists in the database.
-   No match = no trucks report it, and we say so. */
-const HIDDEN_SETTINGS = [
-  {id:'hid_drum_torque_limit',   name:'DRUM_TORQUE_LIMIT',        type:'number', hubType:'Float',   def:340,  alt:365},
-  {id:'hid_can_termination',     name:'CAN_TERMINATION_ENABLED',  type:'toggle', hubType:'Boolean', def:true},
-  {id:'hid_telemetry_buffer',    name:'TELEMETRY_BUFFER_SIZE',    type:'number', hubType:'Integer', def:512,  alt:1024},
-  {id:'hid_gps_reboot_interval', name:'GPS_REBOOT_INTERVAL',      type:'number', hubType:'Long',    def:86400, alt:43200},
-  {id:'hid_fw_channel',          name:'FW_UPDATE_CHANNEL',        type:'text',   hubType:'String',  def:'stable', alt:'beta'},
-];
-function openHiddenRef(){
-  document.getElementById('vpOptsDd').classList.remove('open');
-  document.getElementById('hiddenRefList').innerHTML = HIDDEN_SETTINGS.map(h=>`
-    <div class="href-row">
-      <code class="href-name">${h.name}</code>
-      <span class="type-tag">${h.hubType}</span>
-      <button class="btn btn-ghost href-copy" onclick="copyHiddenName('${h.name}', this)">Copy</button>
-    </div>`).join('');
-  document.getElementById('hiddenRefBackdrop').classList.add('visible');
-}
-function closeHiddenRef(){ document.getElementById('hiddenRefBackdrop').classList.remove('visible'); }
-function copyHiddenName(name, btn){
-  const done = ()=>{ btn.textContent='Copied'; setTimeout(()=>{ btn.textContent='Copy'; }, 1200); };
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(name).then(done, done);
-  } else {
-    const ta=document.createElement('textarea'); ta.value=name; document.body.appendChild(ta);
-    ta.select(); try{document.execCommand('copy')}catch(e){} document.body.removeChild(ta); done();
-  }
-}
-let hiddenPick = null;
-function openCustomSetting(){
-  document.getElementById('cmpPop').classList.remove('open');
-  document.getElementById('custName').value='';
-  hiddenPick = null;
-  renderHiddenMatches();
-  document.getElementById('customBackdrop').classList.add('visible');
-}
-function closeCustomSetting(){ document.getElementById('customBackdrop').classList.remove('visible'); }
-function pickHidden(id){
-  hiddenPick = HIDDEN_SETTINGS.find(h=>h.id===id) || null;
-  if(hiddenPick) document.getElementById('custName').value = hiddenPick.name;
-  renderHiddenMatches();
-}
-function renderHiddenMatches(){
-  const q = document.getElementById('custName').value.trim().toLowerCase();
-  const box = document.getElementById('custMatches');
-  const already = id => SETTINGS.some(s=>s.id===id);
-  if(hiddenPick && hiddenPick.name.toLowerCase()!==q) hiddenPick = null;   // typing again clears the pick
-  const matches = q==='' ? [] : HIDDEN_SETTINGS.filter(h=>h.name.toLowerCase().includes(q));
-  if(q===''){
-    box.innerHTML = `<div class="cust-hint">Type the setting name from firmware to search the database.</div>`;
-  } else if(matches.length===0){
-    box.innerHTML = `<div class="cust-nomatch">No trucks report a setting named &ldquo;${document.getElementById('custName').value.trim()}&rdquo;. Check the firmware name — nothing matching exists in the database.</div>`;
-  } else {
-    box.innerHTML = matches.map(h=>{
-      const loaded = already(h.id);
-      const sel = hiddenPick && hiddenPick.id===h.id;
-      return `<button class="cust-match ${sel?'sel':''}" ${loaded?'disabled':''} onclick="pickHidden('${h.id}')">
-        <span class="cm-name">${h.name}</span>
-        <span class="type-tag">${h.hubType}</span>
-        ${loaded?`<span class="cm-loaded">Already loaded</span>`:''}
-      </button>`;
-    }).join('');
-  }
-  document.getElementById('custAddBtn').disabled = !(hiddenPick && !already(hiddenPick.id));
-}
-function addCustomSetting(){
-  if(!hiddenPick || SETTINGS.some(s=>s.id===hiddenPick.id)) return;
-  const s = {...hiddenPick, sec:'custom', custom:true, hidden:true};
-  SETTINGS.push(s);
-  TRUCKS.forEach(t=>{ state[t.id][s.id] = genEntry(t, s); });
-  if(!compareSettings.includes(s.id)) compareSettings.push(s.id);
-  closeCustomSetting();
-  renderCompare();
-  showToast(`"${s.name}" matched in the database — loaded into the view.`);
-}
-function removeCustomSetting(id){
-  const s = SETTINGS.find(x=>x.id===id);
-  if(!s || !s.custom) return;
-  SETTINGS = SETTINGS.filter(x=>x.id!==id);
-  compareSettings = compareSettings.filter(x=>x!==id);
-  TRUCKS.forEach(t=>{ delete state[t.id][id]; });
-  Object.keys(histCache).forEach(k=>{ if(k.endsWith(':'+id)) delete histCache[k]; });
-  renderCmpPop();
-  renderCompare();
-  showToast(`"${s.name}" removed — one-off setting cleared from this view.`);
-}
-function addCustomSetting_removed(){}
+
+
+
+
+
+
+
+
+
+
+
 
 /* ---- compare view: load specific settings, scan all trucks, fix drift ---- */
 let compareSettings = ['front_discharge'];   // sensible demo default
@@ -1547,13 +1473,12 @@ function renderCmpPop(){
   const q = (document.getElementById('cmpSearch').value||'').toLowerCase();
   const list = document.getElementById('cmpPopList');
   const CHECK = '<svg viewBox="0 0 12 12" fill="none"><path d="M2 6.5 4.8 9 10 3.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  const eligible = SETTINGS.filter(s=>!s.locked && s.functional!==false && (!q || s.name.toLowerCase().includes(q)));
+  const eligible = eligibleSettings(q);
   const renderItems = arr => arr.map(s=>{
     const sel = compareSettings.includes(s.id);
-    const rm = s.custom ? `<span class="cust-rm" onclick="event.stopPropagation();removeCustomSetting('${s.id}')" title="Remove one-off setting">×</span>` : '';
     return `<button class="cmp-pop-item" onclick="toggleCompareSetting('${s.id}')">
       <div class="cb ${sel?'checked':''}">${CHECK}</div>
-      ${s.name}${s.unit?` (${s.unit})`:''}<span class="type-tag">${typeLabel(s)}</span>${rm}
+      ${s.name}${s.unit?` (${s.unit})`:''}<span class="type-tag">${typeLabel(s)}</span>
     </button>`;
   }).join('');
   const items = eligible; // pool for the All Settings checkbox below
@@ -1573,7 +1498,7 @@ function renderCmpPop(){
 }
 function toggleAllCompareSettings(){
   const q = (document.getElementById('cmpSearch').value||'').toLowerCase();
-  const pool = SETTINGS.filter(s=>!s.locked && s.functional!==false && (!q || s.name.toLowerCase().includes(q)));
+  const pool = eligibleSettings(q);
   const allSel = pool.length>0 && pool.every(s=>compareSettings.includes(s.id));
   if(allSel){
     compareSettings = compareSettings.filter(id=>!pool.some(s=>s.id===id));
@@ -1602,15 +1527,57 @@ function cmpSetPageSize(v){ cmpPageSize = parseInt(v,10); cmpPage = 1; renderCom
 function cmpPrev(){ if(cmpPage>1){ cmpPage--; renderCompare(); } }
 function cmpNext(){ cmpPage++; renderCompare(); }
 
-/* logs drawer: full change history for one truck across the loaded settings */
+/* logs drawer: full change history for one truck — loaded settings or every setting */
+let logsTid = null;
+let logsMode = 'loaded';   // 'loaded' = settings picked in the view · 'all' = every setting on the truck
 function openLogs(tid){
-  const t = TRUCKS.find(x=>x.id===tid);
+  logsTid = tid;
+  logsMode = 'loaded';
+  renderLogsDrawer();
+  document.getElementById('logsBackdrop').classList.add('open');
+}
+function setLogsMode(m){ logsMode = m; logsSearch = ''; renderLogsDrawer(); }
+let logsSearch = '';
+function setLogsSearch(v){ logsSearch = v; renderLogsBody(); }
+function clearLogsSearch(){
+  logsSearch = '';
+  const el = document.getElementById('logsSearchInput');
+  if(el) el.value = '';
+  renderLogsBody();
+}
+function renderLogsDrawer(){
+  const t = TRUCKS.find(x=>x.id===logsTid);
   document.getElementById('logsTitle').textContent = `Logs — ${t.name}`;
-  document.getElementById('logsSub').textContent =
-    compareSettings.length===1 ? '1 setting loaded' : `${compareSettings.length} settings loaded`;
-  document.getElementById('logsBody').innerHTML = compareSettings.map(sid=>{
+  if(pageVersion==='v1') logsMode = 'loaded';   // V1: loaded settings only
+  document.getElementById('logsSub').innerHTML = pageVersion==='v1'
+    ? (compareSettings.length===1 ? '1 setting loaded' : `${compareSettings.length} settings loaded`)
+    : `<div class="seg seg-scope" style="margin-top:8px">
+      <button class="${logsMode==='loaded'?'active':''}" onclick="setLogsMode('loaded')">Loaded settings (${compareSettings.length})</button>
+      <button class="${logsMode==='all'?'active':''}" onclick="setLogsMode('all')">All settings (${SETTINGS.filter(s=>!s.locked).length})</button>
+    </div>
+    ${logsMode==='all'?`<div class="logs-csv-row">
+      <div class="search-box" style="flex:1">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6370" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="text" id="logsSearchInput" placeholder="Search settings" oninput="setLogsSearch(this.value)">
+        <button class="clear-x" onclick="clearLogsSearch()">×</button>
+      </div>
+      <button class="btn btn-primary logs-csv-btn">Download CSV</button>
+    </div>`:''}`;
+  renderLogsBody();
+}
+function renderLogsBody(){
+  const q = logsSearch.trim().toLowerCase();
+  let sids = logsMode==='loaded'
+    ? compareSettings
+    : SETTINGS.filter(s=>!s.locked).map(s=>s.id);
+  if(logsMode==='all' && q){
+    sids = sids.filter(sid=>SETTINGS.find(x=>x.id===sid).name.toLowerCase().includes(q));
+  }
+  document.getElementById('logsBody').innerHTML = sids.length===0
+    ? `<div class="cmp-nofilter" style="margin-top:6px">No setting matches &ldquo;${logsSearch.trim()}&rdquo;.<button onclick="clearLogsSearch()">Clear search</button></div>`
+    : sids.map(sid=>{
     const s = SETTINGS.find(x=>x.id===sid);
-    const hist = getHistory(tid, sid);
+    const hist = getHistory(logsTid, sid);
     return `<div class="dr-sec-label">${s.name}${s.unit?` (${s.unit})`:''}</div>
       ${hist.length===0
         ? `<div style="color:var(--faint);font-size:12.5px;padding:2px 0 10px">No history — this setting has never reported a value for this truck.</div>`
@@ -1623,13 +1590,43 @@ function openLogs(tid){
               <td style="width:70px;text-align:right">${i===0?'<span class="hist-current">Current</span>':''}</td>
             </tr>`).join('')}</table>`}`;
   }).join('');
-  document.getElementById('logsBackdrop').classList.add('open');
 }
 function closeLogs(){
   const b = document.getElementById('logsBackdrop');
   if(b) b.classList.remove('open');
 }
 
+let cmpColFilter = '';
+let pageVersion = 'v2';   // v1 = no column filter, no Advanced Settings group · v2 = full build
+function setPageVersion(v){
+  pageVersion = v;
+  document.getElementById('verP1').classList.toggle('active', v==='v1');
+  document.getElementById('verP2').classList.toggle('active', v==='v2');
+  document.getElementById('vpOptsDd').classList.remove('open');
+  if(v==='v1'){
+    // advanced settings don't exist in V1 — unload any that are on screen
+    compareSettings = compareSettings.filter(sid=>{
+      const s = SETTINGS.find(x=>x.id===sid);
+      return s && s.tier!=='advanced';
+    });
+    clearColFilter();
+  }
+  renderCmpPop();
+  renderCompare();
+  if(document.getElementById('logsBackdrop').classList.contains('open')) renderLogsDrawer();
+}
+function eligibleSettings(q){
+  return SETTINGS.filter(s=>!s.locked && s.functional!==false
+    && (pageVersion==='v2' || s.tier!=='advanced')
+    && (!q || s.name.toLowerCase().includes(q)));
+}
+function setColFilter(v){ cmpColFilter = v; renderCompare(); }
+function clearColFilter(){
+  cmpColFilter = '';
+  const el = document.getElementById('cmpColFilter');
+  if(el) el.value = '';
+  renderCompare();
+}
 function renderCompare(){
   // Settings field reflects the current multi-selection
   const ft = document.getElementById('cmpFieldText');
@@ -1644,6 +1641,14 @@ function renderCompare(){
     ft.className = 'cmp-field-text';
   }
 
+  // column filter: only shown once settings are loaded; narrows displayed columns without unloading
+  const fw = document.getElementById('cmpColFilterWrap');
+  fw.style.display = (pageVersion==='v2' && compareSettings.length>1) ? '' : 'none';
+  const q = cmpColFilter.trim().toLowerCase();
+  const visibleSids = q
+    ? compareSettings.filter(sid=>SETTINGS.find(x=>x.id===sid).name.toLowerCase().includes(q))
+    : compareSettings;
+
   const box = document.getElementById('compareTable');
   if(selected.size===0){
     box.innerHTML = `<div class="cmp-hint">Select trucks on the left (or a whole contract) to load them into the comparison.</div>`;
@@ -1653,8 +1658,12 @@ function renderCompare(){
     box.innerHTML = `<div class="cmp-hint">Add one or more settings above to compare them across the ${selected.size} selected trucks.</div>`;
     return;
   }
+  if(visibleSids.length===0){
+    box.innerHTML = `<div class="cmp-nofilter">No loaded setting matches &ldquo;${cmpColFilter.trim()}&rdquo;.<button onclick="clearColFilter()">Clear filter</button>to show all ${compareSettings.length} settings.</div>`;
+    return;
+  }
 
-  const cols = compareSettings.map(sid=>{
+  const cols = visibleSids.map(sid=>{
     const s = SETTINGS.find(x=>x.id===sid);
     const r = rollup(s);
     let majKey = null, split = false;
@@ -1709,7 +1718,14 @@ function renderCompare(){
     return `<tr><td class="truck-col">${truckName(tid)}</td>${cells}<td class="logs-col"><button class="logs-btn" onclick="openLogs('${tid}')">Logs</button></td></tr>`;
   }).join('');
 
-  box.innerHTML = `<div class="cmp-table-wrap"><table class="cmp">${header}<tbody>${rows}</tbody></table></div>
+  const CSV_NUDGE_AT = 15;   // demo threshold; production value TBD
+  const nudge = (pageVersion==='v2' && cols.length >= CSV_NUDGE_AT)
+    ? `<div class="cmp-nudge">
+        <span>Comparing <b>${cols.length}</b> settings across ${sorted.length} trucks — for best results, download a CSV.</span>
+        <button class="btn btn-primary cmp-nudge-btn">Download CSV</button>
+      </div>`
+    : '';
+  box.innerHTML = nudge + `<div class="cmp-table-wrap"><table class="cmp">${header}<tbody>${rows}</tbody></table></div>
     <div class="cmp-pager">
       <span class="sort-note">Mismatched trucks first</span>
       <span>Items per page:
@@ -1724,17 +1740,7 @@ function renderCompare(){
 }
 
 /* ---- update from Compare (drift-only or all selected) ---- */
-let modalVersion = 'v2';   // 'v1' = Type dropdown + typed value (current HUB) · 'v2' = predefined input per setting type
-function setModalVersion(v){
-  modalVersion = v;
-  document.getElementById('verV1').classList.toggle('active', v==='v1');
-  document.getElementById('verV2').classList.toggle('active', v==='v2');
-  document.getElementById('vpOptsDd').classList.remove('open');
-  // hidden-setting lookup is a V1-only workflow (raw Type & typed value world)
-  document.getElementById('cmpPopAdd').style.display = v==='v1' ? '' : 'none';
-  if(v!=='v1') closeCustomSetting();
-  if(fix) renderFixModal();
-}
+
 function setFixValue(v){ if(fix){ fix.value = v; renderFixModal(); } }
 function buildFixControlV2(s){
   if(s.type==='toggle'){
@@ -1754,51 +1760,23 @@ function buildFixControlV2(s){
   return `<input class="num-input" type="number" step="any" value="${fix.value}" oninput="if(fix){fix.value=this.value===''?'':parseFloat(this.value);refreshFixImpact()}">`;
 }
 function fixParsed(){
-  if(modalVersion==='v1') return parseFixValue();
   const v = fix.value;
   const ok = v!=='' && v!==null && v!==undefined && !(typeof v==='number'&&isNaN(v));
   return ok ? {ok:true, value:v} : {ok:false, err:'Enter a target value.'};
 }
-const FIX_TYPES = ['Float','Integer','String','Boolean','Long'];
-function inferFixType(s){
-  if(s.hubType) return s.hubType;
-  if(s.type==='toggle') return 'Boolean';
-  if(s.type==='select') return 'String';
-  const nums = [s.def, s.alt].filter(v=>typeof v==='number');
-  return nums.every(Number.isInteger) ? 'Integer' : 'Float';
-}
+
 function openFix(sid){
   const s = SETTINGS.find(x=>x.id===sid);
   const r = rollup(s);
   const maj = r.groups[0] ? r.groups[0].value : s.def;
-  fix = {sid, raw:'', type: inferFixType(s), value: maj, scope:'custom', custom: new Set(fixDiffTidsFor(sid, maj))};
+  fix = {sid, value: maj, scope:'custom', custom: new Set(fixDiffTidsFor(sid, maj))};
   renderFixModal();
   document.getElementById('fixBackdrop').classList.add('visible');
 }
 function closeFix(){ fix=null; document.getElementById('fixBackdrop').classList.remove('visible'); }
-function setFixType(t){ if(fix){ fix.type = t; refreshFixImpact(); } }
-function setFixRaw(v){ if(fix){ fix.raw = v; refreshFixImpact(); } }
-function parseFixValue(){
-  const raw = (fix.raw||'').trim();
-  if(raw==='') return {ok:false, err:'Enter a value.'};
-  if(fix.type==='Boolean'){
-    if(/^(true|on|1|yes)$/i.test(raw)) return {ok:true, value:true};
-    if(/^(false|off|0|no)$/i.test(raw)) return {ok:true, value:false};
-    return {ok:false, err:'Boolean expects true/false (or on/off).'};
-  }
-  if(fix.type==='Integer' || fix.type==='Long'){
-    const n = Number(raw);
-    if(isNaN(n)) return {ok:false, err:fix.type+' expects a number.'};
-    if(!Number.isInteger(n)) return {ok:false, err:fix.type+' expects a whole number.'};
-    return {ok:true, value:n};
-  }
-  if(fix.type==='Float'){
-    const n = Number(raw);
-    if(isNaN(n)) return {ok:false, err:'Float expects a number.'};
-    return {ok:true, value:n};
-  }
-  return {ok:true, value:raw}; // String
-}
+
+
+
 function fmtParsed(s, v){
   if(typeof v==='boolean') return v?'On':'Off';
   if(typeof v==='number') return v + (s.unit?' '+s.unit:'');
@@ -1861,19 +1839,8 @@ function renderFixModal(){
   document.getElementById('fixTitle').textContent = `Update — ${s.name}`;
   document.getElementById('fixSub').innerHTML =
     `Push a value to the selected trucks. Each updated truck shows <b style="color:var(--text)">Pending</b> until it reports the new value back.`;
-  const valueRows = modalVersion==='v1'
-    ? `<div style="display:flex;align-items:center;gap:12px">
-        <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text);font-weight:700;min-width:70px">Type</label>
-        <select class="sel-input" onchange="setFixType(this.value)">
-          ${FIX_TYPES.map(t=>`<option value="${t}" ${fix.type===t?'selected':''}>${t}</option>`).join('')}
-        </select>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px">
-        <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text);font-weight:700;min-width:70px">Value</label>
-        <input class="num-input" type="text" style="width:220px" value="${(fix.raw||'').replace(/"/g,'&quot;')}" placeholder="Enter value${s.unit?' ('+s.unit+')':''}"
-          oninput="setFixRaw(this.value)">
-      </div>`
-    : `<div style="display:flex;align-items:center;gap:12px">
+  const valueRows =
+    `<div style="display:flex;align-items:center;gap:12px">
         <label style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text);font-weight:700;min-width:70px">New value</label>
         ${buildFixControlV2(s)}
       </div>`;

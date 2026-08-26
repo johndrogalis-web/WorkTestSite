@@ -1610,12 +1610,7 @@ function setPageVersion(v){
     history.replaceState(null, '', url);
   }catch(e){}
   if(v==='v1'){
-    // advanced settings don't exist in V1 — unload any that are on screen
-    compareSettings = compareSettings.filter(sid=>{
-      const s = SETTINGS.find(x=>x.id===sid);
-      return s && s.tier!=='advanced';
-    });
-    clearColFilter();
+    clearColFilter();   // V1 has no column filter — show all loaded columns
   }
   renderCmpPop();
   renderCompare();
@@ -1623,7 +1618,6 @@ function setPageVersion(v){
 }
 function eligibleSettings(q){
   return SETTINGS.filter(s=>!s.locked && s.functional!==false
-    && (pageVersion==='v2' || s.tier!=='advanced')
     && (!q || s.name.toLowerCase().includes(q)));
 }
 function setColFilter(v){ cmpColFilter = v; renderCompare(); }
@@ -1725,7 +1719,7 @@ function renderCompare(){
   }).join('');
 
   const CSV_NUDGE_AT = 15;   // demo threshold; production value TBD
-  const nudge = (pageVersion==='v2' && cols.length >= CSV_NUDGE_AT)
+  const nudge = (cols.length >= CSV_NUDGE_AT)
     ? `<div class="cmp-nudge">
         <span>Comparing <b>${cols.length}</b> settings across ${sorted.length} trucks — for best results, download a CSV.</span>
         <button class="btn btn-primary cmp-nudge-btn">Download CSV</button>

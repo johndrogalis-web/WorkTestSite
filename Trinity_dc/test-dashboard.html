@@ -253,7 +253,9 @@ function groupByWf(ses, proto){
   }).sort(function(a,b){ return b.ses.length-a.ses.length; });
 }
 
+var __frictionWfId = '';
 function renderFriction(ses, wfId){
+  __frictionWfId = wfId || '';
   var host = document.getElementById('chart-friction');
   if(!wfId){ host.innerHTML='<div class="empty">Select one workflow in the filter above</div>'; return; }
   var agg={};
@@ -294,7 +296,8 @@ function renderFriction(ses, wfId){
         if(g.loc){
           var href='./?ping='+encodeURIComponent(g.loc.cid)+','+g.loc.x+','+g.loc.y+
             '&pv='+encodeURIComponent(g.loc.view||'')+'&po='+encodeURIComponent(g.loc.po||'')+
-            '&pt='+encodeURIComponent(g.loc.text.slice(0,40));
+            '&pt='+encodeURIComponent(g.loc.text.slice(0,40))+
+            '&wf='+encodeURIComponent(__frictionWfId)+'&st='+i;   /* lets the prototype replay the path there */
           link='<a class="mlink" href="'+href+'" target="_blank">see location \u2197</a>';
         }
         return '<div class="m"><b>\u00D7'+g.count+'</b><span>clicked \u201C'+esc(parts[0])+'\u201D</span>'+

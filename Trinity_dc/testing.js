@@ -264,33 +264,54 @@ function tstCopyLink(idOrAll, btn) {
     .catch(function () { prompt('Copy this link:', text); });
 }
 
-/* ── Validate — flags workflows broken by code changes ── */
+/* ── Validate — verifies what it can, and is honest about the rest.
+   A static check can PROVE a step is findable but can never prove it's
+   broken: checkpoints inside drawers, menus, and sheets legitimately
+   don't exist on a fresh page. So each step is tried three ways —
+   element id, then text within its recorded container, then text
+   anywhere in the document — and whatever still isn't found is
+   reported as "unverified", never "broken". Click the badge to see
+   exactly which steps to eyeball by hand. ── */
+function tstVerifyStep(cp) {
+  if (cp.eid && document.getElementById(cp.eid)) return true;
+  var scopes = [];
+  var container = document.getElementById(cp.cid) || (cp.cid === 'phone' ? document.querySelector('.phone') : null);
+  if (container) scopes.push(container);
+  scopes.push(document);
+  if (!cp.text && !cp.ntext) return false;
+  for (var s = 0; s < scopes.length; s++) {
+    var cands = scopes[s].querySelectorAll('button, a, [onclick], [id]');
+    for (var k = 0; k < cands.length; k++) {
+      var t = tstNorm(cands[k].textContent);
+      if (t && (t === cp.text || tstDigitless(t) === cp.ntext)) return true;
+    }
+  }
+  return false;
+}
+
 function tstValidateAll() {
   tstState.workflows.forEach(function (wf) {
     if (wf.status !== 'active') return;
     var badge = document.getElementById('tst-val-' + wf.id);
     if (!badge) return;
     var steps = tstWfSteps(wf);
-    var broken = -1, unverifiable = 0;
-    for (var i = 0; i < steps.length; i++) {
-      var cp = steps[i];
-      if (cp.eid) {
-        if (!document.getElementById(cp.eid)) { broken = i + 1; break; }
-        continue;
-      }
-      var container = document.getElementById(cp.cid) || (cp.cid === 'phone' ? document.querySelector('.phone') : null);
-      if (!container) { broken = i + 1; break; }
-      var found = false;
-      var candidates = container.querySelectorAll('button, a, [onclick]');
-      for (var k = 0; k < candidates.length; k++) {
-        var t = tstNorm(candidates[k].textContent);
-        if (t === cp.text || tstDigitless(t) === cp.ntext) { found = true; break; }
-      }
-      if (!found) unverifiable++;   /* may live in runtime-rendered UI — advisory only */
+    var unverified = [];
+    steps.forEach(function (cp, i) {
+      if (!tstVerifyStep(cp)) unverified.push((i + 1) + '. ' + (cp.text || cp.eid || 'step'));
+    });
+    if (!unverified.length) {
+      badge.className = 'tst-badge tst-badge-ok';
+      badge.textContent = 'all ' + steps.length + ' steps verified';
+      badge.onclick = null;
+    } else {
+      badge.className = 'tst-badge tst-badge-warn';
+      badge.textContent = (steps.length - unverified.length) + '/' + steps.length + ' verified \u00B7 details';
+      badge.style.cursor = 'pointer';
+      badge.title = 'Unverified steps (likely inside a drawer or menu \u2014 walk the flow to confirm):\n' + unverified.join('\n');
+      badge.onclick = function () {
+        alert('Unverified steps in \u201C' + wf.name + '\u201D \u2014 these usually live inside drawers or menus that are closed right now. Walk the flow once to confirm they still work:\n\n' + unverified.join('\n'));
+      };
     }
-    if (broken !== -1) { badge.className = 'tst-badge tst-badge-bad'; badge.textContent = 'broken at step ' + broken; }
-    else if (unverifiable) { badge.className = 'tst-badge tst-badge-warn'; badge.textContent = unverifiable + ' unverifiable'; }
-    else { badge.className = 'tst-badge tst-badge-ok'; badge.textContent = 'ok'; }
   });
 }
 
@@ -691,7 +712,59 @@ function tstToast(text) {
   document.body.appendChild(t);
 }
 
-function tstPing(spec, view, orient, label) {
+/* Find the live, VISIBLE element a checkpoint points at. Visibility
+   matters: mobile and tablet surfaces coexist in the DOM with the same
+   button text, and we must click the one that's actually on screen. */
+function tstResolveStep(cp) {
+  function vis(el) { var r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; }
+  if (cp.eid) {
+    var e = document.getElementById(cp.eid);
+    if (e && vis(e)) return e;
+  }
+  var scopes = [];
+  var c = document.getElementById(cp.cid) || (cp.cid === 'phone' ? document.querySelector('.phone') : null);
+  if (c) scopes.push(c);
+  scopes.push(document);
+  if (!cp.text && !cp.ntext) return null;
+  for (var s = 0; s < scopes.length; s++) {
+    var cands = scopes[s].querySelectorAll('button, a, [onclick], [id]');
+    for (var k = 0; k < cands.length; k++) {
+      if (!vis(cands[k])) continue;
+      var t = tstNorm(cands[k].textContent);
+      if (t && (t === cp.text || tstDigitless(t) === cp.ntext)) return cands[k];
+    }
+  }
+  return null;
+}
+
+/* Replay the tester's completed steps to drive the UI into the state
+   where the misclick happened — the recorded workflow doubles as the
+   navigation script that opens the right drawers and menus. */
+function tstReplayPath(wfId, uptoStep, done) {
+  tstGet('?action=list&prototype=' + encodeURIComponent(TST_PROTOTYPE) + '&all=1', function (res) {
+    var wf = ((res.ok && res.workflows) || []).find(function (w) { return w.id === wfId; });
+    if (!wf) { done(); return; }
+    var steps = tstWfSteps(wf).slice(0, uptoStep);
+    if (!steps.length) { done(); return; }
+    var i = 0;
+    (function next() {
+      if (i >= steps.length) { tstToast(null); done(); return; }
+      var el = tstResolveStep(steps[i]);
+      if (!el) {
+        tstToast('Replayed ' + i + ' of ' + steps.length + ' steps \u2014 couldn\u2019t find \u201C' +
+          (steps[i].text || steps[i].eid) + '\u201D, finish the path by hand and the ping will appear.');
+        done();
+        return;
+      }
+      tstToast('Replaying the tester\u2019s path \u2014 step ' + (i + 1) + ' of ' + steps.length + '\u2026');
+      el.click();
+      i++;
+      setTimeout(next, 750);   /* let menus, sheets, and drawers animate in */
+    })();
+  });
+}
+
+function tstPing(spec, view, orient, label, wfId, uptoStep) {
   var parts = spec.split(',');
   var cid = parts[0], x = parseFloat(parts[1]) || 0, y = parseFloat(parts[2]) || 0;
 
@@ -699,6 +772,15 @@ function tstPing(spec, view, orient, label) {
     if (view && typeof setView === 'function') setView(view);
     if (view && view !== 'desktop' && orient && typeof setOrientation === 'function') setOrientation(view, orient);
   } catch (e) {}
+
+  if (wfId && uptoStep > 0) {
+    setTimeout(function () {
+      tstReplayPath(wfId, uptoStep, function () {
+        tstPing(spec, '', '', label, null, 0);   /* path walked — now find and pulse */
+      });
+    }, 700);   /* after the view switch settles */
+    return;
+  }
 
   var tries = 0;
   var timer = setInterval(function () {
@@ -736,7 +818,9 @@ function tstBoot() {
   var ping = url.searchParams.get('ping');
   if (ping) {
     setTimeout(function () {
-      tstPing(ping, url.searchParams.get('pv') || '', url.searchParams.get('po') || '', url.searchParams.get('pt') || '');
+      tstPing(ping, url.searchParams.get('pv') || '', url.searchParams.get('po') || '',
+        url.searchParams.get('pt') || '', url.searchParams.get('wf') || null,
+        parseInt(url.searchParams.get('st') || '0', 10) || 0);
     }, 400);   /* let the app's own boot finish first */
   }
   var t = url.searchParams.get('test');

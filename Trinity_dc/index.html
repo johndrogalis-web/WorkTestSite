@@ -27,9 +27,61 @@
        the user is already on the right view. -->
   <div class="vp-right-cluster">
     <div class="vp-pills vp-viewport-pills">
-      <button class="vp-pill" onclick="setView('mobile')">Mobile</button>
-      <button class="vp-pill" onclick="setView('tablet')">Tablet</button>
-      <button class="vp-pill active" onclick="setView('desktop')">Desktop</button>
+      <!-- Mobile — split pill: label switches view, caret opens orientation menu -->
+      <div class="vp-pill-group" id="vp-group-mobile">
+        <button class="vp-pill" onclick="setView('mobile')">Mobile</button>
+        <button class="vp-pill-caret" onclick="vpOrientToggle(event,'mobile')" title="Orientation" aria-haspopup="menu">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="vp-orient-dd" id="vp-orient-dd-mobile">
+          <div class="vp-opts-section-label">Mobile orientation</div>
+          <div class="vp-opts-row" id="vp-orient-mobile-portrait" onclick="setOrientation('mobile','portrait')">
+            <svg class="vp-opts-check" id="vp-orient-check-mobile-portrait" width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg class="vp-orient-ico" width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="3.5" y="1.5" width="7" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/></svg>
+            <span>Portrait</span>
+          </div>
+          <div class="vp-opts-row" id="vp-orient-mobile-landscape" onclick="setOrientation('mobile','landscape')">
+            <svg class="vp-opts-check" id="vp-orient-check-mobile-landscape" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg class="vp-orient-ico" width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="3.5" width="11" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/></svg>
+            <span>Landscape</span>
+          </div>
+        </div>
+      </div>
+      <!-- Tablet — same split pill -->
+      <div class="vp-pill-group" id="vp-group-tablet">
+        <button class="vp-pill" onclick="setView('tablet')">Tablet</button>
+        <button class="vp-pill-caret" onclick="vpOrientToggle(event,'tablet')" title="Orientation" aria-haspopup="menu">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="vp-orient-dd" id="vp-orient-dd-tablet">
+          <div class="vp-opts-section-label">Tablet orientation</div>
+          <div class="vp-opts-row" id="vp-orient-tablet-portrait" onclick="setOrientation('tablet','portrait')">
+            <svg class="vp-opts-check" id="vp-orient-check-tablet-portrait" width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg class="vp-orient-ico" width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="3" y="1.5" width="8" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/></svg>
+            <span>Portrait</span>
+          </div>
+          <div class="vp-opts-row" id="vp-orient-tablet-landscape" onclick="setOrientation('tablet','landscape')">
+            <svg class="vp-opts-check" id="vp-orient-check-tablet-landscape" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg class="vp-orient-ico" width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="3" width="11" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/></svg>
+            <span>Landscape</span>
+          </div>
+          <div class="vp-orient-hint">Keyboard-dock users are usually landscape</div>
+        </div>
+      </div>
+      <div class="vp-pill-group active" id="vp-group-desktop">
+        <button class="vp-pill active" onclick="setView('desktop')">Desktop</button>
+      </div>
+    </div>
+
+    <!-- Comment pins — drop-mode toggle + show/hide (comments.js) -->
+    <div class="cmt-wrap" id="cmt-wrap">
+      <button class="vp-opts-btn cmt-btn" id="cmt-btn" onclick="cmtToggleMode()" title="Drop a comment">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M12.5 6.6c0 3-2.5 5.4-5.5 5.4-.6 0-1.2-.1-1.8-.3L1.5 12.7l1-3.1A5.3 5.3 0 0 1 1.5 6.6c0-3 2.5-5.4 5.5-5.4s5.5 2.4 5.5 5.4z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        <span style="font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:-0.24px;">Comment</span>
+      </button>
+      <button class="vp-opts-btn" id="cmt-eye" onclick="cmtToggleVisible()" title="Show / hide comments">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1.5 8s2.4-4.5 6.5-4.5S14.5 8 14.5 8 12.1 12.5 8 12.5 1.5 8 1.5 8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3"/></svg>
+      </button>
     </div>
 
     <!-- Options button — opens a dropdown for role + version.
@@ -1612,45 +1664,39 @@
           </div>
         </div>
 
-        <!-- Tab switcher pill (Figma pattern: dropdown pill that switches views) -->
-        <div style="flex-shrink:0;padding:16px 24px 0;display:flex;align-items:center;gap:8px;">
-          <div style="position:relative;" id="tb-swu-pill-wrap">
-            <button id="tb-swu-pill-btn" onclick="tbSwuPillToggle()"
-              style="display:flex;align-items:center;gap:8px;height:40px;padding:0 16px;border:1px solid var(--border-mid);border-radius:32px;background:var(--layer-1);font-family:var(--font);font-size:14px;font-weight:500;color:var(--strong);letter-spacing:-0.28px;cursor:pointer;white-space:nowrap;">
-              <span id="tb-swu-pill-label">Software Updates</span>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-            </button>
-            <div id="tb-swu-pill-menu" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:var(--layer-1);border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.10);z-index:200;min-width:180px;overflow:hidden;">
-              <div onclick="tbSwuSetTab('updates')" style="padding:10px 16px;font-family:var(--font);font-size:14px;color:var(--strong);letter-spacing:-0.28px;cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.05)'" onmouseleave="this.style.background=''">Software Updates</div>
-              <div onclick="tbSwuSetTab('status')"  style="padding:10px 16px;font-family:var(--font);font-size:14px;color:var(--strong);letter-spacing:-0.28px;cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.05)'" onmouseleave="this.style.background=''">Software Status</div>
-            </div>
+        <!-- Tab strip — underline tabs, mirrors the desktop .swu-subtabs pattern.
+             Scrolls sideways when tabs overflow; the mask fade on the right edge
+             is the "there's more" cue. -->
+        <div class="swu-sm-tabstrip-wrap" style="flex-shrink:0;padding:8px 24px 0;">
+          <div class="swu-sm-tabstrip" id="tb-swu-tabstrip">
+            <div class="swu-sm-tab active" data-tab="updates" onclick="tbSwuSetTab('updates')">Software Updates</div>
+            <div class="swu-sm-tab" data-tab="advanced" onclick="asSmShow('tb')">Advanced Settings</div>
+            <div class="swu-sm-tab" data-tab="status" onclick="tbSwuSetTab('status')">Software Status</div>
           </div>
         </div>
 
         <!-- Scrollable page body -->
-        <div style="flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 24px 32px;" id="tb-swu-scroll">
+        <div style="flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 24px 32px;" id="tb-swu-scroll">
 
           <!-- ── Updates tab ─────────────────────────────── -->
-          <div id="tb-swu-tab-updates" style="display:flex;flex-direction:column;gap:16px;">
+          <div id="tb-swu-tab-updates" style="display:flex;flex-direction:column;gap:12px;">
 
-            <!-- Update Software widget -->
-            <div style="background:var(--layer-1);border:1px solid var(--border);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px;">
-              <div>
-                <div style="font-family:var(--font);font-size:15px;font-weight:500;color:var(--strong);letter-spacing:-0.3px;">Update Software</div>
-                <div style="font-family:var(--font);font-size:12px;color:var(--soft);letter-spacing:-0.24px;margin-top:2px;">Pick the trucks and release version, then commit.</div>
-              </div>
+            <!-- Toolbar — mirrors .as-sm-toolbar so Updates matches Advanced Settings -->
+            <div class="swu-sm-toolbar">
 
-              <!-- Trucks multi-select dropdown -->
-              <div style="display:flex;flex-direction:column;gap:6px;">
-                <div style="font-family:var(--font);font-size:12px;font-weight:500;color:var(--strong);letter-spacing:-0.24px;">Trucks</div>
-                <div style="position:relative;" id="tb-swu-trucks-wrap">
-                  <button type="button" onclick="tbSwuTrucksToggle()"
-                    style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--layer-1);border:1px solid var(--border);border-radius:10px;font-family:var(--font);font-size:13px;color:var(--soft);letter-spacing:-0.26px;cursor:pointer;text-align:left;">
-                    <span id="tb-swu-trucks-label">Select trucks</span>
+              <!-- Trucks multi-select pill -->
+                <div class="swu-sm-pillwrap" id="tb-swu-trucks-wrap">
+                  <button type="button" class="swu-sm-pill" onclick="tbSwuTrucksToggle()">
+                    <span id="tb-swu-trucks-label" style="color:var(--soft);">Select trucks</span>
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
                   </button>
                   <!-- Truck multi-select panel -->
-                  <div id="tb-swu-trucks-menu" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--layer-1);border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.10);z-index:300;max-height:260px;overflow-y:auto;">
+                  <div id="tb-swu-trucks-menu" class="swu-sm-menu" style="display:none;max-height:300px;flex-direction:column;">
+                    <!-- Search — mirrors the desktop rail search -->
+                    <div class="swu-sm-menu-search">
+                      <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.4" stroke="currentColor" stroke-width="1.4"/><path d="M9.4 9.4L12.5 12.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                      <input id="tb-swu-trucks-search" placeholder="Truck number" oninput="tbSwuTrucksSearch(this.value)" onclick="event.stopPropagation()">
+                    </div>
                     <!-- Bulk select bar -->
                     <div onclick="tbSwuTrucksSelectAll()" id="tb-swu-trucks-all-row"
                       style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border);cursor:pointer;"
@@ -1663,54 +1709,38 @@
                     <div id="tb-swu-trucks-list"></div>
                     <!-- Done button -->
                     <div style="padding:10px 12px;border-top:1px solid var(--border);">
-                      <button onclick="tbSwuTrucksClose()" style="width:100%;padding:9px;background:var(--blue);color:white;border:none;border-radius:32px;font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;letter-spacing:-0.26px;">Done</button>
+                      <button onclick="tbSwuTrucksClose()" style="width:100%;padding:9px;background:var(--strong);color:var(--base);border:none;border-radius:32px;font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;letter-spacing:-0.26px;">Done</button>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <!-- Release version dropdown -->
-              <div style="display:flex;flex-direction:column;gap:6px;">
-                <div style="font-family:var(--font);font-size:12px;font-weight:500;color:var(--strong);letter-spacing:-0.24px;">Release version</div>
-                <div style="position:relative;" id="tb-swu-ver-wrap">
-                  <button type="button" onclick="tbSwuDdToggle('ver')"
-                    style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--layer-1);border:1px solid var(--border);border-radius:10px;font-family:var(--font);font-size:13px;color:var(--soft);letter-spacing:-0.26px;cursor:pointer;text-align:left;">
-                    <span id="tb-swu-ver-label" data-placeholder="Choose your Package">Choose your Package</span>
+              <!-- Package pill — release version + commit timing together -->
+                <div class="swu-sm-pillwrap" id="tb-swu-package-wrap">
+                  <button type="button" class="swu-sm-pill" onclick="tbSwuPackageToggle()">
+                    <span id="tb-swu-package-label" style="color:var(--soft);">Choose your Package</span>
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
                   </button>
-                  <div id="tb-swu-ver-menu" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--layer-1);border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.10);z-index:300;overflow:hidden;">
+                  <div id="tb-swu-package-menu" class="swu-sm-menu" style="display:none;flex-direction:column;">
+                    <div class="swu-sm-menu-sec">Release version</div>
                     <div onclick="tbSwuDdSelect('ver','v5.0.1')" style="padding:10px 14px;font-family:var(--font);font-size:14px;color:var(--strong);cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.05)'" onmouseleave="this.style.background=''">v5.0.1</div>
                     <div onclick="tbSwuDdSelect('ver','v5.0.0')" style="padding:10px 14px;font-family:var(--font);font-size:14px;color:var(--strong);cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.05)'" onmouseleave="this.style.background=''">v5.0.0</div>
                     <div onclick="tbSwuDdSelect('ver','v4.9.8')" style="padding:10px 14px;font-family:var(--font);font-size:14px;color:var(--strong);cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.05)'" onmouseleave="this.style.background=''">v4.9.8</div>
                     <div onclick="tbSwuDdSelect('ver','v4.9.7')" style="padding:10px 14px;font-family:var(--font);font-size:14px;color:var(--strong);cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.05)'" onmouseleave="this.style.background=''">v4.9.7</div>
+                    <div class="swu-sm-menu-sec">Commit timing</div>
+                    <div onclick="tbSwuDdSelect('commit','On Next Startup')" id="tb-swu-commit-opt-startup" style="padding:10px 14px;font-family:var(--font);font-size:14px;color:var(--strong);cursor:pointer;background:rgba(54,50,45,0.04);" onmouseenter="this.style.background='rgba(54,50,45,0.08)'" onmouseleave="this.style.background='rgba(54,50,45,0.04)'">On Next Startup</div>
+                    <div onclick="tbSwuDdSelect('commit','Now')" id="tb-swu-commit-opt-now" style="padding:10px 14px;font-family:var(--font);font-size:14px;color:var(--strong);cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.05)'" onmouseleave="this.style.background=''">Now</div>
                   </div>
                 </div>
-              </div>
 
-              <!-- Commit timing dropdown -->
-              <div style="display:flex;flex-direction:column;gap:6px;">
-                <div style="font-family:var(--font);font-size:12px;font-weight:500;color:var(--strong);letter-spacing:-0.24px;">Commit timing</div>
-                <div style="position:relative;" id="tb-swu-commit-wrap">
-                  <button type="button" onclick="tbSwuDdToggle('commit')"
-                    style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--layer-1);border:1px solid var(--border);border-radius:10px;font-family:var(--font);font-size:13px;color:var(--strong);letter-spacing:-0.26px;cursor:pointer;text-align:left;">
-                    <span id="tb-swu-commit-label" data-placeholder="Select timing">On Next Startup</span>
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-                  </button>
-                  <div id="tb-swu-commit-menu" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--layer-1);border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.10);z-index:300;overflow:hidden;">
-                    <div onclick="tbSwuDdSelect('commit','On Next Startup')" style="padding:10px 14px;font-family:var(--font);font-size:14px;color:var(--strong);cursor:pointer;background:rgba(54,50,45,0.04);" onmouseenter="this.style.background='rgba(54,50,45,0.08)'" onmouseleave="this.style.background='rgba(54,50,45,0.04)'">On Next Startup</div>
-                    <div onclick="tbSwuDdSelect('commit','Now')" style="padding:10px 14px;font-family:var(--font);font-size:14px;color:var(--strong);cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.05)'" onmouseleave="this.style.background=''">Now</div>
-                  </div>
-                </div>
-              </div>
+              <div class="swu-sm-spacer"></div>
+            </div><!-- /swu-sm-toolbar -->
 
-              <!-- Send button -->
-              <button id="tb-swu-send-btn" onclick="tbSwuSend()"
-                style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 18px;background:#3069e3;color:white;border:none;border-radius:32px;font-family:var(--font);font-size:14px;font-weight:500;letter-spacing:-0.28px;cursor:pointer;opacity:0.4;pointer-events:none;">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l10-5-3 12-2.5-4.5L2 7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-                Send Updates
-              </button>
-              <div id="tb-swu-send-meta" style="font-family:var(--font);font-size:12px;color:var(--soft);letter-spacing:-0.24px;text-align:center;">No trucks selected</div>
-            </div>
+            <!-- Send — pulled out of the pill row into its own full-width commit action -->
+            <button id="tb-swu-send-btn" class="swu-sm-send-full" onclick="tbSwuSend()" style="opacity:0.4;pointer-events:none;">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l10-5-3 12-2.5-4.5L2 7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+              Send Updates
+            </button>
+            <div id="tb-swu-send-meta" class="swu-sm-meta">No trucks selected</div>
 
             <!-- Package Overview widget -->
             <div style="background:var(--layer-1);border:1px solid var(--border);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px;">
@@ -1760,7 +1790,7 @@
                 <div id="tb-swu-status-meta" style="font-family:var(--font);font-size:12px;color:var(--soft);letter-spacing:-0.24px;flex-shrink:0;margin-top:3px;"></div>
               </div>
               <!-- Horizontally scrollable status table -->
-              <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+              <div class="swu-hscroll" style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
                 <table id="tb-swu-status-table" style="width:100%;border-collapse:collapse;min-width:520px;">
                   <thead id="tb-swu-status-thead">
                     <tr></tr>
@@ -3401,36 +3431,37 @@
 
             <!-- ─────────── Updates tab body ─────────── -->
             <div id="swu-tab-updates-body">
-            <!-- 3-column body -->
+            <!-- Rail + main body — mirrors Advanced Settings (.as-body) -->
             <div class="swu-body">
 
-              <!-- Left: truck card stack -->
-              <div class="swu-left">
-                <!-- Bulk-select bar — Gmail-style, sits above the truck cards -->
-                <div class="swu-bulk-bar" id="swu-select-all-card" onclick="swuToggleAll()" role="button" tabindex="0">
-                  <div class="swu-bulk-checkbox">
-                    <svg class="swu-bulk-check" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path d="M2.5 6l2.5 2.5L9.5 3.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </div>
-                  <div class="swu-bulk-label" id="swu-select-all-label">Select all</div>
-                  <div class="swu-bulk-count" id="swu-select-all-count">5 trucks</div>
+              <!-- Left: truck rail (search / select-all / plant groups) -->
+              <aside class="swu-rail">
+                <div class="swu-rail-search"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.4" stroke="currentColor" stroke-width="1.4"/><path d="M9.4 9.4L12.5 12.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><input placeholder="Truck number" oninput="swuRailSearch(this.value)" aria-label="Filter trucks by number"></div>
+                <div class="swu-rail-head">
+                  <span class="swu-allrow" id="swu-select-all-card" onclick="swuToggleAll()" role="button" tabindex="0">
+                    <span class="swu-railcb" id="swu-cb-all"><svg class="swu-bulk-check" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5L9.5 3.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    <span class="swu-allrow-label" id="swu-select-all-label">All trucks</span>
+                  </span>
+                  <span class="swu-rail-headright">
+                    <span class="swu-rail-count" id="swu-select-all-count">5 trucks</span>
+                    <button class="swu-rail-clear" onclick="swuClearSel()">Clear</button>
+                  </span>
                 </div>
-                <!-- Truck cards (populated by swuFigmaInit) -->
-                <div id="swu-truck-stack"></div>
-              </div>
+                <!-- Truck cards, grouped by plant (populated by swuFigmaInit) -->
+                <div class="swu-rail-list" id="swu-truck-stack"></div>
+              </aside>
 
-              <!-- Middle: Update Software widget -->
-              <div class="swu-mid">
-                <div class="swu-widget swu-widget-update">
-                  <div class="swu-widget-head">
-                    <div>
-                      <div class="swu-widget-title">Update Software</div>
-                    </div>
+              <!-- Main panel — mirrors Advanced Settings (.as-main) -->
+              <div class="swu-main">
+                <div class="swu-sechead">
+                  <div>
+                    <div class="swu-sectitle">Software Update</div>
+                    <div class="swu-secsub">Send package updates across the fleet</div>
                   </div>
+                  <div class="swu-secmeta" id="swu-send-meta">No trucks selected</div>
+                </div>
 
-                  <div class="swu-field">
-                    <div class="swu-field-label">Select Release Version</div>
+                <div class="swu-toolbar">
                     <div class="swu-dd-wrap" data-dd="version">
                       <button class="swu-dropdown" type="button" onclick="swuDdToggle('version')">
                         <span class="swu-dd-value" id="swu-dd-val-version" data-placeholder="Choose your Package">Choose your Package</span>
@@ -3443,10 +3474,7 @@
                         <div class="swu-dd-opt" role="option" onclick="swuDdSelect('version', 'v4.9.7')">v4.9.7</div>
                       </div>
                     </div>
-                  </div>
 
-                  <div class="swu-field">
-                    <div class="swu-field-label">Select When To Commit Updates</div>
                     <div class="swu-dd-wrap" data-dd="commit">
                       <button class="swu-dropdown" type="button" onclick="swuDdToggle('commit')">
                         <span class="swu-dd-value" id="swu-dd-val-commit" data-placeholder="Select timing">On Next Startup</span>
@@ -3457,29 +3485,17 @@
                         <div class="swu-dd-opt" role="option" onclick="swuDdSelect('commit', 'Now')">Now</div>
                       </div>
                     </div>
-                  </div>
 
                   <button class="swu-send-btn" onclick="swuSendUpdates()">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l10-5-3 12-2.5-4.5L2 7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
                     Send Updates
                   </button>
-
-                  <div class="swu-send-meta" id="swu-send-meta">No trucks selected</div>
                 </div>
-              </div>
 
-              <!-- Right: Package Overview widget -->
-              <div class="swu-right">
-                <div class="swu-widget swu-widget-overview">
-                  <div class="swu-overview-head">
-                    <div>
-                      <div class="swu-widget-title">Package Overview</div>
-                      <div class="swu-widget-sub">Today</div>
-                    </div>
-                    <button class="swu-icon-pill swu-icon-pill-sm" title="Configure">
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 1v2M7 11v2M1 7h2M11 7h2M2.5 2.5l1.4 1.4M10.1 10.1l1.4 1.4M2.5 11.5l1.4-1.4M10.1 3.9l1.4-1.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-                    </button>
-                  </div>
+                <div class="swu-ovhead">
+                  <span class="swu-ovtitle">Package Overview</span>
+                  <span class="swu-ovsub">Today</span>
+                </div>
 
                   <!-- Empty state (default) -->
                   <div class="swu-overview-empty" id="swu-overview-empty">
@@ -3502,7 +3518,7 @@
                         </svg>
                       </div>
                       <div class="swu-empty-title">Select a truck and release</div>
-                      <div class="swu-empty-msg">Pick one or more trucks from the left and a release version from the Update Software panel to view update history here.</div>
+                      <div class="swu-empty-msg">Pick one or more trucks from the rail and a release version from the toolbar above to view update history here.</div>
                     </div>
                   </div>
 
@@ -3523,7 +3539,6 @@
                     <span class="swu-foot-left" id="swu-foot-left">Awaiting selection</span>
                     <span class="swu-foot-right" id="swu-foot-right" style="display:none;">1 - 4 of 4 Records</span>
                   </div>
-                </div>
               </div>
 
             </div><!-- /swu-body -->
@@ -3976,50 +3991,45 @@
       <div style="margin-left:auto;width:40px;height:40px;flex-shrink:0;"></div>
     </div>
 
+    <!-- Header block — title + pill. Column in portrait, one row in landscape (see .orient-landscape CSS) -->
+    <div id="mob-swu-head" style="display:flex;flex-direction:column;flex-shrink:0;">
     <!-- Page title row -->
-    <div style="padding:20px 16px 8px;flex-shrink:0;">
+    <div class="mob-swu-title-row" style="padding:20px 16px 10px;flex-shrink:0;">
       <div style="font-family:var(--font);font-size:22px;font-weight:500;color:var(--strong);letter-spacing:-0.44px;line-height:1.2;">Diagnostic Center</div>
       <div style="font-family:var(--font);font-size:12px;color:var(--soft);letter-spacing:-0.24px;margin-top:2px;">Last updated: <span id="mob-swu-last-updated">20 seconds ago</span></div>
     </div>
 
     <!-- Pill tab switcher -->
-    <div style="padding:8px 16px 12px;flex-shrink:0;">
-      <div style="position:relative;display:inline-block;" id="mob-swu-pill-wrap">
-        <button id="mob-swu-pill-btn" onclick="mobSwuPillToggle()"
-          style="display:flex;align-items:center;gap:8px;height:40px;padding:0 16px;border:1px solid var(--border-mid);border-radius:32px;background:var(--layer-1);font-family:var(--font);font-size:14px;font-weight:500;color:var(--strong);letter-spacing:-0.28px;cursor:pointer;white-space:nowrap;">
-          <span id="mob-swu-pill-label">Software Updates</span>
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-        </button>
-        <div id="mob-swu-pill-menu" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:var(--layer-1);border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.10);z-index:300;min-width:180px;overflow:hidden;">
-          <div onclick="mobSwuSetTab('updates')" style="padding:10px 16px;font-family:var(--font);font-size:14px;color:var(--strong);letter-spacing:-0.28px;cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.05)'" onmouseleave="this.style.background=''">Software Updates</div>
-          <div onclick="mobSwuSetTab('status')"  style="padding:10px 16px;font-family:var(--font);font-size:14px;color:var(--strong);letter-spacing:-0.28px;cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.05)'" onmouseleave="this.style.background=''">Software Status</div>
-        </div>
+    <div class="mob-swu-pill-row swu-sm-tabstrip-wrap" style="padding:6px 16px 0;flex-shrink:0;">
+      <div class="swu-sm-tabstrip" id="mob-swu-tabstrip">
+        <div class="swu-sm-tab active" data-tab="updates" onclick="mobSwuSetTab('updates')">Software Updates</div>
+        <div class="swu-sm-tab" data-tab="advanced" onclick="asSmShow('mob')">Advanced Settings</div>
+        <div class="swu-sm-tab" data-tab="status" onclick="mobSwuSetTab('status')">Software Status</div>
       </div>
     </div>
+    </div><!-- /mob-swu-head -->
 
     <!-- Scrollable body -->
-    <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 16px 40px;" id="mob-swu-scroll">
+    <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px 40px;" id="mob-swu-scroll">
 
       <!-- ── Updates tab ── -->
-      <div id="mob-swu-tab-updates" style="display:flex;flex-direction:column;gap:14px;">
+      <div id="mob-swu-tab-updates" style="display:flex;flex-direction:column;gap:12px;">
 
-        <!-- Update Software widget -->
-        <div style="background:var(--layer-1);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px;">
-          <div>
-            <div style="font-family:var(--font);font-size:15px;font-weight:500;color:var(--strong);letter-spacing:-0.3px;">Update Software</div>
-            <div style="font-family:var(--font);font-size:12px;color:var(--soft);letter-spacing:-0.24px;margin-top:2px;">Pick trucks and a release, then commit.</div>
-          </div>
+        <!-- Toolbar — mirrors .as-sm-toolbar so Updates matches Advanced Settings -->
+        <div class="swu-sm-toolbar">
 
-          <!-- Trucks -->
-          <div style="display:flex;flex-direction:column;gap:6px;">
-            <div style="font-family:var(--font);font-size:12px;font-weight:500;color:var(--strong);letter-spacing:-0.24px;">Trucks</div>
-            <div style="position:relative;" id="mob-swu-trucks-wrap">
-              <button type="button" onclick="mobSwuTrucksToggle()"
-                style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--layer-1);border:1px solid var(--border);border-radius:10px;font-family:var(--font);font-size:13px;color:var(--soft);letter-spacing:-0.26px;cursor:pointer;text-align:left;">
-                <span id="mob-swu-trucks-label">Select trucks</span>
+          <!-- Trucks multi-select pill -->
+            <div class="swu-sm-pillwrap" id="mob-swu-trucks-wrap">
+              <button type="button" class="swu-sm-pill" onclick="mobSwuTrucksToggle()">
+                <span id="mob-swu-trucks-label" style="color:var(--soft);">Select trucks</span>
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
               </button>
-              <div id="mob-swu-trucks-menu" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--layer-1);border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.10);z-index:400;max-height:240px;overflow-y:auto;">
+              <div id="mob-swu-trucks-menu" class="swu-sm-menu" style="display:none;max-height:300px;flex-direction:column;">
+                <!-- Search — mirrors the desktop rail search -->
+                <div class="swu-sm-menu-search">
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.4" stroke="currentColor" stroke-width="1.4"/><path d="M9.4 9.4L12.5 12.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                  <input id="mob-swu-trucks-search" placeholder="Truck number" oninput="mobSwuTrucksSearch(this.value)" onclick="event.stopPropagation()">
+                </div>
                 <div onclick="mobSwuTrucksSelectAll()" id="mob-swu-trucks-all-row"
                   style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border);cursor:pointer;"
                   onmouseenter="this.style.background='rgba(54,50,45,0.04)'" onmouseleave="this.style.background=''">
@@ -4029,54 +4039,38 @@
                 </div>
                 <div id="mob-swu-trucks-list"></div>
                 <div style="padding:10px 12px;border-top:1px solid var(--border);">
-                  <button onclick="mobSwuTrucksClose()" style="width:100%;padding:9px;background:var(--blue);color:white;border:none;border-radius:32px;font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;letter-spacing:-0.26px;">Done</button>
+                  <button onclick="mobSwuTrucksClose()" style="width:100%;padding:9px;background:var(--strong);color:var(--base);border:none;border-radius:32px;font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;letter-spacing:-0.26px;">Done</button>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Release version -->
-          <div style="display:flex;flex-direction:column;gap:6px;">
-            <div style="font-family:var(--font);font-size:12px;font-weight:500;color:var(--strong);letter-spacing:-0.24px;">Release version</div>
-            <div style="position:relative;" id="mob-swu-ver-wrap">
-              <button type="button" onclick="mobSwuDdToggle('ver')"
-                style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--layer-1);border:1px solid var(--border);border-radius:10px;font-family:var(--font);font-size:13px;color:var(--soft);letter-spacing:-0.26px;cursor:pointer;text-align:left;">
-                <span id="mob-swu-ver-label">Choose your Package</span>
+          <!-- Package pill — release version + commit timing together -->
+            <div class="swu-sm-pillwrap" id="mob-swu-package-wrap">
+              <button type="button" class="swu-sm-pill" onclick="mobSwuPackageToggle()">
+                <span id="mob-swu-package-label" style="color:var(--soft);">Choose your Package</span>
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
               </button>
-              <div id="mob-swu-ver-menu" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--layer-1);border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.10);z-index:400;overflow:hidden;">
+              <div id="mob-swu-package-menu" class="swu-sm-menu" style="display:none;flex-direction:column;">
+                <div class="swu-sm-menu-sec">Release version</div>
                 <div onclick="mobSwuDdSelect('ver','v5.0.1')" style="padding:10px 14px;font-family:var(--font);font-size:14px;color:var(--strong);cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.05)'" onmouseleave="this.style.background=''">v5.0.1</div>
                 <div onclick="mobSwuDdSelect('ver','v5.0.0')" style="padding:10px 14px;font-family:var(--font);font-size:14px;color:var(--strong);cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.05)'" onmouseleave="this.style.background=''">v5.0.0</div>
                 <div onclick="mobSwuDdSelect('ver','v4.9.8')" style="padding:10px 14px;font-family:var(--font);font-size:14px;color:var(--strong);cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.05)'" onmouseleave="this.style.background=''">v4.9.8</div>
                 <div onclick="mobSwuDdSelect('ver','v4.9.7')" style="padding:10px 14px;font-family:var(--font);font-size:14px;color:var(--strong);cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.05)'" onmouseleave="this.style.background=''">v4.9.7</div>
+                <div class="swu-sm-menu-sec">Commit timing</div>
+                <div onclick="mobSwuDdSelect('commit','On Next Startup')" id="mob-swu-commit-opt-startup" style="padding:10px 14px;font-family:var(--font);font-size:14px;color:var(--strong);cursor:pointer;background:rgba(54,50,45,0.04);" onmouseenter="this.style.background='rgba(54,50,45,0.08)'" onmouseleave="this.style.background='rgba(54,50,45,0.04)'">On Next Startup</div>
+                <div onclick="mobSwuDdSelect('commit','Now')" id="mob-swu-commit-opt-now" style="padding:10px 14px;font-family:var(--font);font-size:14px;color:var(--strong);cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.05)'" onmouseleave="this.style.background=''">Now</div>
               </div>
             </div>
-          </div>
 
-          <!-- Commit timing -->
-          <div style="display:flex;flex-direction:column;gap:6px;">
-            <div style="font-family:var(--font);font-size:12px;font-weight:500;color:var(--strong);letter-spacing:-0.24px;">Commit timing</div>
-            <div style="position:relative;" id="mob-swu-commit-wrap">
-              <button type="button" onclick="mobSwuDdToggle('commit')"
-                style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--layer-1);border:1px solid var(--border);border-radius:10px;font-family:var(--font);font-size:13px;color:var(--strong);letter-spacing:-0.26px;cursor:pointer;text-align:left;">
-                <span id="mob-swu-commit-label">On Next Startup</span>
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-              </button>
-              <div id="mob-swu-commit-menu" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--layer-1);border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.10);z-index:400;overflow:hidden;">
-                <div onclick="mobSwuDdSelect('commit','On Next Startup')" style="padding:10px 14px;font-family:var(--font);font-size:14px;color:var(--strong);cursor:pointer;background:rgba(54,50,45,0.04);" onmouseenter="this.style.background='rgba(54,50,45,0.08)'" onmouseleave="this.style.background='rgba(54,50,45,0.04)'">On Next Startup</div>
-                <div onclick="mobSwuDdSelect('commit','Now')" style="padding:10px 14px;font-family:var(--font);font-size:14px;color:var(--strong);cursor:pointer;" onmouseenter="this.style.background='rgba(54,50,45,0.05)'" onmouseleave="this.style.background=''">Now</div>
-              </div>
-            </div>
-          </div>
+          <div class="swu-sm-spacer"></div>
+        </div><!-- /swu-sm-toolbar -->
 
-          <!-- Send button -->
-          <button id="mob-swu-send-btn" onclick="mobSwuSend()"
-            style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 18px;background:#3069e3;color:white;border:none;border-radius:32px;font-family:var(--font);font-size:14px;font-weight:500;letter-spacing:-0.28px;cursor:pointer;opacity:0.4;pointer-events:none;">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l10-5-3 12-2.5-4.5L2 7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-            Send Updates
-          </button>
-          <div id="mob-swu-send-meta" style="font-family:var(--font);font-size:12px;color:var(--soft);letter-spacing:-0.24px;text-align:center;">No trucks selected</div>
-        </div>
+        <!-- Send — pulled out of the pill row into its own full-width commit action -->
+        <button id="mob-swu-send-btn" class="swu-sm-send-full" onclick="mobSwuSend()" style="opacity:0.4;pointer-events:none;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l10-5-3 12-2.5-4.5L2 7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          Send Updates
+        </button>
+        <div id="mob-swu-send-meta" class="swu-sm-meta">No trucks selected</div>
 
         <!-- Package Overview widget -->
         <div style="background:var(--layer-1);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px;">
@@ -4125,7 +4119,7 @@
             </div>
             <div id="mob-swu-status-meta" style="font-family:var(--font);font-size:12px;color:var(--soft);letter-spacing:-0.24px;flex-shrink:0;margin-top:3px;"></div>
           </div>
-          <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+          <div class="swu-hscroll" style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
             <table id="mob-swu-status-table" style="width:100%;border-collapse:collapse;min-width:480px;">
               <thead id="mob-swu-status-thead"><tr></tr></thead>
               <tbody id="mob-swu-status-tbody"></tbody>
@@ -4137,6 +4131,52 @@
     </div><!-- /mob-swu-scroll -->
   </div><!-- /mob-page-update -->
 
+<!-- Simulated on-screen keyboard — Fleet Update only (Software Updates /
+     Advanced Settings / Software Status all live inside #mob-page-update
+     and #tb-page-update, so scoping focus listeners to those containers
+     covers every text input on the page). Purely a visual + typing aid so
+     the team can see what gets covered on a real device, not a real IME. -->
+<div class="fk-keyboard" id="fk-keyboard">
+  <div class="fk-qwerty">
+  <div class="fk-row">
+    <button class="fk-key" data-k="q">q</button><button class="fk-key" data-k="w">w</button><button class="fk-key" data-k="e">e</button><button class="fk-key" data-k="r">r</button><button class="fk-key" data-k="t">t</button><button class="fk-key" data-k="y">y</button><button class="fk-key" data-k="u">u</button><button class="fk-key" data-k="i">i</button><button class="fk-key" data-k="o">o</button><button class="fk-key" data-k="p">p</button>
+  </div>
+  <div class="fk-row fk-row-mid">
+    <button class="fk-key" data-k="a">a</button><button class="fk-key" data-k="s">s</button><button class="fk-key" data-k="d">d</button><button class="fk-key" data-k="f">f</button><button class="fk-key" data-k="g">g</button><button class="fk-key" data-k="h">h</button><button class="fk-key" data-k="j">j</button><button class="fk-key" data-k="k">k</button><button class="fk-key" data-k="l">l</button>
+  </div>
+  <div class="fk-row">
+    <button class="fk-key fk-key-wide" id="fk-shift" aria-label="Shift">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2l5 5.5h-3V13H6V7.5H3L8 2z" fill="currentColor"/></svg>
+    </button>
+    <button class="fk-key" data-k="z">z</button><button class="fk-key" data-k="x">x</button><button class="fk-key" data-k="c">c</button><button class="fk-key" data-k="v">v</button><button class="fk-key" data-k="b">b</button><button class="fk-key" data-k="n">n</button><button class="fk-key" data-k="m">m</button>
+    <button class="fk-key fk-key-wide" id="fk-backspace" aria-label="Backspace">
+      <svg width="18" height="14" viewBox="0 0 18 14" fill="none"><path d="M6 1H16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H6l-5-6 5-6z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8.5 4.5l5 5M13.5 4.5l-5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <div class="fk-row fk-row-bottom">
+    <button class="fk-key fk-key-narrow" id="fk-123">123</button>
+    <button class="fk-key fk-key-space" data-k=" ">space</button>
+    <button class="fk-key fk-key-narrow fk-key-done" id="fk-done">done</button>
+  </div>
+  </div><!-- /fk-qwerty -->
+
+  <!-- Number pad — shown for type="number" inputs, matching what a real
+       device keyboard does for numeric fields -->
+  <div class="fk-numpad">
+    <div class="fk-row"><button class="fk-key fk-numkey" data-k="1">1</button><button class="fk-key fk-numkey" data-k="2">2</button><button class="fk-key fk-numkey" data-k="3">3</button></div>
+    <div class="fk-row"><button class="fk-key fk-numkey" data-k="4">4</button><button class="fk-key fk-numkey" data-k="5">5</button><button class="fk-key fk-numkey" data-k="6">6</button></div>
+    <div class="fk-row"><button class="fk-key fk-numkey" data-k="7">7</button><button class="fk-key fk-numkey" data-k="8">8</button><button class="fk-key fk-numkey" data-k="9">9</button></div>
+    <div class="fk-row">
+      <button class="fk-key fk-numkey" data-k=".">.</button>
+      <button class="fk-key fk-numkey" data-k="0">0</button>
+      <button class="fk-key fk-numkey" id="fk-num-backspace" aria-label="Backspace">
+        <svg width="18" height="14" viewBox="0 0 18 14" fill="none"><path d="M6 1H16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H6l-5-6 5-6z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8.5 4.5l5 5M13.5 4.5l-5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="fk-row"><button class="fk-key fk-key-done fk-num-done" id="fk-num-done">done</button></div>
+  </div>
+</div>
+
 </div><!-- /phone -->
 </div><!-- /phone-wrap -->
 
@@ -4147,6 +4187,7 @@
 <script src="app-04-softwareupdate-maps.js"></script>
 <script src="app-05-tablet-views.js"></script>
 <script src="app-06-desktop-core.js"></script>
+<script src="comments.js"></script>
 <!-- Leaflet — JS for the Maps page. Loaded after the inline script so
      dcMapInit() can probe `typeof L === 'undefined'` and self-retry if
      the CDN is slow. -->

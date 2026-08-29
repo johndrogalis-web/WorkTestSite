@@ -3414,11 +3414,81 @@ document.addEventListener('click', function(e) {
   if (btn) btn.classList.remove('open');
 });
 
+/* ── ORIENTATION ─────────────────────────────────────────────
+   Per-device orientation. Tablet users with a keyboard dock live
+   in landscape; phone users mostly portrait. Both are switchable
+   from the caret on the Mobile / Tablet pills. Desktop ignores it.
+   State is per device so flipping the tablet doesn't flip the phone. */
+var vpOrient = { mobile: 'portrait', tablet: 'portrait' };
+
+function vpCurrentView() {
+  if (document.body.classList.contains('view-mobile')) return 'mobile';
+  if (document.body.classList.contains('view-tablet')) return 'tablet';
+  return 'desktop';
+}
+
+/* Apply body.orient-landscape for the current view + sync menu checks */
+function vpApplyOrient() {
+  var view = vpCurrentView();
+  var landscape = view !== 'desktop' && vpOrient[view] === 'landscape';
+  document.body.classList.toggle('orient-landscape', landscape);
+  ['mobile', 'tablet'].forEach(function(dev) {
+    ['portrait', 'landscape'].forEach(function(o) {
+      var chk = document.getElementById('vp-orient-check-' + dev + '-' + o);
+      var row = document.getElementById('vp-orient-' + dev + '-' + o);
+      var on  = vpOrient[dev] === o;
+      if (chk) chk.style.opacity = on ? '1' : '0';
+      if (row) row.style.fontWeight = on ? '600' : '500';
+    });
+  });
+}
+
+function setOrientation(device, orient) {
+  vpOrient[device] = orient;
+  vpOrientCloseAll();
+  if (vpCurrentView() !== device) { setView(device); return; } /* setView calls vpApplyOrient */
+  vpApplyOrient();
+  /* Leaflet maps and anything measuring its container need a nudge
+     once the frame finishes animating (0.35s). */
+  setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 380);
+  if (device === 'tablet' && typeof tbRenderTable === 'function') setTimeout(tbRenderTable, 380);
+}
+
+function vpOrientToggle(e, device) {
+  if (e) e.stopPropagation();
+  var dd  = document.getElementById('vp-orient-dd-' + device);
+  var grp = document.getElementById('vp-group-' + device);
+  var wasOpen = dd && dd.classList.contains('open');
+  vpOrientCloseAll();
+  /* Also close the Options menu so two menus never overlap */
+  var odd = document.getElementById('vp-opts-dd'); if (odd) odd.classList.remove('open');
+  var obt = document.getElementById('vp-opts-btn'); if (obt) obt.classList.remove('open');
+  if (!wasOpen) { if (dd) dd.classList.add('open'); if (grp) grp.classList.add('dd-open'); }
+}
+
+function vpOrientCloseAll() {
+  document.querySelectorAll('.vp-orient-dd.open').forEach(function(d) { d.classList.remove('open'); });
+  document.querySelectorAll('.vp-pill-group.dd-open').forEach(function(g) { g.classList.remove('dd-open'); });
+}
+
+document.addEventListener('click', function(e) {
+  if (e.target.closest('.vp-pill-group')) return;
+  vpOrientCloseAll();
+});
+
+/* Highlight the right pill + its group */
+function vpSyncPills(view) {
+  document.querySelectorAll('.vp-pill').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.vp-pill-group').forEach(function(g) { g.classList.remove('active'); });
+  var sel = document.querySelector('.vp-pill[onclick="setView(\'' + view + '\')"]');
+  if (sel) { sel.classList.add('active'); var g = sel.closest('.vp-pill-group'); if (g) g.classList.add('active'); }
+}
+
 function setView(view) {
   const isDark = document.body.classList.contains('dark');
   document.body.className = 'view-' + view + (isDark ? ' dark' : '');
-  document.querySelectorAll('.vp-pill').forEach(p => p.classList.remove('active'));
-  document.querySelector(`.vp-pill[onclick="setView('${view}')"]`).classList.add('active');
+  vpApplyOrient();
+  vpSyncPills(view);
   const title = document.getElementById('cs-title');
   if (title) title.textContent = view === 'tablet' ? 'Tablet View' : 'Desktop View';
   if (view === 'desktop') { dtTsUpdateLabels(); dtBuildHeaders('wts'); dtRenderTable(); }
@@ -3443,12 +3513,11 @@ function setView(view) {
   if (current !== view) {
     const isDark = document.body.classList.contains('dark');
     document.body.className = 'view-' + view + (isDark ? ' dark' : '');
-    document.querySelectorAll('.vp-pill').forEach(function(p) { p.classList.remove('active'); });
-    var sel = document.querySelector('.vp-pill[onclick="setView(\'' + view + '\')"]');
-    if (sel) sel.classList.add('active');
+    vpSyncPills(view);
     var title = document.getElementById('cs-title');
     if (title) title.textContent = view === 'tablet' ? 'Tablet View' : 'Desktop View';
   }
+  vpApplyOrient();
 })();
 
 tsUpdateLabels();

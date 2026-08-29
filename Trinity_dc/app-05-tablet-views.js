@@ -926,18 +926,17 @@ function tbNavUnits() {
    desktop engine (window.swuState, swuExecuteSend, etc.).
    This object tracks only dropdown open/close state.           */
 var tbSwuUI = {
-  trucksOpen: false,
-  verOpen:    false,
-  commitOpen: false,
-  pillOpen:   false,
-  currentTab: 'updates',
-  built:      false
+  trucksOpen:   false,
+  packageOpen:  false,
+  currentTab:   'updates',
+  built:        false
 };
 
 function tbSwuInit() {
   /* Always re-sync the truck list so newly added trucks appear */
   tbSwuBuildTruckList();
   tbSwuSyncFromState();
+  tbSwuSyncPackageLabel();
   /* Render status table once */
   tbSwuRenderStatusTab();
   /* Sync send button state */
@@ -1040,11 +1039,14 @@ function tbSwuTrucksSelectAll() {
 function tbSwuTrucksToggle() {
   tbSwuUI.trucksOpen = !tbSwuUI.trucksOpen;
   var menu = document.getElementById('tb-swu-trucks-menu');
-  if (menu) menu.style.display = tbSwuUI.trucksOpen ? 'block' : 'none';
+  if (menu) menu.style.display = tbSwuUI.trucksOpen ? 'flex' : 'none';
   if (tbSwuUI.trucksOpen) {
-    tbSwuUI.verOpen = false; tbSwuUI.commitOpen = false;
-    var v=document.getElementById('tb-swu-ver-menu');    if(v) v.style.display='none';
-    var c=document.getElementById('tb-swu-commit-menu'); if(c) c.style.display='none';
+    var srch = document.getElementById('tb-swu-trucks-search');
+    if (srch) { srch.value = ''; tbSwuTrucksSearch(''); }
+  }
+  if (tbSwuUI.trucksOpen) {
+    tbSwuUI.packageOpen = false;
+    var p=document.getElementById('tb-swu-package-menu'); if(p) p.style.display='none';
   }
 }
 
@@ -1054,34 +1056,46 @@ function tbSwuTrucksClose() {
   if (m) m.style.display = 'none';
 }
 
-function tbSwuDdToggle(which) {
-  var isOpen = (which === 'ver') ? tbSwuUI.verOpen : tbSwuUI.commitOpen;
-  tbSwuUI.verOpen = false; tbSwuUI.commitOpen = false; tbSwuUI.trucksOpen = false;
-  var vm=document.getElementById('tb-swu-ver-menu');    if(vm) vm.style.display='none';
-  var cm=document.getElementById('tb-swu-commit-menu'); if(cm) cm.style.display='none';
-  var tm=document.getElementById('tb-swu-trucks-menu'); if(tm) tm.style.display='none';
-  if (!isOpen) {
-    if (which==='ver') { tbSwuUI.verOpen=true;    if(vm) vm.style.display='block'; }
-    else               { tbSwuUI.commitOpen=true; if(cm) cm.style.display='block'; }
+/* Filter the truck rows in the tablet dropdown by truck number */
+function tbSwuTrucksSearch(v) {
+  var q = (v || '').trim().toLowerCase();
+  document.querySelectorAll('#tb-swu-trucks-list [data-truck]').forEach(function (row) {
+    row.style.display = (!q || row.dataset.truck.toLowerCase().indexOf(q) !== -1) ? 'flex' : 'none';
+  });
+}
+
+function tbSwuPackageToggle() {
+  var isOpen = tbSwuUI.packageOpen;
+  tbSwuUI.packageOpen = false; tbSwuUI.trucksOpen = false;
+  var pm=document.getElementById('tb-swu-package-menu'); if(pm) pm.style.display='none';
+  var tm=document.getElementById('tb-swu-trucks-menu');  if(tm) tm.style.display='none';
+  if (!isOpen) { tbSwuUI.packageOpen=true; if(pm) pm.style.display='flex'; }
+}
+
+/* Combined "Package" label — version is the primary chosen state;
+   commit timing rides along once a version is picked. */
+function tbSwuSyncPackageLabel() {
+  var dd = window.swuDdState || {};
+  var lbl = document.getElementById('tb-swu-package-label');
+  if (!lbl) return;
+  if (!dd.version) { lbl.textContent = 'Choose your Package'; lbl.style.color = 'var(--soft)'; }
+  else { lbl.textContent = dd.version + ' · ' + (dd.commit || 'On Next Startup'); lbl.style.color = 'var(--strong)'; }
+  /* Highlight the active commit-timing option inside the menu */
+  var startup = document.getElementById('tb-swu-commit-opt-startup');
+  var now     = document.getElementById('tb-swu-commit-opt-now');
+  if (startup && now) {
+    var onStartup = (dd.commit || 'On Next Startup') === 'On Next Startup';
+    startup.style.background = onStartup ? 'rgba(54,50,45,0.04)' : '';
+    now.style.background     = onStartup ? '' : 'rgba(54,50,45,0.04)';
   }
 }
 
 function tbSwuDdSelect(which, value) {
   /* Mirror into shared swuDdState so desktop engine sees it */
   window.swuDdState = window.swuDdState || {};
-  if (which === 'ver') {
-    window.swuDdState.version = value;
-    var lbl = document.getElementById('tb-swu-ver-label');
-    if (lbl) { lbl.textContent = value; lbl.style.color = 'var(--strong)'; }
-    tbSwuUI.verOpen = false;
-    var m = document.getElementById('tb-swu-ver-menu'); if(m) m.style.display='none';
-  } else {
-    window.swuDdState.commit = value;
-    var lbl2 = document.getElementById('tb-swu-commit-label');
-    if (lbl2) { lbl2.textContent = value; lbl2.style.color = 'var(--strong)'; }
-    tbSwuUI.commitOpen = false;
-    var m2 = document.getElementById('tb-swu-commit-menu'); if(m2) m2.style.display='none';
-  }
+  if (which === 'ver') window.swuDdState.version = value;
+  else                 window.swuDdState.commit  = value;
+  tbSwuSyncPackageLabel();
   tbSwuSyncSendBtn();
   tbSwuRenderOverviewTablet();
 }
@@ -1298,18 +1312,239 @@ function tbSwuRenderStatusTab() {
   });
 }
 
-function tbSwuPillToggle() {
-  tbSwuUI.pillOpen = !tbSwuUI.pillOpen;
-  var m = document.getElementById('tb-swu-pill-menu');
-  if (m) m.style.display = tbSwuUI.pillOpen ? 'block' : 'none';
+/* Click-and-drag scroll for the tab strip — same pattern as
+   tbm-card-strip / mom-card-strip. Touch devices already get native
+   drag via -webkit-overflow-scrolling; this adds the equivalent for
+   desktop-browser demos where there's no touchscreen, using mouse
+   drag instead of the wheel (wheel isn't how a finger scrolls). */
+(function () {
+  /* Fade the right-edge mask out once fully scrolled — otherwise the
+     "more to see" cue never goes away even after the user gets there. */
+  function syncEdgeMask(strip) {
+    var atEnd = strip.scrollLeft + strip.clientWidth >= strip.scrollWidth - 2;
+    strip.classList.toggle('swu-sm-tabstrip--end', atEnd);
+  }
+
+  function initTabStripDrag(strip) {
+    var isDown = false, dragging = false, startX, startY, scrollLeft;
+    var velX = 0, lastX = 0, lastT = 0, rafId = null;
+
+    function glide() {
+      velX *= 0.88;
+      if (Math.abs(velX) < 0.5) { syncEdgeMask(strip); return; }
+      strip.scrollLeft -= velX;
+      syncEdgeMask(strip);
+      rafId = requestAnimationFrame(glide);
+    }
+
+    strip.addEventListener('mousedown', function (e) {
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+      isDown = true; dragging = false;
+      startX = e.clientX; startY = e.clientY; scrollLeft = strip.scrollLeft;
+      lastX = e.clientX; lastT = Date.now(); velX = 0;
+      /* Don't claim the gesture yet — wait to see if it's horizontal
+         before calling preventDefault, so a vertical drag that merely
+         starts over the strip still scrolls the page underneath it. */
+    });
+
+    strip.addEventListener('mousemove', function (e) {
+      if (!isDown) return;
+      var dx = e.clientX - startX, dy = e.clientY - startY;
+      if (!dragging) {
+        if (Math.abs(dx) < 4 && Math.abs(dy) < 4) return;      /* not yet a gesture */
+        if (Math.abs(dy) > Math.abs(dx)) { isDown = false; return; }  /* vertical — let the page scroll */
+        dragging = true;
+        strip.style.cursor = 'grabbing';
+      }
+      var now = Date.now(), dt = Math.max(now - lastT, 1);
+      velX = (lastX - e.clientX) / dt * 16;
+      lastX = e.clientX; lastT = now;
+      strip.scrollLeft = scrollLeft - dx;
+      syncEdgeMask(strip);
+      e.preventDefault(); e.stopPropagation();
+    }, { passive: false });
+
+    document.addEventListener('mouseup', function () {
+      if (!isDown) return;
+      isDown = false;
+      strip.style.cursor = '';
+      if (dragging) rafId = requestAnimationFrame(glide);
+      dragging = false;
+    });
+
+    strip.addEventListener('scroll', function () { syncEdgeMask(strip); });
+    syncEdgeMask(strip);
+  }
+  /* Same drag-scroll, no edge-mask bookkeeping — for plain horizontal
+     data tables (Software Status) rather than the tab strip. */
+  function initHScrollDrag(el) {
+    var isDown = false, dragging = false, startX, startY, scrollLeft;
+    var velX = 0, lastX = 0, lastT = 0, rafId = null;
+
+    function glide() {
+      velX *= 0.88;
+      if (Math.abs(velX) < 0.5) return;
+      el.scrollLeft -= velX;
+      rafId = requestAnimationFrame(glide);
+    }
+
+    el.addEventListener('mousedown', function (e) {
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+      isDown = true; dragging = false;
+      startX = e.clientX; startY = e.clientY; scrollLeft = el.scrollLeft;
+      lastX = e.clientX; lastT = Date.now(); velX = 0;
+    });
+
+    el.addEventListener('mousemove', function (e) {
+      if (!isDown) return;
+      var dx = e.clientX - startX, dy = e.clientY - startY;
+      if (!dragging) {
+        if (Math.abs(dx) < 4 && Math.abs(dy) < 4) return;
+        if (Math.abs(dy) > Math.abs(dx)) { isDown = false; return; }  /* vertical — let the page scroll */
+        dragging = true;
+        el.style.cursor = 'grabbing';
+      }
+      var now = Date.now(), dt = Math.max(now - lastT, 1);
+      velX = (lastX - e.clientX) / dt * 16;
+      lastX = e.clientX; lastT = now;
+      el.scrollLeft = scrollLeft - dx;
+      e.preventDefault(); e.stopPropagation();
+    }, { passive: false });
+
+    document.addEventListener('mouseup', function () {
+      if (!isDown) return;
+      isDown = false;
+      el.style.cursor = '';
+      if (dragging) rafId = requestAnimationFrame(glide);
+      dragging = false;
+    });
+  }
+
+  function init() {
+    document.querySelectorAll('.swu-sm-tabstrip').forEach(initTabStripDrag);
+    document.querySelectorAll('.swu-hscroll').forEach(initHScrollDrag);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+
+/* ─── Simulated on-screen keyboard — Fleet Update only ───
+   Shows on focus of any text input inside #mob-page-update /
+   #tb-page-update (covers Software Updates, Advanced Settings, and
+   Software Status, since all three subtabs and their sheets/drawers
+   live inside those two containers). Purely to preview what a real
+   keyboard would cover on mobile/tablet — types into the real input
+   and fires its existing oninput handler so search filters actually
+   respond, for a convincing preview. ─── */
+(function () {
+  var kb = null, activeInput = null, shiftOn = false;
+
+  function isInScope(el) {
+    return !!el.closest('#mob-page-update, #tb-page-update');
+  }
+
+  function showKeyboard(input) {
+    if (!kb) kb = document.getElementById('fk-keyboard');
+    if (!kb) return;
+    activeInput = input;
+    kb.classList.add('open');
+  }
+
+  function hideKeyboard() {
+    if (kb) kb.classList.remove('open');
+    activeInput = null;
+  }
+
+  function fireInput(el) {
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  function typeChar(ch) {
+    if (!activeInput) return;
+    var el = activeInput;
+    var start = el.selectionStart != null ? el.selectionStart : el.value.length;
+    var end = el.selectionEnd != null ? el.selectionEnd : el.value.length;
+    el.value = el.value.slice(0, start) + ch + el.value.slice(end);
+    var pos = start + ch.length;
+    if (el.setSelectionRange) el.setSelectionRange(pos, pos);
+    fireInput(el);
+  }
+
+  function backspace() {
+    if (!activeInput) return;
+    var el = activeInput;
+    var start = el.selectionStart != null ? el.selectionStart : el.value.length;
+    var end = el.selectionEnd != null ? el.selectionEnd : el.value.length;
+    if (start === end && start > 0) { el.value = el.value.slice(0, start - 1) + el.value.slice(end); start -= 1; }
+    else { el.value = el.value.slice(0, start) + el.value.slice(end); }
+    if (el.setSelectionRange) el.setSelectionRange(start, start);
+    fireInput(el);
+  }
+
+  document.addEventListener('focusin', function (e) {
+    var el = e.target;
+    if (el.tagName === 'INPUT' && (el.type === 'text' || el.type === '' || !el.type) && isInScope(el)) {
+      showKeyboard(el);
+    }
+  });
+
+  /* Ignore blur caused by tapping the keyboard itself — mousedown on a
+     key would otherwise steal focus and close the keyboard before the
+     tap registers. Everything else closes it, matching a real device. */
+  document.addEventListener('focusout', function (e) {
+    setTimeout(function () {
+      var el = document.activeElement;
+      if (kb && kb.contains(el)) return;
+      if (el && el.tagName === 'INPUT' && isInScope(el)) return;
+      hideKeyboard();
+    }, 0);
+  });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    kb = document.getElementById('fk-keyboard');
+    if (!kb) return;
+
+    kb.querySelectorAll('.fk-key[data-k]').forEach(function (key) {
+      key.addEventListener('mousedown', function (e) {
+        e.preventDefault();   /* keep focus on the real input, not the button */
+        var ch = key.dataset.k;
+        typeChar(shiftOn && ch !== ' ' ? ch.toUpperCase() : ch);
+      });
+    });
+
+    var backspaceBtn = document.getElementById('fk-backspace');
+    if (backspaceBtn) backspaceBtn.addEventListener('mousedown', function (e) { e.preventDefault(); backspace(); });
+
+    var shiftBtn = document.getElementById('fk-shift');
+    if (shiftBtn) shiftBtn.addEventListener('mousedown', function (e) {
+      e.preventDefault();
+      shiftOn = !shiftOn;
+      shiftBtn.classList.toggle('fk-active', shiftOn);
+    });
+
+    var doneBtn = document.getElementById('fk-done');
+    if (doneBtn) doneBtn.addEventListener('mousedown', function (e) {
+      e.preventDefault();
+      if (activeInput) activeInput.blur();
+      hideKeyboard();
+    });
+
+    var oneTwoThreeBtn = document.getElementById('fk-123');
+    if (oneTwoThreeBtn) oneTwoThreeBtn.addEventListener('mousedown', function (e) { e.preventDefault(); /* visual-only in this mock */ });
+  });
+})();
+
+/* Set the active underline on a surface's tab strip.
+   pre = 'tb' | 'mob'; tab = 'updates' | 'advanced' | 'status'. */
+function swuSmStripActive(pre, tab) {
+  document.querySelectorAll('#' + pre + '-swu-tabstrip .swu-sm-tab').forEach(function (el) {
+    el.classList.toggle('active', el.dataset.tab === tab);
+  });
 }
 
 function tbSwuSetTab(tab) {
   tbSwuUI.currentTab = tab;
-  tbSwuUI.pillOpen = false;
-  var m = document.getElementById('tb-swu-pill-menu'); if(m) m.style.display='none';
-  var lbl = document.getElementById('tb-swu-pill-label');
-  if (lbl) lbl.textContent = tab==='updates' ? 'Software Updates' : 'Software Status';
+  swuSmStripActive('tb', tab);
   var u=document.getElementById('tb-swu-tab-updates');
   var s2=document.getElementById('tb-swu-tab-status');
   if (u) u.style.display = tab==='updates' ? 'flex' : 'none';
@@ -1319,15 +1554,13 @@ function tbSwuSetTab(tab) {
 /* Close tablet swu dropdowns when clicking outside */
 document.addEventListener('click', function(e) {
   if (!e.target.closest('#tb-swu-trucks-wrap') && tbSwuUI.trucksOpen) { tbSwuTrucksClose(); }
-  if (!e.target.closest('#tb-swu-ver-wrap')    && tbSwuUI.verOpen)    { tbSwuUI.verOpen=false; var m=document.getElementById('tb-swu-ver-menu'); if(m) m.style.display='none'; }
-  if (!e.target.closest('#tb-swu-commit-wrap') && tbSwuUI.commitOpen) { tbSwuUI.commitOpen=false; var m2=document.getElementById('tb-swu-commit-menu'); if(m2) m2.style.display='none'; }
-  if (!e.target.closest('#tb-swu-pill-wrap')   && tbSwuUI.pillOpen)   { tbSwuUI.pillOpen=false; var m3=document.getElementById('tb-swu-pill-menu'); if(m3) m3.style.display='none'; }
+  if (!e.target.closest('#tb-swu-package-wrap') && tbSwuUI.packageOpen) { tbSwuUI.packageOpen=false; var m=document.getElementById('tb-swu-package-menu'); if(m) m.style.display='none'; }
 });
 
 /* ── MOBILE SOFTWARE UPDATE ───────────────────────────────────
    Identical logic to tbSwu* but targets mob-swu-* IDs.
    Shares window.swuState and swuExecuteSend exactly.          */
-var mobSwuUI = { trucksOpen:false, verOpen:false, commitOpen:false, pillOpen:false, currentTab:'updates' };
+var mobSwuUI = { trucksOpen:false, packageOpen:false, currentTab:'updates' };
 
 function mobSwuOpen() {
   moMapBack();
@@ -1335,6 +1568,7 @@ function mobSwuOpen() {
   if (el) el.style.display = 'flex';
   mobSwuBuildTruckList();
   mobSwuSyncFromState();
+  mobSwuSyncPackageLabel();
   mobSwuRenderStatusTab();
   mobSwuSyncSendBtn();
   /* Mark Software Updates active in sidenav */
@@ -1427,11 +1661,14 @@ function mobSwuTrucksSelectAll() {
 function mobSwuTrucksToggle() {
   mobSwuUI.trucksOpen = !mobSwuUI.trucksOpen;
   var m = document.getElementById('mob-swu-trucks-menu');
-  if (m) m.style.display = mobSwuUI.trucksOpen ? 'block' : 'none';
+  if (m) m.style.display = mobSwuUI.trucksOpen ? 'flex' : 'none';
   if (mobSwuUI.trucksOpen) {
-    mobSwuUI.verOpen=false; mobSwuUI.commitOpen=false;
-    var v=document.getElementById('mob-swu-ver-menu');    if(v) v.style.display='none';
-    var c=document.getElementById('mob-swu-commit-menu'); if(c) c.style.display='none';
+    var srch = document.getElementById('mob-swu-trucks-search');
+    if (srch) { srch.value = ''; mobSwuTrucksSearch(''); }
+  }
+  if (mobSwuUI.trucksOpen) {
+    mobSwuUI.packageOpen=false;
+    var p=document.getElementById('mob-swu-package-menu'); if(p) p.style.display='none';
   }
 }
 
@@ -1440,33 +1677,44 @@ function mobSwuTrucksClose() {
   var m=document.getElementById('mob-swu-trucks-menu'); if(m) m.style.display='none';
 }
 
-function mobSwuDdToggle(which) {
-  var isOpen = which==='ver' ? mobSwuUI.verOpen : mobSwuUI.commitOpen;
-  mobSwuUI.verOpen=false; mobSwuUI.commitOpen=false; mobSwuUI.trucksOpen=false;
-  var vm=document.getElementById('mob-swu-ver-menu');    if(vm) vm.style.display='none';
-  var cm=document.getElementById('mob-swu-commit-menu'); if(cm) cm.style.display='none';
-  var tm=document.getElementById('mob-swu-trucks-menu'); if(tm) tm.style.display='none';
-  if (!isOpen) {
-    if (which==='ver') { mobSwuUI.verOpen=true;    if(vm) vm.style.display='block'; }
-    else               { mobSwuUI.commitOpen=true; if(cm) cm.style.display='block'; }
+/* Filter the truck rows in the mobile dropdown by truck number */
+function mobSwuTrucksSearch(v) {
+  var q = (v || '').trim().toLowerCase();
+  document.querySelectorAll('#mob-swu-trucks-list [data-truck]').forEach(function (row) {
+    row.style.display = (!q || row.dataset.truck.toLowerCase().indexOf(q) !== -1) ? 'flex' : 'none';
+  });
+}
+
+function mobSwuPackageToggle() {
+  var isOpen = mobSwuUI.packageOpen;
+  mobSwuUI.packageOpen=false; mobSwuUI.trucksOpen=false;
+  var pm=document.getElementById('mob-swu-package-menu'); if(pm) pm.style.display='none';
+  var tm=document.getElementById('mob-swu-trucks-menu');  if(tm) tm.style.display='none';
+  if (!isOpen) { mobSwuUI.packageOpen=true; if(pm) pm.style.display='flex'; }
+}
+
+/* Combined "Package" label — version is the primary chosen state;
+   commit timing rides along once a version is picked. */
+function mobSwuSyncPackageLabel() {
+  var dd = window.swuDdState || {};
+  var lbl = document.getElementById('mob-swu-package-label');
+  if (!lbl) return;
+  if (!dd.version) { lbl.textContent = 'Choose your Package'; lbl.style.color = 'var(--soft)'; }
+  else { lbl.textContent = dd.version + ' \u00B7 ' + (dd.commit || 'On Next Startup'); lbl.style.color = 'var(--strong)'; }
+  var startup = document.getElementById('mob-swu-commit-opt-startup');
+  var now     = document.getElementById('mob-swu-commit-opt-now');
+  if (startup && now) {
+    var onStartup = (dd.commit || 'On Next Startup') === 'On Next Startup';
+    startup.style.background = onStartup ? 'rgba(54,50,45,0.04)' : '';
+    now.style.background     = onStartup ? '' : 'rgba(54,50,45,0.04)';
   }
 }
 
 function mobSwuDdSelect(which, value) {
   window.swuDdState = window.swuDdState||{};
-  if (which==='ver') {
-    window.swuDdState.version = value;
-    var lbl=document.getElementById('mob-swu-ver-label');
-    if(lbl){ lbl.textContent=value; lbl.style.color='var(--strong)'; }
-    mobSwuUI.verOpen=false;
-    var m=document.getElementById('mob-swu-ver-menu'); if(m) m.style.display='none';
-  } else {
-    window.swuDdState.commit = value;
-    var lbl2=document.getElementById('mob-swu-commit-label');
-    if(lbl2){ lbl2.textContent=value; lbl2.style.color='var(--strong)'; }
-    mobSwuUI.commitOpen=false;
-    var m2=document.getElementById('mob-swu-commit-menu'); if(m2) m2.style.display='none';
-  }
+  if (which==='ver') window.swuDdState.version = value;
+  else                window.swuDdState.commit  = value;
+  mobSwuSyncPackageLabel();
   mobSwuSyncSendBtn(); mobSwuRenderOverview();
 }
 
@@ -1605,15 +1853,11 @@ function mobSwuRenderStatusTab() {
   });
 }
 
-function mobSwuPillToggle() {
-  mobSwuUI.pillOpen=!mobSwuUI.pillOpen;
-  var m=document.getElementById('mob-swu-pill-menu'); if(m) m.style.display=mobSwuUI.pillOpen?'block':'none';
-}
+
 
 function mobSwuSetTab(tab) {
-  mobSwuUI.currentTab=tab; mobSwuUI.pillOpen=false;
-  var m=document.getElementById('mob-swu-pill-menu'); if(m) m.style.display='none';
-  var lbl=document.getElementById('mob-swu-pill-label'); if(lbl) lbl.textContent=tab==='updates'?'Software Updates':'Software Status';
+  mobSwuUI.currentTab=tab;
+  swuSmStripActive('mob', tab);
   var u=document.getElementById('mob-swu-tab-updates');
   var s=document.getElementById('mob-swu-tab-status');
   if(u) u.style.display=tab==='updates'?'flex':'none';
@@ -1622,9 +1866,7 @@ function mobSwuSetTab(tab) {
 
 document.addEventListener('click', function(e) {
   if(!e.target.closest('#mob-swu-trucks-wrap') && mobSwuUI.trucksOpen) mobSwuTrucksClose();
-  if(!e.target.closest('#mob-swu-ver-wrap')    && mobSwuUI.verOpen)    { mobSwuUI.verOpen=false;    var m=document.getElementById('mob-swu-ver-menu');    if(m) m.style.display='none'; }
-  if(!e.target.closest('#mob-swu-commit-wrap') && mobSwuUI.commitOpen) { mobSwuUI.commitOpen=false; var m2=document.getElementById('mob-swu-commit-menu'); if(m2) m2.style.display='none'; }
-  if(!e.target.closest('#mob-swu-pill-wrap')   && mobSwuUI.pillOpen)   { mobSwuUI.pillOpen=false;   var m3=document.getElementById('mob-swu-pill-menu');   if(m3) m3.style.display='none'; }
+  if(!e.target.closest('#mob-swu-package-wrap') && mobSwuUI.packageOpen) { mobSwuUI.packageOpen=false; var m=document.getElementById('mob-swu-package-menu'); if(m) m.style.display='none'; }
 });
 
 function tbNavUpdate() {

@@ -651,6 +651,55 @@
   .vp-pill.active { background: white; color: #1a1814; }
   .vp-pill:not(.active):hover { color: rgba(255,255,255,0.85); }
 
+  /* ── Split pill (Mobile / Tablet) ──────────────────────────
+     The group is the visual pill. Label = switch view, caret =
+     orientation menu. Active bg lives on the group so the caret
+     sits inside the white pill instead of beside it. */
+  .vp-pill-group {
+    position: relative;
+    display: flex; align-items: stretch;
+    border-radius: 28px;
+    transition: background 0.18s;
+  }
+  .vp-pill-group.active { background: white; }
+  .vp-pill-group.active .vp-pill,
+  .vp-pill-group.active .vp-pill-caret { color: #1a1814; }
+  .vp-pill-group .vp-pill.active { background: none; }   /* group carries the fill */
+  .vp-pill-group .vp-pill:has(+ .vp-pill-caret) { padding-right: 4px; }
+  .vp-pill-caret {
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 9px 0 4px;
+    color: rgba(255,255,255,0.55);
+    border: none; background: none; cursor: pointer;
+    border-radius: 0 28px 28px 0;
+    transition: color 0.18s, background 0.18s;
+  }
+  .vp-pill-group:not(.active) .vp-pill-caret:hover { color: rgba(255,255,255,0.85); }
+  .vp-pill-group.active .vp-pill-caret:hover { background: rgba(54,50,45,0.08); }
+  .vp-pill-caret svg { transition: transform 0.18s; }
+  .vp-pill-group.dd-open .vp-pill-caret svg { transform: rotate(180deg); }
+
+  /* Orientation dropdown — same skin as the Options menu */
+  .vp-orient-dd {
+    display: none;
+    position: absolute; top: calc(100% + 10px); left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(54,50,45,0.14);
+    padding: 6px;
+    min-width: 176px;
+    z-index: 10000;
+    text-align: left;
+  }
+  .vp-orient-dd.open { display: block; }
+  .vp-orient-ico { flex-shrink: 0; color: var(--soft); }
+  .vp-orient-hint {
+    font-size: 11px; color: var(--subtle); letter-spacing: -0.2px;
+    padding: 4px 10px 6px; font-family: var(--font); line-height: 1.4;
+  }
+
   /* Options button — three-dot, opens dropdown for role + version */
   .vp-opts-wrap { position: relative; }
   .vp-opts-btn {
@@ -3592,6 +3641,198 @@
     }
   }
 
+  /* ═══════════════════════════════════════════════════════════
+     ORIENTATION — body.orient-landscape (set by setOrientation())
+     Rotates the simulated device frame. Content stays inside the
+     same .phone box, so nothing escapes the holder; the notch,
+     camera strip and side buttons move to the edges a real
+     rotated device would have them on (rotated counter-clockwise,
+     notch on the left).
+     ─────────────────────────────────────────────────────────── */
+  .phone { transition: width 0.35s cubic-bezier(0.22,1,0.36,1), height 0.35s cubic-bezier(0.22,1,0.36,1); }
+
+  /* ── Mobile landscape: 844 × 390 ── */
+  body.view-mobile.orient-landscape .phone { width: 844px; height: 390px; }
+  body.view-mobile.orient-landscape .phone-notch {
+    top: 50%; left: 12px;
+    transform: translateY(-50%);
+    width: 34px; height: 120px;
+  }
+  /* volume buttons move to the top edge, power to the bottom */
+  body.view-mobile.orient-landscape .phone-wrap::before {
+    left: 120px; top: -3px;
+    width: 36px; height: 3px;
+    border-radius: 2px 2px 0 0;
+    box-shadow: 50px 0 0 #3a3a3a, 100px 0 0 #3a3a3a;
+  }
+  body.view-mobile.orient-landscape .phone-wrap::after {
+    left: 160px; right: auto; top: auto; bottom: -3px;
+    width: 64px; height: 3px;
+    border-radius: 0 0 2px 2px;
+  }
+  /* Safe area: the 54px top offset for the island becomes a left
+     inset for the island. Applies to stacked screens and to the
+     Software Update page (which carries its own inline padding-top). */
+  body.view-mobile.orient-landscape .screen > :first-child { margin-top: 0; }
+  body.view-mobile.orient-landscape .screen { padding: 10px 24px 0 52px; }
+  body.view-mobile.orient-landscape #mob-page-update { padding: 10px 24px 0 52px !important; }
+  body.view-mobile.orient-landscape #s-main .top-nav,
+  body.view-mobile.orient-landscape #mob-page-update .top-nav { padding-top: 6px; padding-bottom: 6px; }
+
+  /* Mobile landscape — Software Update: header collapses to one row,
+     the two widgets sit side by side. Container keeps its inline
+     display:flex (JS toggles it), only the direction flips. */
+  body.view-mobile.orient-landscape #mob-swu-head {
+    flex-direction: row !important;
+    align-items: flex-end; justify-content: space-between;
+  }
+  body.view-mobile.orient-landscape #mob-swu-head .mob-swu-title-row { padding: 6px 16px 10px !important; }
+  body.view-mobile.orient-landscape #mob-swu-head .mob-swu-pill-row  {
+    padding: 0 16px 10px !important;
+    flex:1 1 auto; min-width:0;   /* let the tab strip shrink so overflow-x can scroll */
+  }
+  /* Updates tab is now toolbar + overview (no side-by-side widgets) —
+     it reflows naturally in landscape. Toolbar stays one row; the
+     overview log uses the full width. */
+  body.view-mobile.orient-landscape #mob-swu-scroll { padding-bottom: 24px !important; }
+
+  /* ── Simulated on-screen keyboard — Fleet Update only ──
+     Fixed to the bottom of .phone (which already resizes correctly
+     per view/orientation), so no separate positioning math per state
+     is needed beyond the height, which real keyboards vary by device
+     proportions. Overlays content on purpose — that's the point: show
+     what a real keyboard would cover, exactly like a real device does. */
+  .fk-keyboard {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    z-index: 900;
+    background: #d1d3d9;
+    border-top: 1px solid rgba(0,0,0,0.15);
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.12);
+    display: flex; flex-direction: column;
+    gap: 8px;
+    padding: 8px 4px calc(8px + env(safe-area-inset-bottom, 0px));
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.22,1,0.36,1);
+  }
+  body.dark .fk-keyboard { background: #3a3c40; border-top-color: rgba(255,255,255,0.12); }
+  .fk-keyboard.open { transform: translateY(0); }
+  .fk-row { display: flex; justify-content: center; gap: 6px; }
+  .fk-row-mid { padding: 0 16px; }
+  .fk-key {
+    flex: 1; max-width: 34px; height: 42px;
+    background: #fff; border: none; border-radius: 5px;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.35);
+    font-family: var(--font); font-size: 16px; color: #1a1a1a;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; user-select: none;
+  }
+  .fk-key:active { background: #b9bcc2; }
+  body.dark .fk-key { background: #8a8d94; color: #fff; }
+  body.dark .fk-key:active { background: #6b6e74; }
+  .fk-key-wide { max-width: 42px; background: #b9bcc2; color: #1a1a1a; }
+  body.dark .fk-key-wide { background: #57595e; color: #fff; }
+  #fk-shift.fk-active { background: #fff; color: #1a1a1a; }
+  .fk-row-bottom { padding: 0 6px; }
+  .fk-key-narrow { flex: 0 0 60px; max-width: none; font-size: 13px; background: #b9bcc2; color: #1a1a1a; }
+  body.dark .fk-key-narrow { background: #57595e; color: #fff; }
+  .fk-key-space { flex: 1; max-width: none; font-size: 13px; color: #444; }
+  body.dark .fk-key-space { color: #ddd; }
+  .fk-key-done { background: #3069e3; color: #fff; font-weight: 500; }
+
+  /* Height + row density per surface/orientation — real keyboards eat a
+     bigger share of a short landscape screen, not a fixed pixel height. */
+  body.view-mobile .fk-keyboard { height: 291px; }
+  body.view-mobile.orient-landscape .fk-keyboard { height: 172px; padding-top: 4px; gap: 4px; }
+  body.view-mobile.orient-landscape .fk-key { height: 32px; font-size: 14px; }
+  body.view-tablet .fk-keyboard { height: 344px; }
+  body.view-tablet .fk-key { height: 52px; font-size: 19px; max-width: 58px; }
+  body.view-tablet .fk-key-wide { max-width: 68px; }
+  body.view-tablet.orient-landscape .fk-keyboard { height: 300px; }
+  body.view-tablet.orient-landscape .fk-key { height: 46px; }
+  body.view-desktop .fk-keyboard { display: none; }   /* desktop has a real keyboard */
+
+  /* Layout modes — QWERTY for text, numpad for type="number", mirroring
+     what a real device shows per field type. */
+  .fk-qwerty, .fk-numpad { display: flex; flex-direction: column; gap: 8px; }
+  .fk-numpad { display: none; }
+  .fk-keyboard.fk-mode-num .fk-qwerty { display: none; }
+  .fk-keyboard.fk-mode-num .fk-numpad { display: flex; }
+  .fk-numkey { max-width: 110px; }
+  .fk-num-done { max-width: 348px; flex: 1; }
+  body.view-mobile.orient-landscape .fk-numpad { gap: 4px; }
+
+  /* ── Map card strip — landscape docks it as a vertical rail on the
+        right so the map stays visible, instead of a bottom strip that
+        eats the whole short viewport. Portrait keeps the bottom strip. ── */
+  body.view-mobile.orient-landscape .mom-card-strip {
+    top: 0; bottom: 0; left: auto; right: 0;
+    width: 348px;
+    flex-direction: column;
+    overflow-x: hidden; overflow-y: scroll;
+    padding: 10px 12px;
+  }
+  body.view-mobile.orient-landscape .mom-card { width: 100%; }
+  body.view-mobile.orient-landscape .mom-map-controls { right: 360px; }
+
+  /* ── Mobile landscape map header — map-first. The stacked portrait
+     header (nav row + big title + filter row ≈ 170px) leaves ~220px of
+     map in a 390px frame. Landscape floats the hamburger and search
+     over a full-bleed map instead, Google Maps style, and drops the
+     decorative logo + heading. Left offsets clear the camera notch. ── */
+  body.view-mobile.orient-landscape #mo-page-map { padding: 0; }
+  body.view-mobile.orient-landscape #mo-page-map .top-nav {
+    position: absolute; top: 8px; left: 52px;
+    width: auto; padding: 0; background: none; z-index: 30;
+  }
+  body.view-mobile.orient-landscape #mo-page-map .top-nav > div { display: none; }  /* centred logo */
+  body.view-mobile.orient-landscape #mo-page-map .top-nav button {
+    background: var(--layer-1); border: 1px solid var(--border); border-radius: 10px;
+  }
+  body.view-mobile.orient-landscape .mom-page-heading { display: none; }
+  body.view-mobile.orient-landscape .mom-filterbar {
+    position: absolute; top: 8px; left: 100px; right: 412px;
+    padding: 0; background: none; z-index: 30;
+  }
+  body.view-mobile.orient-landscape .mom-filter-btn,
+  body.view-mobile.orient-landscape .mom-search { background: var(--layer-1); }
+  body.view-mobile.orient-landscape .mom-fs-btn { top: 52px; left: 52px; }
+  body.view-mobile.orient-landscape .mom-legend { right: 352px; }
+
+  body.view-tablet.orient-landscape .tbm-card-strip {
+    top: 0; bottom: 0; left: auto; right: 0;
+    width: 408px;
+    flex-direction: column;
+    overflow-x: hidden; overflow-y: scroll;
+    padding: 12px 14px;
+  }
+  body.view-tablet.orient-landscape .tbm-card { width: 100%; }
+  body.view-tablet.orient-landscape .tbm-map-controls { right: 420px !important; }
+
+  /* Fix setting / Logs sheet (.as-sheet) is position:absolute;inset:0
+     inside #mob-page-update — an absolutely positioned child ignores
+     its parent's padding, so it was filling right back out to the true
+     edges and landing under the camera notch that #mob-page-update's
+     own landscape padding exists to avoid. Give the sheet the same
+     safe-area inset directly. */
+  body.view-mobile.orient-landscape .as-sheet {
+    top: 10px; right: 24px; bottom: 0; left: 52px;
+  }
+
+  /* ── Tablet landscape: 1194 × 834 ── */
+  body.view-tablet.orient-landscape .phone { width: 1194px; height: 834px; }
+  body.view-tablet.orient-landscape .phone::before {
+    top: 50%; left: 14px;
+    transform: translateY(-50%);
+    width: 8px; height: 120px;
+  }
+  /* Camera strip is now on the left edge; shrink the top spacer and
+     inset the whole shell so the hamburger clears it. */
+  body.view-tablet.orient-landscape .tb-status-bar { height: 10px; }
+  body.view-tablet.orient-landscape #s-tablet { padding-left: 26px; }
+
+  /* Tablet landscape — Software Update: toolbar + overview reflow
+     naturally; no side-by-side override needed with the new anatomy. */
+
   /* ─── SCREENS ────────────────────────────────────────────── */
   /* All screens are stacked; JS toggles .active */
   .screen {
@@ -5067,7 +5308,7 @@
   .sn-account-val   { font-size:13px; color:var(--strong); letter-spacing:-0.26px; font-weight:500; }
 
   /* Scroll area */
-  .sn-scroll { flex:1; overflow-y:auto; padding:0 12px 8px; -webkit-overflow-scrolling:touch; }
+  .sn-scroll { flex:1; min-height:0; overflow-y:auto; padding:0 12px 8px; -webkit-overflow-scrolling:touch; }
 
   /* Nav items */
   .sn-item {
@@ -5099,6 +5340,15 @@
   .sn-sub-item.active {
     background:#3069e3; color:#ffffff;
   }
+
+  /* Landscape — short viewport: tighten chrome so more of the list is
+     visible before scrolling, now that scrolling itself works. */
+  body.orient-landscape .sn-header { padding:10px 16px 8px; }
+  body.orient-landscape .sn-account { margin:0 12px 6px; padding:6px 12px; }
+  body.orient-landscape .sn-item,
+  body.orient-landscape .sn-sub-item,
+  body.orient-landscape .sn-footer-item { padding-top:7px; padding-bottom:7px; }
+  body.orient-landscape .sn-footer { padding:6px 12px 14px; }
 
   /* Footer */
   .sn-footer { padding:8px 12px 24px; border-top:1px solid var(--border); flex-shrink:0; }
@@ -6004,55 +6254,233 @@
     margin-bottom:-1px;
   }
   .swu-subtab:hover { color:var(--defined); }
+  /* ── Padding cleanup (8/28) — Fleet Update sub-tab bodies ──────
+     .swu-page-card carries no horizontal padding; each row owns its
+     24px gutter. The Status tab body never added one, so its table
+     ran flush to the card edge. Give Status + Advanced Settings
+     bodies the shared gutter and add air above the sub-tabs. */
+  .swu-subtabs { margin-top: 14px; }
+  #swu-tab-status-body {
+    padding: 16px 24px 24px;
+    box-sizing: border-box;
+  }
+  #swu-tab-as-body {
+    padding: 18px 24px 24px;
+    box-sizing: border-box;
+  }
+
   .swu-subtab.active {
     color:var(--strong);
     border-bottom-color:var(--strong);
   }
 
-  /* 3-column body */
+  /* Rail + main body — mirrors Advanced Settings (.as-body) so the two
+     sub-tabs read as one page. Flat surface, rail divided by a hairline. */
   .swu-body {
-    display:grid;
-    grid-template-columns:412px 280px 1fr;
-    gap:24px;
-    align-items:start;
-    background:var(--layer-2);
-    border:1px solid var(--border);
-    border-radius:24px;
-    padding:24px;
-    margin:10px 24px 0;
+    display:flex;
+    flex-direction:row;
+    gap:20px;
+    align-items:stretch;
+    padding:16px 24px 24px;
+    margin:0;
   }
   body.dark .swu-page-card { background:var(--layer-1); border-color:var(--border); }
   body.dark .dc-map-shell { background:var(--layer-1); border-color:var(--border); }
-  body.dark .swu-body { background:rgba(255,255,255,0.025); }
 
-  /* Left column */
-  .swu-left {
-    display:flex; flex-direction:column; gap:8px;
-    /* The stack scrolls; the column itself doesn't, so the bulk-select
-       bar stays pinned in view while cards scroll behind/below it. */
+  /* ── Truck rail — mirrors .as-rail so Updates and Advanced Settings
+        share one selection component ── */
+  .swu-rail {
+    width:316px; flex-shrink:0;
+    display:flex; flex-direction:column; gap:10px;
+    border-right:1px solid var(--border);
+    padding-right:18px;
     min-height:0;
   }
-  .swu-left #swu-truck-stack {
-    display:flex; flex-direction:column; gap:8px;
-    /* Stack scrolls in its own viewport. Height adapts to the available
-       space below the bulk bar; minimum keeps a reasonable preview when
-       the page is short. */
-    max-height: calc(100vh - 380px);
-    min-height: 320px;
-    overflow-y:auto;
-    /* Subtle scroll affordance — keep the right edge clean since cards
-       have their own padding. */
-    padding-right:4px;
-    margin-right:-4px;
+  .swu-rail-search {
+    display:flex; align-items:center; gap:8px;
+    height:38px; padding:0 13px;
+    border:1px solid var(--border); border-radius:var(--radius-sm);
+    background:var(--layer-1); flex-shrink:0; color:var(--soft);
+  }
+  .swu-rail-search input {
+    border:none; background:none; outline:none;
+    font-family:var(--font); font-size:13px; color:var(--strong); width:100%;
+  }
+  .swu-rail-search input::placeholder { color:var(--subtle); }
+  .swu-rail-head {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:2px 2px 8px;
+    border-bottom:1px solid var(--border);
+  }
+  .swu-allrow {
+    display:flex; align-items:center; gap:9px;
+    font-family:var(--font); font-size:13px; font-weight:500;
+    color:var(--strong); cursor:pointer; user-select:none;
+  }
+  .swu-railcb {
+    width:15px; height:15px; flex-shrink:0;
+    border:1.5px solid var(--border-mid); border-radius:3px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--layer-1);
+    transition:background 0.12s, border-color 0.12s;
+  }
+  .swu-railcb .swu-bulk-check { width:9px; height:9px; opacity:0; display:block; }
+  #swu-select-all-card.all-selected .swu-railcb {
+    background:var(--blue); border-color:var(--blue);
+  }
+  #swu-select-all-card.all-selected .swu-railcb .swu-bulk-check { opacity:1; }
+  .swu-rail-headright { display:flex; align-items:center; gap:10px; }
+  .swu-rail-count {
+    font-family:var(--font); font-size:11px; color:var(--subtle);
+  }
+  .swu-rail-clear {
+    background:none; border:none;
+    font-family:var(--font); font-size:12.5px; color:var(--soft);
+    cursor:pointer; padding:2px 4px;
+  }
+  .swu-rail-clear:hover { color:var(--strong); }
+  .swu-rail-list {
+    flex:1; overflow-y:auto; min-height:320px;
+    max-height:calc(100vh - 420px);
+    padding-top:2px; padding-right:4px; margin-right:-4px;
   }
   /* Custom scrollbar — soft Trinity tones, not the jarring browser default */
-  .swu-left #swu-truck-stack::-webkit-scrollbar { width:6px; }
-  .swu-left #swu-truck-stack::-webkit-scrollbar-track { background:transparent; }
-  .swu-left #swu-truck-stack::-webkit-scrollbar-thumb {
+  .swu-rail-list::-webkit-scrollbar { width:6px; }
+  .swu-rail-list::-webkit-scrollbar-track { background:transparent; }
+  .swu-rail-list::-webkit-scrollbar-thumb {
     background:rgba(54,50,45,0.18); border-radius:3px;
   }
-  .swu-left #swu-truck-stack::-webkit-scrollbar-thumb:hover {
+  .swu-rail-list::-webkit-scrollbar-thumb:hover {
     background:rgba(54,50,45,0.30);
+  }
+  /* Plant groups — same grammar as .as-group */
+  .swu-group-head {
+    display:flex; align-items:center; gap:8px;
+    padding:9px 2px 5px; cursor:pointer; user-select:none;
+  }
+  .swu-group-name {
+    flex:1; font-family:var(--font); font-size:10.5px; font-weight:600;
+    letter-spacing:0.4px; text-transform:uppercase; color:var(--soft);
+  }
+  .swu-group-count { font-family:var(--font); font-size:11px; color:var(--subtle); }
+  .swu-group-chev { color:var(--subtle); display:flex; transition:transform 0.15s; }
+  .swu-group.swu-collapsed .swu-group-chev { transform:rotate(-90deg); }
+  .swu-group.swu-collapsed .swu-truck-card { display:none !important; }
+  /* Rail-sized truck cards — same tightening AS applies (.as-rail-card) */
+  .swu-rail .swu-truck-card { margin:6px 0 10px; padding:14px 16px; gap:10px; max-width:none; }
+  .swu-rail .swu-tc-num { font-size:22px; }
+  /* Rail search hides — separate mechanism from the Filters popover so
+     the two compose instead of clobbering each other's display state */
+  .swu-truck-card.swu-srch-hide { display:none !important; }
+
+  /* ── Small-screen (tablet/mobile) Software Update toolbar —
+        mirrors .as-sm-toolbar / .as-sm-pill so Updates and Advanced
+        Settings read as one product on every surface ── */
+  .swu-sm-toolbar {
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  }
+  .swu-sm-spacer { flex:1; min-width:8px; }
+  .swu-sm-pillwrap { position:relative; }
+  .swu-sm-pill {
+    display:flex; align-items:center; gap:8px;
+    height:40px; padding:0 16px;
+    border:1px solid var(--border-mid); border-radius:32px;
+    background:var(--layer-1);
+    font-family:var(--font); font-size:14px; font-weight:500;
+    color:var(--strong); letter-spacing:-0.28px;
+    cursor:pointer; white-space:nowrap;
+  }
+  .swu-sm-menu {
+    position:absolute; top:calc(100% + 6px); left:0;
+    background:var(--layer-1);
+    border:1px solid var(--border); border-radius:12px;
+    box-shadow:0 4px 16px rgba(0,0,0,0.10);
+    z-index:400; min-width:250px;
+    display:flex; flex-direction:column; overflow:hidden;
+  }
+  /* Truck list scrolls; search + Done stay put */
+  .swu-sm-menu #tb-swu-trucks-list,
+  .swu-sm-menu #mob-swu-trucks-list {
+    overflow-y:auto;
+  }
+  /* Search — mirrors .as-search */
+  .swu-sm-menu-search {
+    display:flex; align-items:center; gap:8px;
+    height:38px; padding:0 12px; margin:8px 8px 0;
+    border:1px solid var(--border); border-radius:var(--radius-sm);
+    background:var(--layer-2); color:var(--soft); flex-shrink:0;
+  }
+  .swu-sm-menu-search input {
+    border:none; background:none; outline:none;
+    font-family:var(--font); font-size:13px; color:var(--strong); width:100%;
+  }
+  .swu-sm-menu-search input::placeholder { color:var(--subtle); }
+  .swu-sm-send {
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    height:40px; padding:0 18px;
+    background:var(--strong); color:var(--base);
+    border:none; border-radius:32px;
+    font-family:var(--font); font-size:14px; font-weight:500;
+    letter-spacing:-0.28px;
+    cursor:pointer;
+  }
+  /* Send pulled out of the pill row — full-width primary commit action,
+     its own row beneath the toolbar (mirrors AS not putting an action
+     inside the pill row at all). */
+  .swu-sm-send-full {
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    width:100%; height:44px;
+    background:var(--strong); color:var(--base);
+    border:none; border-radius:32px;
+    font-family:var(--font); font-size:14px; font-weight:500;
+    letter-spacing:-0.28px;
+    cursor:pointer;
+  }
+  .swu-sm-meta {
+    font-family:var(--font); font-size:12px; color:var(--soft);
+    letter-spacing:-0.24px; text-align:center;
+    margin-top:-4px;   /* container gap is 12; meta belongs to Send, sit at 8 */
+  }
+  /* Section label inside the merged Package menu */
+  .swu-sm-menu-sec {
+    padding:9px 14px 4px;
+    font-family:var(--font); font-size:10px; font-weight:600;
+    letter-spacing:0.4px; text-transform:uppercase; color:var(--subtle);
+  }
+
+  /* ── Small-screen tab strip — underline tabs mirroring desktop
+        .swu-subtabs. Scrolls sideways when tabs overflow; the mask
+        fade on the right edge only appears when content actually
+        reaches it, so 3 tabs look static and 6 signal "more". ── */
+  .swu-sm-tabstrip-wrap { min-width:0; }
+  .swu-sm-tabstrip {
+    display:flex; align-items:flex-end; gap:22px;
+    max-width:100%;
+    overflow-x:auto;
+    border-bottom:1px solid var(--border);
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    -webkit-mask-image:linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+    mask-image:linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+    transition:-webkit-mask-image .15s, mask-image .15s;
+  }
+  /* Fully scrolled — the fade cue is no longer true, so drop it */
+  .swu-sm-tabstrip.swu-sm-tabstrip--end {
+    -webkit-mask-image:none;
+    mask-image:none;
+  }
+  .swu-sm-tabstrip::-webkit-scrollbar { display:none; }
+  .swu-sm-tab {
+    font-family:var(--font); font-size:14px; font-weight:500;
+    color:var(--soft); letter-spacing:-0.28px;
+    padding:8px 2px 10px;
+    border-bottom:2px solid transparent;
+    cursor:pointer; user-select:none;
+    white-space:nowrap; flex-shrink:0;
+  }
+  .swu-sm-tab.active {
+    color:var(--strong);
+    border-bottom-color:var(--strong);
   }
   /* ── Truck card ────────────────────────────────────────────
      Used in Software Update + Map (and anywhere we surface a
@@ -7083,6 +7511,41 @@
 
   /* Middle column — Update Software widget */
   .swu-mid { min-width:0; }
+  /* ── Main panel — mirrors .as-main ── */
+  .swu-main {
+    flex:1; min-width:0;
+    display:flex; flex-direction:column; gap:12px;
+  }
+  .swu-sechead {
+    display:flex; gap:16px; align-items:flex-start; justify-content:space-between;
+    margin-top:2px;
+  }
+  .swu-sectitle {
+    font-family:var(--font); font-size:16px; font-weight:600;
+    color:var(--strong); letter-spacing:-0.32px;
+  }
+  .swu-secsub {
+    font-family:var(--font); font-size:13px; color:var(--soft);
+    letter-spacing:-0.13px; line-height:1.4; margin-top:2px;
+  }
+  .swu-secmeta {
+    font-family:var(--font); font-size:13px; color:var(--soft);
+    letter-spacing:-0.13px; padding-top:4px;
+  }
+  .swu-toolbar {
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap; flex-shrink:0;
+  }
+  .swu-ovhead {
+    display:flex; align-items:baseline; gap:8px; margin-top:6px;
+  }
+  .swu-ovtitle {
+    font-family:var(--font); font-size:13px; font-weight:600;
+    color:var(--strong); letter-spacing:-0.26px;
+  }
+  .swu-ovsub {
+    font-family:var(--font); font-size:12px; color:var(--soft);
+    letter-spacing:-0.12px;
+  }
   .swu-widget {
     background:var(--layer-1);
     border:1px solid var(--border);
@@ -7118,17 +7581,19 @@
     position:relative;
   }
   .swu-dropdown {
-    display:flex; align-items:center; justify-content:space-between;
+    display:inline-flex; align-items:center; justify-content:space-between;
     gap:8px;
-    width:100%;
-    padding:12px;
-    background:transparent;
-    border:1px solid #36322d80;
-    border-radius:4px;
-    font-family:var(--font); font-size:14px;
+    height:44px;
+    padding:0 16px;
+    background:var(--layer-1);
+    border:1px solid var(--border-mid);
+    border-radius:32px;
+    font-family:var(--font); font-size:14px; font-weight:500;
     color:var(--strong); letter-spacing:-0.28px;
     cursor:pointer;
     text-align:left;
+    white-space:nowrap;
+    transition:border-color 0.15s, background 0.15s;
   }
   .swu-dropdown:hover { border-color:var(--strong); }
   .swu-dd-wrap.open .swu-dropdown { border-color:var(--strong); }
@@ -7139,7 +7604,8 @@
 
   .swu-dd-menu {
     display:none;
-    position:absolute; top:calc(100% + 4px); left:0; right:0;
+    position:absolute; top:calc(100% + 6px); left:0; right:auto;
+    min-width:220px;
     background:var(--layer-1);
     border:1px solid var(--border);
     border-radius:8px;
@@ -7161,10 +7627,10 @@
   .swu-dd-opt-selected { color:var(--blue); font-weight:500; }
 
   .swu-send-btn {
-    display:flex; align-items:center; justify-content:center; gap:8px;
-    height:40px; width:100%;
-    padding:0 20px;
-    background:var(--blue); color:#fff;
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    height:44px; width:auto;
+    padding:0 18px;
+    background:var(--strong); color:var(--base);
     border:none; border-radius:32px;
     font-family:var(--font); font-size:14px; font-weight:500;
     letter-spacing:-0.28px;
@@ -7237,10 +7703,11 @@
     text-align:right;
   }
 
-  /* Empty state */
+  /* Empty state — mirrors .as-empty */
   .swu-overview-empty {
     display:flex; flex-direction:column;
   }
+  .swu-overview-empty .swu-overview-table { display:none; }
   .swu-empty-body {
     display:flex; flex-direction:column;
     align-items:center; justify-content:center;
@@ -7408,9 +7875,9 @@
     padding-bottom:6px;
   }
   .swu-ovt-th {
-    padding:0 8px;
-    font-family:var(--font); font-size:12px; font-weight:500;
-    color:var(--strong); letter-spacing:-0.24px;
+    padding:10px 12px;
+    font-family:var(--font); font-size:13px; font-weight:500;
+    color:var(--strong); letter-spacing:-0.26px;
   }
   .swu-ovt-tbody {
     display:flex; flex-direction:column;
@@ -7419,21 +7886,23 @@
     display:grid;
     grid-template-columns: 88px 1fr 1.4fr 1fr;
     align-items:center;
-    height:36px;
+    padding:4px 0;
+    border-bottom:1px solid var(--border);
     transition:background 0.15s;
     background:var(--layer-1);  /* even rows — white */
   }
   .swu-ovt-row.alt { background:var(--layer-2); }  /* odd rows — tint */
   body.dark .swu-ovt-row.alt { background:rgba(255,255,255,0.025); }
   .swu-ovt-row-cell {
-    padding:0 8px;
-    font-family:var(--font); font-size:14px;
-    color:var(--strong); letter-spacing:-0.28px;
+    padding:6px 12px;
+    font-family:var(--font); font-size:13px;
+    color:var(--defined); letter-spacing:-0.13px;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
+  .swu-ovt-row-cell:first-of-type { color:var(--strong); font-weight:500; }
   .swu-ovt-row-cell.vers {
-    font-family:'Inter', sans-serif; font-size:14px;
-    color:var(--strong);
+    font-family:var(--font); font-size:13px;
+    color:var(--defined);
   }
   .swu-ovt-row.expandable { cursor:pointer; }
   .swu-ovt-row.expandable:hover {

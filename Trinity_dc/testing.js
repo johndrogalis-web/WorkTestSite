@@ -87,6 +87,17 @@ var tstState = {
     'body.tst-testing .vp-viewport-pills,body.tst-testing .cmt-wrap,',
     'body.tst-testing .vp-opts-wrap,body.tst-testing .tst-wrap{display:none !important;}',
     /* Step flash on successful match */
+    /* Results view */
+    '.tst-stat{display:flex;gap:14px;font-size:11.5px;color:#555;flex-wrap:wrap;}',
+    '.tst-stat b{color:#171614;font-weight:600;}',
+    '.tst-stepbar{display:flex;align-items:center;gap:8px;font-size:11px;color:#555;}',
+    '.tst-stepbar-label{flex:0 0 118px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
+    '.tst-stepbar-track{flex:1;height:8px;background:#f0eeec;border-radius:4px;overflow:hidden;}',
+    '.tst-stepbar-fill{height:100%;background:#3069e3;border-radius:4px;}',
+    '.tst-stepbar-fill.tst-friction{background:#d3542f;}',
+    '.tst-stepbar-ms{flex:0 0 44px;text-align:right;font-variant-numeric:tabular-nums;}',
+    '.tst-ses-row{display:flex;justify-content:space-between;font-size:11px;color:#555;padding:3px 0;border-bottom:1px solid #f2f0ee;}',
+    '.tst-ses-row:last-child{border-bottom:none;}',
     '.tst-flash{position:fixed;border-radius:50%;width:34px;height:34px;border:3px solid #1f9d55;',
     '  z-index:2999;pointer-events:none;animation:tstflash 0.5s ease-out forwards;margin:-17px 0 0 -17px;}',
     '@keyframes tstflash{from{transform:scale(0.5);opacity:1;}to{transform:scale(1.6);opacity:0;}}'
@@ -185,6 +196,7 @@ function tstOpenAdminPanel() {
     '<div class="tst-item-row">' +
     '<button class="tst-chip tst-chip-primary" onclick="tstStartRecordForm()">\u25CF Record new workflow</button>' +
     '<button class="tst-chip" onclick="tstValidateAll()">Validate all</button>' +
+    '<button class="tst-chip" onclick="tstOpenResultsPanel()">Results</button>' +
     '<button class="tst-chip" onclick="tstCopyLink(\'1\', this)">Copy tester link</button>' +
     '</div><div id="tst-list"><div class="tst-sub">Loading\u2026</div></div>');
   tstGet('?action=list&prototype=' + encodeURIComponent(TST_PROTOTYPE) + '&all=1', function (res) {
@@ -270,6 +282,132 @@ function tstValidateAll() {
     else if (unverifiable) { badge.className = 'tst-badge tst-badge-warn'; badge.textContent = unverifiable + ' unverifiable'; }
     else { badge.className = 'tst-badge tst-badge-ok'; badge.textContent = 'ok'; }
   });
+}
+
+/* ── Results — in-prototype review, no spreadsheet needed ── */
+function tstMedian(arr) {
+  if (!arr.length) return 0;
+  var s = arr.slice().sort(function (a, b) { return a - b; });
+  var mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+}
+function tstFmtS(s) { return (Math.round(s * 10) / 10) + 's'; }
+
+function tstOpenResultsPanel() {
+  var p = tstPanelShell('Results');
+  p.style.width = '360px';
+  p.insertAdjacentHTML('beforeend',
+    '<div class="tst-item-row"><button class="tst-chip" onclick="tstOpenAdminPanel()">\u2190 Back</button></div>' +
+    '<div id="tst-results"><div class="tst-sub">Loading\u2026</div></div>');
+
+  var wfsReady = tstState.workflows.length
+    ? Promise.resolve()
+    : new Promise(function (resolve) {
+        tstGet('?action=list&prototype=' + encodeURIComponent(TST_PROTOTYPE) + '&all=1', function (res) {
+          tstState.workflows = (res.ok && res.workflows) || [];
+          resolve();
+        });
+      });
+
+  wfsReady.then(function () {
+    tstGet('?action=results&prototype=' + encodeURIComponent(TST_PROTOTYPE), function (res) {
+      var host = document.getElementById('tst-results');
+      if (!host) return;
+      if (!res.ok) { host.innerHTML = '<div class="tst-err">' + tstEsc(res.error) + '</div>'; return; }
+      var sessions = res.sessions || [];
+      if (!sessions.length) { host.innerHTML = '<div class="tst-sub">No test sessions yet. Send someone a tester link and results show up here.</div>'; return; }
+      window.__tstSessions = sessions;
+
+      /* Overall strip */
+      var completed = sessions.filter(function (s) { return s.outcome === 'completed'; });
+      var users = {};
+      sessions.forEach(function (s) { users[String(s.user).toLowerCase()] = 1; });
+      var html = '<div class="tst-stat" style="margin-bottom:4px;">' +
+        '<span><b>' + sessions.length + '</b> sessions</span>' +
+        '<span><b>' + Object.keys(users).length + '</b> testers</span>' +
+        '<span><b>' + Math.round(completed.length / sessions.length * 100) + '%</b> completed</span></div>';
+
+      /* Per-workflow blocks — archived ones included, their data lives on */
+      var byWf = {};
+      sessions.forEach(function (s) {
+        (byWf[s.workflow_id] = byWf[s.workflow_id] || []).push(s);
+      });
+      html += Object.keys(byWf).map(function (wfId) {
+        var ses = byWf[wfId];
+        var wf = tstState.workflows.find(function (w) { return w.id === wfId; });
+        var name = wf ? wf.name : (ses[0].workflow_name || wfId);
+        var archived = wf ? wf.status !== 'active' : true;
+        var comp = ses.filter(function (s) { return s.outcome === 'completed'; });
+        var med = tstMedian(comp.map(function (s) { return Number(s.duration_s) || 0; }));
+        var avgMis = ses.reduce(function (a, s) { return a + (Number(s.misclicks_total) || 0); }, 0) / ses.length;
+        return '<div class="tst-item">' +
+          '<div class="tst-item-name">' + tstEsc(name) +
+          (archived ? ' <span class="tst-badge tst-badge-arch">archived</span>' : '') + '</div>' +
+          '<div class="tst-stat">' +
+          '<span><b>' + ses.length + '</b> runs</span>' +
+          '<span><b>' + Math.round(comp.length / ses.length * 100) + '%</b> done</span>' +
+          '<span>median <b>' + tstFmtS(med) + '</b></span>' +
+          '<span><b>' + (Math.round(avgMis * 10) / 10) + '</b> misclicks avg</span></div>' +
+          '<div class="tst-item-row">' +
+          '<button class="tst-chip" onclick="tstResultsSteps(\'' + tstEsc(wfId) + '\', this)">Steps</button>' +
+          '<button class="tst-chip" onclick="tstResultsSessions(\'' + tstEsc(wfId) + '\', this)">Sessions</button></div>' +
+          '<div id="tst-detail-' + tstEsc(wfId) + '"></div></div>';
+      }).join('');
+      host.innerHTML = html;
+    });
+  });
+}
+
+/* Per-step breakdown — avg time bar per step, friction step flagged */
+function tstResultsSteps(wfId, btn) {
+  var box = document.getElementById('tst-detail-' + wfId);
+  if (!box) return;
+  if (box.dataset.showing === 'steps') { box.innerHTML = ''; box.dataset.showing = ''; return; }
+  box.dataset.showing = 'steps';
+
+  var ses = (window.__tstSessions || []).filter(function (s) { return s.workflow_id === wfId; });
+  var agg = {};   /* step index -> {label, msSum, n, mis} */
+  ses.forEach(function (s) {
+    (Array.isArray(s.steps_data) ? s.steps_data : []).forEach(function (st) {
+      var a = agg[st.i] = agg[st.i] || { label: st.label || ('Step ' + (st.i + 1)), msSum: 0, n: 0, mis: 0 };
+      a.msSum += Number(st.ms) || 0; a.n++; a.mis += Number(st.misclicks) || 0;
+    });
+  });
+  var idxs = Object.keys(agg).map(Number).sort(function (a, b) { return a - b; });
+  if (!idxs.length) { box.innerHTML = '<div class="tst-sub">No step data yet.</div>'; return; }
+  var maxAvg = Math.max.apply(null, idxs.map(function (i) { return agg[i].msSum / agg[i].n; }));
+  var frictionIdx = idxs.reduce(function (best, i) {
+    return agg[i].mis > agg[best].mis ? i : best;
+  }, idxs[0]);
+  box.innerHTML = idxs.map(function (i) {
+    var a = agg[i], avg = a.msSum / a.n;
+    var friction = i === frictionIdx && a.mis > 0;
+    return '<div class="tst-stepbar">' +
+      '<span class="tst-stepbar-label" title="' + tstEsc(a.label) + '">' + (i + 1) + '. ' + tstEsc(a.label) + '</span>' +
+      '<span class="tst-stepbar-track"><span class="tst-stepbar-fill' + (friction ? ' tst-friction' : '') + '" style="width:' + Math.max(4, Math.round(avg / maxAvg * 100)) + '%"></span></span>' +
+      '<span class="tst-stepbar-ms">' + tstFmtS(avg / 1000) + '</span>' +
+      (a.mis ? '<span class="tst-badge ' + (friction ? 'tst-badge-bad' : 'tst-badge-warn') + '">' + a.mis + ' mis</span>' : '') +
+      '</div>';
+  }).join('');
+}
+
+/* Individual sessions — who, when, outcome, time */
+function tstResultsSessions(wfId, btn) {
+  var box = document.getElementById('tst-detail-' + wfId);
+  if (!box) return;
+  if (box.dataset.showing === 'sessions') { box.innerHTML = ''; box.dataset.showing = ''; return; }
+  box.dataset.showing = 'sessions';
+
+  var ses = (window.__tstSessions || []).filter(function (s) { return s.workflow_id === wfId; })
+    .sort(function (a, b) { return new Date(b.timestamp) - new Date(a.timestamp); });
+  box.innerHTML = ses.map(function (s) {
+    var when = '';
+    try { when = new Date(s.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch (e) {}
+    return '<div class="tst-ses-row">' +
+      '<span><b>' + tstEsc(s.user) + '</b> \u00B7 ' + when + '</span>' +
+      '<span>' + (s.outcome === 'completed' ? tstFmtS(Number(s.duration_s) || 0) : '<span class="tst-badge tst-badge-bad">gave up</span>') +
+      (Number(s.misclicks_total) ? ' \u00B7 ' + s.misclicks_total + ' mis' : '') + '</span></div>';
+  }).join('');
 }
 
 /* ── Recorder ── */

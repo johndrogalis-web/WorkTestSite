@@ -52,6 +52,7 @@ var cmtState = {
     '.cmt-row{display:flex;gap:6px;justify-content:flex-end;}',
     '.cmt-cta{border:none;border-radius:100px;padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;}',
     '.cmt-cta-post{background:#171614;color:#fff;}',
+    '.cmt-cta:disabled{opacity:0.55;cursor:default;}',
     '.cmt-cta-quiet{background:none;color:#555;}',
     '.cmt-meta{font-size:11px;color:#8a8d94;}',
     '.cmt-author{font-size:12.5px;font-weight:600;color:#1a1a1a;}',
@@ -200,14 +201,21 @@ function cmtOpenComposer(drop) {
   });
 
   card.querySelector('#cmt-post').addEventListener('click', function () {
+    var btn = this;
+    if (btn.disabled) return;   /* Apps Script is slow — block double-submits */
     var name = sel.value === '__add' ? newName.value.trim() : sel.value;
     var text = card.querySelector('#cmt-textarea').value.trim();
     var err = card.querySelector('#cmt-err');
     if (!name) { err.textContent = 'Pick or add a name first.'; err.style.display = 'block'; return; }
     if (!text) { err.textContent = 'Comment is empty.'; err.style.display = 'block'; return; }
     err.style.display = 'none';
+    btn.disabled = true; btn.textContent = 'Posting\u2026';
     try { localStorage.setItem('cmt_last_name', name); } catch (e2) {}
 
+    var fail = function (msg) {
+      err.textContent = 'Save failed: ' + msg; err.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Post';
+    };
     var ctx = cmtContext();
     var post = function () {
       cmtPost({
@@ -215,13 +223,16 @@ function cmtOpenComposer(drop) {
         page: drop.container.id || 'phone', subtab: ctx.subtab,
         x_pct: drop.x_pct, y_pct: drop.y_pct, anchor: drop.anchor, comment: text
       }, function (res) {
-        if (!res.ok) { err.textContent = 'Save failed: ' + res.error; err.style.display = 'block'; return; }
+        if (!res.ok) { fail(res.error); return; }
         cmtCloseCard();
         if (cmtState.mode) cmtToggleMode();   /* one pin per arm, like Figma */
         cmtRefresh();
       });
     };
-    if (sel.value === '__add') cmtPost({ action: 'addName', name: name }, post);
+    if (sel.value === '__add') cmtPost({ action: 'addName', name: name }, function (res) {
+      if (!res.ok) { fail(res.error); return; }
+      post();
+    });
     else post();
   });
 
@@ -308,12 +319,14 @@ function cmtOpenBubble(c, cx, cy) {
 
   var resolveBtn = card.querySelector('#cmt-resolve');
   if (resolveBtn) resolveBtn.addEventListener('click', function () {
-    resolveBtn.textContent = 'Saving\u2026';
+    if (resolveBtn.disabled) return;
+    resolveBtn.disabled = true; resolveBtn.textContent = 'Saving\u2026';
     cmtPost({ action: 'resolve', id: c.id }, function () { cmtCloseCard(); cmtRefresh(); });
   });
   var reopenBtn = card.querySelector('#cmt-reopen');
   if (reopenBtn) reopenBtn.addEventListener('click', function () {
-    reopenBtn.textContent = 'Saving\u2026';
+    if (reopenBtn.disabled) return;
+    reopenBtn.disabled = true; reopenBtn.textContent = 'Saving\u2026';
     cmtPost({ action: 'reopen', id: c.id }, function () { cmtCloseCard(); cmtRefresh(); });
   });
 }

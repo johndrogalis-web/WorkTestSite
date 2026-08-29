@@ -795,20 +795,39 @@ function tstPing(spec, view, orient, label, wfId, uptoStep) {
     clearInterval(timer);
     tstToast(label ? 'They clicked: \u201C' + label + '\u201D \u2014 tap the dot to dismiss' : null);
 
-    if (getComputedStyle(container).position === 'static') container.style.position = 'relative';
-    var px = x / 100 * container.scrollWidth;
-    var py = y / 100 * container.scrollHeight;
-    var dot = document.createElement('div');
-    dot.className = 'tst-ping tst-ui';
-    dot.style.left = px + 'px';
-    dot.style.top = py + 'px';
-    dot.title = label || '';
-    dot.addEventListener('click', function () { dot.remove(); tstToast(null); });
-    container.appendChild(dot);
-    try {
-      container.scrollTo({ left: Math.max(0, px - container.clientWidth / 2),
-                           top: Math.max(0, py - container.clientHeight / 2), behavior: 'smooth' });
-    } catch (e) {}
+    /* Freshly opened drawers often re-render their contents right after
+       appearing, which wipes anything appended to them — including this
+       dot. So: let the container settle first, then keep the dot alive
+       by re-appending it if a render pass destroys it. */
+    var dismissed = false;
+    function placeDot() {
+      var live = document.getElementById(cid) || (cid === 'phone' ? document.querySelector('.phone') : null);
+      if (!live) return;
+      if (getComputedStyle(live).position === 'static') live.style.position = 'relative';
+      var px = x / 100 * live.scrollWidth;
+      var py = y / 100 * live.scrollHeight;
+      var dot = document.createElement('div');
+      dot.className = 'tst-ping tst-ui';
+      dot.id = 'tst-ping-dot';
+      dot.style.left = px + 'px';
+      dot.style.top = py + 'px';
+      dot.title = label || '';
+      dot.addEventListener('click', function () { dismissed = true; dot.remove(); tstToast(null); });
+      live.appendChild(dot);
+      try {
+        live.scrollTo({ left: Math.max(0, px - live.clientWidth / 2),
+                        top: Math.max(0, py - live.clientHeight / 2), behavior: 'smooth' });
+      } catch (e) {}
+    }
+    setTimeout(function () {
+      placeDot();
+      var guard = 0;
+      var keepAlive = setInterval(function () {
+        guard++;
+        if (dismissed || guard > 20) { clearInterval(keepAlive); return; }   /* ~10s of protection */
+        if (!document.getElementById('tst-ping-dot')) placeDot();
+      }, 500);
+    }, 500);
   }, 700);
 }
 

@@ -297,7 +297,8 @@ function tstOpenResultsPanel() {
   var p = tstPanelShell('Results');
   p.style.width = '360px';
   p.insertAdjacentHTML('beforeend',
-    '<div class="tst-item-row"><button class="tst-chip" onclick="tstOpenAdminPanel()">\u2190 Back</button></div>' +
+    '<div class="tst-item-row"><button class="tst-chip" onclick="tstOpenAdminPanel()">\u2190 Back</button>' +
+    '<button class="tst-chip" onclick="tstOpenDashboard()">Expand \u2197</button></div>' +
     '<div id="tst-results"><div class="tst-sub">Loading\u2026</div></div>');
 
   var wfsReady = tstState.workflows.length
@@ -356,6 +357,14 @@ function tstOpenResultsPanel() {
       host.innerHTML = html;
     });
   });
+}
+
+/* Full dashboard in a new tab — one page serves every prototype;
+   ?prototype preselects this one in its filter */
+function tstOpenDashboard() {
+  var url = new URL(location.href);
+  var base = url.pathname.replace(/[^\/]*$/, '');
+  window.open(url.origin + base + 'test-dashboard.html?prototype=' + encodeURIComponent(TST_PROTOTYPE), '_blank');
 }
 
 /* Per-step breakdown — avg time bar per step, friction step flagged */

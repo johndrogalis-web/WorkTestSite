@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prototype Testing — Dashboard</title>
+<style>
+  /* Standalone on purpose: no dependency on any prototype's files, so
+     one copy of this page serves every prototype from the shared sheet. */
+  :root {
+    --base:#f6f4f2; --layer:#fff; --border:rgba(0,0,0,0.10);
+    --strong:#171614; --defined:#3f3c38; --soft:#8a8d94; --subtle:#b3b0ac;
+    --blue:#3069e3; --green:#1f9d55; --red:#d3542f; --amber:#b8860b;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--base); font-family:var(--font); color:var(--strong); }
+  .wrap { max-width:1080px; margin:0 auto; padding:28px 24px 64px; }
+  header { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:20px; }
+  h1 { font-size:20px; font-weight:600; margin:0; letter-spacing:-0.3px; }
+  .sub { font-size:12px; color:var(--soft); }
+  select, button.refresh {
+    font-family:var(--font); font-size:12.5px; color:var(--strong);
+    background:var(--layer); border:1px solid var(--border); border-radius:100px;
+    padding:7px 14px; outline:none; cursor:pointer;
+  }
+  .spacer { flex:1; }
+
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin-bottom:20px; }
+  .card { background:var(--layer); border:1px solid var(--border); border-radius:14px; padding:16px; }
+  .card .num { font-size:26px; font-weight:600; letter-spacing:-0.5px; }
+  .card .lbl { font-size:11.5px; color:var(--soft); margin-top:2px; }
+
+  .panel { background:var(--layer); border:1px solid var(--border); border-radius:14px; padding:18px; margin-bottom:16px; }
+  .panel h2 { font-size:13.5px; font-weight:600; margin:0 0 12px; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:860px){ .grid2 { grid-template-columns:1fr; } }
+
+  /* Hand-rolled charts — zero dependencies */
+  .bars { display:flex; align-items:flex-end; gap:4px; height:140px; }
+  .bars .b { flex:1; background:var(--blue); border-radius:3px 3px 0 0; min-height:2px; position:relative; }
+  .bars .b:hover::after {
+    content:attr(data-tip); position:absolute; bottom:calc(100% + 4px); left:50%; transform:translateX(-50%);
+    background:var(--strong); color:#fff; font-size:10.5px; padding:3px 8px; border-radius:6px; white-space:nowrap; z-index:5;
+  }
+  .bars-x { display:flex; gap:4px; margin-top:6px; }
+  .bars-x span { flex:1; font-size:9.5px; color:var(--subtle); text-align:center; overflow:hidden; white-space:nowrap; }
+
+  .hrow { display:flex; align-items:center; gap:10px; font-size:12px; padding:5px 0; }
+  .hrow .name { flex:0 0 200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .hrow .track { flex:1; height:10px; background:#f0eeec; border-radius:5px; overflow:hidden; }
+  .hrow .fill { height:100%; border-radius:5px; background:var(--green); }
+  .hrow .fill.blue { background:var(--blue); }
+  .hrow .fill.friction { background:var(--red); }
+  .hrow .val { flex:0 0 74px; text-align:right; font-variant-numeric:tabular-nums; color:var(--defined); }
+  .badge { font-size:10px; border-radius:100px; padding:2px 8px; font-weight:600; }
+  .badge.bad { background:#fbe4e0; color:#b03a2a; }
+  .badge.arch { background:#eee; color:#777; }
+
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  th { text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.4px; color:var(--soft); font-weight:600; padding:6px 10px; border-bottom:1px solid var(--border); }
+  td { padding:7px 10px; border-bottom:1px solid #f2f0ee; color:var(--defined); }
+  tr:last-child td { border-bottom:none; }
+  .empty { color:var(--soft); font-size:12.5px; padding:20px 0; text-align:center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Prototype Testing</h1>
+      <div class="sub" id="updated">Loading…</div>
+    </div>
+    <div class="spacer"></div>
+    <select id="proto-sel" onchange="applyFilters()"></select>
+    <select id="wf-sel" onchange="applyFilters()"></select>
+    <button class="refresh" onclick="loadAll()">Refresh</button>
+  </header>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h2>Sessions per day — last 30 days</h2>
+      <div id="chart-days"><div class="empty">—</div></div>
+    </div>
+    <div class="panel">
+      <h2>Completion rate by workflow</h2>
+      <div id="chart-completion"><div class="empty">—</div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Median time by workflow</h2>
+    <div id="chart-time"><div class="empty">—</div></div>
+  </div>
+
+  <div class="panel">
+    <h2 id="friction-h">Step friction</h2>
+    <div class="sub" style="margin:-8px 0 10px;">Pick a single workflow above to see time and misclicks per step.</div>
+    <div id="chart-friction"><div class="empty">—</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>Recent sessions</h2>
+    <div id="sessions-table"><div class="empty">—</div></div>
+  </div>
+</div>
+
+<script>
+/* Same deployment the prototypes write to — one dashboard for everything */
+var TST_API = 'https://script.google.com/macros/s/AKfycbzS0d5DyWuuecdbT6If2Y5AaXBNsK0dCUGYOYemdxQ-FON0thzyzw2yDvYjqwNjT0HIhg/exec';
+
+var ALL = { workflows: [], sessions: [] };
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function median(arr){ if(!arr.length) return 0; var s=arr.slice().sort(function(a,b){return a-b;}); var m=Math.floor(s.length/2); return s.length%2?s[m]:(s[m-1]+s[m])/2; }
+function fmtS(s){ s=Number(s)||0; return s>=90 ? Math.round(s/6)/10+'m' : Math.round(s*10)/10+'s'; }
+function wfSteps(wf){ return (wf.checkpoints||[]).filter(function(s){return !s.meta;}); }
+
+function loadAll(){
+  document.getElementById('updated').textContent = 'Loading…';
+  Promise.all([
+    fetch(TST_API+'?action=list&all=1').then(function(r){return r.json();}),
+    fetch(TST_API+'?action=results').then(function(r){return r.json();})
+  ]).then(function(res){
+    ALL.workflows = (res[0].ok && res[0].workflows) || [];
+    ALL.sessions  = (res[1].ok && res[1].sessions)  || [];
+    document.getElementById('updated').textContent =
+      'Updated ' + new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+    buildFilters();
+    applyFilters();
+  }).catch(function(e){
+    document.getElementById('updated').textContent = 'Load failed — check the API URL. ' + e;
+  });
+}
+
+function buildFilters(){
+  var protos = {};
+  ALL.workflows.forEach(function(w){ protos[w.prototype]=1; });
+  ALL.sessions.forEach(function(s){ protos[s.prototype]=1; });
+  var urlProto = new URL(location.href).searchParams.get('prototype') || '';
+  var sel = document.getElementById('proto-sel');
+  sel.innerHTML = '<option value="">All prototypes</option>' + Object.keys(protos).sort().map(function(p){
+    return '<option value="'+esc(p)+'"'+(p===urlProto?' selected':'')+'>'+esc(p)+'</option>';
+  }).join('');
+  buildWfFilter();
+}
+
+function buildWfFilter(){
+  var proto = document.getElementById('proto-sel').value;
+  var wfs = ALL.workflows.filter(function(w){ return !proto || w.prototype===proto; });
+  var sel = document.getElementById('wf-sel');
+  var cur = sel.value;
+  sel.innerHTML = '<option value="">All workflows</option>' + wfs.map(function(w){
+    return '<option value="'+esc(w.id)+'"'+(w.id===cur?' selected':'')+'>'+esc(w.name)+(w.status!=='active'?' (archived)':'')+'</option>';
+  }).join('');
+}
+
+function applyFilters(){
+  buildWfFilter();
+  var proto = document.getElementById('proto-sel').value;
+  var wfId  = document.getElementById('wf-sel').value;
+  var ses = ALL.sessions.filter(function(s){
+    return (!proto || s.prototype===proto) && (!wfId || s.workflow_id===wfId);
+  });
+  renderCards(ses);
+  renderDays(ses);
+  renderCompletion(ses, proto);
+  renderTime(ses, proto);
+  renderFriction(ses, wfId);
+  renderTable(ses);
+}
+
+function renderCards(ses){
+  var comp = ses.filter(function(s){return s.outcome==='completed';});
+  var users = {}; ses.forEach(function(s){ users[String(s.user).toLowerCase()]=1; });
+  var medAll = median(comp.map(function(s){return Number(s.duration_s)||0;}));
+  var mis = ses.reduce(function(a,s){return a+(Number(s.misclicks_total)||0);},0);
+  document.getElementById('cards').innerHTML =
+    card(ses.length,'Sessions') +
+    card(Object.keys(users).length,'Testers') +
+    card(ses.length?Math.round(comp.length/ses.length*100)+'%':'—','Completed') +
+    card(comp.length?fmtS(medAll):'—','Median time') +
+    card(ses.length?Math.round(mis/ses.length*10)/10:'—','Misclicks / session');
+}
+function card(num,lbl){ return '<div class="card"><div class="num">'+num+'</div><div class="lbl">'+lbl+'</div></div>'; }
+
+function renderDays(ses){
+  var host = document.getElementById('chart-days');
+  if(!ses.length){ host.innerHTML='<div class="empty">No sessions yet</div>'; return; }
+  var days=[], counts={};
+  for(var i=29;i>=0;i--){
+    var d=new Date(); d.setDate(d.getDate()-i);
+    var key=d.toISOString().slice(0,10);
+    days.push(key); counts[key]=0;
+  }
+  ses.forEach(function(s){
+    var key=String(s.timestamp).slice(0,10);
+    if(counts[key]!==undefined) counts[key]++;
+  });
+  var max=Math.max.apply(null,days.map(function(k){return counts[k];})) || 1;
+  host.innerHTML = '<div class="bars">'+days.map(function(k){
+    var v=counts[k];
+    return '<div class="b" style="height:'+Math.max(2,Math.round(v/max*100))+'%" data-tip="'+k+' · '+v+'"></div>';
+  }).join('')+'</div><div class="bars-x">'+days.map(function(k,i){
+    return '<span>'+(i%5===0?k.slice(5):'')+'</span>';
+  }).join('')+'</div>';
+}
+
+function renderCompletion(ses, proto){
+  var host = document.getElementById('chart-completion');
+  var rows = groupByWf(ses, proto).map(function(g){
+    var pct = g.ses.length ? Math.round(g.comp.length/g.ses.length*100) : 0;
+    return '<div class="hrow"><span class="name" title="'+esc(g.name)+'">'+esc(g.name)+(g.archived?' <span class="badge arch">arch</span>':'')+'</span>'+
+      '<span class="track"><span class="fill" style="width:'+pct+'%"></span></span>'+
+      '<span class="val">'+pct+'% · '+g.ses.length+' runs</span></div>';
+  });
+  host.innerHTML = rows.join('') || '<div class="empty">No sessions yet</div>';
+}
+
+function renderTime(ses, proto){
+  var host = document.getElementById('chart-time');
+  var groups = groupByWf(ses, proto);
+  var meds = groups.map(function(g){ return median(g.comp.map(function(s){return Number(s.duration_s)||0;})); });
+  var max = Math.max.apply(null, meds.concat([1]));
+  host.innerHTML = groups.map(function(g,i){
+    return '<div class="hrow"><span class="name" title="'+esc(g.name)+'">'+esc(g.name)+'</span>'+
+      '<span class="track"><span class="fill blue" style="width:'+Math.max(3,Math.round(meds[i]/max*100))+'%"></span></span>'+
+      '<span class="val">'+(g.comp.length?fmtS(meds[i]):'—')+'</span></div>';
+  }).join('') || '<div class="empty">No sessions yet</div>';
+}
+
+function groupByWf(ses, proto){
+  var by={};
+  ses.forEach(function(s){ (by[s.workflow_id]=by[s.workflow_id]||[]).push(s); });
+  return Object.keys(by).map(function(id){
+    var wf = ALL.workflows.find(function(w){return w.id===id;});
+    return {
+      id:id,
+      name: wf?wf.name:(by[id][0].workflow_name||id),
+      archived: wf?wf.status!=='active':true,
+      ses: by[id],
+      comp: by[id].filter(function(s){return s.outcome==='completed';})
+    };
+  }).sort(function(a,b){ return b.ses.length-a.ses.length; });
+}
+
+function renderFriction(ses, wfId){
+  var host = document.getElementById('chart-friction');
+  if(!wfId){ host.innerHTML='<div class="empty">Select one workflow in the filter above</div>'; return; }
+  var agg={};
+  ses.forEach(function(s){
+    (Array.isArray(s.steps_data)?s.steps_data:[]).forEach(function(st){
+      var a=agg[st.i]=agg[st.i]||{label:st.label||('Step '+(st.i+1)),msSum:0,n:0,mis:0};
+      a.msSum+=Number(st.ms)||0; a.n++; a.mis+=Number(st.misclicks)||0;
+    });
+  });
+  var idxs=Object.keys(agg).map(Number).sort(function(a,b){return a-b;});
+  if(!idxs.length){ host.innerHTML='<div class="empty">No step data yet</div>'; return; }
+  var maxAvg=Math.max.apply(null,idxs.map(function(i){return agg[i].msSum/agg[i].n;}));
+  var frictionIdx=idxs.reduce(function(best,i){return agg[i].mis>agg[best].mis?i:best;},idxs[0]);
+  host.innerHTML = idxs.map(function(i){
+    var a=agg[i], avg=a.msSum/a.n, fr=(i===frictionIdx&&a.mis>0);
+    return '<div class="hrow"><span class="name" title="'+esc(a.label)+'">'+(i+1)+'. '+esc(a.label)+'</span>'+
+      '<span class="track"><span class="fill blue'+(fr?' friction':'')+'" style="width:'+Math.max(3,Math.round(avg/maxAvg*100))+'%"></span></span>'+
+      '<span class="val">'+fmtS(avg/1000)+(a.mis?' · '+a.mis+' mis':'')+'</span></div>';
+  }).join('');
+}
+
+function renderTable(ses){
+  var host = document.getElementById('sessions-table');
+  if(!ses.length){ host.innerHTML='<div class="empty">No sessions yet</div>'; return; }
+  var rows = ses.slice().sort(function(a,b){return new Date(b.timestamp)-new Date(a.timestamp);}).slice(0,50);
+  host.innerHTML = '<table><tr><th>Tester</th><th>Workflow</th><th>Prototype</th><th>View</th><th>Outcome</th><th>Time</th><th>Misclicks</th><th>When</th></tr>'+
+    rows.map(function(s){
+      var when=''; try{ when=new Date(s.timestamp).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }catch(e){}
+      return '<tr><td>'+esc(s.user)+'</td><td>'+esc(s.workflow_name||s.workflow_id)+'</td><td>'+esc(s.prototype)+'</td>'+
+        '<td>'+esc(s.view)+(s.orientation&&s.view!=='desktop'?' · '+esc(s.orientation):'')+'</td>'+
+        '<td>'+(s.outcome==='completed'?'Completed':'<span class="badge bad">Gave up</span>')+'</td>'+
+        '<td>'+fmtS(s.duration_s)+'</td><td>'+(s.misclicks_total||0)+'</td><td>'+when+'</td></tr>';
+    }).join('')+'</table>';
+}
+
+loadAll();
+</script>
+</body>
+</html>

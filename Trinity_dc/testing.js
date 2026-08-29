@@ -104,6 +104,11 @@ var tstState = {
     '.tst-ping::before{content:"";position:absolute;inset:-14px;border-radius:50%;',
     '  border:3px solid #d3542f;animation:tstping 1.4s ease-out infinite;}',
     '@keyframes tstping{from{transform:scale(0.4);opacity:1;}to{transform:scale(1.5);opacity:0;}}',
+    '.tst-veil{position:fixed;inset:0;z-index:2990;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);',
+    '  background:rgba(246,244,242,0.45);display:flex;flex-direction:column;gap:12px;',
+    '  align-items:center;justify-content:center;font-family:var(--font,sans-serif);}',
+    '.tst-veil-msg{background:#171614;color:#fff;font-size:13px;padding:10px 20px;border-radius:100px;',
+    '  box-shadow:0 8px 28px rgba(0,0,0,0.3);}',
     '.tst-toast{position:fixed;top:54px;left:50%;transform:translateX(-50%);z-index:3001;',
     '  background:#171614;color:#fff;font-family:var(--font,sans-serif);font-size:12px;',
     '  padding:8px 16px;border-radius:100px;box-shadow:0 4px 14px rgba(0,0,0,0.3);max-width:80vw;',
@@ -718,12 +723,47 @@ function tstToast(text) {
   document.body.appendChild(t);
 }
 
-/* Guided walkthrough to a misclick: instead of auto-clicking (fragile
-   against renders and animations), the bar tells YOU what to click
-   next — the same clicks the tester made — and your clicks advance it.
-   Reaching the misclick step drops the ping. Bonus: you just verified
-   the whole path still works with your own hands. */
+/* ── Auto-walk to a misclick: the page blurs while the tester's own
+   completed steps are replayed as clicks (the path IS what opens the
+   right drawers and menus), then the veil lifts and the dot appears.
+   If any step can't be auto-resolved, the veil lifts and the guided
+   bar takes over from exactly that point — you click, it advances. ── */
 var tstGuide = null;   /* {wf, steps, idx, ping:{spec,label}} */
+
+function tstVeil(msg) {
+  var v = document.getElementById('tst-veil');
+  if (msg === null) { if (v) v.remove(); return; }
+  if (!v) {
+    v = document.createElement('div');
+    v.id = 'tst-veil'; v.className = 'tst-veil tst-ui';
+    v.innerHTML = '<div class="tst-veil-msg" id="tst-veil-msg"></div>' +
+      '<button class="tst-chip" style="background:#fff;" onclick="tstVeil(null);tstGuideCancel();">Cancel</button>';
+    document.body.appendChild(v);
+  }
+  document.getElementById('tst-veil-msg').textContent = msg;
+}
+
+function tstResolveStep(cp) {
+  function vis(el) { var r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; }
+  if (cp.eid) {
+    var e = document.getElementById(cp.eid);
+    if (e && vis(e)) return e;
+  }
+  var scopes = [];
+  var c = document.getElementById(cp.cid) || (cp.cid === 'phone' ? document.querySelector('.phone') : null);
+  if (c) scopes.push(c);
+  scopes.push(document);
+  if (!cp.text && !cp.ntext) return null;
+  for (var s = 0; s < scopes.length; s++) {
+    var cands = scopes[s].querySelectorAll('button, a, [onclick], [id]');
+    for (var k = 0; k < cands.length; k++) {
+      if (!vis(cands[k])) continue;
+      var t = tstNorm(cands[k].textContent);
+      if (t && (t === cp.text || tstDigitless(t) === cp.ntext)) return cands[k];
+    }
+  }
+  return null;
+}
 
 function tstStartGuide(wfId, uptoStep, spec, label) {
   tstGet('?action=list&prototype=' + encodeURIComponent(TST_PROTOTYPE) + '&all=1', function (res) {
@@ -731,9 +771,32 @@ function tstStartGuide(wfId, uptoStep, spec, label) {
     if (!wf) { tstPlacePing(spec, label); return; }
     var steps = tstWfSteps(wf).slice(0, uptoStep);
     if (!steps.length) { tstPlacePing(spec, label); return; }
-    tstState.mode = 'guide';
-    tstGuide = { wf: wf, steps: steps, idx: 0, ping: { spec: spec, label: label } };
-    tstGuideBar();
+
+    var ping = { spec: spec, label: label };
+    tstVeil('Taking you to the spot the tester clicked\u2026');
+    var i = 0;
+    (function next() {
+      if (document.getElementById('tst-veil') === null) return;   /* cancelled */
+      if (i >= steps.length) {
+        tstVeil(null);
+        setTimeout(function () { tstPlacePing(spec, label); }, 600);   /* let the last click settle */
+        return;
+      }
+      var el = tstResolveStep(steps[i]);
+      if (!el) {
+        /* Auto-walk can't see this one (dynamic render, timing) — hand
+           over to the human from exactly this step. */
+        tstVeil(null);
+        tstState.mode = 'guide';
+        tstGuide = { wf: wf, steps: steps, idx: i, ping: ping };
+        tstGuideBar();
+        return;
+      }
+      tstVeil('Walking the tester\u2019s path \u2014 step ' + (i + 1) + ' of ' + steps.length + '\u2026');
+      el.click();
+      i++;
+      setTimeout(next, 800);
+    })();
   });
 }
 
@@ -743,7 +806,7 @@ function tstGuideBar() {
   var next = g.steps[g.idx];
   var bar = document.createElement('div');
   bar.id = 'tst-bar'; bar.className = 'tst-ui tst-bar';
-  bar.innerHTML = '<b>Walk the tester\u2019s path</b>' +
+  bar.innerHTML = '<b>Finish the path</b>' +
     '<span id="tst-bar-count">' + (g.idx + 1) + ' of ' + g.steps.length +
     ' \u2014 click \u201C' + tstEsc(next.text || next.eid || 'next step') + '\u201D</span>' +
     '<button class="tst-chip" onclick="tstGuideCancel()">Cancel</button>';
@@ -819,7 +882,10 @@ function tstPlacePing(spec, label) {
       dot.style.left = px + 'px';
       dot.style.top = py + 'px';
       dot.title = label || '';
-      dot.addEventListener('click', function () { dismissed = true; dot.remove(); tstToast(null); });
+      dot.addEventListener('click', function () {
+        dismissed = true; dot.remove(); tstToast(null);
+        try { window.close(); } catch (e) {}   /* closes when opened from the dashboard; harmless otherwise */
+      });
       live.appendChild(dot);
       try {
         live.scrollTo({ left: Math.max(0, px - live.clientWidth / 2),

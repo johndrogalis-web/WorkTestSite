@@ -379,17 +379,18 @@ function tstResultsSteps(wfId, btn) {
   ses.forEach(function (s) {
     (Array.isArray(s.steps_data) ? s.steps_data : []).forEach(function (st) {
       var a = agg[st.i] = agg[st.i] || { label: st.label || ('Step ' + (st.i + 1)), msSum: 0, n: 0, mis: 0 };
-      a.msSum += Number(st.ms) || 0; a.n++; a.mis += Number(st.misclicks) || 0;
+      if (!st.partial) { a.msSum += Number(st.ms) || 0; a.n++; }
+      a.mis += Number(st.misclicks) || 0;
     });
   });
   var idxs = Object.keys(agg).map(Number).sort(function (a, b) { return a - b; });
   if (!idxs.length) { box.innerHTML = '<div class="tst-sub">No step data yet.</div>'; return; }
-  var maxAvg = Math.max.apply(null, idxs.map(function (i) { return agg[i].msSum / agg[i].n; }));
+  var maxAvg = Math.max.apply(null, idxs.map(function (i) { return agg[i].n ? agg[i].msSum / agg[i].n : 0; })) || 1;
   var frictionIdx = idxs.reduce(function (best, i) {
     return agg[i].mis > agg[best].mis ? i : best;
   }, idxs[0]);
   box.innerHTML = idxs.map(function (i) {
-    var a = agg[i], avg = a.msSum / a.n;
+    var a = agg[i], avg = a.n ? a.msSum / a.n : 0;
     var friction = i === frictionIdx && a.mis > 0;
     return '<div class="tst-stepbar">' +
       '<span class="tst-stepbar-label" title="' + tstEsc(a.label) + '">' + (i + 1) + '. ' + tstEsc(a.label) + '</span>' +
@@ -560,7 +561,7 @@ function tstBeginRun(wf) {
   setTimeout(function () {
     var now = Date.now();
     tstState.mode = 'run';
-    tstState.run = { wf: wf, idx: 0, t0: now, tStep: now, misclicks: 0, stepMis: 0, steps: [] };
+    tstState.run = { wf: wf, idx: 0, t0: now, tStep: now, misclicks: 0, stepMis: 0, stepMissed: [], steps: [] };
     tstRenderBar();
     tstShowInstruction(wf);
   }, 650);
@@ -579,8 +580,8 @@ function tstAdvance(e) {
   var r = tstState.run;
   var steps = tstWfSteps(r.wf);
   var now = Date.now();
-  r.steps.push({ i: r.idx, label: steps[r.idx].text || steps[r.idx].eid, ms: now - r.tStep, misclicks: r.stepMis });
-  r.tStep = now; r.stepMis = 0; r.idx++;
+  r.steps.push({ i: r.idx, label: steps[r.idx].text || steps[r.idx].eid, ms: now - r.tStep, misclicks: r.stepMis, missed: r.stepMissed });
+  r.tStep = now; r.stepMis = 0; r.stepMissed = []; r.idx++;
 
   var flash = document.createElement('div');
   flash.className = 'tst-flash';
@@ -601,6 +602,11 @@ function tstRunGiveUp(btn) {
 
 function tstComplete(outcome) {
   var r = tstState.run;
+  if (outcome === 'abandoned' && r.idx < tstWfSteps(r.wf).length) {
+    var stuck = tstWfSteps(r.wf)[r.idx];
+    r.steps.push({ i: r.idx, label: stuck.text || stuck.eid, ms: Date.now() - r.tStep,
+                   misclicks: r.stepMis, missed: r.stepMissed, partial: 1 });
+  }
   tstState.mode = null;
   var bar = document.getElementById('tst-bar'); if (bar) bar.remove();
 
@@ -647,8 +653,18 @@ document.addEventListener('click', function (e) {
   if (tstState.mode === 'run') {
     var steps = tstWfSteps(tstState.run.wf);
     var fp = tstFingerprint(e.target);
-    if (tstMatches(fp, steps[tstState.run.idx])) tstAdvance(e);
-    else { tstState.run.misclicks++; tstState.run.stepMis++; }
+    if (tstMatches(fp, steps[tstState.run.idx])) { tstAdvance(e); return; }
+    tstState.run.misclicks++; tstState.run.stepMis++;
+    if (tstState.run.stepMissed.length < 25) {   /* cap so steps_data can't bloat */
+      var mc = tstContainerOf(e.target);
+      var mr = mc.getBoundingClientRect();
+      tstState.run.stepMissed.push({
+        cid: mc.id || 'phone',
+        text: fp.text.slice(0, 40),
+        x: Math.round(((e.clientX - mr.left + mc.scrollLeft) / Math.max(mc.scrollWidth, 1)) * 1000) / 10,
+        y: Math.round(((e.clientY - mr.top + mc.scrollTop) / Math.max(mc.scrollHeight, 1)) * 1000) / 10
+      });
+    }
   }
 }, true);
 

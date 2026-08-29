@@ -53,6 +53,11 @@
   .hrow .fill.blue { background:var(--blue); }
   .hrow .fill.friction { background:var(--red); }
   .hrow .val { flex:0 0 74px; text-align:right; font-variant-numeric:tabular-nums; color:var(--defined); }
+  .miss { margin:2px 0 6px 210px; font-size:11px; color:var(--soft); }
+  .miss .m { display:flex; gap:6px; align-items:baseline; padding:1.5px 0; }
+  .miss .m b { color:var(--red); font-weight:600; min-width:26px; }
+  .miss .m .where { color:var(--subtle); }
+  @media (max-width:860px){ .miss { margin-left:0; } }
   .badge { font-size:10px; border-radius:100px; padding:2px 8px; font-weight:600; }
   .badge.bad { background:#fbe4e0; color:#b03a2a; }
   .badge.arch { background:#eee; color:#777; }
@@ -252,19 +257,49 @@ function renderFriction(ses, wfId){
   var agg={};
   ses.forEach(function(s){
     (Array.isArray(s.steps_data)?s.steps_data:[]).forEach(function(st){
-      var a=agg[st.i]=agg[st.i]||{label:st.label||('Step '+(st.i+1)),msSum:0,n:0,mis:0};
-      a.msSum+=Number(st.ms)||0; a.n++; a.mis+=Number(st.misclicks)||0;
+      var a=agg[st.i]=agg[st.i]||{label:st.label||('Step '+(st.i+1)),msSum:0,n:0,mis:0,missed:{},
+                                   stuck:0,stuckMs:0,cleanMs:0,cleanN:0};
+      var ms=Number(st.ms)||0;
+      if(!st.partial){
+        a.msSum+=ms; a.n++;                                    /* time to FIND it, fumbling included */
+        if(!(Number(st.misclicks)||0)){ a.cleanMs+=ms; a.cleanN++; }   /* runs with zero mistakes */
+      } else { a.stuck++; a.stuckMs+=ms; }                     /* time spent trying before quitting */
+      a.mis+=Number(st.misclicks)||0;
+      (Array.isArray(st.missed)?st.missed:[]).forEach(function(m){
+        var key=(m.text||'(blank area)')+'\u0000'+(m.cid||'');
+        a.missed[key]=(a.missed[key]||0)+1;
+      });
     });
   });
   var idxs=Object.keys(agg).map(Number).sort(function(a,b){return a-b;});
   if(!idxs.length){ host.innerHTML='<div class="empty">No step data yet</div>'; return; }
-  var maxAvg=Math.max.apply(null,idxs.map(function(i){return agg[i].msSum/agg[i].n;}));
+  var maxAvg=Math.max.apply(null,idxs.map(function(i){return agg[i].n?agg[i].msSum/agg[i].n:0;}))||1;
   var frictionIdx=idxs.reduce(function(best,i){return agg[i].mis>agg[best].mis?i:best;},idxs[0]);
   host.innerHTML = idxs.map(function(i){
-    var a=agg[i], avg=a.msSum/a.n, fr=(i===frictionIdx&&a.mis>0);
+    var a=agg[i], avg=a.n?a.msSum/a.n:0, fr=(i===frictionIdx&&a.mis>0);
+    /* "clicked instead" — what testers hit while looking for this step,
+       grouped by target, biggest offenders first */
+    var missKeys=Object.keys(a.missed).sort(function(x,y){return a.missed[y]-a.missed[x];});
+    var missHTML='';
+    if(missKeys.length){
+      var shown=missKeys.slice(0,4);
+      missHTML='<div class="miss">'+shown.map(function(k){
+        var parts=k.split('\u0000');
+        return '<div class="m"><b>\u00D7'+a.missed[k]+'</b><span>clicked \u201C'+esc(parts[0])+'\u201D</span>'+
+          (parts[1]?'<span class="where">in '+esc(parts[1])+'</span>':'')+'</div>';
+      }).join('')+(missKeys.length>4?'<div class="m"><span class="where">+'+(missKeys.length-4)+' more targets</span></div>':'')+'</div>';
+    }
+    /* Time reads: avg = time to find it including fumbling; clean shown
+       when someone fumbled, so the cost of confusion is visible; quit
+       shows how long people tried before giving up on this step. */
+    var timeBits=[];
+    if(a.n) timeBits.push(fmtS(avg/1000));
+    if(a.cleanN && a.cleanN<a.n) timeBits.push('clean '+fmtS(a.cleanMs/a.cleanN/1000));
+    if(a.mis) timeBits.push(a.mis+' mis');
+    if(a.stuck) timeBits.push(a.stuck+' quit after ~'+fmtS(a.stuckMs/a.stuck/1000));
     return '<div class="hrow"><span class="name" title="'+esc(a.label)+'">'+(i+1)+'. '+esc(a.label)+'</span>'+
       '<span class="track"><span class="fill blue'+(fr?' friction':'')+'" style="width:'+Math.max(3,Math.round(avg/maxAvg*100))+'%"></span></span>'+
-      '<span class="val">'+fmtS(avg/1000)+(a.mis?' · '+a.mis+' mis':'')+'</span></div>';
+      '<span class="val" style="flex-basis:180px;">'+(timeBits.join(' · ')||'\u2014')+'</span></div>'+missHTML;
   }).join('');
 }
 

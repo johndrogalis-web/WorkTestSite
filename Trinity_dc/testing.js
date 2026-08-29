@@ -98,6 +98,16 @@ var tstState = {
     '.tst-stepbar-ms{flex:0 0 44px;text-align:right;font-variant-numeric:tabular-nums;}',
     '.tst-ses-row{display:flex;justify-content:space-between;font-size:11px;color:#555;padding:3px 0;border-bottom:1px solid #f2f0ee;}',
     '.tst-ses-row:last-child{border-bottom:none;}',
+    /* Location ping — deep-linked from the dashboard */
+    '.tst-ping{position:absolute;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;',
+    '  background:#d3542f;border:3px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,0.4);z-index:1500;cursor:pointer;}',
+    '.tst-ping::before{content:"";position:absolute;inset:-14px;border-radius:50%;',
+    '  border:3px solid #d3542f;animation:tstping 1.4s ease-out infinite;}',
+    '@keyframes tstping{from{transform:scale(0.4);opacity:1;}to{transform:scale(1.5);opacity:0;}}',
+    '.tst-toast{position:fixed;top:54px;left:50%;transform:translateX(-50%);z-index:3001;',
+    '  background:#171614;color:#fff;font-family:var(--font,sans-serif);font-size:12px;',
+    '  padding:8px 16px;border-radius:100px;box-shadow:0 4px 14px rgba(0,0,0,0.3);max-width:80vw;',
+    '  text-align:center;}',
     '.tst-flash{position:fixed;border-radius:50%;width:34px;height:34px;border:3px solid #1f9d55;',
     '  z-index:2999;pointer-events:none;animation:tstflash 0.5s ease-out forwards;margin:-17px 0 0 -17px;}',
     '@keyframes tstflash{from{transform:scale(0.5);opacity:1;}to{transform:scale(1.6);opacity:0;}}'
@@ -668,9 +678,67 @@ document.addEventListener('click', function (e) {
   }
 }, true);
 
+/* ── Location ping — ?ping=cid,x,y&pv=view&po=orientation&pt=label ──
+   Opens the prototype on the right surface and pulses the exact spot a
+   misclick landed. Coordinates are % of the container's scroll content,
+   converted to px at render so long scrolling pages resolve correctly. */
+function tstToast(text) {
+  var t = document.getElementById('tst-toast');
+  if (t) t.remove();
+  if (!text) return;
+  t = document.createElement('div');
+  t.id = 'tst-toast'; t.className = 'tst-toast tst-ui'; t.textContent = text;
+  document.body.appendChild(t);
+}
+
+function tstPing(spec, view, orient, label) {
+  var parts = spec.split(',');
+  var cid = parts[0], x = parseFloat(parts[1]) || 0, y = parseFloat(parts[2]) || 0;
+
+  try {
+    if (view && typeof setView === 'function') setView(view);
+    if (view && view !== 'desktop' && orient && typeof setOrientation === 'function') setOrientation(view, orient);
+  } catch (e) {}
+
+  var tries = 0;
+  var timer = setInterval(function () {
+    tries++;
+    var container = document.getElementById(cid) || (cid === 'phone' ? document.querySelector('.phone') : null);
+    var visible = container && container.getBoundingClientRect().width > 0;
+    if (!visible) {
+      if (tries === 3) tstToast('Looking for "' + cid + '" \u2014 open the screen or drawer where it lives and the ping will appear.');
+      if (tries > 60) { clearInterval(timer); tstToast('Could not find "' + cid + '" \u2014 it may have been renamed since this test ran.'); }
+      return;
+    }
+    clearInterval(timer);
+    tstToast(label ? 'They clicked: \u201C' + label + '\u201D \u2014 tap the dot to dismiss' : null);
+
+    if (getComputedStyle(container).position === 'static') container.style.position = 'relative';
+    var px = x / 100 * container.scrollWidth;
+    var py = y / 100 * container.scrollHeight;
+    var dot = document.createElement('div');
+    dot.className = 'tst-ping tst-ui';
+    dot.style.left = px + 'px';
+    dot.style.top = py + 'px';
+    dot.title = label || '';
+    dot.addEventListener('click', function () { dot.remove(); tstToast(null); });
+    container.appendChild(dot);
+    try {
+      container.scrollTo({ left: Math.max(0, px - container.clientWidth / 2),
+                           top: Math.max(0, py - container.clientHeight / 2), behavior: 'smooth' });
+    } catch (e) {}
+  }, 700);
+}
+
 /* ── Boot ── */
 function tstBoot() {
   var url = new URL(location.href);
+  var ping = url.searchParams.get('ping');
+  if (ping) {
+    setTimeout(function () {
+      tstPing(ping, url.searchParams.get('pv') || '', url.searchParams.get('po') || '', url.searchParams.get('pt') || '');
+    }, 400);   /* let the app's own boot finish first */
+  }
   var t = url.searchParams.get('test');
   if (t) { tstEnterTestMode(t); return; }
   tstMountButton();

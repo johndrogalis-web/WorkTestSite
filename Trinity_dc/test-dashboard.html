@@ -57,6 +57,8 @@
   .miss .m { display:flex; gap:6px; align-items:baseline; padding:1.5px 0; }
   .miss .m b { color:var(--red); font-weight:600; min-width:26px; }
   .miss .m .where { color:var(--subtle); }
+  .miss .m a.mlink { color:var(--blue); text-decoration:none; font-weight:500; }
+  .miss .m a.mlink:hover { text-decoration:underline; }
   @media (max-width:860px){ .miss { margin-left:0; } }
   .badge { font-size:10px; border-radius:100px; padding:2px 8px; font-weight:600; }
   .badge.bad { background:#fbe4e0; color:#b03a2a; }
@@ -267,7 +269,10 @@ function renderFriction(ses, wfId){
       a.mis+=Number(st.misclicks)||0;
       (Array.isArray(st.missed)?st.missed:[]).forEach(function(m){
         var key=(m.text||'(blank area)')+'\u0000'+(m.cid||'');
-        a.missed[key]=(a.missed[key]||0)+1;
+        var g=a.missed[key]=a.missed[key]||{count:0,loc:null};
+        g.count++;
+        /* first occurrence is the representative location for the ping */
+        if(!g.loc && m.cid) g.loc={cid:m.cid,x:m.x,y:m.y,view:s.view,po:s.orientation,text:m.text||''};
       });
     });
   });
@@ -279,14 +284,21 @@ function renderFriction(ses, wfId){
     var a=agg[i], avg=a.n?a.msSum/a.n:0, fr=(i===frictionIdx&&a.mis>0);
     /* "clicked instead" — what testers hit while looking for this step,
        grouped by target, biggest offenders first */
-    var missKeys=Object.keys(a.missed).sort(function(x,y){return a.missed[y]-a.missed[x];});
+    var missKeys=Object.keys(a.missed).sort(function(x,y){return a.missed[y].count-a.missed[x].count;});
     var missHTML='';
     if(missKeys.length){
       var shown=missKeys.slice(0,4);
       missHTML='<div class="miss">'+shown.map(function(k){
-        var parts=k.split('\u0000');
-        return '<div class="m"><b>\u00D7'+a.missed[k]+'</b><span>clicked \u201C'+esc(parts[0])+'\u201D</span>'+
-          (parts[1]?'<span class="where">in '+esc(parts[1])+'</span>':'')+'</div>';
+        var parts=k.split('\u0000'), g=a.missed[k];
+        var link='';
+        if(g.loc){
+          var href='./?ping='+encodeURIComponent(g.loc.cid)+','+g.loc.x+','+g.loc.y+
+            '&pv='+encodeURIComponent(g.loc.view||'')+'&po='+encodeURIComponent(g.loc.po||'')+
+            '&pt='+encodeURIComponent(g.loc.text.slice(0,40));
+          link='<a class="mlink" href="'+href+'" target="_blank">see location \u2197</a>';
+        }
+        return '<div class="m"><b>\u00D7'+g.count+'</b><span>clicked \u201C'+esc(parts[0])+'\u201D</span>'+
+          (parts[1]?'<span class="where">in '+esc(parts[1])+'</span>':'')+link+'</div>';
       }).join('')+(missKeys.length>4?'<div class="m"><span class="where">+'+(missKeys.length-4)+' more targets</span></div>':'')+'</div>';
     }
     /* Time reads: avg = time to find it including fumbling; clean shown

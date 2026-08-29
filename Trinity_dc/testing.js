@@ -681,6 +681,12 @@ document.addEventListener('click', function (e) {
     return;                                                    /* click passes through */
   }
 
+  if (tstState.mode === 'guide') {
+    var gfp = tstFingerprint(e.target);
+    if (tstMatches(gfp, tstGuide.steps[tstGuide.idx])) tstGuideAdvance(e);
+    return;   /* wrong clicks during a guide are just navigation, not data */
+  }
+
   if (tstState.mode === 'run') {
     var steps = tstWfSteps(tstState.run.wf);
     var fp = tstFingerprint(e.target);
@@ -712,76 +718,77 @@ function tstToast(text) {
   document.body.appendChild(t);
 }
 
-/* Find the live, VISIBLE element a checkpoint points at. Visibility
-   matters: mobile and tablet surfaces coexist in the DOM with the same
-   button text, and we must click the one that's actually on screen. */
-function tstResolveStep(cp) {
-  function vis(el) { var r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; }
-  if (cp.eid) {
-    var e = document.getElementById(cp.eid);
-    if (e && vis(e)) return e;
-  }
-  var scopes = [];
-  var c = document.getElementById(cp.cid) || (cp.cid === 'phone' ? document.querySelector('.phone') : null);
-  if (c) scopes.push(c);
-  scopes.push(document);
-  if (!cp.text && !cp.ntext) return null;
-  for (var s = 0; s < scopes.length; s++) {
-    var cands = scopes[s].querySelectorAll('button, a, [onclick], [id]');
-    for (var k = 0; k < cands.length; k++) {
-      if (!vis(cands[k])) continue;
-      var t = tstNorm(cands[k].textContent);
-      if (t && (t === cp.text || tstDigitless(t) === cp.ntext)) return cands[k];
-    }
-  }
-  return null;
-}
+/* Guided walkthrough to a misclick: instead of auto-clicking (fragile
+   against renders and animations), the bar tells YOU what to click
+   next — the same clicks the tester made — and your clicks advance it.
+   Reaching the misclick step drops the ping. Bonus: you just verified
+   the whole path still works with your own hands. */
+var tstGuide = null;   /* {wf, steps, idx, ping:{spec,label}} */
 
-/* Replay the tester's completed steps to drive the UI into the state
-   where the misclick happened — the recorded workflow doubles as the
-   navigation script that opens the right drawers and menus. */
-function tstReplayPath(wfId, uptoStep, done) {
+function tstStartGuide(wfId, uptoStep, spec, label) {
   tstGet('?action=list&prototype=' + encodeURIComponent(TST_PROTOTYPE) + '&all=1', function (res) {
     var wf = ((res.ok && res.workflows) || []).find(function (w) { return w.id === wfId; });
-    if (!wf) { done(); return; }
+    if (!wf) { tstPlacePing(spec, label); return; }
     var steps = tstWfSteps(wf).slice(0, uptoStep);
-    if (!steps.length) { done(); return; }
-    var i = 0;
-    (function next() {
-      if (i >= steps.length) { tstToast(null); done(); return; }
-      var el = tstResolveStep(steps[i]);
-      if (!el) {
-        tstToast('Replayed ' + i + ' of ' + steps.length + ' steps \u2014 couldn\u2019t find \u201C' +
-          (steps[i].text || steps[i].eid) + '\u201D, finish the path by hand and the ping will appear.');
-        done();
-        return;
-      }
-      tstToast('Replaying the tester\u2019s path \u2014 step ' + (i + 1) + ' of ' + steps.length + '\u2026');
-      el.click();
-      i++;
-      setTimeout(next, 750);   /* let menus, sheets, and drawers animate in */
-    })();
+    if (!steps.length) { tstPlacePing(spec, label); return; }
+    tstState.mode = 'guide';
+    tstGuide = { wf: wf, steps: steps, idx: 0, ping: { spec: spec, label: label } };
+    tstGuideBar();
   });
 }
 
-function tstPing(spec, view, orient, label, wfId, uptoStep) {
-  var parts = spec.split(',');
-  var cid = parts[0], x = parseFloat(parts[1]) || 0, y = parseFloat(parts[2]) || 0;
+function tstGuideBar() {
+  var old = document.getElementById('tst-bar'); if (old) old.remove();
+  var g = tstGuide;
+  var next = g.steps[g.idx];
+  var bar = document.createElement('div');
+  bar.id = 'tst-bar'; bar.className = 'tst-ui tst-bar';
+  bar.innerHTML = '<b>Walk the tester\u2019s path</b>' +
+    '<span id="tst-bar-count">' + (g.idx + 1) + ' of ' + g.steps.length +
+    ' \u2014 click \u201C' + tstEsc(next.text || next.eid || 'next step') + '\u201D</span>' +
+    '<button class="tst-chip" onclick="tstGuideCancel()">Cancel</button>';
+  document.body.appendChild(bar);
+}
 
+function tstGuideCancel() {
+  tstState.mode = null; tstGuide = null;
+  var b = document.getElementById('tst-bar'); if (b) b.remove();
+  tstToast(null);
+}
+
+function tstGuideAdvance(e) {
+  var g = tstGuide;
+  g.idx++;
+  var flash = document.createElement('div');
+  flash.className = 'tst-flash';
+  flash.style.left = e.clientX + 'px'; flash.style.top = e.clientY + 'px';
+  document.body.appendChild(flash);
+  setTimeout(function () { flash.remove(); }, 550);
+  if (g.idx >= g.steps.length) {
+    var ping = g.ping;
+    tstGuideCancel();
+    setTimeout(function () { tstPlacePing(ping.spec, ping.label); }, 600);   /* let the last click's UI settle */
+    return;
+  }
+  tstGuideBar();
+}
+
+function tstPing(spec, view, orient, label, wfId, uptoStep) {
   try {
     if (view && typeof setView === 'function') setView(view);
     if (view && view !== 'desktop' && orient && typeof setOrientation === 'function') setOrientation(view, orient);
   } catch (e) {}
 
   if (wfId && uptoStep > 0) {
-    setTimeout(function () {
-      tstReplayPath(wfId, uptoStep, function () {
-        tstPing(spec, '', '', label, null, 0);   /* path walked — now find and pulse */
-      });
-    }, 700);   /* after the view switch settles */
+    setTimeout(function () { tstStartGuide(wfId, uptoStep, spec, label); }, 700);
     return;
   }
+  tstPlacePing(spec, label);
+}
 
+function tstPlacePing(spec, label) {
+  var parts = spec.split(',');
+  var cid = parts[0], x = parseFloat(parts[1]) || 0, y = parseFloat(parts[2]) || 0;
   var tries = 0;
   var timer = setInterval(function () {
     tries++;

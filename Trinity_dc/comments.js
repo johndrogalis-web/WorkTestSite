@@ -52,7 +52,11 @@ var cmtState = {
     '.cmt-row{display:flex;gap:6px;justify-content:flex-end;}',
     '.cmt-cta{border:none;border-radius:100px;padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;}',
     '.cmt-cta-post{background:#171614;color:#fff;}',
-    '.cmt-cta:disabled{opacity:0.55;cursor:default;}',
+    '.cmt-cta:disabled{opacity:0.75;cursor:default;}',
+    '.cmt-spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,0.35);',
+    '  border-top-color:#fff;border-radius:50%;animation:cmtspin 0.7s linear infinite;vertical-align:-2px;}',
+    '.cmt-cta-quiet .cmt-spin{border-color:rgba(0,0,0,0.2);border-top-color:#555;}',
+    '@keyframes cmtspin{to{transform:rotate(360deg)}}',
     '.cmt-cta-quiet{background:none;color:#555;}',
     '.cmt-meta{font-size:11px;color:#8a8d94;}',
     '.cmt-author{font-size:12.5px;font-weight:600;color:#1a1a1a;}',
@@ -209,12 +213,14 @@ function cmtOpenComposer(drop) {
     if (!name) { err.textContent = 'Pick or add a name first.'; err.style.display = 'block'; return; }
     if (!text) { err.textContent = 'Comment is empty.'; err.style.display = 'block'; return; }
     err.style.display = 'none';
-    btn.disabled = true; btn.textContent = 'Posting\u2026';
+    btn.disabled = true;
+    btn.style.width = btn.offsetWidth + 'px';   /* keep size while swapping to spinner */
+    btn.innerHTML = '<span class="cmt-spin"></span>';
     try { localStorage.setItem('cmt_last_name', name); } catch (e2) {}
 
     var fail = function (msg) {
       err.textContent = 'Save failed: ' + msg; err.style.display = 'block';
-      btn.disabled = false; btn.textContent = 'Post';
+      btn.disabled = false; btn.style.width = ''; btn.textContent = 'Post';
     };
     var ctx = cmtContext();
     var post = function () {
@@ -320,13 +326,17 @@ function cmtOpenBubble(c, cx, cy) {
   var resolveBtn = card.querySelector('#cmt-resolve');
   if (resolveBtn) resolveBtn.addEventListener('click', function () {
     if (resolveBtn.disabled) return;
-    resolveBtn.disabled = true; resolveBtn.textContent = 'Saving\u2026';
+    resolveBtn.disabled = true;
+    resolveBtn.style.width = resolveBtn.offsetWidth + 'px';
+    resolveBtn.innerHTML = '<span class="cmt-spin"></span>';
     cmtPost({ action: 'resolve', id: c.id }, function () { cmtCloseCard(); cmtRefresh(); });
   });
   var reopenBtn = card.querySelector('#cmt-reopen');
   if (reopenBtn) reopenBtn.addEventListener('click', function () {
     if (reopenBtn.disabled) return;
-    reopenBtn.disabled = true; reopenBtn.textContent = 'Saving\u2026';
+    reopenBtn.disabled = true;
+    reopenBtn.style.width = reopenBtn.offsetWidth + 'px';
+    reopenBtn.innerHTML = '<span class="cmt-spin"></span>';
     cmtPost({ action: 'reopen', id: c.id }, function () { cmtCloseCard(); cmtRefresh(); });
   });
 }

@@ -2180,26 +2180,33 @@ function confirmAttach() {
      screen where you're about to commit a configuration. */
   const tcgId = (udCurrentUnit && udCurrentUnit.tgw && udCurrentUnit.tgw !== '--') ? udCurrentUnit.tgw : '—';
   overlay.innerHTML = `
-    <div class="confirm-sheet">
-      <div class="confirm-title">Attach Unit to Truck</div>
-      <div style="background:var(--layer-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin:8px 0 14px;display:flex;flex-direction:column;gap:6px;">
-        <div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;">
-          <span style="color:var(--soft);letter-spacing:-0.26px;">Unit ID</span>
-          <span style="color:var(--strong);font-family:'DM Mono',monospace;letter-spacing:0.2px;">${udCurrentUnit.id}</span>
+    <div class="confirm-sheet" style="display:flex;flex-direction:column;max-height:100%;overflow:hidden;box-sizing:border-box;">
+      <div class="confirm-title" style="flex-shrink:0;">Attach Unit to Truck</div>
+      <!-- Scrollable middle — detail table + explanatory copy. Same
+           header/scroll/footer split as the Replace TCG sheet: in a
+           short landscape drawer, the old flat-flow version let the
+           title and buttons get pushed off-screen along with
+           everything else. Only this region scrolls now. -->
+      <div style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+        <div style="background:var(--layer-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin:8px 0 14px;display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;">
+            <span style="color:var(--soft);letter-spacing:-0.26px;">Unit ID</span>
+            <span style="color:var(--strong);font-family:'DM Mono',monospace;letter-spacing:0.2px;">${udCurrentUnit.id}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;">
+            <span style="color:var(--soft);letter-spacing:-0.26px;">TCG ID</span>
+            <span style="color:var(--strong);font-family:'DM Mono',monospace;letter-spacing:0.2px;">${tcgId}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;">
+            <span style="color:var(--soft);letter-spacing:-0.26px;">Truck</span>
+            <span style="color:var(--strong);font-weight:500;letter-spacing:-0.26px;">${attachSelectedTruck}</span>
+          </div>
         </div>
-        <div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;">
-          <span style="color:var(--soft);letter-spacing:-0.26px;">TCG ID</span>
-          <span style="color:var(--strong);font-family:'DM Mono',monospace;letter-spacing:0.2px;">${tcgId}</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;">
-          <span style="color:var(--soft);letter-spacing:-0.26px;">Truck</span>
-          <span style="color:var(--strong);font-weight:500;letter-spacing:-0.26px;">${attachSelectedTruck}</span>
+        <div class="confirm-body">
+          This will make the unit active and ready for deployment.
         </div>
       </div>
-      <div class="confirm-body">
-        This will make the unit active and ready for deployment.
-      </div>
-      <div class="confirm-btns">
+      <div class="confirm-btns" style="flex-shrink:0;">
         <button class="confirm-btn-primary" onclick="doAttach()">Confirm Attachment</button>
         <button class="confirm-btn-cancel" onclick="cancelAttach()">Cancel</button>
       </div>

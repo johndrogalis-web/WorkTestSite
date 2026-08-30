@@ -3745,7 +3745,7 @@
   .mob-units-td.lsc-col, .mob-units-th.lsc-col { display: none; }
   body.view-mobile.orient-landscape #s-main #wts-tbl-head,
   body.view-mobile.orient-landscape #s-main #truck-list .truck-row {
-    grid-template-columns: 74px 80px 48px 68px 122px 64px 78px 112px 82px;
+    grid-template-columns: 74px 80px 48px 68px 118px 76px 78px 104px 82px;
   }
   body.view-mobile.orient-landscape #s-main .th.lsc-col { display: block; }
   body.view-mobile.orient-landscape #s-main .td.lsc-col {
@@ -3822,6 +3822,21 @@
   body.view-mobile.orient-landscape #units-drawer {
     padding-top: 10px !important;
     padding-left: 40px; padding-right: 10px;
+  }
+
+  /* Component install/replace confirmation sheet (#co-install-bar) —
+     shared by every "Replace X" and "Install X" flow, not just TCG.
+     It's a JS-built inline style (`bar.style.cssText = ...`), so
+     overriding it needs !important like the map hamburger did. Portrait
+     reserves 60px above the sheet — fine when the drawer has ~500px+
+     to work with, but in the ~200px-tall landscape drawer that alone
+     could eat most of the available height, squeezing the sheet's own
+     content (icon + title + body + list) into a sliver too short for
+     even its own header row, which is the "cut off" being reported.
+     16px is enough clearance to feel like a sheet, not a takeover. */
+  body.view-mobile.orient-landscape #co-install-bar {
+    max-height: calc(100% - 16px) !important;
+    padding: 10px 16px 14px !important;
   }
 
   /* Mobile landscape — Component Timeline accordion list. The day
@@ -5792,6 +5807,24 @@
   .confirm-sheet {
     background: var(--layer-1); border-radius: 24px 24px 0 0;
     width: 100%; padding: 24px 20px 40px;
+  }
+  /* Mobile landscape — .confirm-overlay uses inset:0, which for an
+     absolutely positioned element is measured against the drawer's
+     padding EDGE, not its content edge — so it ignores the drawer's
+     own padding-left:40px notch clearance entirely and renders flush
+     left, right under the camera pill. Padding alone only moved the
+     TEXT clear of the notch; the sheet's white background still spans
+     the full width underneath it, and the notch (z-index:1200, well
+     above the sheet's 30) draws on top regardless. Insetting the box
+     itself — narrower width, left margin — is what actually stops the
+     notch from visually biting into the card, matching how the
+     hamburger/logo chips sit clear of the notch elsewhere: the notch
+     shows in the dark scrim to the card's left, not on top of it.
+     Applies to every dialog on this shared class (Attach Unit, Unlink,
+     component Remove, etc.) since it's a position fix, not a behavior
+     change — safe everywhere at once rather than only where reported. */
+  body.view-mobile.orient-landscape .confirm-sheet {
+    margin-left: 40px; width: calc(100% - 40px);
   }
   .confirm-title {
     font-size: 17px; font-weight: 500; color: var(--strong);

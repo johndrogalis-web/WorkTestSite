@@ -2962,7 +2962,7 @@ function coOpenTcgReplace(isDesktop) {
     var main = document.getElementById('tb-drawer-main');
     if (!main) return;
     main.style.position = 'relative';
-    bar.style.cssText = 'position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--layer-1);border-top:1px solid var(--border);padding:18px 24px 24px;box-shadow:0 -8px 24px rgba(54,50,45,0.1);animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);max-height:calc(100% - 60px);overflow-y:auto;';
+    bar.style.cssText = 'position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--layer-1);border-top:1px solid var(--border);padding:18px 24px 24px;box-shadow:0 -8px 24px rgba(54,50,45,0.1);animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);max-height:calc(100% - 60px);overflow:hidden;';
     main.appendChild(bar);
     coRenderTcgConfirmStage(true); /* pass true so confirm routes back through desktop/tablet path */
     return;
@@ -2972,13 +2972,13 @@ function coOpenTcgReplace(isDesktop) {
     var main = document.getElementById('dt-drawer-main');
     if (!main) return;
     main.style.position = 'relative';
-    bar.style.cssText = 'position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--layer-1);border-top:1px solid var(--border);padding:18px 24px 24px;box-shadow:0 -8px 24px rgba(54,50,45,0.1);animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);max-height:calc(100% - 60px);overflow-y:auto;';
+    bar.style.cssText = 'position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--layer-1);border-top:1px solid var(--border);padding:18px 24px 24px;box-shadow:0 -8px 24px rgba(54,50,45,0.1);animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);max-height:calc(100% - 60px);overflow:hidden;';
     main.appendChild(bar);
   } else {
     var sc = document.getElementById('state-components');
     if (!sc) return;
     sc.style.position = 'relative';
-    bar.style.cssText = 'position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--layer-1);border-top:1px solid var(--border);padding:18px 16px 36px;box-shadow:0 -8px 24px rgba(54,50,45,0.12);animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);max-height:calc(100% - 60px);overflow-y:auto;';
+    bar.style.cssText = 'position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--layer-1);border-top:1px solid var(--border);padding:18px 16px 36px;box-shadow:0 -8px 24px rgba(54,50,45,0.12);animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);max-height:calc(100% - 60px);overflow:hidden;';
     sc.appendChild(bar);
   }
 
@@ -2999,9 +2999,13 @@ function coRenderTcgConfirmStage(isDesktop) {
       }).join('')
     : '<div style="font-size:12px;color:var(--soft);font-style:italic;">No other components currently installed.</div>';
 
+  bar.style.display = 'flex';
+  bar.style.flexDirection = 'column';
+  bar.style.minHeight = '0';
   bar.innerHTML =
-    /* Header — red icon, title */
-    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">'
+    /* Header — pinned, never scrolls. flex-shrink:0 so a tall list
+       in the scrollable middle can't compress it. */
+    '<div style="display:flex;align-items:center;gap:12px;padding-bottom:14px;flex-shrink:0;">'
     +   '<div style="width:36px;height:36px;border-radius:50%;background:rgba(216,59,58,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
     +     '<svg width="18" height="18" viewBox="0 0 20 20" fill="none">'
     +       '<path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.2 4.2l2.1 2.1M13.7 13.7l2.1 2.1M4.2 15.8l2.1-2.1M13.7 6.3l2.1-2.1" stroke="var(--red)" stroke-width="1.4" stroke-linecap="round"/>'
@@ -3013,19 +3017,24 @@ function coRenderTcgConfirmStage(isDesktop) {
     +     '<div style="font-size:12px;color:var(--soft);letter-spacing:-0.24px;">Telematics Control Gateway</div>'
     +   '</div>'
     + '</div>'
-    /* Body — explain consequence */
-    + '<div style="font-size:13px;color:var(--strong);letter-spacing:-0.26px;line-height:1.5;margin-bottom:14px;">'
-    +   'The unit will go offline briefly while the new TCG installs and re-syncs with your other components. '
-    +   '<strong>The unit ID stays the same</strong>, and you don\'t need to remove anything else from the truck.'
-    + '</div>'
-    /* Reconnect list */
-    + (comps.length
+    /* Scrollable middle — body text + reconnect list. This is the ONLY
+       part that scrolls; on a short landscape drawer the list can run
+       past the sheet's height without ever pushing Cancel/Continue
+       off-screen, which is what a real bottom sheet guarantees and
+       the old flat-flow version didn't. */
+    + '<div style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;">'
+    +   '<div style="font-size:13px;color:var(--strong);letter-spacing:-0.26px;line-height:1.5;margin-bottom:14px;">'
+    +     'The unit will go offline briefly while the new TCG installs and re-syncs with your other components. '
+    +     '<strong>The unit ID stays the same</strong>, and you don\'t need to remove anything else from the truck.'
+    +   '</div>'
+    +   (comps.length
         ? '<div style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;margin-bottom:4px;">These will reconnect to the new TCG</div>'
-          + '<div style="border-top:1px solid var(--border);padding:6px 0;margin-bottom:18px;">' + bullets + '</div>'
-        : '<div style="margin-bottom:18px;">' + bullets + '</div>'
+          + '<div style="border-top:1px solid var(--border);padding:6px 0;">' + bullets + '</div>'
+        : bullets
       )
-    /* Buttons — Cancel + Continue (continues to scan) */
-    + '<div style="display:flex;gap:8px;">'
+    + '</div>'
+    /* Footer — pinned, never scrolls */
+    + '<div style="display:flex;gap:8px;padding-top:14px;flex-shrink:0;">'
     +   '<button onclick="coInstallCancel()" style="flex:0 0 auto;min-width:110px;background:none;border:1px solid var(--border);border-radius:32px;padding:12px 20px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;color:var(--strong);cursor:pointer;">Cancel</button>'
     +   '<button onclick="coTcgContinueToScan(' + (isDesktop?'true':'false') + ')" style="flex:1;background:'+coPrimaryBtnBg()+';color:'+coPrimaryBtnColor()+';border:none;border-radius:32px;padding:12px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">Continue</button>'
     + '</div>';
@@ -3038,6 +3047,15 @@ function coRenderTcgConfirmStage(isDesktop) {
 function coTcgContinueToScan(isDesktop) {
   var bar = document.getElementById('co-install-bar');
   if (!bar) return;
+  /* Stage A (coRenderTcgConfirmStage) set the bar to a flex column with
+     overflow:hidden so ITS internal middle div could own scrolling.
+     Stages B/C use the older flat-flow layout (header+body+footer,
+     no internal split) and rely on the bar itself scrolling — revert
+     both properties or their content silently loses the ability to
+     scroll past max-height. */
+  bar.style.display = '';
+  bar.style.flexDirection = '';
+  bar.style.overflowY = 'auto';
   bar.dataset.compName = 'TCG';
   bar.innerHTML = coBuildInstallFrame('TCG', !isDesktop);
   coRenderManual();
@@ -3210,6 +3228,10 @@ function coTcgRenderReconnect(serial, isDesktop) {
 function coTcgRenderFinalConfirm(serial, isDesktop, comps) {
   var bar = document.getElementById('co-install-bar');
   if (!bar) return;
+  /* Same revert as coTcgContinueToScan — this stage is flat-flow too. */
+  bar.style.display = '';
+  bar.style.flexDirection = '';
+  bar.style.overflowY = 'auto';
   var successSubColor = document.body.classList.contains('dark') ? '#ffffff' : '#166534';
   var fwRows = comps.map(function(name) {
     var fw = COMPONENT_LATEST_FW[name];

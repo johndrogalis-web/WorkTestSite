@@ -3752,9 +3752,11 @@ if (_origSelectDtTab) {
   };
 }
 
-/* ── RESTORE from hash on page load ─────────────────────────── */
+/* ── RESTORE from hash ───────────────────────────────────────
+   Callable on demand (comment Jump-to replays a captured route)
+   and invoked once at load below. */
 
-(function restoreFromHash() {
+function applyHashRoute() {
   const parts = readHashParts();
   if (!parts.length) {
     /* No hash — default to tablet */
@@ -3822,10 +3824,11 @@ if (_origSelectDtTab) {
         setTimeout(() => {
           _origOpenUnitDetail(p2);
           const tab = p3 || 'lifespan';
-          if (tab === 'attach') {
+          if (tab !== 'lifespan') {
+            /* udSelectNavTab ignores its el param — safe to drive
+               programmatically; covers attach/config/logs/etc. */
             setTimeout(() => {
-              const attachEl = document.querySelector('#ud-nav-dropdown .wts-option:nth-child(2)');
-              if (attachEl && _origUdSelectNav) _origUdSelectNav('Attach to Truck', attachEl);
+              if (typeof udSelectNavTab === 'function') udSelectNavTab(tab, null);
             }, 80);
           }
         }, 60);
@@ -3867,7 +3870,20 @@ if (_origSelectDtTab) {
       }
     }
   }
-})();
+}
+applyHashRoute();
+
+/* Unit drawer tab strip writes the hash like every other nav —
+   udSelectNavTab is the live click path (the legacy udSelectNav
+   wrapper above never fires now that the dropdown is hidden). */
+const _origUdSelectNavTab = typeof udSelectNavTab !== 'undefined' ? udSelectNavTab : null;
+if (_origUdSelectNavTab) {
+  udSelectNavTab = function(tab, el) {
+    _origUdSelectNavTab(tab, el);
+    const unitId = (typeof udCurrentUnit !== 'undefined' && udCurrentUnit) ? udCurrentUnit.id : '';
+    if (unitId) setHash(['mobile', 'units', unitId, tab]);
+  };
+}
 
 /* Init tablet territory labels on load */
 tbTsUpdateLabels();

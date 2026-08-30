@@ -3696,6 +3696,147 @@
      overview log uses the full width. */
   body.view-mobile.orient-landscape #mob-swu-scroll { padding-bottom: 24px !important; }
 
+  /* Fleet Update — match All Trucks / Units surface layering: grey nav
+     strip up top, white page content from the title block down. The
+     container keeps its inline var(--base) so the island strip and
+     top-nav zone stay grey like every other screen. */
+  #mob-swu-head   { background: var(--layer-1); }
+  #mob-swu-scroll { background: var(--layer-1); }
+
+  /* Mobile landscape — All Trucks / Diagnostic Center list (#s-main).
+     Short viewport means the header stack (title, filter row, search,
+     territory selector, table head) was eating almost the whole screen
+     before a single truck row showed. Trim every vertical padding and
+     font-size in that stack — column widths and grid layout are
+     untouched, only heights shrink — so several rows are visible
+     without scrolling past the header first. */
+  body.view-mobile.orient-landscape #s-main .page-pad { padding: 6px 16px 0; }
+  body.view-mobile.orient-landscape #s-main .page-title {
+    font-size: 16px; padding: 2px 8px 0; line-height: 1.2;
+  }
+  body.view-mobile.orient-landscape #s-main .page-sub { padding: 0 8px 4px; }
+  body.view-mobile.orient-landscape #s-main .filter-row { padding: 2px 0 6px; }
+  body.view-mobile.orient-landscape #s-main .btn-pill { padding: 6px 10px; }
+  body.view-mobile.orient-landscape #s-main .vt-btn { padding: 6px 10px; }
+  body.view-mobile.orient-landscape #s-main .overview-pill { padding: 8px 14px; }
+  body.view-mobile.orient-landscape #s-main div[style*="margin-bottom:10px"] { margin-bottom: 6px !important; }
+  body.view-mobile.orient-landscape #s-main .srch-field { padding: 8px 12px; }
+  body.view-mobile.orient-landscape #s-main #territory-selector { margin-bottom: 6px !important; }
+  body.view-mobile.orient-landscape #s-main #territory-selector button { padding: 7px 12px 7px 14px !important; }
+  body.view-mobile.orient-landscape #s-main .tbl-head .th { padding: 4px 8px; }
+  body.view-mobile.orient-landscape #s-main .group-header { padding: 8px 10px; }
+  /* 8px vertical padding + min-height keeps every row at least ~36px
+     tall — the earlier 6px compaction produced 31px rows, which is
+     above the WCAG 24px floor but too thin as a reliable full-width
+     thumb target. Costs roughly one visible row of density. */
+  body.view-mobile.orient-landscape #s-main .truck-row .td { padding: 8px; min-height: 36px; box-sizing: border-box; }
+
+  /* Mobile landscape — All Trucks table gains 4 columns (Plant, TCG
+     Version, SW Compliant, Impact) pulled up from the expand-row detail,
+     since the wide-short viewport has the width to show them without
+     tapping a row open. .lsc-col is hidden everywhere else (portrait,
+     tablet, desktop). */
+  /* Two-class selectors here (not just .lsc-col) deliberately outrank
+     the base .td { display:flex } / block-level .th rules that appear
+     later in the stylesheet — a single-class .lsc-col tied on specificity
+     with .td and lost to source order, which is what let these columns
+     leak into portrait as a wrapped second grid row. */
+  .td.lsc-col, .th.lsc-col,
+  .mob-units-td.lsc-col, .mob-units-th.lsc-col { display: none; }
+  body.view-mobile.orient-landscape #s-main #wts-tbl-head,
+  body.view-mobile.orient-landscape #s-main #truck-list .truck-row {
+    grid-template-columns: 74px 80px 48px 68px 122px 64px 78px 112px 82px;
+  }
+  body.view-mobile.orient-landscape #s-main .th.lsc-col { display: block; }
+  body.view-mobile.orient-landscape #s-main .td.lsc-col {
+    display: flex; font-size: 12px; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  body.view-mobile.orient-landscape #s-main .td.lsc-col.lsc-center { justify-content: center; }
+
+  /* TCG Version (6th column) and SW Compliant (7th) keep tight left
+     padding so they hug the Plant column. Plant's width is trimmed to
+     its longest value ("Phoenix Central") so TCG shifts left, and
+     SW Compliant is wide enough that "Compliant" wraps inside its own
+     column instead of spilling under Impact. */
+  body.view-mobile.orient-landscape #s-main #wts-tbl-head .th:nth-child(6),
+  body.view-mobile.orient-landscape #s-main #truck-list .truck-row .td:nth-child(6) {
+    padding-left: 4px;
+  }
+  body.view-mobile.orient-landscape #s-main #wts-tbl-head .th:nth-child(7),
+  body.view-mobile.orient-landscape #s-main #truck-list .truck-row .td:nth-child(7) {
+    padding-left: 4px;
+  }
+
+  /* Mobile landscape — Units list (#s-units). Same problems as the
+     truck list before it was fixed: portrait header stack eating the
+     390px-tall viewport, and Trucks/TCG ID/Config only reachable by
+     tapping a row open despite the width to show them directly.
+     Header/toolbar padding trimmed; three columns promoted from the
+     expand panel; row height held to an accessible 36px floor rather
+     than compacted all the way down (same trade-off made for the
+     truck list after that first landscape pass came in too thin). */
+  body.view-mobile.orient-landscape #s-units .units-hdr { padding: 6px 16px 0 !important; }
+  body.view-mobile.orient-landscape #s-units .units-title-blk { padding: 2px 0 6px !important; }
+  body.view-mobile.orient-landscape #s-units .units-title { font-size: 16px !important; }
+  body.view-mobile.orient-landscape #s-units .units-toolbar { padding-bottom: 6px !important; }
+  body.view-mobile.orient-landscape #s-units .mob-units-th { padding: 4px 8px; }
+  body.view-mobile.orient-landscape #s-units .mob-units-row .mob-units-td {
+    padding: 8px; min-height: 36px; box-sizing: border-box;
+  }
+  body.view-mobile.orient-landscape #s-units #mob-units-thead,
+  body.view-mobile.orient-landscape #s-units .mob-units-row {
+    grid-template-columns: var(--units-cb-col, 0px) 110px 96px 70px 64px 118px 130px;
+  }
+  body.view-mobile.orient-landscape #s-units .th.lsc-col,
+  body.view-mobile.orient-landscape #s-units .mob-units-th.lsc-col {
+    display: block;
+  }
+  body.view-mobile.orient-landscape #s-units .td.lsc-col,
+  body.view-mobile.orient-landscape #s-units .mob-units-td.lsc-col {
+    display: flex; min-width: 0;
+  }
+
+  /* Mobile landscape — truck drawer (.drawer is inset:0 over the whole
+     phone). In landscape the camera notch sits on the drawer's LEFT
+     edge, not the top: the portrait 54px top clearance was wasting
+     scarce height while the nav pill slid under the notch. Swap the
+     clearance to the left, compact the chrome rows, and let the
+     component card grid run three-up since width is abundant. */
+  body.view-mobile.orient-landscape .drawer {
+    padding-top: 10px; padding-left: 40px; padding-right: 10px;
+  }
+  body.view-mobile.orient-landscape .d-chrome { padding: 8px 14px; }
+  body.view-mobile.orient-landscape .d-truck-label { font-size: 17px; }
+  body.view-mobile.orient-landscape .d-nav-row { padding: 0 16px 8px; }
+  body.view-mobile.orient-landscape .d-pill { padding: 7px 12px; font-size: 13px; }
+  body.view-mobile.orient-landscape .co-grid { grid-template-columns: 1fr 1fr 1fr; }
+
+  /* Mobile landscape — units drawer. Same problem the truck drawer had:
+     its portrait 54px top clearance wastes scarce height while the notch
+     actually sits on the LEFT edge, clipping the chrome ("PONENTS",
+     "nit Life Span"). padding-top is inline on the element so it needs
+     !important; left/right aren't set inline. The chrome compaction
+     rules above (.d-chrome, .d-nav-row, .d-pill, .d-truck-label) already
+     apply here because both drawers share those classes. */
+  body.view-mobile.orient-landscape #units-drawer {
+    padding-top: 10px !important;
+    padding-left: 40px; padding-right: 10px;
+  }
+
+  /* Mobile landscape — Component Timeline accordion list. The day
+     strip and date header already reflow fine (grid/flex, full-width),
+     but .ct-list was a single vertical column of 9 components stacked
+     to ~500px tall against a ~250px-tall viewport — most of the 768px
+     width sat empty while the list forced heavy scrolling. Two columns
+     roughly halves the scroll distance. align-items:start keeps a
+     collapsed card at its natural height instead of stretching to
+     match a taller expanded neighbor in the same grid row. */
+  body.view-mobile.orient-landscape #state-timeline .ct-list {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px 12px; align-items: start;
+  }
+
   /* ── Simulated on-screen keyboard — Fleet Update only ──
      Fixed to the bottom of .phone (which already resizes correctly
      per view/orientation), so no separate positioning math per state
@@ -3776,21 +3917,41 @@
 
   /* ── Mobile landscape map header — map-first. The stacked portrait
      header (nav row + big title + filter row ≈ 170px) leaves ~220px of
-     map in a 390px frame. Landscape floats the hamburger and search
-     over a full-bleed map instead, Google Maps style, and drops the
-     decorative logo + heading. Left offsets clear the camera notch. ── */
+     map in a 390px frame. Landscape floats the hamburger, logo, and
+     search over a full-bleed map instead, Google Maps style. Left
+     offsets clear the camera notch. ── */
   body.view-mobile.orient-landscape #mo-page-map { padding: 0; }
   body.view-mobile.orient-landscape #mo-page-map .top-nav {
     position: absolute; top: 8px; left: 52px;
     width: auto; padding: 0; background: none; z-index: 30;
+    display: flex; align-items: center; gap: 8px;
   }
-  body.view-mobile.orient-landscape #mo-page-map .top-nav > div { display: none; }  /* centred logo */
+  /* The hamburger button carries inline background:none/border:none
+     (shared markup with every other top-nav) which beats any external
+     rule at equal or lower specificity — that's why it was rendering
+     as a bare dark icon directly on map tiles with no visible chip
+     behind it. !important is the only way to win against an inline
+     style, and it's scoped tightly enough (this exact button, this
+     exact orientation) that it can't leak anywhere else. */
   body.view-mobile.orient-landscape #mo-page-map .top-nav button {
-    background: var(--layer-1); border: 1px solid var(--border); border-radius: 10px;
+    background: var(--layer-1) !important; border: 1px solid var(--border) !important;
+    border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  }
+  /* Logo — was display:none entirely in landscape. Un-hide it, but it
+     can no longer be absolutely centered (that math assumed top-nav
+     spanned the full page width; here top-nav is a shrink-wrapped
+     flex row). Give it the same floating chip treatment as the
+     hamburger so it's legible against the map instead of a bare
+     dark mark. */
+  body.view-mobile.orient-landscape #mo-page-map .top-nav > div {
+    display: flex !important; position: static !important; transform: none !important;
+    align-items: center; background: var(--layer-1); border: 1px solid var(--border);
+    border-radius: 10px; padding: 0 12px; height: 40px; box-sizing: border-box;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
   }
   body.view-mobile.orient-landscape .mom-page-heading { display: none; }
   body.view-mobile.orient-landscape .mom-filterbar {
-    position: absolute; top: 8px; left: 100px; right: 412px;
+    position: absolute; top: 8px; left: 156px; right: 412px;
     padding: 0; background: none; z-index: 30;
   }
   body.view-mobile.orient-landscape .mom-filter-btn,
@@ -5445,10 +5606,28 @@
   .mob-units-thead,
   .mob-units-row {
     display: grid;
-    grid-template-columns: 36px 110px 96px 1fr;
+    grid-template-columns: var(--units-cb-col, 0px) 110px 96px 1fr;
     border-bottom: 1px solid var(--border);
     min-width: 0;
   }
+  /* Checkbox spacer column — only occupies width in select mode.
+     It used to be a permanent 36px track (just visibility:hidden), which
+     pushed the whole table 36px right of everything else on the page:
+     title/search at 16px, Unit ID text at ~52px, expand-panel labels
+     back at 16px. #s-units.units-selecting (toggled by JS) opens it. */
+  #s-units { --units-cb-col: 0px; }
+  #s-units.units-selecting { --units-cb-col: 36px; }
+  #s-units:not(.units-selecting) .mob-units-th-cb,
+  #s-units:not(.units-selecting) .mob-units-td-cb { padding: 0; overflow: hidden; }
+  /* Units title carries .page-title whose base 8px padding indented it
+     relative to the subtitle/search below — flush it left to match. */
+  #s-units .units-title { padding: 0; }
+  /* With the checkbox spacer collapsed, the table's left edge landed at
+     the screen edge while the title/search sit inside the header's 16px
+     padding — pad the table wrapper to the same gutter so all three
+     share one left line. Matches how the truck list table sits inside
+     .page-pad. */
+  #s-units .units-table-wrap { padding: 0 16px; }
   .mob-units-thead {
     background: var(--layer-1);
     position: sticky; top: 0; z-index: 2;
@@ -5463,14 +5642,14 @@
   .mob-units-row {
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
-    min-height: 32px;
+    min-height: 41px;
   }
   .mob-units-row { background: var(--layer-1); }
   .mob-units-row:active          { background: rgba(48,105,227,0.06); }
   .mob-units-row.dt-selected     { background: rgba(48,105,227,0.06); }
   .mob-units-td {
     font-size: 14px; color: var(--defined);
-    padding: 8px 8px; display: flex; align-items: center;
+    padding: 11px 8px; display: flex; align-items: center;
     letter-spacing: -0.26px; line-height: 1.3;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
@@ -7298,7 +7477,7 @@
   /* ── Page heading below nav ── */
   .mom-page-heading {
     padding: 0 16px 10px 16px;
-    background: var(--base); flex-shrink: 0; z-index: 2;
+    background: var(--layer-1); flex-shrink: 0; z-index: 2;
   }
   .mom-page-title {
     font-family: var(--font); font-size: 24px; font-weight: 500;
@@ -7314,7 +7493,7 @@
   /* Filter + search bar */
   .mom-filterbar {
     display: flex; align-items: center; gap: 0;
-    padding: 8px 16px; background: var(--base);
+    padding: 8px 16px; background: var(--layer-1);
     flex-shrink: 0; z-index: 2;
   }
   .mom-filter-btn {

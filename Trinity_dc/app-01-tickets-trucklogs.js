@@ -1417,6 +1417,12 @@ function renderTrucks() {
         ? `showAccountSwitchConfirm('${t.account}', ${i}, 'wts')`
         : `openDrawerFromList('wts', ${i})`;
 
+      /* SW Compliant icon — shared by the row's .lsc-col cell (mobile
+         landscape only) and the expanded detail row below. */
+      const swIcon = t.swCompliant !== false
+        ? `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7l3.5 3.5 5.5-6" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+        : `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="#d70100" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+
       const expHtml = isOpen ? `
         <div class="exp-wrap open" data-truck-idx="${i}">
           <div class="exp-row"><div class="exp-label">Account</div><div class="exp-val" style="font-weight:500;color:${t.account !== activeAccount ? '#7a5800' : 'var(--defined)'};">${t.account}</div></div>
@@ -1442,6 +1448,10 @@ function renderTrucks() {
             <div class="td src-cell">${t.source === 'Customer Ticket' ? 'Customer' : 'System'}</div>
             <div class="td">${t.ign}</div>
             <div class="td age-cell">${t.age}</div>
+            <div class="td lsc-col">${t.plant}</div>
+            <div class="td lsc-col">${t.ver}</div>
+            <div class="td lsc-col lsc-center">${swIcon}</div>
+            <div class="td lsc-col">${t.impact}</div>
             <div class="td">${badges}${emptyAlert}</div>
           </div>
           ${expHtml}
@@ -1620,6 +1630,12 @@ function openDrawer(i, context) {
     renderMobileCards();
     document.querySelector('.d-nav-row').style.display = 'flex';
     document.getElementById('drawer-nav-label').textContent   = 'Components Overview';
+    /* Tab strip reset — mirror the label reset above */
+    document.querySelectorAll('#drawer-nav-tabstrip .swu-sm-tab').forEach(tb => {
+      tb.classList.toggle('active', tb.dataset.nav === 'Components Overview');
+    });
+    const tabstrip = document.getElementById('drawer-nav-tabstrip');
+    if (tabstrip) tabstrip.scrollLeft = 0;
     document.getElementById('filters-pill').style.display = 'none';
     document.getElementById('ping-pill').style.display    = 'flex';
     document.getElementById('update-pill').style.display  = 'none';
@@ -2883,20 +2899,33 @@ function toggleDrawerNav() {
 }
 
 function selectDrawerNav(label, el) {
-  document.getElementById('drawer-nav-label').textContent = label;
+  /* Visible nav is the tab strip (matches Fleet Update). The legacy
+     dropdown stays in the DOM hidden — comment pins anchor to its
+     button and several flows locate its options — so sync both.
+     `el` may be a tab, a legacy wts-option, or omitted entirely;
+     both UIs are resolved by label, never by el's shape. */
+  document.querySelectorAll('#drawer-nav-tabstrip .swu-sm-tab').forEach(tb => {
+    tb.classList.toggle('active', (tb.dataset.nav || tb.textContent.trim()) === label);
+  });
+  const activeTab = document.querySelector('#drawer-nav-tabstrip .swu-sm-tab.active');
+  if (activeTab && activeTab.scrollIntoView) activeTab.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+
+  const navLbl = document.getElementById('drawer-nav-label');
+  if (navLbl) navLbl.textContent = label;
   document.querySelectorAll('#drawer-nav-dropdown .wts-option').forEach(o => {
     o.classList.remove('wts-active');
-    o.querySelector('.wts-check').style.visibility = 'hidden';
+    const c = o.querySelector('.wts-check'); if (c) c.style.visibility = 'hidden';
   });
-  /* el may be omitted when called programmatically — find matching option by text */
-  const target = el || Array.from(document.querySelectorAll('#drawer-nav-dropdown .wts-option'))
+  const legacyOpt = Array.from(document.querySelectorAll('#drawer-nav-dropdown .wts-option'))
     .find(o => o.textContent.trim().includes(label));
-  if (target) {
-    target.classList.add('wts-active');
-    target.querySelector('.wts-check').style.visibility = 'visible';
+  if (legacyOpt) {
+    legacyOpt.classList.add('wts-active');
+    const c = legacyOpt.querySelector('.wts-check'); if (c) c.style.visibility = 'visible';
   }
-  document.getElementById('drawer-nav-dropdown').style.display = 'none';
-  document.getElementById('drawer-nav-chevron').style.transform = 'rotate(0deg)';
+  const navDd = document.getElementById('drawer-nav-dropdown');
+  if (navDd) navDd.style.display = 'none';
+  const navCh = document.getElementById('drawer-nav-chevron');
+  if (navCh) navCh.style.transform = 'rotate(0deg)';
 
   /* switch drawer content state */
   const showList       = label === 'Truck Logs';

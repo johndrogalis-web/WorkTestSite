@@ -30,6 +30,20 @@ function coSetNavDot(show) {
   } else if (!show && existingDot) {
     existingDot.remove();
   }
+  /* Visible nav is now the tab strip — mirror the dot on the
+     Components Overview tab (the dropdown above is kept hidden) */
+  var coTab = document.querySelector('#drawer-nav-tabstrip .swu-sm-tab[data-nav="Components Overview"]');
+  if (coTab) {
+    var tdot = coTab.querySelector('.co-tab-dot');
+    if (show && !tdot) {
+      tdot = document.createElement('span');
+      tdot.className = 'co-tab-dot';
+      tdot.style.cssText = 'display:inline-block;width:7px;height:7px;border-radius:50%;background:#d97706;margin-left:6px;vertical-align:middle;flex-shrink:0;';
+      coTab.appendChild(tdot);
+    } else if (!show && tdot) {
+      tdot.remove();
+    }
+  }
 }
 
 /* ── MAINTENANCE MODE / TRUCK MODE POPOVER ──────────────
@@ -488,6 +502,9 @@ function renderUnits() {
         `<div class="mob-units-td mob-units-td-id">${chevSvg} ${u.id}</div>` +
         `<div class="mob-units-td">${statusTxt}</div>` +
         `<div class="mob-units-td">${sysVal}</div>` +
+        `<div class="mob-units-td lsc-col">${truckVal}</div>` +
+        `<div class="mob-units-td lsc-col" style="font-family:'DM Mono',monospace;font-size:12px;">${tgwVal}</div>` +
+        `<div class="mob-units-td lsc-col">${cfgVal}</div>` +
       `</div>` +
       expandPanel +
       `</div>`;
@@ -504,6 +521,11 @@ function mobUnitsToggleExpand(id) {
 function mobUnitsSelectToggle() {
   mobUnitsSelectMode = !mobUnitsSelectMode;
   mobUnitsSelected.clear();
+  /* Class hook — CSS collapses the 36px checkbox spacer column to 0
+     outside select mode so the table's left edge aligns with the rest
+     of the page instead of floating 36px right of it. */
+  const sUnitsEl = document.getElementById('s-units');
+  if (sUnitsEl) sUnitsEl.classList.toggle('units-selecting', mobUnitsSelectMode);
   const bar = document.getElementById('mob-units-bulk-bar');
   if (bar) { bar.style.display = mobUnitsSelectMode ? 'flex' : 'none'; bar.style.flexDirection = 'column'; }
   const btn = document.getElementById('mob-units-select-btn');
@@ -598,6 +620,8 @@ function mobUnitsReturnDo() {
   mobUnitsReturnCancel();
   mobUnitsSelectMode = false;
   mobUnitsSelected.clear();
+  const sUnitsReset = document.getElementById('s-units');
+  if (sUnitsReset) sUnitsReset.classList.remove('units-selecting');
   const btn = document.getElementById('mob-units-select-btn');
   if (btn) { btn.style.background = ''; btn.style.borderColor = ''; btn.style.color = ''; }
   const bar = document.getElementById('mob-units-bulk-bar');
@@ -1117,6 +1141,17 @@ function udNavItems(u) {
 function udBuildNavDropdown(activeTab) {
   const u    = udCurrentUnit;
   const items = udNavItems(u);
+  /* Visible nav is the tab strip; the legacy dropdown below is kept
+     hidden in the DOM for app-06 hash routing that locates its options. */
+  const strip = document.getElementById('ud-nav-tabstrip');
+  if (strip) {
+    strip.innerHTML = items.map(item =>
+      `<div class="swu-sm-tab${item.tab === activeTab ? ' active' : ''}" data-nav="${item.tab}" onclick="udSelectNavTab('${item.tab}', this)">${item.label}</div>`
+    ).join('');
+    /* Resync the right-edge fade mask — drag-scroll init ran while the
+       strip was empty, and the mask only updates on scroll events. */
+    strip.dispatchEvent(new Event('scroll'));
+  }
   const dd   = document.getElementById('ud-nav-dropdown');
   if (!dd) return;
   dd.innerHTML = items.map(item => {
@@ -2084,8 +2119,11 @@ function renderAttachBody() {
         ">Attach Unit</button>
       </div>
 
-      <!-- Table header -->
-      <div style="display:grid;grid-template-columns:1fr 60px 55px 80px 80px;border-bottom:1.5px solid var(--border);background:var(--layer-1);position:sticky;top:0;z-index:2;">
+      <!-- Table header — sticky inside #ud-body-wrap, which scrolls with
+           16px padding. top:-16px pins it flush with the scroller's
+           visual top; at top:0 it pinned 16px down and rows slid
+           through the padding strip above it. -->
+      <div style="display:grid;grid-template-columns:1fr 60px 55px 80px 80px;border-bottom:1.5px solid var(--border);background:var(--layer-1);position:sticky;top:-16px;z-index:2;">
         <div style="padding:9px 8px 9px 14px;font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.2px;">Truck No.</div>
         <div style="padding:9px 6px;font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.2px;">Type</div>
         <div style="padding:9px 6px;font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.2px;">Drum</div>

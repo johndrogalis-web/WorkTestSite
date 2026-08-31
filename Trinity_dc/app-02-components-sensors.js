@@ -94,13 +94,28 @@ function toggleWtsDropdown() {
 
 
 function selectWts(label, el) {
+  /* Visible nav is the tab strip; the legacy pill+dropdown stay in the
+     DOM hidden — app-06 hash-restore and comment pins locate them by
+     id, so both need to stay in sync regardless of which UI triggered
+     the change. `el` may be a tab, a legacy wts-option, or omitted. */
+  document.querySelectorAll('#wts-tabstrip .swu-sm-tab').forEach(tb => {
+    tb.classList.toggle('active', (tb.dataset.nav || tb.textContent.trim()) === label);
+  });
+
   document.getElementById('wts-label').textContent = label;
   document.querySelectorAll('.wts-option').forEach(o => {
     o.classList.remove('wts-active');
     o.querySelector('.wts-check').style.visibility = 'hidden';
   });
-  el.classList.add('wts-active');
-  el.querySelector('.wts-check').style.visibility = 'visible';
+  /* el may be omitted when called programmatically — find matching option by text */
+  const target = (el && el.classList && el.classList.contains('wts-option'))
+    ? el
+    : Array.from(document.querySelectorAll('#wts-dropdown .wts-option'))
+        .find(o => o.textContent.trim().includes(label));
+  if (target) {
+    target.classList.add('wts-active');
+    target.querySelector('.wts-check').style.visibility = 'visible';
+  }
   document.getElementById('wts-dropdown').style.display = 'none';
   document.getElementById('wts-chevron').style.transform = 'rotate(0deg)';
 
@@ -1748,7 +1763,14 @@ const ccExpanded = {};
 function filterOpen() {
   document.getElementById('filter-overlay').style.display = 'block';
   const sheet = document.getElementById('filter-sheet');
-  sheet.style.display = 'block';
+  /* Landscape styles the sheet as a flex column (pinned header/footer,
+     scrolling middle). Setting display:block inline here beat that
+     stylesheet rule, so the column never formed and Apply Filters
+     overflowed past the sheet with no way to scroll to it. Use flex in
+     landscape, block in portrait where the sheet is content-height. */
+  const landscape = document.body.classList.contains('orient-landscape')
+    && document.body.classList.contains('view-mobile');
+  sheet.style.display = landscape ? 'flex' : 'block';
   requestAnimationFrame(() => sheet.style.transform = 'translateY(0)');
 }
 
@@ -1757,8 +1779,18 @@ function filterClose() {
   sheet.style.transform = 'translateY(110%)';
   setTimeout(() => {
     document.getElementById('filter-overlay').style.display = 'none';
+    /* Clear the display filterOpen() wrote inline so the sheet returns
+       to its stylesheet state between opens. */
+    sheet.style.display = 'none';
   }, 300);
 }
+
+/* Esc closes the sheet — matches the drawer and comments drawer */
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Escape') return;
+  const ov = document.getElementById('filter-overlay');
+  if (ov && ov.style.display === 'block') filterClose();
+});
 
 function filterToggle(el) {
   const group = el.dataset.group;

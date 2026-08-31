@@ -3768,6 +3768,46 @@
     padding-left: 4px;
   }
 
+  /* Mobile landscape — Filter sheet (#filter-sheet). Same two bugs as
+     every other bottom sheet this session: no height cap (so at its
+     full natural height — handle + header + up to 420px of content +
+     Apply button — it renders taller than the whole landscape drawer
+     and the title/Reset all sit off the top of the visible frame) and
+     no left inset for the notch (Plant/Version chips clipped, matching
+     "hoenix Central" and "NT"/"ION" section labels in the report).
+
+     First pass used max-height:calc(100% - 16px), which needs its
+     containing block to have a definite height for the percentage to
+     resolve — that chain isn't guaranteed here, and in practice it
+     silently failed: the sheet reverted to unconstrained natural
+     height, which is why Apply Filters vanished off the bottom this
+     time instead of the title vanishing off the top like before.
+     top+bottom together sidesteps that: for an absolutely positioned
+     box, two offsets compute a definite pixel height directly, with
+     no percentage-of-parent step to fail. bottom:0 is already inline;
+     adding top is the actual fix, not max-height. */
+  body.view-mobile.orient-landscape #filter-sheet {
+    left: 40px !important;
+    top: 16px !important;
+    max-height: none;
+    display: flex !important;   /* filterOpen() writes display inline;
+       !important keeps the flex column intact regardless */
+    flex-direction: column;
+    padding-bottom: 10px;
+  }
+  body.view-mobile.orient-landscape #filter-sheet .flt-handle-row,
+  body.view-mobile.orient-landscape #filter-sheet .flt-header-row,
+  body.view-mobile.orient-landscape #filter-sheet .flt-apply-row {
+    flex-shrink: 0;
+  }
+  body.view-mobile.orient-landscape #filter-sheet .flt-handle-row { padding: 8px 0 2px; }
+  body.view-mobile.orient-landscape #filter-sheet .flt-header-row { padding: 4px 16px 8px; }
+  body.view-mobile.orient-landscape #filter-sheet .flt-apply-row  { padding: 10px 16px 0; }
+  body.view-mobile.orient-landscape #filter-sheet #filter-scroll {
+    flex: 1; min-height: 0; max-height: none;
+  }
+  body.view-mobile.orient-landscape #filter-sheet .flt-section { margin-bottom: 10px; }
+
   /* Mobile landscape — Units list (#s-units). Same problems as the
      truck list before it was fixed: portrait header stack eating the
      390px-tall viewport, and Trucks/TCG ID/Config only reachable by
@@ -3921,58 +3961,93 @@
         right so the map stays visible, instead of a bottom strip that
         eats the whole short viewport. Portrait keeps the bottom strip. ── */
   body.view-mobile.orient-landscape .mom-card-strip {
-    top: 0; bottom: 0; left: auto; right: 0;
-    width: 348px;
+    top: 52px; bottom: 0; left: auto; right: 0;   /* clears the docked header */
+    width: 330px;
     flex-direction: column;
     overflow-x: hidden; overflow-y: scroll;
     padding: 10px 12px;
   }
   body.view-mobile.orient-landscape .mom-card { width: 100%; }
-  body.view-mobile.orient-landscape .mom-map-controls { right: 360px; }
+  body.view-mobile.orient-landscape .mom-map-controls { right: 342px; }
 
-  /* ── Mobile landscape map header — map-first. The stacked portrait
-     header (nav row + big title + filter row ≈ 170px) leaves ~220px of
-     map in a 390px frame. Landscape floats the hamburger, logo, and
-     search over a full-bleed map instead, Google Maps style. Left
-     offsets clear the camera notch. ── */
-  body.view-mobile.orient-landscape #mo-page-map { padding: 0; }
+  /* ── Mobile landscape map header — one docked row ──
+     Previously this floated the controls over a full-bleed map, which
+     made landscape a different paradigm from portrait rather than a
+     responsive adaptation of it. Portrait is a docked header (nav row,
+     title, search row); landscape now collapses those same three rows
+     into a single 52px docked bar — hamburger, title, then search and
+     filter right-aligned — so rotating the device compacts the layout
+     instead of replacing it. Left offsets clear the camera notch. ── */
+  body.view-mobile.orient-landscape #mo-page-map { padding-top: 52px; }
   body.view-mobile.orient-landscape #mo-page-map .top-nav {
-    position: absolute; top: 8px; left: 52px;
-    width: auto; padding: 0; background: none; z-index: 30;
-    display: flex; align-items: center; gap: 8px;
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 52px; padding: 0 12px 0 27px;   /* the camera notch sits
+       vertically centred on the left edge, well below this 52px bar, so
+       no notch clearance is needed here — the 27px left is 12px gutter
+       plus a 15px nudge to pull the nav group off the frame edge */
+    background: var(--layer-1); border-bottom: 1px solid var(--border);
+    z-index: 30;
+    display: flex; align-items: center; gap: 10px;
   }
-  /* The hamburger button carries inline background:none/border:none
-     (shared markup with every other top-nav) which beats any external
-     rule at equal or lower specificity — that's why it was rendering
-     as a bare dark icon directly on map tiles with no visible chip
-     behind it. !important is the only way to win against an inline
-     style, and it's scoped tightly enough (this exact button, this
-     exact orientation) that it can't leak anywhere else. */
-  body.view-mobile.orient-landscape #mo-page-map .top-nav button {
-    background: var(--layer-1) !important; border: 1px solid var(--border) !important;
-    border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.12);
-  }
-  /* Logo — was display:none entirely in landscape. Un-hide it, but it
-     can no longer be absolutely centered (that math assumed top-nav
-     spanned the full page width; here top-nav is a shrink-wrapped
-     flex row). Give it the same floating chip treatment as the
-     hamburger so it's legible against the map instead of a bare
-     dark mark. */
+  /* Logo stays — docked inline after the hamburger instead of its
+     portrait absolute-centering (that math assumed a full-width bar
+     with nothing else in the middle). */
   body.view-mobile.orient-landscape #mo-page-map .top-nav > div {
     display: flex !important; position: static !important; transform: none !important;
-    align-items: center; background: var(--layer-1); border: 1px solid var(--border);
-    border-radius: 10px; padding: 0 12px; height: 40px; box-sizing: border-box;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    align-items: center; flex-shrink: 0;
   }
-  body.view-mobile.orient-landscape .mom-page-heading { display: none; }
+  body.view-mobile.orient-landscape #mo-page-map .top-nav button {
+    background: none !important; border: none !important;
+    box-shadow: none; flex-shrink: 0;
+    width: 44px; height: 44px;   /* 44x44 minimum tap target — it was
+       rendering at icon size, which is under every accessibility floor */
+    display: flex; align-items: center; justify-content: center;
+    margin-left: -10px;   /* pulls the enlarged hit area back so the
+       ICON stays on the 12px gutter, not the button box */
+  }
+  /* Title moves up into the bar beside the hamburger */
+  /* One centering scheme for the whole bar: every element lives in an
+     explicit 52px-tall box and flex-centres its content. The previous
+     mix (40px button in flex, text centred by 52px line-height, search
+     at top:8px) found the centre line three different ways, each off
+     by a little — which is exactly what a misaligned header looks like. */
+  body.view-mobile.orient-landscape .mom-page-heading {
+    position: absolute; top: 0; left: 105px;   /* 27 pad + 40 button + 10 + 20 logo + 8 nudge */
+    height: 52px; padding: 0; z-index: 31;
+    display: flex; align-items: center; gap: 10px;
+  }
+  /* Title hidden in landscape — the logo already carries identity here,
+     and the row is the scarcest horizontal space in the app. */
+  body.view-mobile.orient-landscape .mom-page-title { display: none; }
+  body.view-mobile.orient-landscape .mom-page-sub {
+    font-size: 11px; color: var(--subtle); white-space: nowrap;
+    margin: 0; line-height: 1.2;
+  }
+  /* Search + filter right-aligned in the same bar */
   body.view-mobile.orient-landscape .mom-filterbar {
-    position: absolute; top: 8px; left: 156px; right: 412px;
-    padding: 0; background: none; z-index: 30;
+    position: absolute; top: 0; right: 27px; left: auto;   /* 12px gutter
+       + 15px nudge left, mirroring the nav group's inset on the other side */
+    height: 52px; display: flex; align-items: center;
+    width: 296px; padding: 0; background: none; z-index: 31;
+    gap: 8px; box-sizing: border-box;   /* same 52px box as everything else */
   }
-  body.view-mobile.orient-landscape .mom-filter-btn,
-  body.view-mobile.orient-landscape .mom-search { background: var(--layer-1); }
-  body.view-mobile.orient-landscape .mom-fs-btn { top: 52px; left: 52px; }
-  body.view-mobile.orient-landscape .mom-legend { right: 352px; }
+  body.view-mobile.orient-landscape .mom-filter-btn {
+    width: 36px; height: 36px; flex-shrink: 0;
+  }
+  body.view-mobile.orient-landscape .mom-search {
+    height: 36px;
+    flex: 1; min-width: 0;   /* the input inside has an intrinsic minimum
+       width; without min-width:0 the flex item refuses to shrink below
+       it and overflows the bar's right edge — that's the cut-off end */
+    box-sizing: border-box;
+  }
+  body.view-mobile.orient-landscape .mom-search input {
+    min-width: 0; width: 100%;
+  }
+  body.view-mobile.orient-landscape .mom-bar-divider { display: none; }
+  /* Map controls clear the docked bar, not a floating chip row */
+  body.view-mobile.orient-landscape .mom-fs-btn { top: 62px; left: 12px; }
+  body.view-mobile.orient-landscape .mom-legend { right: 342px; }
 
   body.view-tablet.orient-landscape .tbm-card-strip {
     top: 0; bottom: 0; left: auto; right: 0;
@@ -8464,3 +8539,195 @@
 }
 .dc-agei:hover .dc-agei-tip,
 .dc-agei:focus-visible .dc-agei-tip{opacity:1;visibility:visible;}
+
+/* ============================================================
+   TRINITY CARD — unified chrome + truck-card structure
+   Source: Trinity DS "Card" node 63516:9714
+   (file Lx7MN3Ztd0qxhyF7rVAiOa).
+
+   Three truck-card families were built separately and drifted:
+     .dc-tc     desktop / fleet map
+     .mom-card  mobile map
+     .tbm-card  tablet map
+   Their DOM is already identical (-sub, -meta, -meta-key/val,
+   -footer, -phase), so this converges them on the Figma spec in
+   CSS only — no markup or JS changes. Placed at end of file so
+   it layers over the original per-family declarations without
+   editing each one in place.
+
+   .co-card (drawer component status) takes the CHROME only. Its
+   body is a different entity — a component, not a truck — and
+   its big-number layout is what makes the sensor grid scannable
+   at a glance. Forcing it into the truck-card row structure
+   would cost more than the consistency is worth.
+   ============================================================ */
+
+:root {
+  --card-radius:      8px;    /* card/corner-radius */
+  --card-pad:         20px;   /* card/padding-desktop */
+  --card-gap:         12px;   /* card/input-content-gap */
+  --card-shadow:      0 5px 4px rgba(74,79,85,0.05);   /* Content Container Shadow */
+  --card-foot-radius: 4px;
+}
+
+/* ─── Chrome ─────────────────────────────────────────────── */
+.dc-tc,
+.mom-card,
+.tbm-card {
+  background: var(--layer-1);
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius);
+  padding: var(--card-pad);
+  gap: var(--card-gap);
+  box-shadow: var(--card-shadow);
+}
+/* Hover/active kept per-family in intent, restated here so the
+   heavier legacy map shadows don't win on hover. */
+.dc-tc:hover,
+.mom-card:hover,
+.tbm-card:hover {
+  border-color: var(--border-mid);
+  box-shadow: 0 5px 12px rgba(74,79,85,0.10);
+}
+body.dark .dc-tc:hover,
+body.dark .mom-card:hover,
+body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
+
+/* ─── Header: hint line under the ID block ───────────────── */
+.dc-tc-subtitle,
+.mom-card-sub,
+.tbm-card-sub {
+  font-size: 12px;
+  color: var(--subtle);
+  letter-spacing: -0.24px;
+  line-height: 1.3;
+}
+
+/* ─── Meta rows: hairline-bracketed, label left / value right ─ */
+.dc-tc-meta,
+.mom-card-meta,
+.tbm-card-meta {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 0;
+  row-gap: 12px;
+}
+.dc-tc-meta-key,
+.mom-card-meta-key,
+.tbm-card-meta-key { font-size: 13px; color: var(--soft); font-weight: 400; }
+.dc-tc-meta-val,
+.mom-card-meta-val,
+.tbm-card-meta-val { font-size: 12px; color: var(--strong); font-weight: 400; }
+
+/* ─── Footer: boxed inset holding phase chip + duration ──── */
+.dc-tc-footer,
+.mom-card-footer,
+.tbm-card-footer {
+  background: var(--layer-2);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--card-foot-radius);
+  padding: 8px;
+  gap: 8px;
+}
+
+/* ─── Component status cards ──────────────────────────────
+   Takes the full card grammar, not just chrome. The big mono
+   value stays (it's what makes the sensor grid scannable) but
+   everything around it adopts the spec: bracketed meta rows,
+   and the status strip becomes a neutral boxed footer holding
+   a colored chip rather than a full-bleed colored band. */
+.co-card,
+.co-card--empty,
+.co-card--pending {
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+}
+.co-card {
+  border: 1px solid var(--border);
+  padding: 14px;          /* card padding moves off the body */
+  gap: 10px;
+  overflow: visible;      /* footer insets now, so no clipping needed */
+}
+.co-card-body { padding: 0; gap: 8px; }
+
+/* Description line = the spec's hint line */
+.co-card .co-desc-text { font-size: 12px; color: var(--subtle); letter-spacing: -0.24px; }
+
+/* Meta rows: label left, value right, hairline-bracketed */
+.co-card .co-meta {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 0;
+  gap: 8px;
+}
+.co-card .co-meta-row {
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 12px;
+}
+.co-card .co-meta-row > span:first-child { font-size: 13px; color: var(--soft); }
+.co-card .co-meta-row > span:last-child  { color: var(--strong); text-align: right; }
+
+/* Footer: the box itself is the full state color (pill-inside-neutral-box
+   tested worse — reverted per feedback). Radius/padding stay at the
+   spec's footer values, just filled edge to edge with the state tint. */
+.co-card .co-card-strip {
+  border-radius: var(--card-foot-radius);
+  padding: 8px;
+  gap: 8px;
+}
+.co-card .co-strip-label { font-size: 12px; font-weight: 500; }
+.co-card .co-strip--normal  { background: #d5f1d2; }
+.co-card .co-strip--normal  .co-strip-label { color: #15322f; }
+.co-card .co-strip--warn    { background: var(--amber); }
+.co-card .co-strip--warn    .co-strip-label { color: #894f18; }
+.co-card .co-strip--alarm   { background: #ffd0d0; }
+.co-card .co-strip--alarm   .co-strip-label { color: var(--red); }
+.co-card .co-strip--pending { background: #ffefa9; }
+.co-card .co-strip--pending .co-strip-label { color: var(--strong); }
+.co-card .co-strip--grey,
+.co-card .co-strip--empty   { background: var(--layer-2); }
+.co-card .co-strip--grey    .co-strip-label,
+.co-card .co-strip--empty   .co-strip-label { color: var(--soft); }
+
+/* ─── Desktop component status cards (.dt-co-card) ──────────
+   Third copy of the component card, desktop drawer only —
+   missed in the first unification pass because it's a separate
+   dt- prefixed family rendered from app-06, not shared markup.
+   Same treatment as .co-card: spec chrome, bracketed meta rows,
+   status band → neutral inset footer with a colored chip.
+   State classes live on the CARD here (.clean/.warn/.alarm),
+   not the strip, so the chip selectors follow that scheme. */
+.dt-co-card {
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  padding: 20px;
+  gap: 10px;
+  overflow: visible;
+}
+.dt-co-card-body { padding: 0; }
+
+.dt-co-card-meta {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 0;
+  gap: 8px;
+}
+.dt-co-card-meta-row { justify-content: space-between; align-items: baseline; gap: 12px; }
+.dt-co-card-meta-label { color: var(--soft); }
+.dt-co-card-meta-row > span:last-child { color: var(--strong); text-align: right; }
+
+/* Footer: box itself is the full state color again (pill-inside-neutral-box
+   reverted per feedback). Radius stays at the spec's footer value; the
+   original per-state .dt-co-card.STATE .dt-co-card-strip background
+   rules already do this job on their own now that nothing overrides
+   them, so this block only needs to add the radius + fix the label,
+   which no longer needs pill padding. */
+.dt-co-card .dt-co-card-strip {
+  border-radius: var(--card-foot-radius);
+  padding: 8px;
+  gap: 8px;
+}
+.dt-co-card .dt-co-card-strip-label { font-size: 13px; }

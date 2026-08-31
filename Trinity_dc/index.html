@@ -207,20 +207,34 @@
           <div id="srch-results"></div>
         </div>
 
-        <div style="margin-bottom:10px;display:flex;align-items:center;gap:8px;">
-          <div style="position:relative;flex-shrink:0;">
-            <button class="overview-pill" id="wts-btn" onclick="toggleWtsDropdown()">
-              <span id="wts-label">Where to start</span>
-              <svg id="wts-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" style="transition:transform 0.2s;">
-                <path d="M3 5l4 4 4-4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
-            <div id="wts-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:white;border:1px solid var(--border-mid);border-radius:8px;box-shadow:0 4px 16px rgba(54,50,45,0.12);padding:4px;min-width:200px;z-index:50;">
-              <div class="wts-option wts-active" onclick="selectWts('Where to start', this)"><span class="wts-check">✓</span>Where To Start</div>
-              <div class="wts-option" onclick="selectWts('Overview', this)"><span class="wts-check" style="visibility:hidden">✓</span>Overview</div>
-              <div class="wts-option" onclick="selectWts('Components Condition', this)"><span class="wts-check" style="visibility:hidden">✓</span>Components Condition</div>
-            </div>
+        <!-- Section nav — tab strip (matches Fleet Update + drawer nav
+             pattern). The legacy pill+dropdown stay in the DOM hidden
+             below: the onboarding tour, hash-restore (app-06), and
+             comment pins all reference #wts-btn / #wts-dropdown /
+             #wts-label by id, so removing them outright breaks three
+             unrelated systems. selectWts() keeps both in sync. -->
+        <div class="swu-sm-tabstrip-wrap" style="margin-bottom:10px;">
+          <div class="swu-sm-tabstrip" id="wts-tabstrip">
+            <div class="swu-sm-tab active" data-nav="Where to start" onclick="selectWts('Where to start', this)">Where To Start</div>
+            <div class="swu-sm-tab" data-nav="Overview" onclick="selectWts('Overview', this)">Overview</div>
+            <div class="swu-sm-tab" data-nav="Components Condition" onclick="selectWts('Components Condition', this)">Components Condition</div>
           </div>
+        </div>
+        <div style="position:relative;display:none;">
+          <button class="overview-pill" id="wts-btn" onclick="toggleWtsDropdown()">
+            <span id="wts-label">Where to start</span>
+            <svg id="wts-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" style="transition:transform 0.2s;">
+              <path d="M3 5l4 4 4-4" stroke="#36322d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div id="wts-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:white;border:1px solid var(--border-mid);border-radius:8px;box-shadow:0 4px 16px rgba(54,50,45,0.12);padding:4px;min-width:200px;z-index:50;">
+            <div class="wts-option wts-active" data-label="Where to start" onclick="selectWts('Where to start', this)"><span class="wts-check">✓</span>Where To Start</div>
+            <div class="wts-option" data-label="Overview" onclick="selectWts('Overview', this)"><span class="wts-check" style="visibility:hidden">✓</span>Overview</div>
+            <div class="wts-option" data-label="Components Condition" onclick="selectWts('Components Condition', this)"><span class="wts-check" style="visibility:hidden">✓</span>Components Condition</div>
+          </div>
+        </div>
+        <!-- Search — now full width on its own row -->
+        <div style="margin-bottom:10px;">
           <!-- Search — fills remaining space, dropdown anchors to its own wrap -->
           <div class="srch-wrap" id="srch-wrap" style="flex:1;">
             <div class="srch-field" id="srch-field">
@@ -338,18 +352,28 @@
     padding-bottom:32px;
   ">
     <!-- Handle -->
-    <div style="display:flex;justify-content:center;padding:12px 0 4px;">
+    <div class="flt-handle-row" style="display:flex;justify-content:center;padding:12px 0 4px;">
       <div style="width:36px;height:4px;border-radius:2px;background:var(--border-mid);"></div>
     </div>
 
     <!-- Header -->
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px 12px;">
+    <div class="flt-header-row" style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px 12px;">
       <div style="font-size:18px;font-weight:500;color:var(--strong);letter-spacing:-0.4px;">Filter</div>
-      <button onclick="filterReset()" id="filter-reset-btn" style="font-size:13px;color:var(--blue);font-weight:500;letter-spacing:-0.2px;background:none;border:none;cursor:pointer;padding:4px 0;font-family:var(--font);">Reset all</button>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button onclick="filterReset()" id="filter-reset-btn" style="font-size:13px;color:var(--blue);font-weight:500;letter-spacing:-0.2px;background:none;border:none;cursor:pointer;padding:4px 0;font-family:var(--font);">Reset all</button>
+        <!-- Explicit close. Tapping the scrim still works, but in
+             landscape the sheet covers nearly the whole frame and
+             leaves no real scrim target, so the sheet needs its own
+             dismiss. Present in both orientations to stay consistent. -->
+        <button onclick="filterClose()" id="filter-close-btn" aria-label="Close filters"
+          style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;color:var(--strong);-webkit-tap-highlight-color:transparent;">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
     </div>
 
     <!-- Scrollable content -->
-    <div style="overflow-y:auto;max-height:420px;padding:0 16px;">
+    <div id="filter-scroll" style="overflow-y:auto;max-height:420px;padding:0 16px;">
 
       <!-- Section: Ignition -->
       <div class="flt-section">
@@ -395,7 +419,7 @@
     </div>
 
     <!-- Apply button -->
-    <div style="padding:16px 16px 0;">
+    <div class="flt-apply-row" style="padding:16px 16px 0;">
       <button onclick="filterApply()" style="width:100%;background:var(--strong);color:white;border:none;border-radius:32px;padding:14px;font-size:15px;font-weight:500;font-family:var(--font);letter-spacing:-0.3px;cursor:pointer;">
         Apply Filters
       </button>

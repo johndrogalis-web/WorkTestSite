@@ -512,11 +512,18 @@ function tstDevLabel(view, orient) {
 function tstDevSelect(id, view, orient) {
   var cur = tstDevKey(view || tstCurView(), orient || tstCurOrient());
   return '<div class="tst-sub">Which surface is this test run on?</div>' +
-    '<select class="tst-input" id="' + id + '">' +
+    '<select class="tst-input" id="' + id + '" onchange="tstDevPreview(this)">' +
     TST_DEVICES.map(function (d) {
       var k = tstDevKey(d.v, d.o);
       return '<option value="' + k + '"' + (k === cur ? ' selected' : '') + '>' + d.label + '</option>';
     }).join('') + '</select>';
+}
+/* Changing the dropdown flips the prototype behind the panel straight
+   away, so you author against the surface you picked instead of finding
+   out at Start. The form lives in the drawer, so its values survive. */
+function tstDevPreview(sel) {
+  var p = (sel && sel.value ? sel.value : 'desktop').split('-');
+  tstDevApply(p[0], p[1] || 'portrait');
 }
 function tstDevRead(id) {
   var el = document.getElementById(id);

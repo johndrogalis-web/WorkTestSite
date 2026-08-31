@@ -98,6 +98,13 @@ var tstState = {
     /* Test-mode chrome hiding */
     'body.tst-testing .vp-viewport-pills,body.tst-testing .cmt-wrap,',
     'body.tst-testing .vp-opts-wrap,body.tst-testing .tst-wrap{display:none !important;}',
+    /* Comment layer is authoring furniture. A tester should never see a
+       pin, a card, the hint strip or the drawer during a session. */
+    'body.tst-testing .cmt-pin,body.tst-testing .cmt-card,body.tst-testing .cmt-hint,',
+    'body.tst-testing .cmt-menu,body.tst-testing .cmt-drawer,body.tst-testing .cmt-drawer-scrim,',
+    'body.tst-testing .vp-right-cluster{display:none !important;}',
+    '.tst-dev-tag{display:inline-block;font-size:10px;font-weight:600;letter-spacing:0.03em;',
+    '  text-transform:uppercase;color:#555;background:#f0eeec;border-radius:100px;padding:2px 8px;}',
     /* Step flash on successful match */
     /* Results view */
     '.tst-stat{display:flex;gap:14px;font-size:11.5px;color:#555;flex-wrap:wrap;}',
@@ -478,6 +485,54 @@ function tstWfMeta(wf) {
   var m = (wf.checkpoints && wf.checkpoints[0] && wf.checkpoints[0].meta) ? wf.checkpoints[0] : null;
   return m ? (m.view + (m.orientation ? ' \u00B7 ' + m.orientation : '')) : '';
 }
+/* ── Device target ───────────────────────────────────────────────
+   A workflow is recorded against one surface and only makes sense on
+   that surface, so the target is chosen up front, applied before the
+   first click is recorded, and re-applied for the tester. Stored on the
+   meta checkpoint as {view, orientation} — same shape it always had, so
+   older workflows keep working. ── */
+var TST_DEVICES = [
+  { v: 'desktop', o: 'portrait',  label: 'Desktop' },
+  { v: 'tablet',  o: 'portrait',  label: 'Tablet \u00B7 portrait' },
+  { v: 'tablet',  o: 'landscape', label: 'Tablet \u00B7 landscape' },
+  { v: 'mobile',  o: 'portrait',  label: 'Mobile \u00B7 portrait' },
+  { v: 'mobile',  o: 'landscape', label: 'Mobile \u00B7 landscape' }
+];
+function tstDevKey(view, orient) {
+  return view === 'desktop' ? 'desktop' : view + '-' + (orient || 'portrait');
+}
+function tstDevLabel(view, orient) {
+  var k = tstDevKey(view, orient);
+  for (var i = 0; i < TST_DEVICES.length; i++) {
+    if (tstDevKey(TST_DEVICES[i].v, TST_DEVICES[i].o) === k) return TST_DEVICES[i].label;
+  }
+  return 'Desktop';
+}
+/* Select markup, defaulted to whatever surface the author is on now. */
+function tstDevSelect(id, view, orient) {
+  var cur = tstDevKey(view || tstCurView(), orient || tstCurOrient());
+  return '<div class="tst-sub">Which surface is this test run on?</div>' +
+    '<select class="tst-input" id="' + id + '">' +
+    TST_DEVICES.map(function (d) {
+      var k = tstDevKey(d.v, d.o);
+      return '<option value="' + k + '"' + (k === cur ? ' selected' : '') + '>' + d.label + '</option>';
+    }).join('') + '</select>';
+}
+function tstDevRead(id) {
+  var el = document.getElementById(id);
+  var k = (el && el.value) || 'desktop';
+  var p = k.split('-');
+  return { view: p[0], orientation: p[1] || 'portrait' };
+}
+/* Single place that puts the prototype on a surface. */
+function tstDevApply(view, orient) {
+  try {
+    if (!view) return;
+    if (typeof setView === 'function') setView(view);
+    if (view !== 'desktop' && typeof setOrientation === 'function') setOrientation(view, orient || 'portrait');
+  } catch (e) { console.warn('[testing] view switch failed', e); }
+}
+
 function tstWfSteps(wf) {
   return (wf.checkpoints || []).filter(function (s) { return !s.meta; });
 }
@@ -763,6 +818,7 @@ function tstResultsSessions(wfId, btn) {
 /* ── Recorder ── */
 function tstStartRecordForm(editingId) {
   var wf = editingId ? tstState.workflows.find(function (w) { return w.id === editingId; }) : null;
+  var wfMeta = (wf && wf.checkpoints && wf.checkpoints[0] && wf.checkpoints[0].meta) ? wf.checkpoints[0] : null;
   /* Lives inside the Workflows tab now rather than replacing the whole
      surface, so cancelling returns you to the list instead of nothing. */
   var body = tstDrawerShell('workflows');
@@ -771,7 +827,8 @@ function tstStartRecordForm(editingId) {
     '<div class="tst-dr-formtitle">' + (editingId ? 'Re-record workflow' : 'New workflow') + '</div>' +
     '<input class="tst-input" id="tst-rec-name" placeholder="Workflow name (e.g. Send an update to 2 trucks)" value="' + (wf ? tstEsc(wf.name) : '') + '">' +
     '<textarea class="tst-ta" id="tst-rec-inst" placeholder="Instruction the tester will read">' + (wf ? tstEsc(wf.instruction) : '') + '</textarea>' +
-    '<div class="tst-sub">After you hit Start, set the right view first if needed, then click through the task exactly as a user would. Every click in the prototype becomes a step. Finish on the last click of the task.</div>' +
+    tstDevSelect('tst-rec-device', wfMeta ? wfMeta.view : null, wfMeta ? wfMeta.orientation : null) +
+    '<div class="tst-sub">Hitting Start switches the prototype to that surface for you. Click through the task exactly as a user would \u2014 every click becomes a step. Finish on the last click. Testers are locked to this same surface.</div>' +
     '<div class="tst-err" id="tst-rec-err" style="display:none;"></div>' +
     '<div class="tst-item-row" style="justify-content:flex-end;">' +
     '<button class="tst-cta tst-cta-quiet" onclick="tstOpenAdminPanel()">Cancel</button>' +
@@ -784,9 +841,12 @@ function tstBeginRecording(editingId) {
   var inst = document.getElementById('tst-rec-inst').value.trim();
   var err = document.getElementById('tst-rec-err');
   if (!name || !inst) { err.textContent = 'Name and instruction are both needed.'; err.style.display = 'block'; return; }
+  var dev = tstDevRead('tst-rec-device');
   tstClosePanel();
   tstState.mode = 'record';
-  tstState.rec = { name: name, instruction: inst, steps: [], editingId: editingId };
+  tstState.rec = { name: name, instruction: inst, steps: [], editingId: editingId, device: dev };
+  /* Record on the surface that was chosen, not whatever was on screen. */
+  tstDevApply(dev.view, dev.orientation);
   tstRenderBar();
 }
 
@@ -824,12 +884,8 @@ function tstRecFinish(btn) {
   var rec = tstState.rec;
   if (!rec.steps.length) { alert('No steps recorded yet \u2014 click through the task first.'); return; }
   btn.disabled = true; btn.innerHTML = '<span class="tst-spin"></span>';
-  var meta = {
-    meta: 1,
-    view: document.body.classList.contains('view-mobile') ? 'mobile'
-        : document.body.classList.contains('view-tablet') ? 'tablet' : 'desktop',
-    orientation: document.body.classList.contains('orient-landscape') ? 'landscape' : 'portrait'
-  };
+  var dev = rec.device || { view: tstCurView(), orientation: tstCurOrient() };
+  var meta = { meta: 1, view: dev.view, orientation: dev.orientation };
   var checkpoints = [meta].concat(rec.steps);
   var done = function (res) {
     tstRecCancel();
@@ -892,8 +948,12 @@ function tstOpenTesterPanel(param) {
     '<div class="tst-item-row"><button class="tst-chip" onclick="tstStartExplore()">Explore</button></div></div>' +
     wfs.map(function (wf) {
       var g = tstIsGoal(wf);
+      var wm = (wf.checkpoints && wf.checkpoints[0] && wf.checkpoints[0].meta) ? wf.checkpoints[0] : null;
       return '<div class="tst-item"><div class="tst-item-name">' + tstEsc(wf.name) + '</div>' +
         '<div class="tst-item-meta">' + tstEsc(wf.instruction) + '</div>' +
+        '<div class="tst-item-meta"><span class="tst-dev-tag">' +
+          tstEsc(tstDevLabel(wm ? wm.view : 'desktop', wm ? wm.orientation : 'portrait')) +
+        '</span></div>' +
         (g ? '<div class="tst-item-meta">Find your own way. Tell us when you think you\u2019ve got it, or give up \u2014 both are useful.</div>' : '') +
         '<div class="tst-item-row"><button class="tst-chip tst-chip-primary" onclick="tstBeginRunById(\'' + tstEsc(wf.id) + '\')">Start</button></div></div>';
     }).join(''));
@@ -917,10 +977,7 @@ function tstBeginRun(wf) {
   tstClosePanel();
   /* Put the prototype in the surface the workflow was recorded on */
   var meta = (wf.checkpoints && wf.checkpoints[0] && wf.checkpoints[0].meta) ? wf.checkpoints[0] : null;
-  try {
-    if (meta && typeof setView === 'function') setView(meta.view);
-    if (meta && meta.view !== 'desktop' && typeof setOrientation === 'function') setOrientation(meta.view, meta.orientation || 'portrait');
-  } catch (e) { console.warn('[testing] view switch failed', e); }
+  tstDevApply(meta ? meta.view : 'desktop', meta ? meta.orientation : 'portrait');
 
   setTimeout(function () {
     var now = Date.now();
@@ -1196,6 +1253,7 @@ function tstStartGoalForm() {
     '<div class="tst-sub">Give the tester a destination without a route. They wander until they think they found it, or give up. Every screen they touch is recorded either way.</div>' +
     '<input class="tst-input" id="tst-goal-name" placeholder="Short name, e.g. Find a truck\u2019s sensor history">' +
     '<textarea class="tst-ta" id="tst-goal-inst" placeholder="The goal, in the tester\u2019s language"></textarea>' +
+    tstDevSelect('tst-goal-device', null, null) +
     '<div class="tst-item-row" style="justify-content:flex-end;">' +
     '<button class="tst-cta tst-cta-quiet" onclick="tstOpenAdminPanel()">Cancel</button>' +
     '<button class="tst-cta tst-cta-dark" onclick="tstSaveGoal(this)">Save goal</button></div>';
@@ -1206,12 +1264,13 @@ function tstSaveGoal(btn) {
   var name = document.getElementById('tst-goal-name').value.trim();
   var inst = document.getElementById('tst-goal-inst').value.trim();
   if (!name || !inst) { alert('A goal needs both a name and an instruction.'); return; }
+  var goalDev = tstDevRead('tst-goal-device');
   btn.disabled = true;
   /* Meta-only checkpoint list: satisfies the backend's non-empty
      requirement while defining zero steps to match against. */
   tstPost({
     action: 'addWorkflow', prototype: TST_PROTOTYPE, name: name, instruction: inst, author: '',
-    checkpoints: [{ meta: 1, kind: 'goal', view: tstCurView(), orientation: tstCurOrient() }]
+    checkpoints: [{ meta: 1, kind: 'goal', view: goalDev.view, orientation: goalDev.orientation }]
   }, function (res) {
     if (!res.ok) { alert('Save failed: ' + res.error); btn.disabled = false; return; }
     tstOpenAdminPanel();
@@ -1221,10 +1280,7 @@ function tstSaveGoal(btn) {
 function tstBeginGoal(wf) {
   tstClosePanel();
   var meta = (wf.checkpoints && wf.checkpoints[0] && wf.checkpoints[0].meta) ? wf.checkpoints[0] : null;
-  try {
-    if (meta && typeof setView === 'function') setView(meta.view);
-    if (meta && meta.view !== 'desktop' && typeof setOrientation === 'function') setOrientation(meta.view, meta.orientation || 'portrait');
-  } catch (e) {}
+  tstDevApply(meta ? meta.view : 'desktop', meta ? meta.orientation : 'portrait');
   setTimeout(function () {
     tstBeginExplore(wf);
     tstShowInstruction(wf);

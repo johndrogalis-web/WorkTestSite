@@ -822,6 +822,30 @@ table.hist td.dim{color:var(--muted)}
 .fpr-name{flex:1;font-weight:500}
 .fpr-val{color:var(--muted);font-size:12px}
 
+/* ---- MVP single-setting panel ---- */
+.mvp-update-row{display:flex;gap:24px;align-items:flex-end;margin-top:18px;flex-wrap:wrap}
+.mvp-field-block{display:flex;flex-direction:column}
+.mvp-type-display{
+  width:220px;cursor:default;color:var(--muted);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.mvp-type-display svg{opacity:.35;flex-shrink:0}
+.mvp-toggle{
+  width:40px;height:24px;border-radius:12px;
+  background:var(--panel-2);border:1px solid var(--border);
+  position:relative;cursor:pointer;transition:background .15s,border-color .15s;flex-shrink:0;
+}
+.mvp-toggle::after{
+  content:'';position:absolute;top:2px;left:2px;
+  width:18px;height:18px;border-radius:50%;background:var(--faint);transition:left .15s,background .15s;
+}
+.mvp-toggle.on{background:var(--blue);border-color:var(--blue)}
+.mvp-toggle.on::after{left:16px;background:#fff}
+.cmp-pop-item.selected{background:var(--panel-2)}
+.mvp-pop-check{width:12px;height:12px;flex-shrink:0;color:var(--blue-hi)}
+.status-cell.differs{color:var(--amber)}
+.status-cell.differs .dot{background:var(--amber)}
+
 /* expanded per-truck table */
 .detail{display:none;padding:0 18px 16px 18px}
 .setting-row.open .detail{display:block}
@@ -936,7 +960,7 @@ table.tt td.dim{color:var(--muted)}
     <svg class="vp-logo" viewBox="0 0 96 24" xmlns="http://www.w3.org/2000/svg" aria-label="verifi">
       <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z"/>
     </svg>
-    <span class="vp-tag">Advanced Settings · Compare</span>
+    <span class="vp-tag" id="vpTag">Advanced Settings · MVP</span>
   </div>
   <div class="vp-right-cluster">
     <div class="vp-pills">
@@ -948,8 +972,9 @@ table.tt td.dim{color:var(--muted)}
       <button class="vp-opts-btn" onclick="toggleOpts(event)">Options <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
       <div class="vp-opts-dd" id="vpOptsDd" onclick="event.stopPropagation()">
         <div class="vp-dd-label">Version</div>
+        <button class="vp-opt-row active" id="verMvp" onclick="setPageVersion('mvp')">MVP <span class="vp-check">✓</span></button>
         <button class="vp-opt-row" id="verP1" onclick="setPageVersion('v1')">Version 1 <span class="vp-check">✓</span></button>
-        <button class="vp-opt-row active" id="verP2" onclick="setPageVersion('v2')">Version 2 <span class="vp-check">✓</span></button>
+        <button class="vp-opt-row" id="verP2" onclick="setPageVersion('v2')">Version 2 <span class="vp-check">✓</span></button>
         <div class="vp-dd-div"></div>
         <button class="vp-opt-row" onclick="toggleTheme()">Dark mode <span class="vp-switch" id="themeSwitch"></span></button>
       </div>
@@ -1067,7 +1092,41 @@ table.tt td.dim{color:var(--muted)}
   <!-- MAIN -->
   <main class="main" id="main">
         
-        <div id="compareFocus">
+        <div id="mvpFocus">
+      <div class="cmp-toolbar">
+        <div class="cmp-select-wrap" style="max-width:520px">
+          <div class="cmp-label">Settings</div>
+          <div class="cmp-field" onclick="toggleMvpPop(event)">
+            <span id="mvpFieldText" class="cmp-field-text"></span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+          <div class="cmp-pop" id="mvpPop" onclick="event.stopPropagation()">
+            <div class="cmp-pop-search">
+              <div class="search-box">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6370" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <input id="mvpSearch" type="text" placeholder="Search settings" oninput="renderMvpPop()">
+                <button class="clear-x" onclick="document.getElementById('mvpSearch').value='';renderMvpPop()">×</button>
+              </div>
+            </div>
+            <div class="cmp-pop-list" id="mvpPopList"></div>
+          </div>
+        </div>
+      </div>
+      <div class="mvp-update-row">
+        <div class="mvp-field-block">
+          <div class="cmp-label">Type</div>
+          <div class="mvp-type-display" id="mvpTypeDisplay">—</div>
+        </div>
+        <div class="mvp-field-block">
+          <div class="cmp-label">Value</div>
+          <div id="mvpValueControl"></div>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="mvpSendBtn" onclick="sendMvpUpdate()" style="margin-top:16px;margin-bottom:24px">Send update</button>
+      <div id="mvpResult"></div>
+    </div>
+
+    <div id="compareFocus" style="display:none">
       <div class="cmp-toolbar">
         <div class="cmp-select-wrap">
           <div class="cmp-label">Settings</div>
@@ -2010,12 +2069,17 @@ function closeLogs(){
 }
 
 let cmpColFilter = '';
-let pageVersion = 'v2';   // v1 = no column filter, no Advanced Settings group · v2 = full build
+let pageVersion = 'mvp';   // mvp = single-setting update (default) · v1 = compare, no column filter · v2 = compare, full build
 function setPageVersion(v){
   pageVersion = v;
+  document.getElementById('verMvp').classList.toggle('active', v==='mvp');
   document.getElementById('verP1').classList.toggle('active', v==='v1');
   document.getElementById('verP2').classList.toggle('active', v==='v2');
   document.getElementById('vpOptsDd').classList.remove('open');
+  const tag = document.getElementById('vpTag');
+  if(tag) tag.textContent = 'Advanced Settings · ' + (v==='mvp' ? 'MVP' : 'Compare');
+  document.getElementById('mvpFocus').style.display = v==='mvp' ? '' : 'none';
+  document.getElementById('compareFocus').style.display = v==='mvp' ? 'none' : '';
   // keep the URL shareable: address bar always reflects the current version
   try{
     const url = new URL(location.href);
@@ -2026,7 +2090,8 @@ function setPageVersion(v){
     clearColFilter();   // V1 has no column filter — show all loaded columns
   }
   renderCmpPop();
-  renderCompare();
+  renderMvpPop();
+  renderMain();
   if(document.getElementById('logsBackdrop').classList.contains('open')) renderLogsDrawer();
 }
 function eligibleSettings(q){
@@ -2324,9 +2389,176 @@ function sendFix(){
   showToast(`Consistency update sent to ${n} truck${n===1?'':'s'} — awaiting confirmation`);
 }
 
-/* ---- mass-update drawer ---- */
+/* ---- MVP single-setting panel ---- */
+let mvpSetting = 'front_discharge';
+let mvpValue = null;
+function seedMvpValue(){
+  const s = SETTINGS.find(x=>x.id===mvpSetting);
+  if(!s){ mvpValue = null; return; }
+  const r = rollup(s);
+  mvpValue = r.groups[0] ? r.groups[0].value : s.def;
+}
+seedMvpValue();
 
+function toggleMvpPop(e){
+  e.stopPropagation();
+  const p = document.getElementById('mvpPop');
+  p.classList.toggle('open');
+  if(p.classList.contains('open')) renderMvpPop();
+}
+function renderMvpPop(){
+  const q = (document.getElementById('mvpSearch').value||'').toLowerCase();
+  const list = document.getElementById('mvpPopList');
+  const CHECK = '<svg class="mvp-pop-check" viewBox="0 0 12 12" fill="none"><path d="M2 6.5 4.8 9 10 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const eligible = eligibleSettings(q);
+  const renderItems = arr => arr.map(s=>{
+    const sel = mvpSetting===s.id;
+    return `<button class="cmp-pop-item${sel?' selected':''}" title="${s.fw||s.name}" onclick="selectMvpSetting('${s.id}')">
+      <span class="mvp-pop-check">${sel?CHECK:''}</span>
+      ${s.name}${s.unit?` (${s.unit})`:''}<span class="type-tag">${typeLabel(s)}</span>
+    </button>`;
+  }).join('');
+  const basicHtml = SECTIONS.filter(sec=>sec.id!=='advanced').map(sec=>{
+    const inSec = eligible.filter(s=>s.sec===sec.id);
+    if(inSec.length===0) return '';
+    return `<div class="cmp-pop-head">${sec.name}</div>` + renderItems(inSec);
+  }).join('');
+  const advEligible = eligible.filter(s=>s.sec==='advanced');
+  let advHtml = '';
+  if(advEligible.length){
+    const subs = [];
+    advEligible.forEach(s=>{ if(!subs.includes(s.advSec)) subs.push(s.advSec); });
+    advHtml = `<div class="cmp-pop-head">Advanced Settings</div>` + subs.map(sub=>
+      `<div class="cmp-pop-subhead">${sub}</div>` + renderItems(advEligible.filter(s=>s.advSec===sub))
+    ).join('');
+  }
+  list.innerHTML = (basicHtml + advHtml) || `<div style="padding:14px;color:var(--faint);font-size:12.5px">No matching settings</div>`;
+}
+function selectMvpSetting(sid){
+  mvpSetting = sid;
+  seedMvpValue();
+  document.getElementById('mvpPop').classList.remove('open');
+  renderMvp();
+}
+document.addEventListener('click', ()=>{ const p=document.getElementById('mvpPop'); if(p) p.classList.remove('open'); });
 
+function setMvpValue(v){ mvpValue = v; renderMvp(); }
+function buildMvpControl(s){
+  if(s.type==='toggle'){
+    return `<div class="mvp-toggle${mvpValue===true?' on':''}" onclick="setMvpValue(${mvpValue===true?'false':'true'})"></div>`;
+  }
+  if(s.type==='select'){
+    return `<select class="sel-input" style="width:220px" onchange="setMvpValue(this.value)">
+      ${s.options.map(o=>`<option value="${o}" ${mvpValue===o?'selected':''}>${o}</option>`).join('')}
+    </select>`;
+  }
+  if(s.type==='text'){
+    return `<input class="num-input" type="text" style="width:220px" value="${String(mvpValue??'').replace(/"/g,'&quot;')}" placeholder="Enter value" oninput="mvpValue=this.value;renderMvpResult()">`;
+  }
+  return `<input class="num-input" type="number" step="any" style="width:220px" value="${mvpValue===null||mvpValue===undefined?'':mvpValue}" oninput="mvpValue=(this.value===''?'':parseFloat(this.value));renderMvpResult()">`;
+}
+function mvpParsed(){
+  const v = mvpValue;
+  const ok = v!=='' && v!==null && v!==undefined && !(typeof v==='number'&&isNaN(v));
+  return ok ? {ok:true, value:v} : {ok:false};
+}
+function renderMvp(){
+  const s = SETTINGS.find(x=>x.id===mvpSetting);
+  const ft = document.getElementById('mvpFieldText');
+  if(!s){
+    ft.textContent = 'Select a setting';
+    ft.className = 'cmp-field-text placeholder';
+    document.getElementById('mvpTypeDisplay').textContent = '—';
+    document.getElementById('mvpValueControl').innerHTML = '';
+    document.getElementById('mvpResult').innerHTML = `<div class="cmp-hint">Pick a setting above to view and update its value across the selected trucks.</div>`;
+    document.getElementById('mvpSendBtn').disabled = true;
+    return;
+  }
+  ft.textContent = s.name + (s.unit?` (${s.unit})`:'');
+  ft.className = 'cmp-field-text';
+  document.getElementById('mvpTypeDisplay').innerHTML = `<span>${typeLabel(s)}</span>${CHEV}`;
+  document.getElementById('mvpValueControl').innerHTML = buildMvpControl(s);
+  renderMvpResult();
+}
+function renderMvpResult(){
+  const s = SETTINGS.find(x=>x.id===mvpSetting);
+  const box = document.getElementById('mvpResult');
+  const btn = document.getElementById('mvpSendBtn');
+  if(!s) return;
+  if(selected.size===0){
+    box.innerHTML = `<div class="cmp-hint">Select trucks on the left to load them here.</div>`;
+    btn.disabled = true;
+    return;
+  }
+  const p = mvpParsed();
+  const r = rollup(s);
+  const total = r.entries.length;
+  const inSync = p.ok ? r.entries.filter(e=>e.value!==null && JSON.stringify(e.value)===JSON.stringify(p.value)).length : 0;
+  const differ = total - r.noVal - inSync;
+
+  const chips = [`<span class="sum-chip${inSync>0?' confirmed':''}"><span class="dot"></span>${inSync} in sync${p.ok?` @ ${fmtVal(s,p.value)}`:''}</span>`];
+  if(differ>0) chips.push(`<span class="sum-chip mixed"><span class="dot"></span>${differ} differ</span>`);
+  if(r.noVal>0) chips.push(`<span class="sum-chip"><span class="dot"></span>${r.noVal} no value</span>`);
+
+  const warn = (r.noVal===total)
+    ? `<div class="warn-banner">No value was reported for ${s.fw||s.name} by any of the ${total} selected truck${total===1?'':'s'} in the last 90 days. Confirm the setting name is spelled correctly and that the trucks have reported since it was applied.</div>`
+    : '';
+
+  const rows = [...selected]
+    .sort((a,b)=>truckName(a).localeCompare(truckName(b), undefined, {numeric:true}))
+    .map(tid=>{
+      const e = state[tid][s.id];
+      let st, label;
+      if(e.status==='pending'){ st='pending'; label='Pending'; }
+      else if(e.value===null){ st='novalue'; label='No value'; }
+      else if(p.ok && JSON.stringify(e.value)===JSON.stringify(p.value)){ st='confirmed'; label='In sync'; }
+      else { st='differs'; label='Differs'; }
+      return `<tr>
+        <td>${truckName(tid)}</td>
+        <td>${s.fw||s.name}</td>
+        <td>${typeLabel(s)}</td>
+        <td>${e.value===null?'—':fmtVal(s,e.value)}</td>
+        <td class="dim">${e.lastUpdated||'—'}</td>
+        <td class="dim">${e.source||'—'}</td>
+        <td><span class="status-cell ${st}"><span class="dot"></span>${label}</span></td>
+      </tr>`;
+    }).join('');
+
+  box.innerHTML = `${warn}
+    <div class="summary-bar">
+      <div class="summary-count"><span class="label">Setting</span><span class="num" style="font-size:14px">${s.fw||s.name}</span></div>
+      <div class="summary-count"><span class="label">Trucks selected</span><span class="num">${inSync}/${total}</span></div>
+      <div class="summary-chips">${chips.join('')}</div>
+    </div>
+    <div class="cmp-table-wrap"><table class="tt">
+      <thead><tr><th>Truck Name</th><th>Settings</th><th>Type</th><th>Current Value</th><th>Last Updated</th><th>Source</th><th>Status</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+
+  btn.disabled = !p.ok;
+}
+function sendMvpUpdate(){
+  const s = SETTINGS.find(x=>x.id===mvpSetting);
+  const p = mvpParsed();
+  if(!s || !p.ok || selected.size===0) return;
+  const targets = [...selected];
+  const now = 'Aug 31, 2026';
+  targets.forEach(tid=>{
+    state[tid][s.id] = {...state[tid][s.id], status:'pending', source:'Hub', submitter:'You', pendingValue:p.value};
+  });
+  renderMvpResult();
+  targets.forEach((tid,i)=>{
+    const delay = (i===targets.length-1 && targets.length>2) ? 9000 : 1500 + Math.random()*4500;
+    setTimeout(()=>{
+      const e = state[tid][s.id];
+      state[tid][s.id] = {value:e.pendingValue, lastUpdated:now, source:'Hub', submitter:'You', status:'confirmed'};
+      getHistory(tid, s.id).unshift({value:e.pendingValue, date:now, submitter:'You', source:'Hub'});
+      if(pageVersion==='mvp') renderMvpResult();
+    }, delay);
+  });
+  const n = targets.length;
+  showToast(`Update sent to ${n} truck${n===1?'':'s'} — awaiting confirmation`);
+}
 
 
 
@@ -2362,7 +2594,7 @@ function showToast(msg){
 }
 
 /* ============ MASTER RENDER ============ */
-function renderMain(){ renderCompare(); }
+function renderMain(){ if(pageVersion==='mvp') renderMvp(); else renderCompare(); }
 function renderAll(){ renderTrucks(); renderMain(); }
 renderAll();
 
@@ -2371,7 +2603,8 @@ renderAll();
   try{
     const params = new URLSearchParams(location.search);
     const raw = (params.get('version') || params.get('v') || location.hash.replace('#','') || '').toLowerCase();
-    if(raw==='v1' || raw==='1') setPageVersion('v1');
+    if(raw==='mvp' || raw==='0') setPageVersion('mvp');
+    else if(raw==='v1' || raw==='1') setPageVersion('v1');
     else if(raw==='v2' || raw==='2') setPageVersion('v2');
   }catch(e){}
 })();

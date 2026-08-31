@@ -8674,10 +8674,33 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
    spec's footer values, just filled edge to edge with the state tint. */
 .co-card .co-card-strip {
   border-radius: var(--card-foot-radius);
-  padding: 8px;
-  gap: 8px;
+  /* Was a flat 8px, which pulled the footer text 6px left of the body's
+     14px and made every card look off-axis. Match the body. */
+  padding: 8px 14px;
+  gap: 7px;
+  /* Long reasons wrap now, so the dot has to hold the first line
+     instead of floating to the centre of a two-line block. */
+  align-items: flex-start;
 }
-.co-card .co-strip-label { font-size: 12px; font-weight: 500; }
+.co-card .co-strip-dot { margin-top: 4px; }
+/* The base rule sets white-space:nowrap, and the card is overflow:hidden.
+   Together they clipped any status longer than the card is wide —
+   "Warning · Approaching limit" lost its last word. Reasons are the
+   whole point of the strip, so wrap rather than truncate. */
+.co-card .co-strip-label {
+  font-size: 12px; font-weight: 500;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 15px;
+  min-width: 0;
+  flex: 1;
+}
+/* A long unit or value should shorten the row, not push past the card */
+.co-card .co-val-row { min-width: 0; flex-wrap: wrap; }
+.co-card .co-card-head { min-width: 0; }
+.co-card .co-card-head > span:first-of-type {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .co-card .co-strip--normal  { background: #d5f1d2; }
 .co-card .co-strip--normal  .co-strip-label { color: #15322f; }
 .co-card .co-strip--warn    { background: var(--amber); }
@@ -8706,6 +8729,14 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
   padding: 20px;
   gap: 10px;
   overflow: visible;
+  /* The wrench button (.dt-co-tcg-replace-btn) is position:absolute at
+     top:12/right:12. Until now the only rule giving this card a
+     position was scoped to .dt-replace-mode, so outside replace mode
+     the button had no positioned ancestor on its own card and escaped
+     to the nearest one — rendering as a stray grey circle floating over
+     whichever card sat at that container's top-right. overflow:visible
+     above is why it was drawn rather than clipped. */
+  position: relative;
 }
 .dt-co-card-body { padding: 0; }
 
@@ -8729,5 +8760,857 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
   border-radius: var(--card-foot-radius);
   padding: 8px;
   gap: 8px;
+  /* Long reasons wrap now, so the dot holds the first line rather than
+     centring itself against a two-line block. */
+  align-items: flex-start;
 }
-.dt-co-card .dt-co-card-strip-label { font-size: 13px; }
+.dt-co-card .dt-co-card-strip-dot { margin-top: 4px; }
+/* The base rule sets white-space:nowrap and this card is overflow:visible,
+   so a status longer than the card spilled OUT of it and over the
+   neighbour instead of clipping. Reasons are the point of the strip,
+   so wrap rather than truncate. */
+.dt-co-card .dt-co-card-strip-label {
+  font-size: 13px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 16px;
+  min-width: 0;
+  flex: 1;
+}
+
+  /* ═══ TICKETS — PHASES BOARD ════════════════════════════════════════════════
+     Owned by app-07-tickets-phases.js. Reuses .tk-topbar / .tk-filterbar /
+     .tk-seg / .tk-phase-pill from the Ticket List so the two views read as one
+     page with two representations. Everything new is tp-.
+     ═════════════════════════════════════════════════════════════════════════ */
+
+  #dt-page-tphases { display:none; flex-direction:column; flex:1; min-width:0; overflow:hidden; }
+  #dt-page-tphases.active { display:flex; }
+
+  /* Stat band — hairline-divided row, not boxed cards */
+  .tp-statband {
+    display:flex; align-items:stretch; flex-shrink:0;
+    margin:0 28px; border:1px solid var(--border);
+    border-radius:var(--radius-md); background:var(--layer-1); overflow:hidden;
+  }
+  body.dark .tp-statband { background:#1e1c1a; border-color:rgba(255,255,255,0.08); }
+  .tp-stat { flex:1; display:flex; flex-direction:column; gap:6px; padding:14px 18px; min-width:0; border-right:1px solid var(--border); }
+  body.dark .tp-stat { border-color:rgba(255,255,255,0.08); }
+  .tp-stat:last-child { border-right:none; }
+  .tp-stat-label { font-size:12px; color:var(--soft); letter-spacing:-0.2px; white-space:nowrap; }
+  .tp-stat-value { font-size:22px; font-weight:500; color:var(--strong); letter-spacing:-0.55px; line-height:1; }
+  .tp-stat-value.warn { color:var(--amber); }
+  .tp-stat-value.err  { color:var(--red); }
+
+  /* Desktop Filters popover rows — reuses .dt-cols-popover chrome from the
+     Columns control on the same toolbar, so the two read as one family. */
+  .tp-filter-row {
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    width:100%; padding:7px 8px; background:none; border:none;
+    border-radius:6px; cursor:pointer; text-align:left;
+    font-family:var(--font); font-size:14px; color:var(--defined); letter-spacing:-0.28px;
+  }
+  .tp-filter-row:hover { background:var(--layer-2); }
+  .tp-filter-row.active { color:var(--strong); font-weight:500; }
+  .tp-filter-count {
+    display:none; align-items:center; justify-content:center;
+    min-width:18px; height:18px; padding:0 5px; border-radius:10px;
+    background:var(--blue); color:#fff;
+    font-size:11px; font-weight:600; letter-spacing:-0.2px; margin-left:2px;
+  }
+  body.dark .tp-filter-count { background:#e3f200; color:#000; }
+
+  /* Zebra striping over a filtered list. :nth-child still counts hidden rows,
+     so JS tags the visible ones and these rules take over on source order
+     (same specificity as the :nth-child rule they replace). */
+  .tk-table tbody tr.tp-alt   { background:var(--layer-2); }
+  .tk-table tbody tr.tp-noalt { background:var(--layer-1); }
+  body.dark .tk-table tbody tr.tp-alt   { background:rgba(255,255,255,0.03); }
+  body.dark .tk-table tbody tr.tp-noalt { background:#1e1c1a; }
+
+  /* Overdue toggle — quiet outline pill, fills only while it is on */
+  .tp-toggle-btn.on { background:var(--blue); border-color:var(--blue); color:#fff; }
+  body.dark .tp-toggle-btn.on { background:#e3f200; border-color:#e3f200; color:#000; }
+
+  /* Board — horizontal rail of phase columns */
+  .tp-board {
+    flex:1; min-height:0; display:flex; align-items:stretch; gap:14px;
+    overflow-x:auto; overflow-y:hidden; padding:16px 28px 28px;
+  }
+  .tp-col {
+    flex:0 0 264px; display:flex; flex-direction:column; min-height:0;
+    background:var(--layer-2); border:1px solid var(--border);
+    border-radius:var(--radius-md); overflow:hidden;
+  }
+  body.dark .tp-col { background:rgba(255,255,255,0.03); border-color:rgba(255,255,255,0.08); }
+
+  /* Column header — phase pill carries the color, a top rail echoes it */
+  .tp-col-head {
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    padding:12px 12px 10px; flex-shrink:0;
+    border-top:3px solid var(--tp-accent, var(--border));
+    border-bottom:1px solid var(--border);
+  }
+  body.dark .tp-col-head { border-bottom-color:rgba(255,255,255,0.08); }
+  .tp-col-count {
+    font-size:13px; font-weight:500; color:var(--soft); letter-spacing:-0.26px;
+    min-width:20px; text-align:right; flex-shrink:0;
+  }
+
+  /* min-height:0 — without it the column body refuses to scroll inside the flex column */
+  .tp-col-body {
+    flex:1; min-height:0; overflow-y:auto;
+    display:flex; flex-direction:column; gap:8px; padding:10px;
+  }
+
+  /* Ticket card */
+  .tp-card {
+    background:var(--layer-1); border:1px solid var(--border);
+    border-radius:12px; padding:10px 12px; cursor:pointer;
+    display:flex; flex-direction:column; gap:6px;
+    transition:background 0.12s, border-color 0.12s;
+  }
+  body.dark .tp-card { background:#1e1c1a; border-color:rgba(255,255,255,0.08); }
+  .tp-card:hover { background:rgba(48,105,227,0.05); border-color:var(--border-mid); }
+  body.dark .tp-card:hover { background:rgba(227,242,0,0.05); }
+
+  .tp-card-top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .tp-card-ticket { font-size:14px; font-weight:500; color:var(--strong); letter-spacing:-0.28px; }
+  .tp-card-truck {
+    font-size:14px; color:var(--blue-link); text-decoration:underline;
+    letter-spacing:-0.28px; cursor:pointer; width:fit-content;
+  }
+  body.dark .tp-card-truck { color:var(--strong); }
+  .tp-card-meta {
+    font-size:12px; color:var(--soft); letter-spacing:-0.2px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .tp-card-foot { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:2px; }
+  .tp-card-loc {
+    font-size:12px; color:var(--subtle); letter-spacing:-0.2px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0;
+  }
+
+  /* Dwell chip — neutral by default, solid amber once the phase runs long */
+  .tp-dwell {
+    display:inline-flex; align-items:center; gap:4px; flex-shrink:0;
+    padding:2px 8px; border-radius:32px; font-size:12px; letter-spacing:-0.2px;
+    color:var(--soft); border:1px solid var(--border); background:none;
+  }
+  .tp-dwell.over { background:var(--amber); border-color:var(--amber); color:#36322d; font-weight:500; }
+
+  .tp-empty {
+    font-size:12px; color:var(--subtle); letter-spacing:-0.2px;
+    text-align:center; padding:18px 8px; border:1px dashed var(--border);
+    border-radius:12px;
+  }
+  body.dark .tp-empty { border-color:rgba(255,255,255,0.08); }
+
+  /* ═══ TICKETS — MOBILE + TABLET ═════════════════════════════════════════════
+     Owned by app-08-tickets-mobile-tablet.js.
+     mtk- = mobile (#mob-page-tickets), ttk- = tablet (#tb-page-tickets).
+
+     Responsive rules key off body classes (view-mobile / view-tablet /
+     orient-landscape) and never window-width media queries: the device frames
+     are fixed-size divs inside a desktop browser, so media queries never fire.
+     Landscape-only cells carry .lsc-col and are hidden by two-class selectors
+     that outrank the single-class base rules on source order alone.
+     ═════════════════════════════════════════════════════════════════════════ */
+
+  /* ── MOBILE ─────────────────────────────────────────────────────────────── */
+
+  /* #s-tablet lives inside .phone, so a mobile overlay left open would paint
+     over the tablet UI after a viewport switch. Same guard the .screen
+     elements get. */
+  body.view-tablet  #mob-page-tickets,
+  body.view-desktop #mob-page-tickets { display:none !important; }
+
+
+  #mtk-head { display:flex; flex-direction:column; flex-shrink:0; }
+
+  .mtk-title-row {
+    display:flex; align-items:flex-start; justify-content:space-between;
+    gap:12px; padding:4px 16px 10px;
+  }
+  .mtk-title {
+    font-family:var(--font); font-size:24px; font-weight:500; color:var(--strong);
+    letter-spacing:-0.72px; line-height:1.2;
+  }
+  .mtk-sub {
+    font-family:var(--font); font-size:12px; color:var(--soft);
+    letter-spacing:-0.24px; margin-top:2px;
+  }
+  .mtk-new-btn {
+    display:inline-flex; align-items:center; gap:6px; flex-shrink:0;
+    height:36px; padding:0 14px; background:none;
+    border:1px solid var(--border); border-radius:32px;
+    font-family:var(--font); font-size:13px; font-weight:500;
+    color:var(--strong); letter-spacing:-0.26px; cursor:pointer;
+  }
+  .mtk-new-btn:active { background:var(--layer-2); }
+
+  .mtk-toolbar { display:flex; align-items:center; gap:8px; padding:0 16px 10px; }
+  .mtk-search-field {
+    flex:1; min-width:0; display:flex; align-items:center; gap:8px;
+    height:36px; background:var(--base);
+    border:1px solid var(--border); border-radius:24px;
+    padding:0 12px; box-sizing:border-box;
+  }
+  .mtk-search-field input {
+    flex:1; min-width:0; border:none; outline:none; background:none;
+    font-family:var(--font); font-size:14px; color:var(--strong); letter-spacing:-0.28px;
+  }
+  .mtk-search-field input::placeholder { color:var(--soft); }
+
+  /* Phase filter — anchored under the Filters button. It replaced a chip strip
+     that ran off the right edge of both frames and duplicated a control the
+     toolbar already advertised. */
+  .mtk-filter-wrap { position:relative; flex-shrink:0; }
+  .mtk-filter-btn {
+    display:inline-flex; align-items:center; gap:5px;
+    height:36px; padding:0 12px; background:none;
+    border:1px solid var(--border); border-radius:32px;
+    font-family:var(--font); color:var(--strong); cursor:pointer;
+  }
+  .mtk-filter-btn:active { background:var(--layer-2); }
+  .mtk-filter-count {
+    display:none; align-items:center; justify-content:center;
+    min-width:18px; height:18px; padding:0 5px; border-radius:10px;
+    background:var(--blue); color:#fff;
+    font-size:11px; font-weight:600; letter-spacing:-0.2px;
+  }
+  body.dark .mtk-filter-count { background:#e3f200; color:#000; }
+
+  .mtk-filter-pop {
+    display:none; position:absolute; top:calc(100% + 6px); right:0;
+    min-width:196px; background:var(--layer-1);
+    border:1px solid var(--border-mid); border-radius:12px;
+    box-shadow:0 8px 24px rgba(54,50,45,0.16);
+    padding:6px; z-index:300;
+  }
+  .mtk-filter-pop.open { display:block; }
+  .mtk-filter-head {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:6px 10px 8px; font-family:var(--font); font-size:11px;
+    font-weight:600; color:var(--soft); letter-spacing:0.4px; text-transform:uppercase;
+  }
+  .mtk-filter-reset {
+    background:none; border:none; padding:0; cursor:pointer;
+    font-family:var(--font); font-size:11px; font-weight:600;
+    color:var(--blue-link); letter-spacing:0.4px; text-transform:uppercase;
+  }
+  .mtk-filter-list { display:flex; flex-direction:column; max-height:240px; overflow-y:auto; }
+  .mtk-filter-row {
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    width:100%; padding:8px 10px; background:none; border:none;
+    border-radius:8px; cursor:pointer; text-align:left;
+    font-family:var(--font); font-size:14px; color:var(--defined); letter-spacing:-0.28px;
+  }
+  .mtk-filter-row:active { background:var(--layer-2); }
+  .mtk-filter-row.active { color:var(--strong); font-weight:500; }
+
+  /* min-height:0 — without it the list refuses to scroll inside the flex column */
+  .mtk-table-wrap {
+    flex:1; min-height:0; overflow-y:auto; padding:0 16px 16px;
+    background:var(--layer-1);
+  }
+
+  /* Portrait: Ticket · Phase · Truck · Time · Alerts — as many columns as
+     358px of usable width holds without the phase pill wrapping. Cell padding
+     and type drop a step to buy the room; anything more (Customer, Location)
+     squeezes the pill and belongs in the expand panel. */
+  .mtk-thead, .mtk-row {
+    display:grid; grid-template-columns:84px 1fr 52px 60px 46px;
+    border-bottom:1px solid var(--border); min-width:0;
+  }
+  .mtk-thead { background:var(--layer-1); position:sticky; top:0; z-index:2; }
+  .mtk-th {
+    font-family:var(--font); font-size:13px; font-weight:500; color:var(--strong);
+    padding:8px 6px; letter-spacing:-0.26px; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis;
+  }
+  .mtk-th-id { border-right:1.5px solid var(--border); }
+  .mtk-th-alerts { text-align:right; }
+
+  .mtk-row {
+    background:var(--layer-1); cursor:pointer; min-height:41px;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .mtk-row:active { background:rgba(48,105,227,0.06); }
+  body.dark .mtk-row:active { background:rgba(227,242,0,0.06); }
+
+  .mtk-td {
+    font-family:var(--font); font-size:13px; color:var(--defined);
+    padding:11px 6px; display:flex; align-items:center;
+    letter-spacing:-0.26px; line-height:1.3;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;
+  }
+  /* The phase pill is the widest thing in the row and sets the floor for how
+     many columns fit. One step down in type keeps "Return to plant" on a
+     single line at 390px. */
+  #mob-page-tickets .tk-phase-pill { font-size:11px; padding:3px 8px; letter-spacing:-0.2px; }
+  .mtk-td-time { justify-content:flex-end; text-align:right; }
+  .mtk-td-id {
+    border-right:1.5px solid var(--border);
+    font-weight:500; color:var(--strong); gap:6px;
+  }
+  .mtk-td-alerts { justify-content:flex-end; }
+  .mtk-th-truck, .mtk-td-truck { justify-content:flex-end; text-align:right; }
+  .mtk-th + .mtk-th.mtk-th-alerts { text-align:right; }
+  .mtk-chev { flex-shrink:0; transition:transform 0.18s; }
+  .mtk-row-open .mtk-chev { transform:rotate(90deg); }
+
+  /* Landscape-only columns — hidden by default with a two-class selector so
+     they outrank the single-class .mtk-td / .mtk-th display rules above. */
+  .mtk-td.lsc-col, .mtk-th.lsc-col { display:none; }
+
+  /* Expand panel — full width below the row. Same anatomy as .mob-units-expand
+     on the Units table: label/value rows, then one full-width CTA. */
+  .mtk-expand {
+    display:none; flex-direction:column;
+    border-bottom:1px solid var(--border); background:var(--layer-1);
+  }
+  .mtk-expand.open { display:flex; }
+  .mtk-exp-row {
+    display:flex; align-items:center; padding:0 8px; min-height:36px;
+    border-bottom:1px solid var(--border);
+  }
+  .mtk-exp-row:last-of-type { border-bottom:none; }
+  .mtk-exp-label {
+    font-family:var(--font); font-size:14px; font-weight:500; color:var(--strong);
+    letter-spacing:-0.28px; padding:8px; flex-shrink:0; min-width:104px;
+  }
+  .mtk-exp-value {
+    font-family:var(--font); font-size:14px; color:var(--defined);
+    letter-spacing:-0.28px; padding:8px; flex:1; text-align:right;
+    overflow:hidden; text-overflow:ellipsis;
+  }
+  .mtk-exp-cta { padding:12px 8px; }
+  .mtk-exp-btn {
+    display:flex; align-items:center; justify-content:center;
+    width:100%; height:44px; background:var(--blue); color:#fff;
+    border:none; border-radius:32px; font-family:var(--font);
+    font-size:14px; font-weight:500; letter-spacing:-0.28px; cursor:pointer;
+  }
+  .mtk-exp-btn:active { opacity:0.88; }
+  body.dark .mtk-exp-btn { color:#000; }
+
+  .mtk-empty {
+    font-family:var(--font); font-size:13px; color:var(--subtle);
+    letter-spacing:-0.2px; text-align:center; padding:28px 8px;
+  }
+
+  /* ── MOBILE LANDSCAPE (844 × 390) ────────────────────────────────────────
+     Height is the scarce axis, width is abundant: collapse the header to one
+     row, trim vertical padding, and promote four expand-panel fields into
+     real columns. Row height holds at a 36px floor, the same trade-off made
+     on the truck list and Units. */
+  body.view-mobile.orient-landscape #mob-page-tickets {
+    padding:10px 24px 0 52px !important;   /* safe area moves to the left edge */
+  }
+  body.view-mobile.orient-landscape #mob-page-tickets .top-nav {
+    padding-top:6px; padding-bottom:6px;
+  }
+  body.view-mobile.orient-landscape #mtk-head {
+    flex-direction:row; align-items:flex-end; justify-content:space-between; gap:12px;
+  }
+  body.view-mobile.orient-landscape #mob-page-tickets .mtk-title-row { padding:2px 16px 8px; }
+  body.view-mobile.orient-landscape #mob-page-tickets .mtk-title { font-size:16px; }
+  body.view-mobile.orient-landscape #mob-page-tickets .mtk-toolbar {
+    flex:1 1 auto; min-width:0; padding:0 8px 8px;
+  }
+  /* Landscape carries all eleven desktop columns across 736px of usable width.
+     Type and padding drop another step to make that fit; Location takes the
+     flexible track because it is the only value that can safely ellipsis. */
+  body.view-mobile.orient-landscape #mob-page-tickets .mtk-thead,
+  body.view-mobile.orient-landscape #mob-page-tickets .mtk-row {
+    grid-template-columns:82px 100px 50px 70px 72px 1fr 60px 66px 50px 52px 44px;
+  }
+  body.view-mobile.orient-landscape #mob-page-tickets .mtk-th { font-size:11px; padding:4px 5px; }
+  body.view-mobile.orient-landscape #mob-page-tickets .mtk-td {
+    padding:8px 5px; min-height:36px; box-sizing:border-box; font-size:12px;
+  }
+  body.view-mobile.orient-landscape #mob-page-tickets .tk-phase-pill {
+    font-size:10px; padding:3px 7px;
+  }
+  /* Truck and Time sit mid-row in landscape, so they go back to left alignment */
+  body.view-mobile.orient-landscape #mob-page-tickets .mtk-th-truck,
+  body.view-mobile.orient-landscape #mob-page-tickets .mtk-td-truck,
+  body.view-mobile.orient-landscape #mob-page-tickets .mtk-td-time {
+    justify-content:flex-start; text-align:left;
+  }
+  body.view-mobile.orient-landscape #mob-page-tickets .mtk-th.lsc-col { display:block; }
+  body.view-mobile.orient-landscape #mob-page-tickets .mtk-td.lsc-col {
+    display:flex; font-size:12px; min-width:0;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+
+  /* Landscape: the panel runs two-up, width is no longer the constraint */
+  body.view-mobile.orient-landscape #mob-page-tickets .mtk-expand { display:none; flex-flow:row wrap; }
+  body.view-mobile.orient-landscape #mob-page-tickets .mtk-expand.open { display:flex; }
+  body.view-mobile.orient-landscape #mob-page-tickets .mtk-exp-row { flex:0 0 50%; box-sizing:border-box; }
+  body.view-mobile.orient-landscape #mob-page-tickets .mtk-exp-cta { flex:0 0 100%; }
+  /* ── TABLET ─────────────────────────────────────────────────────────────── */
+
+  #tb-page-tickets .tb-page-header { align-items:flex-start; }
+
+  .ttk-btn {
+    display:inline-flex; align-items:center; gap:6px; flex-shrink:0;
+    height:44px; padding:0 16px; background:none;
+    border:1px solid var(--border); border-radius:32px;
+    font-family:var(--font); font-size:14px; font-weight:500;
+    color:var(--strong); letter-spacing:-0.28px; cursor:pointer;
+  }
+  .ttk-btn:hover { background:var(--layer-2); }
+
+  /* Phase filter — same move as mobile: it lives under Filters, not in a strip */
+  .ttk-filter-wrap { position:relative; flex-shrink:0; }
+  .ttk-filter-count {
+    display:none; align-items:center; justify-content:center;
+    min-width:18px; height:18px; padding:0 5px; border-radius:10px;
+    background:var(--blue); color:#fff;
+    font-size:11px; font-weight:600; letter-spacing:-0.2px;
+  }
+  body.dark .ttk-filter-count { background:#e3f200; color:#000; }
+
+  .ttk-filter-pop {
+    display:none; position:absolute; top:calc(100% + 6px); left:0;
+    min-width:212px; background:var(--layer-1);
+    border:1px solid var(--border-mid); border-radius:12px;
+    box-shadow:0 8px 24px rgba(54,50,45,0.16);
+    padding:6px; z-index:300;
+  }
+  .ttk-filter-pop.open { display:block; }
+  .ttk-filter-head {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:6px 10px 8px; font-family:var(--font); font-size:11px;
+    font-weight:600; color:var(--soft); letter-spacing:0.4px; text-transform:uppercase;
+  }
+  .ttk-filter-reset {
+    background:none; border:none; padding:0; cursor:pointer;
+    font-family:var(--font); font-size:11px; font-weight:600;
+    color:var(--blue-link); letter-spacing:0.4px; text-transform:uppercase;
+  }
+  .ttk-filter-list { display:flex; flex-direction:column; max-height:300px; overflow-y:auto; }
+  .ttk-filter-row {
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    width:100%; padding:8px 10px; background:none; border:none;
+    border-radius:8px; cursor:pointer; text-align:left;
+    font-family:var(--font); font-size:14px; color:var(--defined); letter-spacing:-0.28px;
+  }
+  .ttk-filter-row:hover { background:var(--layer-2); }
+  .ttk-filter-row.active { color:var(--strong); font-weight:500; }
+
+  /* Ten columns at 834px portrait means the shared .tb-td padding has to come
+     in a step; Location and Customer truncate rather than push the table into
+     a horizontal scroll. */
+  .ttk-table-wrap { min-width:0; }
+  #tb-page-tickets .tb-th { padding:7px 7px; font-size:12px; }
+  #tb-page-tickets .tb-td { padding:8px 7px; font-size:13px; }
+  #tb-page-tickets .tb-td-trunc { max-width:104px; }
+  #tb-page-tickets .tk-phase-pill { font-size:11px; padding:3px 8px; }
+  #ttk-tbody tr:last-child td { border-bottom:none; }
+  .ttk-empty {
+    font-family:var(--font); font-size:13px; color:var(--subtle);
+    letter-spacing:-0.2px; text-align:center; padding:28px 8px;
+  }
+
+  /* Landscape-only tablet columns. Two-class selector for the same specificity
+     reason as .mtk-td.lsc-col above; shown as table-cell, not block. */
+  .tb-th.ttk-lsc, .tb-td.ttk-lsc { display:none; }
+  body.view-tablet.orient-landscape #tb-page-tickets .tb-th.ttk-lsc,
+  body.view-tablet.orient-landscape #tb-page-tickets .tb-td.ttk-lsc { display:table-cell; }
+
+  /* Tablet landscape (1194 × 834) — height is scarcer, so the header row and
+     the chip strip tighten up. */
+  body.view-tablet.orient-landscape #tb-page-tickets .tb-page-header { margin-bottom:8px; }
+  body.view-tablet.orient-landscape #tb-page-tickets .ttk-btn { height:40px; }
+  body.view-tablet.orient-landscape #tb-page-tickets .tb-td { padding:6px 10px; font-size:13px; }
+  body.view-tablet.orient-landscape #tb-page-tickets .tb-th { padding:6px 10px; font-size:13px; }
+  body.view-tablet.orient-landscape #tb-page-tickets .tb-td-trunc { max-width:160px; }
+
+
+  /* ═══ TICKET DRAWER — MOBILE + TABLET ═══════════════════════════════════════
+     #dt-ticket-drawer now sits at .phone level and is shared by all three
+     viewports. Desktop keeps its two-column geometry untouched; these rules
+     only reshape it inside the device frames.
+     ═════════════════════════════════════════════════════════════════════════ */
+
+  /* Both device frames: full bleed, above the mobile page overlay (z-index 200) */
+  body.view-mobile #dt-ticket-drawer,
+  body.view-tablet #dt-ticket-drawer {
+    width:100%; border-left:none; border-radius:0;
+    box-shadow:none; z-index:410;
+  }
+  body.view-mobile #dt-ticket-scrim,
+  body.view-tablet #dt-ticket-scrim { z-index:400; }
+
+  /* ── One pane, both frames ───────────────────────────────────────────────
+     #drawer (mobile) and #tb-drawer (tablet) are both single-pane: header,
+     tab strip, one scroll. The desktop split is collapsed by hoisting
+     .dt-drawer-side out with display:contents, which turns its two children
+     into flex items of the drawer — the chrome row pins to the header, and
+     #tk-side-body is free to be moved into the scroll by app-08. */
+  body.view-mobile #dt-ticket-drawer,
+  body.view-tablet #dt-ticket-drawer { flex-direction:column; }
+  body.view-mobile #dt-ticket-drawer .dt-drawer-main,
+  body.view-tablet #dt-ticket-drawer .dt-drawer-main {
+    order:0; flex:1 1 auto; min-height:0; border-right:none;
+  }
+  body.view-mobile #dt-ticket-drawer .dt-drawer-side,
+  body.view-tablet #dt-ticket-drawer .dt-drawer-side { display:contents; }
+
+  /* Neither truck drawer carries prev/next — close only, dark filled. */
+  body.view-mobile #dt-ticket-drawer .dt-drawer-chrome-btn:nth-child(1),
+  body.view-mobile #dt-ticket-drawer .dt-drawer-chrome-btn:nth-child(2),
+  body.view-tablet #dt-ticket-drawer .dt-drawer-chrome-btn:nth-child(1),
+  body.view-tablet #dt-ticket-drawer .dt-drawer-chrome-btn:nth-child(2) { display:none; }
+  body.view-mobile #dt-ticket-drawer .dt-drawer-chrome-btn:nth-child(3),
+  body.view-tablet #dt-ticket-drawer .dt-drawer-chrome-btn:nth-child(3) {
+    width:40px; height:40px; background:var(--strong); border-color:var(--strong);
+  }
+  body.view-mobile #dt-ticket-drawer .dt-drawer-chrome-btn:nth-child(3) svg path,
+  body.view-tablet #dt-ticket-drawer .dt-drawer-chrome-btn:nth-child(3) svg path { stroke:#fff; }
+
+  /* Summary panel docks under the tab content in the shared scroll */
+  /* #tk-side-body carries display:flex as an inline style, which no selector
+     can outrank — hence !important. Without it the panel showed up loose at
+     the bottom of tabs that don't dock it, like Map. */
+  body.view-mobile #dt-ticket-drawer #tk-side-body,
+  body.view-tablet #dt-ticket-drawer #tk-side-body { display:none !important; }
+  body.view-mobile #dt-ticket-drawer #tk-side-body.tkx-docked,
+  body.view-tablet #dt-ticket-drawer #tk-side-body.tkx-docked {
+    display:flex !important; width:100%; box-sizing:border-box;
+    padding:16px 0 24px; margin-top:16px;
+    border-top:1px solid var(--border); overflow:visible;
+  }
+  body.view-mobile #dt-ticket-drawer .tkx-hscroll,
+  body.view-tablet #dt-ticket-drawer .tkx-hscroll {
+    overflow-x:auto; overflow-y:hidden; scrollbar-width:none;
+  }
+  body.view-mobile #dt-ticket-drawer .tkx-hscroll::-webkit-scrollbar,
+  body.view-tablet #dt-ticket-drawer .tkx-hscroll::-webkit-scrollbar { display:none; }
+
+  /* ── Tablet ──────────────────────────────────────────────────────────────
+     Matched to #tb-drawer: 16px 20px 0 header, .tb-drawer-tabs strip with a
+     full-width hairline and 16px gutters, .tb-drawer-scroll padding. */
+  body.view-tablet #dt-ticket-drawer .dt-drawer-main > div:first-child {
+    padding:16px 20px 0; padding-right:76px;
+  }
+  body.view-tablet #dt-ticket-drawer #tk-drawer-id { font-size:20px; letter-spacing:-0.5px; }
+  body.view-tablet #dt-ticket-drawer .dt-drawer-side > div:first-child {
+    position:absolute; top:16px; right:20px; padding:0; gap:8px; z-index:3;
+  }
+  body.view-tablet #dt-ticket-drawer .dt-drawer-tabs {
+    border-bottom:1px solid var(--border); padding:0 16px; margin-top:10px;
+  }
+  body.view-tablet #dt-ticket-drawer .dt-drawer-tabs::after { display:none; }
+  body.view-tablet #dt-ticket-drawer .dt-drawer-tab {
+    padding:10px 14px; font-size:13px; font-weight:500;
+  }
+  body.view-tablet #dt-ticket-drawer .dt-drawer-scroll { padding:20px 16px; }
+  body.view-tablet #dt-ticket-drawer .tkx-hscroll { margin:0 -16px; padding:0 16px; }
+
+  /* ── Mobile ──────────────────────────────────────────────────────────────
+     Matched to .drawer: 44px inset radius, 54px notch clearance, .d-chrome
+     title geometry and .swu-sm-tabstrip tab type with its edge fade. */
+  body.view-mobile #dt-ticket-drawer {
+    border-radius:44px; padding-top:54px; background:var(--layer-1);
+  }
+  body.view-mobile #dt-ticket-drawer .dt-drawer-main > div:first-child {
+    padding:16px 14px 12px; padding-right:64px;
+  }
+  body.view-mobile #dt-ticket-drawer #tk-drawer-id {
+    font-size:20px; font-weight:500; letter-spacing:-0.5px; font-family:var(--font);
+  }
+  body.view-mobile #dt-ticket-drawer #tk-drawer-meta { font-size:11px; letter-spacing:0.2px; }
+  body.view-mobile #dt-ticket-drawer .dt-drawer-side > div:first-child {
+    position:absolute; top:62px; right:14px; padding:0; gap:5px; z-index:3;
+  }
+  body.view-mobile #dt-ticket-drawer .dt-drawer-tabs {
+    gap:22px; padding-left:14px; padding-right:14px;
+    -webkit-mask-image:linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+    mask-image:linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+  }
+  body.view-mobile #dt-ticket-drawer .dt-drawer-tabs::after { left:14px; }
+  body.view-mobile #dt-ticket-drawer .dt-drawer-tab {
+    font-size:14px; font-weight:500; padding:8px 2px 10px;
+  }
+  body.view-mobile #dt-ticket-drawer .dt-drawer-scroll { padding:0 14px 16px; }
+  body.view-mobile #dt-ticket-drawer .tkx-hscroll { margin:0 -14px; padding:0 14px; }
+
+  /* Mobile landscape — the notch moves to the left edge, so the 54px top
+     clearance becomes a left inset and the chrome compacts. Mirrors the
+     .drawer landscape block above. */
+  body.view-mobile.orient-landscape #dt-ticket-drawer {
+    padding-top:10px; padding-left:40px; padding-right:10px;
+  }
+  body.view-mobile.orient-landscape #dt-ticket-drawer .dt-drawer-main > div:first-child {
+    padding:8px 64px 8px 14px;
+  }
+  body.view-mobile.orient-landscape #dt-ticket-drawer #tk-drawer-id { font-size:17px; }
+  body.view-mobile.orient-landscape #dt-ticket-drawer .dt-drawer-side > div:first-child {
+    top:14px; right:14px;
+  }
+  body.view-mobile.orient-landscape #dt-ticket-drawer .dt-drawer-tab { padding:6px 2px 8px; }
+
+  /* ═══ TICKET DRAWER — STATUS TABLE (responsive) ═════════════════════════════
+     Replaces app-01's fixed 1100px table. One CSS grid, sized per frame, all
+     ten columns everywhere the table is shown. Tablet portrait is about 140px
+     short of fitting them, so the table slides inside its own scroller — two
+     columns is not worth a chevron and an expand panel. Mobile portrait drops
+     the table entirely for the Component Timeline card stack.
+
+     Sizing is driven by body classes, never media queries, because the device
+     frames are fixed-size divs. Owned by app-08 (section 5).
+     ═════════════════════════════════════════════════════════════════════════ */
+
+  /* Mobile portrait gets the Component Timeline card stack instead of a
+     three-column table — .ct-list / .ct-row / .ct-event, the same components,
+     not a lookalike. Both markups are in the DOM and CSS picks one, so
+     rotating the frame swaps layouts without a re-render. */
+  .tks-cards { display:none; padding:12px 0 4px; }
+  body.view-mobile:not(.orient-landscape) #dt-ticket-drawer .tks-cards { display:block; }
+  body.view-mobile:not(.orient-landscape) #dt-ticket-drawer .tks-scroll-x { display:none; }
+
+  .tks-evt + .tks-evt { border-top:1px solid var(--border); }
+  .tks-cards .ct-event { border-bottom:none; }
+  .tks-icon-ok { background:var(--layer-2); border:1px solid var(--border); }
+  .tks-evt-arrow { transition:transform 0.2s; }
+  .tks-evt-arrow.open { transform:rotate(90deg); }
+  .tks-evt-detail { display:none; border-top:1px solid var(--border); background:var(--layer-2); }
+  .tks-evt-detail.open { display:block; }
+  body.dark .tks-evt-detail { background:rgba(255,255,255,0.03); }
+  .tks-cards .tl-detail-k { color:var(--soft); }
+  .tks-cards .tl-detail-v { color:var(--strong); }
+
+  /* The table lives in its own horizontal scroller so that when it does need
+     to slide, the summary panel docked underneath stays put. touch-action
+     pan-x hands horizontal drags to the browser on a real device while
+     vertical drags still scroll the drawer; app-08 adds pointer dragging on
+     top so it is grabbable in the desktop-simulated frames too. */
+  .tks-scroll-x {
+    overflow-x:auto; overflow-y:hidden;
+    scrollbar-width:thin; -webkit-overflow-scrolling:touch;
+    touch-action:pan-x; overscroll-behavior-x:contain;
+  }
+  .tks-scroll-x.tks-dragging { cursor:grabbing; user-select:none; }
+  .tks-scroll-x.tks-dragging * { cursor:grabbing; }
+  /* Tablet portrait is the one frame the table overruns, so it is the one that
+     advertises the grab. */
+  body.view-tablet:not(.orient-landscape) #dt-ticket-drawer .tks-scroll-x { cursor:grab; }
+
+  .tks-tbl {
+    display:grid; width:100%; font-family:var(--font);
+    grid-template-columns:1fr 84px 96px 96px 96px 86px 96px 82px 74px 82px;
+  }
+  .tks-th, .tks-td {
+    display:flex; align-items:center; min-width:0;
+    padding:9px 8px; font-size:13px; letter-spacing:-0.26px;
+    overflow:hidden; text-overflow:ellipsis;
+  }
+  .tks-th {
+    position:sticky; top:0; z-index:2;
+    background:var(--layer-1); border-bottom:1px solid var(--border);
+    font-weight:500; color:var(--strong); white-space:nowrap;
+    align-items:flex-end; padding-bottom:10px;
+  }
+  .tks-td {
+    color:var(--defined); min-height:44px;
+    border-bottom:1px solid var(--border);
+  }
+  .tks-td.alt { background:var(--layer-2); }
+
+  /* Date cell stacks time over date, as it did in the original */
+  .tks-c-date { flex-direction:column; align-items:flex-start; justify-content:center; gap:1px; }
+  .tks-th.tks-c-date { flex-direction:row; align-items:flex-end; }
+  .tks-date-t { color:var(--defined); line-height:1.25; }
+  .tks-date-d { color:var(--soft); line-height:1.25; }
+
+  /* Phase group — a banded section row, matching .tb-group-row in the tablet
+     Diagnostic Center table */
+  .tks-group {
+    grid-column:1 / -1; display:flex; align-items:center; gap:10px;
+    padding:10px 8px; cursor:pointer; color:var(--defined);
+    background:var(--layer-2);
+    border-top:1px solid var(--border-mid); border-bottom:1px solid var(--border);
+  }
+  .tks-tbl > .tks-group:first-of-type { border-top:none; }
+  body.dark .tks-group { background:rgba(255,255,255,0.04); }
+  .tks-group-chev { flex-shrink:0; transition:transform 0.2s; }
+  .tks-group-chev.closed { transform:rotate(-90deg); }
+  .tks-group-elapsed { font-size:12px; color:var(--soft); letter-spacing:-0.24px; }
+
+  /* ── Per-frame sizing ───────────────────────────────────────────────────── */
+
+  /* Mobile landscape — all ten fit at 11px across ~766px */
+  body.view-mobile.orient-landscape #dt-ticket-drawer .tks-tbl {
+    grid-template-columns:1fr 66px 76px 78px 76px 68px 76px 62px 44px 60px;
+  }
+  body.view-mobile.orient-landscape #dt-ticket-drawer .tks-th,
+  body.view-mobile.orient-landscape #dt-ticket-drawer .tks-td {
+    font-size:11px; padding:6px 5px;
+  }
+  body.view-mobile.orient-landscape #dt-ticket-drawer .tks-td { min-height:38px; }
+
+  /* Tablet — one set of widths for both orientations. Portrait is ~140px short
+     of the full set, so the scroller slides; landscape has room to spare. */
+  body.view-tablet #dt-ticket-drawer .tks-tbl {
+    grid-template-columns:1fr 84px 98px 98px 102px 88px 98px 84px 76px 86px;
+  }
+  body.view-tablet:not(.orient-landscape) #dt-ticket-drawer .tks-tbl { min-width:940px; }
+
+  /* Desktop — the base grid above already fits the drawer pane */
+  body.view-desktop #dt-ticket-drawer .tks-scroll-x { overflow-x:auto; }
+
+  /* ═══ TICKET DRAWER — MAP TAB ═══════════════════════════════════════════════
+     Figma: Trinity Design Overview, node 2651:104717. Full-bleed map, floating
+     summary card top-left, controls right, phase legend bottom. Breadcrumb dots
+     use the same --phase-* tokens as the Status groups and the fleet markers,
+     so one colour means one phase everywhere. Owned by app-09.
+     ═════════════════════════════════════════════════════════════════════════ */
+
+  .tkm-wrap { position:relative; width:100%; height:100%; min-height:320px; background:#dde7ec; overflow:hidden; }
+  body.dark .tkm-wrap { background:#1a1917; }
+  .tkm-leaflet { position:absolute; inset:0; z-index:1; }
+  .tkm-controls { position:absolute; top:8px; right:8px; bottom:56px; z-index:10; }
+
+  /* Breadcrumb dot — one per logged position, coloured by the phase */
+  .tkm-dot {
+    display:block; width:10px; height:10px; border-radius:50%;
+    border:1.5px solid rgba(255,255,255,0.9);
+    box-shadow:0 1px 2px rgba(54,50,45,0.35);
+    background:var(--phase-ignition-off);
+  }
+  .tkm-dot.waiting-to-load  { background:var(--phase-waiting-to-load); }
+  .tkm-dot.loading          { background:var(--phase-loading); }
+  .tkm-dot.loaded           { background:var(--phase-loaded); }
+  .tkm-dot.to-job           { background:var(--phase-to-job); }
+  .tkm-dot.on-site          { background:var(--phase-on-site); }
+  .tkm-dot.pouring          { background:var(--phase-pouring); }
+  .tkm-dot.washing          { background:var(--phase-washing); }
+  .tkm-dot.return-to-plant  { background:var(--phase-return-to-plant); }
+  .tkm-dot.ignition-off     { background:var(--phase-ignition-off); }
+
+  /* Head marker reuses .dc-map-marker so it matches the fleet map exactly */
+  .tkm-head { transform:translateX(-50%); }
+  .tkm-head-sep {
+    display:inline-block; width:1px; height:10px; margin:0 2px -1px;
+    background:rgba(255,255,255,0.5);
+  }
+
+  /* Floating summary card */
+  .tkm-card {
+    position:absolute; top:12px; left:12px; z-index:10;
+    width:264px; max-width:calc(100% - 24px);
+    background:var(--layer-1); border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    box-shadow:0 6px 24px rgba(54,50,45,0.16);
+    padding:14px 16px; font-family:var(--font);
+  }
+  body.dark .tkm-card { background:#1e1c1a; border-color:rgba(255,255,255,0.1); }
+  .tkm-card-head {
+    display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+    width:100%; padding:0; background:none; border:none; cursor:default;
+    font-family:var(--font); text-align:left;
+  }
+  .tkm-card-chev { display:none; align-self:center; color:var(--soft); transition:transform 0.2s; }
+  .tkm-card-title { font-size:16px; font-weight:500; color:var(--strong); letter-spacing:-0.32px; }
+  .tkm-card-time { font-size:12px; color:var(--soft); letter-spacing:-0.2px; white-space:nowrap; }
+  .tkm-card-pill { margin-top:8px; }
+  .tkm-rows { margin-top:12px; display:flex; flex-direction:column; }
+  .tkm-row {
+    display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+    padding:7px 0; border-bottom:1px solid var(--border);
+    font-size:13px; letter-spacing:-0.26px;
+  }
+  .tkm-row:last-child { border-bottom:none; }
+  .tkm-k { color:var(--soft); }
+  .tkm-v { color:var(--strong); font-weight:500; text-align:right; }
+
+  .tkm-card-foot { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:12px; }
+  .tkm-replay {
+    display:inline-flex; align-items:center; gap:8px;
+    height:36px; padding:0 16px; background:none;
+    border:1px solid var(--border); border-radius:32px;
+    font-family:var(--font); font-size:14px; font-weight:500;
+    color:var(--strong); letter-spacing:-0.28px; cursor:pointer;
+  }
+  .tkm-replay:hover { background:var(--layer-2); }
+  .tkm-steps { display:flex; gap:6px; }
+  .tkm-step { width:36px; height:36px; border-radius:50%; }
+
+  /* Phase legend — doubles as a scrubber; tap a phase to jump the trail there */
+  .tkm-legend {
+    position:absolute; left:12px; right:12px; bottom:12px; z-index:10;
+    display:flex; align-items:center; gap:6px;
+    overflow-x:auto; scrollbar-width:none;
+    background:var(--layer-1); border:1px solid var(--border);
+    border-radius:32px; padding:6px 8px;
+    box-shadow:0 4px 16px rgba(54,50,45,0.14);
+  }
+  .tkm-legend::-webkit-scrollbar { display:none; }
+  body.dark .tkm-legend { background:#1e1c1a; border-color:rgba(255,255,255,0.1); }
+  .tkm-leg {
+    display:inline-flex; align-items:center; gap:6px; flex-shrink:0;
+    height:28px; padding:0 10px; background:none; border:none;
+    border-radius:32px; cursor:pointer;
+    font-family:var(--font); font-size:12px; letter-spacing:-0.2px;
+    color:var(--subtle); white-space:nowrap;
+  }
+  .tkm-leg.done { color:var(--defined); }
+  .tkm-leg.current { background:var(--layer-2); color:var(--strong); font-weight:500; }
+  .tkm-leg-dot {
+    width:8px; height:8px; border-radius:50%; flex-shrink:0; opacity:0.35;
+    background:var(--phase-ignition-off);
+  }
+  .tkm-leg.done .tkm-leg-dot { opacity:1; }
+  .tkm-leg-dot.waiting-to-load { background:var(--phase-waiting-to-load); }
+  .tkm-leg-dot.loading         { background:var(--phase-loading); }
+  .tkm-leg-dot.loaded          { background:var(--phase-loaded); }
+  .tkm-leg-dot.to-job          { background:var(--phase-to-job); }
+  .tkm-leg-dot.on-site         { background:var(--phase-on-site); }
+  .tkm-leg-dot.pouring         { background:var(--phase-pouring); }
+  .tkm-leg-dot.washing         { background:var(--phase-washing); }
+  .tkm-leg-dot.return-to-plant { background:var(--phase-return-to-plant); }
+  .tkm-leg-dot.ignition-off    { background:var(--phase-ignition-off); }
+
+  /* ── Tablet ────────────────────────────────────────────────────────────── */
+  body.view-tablet #dt-ticket-drawer .tkm-card { width:250px; padding:12px 14px; }
+  body.view-tablet #dt-ticket-drawer .tkm-row { font-size:12px; padding:6px 0; }
+
+  /* ── Mobile portrait ───────────────────────────────────────────────────
+     No room to float a card over a 390px map, so it becomes a sheet across
+     the bottom and the legend moves above it. Same content, same controls. */
+  body.view-mobile:not(.orient-landscape) #dt-ticket-drawer .tkm-card {
+    top:auto; left:0; right:0; bottom:0; width:auto; max-width:none;
+    border-radius:16px 16px 0 0; border-left:none; border-right:none; border-bottom:none;
+    padding:12px 16px 16px;
+  }
+  body.view-mobile:not(.orient-landscape) #dt-ticket-drawer .tkm-rows {
+    display:grid; grid-template-columns:1fr 1fr; column-gap:16px; margin-top:8px;
+  }
+  body.view-mobile:not(.orient-landscape) #dt-ticket-drawer .tkm-row { font-size:12px; padding:5px 0; }
+  body.view-mobile:not(.orient-landscape) #dt-ticket-drawer .tkm-legend { bottom:auto; top:12px; }
+  body.view-mobile:not(.orient-landscape) #dt-ticket-drawer .tkm-controls { top:52px; bottom:auto; }
+  /* The sheet eats the bottom third of a 390px map, so it folds. Header and
+     Replay stay; the readings and the phase pill are what collapse. */
+  body.view-mobile:not(.orient-landscape) #dt-ticket-drawer .tkm-card-head { cursor:pointer; }
+  body.view-mobile:not(.orient-landscape) #dt-ticket-drawer .tkm-card-chev { display:block; }
+  body.view-mobile:not(.orient-landscape) #dt-ticket-drawer .tkm-card.collapsed .tkm-card-chev { transform:rotate(180deg); }
+  body.view-mobile:not(.orient-landscape) #dt-ticket-drawer .tkm-card.collapsed .tkm-rows,
+  body.view-mobile:not(.orient-landscape) #dt-ticket-drawer .tkm-card.collapsed .tkm-card-pill { display:none; }
+  body.view-mobile:not(.orient-landscape) #dt-ticket-drawer .tkm-card.collapsed .tkm-card-foot { margin-top:10px; }
+
+  /* ── Mobile landscape ──────────────────────────────────────────────────
+     Height is scarce, width is not: the card floats left, condensed, and the
+     legend tucks in beside it. */
+  body.view-mobile.orient-landscape #dt-ticket-drawer .tkm-card {
+    width:216px; top:8px; left:8px; padding:10px 12px;
+  }
+  body.view-mobile.orient-landscape #dt-ticket-drawer .tkm-card-title { font-size:14px; }
+  body.view-mobile.orient-landscape #dt-ticket-drawer .tkm-row { font-size:11px; padding:4px 0; }
+  body.view-mobile.orient-landscape #dt-ticket-drawer .tkm-replay { height:30px; padding:0 12px; font-size:13px; }
+  body.view-mobile.orient-landscape #dt-ticket-drawer .tkm-step { width:30px; height:30px; }
+  body.view-mobile.orient-landscape #dt-ticket-drawer .tkm-legend { left:236px; bottom:8px; right:8px; }
+  body.view-mobile.orient-landscape #dt-ticket-drawer .tkm-controls { bottom:48px; }

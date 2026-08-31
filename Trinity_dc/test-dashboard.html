@@ -59,6 +59,22 @@
   .miss .m .where { color:var(--subtle); }
   .miss .m a.mlink { color:var(--blue); text-decoration:none; font-weight:500; }
   .miss .m a.mlink:hover { text-decoration:underline; }
+  #friction-heat a { font-size:12px; font-weight:500; color:var(--blue); text-decoration:none; margin-left:8px; }
+  #friction-heat a:hover { text-decoration:underline; }
+  .sk-group { font-size:13px; font-weight:600; color:var(--strong); margin:14px 0 6px; }
+  .sk-group:first-child { margin-top:0; }
+  .sk-wrap { overflow-x:auto; }
+  .sk-node { fill:#6b7280; cursor:pointer; }
+  .sk-node:hover { fill:var(--blue); }
+  .sk-ribbon { fill:#dfe3e8; }
+  .sk-end { fill:url(#skHatch); }
+  .sk-lbl { font-size:11px; fill:var(--defined); font-family:var(--font); }
+  .sk-user { font-size:11px; fill:var(--soft); font-family:var(--font); text-anchor:end; }
+  .sk-tip { position:fixed; z-index:50; background:#171614; color:#fff; border-radius:8px;
+            padding:8px 10px; font-size:11.5px; max-width:230px; pointer-events:none;
+            box-shadow:0 6px 20px rgba(0,0,0,0.3); display:none; }
+  .sk-tip b { display:block; font-size:12.5px; margin-bottom:2px; }
+  .sk-tip a { color:#9dc0ff; pointer-events:auto; }
   @media (max-width:860px){ .miss { margin-left:0; } }
   .badge { font-size:10px; border-radius:100px; padding:2px 8px; font-weight:600; }
   .badge.bad { background:#fbe4e0; color:#b03a2a; }
@@ -103,9 +119,15 @@
   </div>
 
   <div class="panel">
-    <h2 id="friction-h">Step friction</h2>
+    <h2 id="friction-h">Step friction <span id="friction-heat"></span></h2>
     <div class="sub" style="margin:-8px 0 10px;">Pick a single workflow above to see time and misclicks per step.</div>
     <div id="chart-friction"><div class="empty">—</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>Exploration paths <span id="paths-heat"></span></h2>
+    <div class="sub" style="margin:-8px 0 10px;">Where people went when nobody gave them a task. Ribbon thickness is sessions; hatched bars are where they stopped.</div>
+    <div id="chart-paths"><div class="empty">—</div></div>
   </div>
 
   <div class="panel">
@@ -168,15 +190,184 @@ function applyFilters(){
   buildWfFilter();
   var proto = document.getElementById('proto-sel').value;
   var wfId  = document.getElementById('wf-sel').value;
-  var ses = ALL.sessions.filter(function(s){
+  var all = ALL.sessions.filter(function(s){
     return (!proto || s.prototype===proto) && (!wfId || s.workflow_id===wfId);
   });
+  /* Three kinds of session now land in this sheet:
+       workflow  guided run, has steps        \u2192 all charts
+       goal      mode=explore + a workflow_id \u2192 completion yes, friction no
+       explore   mode=explore, no workflow_id \u2192 paths chart only
+
+     A goal run has a real verdict (found it / gave up), so excluding it
+     from completion would throw away the most interesting number this
+     system produces. It has no steps, so it must stay out of friction. */
+  var isExplore = function(s){ return String(s.mode||'workflow') === 'explore'; };
+  var isFreeRoam = function(s){ return isExplore(s) && !String(s.workflow_id||''); };
+  var ses = all.filter(function(s){ return !isFreeRoam(s); });
+  var guided = all.filter(function(s){ return !isExplore(s); });
   renderCards(ses);
   renderDays(ses);
   renderCompletion(ses, proto);
   renderTime(ses, proto);
-  renderFriction(ses, wfId);
-  renderTable(ses);
+  renderFriction(guided, wfId);
+  renderPaths(all);
+  renderTable(all);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   EXPLORATION PATHS — Sankey
+
+   Columns are ORDINAL, not temporal: column 1 is everyone's first
+   screen, column 2 their second, and so on. That is what makes the
+   ribbons comparable across sessions of different lengths, and it is
+   why a session that ends early terminates in a hatched stub rather
+   than being padded forward.
+
+   No charting library — the dashboard has no dependencies and this
+   keeps it that way.
+   ═══════════════════════════════════════════════════════════════ */
+
+var SK_MAX_DEPTH = 7;    /* beyond this the diagram is unreadable anyway */
+
+function pathOf(s){
+  var p = s.steps_data;
+  if(typeof p === 'string'){ try{ p = JSON.parse(p); }catch(e){ p = []; } }
+  return Array.isArray(p) ? p : [];
+}
+
+function surfaceOf(s){
+  var v = s.view || 'desktop';
+  return v.charAt(0).toUpperCase() + v.slice(1);
+}
+
+function renderPaths(ses){
+  var host = document.getElementById('chart-paths');
+  var explore = ses.filter(function(s){ return String(s.mode||'') === 'explore'; });
+  if(!explore.length){
+    host.innerHTML = '<div class="empty">No open explorations yet. Send someone an explore link from the prototype\u2019s Test panel.</div>';
+    document.getElementById('paths-heat').innerHTML = '';
+    return;
+  }
+
+  /* Group by device, the way the reference tool does — a mobile path
+     through the same product is a different product experience. */
+  var groups = {};
+  explore.forEach(function(s){
+    var k = surfaceOf(s);
+    (groups[k] = groups[k] || []).push(s);
+  });
+
+  host.innerHTML = Object.keys(groups).sort().map(function(k){
+    var goalN = groups[k].filter(function(s){ return String(s.workflow_id||''); }).length;
+    var who = {}; groups[k].forEach(function(s){ who[String(s.user||'anon')] = 1; });
+    var names = Object.keys(who);
+    return '<div class="sk-group">' + esc(k) + ' \u00B7 ' + groups[k].length + ' session' + (groups[k].length===1?'':'s') +
+           (goalN ? ' \u00B7 ' + goalN + ' with a goal' : '') +
+           ' <span style="font-weight:400;color:var(--soft);">' + esc(names.slice(0,6).join(', ')) +
+           (names.length>6 ? ' +' + (names.length-6) : '') + '</span></div>' +
+           '<div class="sk-wrap">' + sankeySVG(groups[k]) + '</div>';
+  }).join('');
+}
+
+function sankeySVG(ses){
+  /* ── Build ordinal columns ── */
+  var cols = [];          /* cols[d] = { id: {label, n, out:{nextId:n}, ends:n} } */
+  var maxDepth = 0;
+  ses.forEach(function(s){
+    var p = pathOf(s).slice(0, SK_MAX_DEPTH);
+    if(!p.length) return;
+    maxDepth = Math.max(maxDepth, p.length);
+    p.forEach(function(node, d){
+      cols[d] = cols[d] || {};
+      var id = node.s || 'unknown';
+      var c = cols[d][id] = cols[d][id] || { label: node.label || id, n:0, out:{}, ends:0 };
+      c.n++;
+      if(d+1 < p.length){
+        var nid = p[d+1].s || 'unknown';
+        c.out[nid] = (c.out[nid]||0) + 1;
+      } else {
+        c.ends++;   /* session stopped here */
+      }
+    });
+  });
+  if(!maxDepth) return '<div class="empty">No path data recorded</div>';
+
+  /* ── Layout ── */
+  var colW = 150, nodeW = 9, gap = 6, padL = 8, padR = 20, padT = 14, padB = 14;
+  var total = ses.length;
+  var bodyH = Math.max(120, total * 30);
+  var W = padL + maxDepth * colW + padR;
+  var H = padT + bodyH + padB;
+
+  /* Height scale is GLOBAL, not per column. Normalising each column to
+     its own sum would make one surviving session as tall as the whole
+     cohort, which hides exactly the drop-off this chart exists to show.
+     A column that lost half its sessions should look half as tall. */
+  var unit = (bodyH - gap * 3) / total;
+  var pos = [];
+  for(var d=0; d<maxDepth; d++){
+    var ids = Object.keys(cols[d]||{}).sort(function(a,b){ return cols[d][b].n - cols[d][a].n; });
+    var y = padT;
+    pos[d] = {};
+    ids.forEach(function(id){
+      var h = Math.max(5, cols[d][id].n * unit);
+      pos[d][id] = { y:y, h:h, node:cols[d][id] };
+      y += h + gap;
+    });
+  }
+
+  var svg = ['<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">'];
+  svg.push('<defs><pattern id="skHatch" width="6" height="6" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">' +
+           '<rect width="6" height="6" fill="#fbe6df"/><line x1="0" y1="0" x2="0" y2="6" stroke="#d3542f" stroke-width="3"/></pattern></defs>');
+
+  /* ── Ribbons, drawn first so nodes sit on top ── */
+  for(var d=0; d<maxDepth-1; d++){
+    var srcIds = Object.keys(pos[d]||{});
+    /* running offsets so multiple ribbons stack inside a node's band */
+    var outOff = {}, inOff = {};
+    srcIds.forEach(function(sid){
+      var src = pos[d][sid];
+      var outs = Object.keys(src.node.out).sort(function(a,b){ return src.node.out[b]-src.node.out[a]; });
+      outs.forEach(function(tid){
+        var dst = pos[d+1] && pos[d+1][tid];
+        if(!dst) return;
+        var n = src.node.out[tid];
+        var sh = n / src.node.n * src.h;
+        var dh = n / dst.node.n * dst.h;
+        var sy = src.y + (outOff[sid]||0); outOff[sid] = (outOff[sid]||0) + sh;
+        var dy = dst.y + (inOff[tid]||0);  inOff[tid]  = (inOff[tid]||0) + dh;
+        var x1 = padL + d*colW + nodeW, x2 = padL + (d+1)*colW;
+        var mx = (x1+x2)/2;
+        svg.push('<path class="sk-ribbon" d="M'+x1+','+sy+' C'+mx+','+sy+' '+mx+','+dy+' '+x2+','+dy +
+                 ' L'+x2+','+(dy+dh)+' C'+mx+','+(dy+dh)+' '+mx+','+(sy+sh)+' '+x1+','+(sy+sh)+' Z"/>');
+      });
+    });
+  }
+
+  /* ── Nodes + drop-off stubs + labels ── */
+  for(var d2=0; d2<maxDepth; d2++){
+    var x = padL + d2*colW;
+    Object.keys(pos[d2]||{}).forEach(function(id){
+      var p = pos[d2][id], nd = p.node;
+      svg.push('<rect class="sk-node" x="'+x+'" y="'+p.y+'" width="'+nodeW+'" height="'+p.h+'" rx="2">' +
+               '<title>'+esc(nd.label)+' \u2014 '+nd.n+' session'+(nd.n===1?'':'s')+
+               (nd.ends?', '+nd.ends+' stopped here':'')+'</title></rect>');
+      /* Sessions that ended on this node: a hatched stub on the right
+         edge, the same visual language the reference tool uses. */
+      if(nd.ends){
+        var eh = nd.ends / nd.n * p.h;
+        svg.push('<rect class="sk-end" x="'+(x+nodeW)+'" y="'+(p.y + p.h - eh)+'" width="7" height="'+eh+'" rx="1">' +
+                 '<title>'+nd.ends+' stopped at '+esc(nd.label)+'</title></rect>');
+      }
+      if(p.h >= 13){
+        svg.push('<text class="sk-lbl" x="'+(x+nodeW+11)+'" y="'+(p.y + p.h/2 + 3.5)+'">' +
+                 esc(nd.label.length>17 ? nd.label.slice(0,16)+'\u2026' : nd.label) + '</text>');
+      }
+    });
+  }
+
+  svg.push('</svg>');
+  return svg.join('');
 }
 
 function renderCards(ses){
@@ -184,8 +375,9 @@ function renderCards(ses){
   var users = {}; ses.forEach(function(s){ users[String(s.user).toLowerCase()]=1; });
   var medAll = median(comp.map(function(s){return Number(s.duration_s)||0;}));
   var mis = ses.reduce(function(a,s){return a+(Number(s.misclicks_total)||0);},0);
+  var goals = ses.filter(function(s){ return String(s.mode||'')==='explore'; }).length;
   document.getElementById('cards').innerHTML =
-    card(ses.length,'Sessions') +
+    card(ses.length + (goals ? ' <span style="font-size:12px;color:var(--soft);font-weight:400;">('+goals+' goal)</span>' : ''),'Sessions') +
     card(Object.keys(users).length,'Testers') +
     card(ses.length?Math.round(comp.length/ses.length*100)+'%':'—','Completed') +
     card(comp.length?fmtS(medAll):'—','Median time') +
@@ -254,8 +446,41 @@ function groupByWf(ses, proto){
 }
 
 var __frictionWfId = '';
+
+/* Misclick coordinates are layout-specific, so the heat link has to
+   carry a viewport. Use the one most of these sessions actually ran
+   on — sending the wrong surface would land on an empty heat map. */
+function dominantSurface(ses){
+  var tally = {};
+  ses.forEach(function(s){
+    var k = (s.view || 'desktop') + '|' + (s.orientation || '');
+    tally[k] = (tally[k] || 0) + 1;
+  });
+  var best = Object.keys(tally).sort(function(a,b){ return tally[b] - tally[a]; })[0] || 'desktop|';
+  var parts = best.split('|');
+  return { view: parts[0], orient: parts[1] };
+}
+
+function renderHeatLink(ses, wfId){
+  var host = document.getElementById('friction-heat');
+  if(!host) return;
+  var any = ses.some(function(s){
+    var st = s.steps_data;
+    if(typeof st === 'string'){ try{ st = JSON.parse(st); }catch(e){ st = []; } }
+    return (st||[]).some(function(x){ return (x.missed && x.missed.length) || x.hit; });
+  });
+  if(!any){ host.innerHTML = ''; return; }
+  var surf = dominantSurface(ses);
+  var href = './?heat=1&hv=' + encodeURIComponent(surf.view) +
+             '&ho=' + encodeURIComponent(surf.orient) +
+             '&hw=' + encodeURIComponent(wfId || 'all') +
+             '&hm=both';
+  host.innerHTML = '<a href="' + href + '" target="_blank">see heat map \u2197</a>';
+}
+
 function renderFriction(ses, wfId){
   __frictionWfId = wfId || '';
+  renderHeatLink(ses, wfId);
   var host = document.getElementById('chart-friction');
   if(!wfId){ host.innerHTML='<div class="empty">Select one workflow in the filter above</div>'; return; }
   var agg={};

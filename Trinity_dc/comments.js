@@ -14,7 +14,10 @@ var CMT_API = 'https://script.google.com/macros/s/AKfycbymB9TsgS4EkVXe5m-qdpYrFe
 
 var cmtState = {
   mode: false,          /* drop-a-comment mode */
-  visible: true,        /* pins shown (on by default) */
+  visible: false,       /* pins hidden by default — the prototype is
+                           the thing being reviewed, not the annotation
+                           layer. Turn them on from the Comment caret
+                           menu, or just arm drop mode. */
   comments: [],
   names: [],
   pending: [],          /* comments whose container isn't in DOM yet */
@@ -88,19 +91,24 @@ function cmtPost(payload, cb) {
 /* ── Toolbar actions ── */
 function cmtToggleMode() {
   cmtState.mode = !cmtState.mode;
+  /* Arming drop mode is the moment you start caring about comments,
+     so bring the existing pins back rather than making you drop one
+     blind on top of a pin you cannot see. */
+  if (cmtState.mode) cmtSetVisible(true);
   document.body.classList.toggle('cmt-mode', cmtState.mode);
   var btn = document.getElementById('cmt-btn');
   if (btn) btn.classList.toggle('cmt-armed', cmtState.mode);
   cmtHint(cmtState.mode ? 'Click anywhere in the prototype to drop a comment (Esc to cancel)' : null);
   if (!cmtState.mode) cmtCloseCard();
 }
-function cmtToggleVisible() {
-  cmtState.visible = !cmtState.visible;
+function cmtSetVisible(on) {
+  cmtState.visible = !!on;
   document.body.classList.toggle('cmt-hidden', !cmtState.visible);
   var eye = document.getElementById('cmt-eye');
   if (eye) eye.classList.toggle('cmt-eye-off', !cmtState.visible);
   if (!cmtState.visible) cmtCloseCard();
 }
+function cmtToggleVisible() { cmtSetVisible(!cmtState.visible); }
 function cmtHint(text) {
   var h = document.getElementById('cmt-hint');
   if (h) h.remove();
@@ -382,6 +390,11 @@ function cmtRefresh() {
   });
   mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
 })();
+
+/* Set the class immediately rather than inside cmtRefresh: the first
+   render is async, but a stale cmt-hidden-less body would let pins
+   paint for a frame before the class landed. */
+if (!cmtState.visible) document.body.classList.add('cmt-hidden');
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', cmtRefresh);
 else cmtRefresh();

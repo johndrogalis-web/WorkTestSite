@@ -29,12 +29,13 @@ var TST_API = 'https://script.google.com/macros/s/AKfycbzS0d5DyWuuecdbT6If2Y5AaX
 var TST_PROTOTYPE = 'diagnostic-center';
 
 var tstState = {
-  mode: null,            /* null | 'record' | 'run' */
+  mode: null,            /* null | 'record' | 'run' | 'explore' */
   workflows: [],
   testing: false,        /* page opened via ?test= */
   user: '',
   rec: null,             /* {name, instruction, steps[], editingId} */
-  run: null              /* {wf, idx, t0, tStep, misclicks, stepMis, steps[]} */
+  run: null,             /* {wf, idx, t0, tStep, misclicks, stepMis, steps[]} */
+  explore: null          /* {t0, tNode, clicks, path[]} — open exploration */
 };
 
 /* ── Styles ── */
@@ -74,9 +75,20 @@ var tstState = {
     '  border-top-color:#fff;border-radius:50%;animation:tstspin 0.7s linear infinite;vertical-align:-2px;}',
     '@keyframes tstspin{to{transform:rotate(360deg)}}',
     /* Recorder / runner bar */
-    '.tst-bar{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:3000;',
+    /* Docked top by default: the bottom of the viewport is where the
+       prototype puts its own primary actions, so a bar down there sat
+       on top of the thing the tester was trying to click. */
+    '.tst-bar{position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:3000;',
     '  background:#171614;color:#fff;border-radius:100px;padding:10px 16px;display:flex;gap:12px;',
-    '  align-items:center;font-family:var(--font,sans-serif);font-size:12.5px;box-shadow:0 8px 28px rgba(0,0,0,0.35);}',
+    '  align-items:center;font-family:var(--font,sans-serif);font-size:12.5px;box-shadow:0 8px 28px rgba(0,0,0,0.35);',
+    '  cursor:grab;user-select:none;-webkit-user-select:none;}',
+    '.tst-bar.tst-dragging{cursor:grabbing;transition:none;}',
+    /* Once dragged, left/top are set explicitly and the centering
+       transform has to come off or the bar sits half a width away
+       from the pointer. */
+    '.tst-bar.tst-moved{transform:none;}',
+    '.tst-bar .tst-grip{opacity:0.45;letter-spacing:1px;font-size:14px;line-height:1;margin-right:-4px;}',
+    '.tst-bar button,.tst-bar .tst-chip{cursor:pointer;}',
     '.tst-bar.tst-bar-rec{background:#1f9d55;}',
     '.tst-bar b{font-weight:600;}',
     '.tst-bar .tst-chip{border-color:rgba(255,255,255,0.4);color:#fff;background:none;}',
@@ -115,7 +127,88 @@ var tstState = {
     '  text-align:center;}',
     '.tst-flash{position:fixed;border-radius:50%;width:34px;height:34px;border:3px solid #1f9d55;',
     '  z-index:2999;pointer-events:none;animation:tstflash 0.5s ease-out forwards;margin:-17px 0 0 -17px;}',
-    '@keyframes tstflash{from{transform:scale(0.5);opacity:1;}to{transform:scale(1.6);opacity:0;}}'
+    '@keyframes tstflash{from{transform:scale(0.5);opacity:1;}to{transform:scale(1.6);opacity:0;}}',
+    /* Heat map overlay */
+    '.tst-heat-layer{position:absolute;top:0;left:0;pointer-events:none;z-index:1400;overflow:hidden;}',
+    '.tst-heat-blob{position:absolute;border-radius:50%;pointer-events:none;',
+    '  background:radial-gradient(circle closest-side,rgba(211,84,47,0.55),rgba(211,84,47,0.22) 55%,rgba(211,84,47,0) 100%);}',
+    '.tst-heat-blob.hit{background:radial-gradient(circle closest-side,rgba(31,157,85,0.55),rgba(31,157,85,0.22) 55%,rgba(31,157,85,0) 100%);}',
+    '.tst-heat-pin.hit{background:#16693a;}',
+    '.tst-heat-n.hit{color:#16693a;}',
+    '.tst-heat-ramp.hit{background:linear-gradient(90deg,rgba(31,157,85,0.18),rgba(31,157,85,0.95));}',
+    '.tst-heat-seg{display:flex;gap:0;border:1px solid rgba(0,0,0,0.15);border-radius:100px;overflow:hidden;}',
+    '.tst-heat-seg button{flex:1;border:none;background:#fff;font-family:inherit;font-size:11px;',
+    '  font-weight:500;color:#555;padding:5px 0;cursor:pointer;}',
+    '.tst-heat-seg button.on{background:#171614;color:#fff;}',
+    '.tst-heat-pin{position:absolute;transform:translate(-50%,-50%);pointer-events:none;',
+    '  font-family:var(--font,sans-serif);font-size:10px;font-weight:700;color:#fff;',
+    '  background:#a8341a;border-radius:100px;padding:1px 6px;box-shadow:0 1px 4px rgba(0,0,0,0.35);}',
+    '.tst-heat-row{display:flex;align-items:center;justify-content:space-between;gap:8px;',
+    '  font-size:11.5px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,0.07);}',
+    '.tst-heat-row:last-child{border-bottom:none;}',
+    '.tst-heat-cid{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#171614;',
+    '  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
+    '.tst-heat-n{font-weight:700;color:#a8341a;flex:0 0 auto;}',
+    '.tst-heat-off{color:#8a8d94;font-size:10px;flex:0 0 auto;}',
+    '.tst-heat-key{display:flex;align-items:center;gap:6px;font-size:10.5px;color:#8a8d94;}',
+    '.tst-heat-ramp{height:8px;flex:1;border-radius:4px;',
+    '  background:linear-gradient(90deg,rgba(211,84,47,0.18),rgba(211,84,47,0.95));}',
+    /* ── Admin drawer ──
+       The admin surface outgrew a 320px floating card: seven co-equal
+       chips were doing three unrelated jobs (author / share / analyse)
+       and the list mixed tasks, goals and archived rows in one stack.
+       This is a docked right drawer with a tab rail, so each job gets
+       its own room and the dashboard gets a permanent home in the
+       footer instead of living two levels deep under Results. */
+    '.tst-drawer{position:fixed;top:52px;right:0;bottom:0;width:420px;max-width:92vw;background:#fff;',
+    '  border-left:1px solid rgba(0,0,0,0.12);box-shadow:-10px 0 34px rgba(0,0,0,0.16);z-index:3000;',
+    '  display:flex;flex-direction:column;font-family:var(--font,sans-serif);animation:tstdrin 0.16s ease-out;}',
+    '@keyframes tstdrin{from{transform:translateX(28px);opacity:0;}to{transform:none;opacity:1;}}',
+    '.tst-dr-head{flex:0 0 auto;padding:14px 18px 0;display:flex;flex-direction:column;gap:12px;}',
+    '.tst-dr-title{display:flex;align-items:center;justify-content:space-between;',
+    '  font-size:14px;font-weight:600;color:#171614;}',
+    '.tst-dr-tabs{display:flex;gap:18px;border-bottom:1px solid rgba(0,0,0,0.09);}',
+    '.tst-dr-tab{border:none;background:none;font-family:inherit;font-size:12.5px;font-weight:500;',
+    '  color:#8a8d94;padding:0 0 9px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}',
+    '.tst-dr-tab:hover{color:#171614;}',
+    '.tst-dr-tab.on{color:#171614;border-bottom-color:#171614;}',
+    /* min-height:0 or the body refuses to scroll inside the flex column */
+    '.tst-dr-body{flex:1;min-height:0;overflow-y:auto;padding:14px 18px 18px;',
+    '  display:flex;flex-direction:column;gap:12px;}',
+    '.tst-dr-foot{flex:0 0 auto;border-top:1px solid rgba(0,0,0,0.09);background:#faf9f8;',
+    '  padding:10px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;}',
+    '.tst-dr-foot-left{font-size:11px;color:#8a8d94;}',
+    '.tst-dr-formtitle{font-size:13px;font-weight:600;color:#171614;}',
+    /* The old panel got its rhythm from the panel-level flex gap. The
+       drawer body has its own gap, so the three tab hosts have to
+       re-establish it for their own children. */
+    '#tst-list,#tst-results,#tst-heat-body{display:flex;flex-direction:column;gap:10px;}',
+    /* Grouped workflow list */
+    '.tst-actions{display:flex;gap:6px;flex-wrap:wrap;}',
+    '.tst-share{border:1px solid rgba(0,0,0,0.08);background:#faf9f8;border-radius:10px;',
+    '  padding:9px 10px;display:flex;flex-direction:column;gap:7px;}',
+    '.tst-share-label{font-size:10.5px;font-weight:600;letter-spacing:0.04em;',
+    '  text-transform:uppercase;color:#8a8d94;}',
+    '.tst-group{display:flex;flex-direction:column;gap:8px;}',
+    '.tst-group-h{display:flex;align-items:baseline;gap:7px;}',
+    '.tst-group-t{font-size:12px;font-weight:600;color:#171614;}',
+    '.tst-group-n{font-size:11px;color:#8a8d94;}',
+    '.tst-group-sub{font-size:11px;color:#8a8d94;margin-top:-6px;}',
+    '.tst-fold{border-top:1px solid rgba(0,0,0,0.08);padding-top:11px;}',
+    '.tst-fold>summary{cursor:pointer;font-size:12px;font-weight:600;color:#8a8d94;padding:1px 0;}',
+    '.tst-fold>summary:hover{color:#171614;}',
+    '.tst-fold-body{display:flex;flex-direction:column;gap:8px;padding-top:10px;}',
+    /* Test split button + shortcut menu */
+    '.tst-wrap{position:relative;}',
+    '.tst-menu{display:none;position:absolute;top:calc(100% + 6px);right:0;min-width:190px;',
+    '  background:#fff;border:1px solid rgba(0,0,0,0.12);border-radius:10px;',
+    '  box-shadow:0 10px 28px rgba(0,0,0,0.22);padding:5px;z-index:3100;font-family:var(--font,sans-serif);}',
+    '.tst-menu.open{display:block;}',
+    '.tst-menu-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:7px;',
+    '  font-size:12px;color:#171614;cursor:pointer;white-space:nowrap;}',
+    '.tst-menu-item:hover{background:#f2f0ee;}',
+    '.tst-menu-div{height:1px;background:rgba(0,0,0,0.08);margin:4px 6px;}',
+    'body.tst-testing .tst-drawer,body.tst-testing .tst-menu{display:none !important;}'
   ].join('\n');
   var el = document.createElement('style');
   el.textContent = css;
@@ -131,6 +224,32 @@ function tstPost(payload, cb) {
   fetch(TST_API, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) })
     .then(function (r) { return r.json(); }).then(cb)
     .catch(function (e) { console.warn('[testing] save failed', e); if (cb) cb({ ok: false, error: String(e) }); });
+}
+
+/* ── Tester IP — Apps Script cannot see the client address, so the
+   browser resolves it and hands it to the backend in the payload.
+   Prefetched on entry to test mode so it is warm before the first
+   task finishes. Fails silent: a blank ip never blocks a save. ── */
+var tstIP = null;          /* string once resolved, '' if lookup failed */
+var tstIPWait = [];        /* callbacks queued while the fetch is in flight */
+var tstIPBusy = false;
+
+function tstFetchIP(cb) {
+  if (tstIP !== null) { if (cb) cb(tstIP); return; }
+  if (cb) tstIPWait.push(cb);
+  if (tstIPBusy) return;
+  tstIPBusy = true;
+  var done = function (v) {
+    tstIP = v || '';
+    tstIPBusy = false;
+    var q = tstIPWait; tstIPWait = [];
+    q.forEach(function (f) { try { f(tstIP); } catch (e) {} });
+  };
+  var bail = setTimeout(function () { if (tstIPBusy) done(''); }, 2500);
+  fetch('https://api.ipify.org?format=json')
+    .then(function (r) { return r.json(); })
+    .then(function (d) { clearTimeout(bail); done(d && d.ip); })
+    .catch(function () { clearTimeout(bail); done(''); });
 }
 
 /* ── Fingerprinting — shared by record, run, and validate ── */
@@ -176,22 +295,143 @@ function tstMountButton() {
   if (!cluster) return;
   var wrap = document.createElement('div');
   wrap.className = 'tst-wrap cmt-wrap';
+  /* Split button, same grammar as the Comment control: the label opens
+     the drawer, the caret exposes the three things you want without
+     opening anything (dashboard + the two tester links). */
   wrap.innerHTML =
     '<button class="vp-opts-btn tst-btn" id="tst-btn" onclick="tstTogglePanel()" title="Workflow testing">' +
     '<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 7.2 5.2 10.4 12 3.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
-    '<span style="font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:-0.24px;">Test</span></button>';
+    '<span style="font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:-0.24px;">Test</span></button>' +
+    '<button class="vp-opts-btn" id="tst-caret" onclick="tstMenuToggle(event)" title="Testing shortcuts">' +
+    '<svg width="9" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+    '<div class="tst-menu" id="tst-menu">' +
+      '<div class="tst-menu-item" onclick="tstMenuGo(\'dash\')">' +
+        '<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="1.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="8" y="1.5" width="4.5" height="7.5" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="1.5" y="8" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>' +
+        'Open dashboard \u2197</div>' +
+      '<div class="tst-menu-div"></div>' +
+      '<div class="tst-menu-item" onclick="tstMenuGo(\'tester\')">' +
+        '<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M5.8 8.2a2.4 2.4 0 0 0 3.4 0l2.1-2.1a2.4 2.4 0 0 0-3.4-3.4l-.6.6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M8.2 5.8a2.4 2.4 0 0 0-3.4 0L2.7 7.9a2.4 2.4 0 0 0 3.4 3.4l.6-.6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>' +
+        'Copy tester link</div>' +
+      '<div class="tst-menu-item" onclick="tstMenuGo(\'explore\')">' +
+        '<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M9.2 4.8 8 8 4.8 9.2 6 6z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>' +
+        'Copy explore link</div>' +
+    '</div>';
   var anchor = cluster.querySelector('.cmt-wrap') || cluster.querySelector('.vp-opts-wrap');
   if (anchor) cluster.insertBefore(wrap, anchor);
   else cluster.appendChild(wrap);
 }
 
-/* ── Panels ── */
-function tstClosePanel() { var p = document.getElementById('tst-panel'); if (p) p.remove(); }
+/* ── Panels ──
+   Two surfaces now. The floating card (tst-panel) is what a TESTER
+   sees: one thing at a time, small, disposable. The drawer
+   (tst-drawer) is the ADMIN surface: tabbed, docked, persistent.
+   tstClosePanel() kills both so every existing "get out of my way"
+   caller (start recording, begin a run, enter test mode) keeps
+   working unchanged. */
+function tstClosePanel() {
+  var p = document.getElementById('tst-panel'); if (p) p.remove();
+  tstDrawerClose();
+}
+
+function tstDrawerClose() { var d = document.getElementById('tst-drawer'); if (d) d.remove(); }
 
 function tstTogglePanel() {
-  if (document.getElementById('tst-panel')) { tstClosePanel(); return; }
+  if (document.getElementById('tst-drawer')) { tstDrawerClose(); return; }
   tstOpenAdminPanel();
 }
+
+/* ── Admin drawer shell ──
+   Built once, then reused: each tab render just refills the body, so
+   scroll chrome and the footer never flicker between tabs. */
+var tstTab = 'workflows';
+
+function tstDrawerShell(tab) {
+  var d = document.getElementById('tst-drawer');
+  if (!d) {
+    var old = document.getElementById('tst-panel'); if (old) old.remove();
+    d = document.createElement('div');
+    d.id = 'tst-drawer'; d.className = 'tst-drawer tst-ui';
+    d.innerHTML =
+      '<div class="tst-dr-head">' +
+        '<div class="tst-dr-title"><span>Workflow testing</span>' +
+        '<span class="tst-x" onclick="tstDrawerClose()">\u00D7</span></div>' +
+        '<div class="tst-dr-tabs">' +
+          '<button class="tst-dr-tab" data-tab="workflows" onclick="tstDrawerGo(\'workflows\')">Workflows</button>' +
+          '<button class="tst-dr-tab" data-tab="results" onclick="tstDrawerGo(\'results\')">Results</button>' +
+          '<button class="tst-dr-tab" data-tab="heat" onclick="tstDrawerGo(\'heat\')">Heat map</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="tst-dr-body" id="tst-dr-body"></div>' +
+      '<div class="tst-dr-foot">' +
+        '<span class="tst-dr-foot-left" id="tst-dr-count"></span>' +
+        '<button class="tst-chip tst-chip-primary" onclick="tstOpenDashboard()">Open dashboard \u2197</button>' +
+      '</div>';
+    document.body.appendChild(d);
+  }
+  tstTab = tab;
+  var tabs = d.querySelectorAll('.tst-dr-tab');
+  for (var i = 0; i < tabs.length; i++) {
+    if (tabs[i].getAttribute('data-tab') === tab) tabs[i].classList.add('on');
+    else tabs[i].classList.remove('on');
+  }
+  var body = document.getElementById('tst-dr-body');
+  body.innerHTML = '';
+  body.scrollTop = 0;
+  tstDrawerCount();
+  return body;
+}
+
+function tstDrawerGo(tab) {
+  if (tab === 'results') tstOpenResultsPanel();
+  else if (tab === 'heat') tstOpenHeatPanel();
+  else tstOpenAdminPanel();
+}
+
+/* Footer summary — cheap orientation without opening the Workflows tab */
+function tstDrawerCount() {
+  var el = document.getElementById('tst-dr-count');
+  if (!el) return;
+  var act = tstState.workflows.filter(function (w) { return w.status === 'active'; });
+  if (!act.length) { el.textContent = ''; return; }
+  var goals = act.filter(tstIsGoal).length;
+  var tasks = act.length - goals;
+  el.textContent = tasks + (tasks === 1 ? ' task' : ' tasks') + ' \u00B7 ' + goals + (goals === 1 ? ' goal' : ' goals');
+}
+
+/* ── Top-bar shortcut menu ── */
+function tstMenuToggle(e) {
+  if (e) e.stopPropagation();
+  var m = document.getElementById('tst-menu');
+  if (m) m.classList.toggle('open');
+}
+
+function tstMenuGo(what) {
+  var m = document.getElementById('tst-menu');
+  if (m) m.classList.remove('open');
+  if (what === 'dash') { tstOpenDashboard(); return; }
+  var url = new URL(location.href);
+  url.search = what === 'explore' ? '?explore=1' : '?test=1';
+  url.hash = '';
+  var text = url.toString();
+  (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject())
+    .then(function () { tstToast((what === 'explore' ? 'Explore' : 'Tester') + ' link copied'); })
+    .catch(function () { prompt('Copy this link:', text); });
+}
+
+document.addEventListener('click', function (e) {
+  var m = document.getElementById('tst-menu');
+  if (m && m.classList.contains('open') && !e.target.closest('.tst-wrap')) m.classList.remove('open');
+});
+
+/* Escape closes the shallowest thing that is open. Recording and live
+   runs own Escape themselves, so leave them alone. */
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Escape') return;
+  var m = document.getElementById('tst-menu');
+  if (m && m.classList.contains('open')) { m.classList.remove('open'); return; }
+  if (tstState.mode) return;
+  if (document.getElementById('tst-drawer')) tstDrawerClose();
+});
 
 function tstPanelShell(title) {
   tstClosePanel();
@@ -206,19 +446,33 @@ function tstEsc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;
 
 /* ── Admin panel ── */
 function tstOpenAdminPanel() {
-  var p = tstPanelShell('Workflow testing');
-  p.insertAdjacentHTML('beforeend',
-    '<div class="tst-item-row">' +
-    '<button class="tst-chip tst-chip-primary" onclick="tstStartRecordForm()">\u25CF Record new workflow</button>' +
-    '<button class="tst-chip" onclick="tstValidateAll()">Validate all</button>' +
-    '<button class="tst-chip" onclick="tstOpenResultsPanel()">Results</button>' +
-    '<button class="tst-chip" onclick="tstCopyLink(\'1\', this)">Copy tester link</button>' +
-    '</div><div id="tst-list"><div class="tst-sub">Loading\u2026</div></div>');
+  var body = tstDrawerShell('workflows');
+  body.innerHTML =
+    /* Authoring first — the three things that change what exists */
+    '<div class="tst-actions">' +
+      '<button class="tst-chip tst-chip-primary" onclick="tstStartRecordForm()">\u25CF Record workflow</button>' +
+      '<button class="tst-chip" onclick="tstStartGoalForm()">+ New goal</button>' +
+      '<button class="tst-chip" onclick="tstValidateAll()">Validate all</button>' +
+    '</div>' +
+    /* Sharing second, boxed so it stops competing with the actions */
+    '<div class="tst-share">' +
+      '<span class="tst-share-label">Send to a tester</span>' +
+      '<div class="tst-item-row">' +
+        '<button class="tst-chip" onclick="tstCopyLink(\'1\', this)">Copy tester link</button>' +
+        '<button class="tst-chip" onclick="tstCopyExploreLink(this)">Copy explore link</button>' +
+      '</div>' +
+      '<div class="tst-sub">Tester link shows the task list. Explore link drops them into free roam with no task.</div>' +
+    '</div>' +
+    '<div id="tst-list"><div class="tst-sub">Loading\u2026</div></div>';
   tstGet('?action=list&prototype=' + encodeURIComponent(TST_PROTOTYPE) + '&all=1', function (res) {
     tstState.workflows = (res.ok && res.workflows) || [];
     tstRenderAdminList();
   });
 }
+
+/* Goals have nothing to validate: a static check needs checkpoints,
+   and a goal deliberately has none. */
+function tstValidatable(wf) { return !tstIsGoal(wf); }
 
 function tstWfMeta(wf) {
   var m = (wf.checkpoints && wf.checkpoints[0] && wf.checkpoints[0].meta) ? wf.checkpoints[0] : null;
@@ -228,35 +482,86 @@ function tstWfSteps(wf) {
   return (wf.checkpoints || []).filter(function (s) { return !s.meta; });
 }
 
+/* One workflow card. Unchanged content, extracted so the three
+   groups can each render their own slice. */
+function tstWfCard(wf) {
+  var steps = tstWfSteps(wf);
+  var archived = wf.status !== 'active';
+  var goal = tstIsGoal(wf);
+  return '<div class="tst-item" data-wfid="' + tstEsc(wf.id) + '">' +
+    '<div class="tst-item-name">' + tstEsc(wf.name) +
+    /* The goal badge is redundant inside the Goals group but the
+       archived fold mixes both kinds, so it earns its place there. */
+    (archived && goal ? ' <span class="tst-badge">goal</span>' : '') +
+    (archived ? ' <span class="tst-badge tst-badge-arch">archived</span>' : '') +
+    (goal || archived ? '' : ' <span class="tst-badge" id="tst-val-' + tstEsc(wf.id) + '"></span>') + '</div>' +
+    '<div class="tst-item-meta">' +
+      (goal ? 'No fixed route \u00B7 tester decides when they\u2019re there' : steps.length + ' steps') +
+      ' \u00B7 ' + tstWfMeta(wf) + '</div>' +
+    '<div class="tst-item-meta">' + tstEsc(wf.instruction) + '</div>' +
+    '<div class="tst-item-row">' +
+    (archived
+      ? '<button class="tst-chip" onclick="tstSetStatus(\'' + tstEsc(wf.id) + '\',\'active\',this)">Restore</button>'
+      : '<button class="tst-chip" onclick="tstCopyLink(\'' + tstEsc(wf.id) + '\', this)">Copy link</button>' +
+        (goal ? '' : '<button class="tst-chip" onclick="tstStartRecordForm(\'' + tstEsc(wf.id) + '\')">Re-record</button>') +
+        '<button class="tst-chip" onclick="tstSetStatus(\'' + tstEsc(wf.id) + '\',\'archived\',this)">Archive</button>') +
+    '</div></div>';
+}
+
+function tstGroup(title, sub, arr, empty) {
+  if (!arr.length && !empty) return '';
+  return '<div class="tst-group">' +
+    '<div class="tst-group-h"><span class="tst-group-t">' + title + '</span>' +
+    '<span class="tst-group-n">' + arr.length + '</span></div>' +
+    '<div class="tst-group-sub">' + sub + '</div>' +
+    (arr.length ? arr.map(tstWfCard).join('') : '<div class="tst-sub">' + empty + '</div>') +
+    '</div>';
+}
+
+/* Tasks and goals are different instruments and were reading as one
+   list. Archived rows are history, not inventory, so they fold away
+   instead of padding the scroll. */
 function tstRenderAdminList() {
   var list = document.getElementById('tst-list');
   if (!list) return;
+  tstDrawerCount();
   if (!tstState.workflows.length) {
     list.innerHTML = '<div class="tst-sub">No workflows yet. Hit Record, then click through the task in the prototype \u2014 every click becomes a step.</div>';
     return;
   }
-  list.innerHTML = tstState.workflows.map(function (wf, i) {
-    var steps = tstWfSteps(wf);
-    var archived = wf.status !== 'active';
-    return '<div class="tst-item" data-wfid="' + tstEsc(wf.id) + '">' +
-      '<div class="tst-item-name">' + tstEsc(wf.name) +
-      (archived ? ' <span class="tst-badge tst-badge-arch">archived</span>' : '') +
-      ' <span class="tst-badge" id="tst-val-' + tstEsc(wf.id) + '"></span></div>' +
-      '<div class="tst-item-meta">' + steps.length + ' steps \u00B7 ' + tstWfMeta(wf) + '</div>' +
-      '<div class="tst-item-meta">' + tstEsc(wf.instruction) + '</div>' +
-      '<div class="tst-item-row">' +
-      (archived
-        ? '<button class="tst-chip" onclick="tstSetStatus(\'' + tstEsc(wf.id) + '\',\'active\',this)">Restore</button>'
-        : '<button class="tst-chip" onclick="tstCopyLink(\'' + tstEsc(wf.id) + '\', this)">Copy link</button>' +
-          '<button class="tst-chip" onclick="tstStartRecordForm(\'' + tstEsc(wf.id) + '\')">Re-record</button>' +
-          '<button class="tst-chip" onclick="tstSetStatus(\'' + tstEsc(wf.id) + '\',\'archived\',this)">Archive</button>') +
-      '</div></div>';
-  }).join('');
+  var tasks = [], goals = [], arch = [];
+  tstState.workflows.forEach(function (wf) {
+    if (wf.status !== 'active') arch.push(wf);
+    else if (tstIsGoal(wf)) goals.push(wf);
+    else tasks.push(wf);
+  });
+  var html =
+    tstGroup('Recorded tasks', 'Fixed route \u00B7 every click is matched against a step', tasks,
+             'Nothing recorded yet. Hit Record and click through a task.') +
+    tstGroup('Goals', 'A destination with no route \u00B7 the tester finds their own way', goals, '');
+  if (arch.length) {
+    html += '<details class="tst-fold"><summary>Archived (' + arch.length + ')</summary>' +
+      '<div class="tst-fold-body">' + arch.map(tstWfCard).join('') + '</div></details>';
+  }
+  list.innerHTML = html;
 }
 
 function tstSetStatus(id, status, btn) {
   btn.disabled = true;
   tstPost({ action: 'setWorkflowStatus', id: id, status: status }, function () { tstOpenAdminPanel(); });
+}
+
+/* An explore link drops the tester straight into free roam, no task
+   list, no instruction. Separate link so you can send guided and
+   open-ended sessions to different people. */
+function tstCopyExploreLink(btn) {
+  var url = new URL(location.href);
+  url.search = '?explore=1';
+  url.hash = '';
+  var text = url.toString();
+  (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject())
+    .then(function () { btn.textContent = 'Copied!'; setTimeout(function () { btn.textContent = 'Copy explore link'; }, 1400); })
+    .catch(function () { prompt('Copy this link:', text); });
 }
 
 function tstCopyLink(idOrAll, btn) {
@@ -297,6 +602,7 @@ function tstVerifyStep(cp) {
 function tstValidateAll() {
   tstState.workflows.forEach(function (wf) {
     if (wf.status !== 'active') return;
+    if (!tstValidatable(wf)) return;      /* goals have no checkpoints to verify */
     var badge = document.getElementById('tst-val-' + wf.id);
     if (!badge) return;
     var steps = tstWfSteps(wf);
@@ -330,12 +636,10 @@ function tstMedian(arr) {
 function tstFmtS(s) { return (Math.round(s * 10) / 10) + 's'; }
 
 function tstOpenResultsPanel() {
-  var p = tstPanelShell('Results');
-  p.style.width = '360px';
-  p.insertAdjacentHTML('beforeend',
-    '<div class="tst-item-row"><button class="tst-chip" onclick="tstOpenAdminPanel()">\u2190 Back</button>' +
-    '<button class="tst-chip" onclick="tstOpenDashboard()">Expand \u2197</button></div>' +
-    '<div id="tst-results"><div class="tst-sub">Loading\u2026</div></div>');
+  /* The Back and Expand chips are gone: the tab rail is the way back
+     and the footer holds the dashboard permanently. */
+  var body = tstDrawerShell('results');
+  body.innerHTML = '<div id="tst-results"><div class="tst-sub">Loading\u2026</div></div>';
 
   var wfsReady = tstState.workflows.length
     ? Promise.resolve()
@@ -459,15 +763,20 @@ function tstResultsSessions(wfId, btn) {
 /* ── Recorder ── */
 function tstStartRecordForm(editingId) {
   var wf = editingId ? tstState.workflows.find(function (w) { return w.id === editingId; }) : null;
-  var p = tstPanelShell(editingId ? 'Re-record workflow' : 'New workflow');
-  p.insertAdjacentHTML('beforeend',
+  /* Lives inside the Workflows tab now rather than replacing the whole
+     surface, so cancelling returns you to the list instead of nothing. */
+  var body = tstDrawerShell('workflows');
+  body.innerHTML =
+    '<div class="tst-item-row"><button class="tst-chip" onclick="tstOpenAdminPanel()">\u2190 Back</button></div>' +
+    '<div class="tst-dr-formtitle">' + (editingId ? 'Re-record workflow' : 'New workflow') + '</div>' +
     '<input class="tst-input" id="tst-rec-name" placeholder="Workflow name (e.g. Send an update to 2 trucks)" value="' + (wf ? tstEsc(wf.name) : '') + '">' +
     '<textarea class="tst-ta" id="tst-rec-inst" placeholder="Instruction the tester will read">' + (wf ? tstEsc(wf.instruction) : '') + '</textarea>' +
     '<div class="tst-sub">After you hit Start, set the right view first if needed, then click through the task exactly as a user would. Every click in the prototype becomes a step. Finish on the last click of the task.</div>' +
     '<div class="tst-err" id="tst-rec-err" style="display:none;"></div>' +
     '<div class="tst-item-row" style="justify-content:flex-end;">' +
-    '<button class="tst-cta tst-cta-quiet" onclick="tstClosePanel()">Cancel</button>' +
-    '<button class="tst-cta tst-cta-dark" onclick="tstBeginRecording(' + (editingId ? '\'' + tstEsc(editingId) + '\'' : 'null') + ')">Start recording</button></div>');
+    '<button class="tst-cta tst-cta-quiet" onclick="tstOpenAdminPanel()">Cancel</button>' +
+    '<button class="tst-cta tst-cta-dark" onclick="tstBeginRecording(' + (editingId ? '\'' + tstEsc(editingId) + '\'' : 'null') + ')">Start recording</button></div>';
+  setTimeout(function () { var i = document.getElementById('tst-rec-name'); if (i) i.focus(); }, 50);
 }
 
 function tstBeginRecording(editingId) {
@@ -497,7 +806,9 @@ function tstRenderBar() {
       '<span id="tst-bar-count">Step ' + (r.idx + 1) + ' of ' + total + '</span>' +
       '<button class="tst-chip" onclick="tstRunGiveUp(this)">Give up</button>';
   }
+  bar.innerHTML = '<span class="tst-grip">\u22EE\u22EE</span>' + bar.innerHTML;
   document.body.appendChild(bar);
+  tstBarDraggable(bar);
 }
 
 function tstRecUndo() {
@@ -533,6 +844,7 @@ function tstRecFinish(btn) {
 function tstEnterTestMode(param) {
   tstState.testing = true;
   document.body.classList.add('tst-testing');
+  tstFetchIP();                                   /* warm it up early */
   var url = new URL(location.href);
   tstState.user = url.searchParams.get('user') || '';
   try { if (!tstState.user) tstState.user = localStorage.getItem('tst_user') || ''; } catch (e) {}
@@ -557,14 +869,16 @@ function tstSaveName(param) {
   if (!v) return;
   tstState.user = v;
   try { localStorage.setItem('tst_user', v); } catch (e) {}
+  if (param === 'explore') { tstBeginExplore(); return; }
   tstOpenTesterPanel(param);
 }
 
 function tstOpenTesterPanel(param) {
   var wfs = tstState.workflows;
+  if (param === 'explore') { tstBeginExplore(); return; }
   if (param !== '1') {
     var one = wfs.find(function (w) { return w.id === param; });
-    if (one) { tstBeginRun(one); return; }
+    if (one) { tstIsGoal(one) ? tstBeginGoal(one) : tstBeginRun(one); return; }
   }
   var p = tstPanelShell('Tasks to try');
   if (!wfs.length) {
@@ -573,16 +887,30 @@ function tstOpenTesterPanel(param) {
   }
   p.insertAdjacentHTML('beforeend',
     '<div class="tst-sub">Pick a task, read the instruction, and complete it in the prototype like you normally would. There are no wrong answers \u2014 we\u2019re testing the design, not you.</div>' +
+    '<div class="tst-item"><div class="tst-item-name">Just have a look around</div>' +
+    '<div class="tst-item-meta">No task. Click wherever you like and tell us nothing \u2014 we learn from where you go.</div>' +
+    '<div class="tst-item-row"><button class="tst-chip" onclick="tstStartExplore()">Explore</button></div></div>' +
     wfs.map(function (wf) {
+      var g = tstIsGoal(wf);
       return '<div class="tst-item"><div class="tst-item-name">' + tstEsc(wf.name) + '</div>' +
         '<div class="tst-item-meta">' + tstEsc(wf.instruction) + '</div>' +
+        (g ? '<div class="tst-item-meta">Find your own way. Tell us when you think you\u2019ve got it, or give up \u2014 both are useful.</div>' : '') +
         '<div class="tst-item-row"><button class="tst-chip tst-chip-primary" onclick="tstBeginRunById(\'' + tstEsc(wf.id) + '\')">Start</button></div></div>';
     }).join(''));
 }
 
+/* Exploration still needs a name on the row, so route through the
+   same prompt the guided runs use rather than recording an anonymous
+   path we cannot attribute later. */
+function tstStartExplore() {
+  if (!tstState.user) { tstAskName('explore'); return; }
+  tstBeginExplore();
+}
+
 function tstBeginRunById(id) {
   var wf = tstState.workflows.find(function (w) { return w.id === id; });
-  if (wf) tstBeginRun(wf);
+  if (!wf) return;
+  if (tstIsGoal(wf)) tstBeginGoal(wf); else tstBeginRun(wf);
 }
 
 function tstBeginRun(wf) {
@@ -616,7 +944,13 @@ function tstAdvance(e) {
   var r = tstState.run;
   var steps = tstWfSteps(r.wf);
   var now = Date.now();
-  r.steps.push({ i: r.idx, label: steps[r.idx].text || steps[r.idx].eid, ms: now - r.tStep, misclicks: r.stepMis, missed: r.stepMissed });
+  /* `hit` is the position of the click that satisfied this step. New as
+     of the heat map: sessions recorded before this exists have misses
+     only, which is why the heat panel can show 0 correct on old data. */
+  var hit = null;
+  try { hit = tstClickPos(e); } catch (err) {}
+  r.steps.push({ i: r.idx, label: steps[r.idx].text || steps[r.idx].eid, ms: now - r.tStep,
+                 misclicks: r.stepMis, missed: r.stepMissed, hit: hit });
   r.tStep = now; r.stepMis = 0; r.stepMissed = []; r.idx++;
 
   var flash = document.createElement('div');
@@ -646,11 +980,13 @@ function tstComplete(outcome) {
   tstState.mode = null;
   var bar = document.getElementById('tst-bar'); if (bar) bar.remove();
 
+  tstFetchIP(function (ip) {
   tstPost({
     action: 'addSession',
     prototype: TST_PROTOTYPE,
     workflow_id: r.wf.id,
     user: tstState.user,
+    ip: ip || '',
     view: document.body.classList.contains('view-mobile') ? 'mobile'
         : document.body.classList.contains('view-tablet') ? 'tablet' : 'desktop',
     orientation: document.body.classList.contains('orient-landscape') ? 'landscape' : 'portrait',
@@ -660,6 +996,7 @@ function tstComplete(outcome) {
     misclicks_total: r.misclicks,
     steps_data: r.steps
   }, function () {});
+  });
 
   var p = tstPanelShell(outcome === 'completed' ? 'Task complete \u2714' : 'Task stopped');
   p.insertAdjacentHTML('beforeend',
@@ -670,6 +1007,668 @@ function tstComplete(outcome) {
       ? '<div class="tst-item-row" style="justify-content:flex-end;"><button class="tst-cta tst-cta-dark" onclick="tstOpenTesterPanel(\'1\')">More tasks</button></div>'
       : ''));
   tstState.run = null;
+}
+
+/* ── The bar is draggable, and remembers where you put it ──
+   Testers on small viewports will always find something underneath it.
+   Position is stored per browser so it does not reset mid-session. */
+function tstBarDraggable(bar) {
+  try {
+    var saved = JSON.parse(localStorage.getItem('tst_bar_pos') || 'null');
+    if (saved && typeof saved.x === 'number') {
+      bar.classList.add('tst-moved');
+      bar.style.left = saved.x + 'px';
+      bar.style.top = saved.y + 'px';
+    }
+  } catch (e) {}
+
+  var drag = null;
+  bar.addEventListener('pointerdown', function (e) {
+    /* Let the buttons be buttons */
+    if (e.target.closest('button')) return;
+    var r = bar.getBoundingClientRect();
+    drag = { dx: e.clientX - r.left, dy: e.clientY - r.top };
+    bar.classList.add('tst-moved', 'tst-dragging');
+    bar.style.left = r.left + 'px';
+    bar.style.top = r.top + 'px';
+    try { bar.setPointerCapture(e.pointerId); } catch (err) {}
+    e.preventDefault();
+  });
+  bar.addEventListener('pointermove', function (e) {
+    if (!drag) return;
+    var w = bar.offsetWidth, h = bar.offsetHeight;
+    /* Clamp so it can never be dragged off screen and stranded */
+    var x = Math.max(4, Math.min(window.innerWidth - w - 4, e.clientX - drag.dx));
+    var y = Math.max(4, Math.min(window.innerHeight - h - 4, e.clientY - drag.dy));
+    bar.style.left = x + 'px';
+    bar.style.top = y + 'px';
+  });
+  function end() {
+    if (!drag) return;
+    drag = null;
+    bar.classList.remove('tst-dragging');
+    try {
+      localStorage.setItem('tst_bar_pos', JSON.stringify({
+        x: parseFloat(bar.style.left) || 0, y: parseFloat(bar.style.top) || 0
+      }));
+    } catch (e) {}
+  }
+  bar.addEventListener('pointerup', end);
+  bar.addEventListener('pointercancel', end);
+}
+
+/* ═══════════════════════════════════════════════════════
+   SCREEN MODEL — what counts as a \u201Cplace\u201D in the prototype
+
+   The path diagram needs nodes, and a single-file app has no URLs to
+   borrow. So a screen is derived from three things already encoded in
+   the markup, in priority order:
+
+     1. an open drawer          (dt-drawer, dt-ud-drawer, …)
+     2. its active tab          (.dt-drawer-tab.active)
+     3. otherwise the visible page div (dt-page-*, toggled display:none)
+
+   Derived rather than tagged, so it keeps working as screens are added.
+   TST_SCREENS only supplies readable LABELS — an unmapped id still
+   tracks correctly, it just shows its raw id in the diagram. That is
+   the failure mode you want: ugly, not missing.
+   ═══════════════════════════════════════════════════════ */
+
+var TST_SCREENS = {
+  'dt-page-home':    'Home',
+  'dt-page-trucks':  'Trucks',
+  'dt-page-units':   'Units',
+  'dt-page-update':  'Fleet Update',
+  'dt-page-map':     'Map',
+  'dt-page-tickets': 'Tickets',
+  'dt-drawer':       'Truck detail',
+  'dt-ud-drawer':    'Unit detail',
+  'dt-at-drawer':    'Add truck',
+  'dt-au-drawer':    'Add unit',
+  'add-unit-sheet':  'Add unit sheet'
+};
+
+var TST_PAGE_IDS   = ['dt-page-home','dt-page-trucks','dt-page-units',
+                      'dt-page-update','dt-page-map','dt-page-tickets'];
+/* Most specific first: an add-unit sheet layered over a truck drawer
+   should read as the sheet, since that is where the tester actually is. */
+var TST_DRAWER_IDS = ['add-unit-sheet','dt-au-drawer','dt-at-drawer',
+                      'dt-ud-drawer','dt-drawer'];
+
+/* Deciding whether a container is really on screen is harder than it
+   looks. add-unit-sheet is position:absolute and hidden with
+   transform:translateX(100%) — it keeps a non-null offsetParent and a
+   full-size bounding rect the entire time, so a naive check reports it
+   as visible on every screen and the whole session collapses into one
+   node. Four tests, cheapest first:
+
+     1. computed style          catches display/visibility/opacity
+     2. non-zero rect           catches collapsed containers
+     3. intersects the viewport catches transform-slid panels
+     4. hit test at its centre  catches anything clipped by an ancestor
+
+   Step 4 is the expensive one and the only one that catches a panel
+   slid outside a parent with overflow:hidden, which is the pattern
+   this prototype uses everywhere. */
+function tstVisible(id) {
+  var el = document.getElementById(id);
+  if (!el) return null;
+
+  var cs = getComputedStyle(el);
+  if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) === 0) return null;
+
+  var r = el.getBoundingClientRect();
+  if (r.width <= 2 || r.height <= 2) return null;
+
+  var vw = window.innerWidth, vh = window.innerHeight;
+  if (r.right <= 0 || r.bottom <= 0 || r.left >= vw || r.top >= vh) return null;
+
+  /* Hit test the centre of whatever part of it is actually on screen */
+  var cx = Math.min(Math.max((Math.max(r.left, 0) + Math.min(r.right, vw)) / 2, 1), vw - 1);
+  var cy = Math.min(Math.max((Math.max(r.top, 0) + Math.min(r.bottom, vh)) / 2, 1), vh - 1);
+
+  var stack = document.elementsFromPoint ? document.elementsFromPoint(cx, cy) : [document.elementFromPoint(cx, cy)];
+  for (var i = 0; i < stack.length; i++) {
+    var hit = stack[i];
+    if (!hit) continue;
+    if (hit.closest && hit.closest('.tst-ui')) continue;   /* our own bar and overlays don't count */
+    return (hit === el || el.contains(hit)) ? el : null;
+  }
+  return null;
+}
+
+function tstScreenLabel(id) { return TST_SCREENS[id] || id; }
+
+/* Returns {id, label}. id is stable and machine-comparable; label is
+   what the diagram prints. */
+function tstScreen() {
+  for (var i = 0; i < TST_DRAWER_IDS.length; i++) {
+    var d = tstVisible(TST_DRAWER_IDS[i]);
+    if (!d) continue;
+    var tab = d.querySelector('.dt-drawer-tab.active, .dt-tab.active');
+    var tabTxt = tab ? tstNorm(tab.textContent) : '';
+    var id = TST_DRAWER_IDS[i] + (tabTxt ? '#' + tabTxt : '');
+    return { id: id, label: tstScreenLabel(TST_DRAWER_IDS[i]) + (tabTxt ? ' \u00B7 ' + tabTxt : '') };
+  }
+  for (var j = 0; j < TST_PAGE_IDS.length; j++) {
+    if (tstVisible(TST_PAGE_IDS[j])) {
+      return { id: TST_PAGE_IDS[j], label: tstScreenLabel(TST_PAGE_IDS[j]) };
+    }
+  }
+  return { id: 'unknown', label: 'Unknown' };
+}
+
+/* ═══════════════════════════════════════════════════════
+   OPEN EXPLORATION — no workflow, no right answer
+
+   The tester wanders; every click is timestamped and the screen is
+   re-read AFTER the DOM settles, so a click that opens a drawer is
+   attributed to the drawer it opened rather than the page it left.
+   Only screen CHANGES become path nodes. Clicks that stay put are
+   counted as dwell activity on the current node instead of adding a
+   node, or the diagram would be one column per click.
+   ═══════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════
+   GOAL RUNS — a destination, no route
+
+   Three modes now exist, and the difference is what is prescribed:
+
+     workflow  goal + exact route — clicks matched to checkpoints
+     goal      goal, no route     — tester decides when they got there
+     explore   neither            — free roam
+
+   A goal is stored as a Workflow row whose only checkpoint is the
+   meta record, so tstWfSteps() returns zero steps. That is the test
+   for \u201Cis this a goal\u201D and it needs no backend change: the sheet
+   already carries a name and an instruction, which is the whole
+   definition of a goal. Runs post as mode 'explore' with the goal's
+   workflow_id attached, so the path is recorded AND attributable.
+   ═══════════════════════════════════════════════════════ */
+
+function tstIsGoal(wf) { return tstWfSteps(wf).length === 0; }
+
+function tstStartGoalForm() {
+  var body = tstDrawerShell('workflows');
+  body.innerHTML =
+    '<div class="tst-item-row"><button class="tst-chip" onclick="tstOpenAdminPanel()">\u2190 Back</button></div>' +
+    '<div class="tst-dr-formtitle">New goal</div>' +
+    '<div class="tst-sub">Give the tester a destination without a route. They wander until they think they found it, or give up. Every screen they touch is recorded either way.</div>' +
+    '<input class="tst-input" id="tst-goal-name" placeholder="Short name, e.g. Find a truck\u2019s sensor history">' +
+    '<textarea class="tst-ta" id="tst-goal-inst" placeholder="The goal, in the tester\u2019s language"></textarea>' +
+    '<div class="tst-item-row" style="justify-content:flex-end;">' +
+    '<button class="tst-cta tst-cta-quiet" onclick="tstOpenAdminPanel()">Cancel</button>' +
+    '<button class="tst-cta tst-cta-dark" onclick="tstSaveGoal(this)">Save goal</button></div>';
+  setTimeout(function () { var i = document.getElementById('tst-goal-name'); if (i) i.focus(); }, 50);
+}
+
+function tstSaveGoal(btn) {
+  var name = document.getElementById('tst-goal-name').value.trim();
+  var inst = document.getElementById('tst-goal-inst').value.trim();
+  if (!name || !inst) { alert('A goal needs both a name and an instruction.'); return; }
+  btn.disabled = true;
+  /* Meta-only checkpoint list: satisfies the backend's non-empty
+     requirement while defining zero steps to match against. */
+  tstPost({
+    action: 'addWorkflow', prototype: TST_PROTOTYPE, name: name, instruction: inst, author: '',
+    checkpoints: [{ meta: 1, kind: 'goal', view: tstCurView(), orientation: tstCurOrient() }]
+  }, function (res) {
+    if (!res.ok) { alert('Save failed: ' + res.error); btn.disabled = false; return; }
+    tstOpenAdminPanel();
+  });
+}
+
+function tstBeginGoal(wf) {
+  tstClosePanel();
+  var meta = (wf.checkpoints && wf.checkpoints[0] && wf.checkpoints[0].meta) ? wf.checkpoints[0] : null;
+  try {
+    if (meta && typeof setView === 'function') setView(meta.view);
+    if (meta && meta.view !== 'desktop' && typeof setOrientation === 'function') setOrientation(meta.view, meta.orientation || 'portrait');
+  } catch (e) {}
+  setTimeout(function () {
+    tstBeginExplore(wf);
+    tstShowInstruction(wf);
+  }, 650);
+}
+
+var TST_EXPLORE_CAP = 300;   /* backend truncates at ~48k chars; this keeps us well under */
+
+function tstBeginExplore(wf) {
+  tstClosePanel();
+  var s = tstScreen();
+  tstState.mode = 'explore';
+  tstState.explore = {
+    wf: wf || null,          /* set for a goal run, null for free roam */
+    t0: Date.now(),
+    tNode: Date.now(),
+    clicks: 0,
+    truncated: false,
+    path: [{ s: s.id, label: s.label, t: 0, clicks: 0, ms: 0 }]
+  };
+  tstExploreBar();
+}
+
+function tstExploreBar() {
+  var old = document.getElementById('tst-bar'); if (old) old.remove();
+  var x = tstState.explore;
+  var bar = document.createElement('div');
+  bar.id = 'tst-bar'; bar.className = 'tst-ui tst-bar';
+  bar.innerHTML = '<span class="tst-grip">\u22EE\u22EE</span>' +
+    '<b>' + (x.wf ? tstEsc(x.wf.name) : 'Exploring') + '</b>' +
+    '<span id="tst-bar-count">' + x.path.length + ' screens \u00B7 ' + x.clicks + ' clicks</span>' +
+    (x.wf
+      ? '<button class="tst-chip" onclick="tstExploreDone(\'completed\')">I found it</button>' +
+        '<button class="tst-chip" onclick="tstExploreDone(\'abandoned\')">Give up</button>'
+      : '<button class="tst-chip" onclick="tstExploreDone()">I\u2019m done</button>');
+  document.body.appendChild(bar);
+  tstBarDraggable(bar);
+}
+
+/* Called after every click while exploring, once the DOM has settled */
+function tstExploreSample(clickLabel) {
+  var x = tstState.explore;
+  if (!x) return;
+  var now = Date.now();
+  var cur = x.path[x.path.length - 1];
+  var s = tstScreen();
+  if (s.id === cur.s) { cur.clicks++; return; }
+  if (x.path.length >= TST_EXPLORE_CAP) { x.truncated = true; return; }
+  cur.ms = now - x.tNode;
+  x.tNode = now;
+  x.path.push({ s: s.id, label: s.label, t: now - x.t0, clicks: 0, ms: 0, via: clickLabel || '' });
+  tstExploreCount();
+}
+
+function tstExploreCount() {
+  var x = tstState.explore;
+  var c = document.getElementById('tst-bar-count');
+  if (x && c) c.textContent = x.path.length + ' screens \u00B7 ' + x.clicks + ' clicks';
+}
+
+function tstExploreDone(outcome) {
+  var x = tstState.explore;
+  if (!x) return;
+  /* A goal run has a verdict; free roam does not. The tester decides,
+     which is the point — there are no checkpoints to decide for them. */
+  outcome = x.wf ? (outcome === 'completed' ? 'completed' : 'abandoned') : 'explored';
+  if (x.wf && outcome === 'abandoned' &&
+      !confirm('Give up on this one? Everywhere you looked is still recorded \u2014 that\u2019s the useful part.')) return;
+  x.path[x.path.length - 1].ms = Date.now() - x.tNode;
+  tstState.mode = null;
+  var bar = document.getElementById('tst-bar'); if (bar) bar.remove();
+
+  tstFetchIP(function (ip) {
+    tstPost({
+      action: 'addSession',
+      mode: 'explore',
+      prototype: TST_PROTOTYPE,
+      workflow_id: x.wf ? x.wf.id : '',
+      user: tstState.user,
+      ip: ip || '',
+      view: tstCurView(),
+      orientation: tstCurOrient(),
+      outcome: outcome,
+      duration_s: Math.round((Date.now() - x.t0) / 100) / 10,
+      steps_total: x.path.length,
+      misclicks_total: 0,
+      steps_data: x.path
+    }, function () {});
+  });
+
+  var p = tstPanelShell(outcome === 'abandoned' ? 'No problem \u2014 recorded' : 'Thanks \u2014 that\u2019s recorded');
+  p.insertAdjacentHTML('beforeend',
+    '<div class="tst-sub">You visited ' + x.path.length + ' screens over ' +
+      (Math.round((Date.now() - x.t0) / 100) / 10) + 's. Where you went and what you opened tells us ' +
+      'more than any single task could.</div>' +
+    (tstState.testing
+      ? '<div class="tst-item-row" style="justify-content:flex-end;">' +
+        '<button class="tst-cta tst-cta-dark" onclick="tstOpenTesterPanel(\'1\')">Back to tasks</button></div>'
+      : ''));
+  tstState.explore = null;
+}
+
+/* ═══════════════════════════════════════════════════════
+   MISCLICK HEAT MAP
+
+   Every misclick has been recorded since the playback feature shipped:
+   steps_data[].missed[] holds {cid, text, x, y} where x/y are percent
+   of the container's scroll content. That is already a heat map data
+   set, so this reads history rather than collecting anything new.
+
+   Coordinates are container-relative AND layout-specific, so points
+   are filtered to the view + orientation currently on screen before
+   anything is drawn. Pooling a mobile-portrait click with a desktop
+   one would put the blob in the wrong place.
+
+   Blobs are stacked translucent radial gradients: overlap darkens
+   naturally, so density reads as heat without a canvas.
+   ═══════════════════════════════════════════════════════ */
+
+var tstHeat = {
+  on: false,
+  mode: 'both',     /* 'miss' | 'hit' | 'both' */
+  wf: 'all',        /* workflow filter */
+  sessions: null,   /* cached raw sessions */
+  clusters: {},     /* cid -> [{x,y,n,labels[]}] for the active filter */
+  keepAlive: null
+};
+
+function tstCurView() {
+  return document.body.classList.contains('view-mobile') ? 'mobile'
+       : document.body.classList.contains('view-tablet') ? 'tablet' : 'desktop';
+}
+function tstCurOrient() {
+  return document.body.classList.contains('orient-landscape') ? 'landscape' : 'portrait';
+}
+
+/* Desktop has no orientation, so it matches on view alone. Older
+   sessions predating the orientation column come through blank and
+   are kept rather than silently dropped. */
+function tstHeatSessionMatches(s) {
+  if (String(s.view || 'desktop') !== tstCurView()) return false;
+  if (tstCurView() === 'desktop') return true;
+  var o = String(s.orientation || '');
+  return !o || o === tstCurOrient();
+}
+
+/* Grid-bucket the points so 40 clicks on one button become one hot
+   blob with n=40 instead of 40 identical blobs. 1.6% of the container
+   is roughly a button's worth at typical prototype sizes. */
+var TST_HEAT_CELL = 1.6;
+
+function tstHeatAdd(out, cid, x, y, label) {
+  if (typeof x !== 'number' || typeof y !== 'number') return;
+  cid = cid || 'phone';
+  var key = Math.round(x / TST_HEAT_CELL) + ':' + Math.round(y / TST_HEAT_CELL);
+  var bucket = (out[cid] = out[cid] || {});
+  var c = bucket[key];
+  if (!c) c = bucket[key] = { x: 0, y: 0, n: 0, labels: {} };
+  c.x += x; c.y += y; c.n++;
+  if (label) c.labels[label] = (c.labels[label] || 0) + 1;
+}
+
+function tstHeatCollapse(out) {
+  var clusters = {};
+  Object.keys(out).forEach(function (cid) {
+    clusters[cid] = Object.keys(out[cid]).map(function (k) {
+      var c = out[cid][k];
+      var top = Object.keys(c.labels).sort(function (a, b) { return c.labels[b] - c.labels[a]; })[0] || '';
+      return { x: c.x / c.n, y: c.y / c.n, n: c.n, label: top };
+    }).sort(function (a, b) { return b.n - a.n; });
+  });
+  return clusters;
+}
+
+function tstHeatBuild() {
+  var miss = {}, hit = {};
+  var sessions = (tstHeat.sessions || []).filter(tstHeatSessionMatches);
+  sessions.forEach(function (s) {
+    if (tstHeat.wf !== 'all' && String(s.workflow_id) !== tstHeat.wf) return;
+    var steps = s.steps_data;
+    if (typeof steps === 'string') { try { steps = JSON.parse(steps); } catch (e) { steps = []; } }
+    (steps || []).forEach(function (st) {
+      (st.missed || []).forEach(function (m) {
+        tstHeatAdd(miss, m.cid, m.x, m.y, m.text);
+      });
+      /* Correct clicks. Absent on sessions recorded before this shipped,
+         which is expected and surfaced in the panel rather than hidden. */
+      if (st.hit) tstHeatAdd(hit, st.hit.cid, st.hit.x, st.hit.y, st.label);
+    });
+  });
+  tstHeat.clusters = tstHeatCollapse(miss);
+  tstHeat.hits = tstHeatCollapse(hit);
+  return tstHeat.clusters;
+}
+
+function tstHeatSum(set) {
+  set = set || {};
+  return Object.keys(set).reduce(function (a, cid) {
+    return a + set[cid].reduce(function (b, c) { return b + c.n; }, 0);
+  }, 0);
+}
+function tstHeatTotal() { return tstHeatSum(tstHeat.clusters); }
+
+function tstHeatLive(cid) {
+  var el = document.getElementById(cid) || (cid === 'phone' ? document.querySelector('.phone') : null);
+  return (el && el.getBoundingClientRect().width > 0) ? el : null;
+}
+
+function tstHeatClear() {
+  var n = document.querySelectorAll('.tst-heat-layer');
+  for (var i = 0; i < n.length; i++) n[i].remove();
+}
+
+/* Repaint from scratch. Cheap enough to run on a timer, which is how
+   this survives drawers and tabs that re-render their contents and
+   wipe anything appended to them — same problem the ping dot has. */
+/* Which sets to draw, in z-order: correct underneath, misses on top,
+   because the miss is the thing you are looking for. */
+function tstHeatActiveSets() {
+  var sets = [];
+  if (tstHeat.mode !== 'miss') sets.push({ data: tstHeat.hits || {}, cls: 'hit' });
+  if (tstHeat.mode !== 'hit') sets.push({ data: tstHeat.clusters || {}, cls: '' });
+  return sets;
+}
+
+function tstHeatPaint() {
+  tstHeatClear();
+  if (!tstHeat.on) return;
+  var sets = tstHeatActiveSets();
+
+  /* Scale hits and misses independently. Correct clicks outnumber
+     misses roughly one per step per tester, so a shared scale would
+     flatten the misses into invisibility — which is the opposite of
+     what this view is for. */
+  sets.forEach(function (set) {
+    var m = 1;
+    Object.keys(set.data).forEach(function (cid) {
+      set.data[cid].forEach(function (c) { if (c.n > m) m = c.n; });
+    });
+    set.max = m;
+  });
+
+  /* One layer per container, holding every active set, so a container
+     that re-renders loses and regains all of its heat together. */
+  var cids = {};
+  sets.forEach(function (set) { Object.keys(set.data).forEach(function (cid) { cids[cid] = 1; }); });
+
+  Object.keys(cids).forEach(function (cid) {
+    var live = tstHeatLive(cid);
+    if (!live) return;
+    if (getComputedStyle(live).position === 'static') live.style.position = 'relative';
+    var w = live.scrollWidth, h = live.scrollHeight;
+    var layer = document.createElement('div');
+    layer.className = 'tst-heat-layer tst-ui';
+    layer.setAttribute('data-heat-cid', cid);
+    layer.style.width = w + 'px';
+    layer.style.height = h + 'px';
+
+    sets.forEach(function (set) {
+      (set.data[cid] || []).forEach(function (c) {
+        var px = c.x / 100 * w, py = c.y / 100 * h;
+        /* Radius grows with sqrt of count so one loud spot cannot swallow
+           the whole surface; alpha carries the rest of the signal. */
+        var d = Math.min(190, 54 + Math.sqrt(c.n) * 26);
+        var blob = document.createElement('div');
+        blob.className = 'tst-heat-blob' + (set.cls ? ' ' + set.cls : '');
+        blob.style.width = d + 'px';
+        blob.style.height = d + 'px';
+        blob.style.left = (px - d / 2) + 'px';
+        blob.style.top = (py - d / 2) + 'px';
+        blob.style.opacity = String(Math.min(1, 0.35 + (c.n / set.max) * 0.65));
+        layer.appendChild(blob);
+
+        if (c.n > 1) {
+          var pin = document.createElement('div');
+          pin.className = 'tst-heat-pin' + (set.cls ? ' ' + set.cls : '');
+          pin.style.left = px + 'px';
+          pin.style.top = py + 'px';
+          pin.textContent = String(c.n);
+          layer.appendChild(pin);
+        }
+      });
+    });
+    live.appendChild(layer);
+  });
+}
+
+function tstHeatSetMode(m) {
+  tstHeat.mode = m;
+  tstHeatRenderPanel();
+  if (tstHeat.on) tstHeatPaint();
+}
+
+function tstHeatOn() {
+  tstHeat.on = true;
+  tstHeatBuild();
+  tstHeatPaint();
+  if (tstHeat.keepAlive) clearInterval(tstHeat.keepAlive);
+  tstHeat.keepAlive = setInterval(function () {
+    if (!tstHeat.on) { clearInterval(tstHeat.keepAlive); tstHeat.keepAlive = null; return; }
+    /* Rebuild if the user flipped viewport pills while heat is showing */
+    var sig = tstCurView() + '|' + tstCurOrient();
+    if (sig !== tstHeat.sig) { tstHeat.sig = sig; tstHeatBuild(); tstHeatRenderPanel(); }
+    tstHeatPaint();
+  }, 900);
+  tstHeat.sig = tstCurView() + '|' + tstCurOrient();
+}
+
+function tstHeatOff() {
+  tstHeat.on = false;
+  if (tstHeat.keepAlive) { clearInterval(tstHeat.keepAlive); tstHeat.keepAlive = null; }
+  tstHeatClear();
+}
+
+function tstHeatToggle() {
+  if (tstHeat.on) tstHeatOff(); else tstHeatOn();
+  tstHeatRenderPanel();
+}
+
+function tstHeatSetWf(v) {
+  tstHeat.wf = v;
+  tstHeatBuild();
+  tstHeatRenderPanel();
+  if (tstHeat.on) tstHeatPaint();
+}
+
+/* Scroll a container into view so its heat is actually on screen */
+function tstHeatGoto(cid) {
+  var live = tstHeatLive(cid);
+  if (!live) { tstToast('\u201C' + cid + '\u201D is not on screen \u2014 open that screen or drawer and the heat appears.'); return; }
+  try { live.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+  if (!tstHeat.on) { tstHeatOn(); tstHeatRenderPanel(); }
+}
+
+/* ── Panel ── */
+function tstOpenHeatPanel() {
+  var body = tstDrawerShell('heat');
+  body.innerHTML = '<div id="tst-heat-body"><div class="tst-sub">Loading\u2026</div></div>';
+
+  var needWfs = !tstState.workflows.length;
+  var loadWfs = needWfs
+    ? new Promise(function (res) {
+        tstGet('?action=list&prototype=' + encodeURIComponent(TST_PROTOTYPE) + '&all=1', function (r) {
+          tstState.workflows = (r.ok && r.workflows) || []; res();
+        });
+      })
+    : Promise.resolve();
+
+  loadWfs.then(function () {
+    if (tstHeat.sessions) { tstHeatBuild(); tstHeatRenderPanel(); return; }
+    tstGet('?action=results&prototype=' + encodeURIComponent(TST_PROTOTYPE), function (res) {
+      tstHeat.sessions = (res.ok && res.sessions) || [];
+      tstHeatBuild();
+      tstHeatRenderPanel();
+    });
+  });
+}
+
+function tstHeatRenderPanel() {
+  var host = document.getElementById('tst-heat-body');
+  if (!host) return;
+
+  var missTotal = tstHeatSum(tstHeat.clusters);
+  var hitTotal = tstHeatSum(tstHeat.hits);
+  var active = tstHeat.mode === 'hit' ? (tstHeat.hits || {}) : (tstHeat.clusters || {});
+  var cids = Object.keys(active).sort(function (a, b) {
+    var an = active[a].reduce(function (x, c) { return x + c.n; }, 0);
+    var bn = active[b].reduce(function (x, c) { return x + c.n; }, 0);
+    return bn - an;
+  });
+  var total = tstHeat.mode === 'hit' ? hitTotal : missTotal;
+  var onNow = cids.filter(function (c) { return !!tstHeatLive(c); }).length;
+
+  var wfOpts = '<option value="all"' + (tstHeat.wf === 'all' ? ' selected' : '') + '>All workflows</option>' +
+    tstState.workflows.map(function (w) {
+      return '<option value="' + tstEsc(w.id) + '"' + (tstHeat.wf === w.id ? ' selected' : '') + '>' + tstEsc(w.name) + '</option>';
+    }).join('');
+
+  var html =
+    '<div class="tst-sub">Showing <b>' + tstCurView() +
+      (tstCurView() === 'desktop' ? '' : ' \u00B7 ' + tstCurOrient()) + '</b>. ' +
+      'Misclick positions are layout-specific, so only sessions run on this surface are plotted. ' +
+      'Flip the viewport pills to see another one.</div>' +
+    '<select class="tst-ta" style="height:auto;padding:6px;font-size:12px;" onchange="tstHeatSetWf(this.value)">' + wfOpts + '</select>' +
+    '<div class="tst-heat-seg">' +
+      '<button class="' + (tstHeat.mode === 'miss' ? 'on' : '') + '" onclick="tstHeatSetMode(\'miss\')">Misses</button>' +
+      '<button class="' + (tstHeat.mode === 'hit' ? 'on' : '') + '" onclick="tstHeatSetMode(\'hit\')">Correct</button>' +
+      '<button class="' + (tstHeat.mode === 'both' ? 'on' : '') + '" onclick="tstHeatSetMode(\'both\')">Both</button>' +
+    '</div>' +
+    '<div class="tst-stat">' +
+      '<span style="color:#a8341a;"><b>' + missTotal + '</b> misses</span>' +
+      '<span style="color:#16693a;"><b>' + hitTotal + '</b> correct</span>' +
+      '<span><b>' + onNow + '</b> on screen</span></div>';
+
+  /* Correct-click positions started being recorded when the heat map
+     shipped. Say so plainly rather than letting an empty green layer
+     read as \u201cnobody ever got it right.\u201d */
+  if (!hitTotal && missTotal) {
+    html += '<div class="tst-sub">No correct-click positions on this surface yet. Sessions recorded before the heat map shipped only stored misses \u2014 run one new test and the green layer fills in.</div>';
+  }
+
+  if (!missTotal && !hitTotal) {
+    html += '<div class="tst-sub">Nothing recorded on this surface yet. Either nobody has tested it, or these sessions ran on a different viewport.</div>';
+    host.innerHTML = html;
+    return;
+  }
+  if (!total) {
+    html += '<div class="tst-sub">Nothing to show in this mode.</div>';
+    host.innerHTML = html;
+    return;
+  }
+
+  html +=
+    '<div class="tst-item-row">' +
+    '<button class="tst-chip ' + (tstHeat.on ? 'tst-chip-primary' : '') + '" onclick="tstHeatToggle()">' +
+      (tstHeat.on ? 'Hide heat' : 'Show heat') + '</button>' +
+    '<button class="tst-chip" onclick="tstHeat.sessions=null;tstOpenHeatPanel();">Refresh</button>' +
+    '</div>' +
+    '<div class="tst-heat-key">' +
+      (tstHeat.mode !== 'hit' ? '<span style="color:#a8341a;">miss</span><span class="tst-heat-ramp"></span>' : '') +
+      (tstHeat.mode !== 'miss' ? '<span style="color:#16693a;">correct</span><span class="tst-heat-ramp hit"></span>' : '') +
+    '</div>';
+
+  /* Hottest single spots, across containers */
+  var flat = [];
+  cids.forEach(function (cid) {
+    active[cid].forEach(function (c) { flat.push({ cid: cid, c: c }); });
+  });
+  flat.sort(function (a, b) { return b.c.n - a.c.n; });
+
+  var hotLabel = tstHeat.mode === 'hit' ? 'Most-clicked targets' : 'Hottest misses';
+  var nCls = tstHeat.mode === 'hit' ? ' hit' : '';
+  html += '<div class="tst-sub" style="margin-top:2px;">' + hotLabel + '</div>';
+  html += flat.slice(0, 5).map(function (f) {
+    var live = !!tstHeatLive(f.cid);
+    return '<div class="tst-heat-row" style="cursor:pointer;" onclick="tstHeatGoto(\'' + tstEsc(f.cid) + '\')">' +
+      '<div style="min-width:0;">' +
+        '<div style="font-size:12px;color:#171614;">' + tstEsc(f.c.label || '(no label)') + '</div>' +
+        '<div class="tst-heat-cid">' + tstEsc(f.cid) + (live ? '' : ' <span class="tst-heat-off">not on screen</span>') + '</div>' +
+      '</div>' +
+      '<span class="tst-heat-n' + nCls + '">' + f.c.n + '</span></div>';
+  }).join('');
+
+  host.innerHTML = html;
 }
 
 /* ── One capture listener routes clicks by mode ── */
@@ -692,25 +1691,44 @@ document.addEventListener('click', function (e) {
     return;   /* wrong clicks during a guide are just navigation, not data */
   }
 
+  if (tstState.mode === 'explore') {
+    tstState.explore.clicks++;
+    tstExploreCount();
+    var lbl = tstNorm(e.target.textContent).slice(0, 40);
+    /* Read the screen AFTER the click's own handlers have run and any
+       drawer has finished opening, or every transition is attributed
+       to the screen the tester just left. */
+    setTimeout(function () { tstExploreSample(lbl); }, 380);
+    return;
+  }
+
   if (tstState.mode === 'run') {
     var steps = tstWfSteps(tstState.run.wf);
     var fp = tstFingerprint(e.target);
     if (tstMatches(fp, steps[tstState.run.idx])) { tstAdvance(e); return; }
     tstState.run.misclicks++; tstState.run.stepMis++;
     if (tstState.run.stepMissed.length < 25) {   /* cap so steps_data can't bloat */
-      var mc = tstContainerOf(e.target);
-      var mr = mc.getBoundingClientRect();
-      tstState.run.stepMissed.push({
-        cid: mc.id || 'phone',
-        text: fp.text.slice(0, 40),
-        x: Math.round(((e.clientX - mr.left + mc.scrollLeft) / Math.max(mc.scrollWidth, 1)) * 1000) / 10,
-        y: Math.round(((e.clientY - mr.top + mc.scrollTop) / Math.max(mc.scrollHeight, 1)) * 1000) / 10
-      });
+      var mp = tstClickPos(e);
+      mp.text = fp.text.slice(0, 40);
+      tstState.run.stepMissed.push(mp);
     }
   }
 }, true);
 
-/* ── Location ping — ?ping=cid,x,y&pv=view&po=orientation&pt=label ──
+/* Container-relative click position, as % of the container's scroll
+   content. The single source of truth for BOTH misses and hits, so the
+   two heat layers are guaranteed to sit in the same coordinate space. */
+function tstClickPos(e, target) {
+  var c = tstContainerOf(target || e.target);
+  var r = c.getBoundingClientRect();
+  return {
+    cid: c.id || 'phone',
+    x: Math.round(((e.clientX - r.left + c.scrollLeft) / Math.max(c.scrollWidth, 1)) * 1000) / 10,
+    y: Math.round(((e.clientY - r.top + c.scrollTop) / Math.max(c.scrollHeight, 1)) * 1000) / 10
+  };
+}
+
+/* ── Location ping ──
    Opens the prototype on the right surface and pulses the exact spot a
    misclick landed. Coordinates are % of the container's scroll content,
    converted to px at render so long scrolling pages resolve correctly. */
@@ -904,9 +1922,45 @@ function tstPlacePing(spec, label) {
   }, 700);
 }
 
+/* ── Heat deep link — ?heat=1&hv=view&ho=orientation&hw=workflowId&hm=mode
+   Opened from the dashboard so a friction row goes straight to the
+   heat, on the right viewport, without hunting for the Test button. ── */
+function tstHeatDeepLink(view, orient, wfId, mode) {
+  try {
+    if (view && typeof setView === 'function') setView(view);
+    if (view && view !== 'desktop' && orient && typeof setOrientation === 'function') setOrientation(view, orient);
+  } catch (e) {}
+  tstHeat.wf = wfId || 'all';
+  tstHeat.mode = (mode === 'hit' || mode === 'miss') ? mode : 'both';
+  /* Let the viewport change settle before measuring containers, or the
+     blobs get placed against the old layout's scroll dimensions. */
+  setTimeout(function () {
+    tstOpenHeatPanel();
+    var tries = 0;
+    var wait = setInterval(function () {
+      tries++;
+      if (tstHeat.sessions) {
+        clearInterval(wait);
+        tstHeatBuild();
+        tstHeatOn();
+        tstHeatRenderPanel();
+      } else if (tries > 40) { clearInterval(wait); }
+    }, 200);
+  }, 800);
+}
+
 /* ── Boot ── */
 function tstBoot() {
   var url = new URL(location.href);
+  var heat = url.searchParams.get('heat');
+  if (heat) {
+    tstMountButton();
+    setTimeout(function () {
+      tstHeatDeepLink(url.searchParams.get('hv') || '', url.searchParams.get('ho') || '',
+        url.searchParams.get('hw') || 'all', url.searchParams.get('hm') || 'both');
+    }, 400);
+    return;
+  }
   var ping = url.searchParams.get('ping');
   if (ping) {
     setTimeout(function () {
@@ -915,6 +1969,7 @@ function tstBoot() {
         parseInt(url.searchParams.get('st') || '0', 10) || 0);
     }, 400);   /* let the app's own boot finish first */
   }
+  if (url.searchParams.get('explore')) { tstEnterTestMode('explore'); return; }
   var t = url.searchParams.get('test');
   if (t) { tstEnterTestMode(t); return; }
   tstMountButton();

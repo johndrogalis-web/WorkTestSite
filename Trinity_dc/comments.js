@@ -315,9 +315,13 @@ setInterval(cmtRetryPending, 2500);
    token appended at post time (see the route capture in the composer). */
 function cmtAnchorParts(c) {
   var a = String(c.anchor || '');
-  var i = a.indexOf('\u27C2route=');
+  var tok = '\u27C2route=';
+  var i = a.indexOf(tok);
   if (i === -1) return { display: a, route: null };
-  return { display: a.slice(0, i).trim(), route: a.slice(i + 8).trim() };
+  /* slice by token length, not a hand-counted offset — the old i+8
+     ate the first character of every route ("esktop/trucks/...") and
+     silently broke everything downstream that consumed routes. */
+  return { display: a.slice(0, i).trim(), route: a.slice(i + tok.length).trim() };
 }
 
 /* ── Bubble (read / resolve) ── */

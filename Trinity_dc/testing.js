@@ -1306,7 +1306,8 @@ function tstBeginExplore(wf) {
     tNode: Date.now(),
     clicks: 0,
     truncated: false,
-    path: [{ s: s.id, label: s.label, t: 0, clicks: 0, ms: 0 }]
+    path: [{ s: s.id, label: s.label, t: 0, clicks: 0, ms: 0,
+             r: location.hash.replace(/^#/, '') }]
   };
   tstExploreBar();
 }
@@ -1338,7 +1339,10 @@ function tstExploreSample(clickLabel) {
   if (x.path.length >= TST_EXPLORE_CAP) { x.truncated = true; return; }
   cur.ms = now - x.tNode;
   x.tNode = now;
-  x.path.push({ s: s.id, label: s.label, t: now - x.t0, clicks: 0, ms: 0, via: clickLabel || '' });
+  /* Sampled 380ms after the click, so the hash has settled on the NEW
+     screen — exactly the route a dashboard node click should jump to. */
+  x.path.push({ s: s.id, label: s.label, t: now - x.t0, clicks: 0, ms: 0, via: clickLabel || '',
+                r: location.hash.replace(/^#/, '') });
   tstExploreCount();
 }
 
@@ -1787,7 +1791,12 @@ function tstClickPos(e, target) {
   return {
     cid: c.id || 'phone',
     x: Math.round(((e.clientX - r.left + c.scrollLeft) / Math.max(c.scrollWidth, 1)) * 1000) / 10,
-    y: Math.round(((e.clientY - r.top + c.scrollTop) / Math.max(c.scrollHeight, 1)) * 1000) / 10
+    y: Math.round(((e.clientY - r.top + c.scrollTop) / Math.max(c.scrollHeight, 1)) * 1000) / 10,
+    /* The hash at click time — this listener runs in the capture phase,
+       before the click's own handlers can navigate, so this is the
+       screen the tester was on when they clicked. Lets the dashboard
+       build ?jump= links instead of replaying the whole path. */
+    route: location.hash.replace(/^#/, '')
   };
 }
 
@@ -2026,11 +2035,21 @@ function tstBoot() {
   }
   var ping = url.searchParams.get('ping');
   if (ping) {
-    setTimeout(function () {
-      tstPing(ping, url.searchParams.get('pv') || '', url.searchParams.get('po') || '',
-        url.searchParams.get('pt') || '', url.searchParams.get('wf') || null,
-        parseInt(url.searchParams.get('st') || '0', 10) || 0);
-    }, 400);   /* let the app's own boot finish first */
+    if (url.searchParams.get('jump')) {
+      /* Route-carrying link: router.js consumes ?jump and drives the UI
+         there. Just place the dot — tstPlacePing polls for the container,
+         so it naturally waits out the router's navigation. */
+      setTimeout(function () {
+        tstPlacePing(ping, url.searchParams.get('pt') || '');
+      }, 900);
+    } else {
+      /* Legacy link (pre-route sessions): view-set + auto-walk replay. */
+      setTimeout(function () {
+        tstPing(ping, url.searchParams.get('pv') || '', url.searchParams.get('po') || '',
+          url.searchParams.get('pt') || '', url.searchParams.get('wf') || null,
+          parseInt(url.searchParams.get('st') || '0', 10) || 0);
+      }, 400);   /* let the app's own boot finish first */
+    }
   }
   if (url.searchParams.get('explore')) { tstEnterTestMode('explore'); return; }
   var t = url.searchParams.get('test');

@@ -280,8 +280,9 @@ function sankeySVG(ses){
     p.forEach(function(node, d){
       cols[d] = cols[d] || {};
       var id = node.s || 'unknown';
-      var c = cols[d][id] = cols[d][id] || { label: node.label || id, n:0, out:{}, ends:0 };
+      var c = cols[d][id] = cols[d][id] || { label: node.label || id, n:0, out:{}, ends:0, r:'' };
       c.n++;
+      if(!c.r && node.r) c.r = node.r;   /* first recorded route wins — one screen, one route */
       if(d+1 < p.length){
         var nid = p[d+1].s || 'unknown';
         c.out[nid] = (c.out[nid]||0) + 1;
@@ -349,9 +350,13 @@ function sankeySVG(ses){
     var x = padL + d2*colW;
     Object.keys(pos[d2]||{}).forEach(function(id){
       var p = pos[d2][id], nd = p.node;
-      svg.push('<rect class="sk-node" x="'+x+'" y="'+p.y+'" width="'+nodeW+'" height="'+p.h+'" rx="2">' +
+      var clickAttr = nd.r
+        ? ' style="cursor:pointer;" onclick="window.open(\'./?jump='+encodeURIComponent(nd.r)+'\',\'_blank\')"'
+        : '';
+      svg.push('<rect class="sk-node" x="'+x+'" y="'+p.y+'" width="'+nodeW+'" height="'+p.h+'" rx="2"'+clickAttr+'>' +
                '<title>'+esc(nd.label)+' \u2014 '+nd.n+' session'+(nd.n===1?'':'s')+
-               (nd.ends?', '+nd.ends+' stopped here':'')+'</title></rect>');
+               (nd.ends?', '+nd.ends+' stopped here':'')+
+               (nd.r?' \u2014 click to open in prototype':'')+'</title></rect>');
       /* Sessions that ended on this node: a hatched stub on the right
          edge, the same visual language the reference tool uses. */
       if(nd.ends){
@@ -499,7 +504,7 @@ function renderFriction(ses, wfId){
         var g=a.missed[key]=a.missed[key]||{count:0,loc:null};
         g.count++;
         /* first occurrence is the representative location for the ping */
-        if(!g.loc && m.cid) g.loc={cid:m.cid,x:m.x,y:m.y,view:s.view,po:s.orientation,text:m.text||''};
+        if(!g.loc && m.cid) g.loc={cid:m.cid,x:m.x,y:m.y,view:s.view,po:s.orientation,text:m.text||'',route:m.route||''};
       });
     });
   });
@@ -519,10 +524,20 @@ function renderFriction(ses, wfId){
         var parts=k.split('\u0000'), g=a.missed[k];
         var link='';
         if(g.loc){
-          var href='./?ping='+encodeURIComponent(g.loc.cid)+','+g.loc.x+','+g.loc.y+
-            '&pv='+encodeURIComponent(g.loc.view||'')+'&po='+encodeURIComponent(g.loc.po||'')+
-            '&pt='+encodeURIComponent(g.loc.text.slice(0,40))+
-            '&wf='+encodeURIComponent(__frictionWfId)+'&st='+i;   /* lets the prototype replay the path there */
+          var href;
+          if(g.loc.route){
+            /* Session recorded the route it happened on — the prototype's
+               router jumps straight there, then pings the exact spot. */
+            href='./?jump='+encodeURIComponent(g.loc.route)+
+              '&ping='+encodeURIComponent(g.loc.cid)+','+g.loc.x+','+g.loc.y+
+              '&pt='+encodeURIComponent(g.loc.text.slice(0,40));
+          } else {
+            /* Pre-route session — fall back to replaying the tester's path. */
+            href='./?ping='+encodeURIComponent(g.loc.cid)+','+g.loc.x+','+g.loc.y+
+              '&pv='+encodeURIComponent(g.loc.view||'')+'&po='+encodeURIComponent(g.loc.po||'')+
+              '&pt='+encodeURIComponent(g.loc.text.slice(0,40))+
+              '&wf='+encodeURIComponent(__frictionWfId)+'&st='+i;
+          }
           link='<a class="mlink" href="'+href+'" target="_blank">see location \u2197</a>';
         }
         return '<div class="m"><b>\u00D7'+g.count+'</b><span>clicked \u201C'+esc(parts[0])+'\u201D</span>'+

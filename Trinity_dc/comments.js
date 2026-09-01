@@ -389,6 +389,17 @@ function cmtRefresh() {
 /* Re-render on view/orientation change — container sizes shift */
 (function () {
   var mo = new MutationObserver(function () {
+    /* setView() rebuilds body.className from scratch ('view-' + view),
+       wiping cmt-hidden and revealing every pin — tester links hit this
+       on boot when they force the workflow's device. Re-assert our own
+       classes whenever anyone rewrites the attribute. The guards keep
+       the re-add from re-triggering this observer into a loop. */
+    if (!cmtState.visible && !document.body.classList.contains('cmt-hidden')) {
+      document.body.classList.add('cmt-hidden');
+    }
+    if (cmtState.mode && !document.body.classList.contains('cmt-mode')) {
+      document.body.classList.add('cmt-mode');
+    }
     clearTimeout(window.__cmtRerenderT);
     window.__cmtRerenderT = setTimeout(cmtRenderAll, 450);
   });

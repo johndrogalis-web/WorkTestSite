@@ -2037,10 +2037,30 @@ function tstBoot() {
   if (ping) {
     if (url.searchParams.get('jump')) {
       /* Route-carrying link: router.js consumes ?jump and drives the UI
-         there. Just place the dot — tstPlacePing polls for the container,
-         so it naturally waits out the router's navigation. */
+         there. Routes restore NAVIGATION state (page, drawer, tab) but
+         not FLOW state — a misclick inside a confirm dialog or error
+         overlay has a container that only exists mid-flow. So: give the
+         router time to land, poll briefly for the container, and if it
+         never appears hand off to the auto-walk, which replays the
+         tester's own clicks — the thing that opens those modals. */
       setTimeout(function () {
-        tstPlacePing(ping, url.searchParams.get('pt') || '');
+        var cid = ping.split(',')[0];
+        var pt  = url.searchParams.get('pt') || '';
+        var wf  = url.searchParams.get('wf') || null;
+        var st  = parseInt(url.searchParams.get('st') || '0', 10) || 0;
+        var tries = 0;
+        var probe = setInterval(function () {
+          tries++;
+          var c = document.getElementById(cid) || (cid === 'phone' ? document.querySelector('.phone') : null);
+          if (c && c.getBoundingClientRect().width > 0) {
+            clearInterval(probe);
+            tstPlacePing(ping, pt);
+          } else if (tries > 8) {          /* ~4s — the router has landed; this container needs the flow */
+            clearInterval(probe);
+            if (wf && st > 0) tstStartGuide(wf, st, ping, pt);
+            else tstPlacePing(ping, pt);   /* no path to replay — long poll + honest toast */
+          }
+        }, 500);
       }, 900);
     } else {
       /* Legacy link (pre-route sessions): view-set + auto-walk replay. */

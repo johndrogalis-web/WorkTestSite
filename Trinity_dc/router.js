@@ -265,6 +265,24 @@ function rtOpenDtUnit(unitId, tab) {
   dtSelectTab.__rtWrapped = true;
 })();
 
+/* app-06's dtDrawerTab wrapper guesses the truck number from hash
+   position with a length<=6 test — and the slug 'logs' is 4 chars, so
+   clicking the Logs tab wrote hashes like desktop/trucks/logs/logs.
+   dtDrawerTruckNum is the drawer's own source of truth; rewrite the
+   hash from it after the (already wrapped) original runs. */
+(function () {
+  if (typeof dtDrawerTab !== 'function' || dtDrawerTab.__rtHashFix) return;
+  var orig = dtDrawerTab;
+  dtDrawerTab = function (tab, el) {
+    orig.call(this, tab, el);
+    if (typeof dtDrawerTruckNum !== 'undefined' && dtDrawerTruckNum &&
+        typeof setHash === 'function') {
+      setHash(['desktop', 'trucks', dtDrawerTruckNum, tab]);
+    }
+  };
+  dtDrawerTab.__rtHashFix = true;
+})();
+
 /* ── Comments: Jump button ──────────────────────────────────────────
    comments.js already stores the route inside each pin's anchor
    (cmtAnchorParts splits it back out). The drawer renders rows in a

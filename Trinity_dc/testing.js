@@ -132,6 +132,26 @@ var tstState = {
     '  background:#171614;color:#fff;font-family:var(--font,sans-serif);font-size:12px;',
     '  padding:8px 16px;border-radius:100px;box-shadow:0 4px 14px rgba(0,0,0,0.3);max-width:80vw;',
     '  text-align:center;}',
+    /* ── TESTER MODE CHROME ────────────────────────────────────────
+       A tester link pins the prototype to the surface the workflow was
+       recorded on, so viewport pills would let them invalidate their own
+       session. Comment pins are review chrome, not product. The Test
+       button reopens the admin panel. All three go. Dark mode survives
+       because it is a genuine preference and changes nothing being
+       measured — it lives in the Options dropdown, which stays. */
+    'body.tst-testing .vp-viewport-pills{display:none !important;}',
+    'body.tst-testing .cmt-wrap{display:none !important;}',
+    'body.tst-testing .tst-wrap{display:none !important;}',
+    /* Role and Version change what the prototype SHOWS, so they would
+       also invalidate a run — hide those rows and their labels/dividers,
+       leaving Appearance and Onboarding. */
+    'body.tst-testing #vp-opt-external,body.tst-testing #vp-opt-internal,',
+    'body.tst-testing #vp-opt-final{display:none !important;}',
+    'body.tst-testing .vp-opts-dd > .vp-opts-section-label:nth-of-type(1),',
+    'body.tst-testing .vp-opts-dd > .vp-opts-section-label:nth-of-type(2),',
+    'body.tst-testing .vp-opts-dd > .vp-opts-divider:nth-of-type(1),',
+    'body.tst-testing .vp-opts-dd > .vp-opts-divider:nth-of-type(2){display:none !important;}',
+    /* Task recall button — sits beside the run bar's own controls */
     '.tst-flash{position:fixed;border-radius:50%;width:34px;height:34px;border:3px solid #1f9d55;',
     '  z-index:2999;pointer-events:none;animation:tstflash 0.5s ease-out forwards;margin:-17px 0 0 -17px;}',
     '@keyframes tstflash{from{transform:scale(0.5);opacity:1;}to{transform:scale(1.6);opacity:0;}}',
@@ -869,8 +889,12 @@ function tstRenderBar() {
       '<button class="tst-chip" onclick="tstRecFinish(this)">Finish</button>';
   } else if (tstState.mode === 'run') {
     var r = tstState.run, total = tstWfSteps(r.wf).length;
+    /* Testers forget the instruction two steps in and have no way back
+       to it — the panel is dismissed with "Got it" and never returns.
+       Re-reading the task is not a hint, it is the task. */
     bar.innerHTML = '<b>' + tstEsc(r.wf.name) + '</b>' +
       '<span id="tst-bar-count">Step ' + (r.idx + 1) + ' of ' + total + '</span>' +
+      '<button class="tst-chip" onclick="tstShowTask()">Task</button>' +
       '<button class="tst-chip" onclick="tstRunGiveUp(this)">Give up</button>';
   }
   bar.innerHTML = '<span class="tst-grip">\u22EE\u22EE</span>' + bar.innerHTML;
@@ -1002,6 +1026,14 @@ function tstShowInstruction(wf) {
     '<div class="tst-sub" style="font-size:12.5px;color:#333;">' + tstEsc(wf.instruction) + '</div>' +
     '<div class="tst-item-row" style="justify-content:flex-end;">' +
     '<button class="tst-cta tst-cta-dark" onclick="tstClosePanel()">Got it</button></div>');
+}
+
+/* Re-show the current task. Works for both run kinds — a guided run
+   keeps its workflow on tstState.run, a goal run on tstState.explore. */
+function tstShowTask() {
+  var wf = (tstState.run && tstState.run.wf) ||
+           (tstState.explore && tstState.explore.wf) || null;
+  if (wf) tstShowInstruction(wf);
 }
 
 function tstAdvance(e) {
@@ -1321,7 +1353,8 @@ function tstExploreBar() {
     '<b>' + (x.wf ? tstEsc(x.wf.name) : 'Exploring') + '</b>' +
     '<span id="tst-bar-count">' + x.path.length + ' screens \u00B7 ' + x.clicks + ' clicks</span>' +
     (x.wf
-      ? '<button class="tst-chip" onclick="tstExploreDone(\'completed\')">I found it</button>' +
+      ? '<button class="tst-chip" onclick="tstShowTask()">Task</button>' +
+        '<button class="tst-chip" onclick="tstExploreDone(\'completed\')">I found it</button>' +
         '<button class="tst-chip" onclick="tstExploreDone(\'abandoned\')">Give up</button>'
       : '<button class="tst-chip" onclick="tstExploreDone()">I\u2019m done</button>');
   document.body.appendChild(bar);

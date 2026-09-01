@@ -706,7 +706,7 @@ function tstValidateAll() {
                queue.length + ' task' + (queue.length !== 1 ? 's' : '') +
                ' to replay. Reload the page afterwards to get back to a clean state.\n\nRun it?')) return;
 
-  tstVal = { queue: queue, i: 0, cancelled: false };
+  tstVal = { queue: queue, i: 0, cancelled: false, slow: [] };
   tstClosePanel();
   tstValNext();
 }
@@ -750,6 +750,48 @@ function tstValReset(meta, then) {
   setTimeout(then, 550);
 }
 
+/* ── Clickability ───────────────────────────────────────────────────
+   Finding the element is not the same as being able to use it. The
+   install bar renders its Confirm button immediately but leaves it
+   disabled for the 2.5s scan; a replay that clicks the instant it
+   appears fires into a dead button, the click is swallowed, and the
+   NEXT step is the one that reports the break. The flow looks broken
+   at step 8 when step 7 is what actually failed.
+
+   So the replay waits for the element to be genuinely clickable, and
+   when it gives up it says which of the two things went wrong:
+   never appeared, or appeared and never became usable. ── */
+function tstValUsable(el) {
+  if (!el) return false;
+  if (el.disabled) return false;
+  if (el.getAttribute && el.getAttribute('aria-disabled') === 'true') return false;
+  if (el.closest && el.closest('[disabled],[aria-disabled="true"],fieldset[disabled]')) return false;
+  var cs = getComputedStyle(el);
+  if (cs.pointerEvents === 'none') return false;
+  if (parseFloat(cs.opacity) < 0.25) return false;   /* the disabled-look pattern used across the kit */
+  return true;
+}
+
+/* {el, state} so the verdict can name the reason. 'blocked' means the
+   element is on screen but not usable — a tester would be just as
+   stuck, so it still counts as a break, it just gets a different
+   sentence. */
+function tstValFind(cp) {
+  var el = tstResolveStep(cp);
+  if (!el) return { el: null, state: 'missing' };
+  if (tstValUsable(el)) return { el: el, state: 'ok' };
+  /* First match is dead — a second element with the same label may be
+     the live one (tab strip plus legacy dropdown, for instance). */
+  var all = document.querySelectorAll('button, a, [onclick], [id]');
+  for (var k = 0; k < all.length; k++) {
+    var t = tstNorm(all[k].textContent);
+    var hit = (cp.eid && all[k].id === cp.eid) ||
+              (t && (t === cp.text || (cp.ntext && tstDigitless(t) === cp.ntext)));
+    if (hit && tstValUsable(all[k])) return { el: all[k], state: 'ok' };
+  }
+  return { el: el, state: 'blocked' };
+}
+
 function tstValWalk(wf, steps, i) {
   if (!tstValLive()) return tstValFinish();
   if (i >= steps.length) {
@@ -757,20 +799,27 @@ function tstValWalk(wf, steps, i) {
   }
   tstVeil('Validating \u201C' + wf.name + '\u201D \u2014 step ' + (i + 1) + ' of ' + steps.length + '\u2026');
 
-  var attempts = 0;
+  var attempts = 0, last = 'missing';
   (function resolve() {
     if (!tstValLive()) return tstValFinish();
-    var el = tstResolveStep(steps[i]);
-    if (el) {
-      try { el.click(); } catch (e) {}
+    var f = tstValFind(steps[i]);
+    last = f.state;
+    if (f.state === 'ok') {
+      try { f.el.click(); } catch (e) {}
+      /* A step that needed most of the window was still a pass, but a
+         tester on a slow connection may not be so patient — worth
+         seeing in the report. */
+      if (attempts > 10) (tstVal.slow = tstVal.slow || []).push(wf.name + ' \u2014 step ' + (i + 1));
       setTimeout(function () { tstValWalk(wf, steps, i + 1); }, 650);
       return;
     }
-    /* ~3.3s. Long enough for a slow render, short enough that a pass
-       over a dozen tasks still finishes while you watch it. */
-    if (++attempts > 11) {
+    /* ~8s. The scan states, the reconnection animation and the drawer
+       transitions all land inside this; 3s did not, which is what made
+       the first pass report false breaks. */
+    if (++attempts > 26) {
       return tstValDone(wf, {
         ok: false, at: i + 1, total: steps.length,
+        reason: last,
         label: steps[i].text || steps[i].eid || 'step',
         cid: steps[i].cid || ''
       });
@@ -790,6 +839,7 @@ function tstValFinish() {
   var n = tstVal ? tstVal.queue.length : 0;
   var done = tstVal ? tstVal.i : 0;
   var cancelled = tstVal ? tstVal.cancelled : false;
+  var slow = (tstVal && tstVal.slow) || [];
   tstVal = null;
   tstVeil(null);
 
@@ -798,6 +848,7 @@ function tstValFinish() {
   Object.keys(r).forEach(function (k) { if (r[k] && !r[k].ok) broke++; });
 
   tstOpenAdminPanel();
+  if (slow.length) console.warn('[validate] slow steps (took over 3s to appear):\n' + slow.join('\n'));
   tstToast(cancelled
     ? 'Validate cancelled after ' + done + ' of ' + n
     : (broke ? broke + ' task' + (broke !== 1 ? 's' : '') + ' broke \u2014 re-record ' + (broke !== 1 ? 'them' : 'it')
@@ -821,19 +872,24 @@ function tstPaintVal() {
       badge.style.cursor = '';
       badge.title = 'Every step resolved and clicked through on the last validate pass.';
     } else {
+      var blocked = res.reason === 'blocked';
       badge.className   = 'tst-badge tst-badge-bad';
-      badge.textContent = 'breaks at step ' + res.at + ' of ' + res.total;
+      badge.textContent = (blocked ? 'stuck at step ' : 'breaks at step ') + res.at + ' of ' + res.total;
       badge.style.cursor = 'pointer';
-      badge.title = 'Step ' + res.at + ' (\u201C' + res.label + '\u201D) never appeared. Re-record this task.';
-      badge.onclick = (function (res) {
+      badge.title = 'Step ' + res.at + ' (\u201C' + res.label + '\u201D) ' +
+        (blocked ? 'is on screen but never became clickable.' : 'never appeared.');
+      badge.onclick = (function (res, blocked) {
         return function () {
-          alert('Breaks at step ' + res.at + ' of ' + res.total + '.\n\n' +
-                'Looking for: \u201C' + res.label + '\u201D' +
-                (res.cid ? ' in ' + res.cid : '') + '\n\n' +
-                'Steps 1\u2013' + (res.at - 1) + ' replayed fine, so the path is intact up to there. ' +
-                'This element was renamed, moved, or removed. Re-record the task.');
+          alert((blocked ? 'Stuck at step ' : 'Breaks at step ') + res.at + ' of ' + res.total + '.\n\n' +
+                'Looking for: \u201C' + res.label + '\u201D' + (res.cid ? ' in ' + res.cid : '') + '\n\n' +
+                (blocked
+                  ? 'It is on screen but stayed disabled for 8 seconds, so the replay could not click it. ' +
+                    'Either the step before it left the UI in the wrong state, or this control now waits on ' +
+                    'something that never arrives. A tester would be stuck here too.'
+                  : 'It never appeared within 8 seconds. Renamed, moved, or removed.') + '\n\n' +
+                'Steps 1\u2013' + (res.at - 1) + ' replayed fine, so the path is intact up to there.');
         };
-      })(res);
+      })(res, blocked);
     }
   });
 }

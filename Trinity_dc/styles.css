@@ -8636,29 +8636,36 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
    everything around it adopts the spec: bracketed meta rows,
    and the status strip becomes a neutral boxed footer holding
    a colored chip rather than a full-bleed colored band. */
+/* Reverted to the Trinity ComponentCard spec (Figma 63631:17571), same
+   correction as .dt-co-card below. The card carries no padding and the
+   status band is full-bleed — it IS the bottom edge of the card, not a
+   chip sitting inside it. Body owns the padding; band owns 20/10. */
 .co-card,
 .co-card--empty,
 .co-card--pending {
-  border-radius: var(--card-radius);
-  box-shadow: var(--card-shadow);
+  border-radius: 20px;
+  box-shadow: none;
 }
 .co-card {
-  border: 1px solid var(--border);
-  padding: 14px;          /* card padding moves off the body */
-  gap: 10px;
-  overflow: visible;      /* footer insets now, so no clipping needed */
+  border: 1px solid rgba(54,50,45,0.62);
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  position: relative;     /* anchors .co-tcg-replace-btn */
 }
-.co-card-body { padding: 0; gap: 8px; }
+.co-card-body { padding: 20px 20px 14px; gap: 8px; }
 
 /* Description line = the spec's hint line */
 .co-card .co-desc-text { font-size: 12px; color: var(--subtle); letter-spacing: -0.24px; }
 
 /* Meta rows: label left, value right, hairline-bracketed */
+/* Meta rows read as more Desc lines per the spec: no rules, no inset.
+   Only the label/value split survives from the unification pass. */
 .co-card .co-meta {
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 10px 0;
-  gap: 8px;
+  border-top: none;
+  border-bottom: none;
+  padding: 0;
+  gap: 2px;
 }
 .co-card .co-meta-row {
   justify-content: space-between;
@@ -8673,11 +8680,9 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
    tested worse — reverted per feedback). Radius/padding stay at the
    spec's footer values, just filled edge to edge with the state tint. */
 .co-card .co-card-strip {
-  border-radius: var(--card-foot-radius);
-  /* Was a flat 8px, which pulled the footer text 6px left of the body's
-     14px and made every card look off-axis. Match the body. */
-  padding: 8px 14px;
-  gap: 7px;
+  border-radius: 0;
+  padding: 10px 20px;
+  gap: 8px;
   /* Long reasons wrap now, so the dot has to hold the first line
      instead of floating to the centre of a two-line block. */
   align-items: flex-start;
@@ -8723,12 +8728,18 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
    State classes live on the CARD here (.clean/.warn/.alarm),
    not the strip, so the chip selectors follow that scheme. */
 .dt-co-card {
-  border: 1px solid var(--border);
-  border-radius: var(--card-radius);
-  box-shadow: var(--card-shadow);
-  padding: 20px;
-  gap: 10px;
-  overflow: visible;
+  /* Reverted to the Trinity ComponentCard spec (Figma 63631:17571).
+     The unification pass above had put 20px padding on the CARD and
+     zeroed the body, which pulled the status band in off the edges and
+     turned it into a floating chip. The band is full-bleed by design:
+     it is the bottom edge of the card, not an element inside it.
+     Card owns no padding; the body owns 20/20/14; the band owns 20/10. */
+  border: 1px solid rgba(54,50,45,0.62);
+  border-radius: 20px;
+  box-shadow: none;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
   /* The wrench button (.dt-co-tcg-replace-btn) is position:absolute at
      top:12/right:12. Until now the only rule giving this card a
      position was scoped to .dt-replace-mode, so outside replace mode
@@ -8738,13 +8749,15 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
      above is why it was drawn rather than clipped. */
   position: relative;
 }
-.dt-co-card-body { padding: 0; }
+.dt-co-card-body { padding: 20px 20px 14px; gap: 8px; }
 
+/* Meta rows read as more Desc lines per the spec: no rules above or
+   below, no inset. Only the label/value split survives from the pass. */
 .dt-co-card-meta {
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 10px 0;
-  gap: 8px;
+  border-top: none;
+  border-bottom: none;
+  padding: 0;
+  gap: 2px;
 }
 .dt-co-card-meta-row { justify-content: space-between; align-items: baseline; gap: 12px; }
 .dt-co-card-meta-label { color: var(--soft); }
@@ -8757,8 +8770,8 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
    them, so this block only needs to add the radius + fix the label,
    which no longer needs pill padding. */
 .dt-co-card .dt-co-card-strip {
-  border-radius: var(--card-foot-radius);
-  padding: 8px;
+  border-radius: 0;
+  padding: 10px 20px;
   gap: 8px;
   /* Long reasons wrap now, so the dot holds the first line rather than
      centring itself against a two-line block. */

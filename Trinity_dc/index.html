@@ -13,6 +13,46 @@
 <!-- build:1778170116 -->
 </head>
 <body class="view-desktop">
+<script>
+/* Boot veil — shows INSTANTLY on arrival from a dashboard link, before
+   the app bundle has even parsed. The jump itself is fast; what is slow
+   is anything that has to round-trip to the Apps Script backend (the
+   auto-walk fetching its workflow, comments loading). This does not
+   speed any of that up — it just tells the user the wait is on purpose.
+   Visual language matches testing.js's .tst-veil (same blur, same pill).
+   Lifted by window.bootVeilLift(), called from router.js and testing.js
+   at whichever milestone lands first; 25s failsafe so a failed link can
+   never strand a blurred screen. */
+(function () {
+  if (!/[?&](jump|ping)=/.test(location.search)) return;
+  var css = document.createElement('style');
+  css.textContent =
+    '#boot-veil{position:fixed;inset:0;z-index:2990;backdrop-filter:blur(7px);' +
+    '-webkit-backdrop-filter:blur(7px);background:rgba(23,22,20,0.35);' +
+    'display:flex;align-items:center;justify-content:center;' +
+    'transition:opacity 0.45s;}' +
+    '#boot-veil.lift{opacity:0;pointer-events:none;}' +
+    '#boot-veil .bv-msg{background:#171614;color:#fff;font-size:13px;padding:10px 20px;' +
+    'border-radius:100px;box-shadow:0 8px 28px rgba(0,0,0,0.4);display:flex;' +
+    'align-items:center;gap:10px;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;}' +
+    '#boot-veil .bv-spin{width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);' +
+    'border-top-color:#fff;border-radius:50%;animation:bvspin 0.7s linear infinite;}' +
+    '@keyframes bvspin{to{transform:rotate(360deg)}}';
+  document.head.appendChild(css);
+  var v = document.createElement('div');
+  v.id = 'boot-veil';
+  v.innerHTML = '<div class="bv-msg"><span class="bv-spin"></span>' +
+    'Taking you to the spot\u2026 this can take a few seconds</div>';
+  document.body.appendChild(v);
+  window.bootVeilLift = function () {
+    var el = document.getElementById('boot-veil');
+    if (!el) return;
+    el.classList.add('lift');
+    setTimeout(function () { el.remove(); }, 500);
+  };
+  setTimeout(function () { if (window.bootVeilLift) window.bootVeilLift(); }, 25000);
+})();
+</script>
 
 <!-- ─── VIEWPORT SWITCHER BAR ─────────────────────────────── -->
 <div class="vp-bar">

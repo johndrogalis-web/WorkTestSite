@@ -1821,6 +1821,9 @@ function tstToast(text) {
 var tstGuide = null;   /* {wf, steps, idx, ping:{spec,label}} */
 
 function tstVeil(msg) {
+  /* The walk's veil is a direct continuation of the boot veil — hand
+     over rather than stack two blurs. */
+  if (msg !== null && window.bootVeilLift) window.bootVeilLift();
   var v = document.getElementById('tst-veil');
   if (msg === null) { if (v) v.remove(); return; }
   if (!v) {
@@ -1872,20 +1875,35 @@ function tstStartGuide(wfId, uptoStep, spec, label) {
         setTimeout(function () { tstPlacePing(spec, label); }, 600);   /* let the last click settle */
         return;
       }
-      var el = tstResolveStep(steps[i]);
-      if (!el) {
-        /* Auto-walk can't see this one (dynamic render, timing) — hand
-           over to the human from exactly this step. */
-        tstVeil(null);
-        tstState.mode = 'guide';
-        tstGuide = { wf: wf, steps: steps, idx: i, ping: ping };
-        tstGuideBar();
-        return;
-      }
+      /* Steps often target elements the PREVIOUS click creates —
+         confirm overlays, buttons that appear after entering a mode.
+         A single immediate lookup fails on any render slower than the
+         inter-step delay and dumps the walk on the human. So: poll for
+         the element up to ~4.5s. The guided hand-off stays, but only
+         for elements that genuinely never materialise. */
       tstVeil('Walking the tester\u2019s path \u2014 step ' + (i + 1) + ' of ' + steps.length + '\u2026');
-      el.click();
-      i++;
-      setTimeout(next, 800);
+      var attempts = 0;
+      (function resolve() {
+        if (document.getElementById('tst-veil') === null) return;   /* cancelled mid-wait */
+        var el = tstResolveStep(steps[i]);
+        if (el) {
+          el.click();
+          i++;
+          setTimeout(next, 800);
+          return;
+        }
+        attempts++;
+        if (attempts > 15) {
+          /* ~4.5s and it never appeared — this one really does need a
+             human (renamed element, state the replay can't recreate). */
+          tstVeil(null);
+          tstState.mode = 'guide';
+          tstGuide = { wf: wf, steps: steps, idx: i, ping: ping };
+          tstGuideBar();
+          return;
+        }
+        setTimeout(resolve, 300);
+      })();
     })();
   });
 }
@@ -1948,11 +1966,15 @@ function tstPlacePing(spec, label) {
     var container = document.getElementById(cid) || (cid === 'phone' ? document.querySelector('.phone') : null);
     var visible = container && container.getBoundingClientRect().width > 0;
     if (!visible) {
-      if (tries === 3) tstToast('Looking for "' + cid + '" \u2014 open the screen or drawer where it lives and the ping will appear.');
-      if (tries > 60) { clearInterval(timer); tstToast('Could not find "' + cid + '" \u2014 it may have been renamed since this test ran.'); }
+      if (tries === 3) {
+        if (window.bootVeilLift) window.bootVeilLift();   /* waiting on the USER now — show them the screen */
+        tstToast('Looking for "' + cid + '" \u2014 open the screen or drawer where it lives and the ping will appear.');
+      }
+      if (tries > 60) { clearInterval(timer); if (window.bootVeilLift) window.bootVeilLift(); tstToast('Could not find "' + cid + '" \u2014 it may have been renamed since this test ran.'); }
       return;
     }
     clearInterval(timer);
+    if (window.bootVeilLift) window.bootVeilLift();   /* the spot is on screen — reveal it */
     tstToast(label ? 'They clicked: \u201C' + label + '\u201D \u2014 tap the dot to dismiss' : null);
 
     /* Freshly opened drawers often re-render their contents right after

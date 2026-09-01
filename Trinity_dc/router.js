@@ -374,6 +374,13 @@ function rtCmtJump(c) {
   var jump = q.get('jump');
   if (!jump) return;
   setTimeout(function () {
-    rtGoTo(jump).catch(function (e) { console.warn('[router] ?jump failed', e); });
+    rtGoTo(jump)
+      .catch(function (e) { console.warn('[router] ?jump failed', e); })
+      .then(function () {
+        /* A ping link keeps the boot veil up until the dot (or the
+           auto-walk's own veil) takes over — the jump landing is not
+           the answer the user came for, the dot is. */
+        if (!q.get('ping') && window.bootVeilLift) window.bootVeilLift();
+      });
   }, 400);
 })();

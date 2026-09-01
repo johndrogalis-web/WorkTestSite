@@ -21,12 +21,21 @@
    - Consumers (comments Jump, dashboard see-location, ?jump= links)
      never touch app internals. They only speak routes.
 
-   THIS FILE CURRENTLY REGISTERS THE DESKTOP TRUCKS SLICE ONLY:
-     desktop
-     desktop/trucks
-     desktop/trucks/wts|overview|cc
-     desktop/trucks/:truck
-     desktop/trucks/:truck/:tab
+   WHAT THIS FILE REGISTERS
+     desktop, desktop/home|units|tickets|update|map
+     desktop/trucks, desktop/trucks/wts|overview|cc
+     desktop/trucks/:truck[/:tab], desktop/units/:unit[/:tab]
+     mobile,  mobile/trucks[/wts|overview|cc], mobile/trucks/:truck[/:tab]
+     mobile/units, mobile/units/:unit[/:tab]
+     tablet,  tablet/trucks[/wts|overview|cc], tablet/trucks/:truck[/:tab]
+     tablet/units, tablet/units/:unit[/:tab]
+
+   That is every route the hash writers in app-06 actually produce.
+   Sub-tab state inside Map, Software Update and Tickets is not written
+   to the hash by anything, so there is nothing to resolve there and no
+   resolver is registered — those screens land at page level. Adding
+   them means adding hash writers first.
+
    Once the pattern is approved, registrations migrate into the app
    file that owns each screen (map into app-04, tickets into app-01,
    mobile into app-03/05) and this file keeps only the engine.
@@ -249,6 +258,277 @@ function rtOpenDtUnit(unitId, tab) {
     });
   });
 }
+
+/* ── Mobile and tablet slices ───────────────────────────────────────
+   Same contract as desktop: a route names ONE state, so each resolver
+   closes what the route doesn't mention before opening what it does.
+   Every app function is typeof-guarded — an unregistered or renamed
+   function warns and lands you at page level instead of throwing and
+   killing the jump. ── */
+
+/* setView preserves orientation through vpApplyOrient, so a resolver
+   never needs to know which way the device is turned. */
+function rtEnsureView(view) {
+  if (!document.body.classList.contains('view-' + view)) setView(view);
+  return rtWaitFor(function () {
+    return document.body.classList.contains('view-' + view);
+  });
+}
+
+function rtVisible(id) {
+  var el = document.getElementById(id);
+  if (!el) return false;
+  return getComputedStyle(el).display !== 'none';
+}
+
+/* ── Mobile ─────────────────────────────────────────────────────── */
+
+/* Route slug → the label the mobile nav functions expect. Mirrors the
+   label → slug maps in app-06's hash writers; if a tab is renamed
+   there, rename it here too or the jump lands on the default tab. */
+var RT_MO_WTS = {
+  wts:      'Where to start',
+  overview: 'Overview',
+  cc:       'Components Condition'
+};
+var RT_MO_DRAWER_TAB = {
+  components: 'Components Overview',
+  overview:   'Components Overview',   /* openDrawer writes 'overview' */
+  timeline:   'Component Timeline',
+  logs:       'Truck Logs',
+  manual:     'Manual Control',
+  sensor:     'Sensor',
+  config:     'Configuration'
+};
+
+function rtMoCloseDrawers(keep) {
+  var d = document.getElementById('drawer');
+  if (keep !== 'truck' && d && d.classList.contains('open') &&
+      typeof closeDrawer === 'function') closeDrawer();
+  if (keep !== 'unit' && rtVisible('units-drawer') &&
+      typeof closeUnitDetail === 'function') closeUnitDetail();
+}
+
+function rtMoTrucks() {
+  return rtEnsureView('mobile').then(function () {
+    rtMoCloseDrawers(null);
+    if (typeof goToAllTrucks === 'function') goToAllTrucks();
+    return rtWaitFor(function () {
+      var s = document.getElementById('s-main');
+      return s && s.classList.contains('active') ? s : null;
+    });
+  });
+}
+
+function rtMoUnits() {
+  return rtEnsureView('mobile').then(function () {
+    rtMoCloseDrawers(null);
+    if (typeof openUnits === 'function') openUnits();
+    return rtWaitFor(function () {
+      var s = document.getElementById('s-units');
+      return s && s.classList.contains('active') ? s : null;
+    });
+  });
+}
+
+function rtMoOpenTruck(truckNum, tab) {
+  return rtMoTrucks().then(function () {
+    var i = (typeof trucks !== 'undefined')
+      ? trucks.findIndex(function (t) { return String(t.num) === String(truckNum); }) : -1;
+    if (i < 0) { console.warn('[router] unknown truck', truckNum); return; }
+    rtMoCloseDrawers('truck');
+    openDrawer(i);
+    return rtWaitFor(function () {
+      var d = document.getElementById('drawer');
+      return d && d.classList.contains('open') ? d : null;
+    }).then(function () {
+      var label = RT_MO_DRAWER_TAB[tab];
+      /* selectDrawerNav resolves its own element from the label, so the
+         second argument is deliberately omitted. */
+      if (label && typeof selectDrawerNav === 'function') selectDrawerNav(label);
+      else if (tab && !label) console.warn('[router] unknown mobile tab', tab);
+    });
+  });
+}
+
+function rtMoOpenUnit(unitId, tab) {
+  return rtMoUnits().then(function () {
+    var u = (typeof UNITS_DATA !== 'undefined') &&
+      UNITS_DATA.find(function (x) { return x.id === unitId; });
+    if (!u) { console.warn('[router] unknown unit', unitId); return; }
+    rtMoCloseDrawers('unit');
+    openUnitDetail(unitId);
+    return rtWaitFor(function () {
+      return rtVisible('units-drawer') ? 1 : null;
+    }).then(function () {
+      /* Unit tabs vary by status, same as desktop. udSelectNavTab takes
+         the slug straight, so no label map is needed here. */
+      if (tab && typeof udSelectNavTab === 'function') udSelectNavTab(tab, null);
+    });
+  });
+}
+
+rtRegister('mobile', function () { return rtEnsureView('mobile'); });
+rtRegister('mobile/trucks', function () { return rtMoTrucks(); });
+rtRegister('mobile/units',  function () { return rtMoUnits(); });
+
+Object.keys(RT_MO_WTS).forEach(function (sub) {
+  rtRegister('mobile/trucks/' + sub, function () {
+    return rtMoTrucks().then(function () {
+      if (typeof selectWts === 'function') selectWts(RT_MO_WTS[sub]);
+    });
+  });
+});
+
+/* ':truck' is registered AFTER the three literal sub-tabs, but rtMatch
+   scores literals above params at equal depth, so 'mobile/trucks/cc'
+   still reaches the sub-tab resolver rather than being read as a truck
+   number. Order here is cosmetic. */
+rtRegister('mobile/trucks/:truck',      function (p) { return rtMoOpenTruck(p.truck, null); });
+rtRegister('mobile/trucks/:truck/:tab', function (p) { return rtMoOpenTruck(p.truck, p.tab); });
+rtRegister('mobile/units/:unit',        function (p) { return rtMoOpenUnit(p.unit, null); });
+rtRegister('mobile/units/:unit/:tab',   function (p) { return rtMoOpenUnit(p.unit, p.tab); });
+
+/* ── Tablet ─────────────────────────────────────────────────────────
+   Tablet is not mobile with a wider frame: it has its own page nav
+   (tbNavTrucks/tbNavUnits), its own drawer (#tb-drawer, tbOpenTruck),
+   and its own unit drawer (tbUdOpen). Same route shapes, different
+   functions underneath. Tab slugs match the desktop set. ── */
+
+function rtTbCloseDrawers(keep) {
+  var d = document.getElementById('tb-drawer');
+  if (keep !== 'truck' && d && d.classList.contains('open') &&
+      typeof tbCloseDrawer === 'function') tbCloseDrawer();
+  var ud = document.getElementById('tb-ud-drawer');
+  if (keep !== 'unit' && ud && ud.classList.contains('open') &&
+      typeof tbUdClose === 'function') tbUdClose();
+}
+
+function rtTbTrucks() {
+  return rtEnsureView('tablet').then(function () {
+    rtTbCloseDrawers(null);
+    if (typeof tbNavTrucks === 'function') tbNavTrucks();
+    return rtWaitFor(function () { return rtVisible('tb-content') ? 1 : null; });
+  });
+}
+
+function rtTbUnits() {
+  return rtEnsureView('tablet').then(function () {
+    rtTbCloseDrawers(null);
+    if (typeof tbNavUnits === 'function') tbNavUnits();
+    return rtWaitFor(function () { return rtVisible('tb-page-units') ? 1 : null; });
+  });
+}
+
+function rtTbOpenTruck(truckNum, tab) {
+  return rtTbTrucks().then(function () {
+    if (typeof tbOpenTruck !== 'function') return;
+    rtTbCloseDrawers('truck');
+    tbOpenTruck(truckNum);
+    return rtWaitFor(function () {
+      var d = document.getElementById('tb-drawer');
+      return d && d.classList.contains('open') ? d : null;
+    }).then(function () {
+      if (!tab || tab === 'overview') return;
+      var btn = rtFindByOnclick('#tb-drawer', 'tbDrawerTab', tab);
+      if (btn) tbDrawerTab(tab, btn);
+      else console.warn('[router] tab', tab, 'not available on tablet drawer');
+    });
+  });
+}
+
+function rtTbOpenUnit(unitId, tab) {
+  return rtTbUnits().then(function () {
+    if (typeof tbUdOpen !== 'function') return;
+    rtTbCloseDrawers('unit');
+    tbUdOpen(unitId);
+    return rtWaitFor(function () {
+      var d = document.getElementById('tb-ud-drawer');
+      return d && d.classList.contains('open') ? d : null;
+    }).then(function () {
+      if (tab && typeof tbUdSelectTab === 'function') tbUdSelectTab(tab);
+    });
+  });
+}
+
+rtRegister('tablet', function () { return rtEnsureView('tablet'); });
+rtRegister('tablet/trucks', function () { return rtTbTrucks(); });
+rtRegister('tablet/units',  function () { return rtTbUnits(); });
+
+['wts', 'overview', 'cc'].forEach(function (sub) {
+  rtRegister('tablet/trucks/' + sub, function () {
+    return rtTbTrucks().then(function () {
+      var btn = rtFindByOnclick('#tb-page', 'tbSelectTab', sub);
+      if (btn && typeof tbSelectTab === 'function') tbSelectTab(sub, btn);
+    });
+  });
+});
+
+rtRegister('tablet/trucks/:truck',      function (p) { return rtTbOpenTruck(p.truck, null); });
+rtRegister('tablet/trucks/:truck/:tab', function (p) { return rtTbOpenTruck(p.truck, p.tab); });
+rtRegister('tablet/units/:unit',        function (p) { return rtTbOpenUnit(p.unit, null); });
+rtRegister('tablet/units/:unit/:tab',   function (p) { return rtTbOpenUnit(p.unit, p.tab); });
+
+/* ── Tablet hash-writer gap ─────────────────────────────────────────
+   app-06 wraps the MOBILE nav functions and hardcodes 'mobile' into
+   every setHash call, so a tablet session wrote mobile/... routes, or
+   nothing at all where tablet uses its own tb* functions. Validate
+   replays from the stored route, so a tablet task carrying a mobile
+   route would reset onto the wrong surface. Wrap the tablet functions
+   the same way app-06 wraps the mobile ones. ── */
+(function rtTabletHashWriters() {
+  function wrap(name, parts) {
+    var fn = window[name];
+    if (typeof fn !== 'function' || fn.__rtHash) return;
+    window[name] = function () {
+      var out = fn.apply(this, arguments);
+      try {
+        if (typeof setHash === 'function' &&
+            document.body.classList.contains('view-tablet')) {
+          var p = parts.apply(this, arguments);
+          if (p) setHash(p);
+        }
+      } catch (e) {}
+      return out;
+    };
+    window[name].__rtHash = true;
+  }
+
+  wrap('tbNavTrucks', function () { return ['tablet', 'trucks']; });
+  wrap('tbNavUnits',  function () { return ['tablet', 'units']; });
+  wrap('tbNavUpdate', function () { return ['tablet', 'update']; });
+  wrap('tbNavMap',    function () { return ['tablet', 'map']; });
+  wrap('tbSelectTab', function (tab) { return ['tablet', 'trucks', tab]; });
+  wrap('tbOpenTruck', function (num) { return ['tablet', 'trucks', num, 'overview']; });
+  wrap('tbCloseDrawer', function () { return ['tablet', 'trucks']; });
+  wrap('tbDrawerTab', function (tab) {
+    var num = (typeof tbDrawerTruck !== 'undefined' && tbDrawerTruck) ? tbDrawerTruck.num : '';
+    return num ? ['tablet', 'trucks', num, tab] : null;
+  });
+  wrap('tbUdOpen',      function (id) { return ['tablet', 'units', id, 'lifespan']; });
+  wrap('tbUdClose',     function () { return ['tablet', 'units']; });
+  wrap('tbUdSelectTab', function (tab) {
+    var id = (typeof tbUdCurrentUnitId !== 'undefined') ? tbUdCurrentUnitId : '';
+    return id ? ['tablet', 'units', id, tab] : null;
+  });
+})();
+
+/* Page-level tablet routes for the two screens with no deeper state
+   written to the hash. */
+rtRegister('tablet/update', function () {
+  return rtEnsureView('tablet').then(function () {
+    rtTbCloseDrawers(null);
+    if (typeof tbNavUpdate === 'function') tbNavUpdate();
+    return rtWaitFor(function () { return rtVisible('tb-page-update') ? 1 : null; });
+  });
+});
+rtRegister('tablet/map', function () {
+  return rtEnsureView('tablet').then(function () {
+    rtTbCloseDrawers(null);
+    if (typeof tbNavMap === 'function') tbNavMap();
+    return rtWaitFor(function () { return rtVisible('tb-page-map') ? 1 : null; });
+  });
+});
 
 /* ── Hash-writer gap fix ────────────────────────────────────────────
    app-06 wraps `selectDtTab` to write the hash on desktop sub-tab

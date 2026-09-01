@@ -460,8 +460,9 @@
   body.dark .sen-chip.active { border-color: #e3f200 !important; background: rgba(227,242,0,0.1) !important; }
   body.dark .sen-chip.active .sen-chip-label,
   body.dark .sen-chip.active .sen-chip-val { color: #e3f200 !important; }
-  /* dt-cols-toggle.on */
-  body.dark .dt-cols-toggle.on { background: #e3f200 !important; color: #000000 !important; }
+  /* dt-cols-toggle.on — checkbox: lime fill is a selection surface, tick goes dark */
+  body.dark .dt-cols-toggle.on { background: #e3f200 !important; border-color: #e3f200 !important; color: #000000 !important; }
+  body.dark .dt-cols-toggle::after { border-color: #000000; }
   /* tb-seg-btn active */
   /* Mobile log detail — comp-card chevrons, back button, section accordion */
   body.dark .detail-scroll svg path[stroke="#36322d9e"] { stroke: rgba(255,255,255,0.3) !important; }
@@ -3359,19 +3360,30 @@
     padding:6px 4px; border-radius:6px; cursor:pointer;
   }
   .dt-cols-pop-row:hover { background:var(--layer-2); }
+  /* Column visibility control — checkbox, not a switch. A switch implies a
+     setting that takes effect elsewhere; these are selections within a list,
+     so the checkbox reads correctly and matches Trinity list-select grammar.
+     JS still only adds/removes .on, so no script changes are needed. */
   .dt-cols-toggle {
-    width:32px; height:18px; border-radius:9px;
-    background:var(--border); border:none; cursor:pointer;
-    position:relative; flex-shrink:0; transition:background 0.2s;
+    width:18px; height:18px; border-radius:var(--radius-sm);
+    background:var(--layer-1); border:1.5px solid var(--border-mid);
+    cursor:pointer; position:relative; flex-shrink:0; box-sizing:border-box;
+    transition:background 0.15s, border-color 0.15s;
     padding:0;
   }
-  .dt-cols-toggle.on { background:#1594ef; }
+  .dt-cols-pop-row:hover .dt-cols-toggle { border-color:var(--soft); }
+  .dt-cols-toggle.on { background:var(--blue); border-color:var(--blue); }
+  .dt-cols-pop-row:hover .dt-cols-toggle.on { border-color:var(--blue); }
+  /* Checkmark — 2px border tick, hidden until .on */
   .dt-cols-toggle::after {
-    content:''; position:absolute; top:2px; left:2px;
-    width:14px; height:14px; border-radius:7px;
-    background:white; transition:left 0.2s;
+    content:''; position:absolute;
+    left:5px; top:1px; width:4px; height:9px;
+    border:solid #ffffff; border-width:0 2px 2px 0;
+    border-radius:1px;
+    transform:rotate(45deg);
+    opacity:0; transition:opacity 0.12s;
   }
-  .dt-cols-toggle.on::after { left:16px; }
+  .dt-cols-toggle.on::after { opacity:1; }
   .dt-cols-pop-label {
     flex:1; font-size:13px; color:var(--strong);
     letter-spacing:-0.26px; font-family:var(--font);

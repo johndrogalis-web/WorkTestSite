@@ -226,7 +226,64 @@ var tstState = {
     '  font-size:12px;color:#171614;cursor:pointer;white-space:nowrap;}',
     '.tst-menu-item:hover{background:#f2f0ee;}',
     '.tst-menu-div{height:1px;background:rgba(0,0,0,0.08);margin:4px 6px;}',
-    'body.tst-testing .tst-drawer,body.tst-testing .tst-menu{display:none !important;}'
+    'body.tst-testing .tst-drawer,body.tst-testing .tst-menu{display:none !important;}',
+    /* ── Research skin ──────────────────────────────────────────────
+       Everything a TESTER sees has to read as moderator furniture, not
+       as part of the product. Three signals do the work, and none of
+       them rely on colour alone:
+         1. system font, never ABC Repro
+         2. squared geometry (8-10px), never Trinity pills / 16-24px
+         3. indigo #4a3ec8, a hue that appears nowhere in Trinity
+       The admin drawer is deliberately NOT reskinned — authors know
+       what they are looking at, testers do not. */
+    ':root{--tst-ink:#4a3ec8;--tst-ink-deep:#211d4d;--tst-paper:#f4f4fb;',
+    '  --tst-face:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}',
+    /* Session frame — a permanent, unmissable "you are being observed"
+       edge. One element, pointer-events:none, removed with the mode. */
+    '#tst-frame{position:fixed;inset:0;pointer-events:none;z-index:2996;',
+    '  box-shadow:inset 0 0 0 2px var(--tst-ink);}',
+    '#tst-frame-tag{position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:2997;',
+    '  pointer-events:none;background:var(--tst-ink);color:#fff;font-family:var(--tst-face);',
+    '  font-size:9.5px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;',
+    '  padding:3px 12px 4px;border-radius:0 0 7px 7px;}',
+    /* Scrim behind the start / finish moments */
+    '#tst-scrim{position:fixed;inset:0;z-index:2994;background:rgba(23,21,52,0.42);',
+    '  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}',
+    /* Panel — the only shell a tester ever sees */
+    '.tst-panel{font-family:var(--tst-face);background:var(--tst-paper);border:2px solid var(--tst-ink);',
+    '  border-radius:10px;box-shadow:0 18px 44px rgba(23,21,52,0.28);gap:11px;padding:16px;}',
+    '.tst-panel.tst-modal{top:50%;left:50%;right:auto;transform:translate(-50%,-50%);',
+    '  width:400px;max-width:calc(100vw - 32px);max-height:calc(100vh - 48px);}',
+    '.tst-eyebrow{display:flex;align-items:center;gap:6px;font-size:9.5px;font-weight:700;',
+    '  letter-spacing:0.1em;text-transform:uppercase;color:var(--tst-ink);}',
+    '.tst-eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;',
+    '  background:var(--tst-ink);animation:tstblink 1.6s infinite;}',
+    '.tst-panel .tst-h{font-size:15.5px;color:var(--tst-ink-deep);letter-spacing:-0.01em;}',
+    '.tst-panel .tst-sub{color:#4c4a6b;}',
+    '.tst-panel .tst-item{background:#fff;border-color:rgba(74,62,200,0.20);border-radius:8px;}',
+    '.tst-panel .tst-item-name{color:var(--tst-ink-deep);}',
+    '.tst-panel .tst-item-meta{color:#615f80;}',
+    '.tst-panel .tst-chip{border-radius:6px;border-color:rgba(74,62,200,0.35);color:var(--tst-ink-deep);}',
+    '.tst-panel .tst-chip:hover{background:#eceafb;}',
+    '.tst-panel .tst-chip-primary{background:var(--tst-ink);border-color:var(--tst-ink);color:#fff;}',
+    '.tst-panel .tst-chip-primary:hover{background:#3d33ac;}',
+    '.tst-panel .tst-cta{border-radius:6px;font-weight:600;}',
+    '.tst-panel .tst-cta-dark{background:var(--tst-ink);}',
+    '.tst-panel .tst-cta-dark:hover{background:#3d33ac;}',
+    '.tst-panel .tst-input,.tst-panel .tst-ta{border-radius:6px;border-color:rgba(74,62,200,0.35);}',
+    '.tst-panel .tst-input:focus,.tst-panel .tst-ta:focus{border-color:var(--tst-ink);}',
+    '.tst-panel .tst-dev-tag{background:#e8e6f9;color:var(--tst-ink);}',
+    /* A short list of what the session records, shown on the start screen */
+    '.tst-note{background:#fff;border:1px dashed rgba(74,62,200,0.35);border-radius:8px;',
+    '  padding:10px 12px;display:flex;flex-direction:column;gap:5px;}',
+    '.tst-note-li{font-size:11.5px;color:#4c4a6b;padding-left:14px;position:relative;line-height:1.45;}',
+    '.tst-note-li::before{content:"";position:absolute;left:2px;top:6px;width:5px;height:5px;',
+    '  border-radius:50%;background:var(--tst-ink);}',
+    /* Runner bar joins the same family: squared, system font, indigo */
+    '.tst-bar{font-family:var(--tst-face);border-radius:12px;background:var(--tst-ink);',
+    '  box-shadow:0 10px 30px rgba(23,21,52,0.34);}',
+    '.tst-bar.tst-bar-rec{background:#1f9d55;border-radius:12px;}',
+    '.tst-bar .tst-chip{border-radius:6px;}'
   ].join('\n');
   var el = document.createElement('style');
   el.textContent = css;
@@ -348,6 +405,7 @@ function tstMountButton() {
    working unchanged. */
 function tstClosePanel() {
   var p = document.getElementById('tst-panel'); if (p) p.remove();
+  var s = document.getElementById('tst-scrim'); if (s) s.remove();
   tstDrawerClose();
 }
 
@@ -451,11 +509,22 @@ document.addEventListener('keydown', function (e) {
   if (document.getElementById('tst-drawer')) tstDrawerClose();
 });
 
-function tstPanelShell(title) {
+/* `modal` centres the panel over a scrim. Reserved for the moments
+   that bracket a session — start screen, task list, finish — where the
+   tester should be looking at us and not at the prototype. Mid-run
+   panels (re-reading the task) stay docked so the screen behind them
+   is still readable. */
+function tstPanelShell(title, modal) {
   tstClosePanel();
+  if (modal) {
+    var sc = document.createElement('div');
+    sc.id = 'tst-scrim'; sc.className = 'tst-ui';
+    document.body.appendChild(sc);
+  }
   var p = document.createElement('div');
-  p.className = 'tst-panel tst-ui'; p.id = 'tst-panel';
-  p.innerHTML = '<div class="tst-h"><span>' + title + '</span><span class="tst-x" onclick="tstClosePanel()">\u00D7</span></div>';
+  p.className = 'tst-panel tst-ui' + (modal ? ' tst-modal' : ''); p.id = 'tst-panel';
+  p.innerHTML = '<div class="tst-eyebrow">Research session</div>' +
+    '<div class="tst-h"><span>' + title + '</span><span class="tst-x" onclick="tstClosePanel()">\u00D7</span></div>';
   document.body.appendChild(p);
   return p;
 }
@@ -1124,26 +1193,80 @@ function tstRecFinish(btn) {
 function tstEnterTestMode(param) {
   tstState.testing = true;
   document.body.classList.add('tst-testing');
+  tstFrameOn();
   tstFetchIP();                                   /* warm it up early */
   var url = new URL(location.href);
   tstState.user = url.searchParams.get('user') || '';
   try { if (!tstState.user) tstState.user = localStorage.getItem('tst_user') || ''; } catch (e) {}
+  /* The start screen needs nothing from the network — a name field and
+     a paragraph of copy. Paint it now and let the workflow list land
+     underneath it; tstSaveName picks up whichever order they finish in. */
+  tstStartScreen(param);
+  tstState.wfLoaded = false;
   tstGet('?action=list&prototype=' + encodeURIComponent(TST_PROTOTYPE), function (res) {
     tstState.workflows = (res.ok && res.workflows) || [];
-    if (!tstState.user) tstAskName(param);
-    else tstOpenTesterPanel(param);
+    tstState.wfLoaded = true;
+    if (tstState.waitingParam !== undefined) {
+      var w = tstState.waitingParam; tstState.waitingParam = undefined;
+      tstOpenTesterPanel(w);
+    }
   });
 }
 
-function tstAskName(param) {
-  var p = tstPanelShell('Before you start');
-  p.insertAdjacentHTML('beforeend',
-    '<div class="tst-sub">What\u2019s your name? It\u2019s saved with your results so we know who tested what.</div>' +
-    '<input class="tst-input" id="tst-user-input" placeholder="Your name">' +
-    '<div class="tst-item-row" style="justify-content:flex-end;">' +
-    '<button class="tst-cta tst-cta-dark" onclick="tstSaveName(\'' + tstEsc(param) + '\')">Continue</button></div>');
-  setTimeout(function () { var i = document.getElementById('tst-user-input'); if (i) i.focus(); }, 50);
+/* Indigo edge + tab that sit above the prototype for the whole
+   session. Cheapest possible answer to \"is this thing part of the
+   product?\" — the answer is visible without opening anything. */
+/* Clears the synchronous curtain painted by the gate snippet in
+   index.html's <head>. Safe to call when no gate is present. */
+function tstGateOff() {
+  document.documentElement.classList.remove('tst-gate');
 }
+
+function tstFrameOn() {
+  if (document.getElementById('tst-frame')) return;
+  var f = document.createElement('div');
+  f.id = 'tst-frame'; f.className = 'tst-ui';
+  var t = document.createElement('div');
+  t.id = 'tst-frame-tag'; t.className = 'tst-ui'; t.textContent = 'Research session';
+  document.body.appendChild(f);
+  document.body.appendChild(t);
+}
+
+/* Every session opens here, name on file or not. A tester who lands
+   straight inside a prototype has no way to know a session has begun,
+   what is being recorded, or that the thing being judged is the design
+   and not them. One screen, said once, before anything is measured. */
+function tstStartScreen(param) {
+  tstGateOff();
+  var p = tstPanelShell('You\u2019re about to test a prototype', 1);
+  p.insertAdjacentHTML('beforeend',
+    '<div class="tst-sub">This is a design prototype, not the live product. Some things work, some are painted on. ' +
+      'We\u2019re testing the design \u2014 there are no wrong answers and nothing you do here breaks anything.</div>' +
+    '<div class="tst-note">' +
+      '<div class="tst-note-li">' + (param === 'explore'
+        ? 'No task this time. Click wherever you like \u2014 we learn from where you go.'
+        : 'You get a short task. Do it the way you normally would.') + '</div>' +
+      '<div class="tst-note-li">We record where you click and how long it takes. No screen or audio recording.</div>' +
+      '<div class="tst-note-li">Stuck is useful. Give up whenever you like \u2014 that tells us more than finishing.</div>' +
+      '<div class="tst-note-li">The indigo border stays up for the whole session. Anything indigo is us, not the product.</div>' +
+    '</div>' +
+    '<input class="tst-input" id="tst-user-input" placeholder="Your name" value="' + tstEsc(tstState.user || '') + '">' +
+    '<div class="tst-item-row" style="justify-content:flex-end;">' +
+    '<button class="tst-cta tst-cta-dark" onclick="tstSaveName(\'' + tstEsc(param) + '\')">Begin</button></div>');
+  var x = p.querySelector('.tst-x'); if (x) x.remove();
+  setTimeout(function () {
+    var i = document.getElementById('tst-user-input');
+    if (!i) return;
+    i.focus();
+    i.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); tstSaveName(param); }
+    });
+  }, 50);
+}
+
+/* Kept as an alias: tstStartExplore() still routes here when a free-roam
+   link is opened outside test mode and we have no name yet. */
+function tstAskName(param) { tstStartScreen(param); }
 function tstSaveName(param) {
   var v = document.getElementById('tst-user-input').value.trim();
   if (!v) return;
@@ -1154,13 +1277,22 @@ function tstSaveName(param) {
 }
 
 function tstOpenTesterPanel(param) {
-  var wfs = tstState.workflows;
   if (param === 'explore') { tstBeginExplore(); return; }
+  /* Begin can beat the Apps Script round trip. Park the tester on a
+     labelled wait rather than an empty task list. */
+  if (tstState.wfLoaded === false) {
+    tstState.waitingParam = param;
+    var w = tstPanelShell('Loading your tasks', 1);
+    w.insertAdjacentHTML('beforeend',
+      '<div class="tst-sub">One moment \u2014 fetching the tasks for this session.</div>');
+    return;
+  }
+  var wfs = tstState.workflows;
   if (param !== '1') {
     var one = wfs.find(function (w) { return w.id === param; });
     if (one) { tstIsGoal(one) ? tstBeginGoal(one) : tstBeginRun(one); return; }
   }
-  var p = tstPanelShell('Tasks to try');
+  var p = tstPanelShell('Tasks to try', 1);
   if (!wfs.length) {
     p.insertAdjacentHTML('beforeend', '<div class="tst-sub">No tasks are available right now.</div>');
     return;
@@ -1287,7 +1419,7 @@ function tstComplete(outcome) {
   }, function () {});
   });
 
-  var p = tstPanelShell(outcome === 'completed' ? 'Task complete \u2714' : 'Task stopped');
+  var p = tstPanelShell(outcome === 'completed' ? 'Task complete \u2714' : 'Task stopped', 1);
   p.insertAdjacentHTML('beforeend',
     '<div class="tst-sub">' + (outcome === 'completed'
       ? 'Nice \u2014 that took ' + (Math.round((Date.now() - r.t0) / 100) / 10) + 's. Your result was recorded.'
@@ -1608,7 +1740,7 @@ function tstExploreDone(outcome) {
     }, function () {});
   });
 
-  var p = tstPanelShell(outcome === 'abandoned' ? 'No problem \u2014 recorded' : 'Thanks \u2014 that\u2019s recorded');
+  var p = tstPanelShell(outcome === 'abandoned' ? 'No problem \u2014 recorded' : 'Thanks \u2014 that\u2019s recorded', 1);
   p.insertAdjacentHTML('beforeend',
     '<div class="tst-sub">You visited ' + x.path.length + ' screens over ' +
       (Math.round((Date.now() - x.t0) / 100) / 10) + 's. Where you went and what you opened tells us ' +
@@ -2323,6 +2455,7 @@ function tstBoot() {
   var t = url.searchParams.get('test');
   if (t) { tstEnterTestMode(t); return; }
   tstMountButton();
+  tstGateOff();
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tstBoot);
 else tstBoot();

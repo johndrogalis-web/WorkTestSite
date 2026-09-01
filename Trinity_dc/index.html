@@ -11,6 +11,44 @@
       crossorigin=""/>
 <link rel="stylesheet" href="styles.css">
 <!-- build:1778170116 -->
+
+<!-- ─── TEST-SESSION GATE ──────────────────────────────────────────
+     Runs synchronously in <head>, before a single pixel of the
+     prototype paints. testing.js cannot do this job: it loads at the
+     bottom of the body and boots on DOMContentLoaded, then waits on a
+     round trip to Apps Script for the workflow list, so a tester on a
+     ?test= link sat looking at the live prototype for a second or two
+     with no idea a session had started.
+
+     This is CSS only and DOM free: pseudo-elements on <body> paint the
+     curtain, and body's real children are hidden underneath it. No
+     fetch, no dependency, nothing to fail. testing.js clears the class
+     the moment its start screen is up; the timeout below is the
+     failsafe for a broken load, so nobody is ever stranded.
+─────────────────────────────────────────────────────────────────── -->
+<script>
+(function () {
+  var q = location.search;
+  if (!/[?&](test|explore)=/.test(q)) return;
+  var s = document.createElement('style');
+  s.textContent =
+    'html.tst-gate,html.tst-gate body{overflow:hidden !important;}' +
+    'html.tst-gate body>*{visibility:hidden !important;}' +
+    'html.tst-gate body::before{content:"";position:fixed;inset:0;z-index:99998;' +
+    '  background:#f4f4fb;box-shadow:inset 0 0 0 2px #4a3ec8;}' +
+    'html.tst-gate body::after{content:"RESEARCH SESSION\\A Setting up your session\\2026";' +
+    '  position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;' +
+    '  align-items:center;justify-content:center;gap:6px;white-space:pre-line;text-align:center;' +
+    '  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;' +
+    '  font-size:13px;line-height:2.2;color:#4a3ec8;letter-spacing:0.02em;' +
+    '  animation:tstgatepulse 1.5s ease-in-out infinite;}' +
+    '@keyframes tstgatepulse{50%{opacity:0.55;}}';
+  document.head.appendChild(s);
+  document.documentElement.classList.add('tst-gate');
+  /* Failsafe: never trap a tester behind a curtain we forgot to lift. */
+  setTimeout(function () { document.documentElement.classList.remove('tst-gate'); }, 9000);
+})();
+</script>
 </head>
 <body class="view-desktop">
 

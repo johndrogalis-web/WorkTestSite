@@ -364,6 +364,30 @@ function rtCmtJump(c) {
   document.head.appendChild(el);
 })();
 
+/* ── Shell scroll guard ─────────────────────────────────────────────
+   scrollIntoView() scrolls EVERY scrollable ancestor — including
+   overflow:hidden ones — and the codebase calls it from 15+ places.
+   When a target is mid-animation or inside a translated panel at
+   measure time, the browser scrolls the .phone shell sideways to
+   reach it, and with no scrollbar there is no way back: the parked
+   ticket drawer (translateX just past the phone's right edge) slides
+   into view looking like a mystery panel. The shell containers are
+   never legitimately horizontally scrolled — tables and tab strips
+   scroll their OWN inner containers — so pin them at scrollLeft 0.
+   Vertical is untouched. */
+(function () {
+  function pin(el) {
+    if (!el) return;
+    if (el.scrollLeft !== 0) el.scrollLeft = 0;
+    el.addEventListener('scroll', function () {
+      if (el.scrollLeft !== 0) el.scrollLeft = 0;
+    }, { passive: true });
+  }
+  pin(document.querySelector('.phone-wrap'));
+  pin(document.querySelector('.phone'));
+  pin(document.getElementById('s-desktop'));
+})();
+
 /* ── ?jump= deep link ───────────────────────────────────────────────
    The dashboard's see-location (and anyone pasting a link) can open
    the prototype at index.html?jump=desktop/trucks/45689/logs. Runs

@@ -633,6 +633,7 @@ function tstRenderAdminList() {
       '<div class="tst-fold-body">' + arch.map(tstWfCard).join('') + '</div></details>';
   }
   list.innerHTML = html;
+  tstPaintVal();          /* re-apply the last validate pass to the fresh badges */
 }
 
 function tstSetStatus(id, status, btn) {
@@ -663,54 +664,176 @@ function tstCopyLink(idOrAll, btn) {
     .catch(function () { prompt('Copy this link:', text); });
 }
 
-/* ── Validate — verifies what it can, and is honest about the rest.
-   A static check can PROVE a step is findable but can never prove it's
-   broken: checkpoints inside drawers, menus, and sheets legitimately
-   don't exist on a fresh page. So each step is tried three ways —
-   element id, then text within its recorded container, then text
-   anywhere in the document — and whatever still isn't found is
-   reported as "unverified", never "broken". Click the badge to see
-   exactly which steps to eyeball by hand. ── */
-function tstVerifyStep(cp) {
-  if (cp.eid && document.getElementById(cp.eid)) return true;
-  var scopes = [];
-  var container = document.getElementById(cp.cid) || (cp.cid === 'phone' ? document.querySelector('.phone') : null);
-  if (container) scopes.push(container);
-  scopes.push(document);
-  if (!cp.text && !cp.ntext) return false;
-  for (var s = 0; s < scopes.length; s++) {
-    var cands = scopes[s].querySelectorAll('button, a, [onclick], [id]');
-    for (var k = 0; k < cands.length; k++) {
-      var t = tstNorm(cands[k].textContent);
-      if (t && (t === cp.text || tstDigitless(t) === cp.ntext)) return true;
-    }
-  }
-  return false;
+/* ── Validate — a replay, not a static scan ─────────────────────────
+   The question this feature answers is a regression question: after a
+   change to the prototype, does this recorded task still run? A static
+   existence check can't answer it, because step 7 only exists because
+   step 6 opened the drawer that holds it. Scanning a cold home screen
+   for all ten steps reports six false unverifieds and gives you no way
+   to tell noise from a real break.
+
+   So validate replays. The workflow's surface is applied, each step is
+   resolved with tstResolveStep (id, then text in its recorded
+   container, then text anywhere) and CLICKED, and the walk continues
+   into whatever that click opened. The first step that never appears
+   inside the poll window is the break, reported by number and label:
+   "breaks at step 7 of 10". That is the signal that means re-record.
+
+   Real clicks means real consequences: the replay navigates, opens
+   drawers, and fires whatever those paths fire. It asks before running
+   and tells you to reload afterwards. Nothing else in the suite does a
+   dry run, and a dry run couldn't reproduce state anyway. ── */
+
+var tstVal = null;                /* {queue, i, cancelled} while running */
+
+/* Results survive the panel being closed and re-rendered, which it is
+   at the end of every pass, so they hang off window rather than the
+   list markup. */
+function tstValResults() {
+  if (!window.__tstVal) window.__tstVal = {};
+  return window.__tstVal;
 }
 
 function tstValidateAll() {
-  tstState.workflows.forEach(function (wf) {
-    if (wf.status !== 'active') return;
-    if (!tstValidatable(wf)) return;      /* goals have no checkpoints to verify */
-    var badge = document.getElementById('tst-val-' + wf.id);
-    if (!badge) return;
-    var steps = tstWfSteps(wf);
-    var unverified = [];
-    steps.forEach(function (cp, i) {
-      if (!tstVerifyStep(cp)) unverified.push((i + 1) + '. ' + (cp.text || cp.eid || 'step'));
-    });
-    if (!unverified.length) {
-      badge.className = 'tst-badge tst-badge-ok';
-      badge.textContent = 'all ' + steps.length + ' steps verified';
+  if (tstVal) return;                                  /* already running */
+  var queue = (tstState.workflows || []).filter(function (wf) {
+    return wf.status === 'active' && tstValidatable(wf) && tstWfSteps(wf).length;
+  });
+  if (!queue.length) { alert('No recorded tasks to validate.'); return; }
+
+  if (!confirm('Validate replays each recorded task by actually clicking through it. ' +
+               'The prototype will navigate and anything those paths trigger will fire for real.\n\n' +
+               queue.length + ' task' + (queue.length !== 1 ? 's' : '') +
+               ' to replay. Reload the page afterwards to get back to a clean state.\n\nRun it?')) return;
+
+  tstVal = { queue: queue, i: 0, cancelled: false };
+  tstClosePanel();
+  tstValNext();
+}
+
+/* The veil's own Cancel calls tstVeil(null), so a missing veil is the
+   cancel signal — same convention the misclick walk uses. */
+function tstValLive() {
+  if (!tstVal || tstVal.cancelled) return false;
+  if (!document.getElementById('tst-veil')) { tstVal.cancelled = true; return false; }
+  return true;
+}
+
+function tstValNext() {
+  if (!tstVal) return;
+  if (tstVal.cancelled || tstVal.i >= tstVal.queue.length) return tstValFinish();
+
+  var wf    = tstVal.queue[tstVal.i];
+  var steps = tstWfSteps(wf);
+  var meta  = (wf.checkpoints && wf.checkpoints[0] && wf.checkpoints[0].meta) ? wf.checkpoints[0] : null;
+
+  tstVeil('Validating \u201C' + wf.name + '\u201D \u2014 task ' +
+          (tstVal.i + 1) + ' of ' + tstVal.queue.length + '\u2026');
+  tstDevApply(meta ? meta.view : 'desktop', meta ? meta.orientation : 'portrait');
+  tstValReset(meta, function () { tstValWalk(wf, steps, 0); });
+}
+
+/* One task's leftover drawers should not decide the next task's verdict.
+   If the workflow carries a start route and the router can reach it, go
+   there first. Recordings made before routes existed have none, so the
+   replay starts from wherever the previous task left off — which is
+   also how a real tester run starts, so the verdict stays honest. */
+function tstValReset(meta, then) {
+  var route = (meta && meta.route) || null;
+  if (route && typeof rtCanResolve === 'function' && rtCanResolve(route)) {
+    try {
+      rtGoTo(route).then(function () { setTimeout(then, 450); },
+                         function () { setTimeout(then, 450); });
+      return;
+    } catch (e) { /* fall through to the plain delay */ }
+  }
+  setTimeout(then, 550);
+}
+
+function tstValWalk(wf, steps, i) {
+  if (!tstValLive()) return tstValFinish();
+  if (i >= steps.length) {
+    return tstValDone(wf, { ok: true, total: steps.length });
+  }
+  tstVeil('Validating \u201C' + wf.name + '\u201D \u2014 step ' + (i + 1) + ' of ' + steps.length + '\u2026');
+
+  var attempts = 0;
+  (function resolve() {
+    if (!tstValLive()) return tstValFinish();
+    var el = tstResolveStep(steps[i]);
+    if (el) {
+      try { el.click(); } catch (e) {}
+      setTimeout(function () { tstValWalk(wf, steps, i + 1); }, 650);
+      return;
+    }
+    /* ~3.3s. Long enough for a slow render, short enough that a pass
+       over a dozen tasks still finishes while you watch it. */
+    if (++attempts > 11) {
+      return tstValDone(wf, {
+        ok: false, at: i + 1, total: steps.length,
+        label: steps[i].text || steps[i].eid || 'step',
+        cid: steps[i].cid || ''
+      });
+    }
+    setTimeout(resolve, 300);
+  })();
+}
+
+function tstValDone(wf, res) {
+  tstValResults()[wf.id] = res;
+  if (!tstVal) return;
+  tstVal.i++;
+  setTimeout(tstValNext, 350);
+}
+
+function tstValFinish() {
+  var n = tstVal ? tstVal.queue.length : 0;
+  var done = tstVal ? tstVal.i : 0;
+  var cancelled = tstVal ? tstVal.cancelled : false;
+  tstVal = null;
+  tstVeil(null);
+
+  var r = tstValResults();
+  var broke = 0;
+  Object.keys(r).forEach(function (k) { if (r[k] && !r[k].ok) broke++; });
+
+  tstOpenAdminPanel();
+  tstToast(cancelled
+    ? 'Validate cancelled after ' + done + ' of ' + n
+    : (broke ? broke + ' task' + (broke !== 1 ? 's' : '') + ' broke \u2014 re-record ' + (broke !== 1 ? 'them' : 'it')
+             : 'All ' + n + ' task' + (n !== 1 ? 's' : '') + ' still run'));
+  setTimeout(function () { tstToast(null); }, 5000);
+}
+
+/* Badges are painted from the cache, not during the walk, because the
+   admin list is rebuilt after every pass. */
+function tstPaintVal() {
+  var r = window.__tstVal;
+  if (!r) return;
+  Object.keys(r).forEach(function (id) {
+    var badge = document.getElementById('tst-val-' + id);
+    var res   = r[id];
+    if (!badge || !res) return;
+    if (res.ok) {
+      badge.className   = 'tst-badge tst-badge-ok';
+      badge.textContent = 'replayed \u00B7 ' + res.total + ' steps still work';
       badge.onclick = null;
+      badge.style.cursor = '';
+      badge.title = 'Every step resolved and clicked through on the last validate pass.';
     } else {
-      badge.className = 'tst-badge tst-badge-warn';
-      badge.textContent = (steps.length - unverified.length) + '/' + steps.length + ' verified \u00B7 details';
+      badge.className   = 'tst-badge tst-badge-bad';
+      badge.textContent = 'breaks at step ' + res.at + ' of ' + res.total;
       badge.style.cursor = 'pointer';
-      badge.title = 'Unverified steps (likely inside a drawer or menu \u2014 walk the flow to confirm):\n' + unverified.join('\n');
-      badge.onclick = function () {
-        alert('Unverified steps in \u201C' + wf.name + '\u201D \u2014 these usually live inside drawers or menus that are closed right now. Walk the flow once to confirm they still work:\n\n' + unverified.join('\n'));
-      };
+      badge.title = 'Step ' + res.at + ' (\u201C' + res.label + '\u201D) never appeared. Re-record this task.';
+      badge.onclick = (function (res) {
+        return function () {
+          alert('Breaks at step ' + res.at + ' of ' + res.total + '.\n\n' +
+                'Looking for: \u201C' + res.label + '\u201D' +
+                (res.cid ? ' in ' + res.cid : '') + '\n\n' +
+                'Steps 1\u2013' + (res.at - 1) + ' replayed fine, so the path is intact up to there. ' +
+                'This element was renamed, moved, or removed. Re-record the task.');
+        };
+      })(res);
     }
   });
 }
@@ -881,6 +1004,13 @@ function tstBeginRecording(editingId) {
   tstState.rec = { name: name, instruction: inst, steps: [], editingId: editingId, device: dev };
   /* Record on the surface that was chosen, not whatever was on screen. */
   tstDevApply(dev.view, dev.orientation);
+  /* Where the recording began. Validate replays from here so one task's
+     leftover state can't fail the next one. Captured after the surface
+     switch because setView writes the hash. Older workflows have no
+     route and simply replay from wherever the page already is. */
+  setTimeout(function () {
+    if (tstState.rec) tstState.rec.route = location.hash.replace(/^#/, '');
+  }, 400);
   tstRenderBar();
 }
 
@@ -923,7 +1053,7 @@ function tstRecFinish(btn) {
   if (!rec.steps.length) { alert('No steps recorded yet \u2014 click through the task first.'); return; }
   btn.disabled = true; btn.innerHTML = '<span class="tst-spin"></span>';
   var dev = rec.device || { view: tstCurView(), orientation: tstCurOrient() };
-  var meta = { meta: 1, view: dev.view, orientation: dev.orientation };
+  var meta = { meta: 1, view: dev.view, orientation: dev.orientation, route: rec.route || '' };
   var checkpoints = [meta].concat(rec.steps);
   var done = function (res) {
     tstRecCancel();

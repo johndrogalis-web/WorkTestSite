@@ -1070,19 +1070,38 @@ function dbMobileClose() {
   });
 })();
 
-/* ── 13. Restore on refresh ───────────────────────────────────────────────────
-   app-06's applyHashRoute runs at its own load time, before this file exists,
-   and treats an unrecognised section as the trucks page. So the dashboard has
-   to claim its own route once the suite is up. */
-(function dbBootFromHash() {
+/* ── 13. Landing route ────────────────────────────────────────────────────────
+   app-06's applyHashRoute only knows two sections, trucks and units. Every
+   other route — update, map, tickets, tfleet, tphases, dashboard — falls
+   through its default branch and lands on All Trucks, which is why a refresh
+   anywhere outside those two dumped you on the truck list.
+
+   Dashboards is the product's landing page now, so it takes that fallback:
+   anything not restorable opens the dashboard instead. Truck and unit deep
+   links are left alone — those are the documented Jira-linkable routes and
+   app-06 restores them properly. A bare #desktop/trucks with nothing after it
+   is not a deep link, it is the old default, so it goes to the dashboard too.
+
+   This file loads last, so app-06's router has already had its turn; for the
+   routes we take over it does nothing, and for the ones we skip it wins. */
+(function dbBootRoute() {
   var parts = (typeof readHashParts === 'function') ? readHashParts() : [];
-  if (parts[1] !== 'dashboard') return;
+  var section = parts[1];
+
+  var isDeepLink = (section === 'units') || (section === 'trucks' && !!parts[2]);
+  if (isDeepLink) return;
+
   var view = parts[0];
+  if (view !== 'mobile' && view !== 'tablet' && view !== 'desktop') {
+    view = document.body.classList.contains('view-mobile') ? 'mobile'
+         : document.body.classList.contains('view-tablet') ? 'tablet' : 'desktop';
+  }
+
   setTimeout(function () {
     try {
       if (view === 'mobile') dbMobileOpen();
       else if (view === 'tablet') dbTabletOpen();
       else dbDeskShow();
-    } catch (e) { /* a failed restore should never blank the app */ }
-  }, 140);
+    } catch (e) { /* a failed landing should never blank the app */ }
+  }, 160);
 })();

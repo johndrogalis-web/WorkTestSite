@@ -901,6 +901,13 @@ function dbNavLight(on) {
   }
 }
 
+/* app-06 owns the hash; we just write our own segment through its helper.
+   Without this the reset call below leaves '__db__' in the URL and a refresh
+   falls through to All Trucks. */
+function dbSetHash(view) {
+  if (typeof setHash === 'function') setHash([view, 'dashboard']);
+}
+
 function dbDeskShow() {
   /* Put the shell in a clean state: an unknown key hides every core page and
      clears every core nav light; app-10's wrapper clears the Tickets branch. */
@@ -909,6 +916,7 @@ function dbDeskShow() {
   if (page) page.style.display = 'flex';
   dbNavLight(true);
   dbRenderDesktop();
+  dbSetHash('desktop');
 }
 
 var dbOrigNavGo = (typeof dtNavGo === 'function') ? dtNavGo : null;
@@ -986,6 +994,7 @@ function dbTabletOpen() {
   dbTbOpening = false;
   dbTabletPill(true);
   dbRenderDevice('db-tb-mount', 't');
+  dbSetHash('tablet');
 }
 
 function dbTabletClose() {
@@ -1042,6 +1051,7 @@ function dbMobileOpen() {
   if (el) el.style.display = 'flex';
   document.querySelectorAll('.sn-sub-item').forEach(function (i) { i.classList.remove('active'); });
   dbRenderDevice('db-mob-mount', 'm');
+  dbSetHash('mobile');
 }
 
 function dbMobileClose() {
@@ -1058,4 +1068,21 @@ function dbMobileClose() {
       window[fn].__dbWrapped = true;
     }
   });
+})();
+
+/* ── 13. Restore on refresh ───────────────────────────────────────────────────
+   app-06's applyHashRoute runs at its own load time, before this file exists,
+   and treats an unrecognised section as the trucks page. So the dashboard has
+   to claim its own route once the suite is up. */
+(function dbBootFromHash() {
+  var parts = (typeof readHashParts === 'function') ? readHashParts() : [];
+  if (parts[1] !== 'dashboard') return;
+  var view = parts[0];
+  setTimeout(function () {
+    try {
+      if (view === 'mobile') dbMobileOpen();
+      else if (view === 'tablet') dbTabletOpen();
+      else dbDeskShow();
+    } catch (e) { /* a failed restore should never blank the app */ }
+  }, 140);
 })();

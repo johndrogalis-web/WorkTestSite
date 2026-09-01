@@ -479,9 +479,12 @@ window.tkOpenDrawer = function (idx) {
    the old fixed 1100px. Column order is regrouped so Target Slump sits next
    to Actual Slump, which reads better than the original interleave.        */
 
+/* Severity leads the row and Status is gone. Status repeated the phase pill
+   the group header already carries, and burying the out-of-spec signal eight
+   columns in was why the table scanned worse than the mobile card stack. */
 const TKS_COLS = [
+  { key:'sev',    label:''             },
   { key:'date',   label:'Date & Time'  },
-  { key:'status', label:'Status'       },
   { key:'slump',  label:'Actual Slump' },
   { key:'target', label:'Target Slump' },
   { key:'water',  label:'Water added'  },
@@ -490,6 +493,7 @@ const TKS_COLS = [
   { key:'revs',   label:'Total revs'   },
   { key:'temp',   label:'Temp'         },
   { key:'size',   label:'Load size'    },
+  { key:'pad',    label:''             },
 ];
 
 /* Mock phase groups, lifted verbatim from app-01's tkRenderStatus so the two
@@ -514,6 +518,12 @@ function tksToggleRow(key) {
 }
 
 function tksCell(col, row) {
+  if (col.key === 'pad') return '';
+  if (col.key === 'sev') {
+    var bad = tksOutOfSpec(row);
+    return '<span class="tks-sev' + (bad ? ' bad' : '') + '">' +
+      (bad ? TKS_WARN_SVG : '') + '</span>';
+  }
   if (col.key === 'date') {
     return '<span class="tks-date-t">' + row.date + '</span>' +
            '<span class="tks-date-d">' + row.dateD + '</span>';
@@ -525,6 +535,12 @@ function tksCell(col, row) {
 
 /* Same test tkSlumpBadge uses to decide the red chip — reused here to colour
    the card icon, so an out-of-spec reading is visible before you open it. */
+/* "4 readings \u00b7 24m 18s" — the line that lets you skip a whole group
+   without reading it. The card stack had it; the table did not. */
+function tksGroupLabel(g) {
+  return g.count + (g.count === 1 ? ' reading' : ' readings') +
+         (g.elapsed ? ' \u00b7 ' + g.elapsed : '');
+}
 function tksOutOfSpec(row) {
   const n = parseFloat(row.slump), t = parseFloat(row.target) || 4.0;
   return isFinite(n) && Math.abs(n - t) > 1.5;
@@ -538,7 +554,7 @@ const TKS_CLOCK_SVG = '<svg width="11" height="11" viewBox="0 0 12 12" fill="non
 function tksCards() {
   return '<div class="tks-cards"><div class="ct-list">' + TKS_GROUPS.map((g, gi) => {
     const collapsed = tkStatusCollapsed[g.phase];
-    const label = g.count + (g.count === 1 ? ' reading' : ' readings') + (g.elapsed ? ' \u00b7 ' + g.elapsed : '');
+    const label = tksGroupLabel(g);
 
     let evts = '';
     for (let i = 0; i < g.count; i++) {
@@ -656,7 +672,7 @@ window.tkRenderStatus = function (t) {
       '<div class="tks-group" onclick="tkStatusToggleGroup(\'' + g.phase.replace(/'/g, "\\'") + '\')">' +
         '<svg class="tks-group-chev' + (collapsed ? ' closed' : '') + '" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1.5l5 5 5-5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>' +
         tkPhasePill(g.phase) +
-        (g.elapsed ? '<span class="tks-group-elapsed">' + g.elapsed + '</span>' : '') +
+        '<span class="tks-group-elapsed">' + tksGroupLabel(g) + '</span>' +
       '</div>';
     if (collapsed) return group;
 

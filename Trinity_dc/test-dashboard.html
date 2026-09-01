@@ -563,14 +563,70 @@ function renderTable(ses){
   var host = document.getElementById('sessions-table');
   if(!ses.length){ host.innerHTML='<div class="empty">No sessions yet</div>'; return; }
   var rows = ses.slice().sort(function(a,b){return new Date(b.timestamp)-new Date(a.timestamp);}).slice(0,50);
-  host.innerHTML = '<table><tr><th>Tester</th><th>Workflow</th><th>Prototype</th><th>View</th><th>Outcome</th><th>Time</th><th>Misclicks</th><th>When</th></tr>'+
+  host.innerHTML = '<table><tr><th>Tester</th><th>Workflow</th><th>Prototype</th><th>View</th><th>Outcome</th><th>Time</th><th>Misclicks</th><th>When</th><th>Location</th></tr>'+
     rows.map(function(s){
       var when=''; try{ when=new Date(s.timestamp).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }catch(e){}
+      var ip=String(s.ip||'').trim();
+      var loc = ip
+        ? '<span class="geo" data-geo-ip="'+esc(ip)+'">'+(GEO_CACHE[ip]?geoLabel(GEO_CACHE[ip]):'\u2026')+'</span>'
+        : '\u2014';
       return '<tr><td>'+esc(s.user)+'</td><td>'+esc(s.workflow_name||s.workflow_id)+'</td><td>'+esc(s.prototype)+'</td>'+
         '<td>'+esc(s.view)+(s.orientation&&s.view!=='desktop'?' · '+esc(s.orientation):'')+'</td>'+
         '<td>'+(s.outcome==='completed'?'Completed':'<span class="badge bad">Gave up</span>')+'</td>'+
-        '<td>'+fmtS(s.duration_s)+'</td><td>'+(s.misclicks_total||0)+'</td><td>'+when+'</td></tr>';
+        '<td>'+fmtS(s.duration_s)+'</td><td>'+(s.misclicks_total||0)+'</td><td>'+when+'</td><td>'+loc+'</td></tr>';
     }).join('')+'</table>';
+  geoResolve();
+}
+
+/* ── IP geolocation — resolved HERE, not at record time, so it works
+   retroactively on every session already in the sheet. Each unique IP
+   is fetched once from ipwho.is (free, keyless, CORS-enabled) and
+   cached in localStorage forever after; a dashboard reload costs zero
+   lookups once the cache is warm. Lookups run sequentially with a
+   small gap to stay friendly to the free tier. IP geolocation is
+   approximate — city is often the ISP hub, not the tester's desk —
+   so treat it as country/state confidence, not a pin on a map. ── */
+var GEO_CACHE = {};
+try { GEO_CACHE = JSON.parse(localStorage.getItem('tst_geo')||'{}'); } catch(e){}
+
+function geoLabel(g){
+  if(!g || (!g.c && !g.r && !g.city)) return '\u2014';
+  var bits=[];
+  if(g.city) bits.push(g.city);
+  if(g.r && g.r!==g.city) bits.push(g.r);
+  return (bits.length ? bits.join(', ')+' \u00b7 ' : '') + (g.c||'?');
+}
+
+function geoResolve(){
+  var spans = document.querySelectorAll('[data-geo-ip]');
+  var need = {};
+  spans.forEach(function(el){
+    var ip = el.getAttribute('data-geo-ip');
+    if(GEO_CACHE[ip]) el.textContent = geoLabel(GEO_CACHE[ip]);
+    else need[ip] = 1;
+  });
+  var ips = Object.keys(need);
+  (function next(i){
+    if(i >= ips.length) return;
+    fetch('https://ipwho.is/'+encodeURIComponent(ips[i]))
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        GEO_CACHE[ips[i]] = (d && d.success)
+          ? { c: d.country_code||'', r: d.region||'', city: d.city||'' }
+          : { c:'', r:'', city:'' };   /* cache failures too — no re-asking every load */
+        try{ localStorage.setItem('tst_geo', JSON.stringify(GEO_CACHE)); }catch(e){}
+        document.querySelectorAll('[data-geo-ip="'+ips[i]+'"]').forEach(function(el){
+          el.textContent = geoLabel(GEO_CACHE[ips[i]]);
+        });
+        setTimeout(function(){ next(i+1); }, 300);
+      })
+      .catch(function(){
+        document.querySelectorAll('[data-geo-ip="'+ips[i]+'"]').forEach(function(el){
+          el.textContent = '\u2014';
+        });
+        next(i+1);   /* network failure: leave uncached so a later load retries */
+      });
+  })(0);
 }
 
 loadAll();

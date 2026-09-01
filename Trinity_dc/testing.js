@@ -95,14 +95,25 @@ var tstState = {
     '.tst-bar .tst-chip:hover{background:rgba(255,255,255,0.12);}',
     '.tst-dot{width:8px;height:8px;border-radius:50%;background:#fff;animation:tstblink 1.1s infinite;}',
     '@keyframes tstblink{50%{opacity:0.25;}}',
-    /* Test-mode chrome hiding */
+    /* ── Test-mode chrome ──────────────────────────────────────────
+       Hide what can invalidate a run: viewport pills (the link already
+       pinned the surface), the comment layer (authoring furniture), and
+       the Test button. Options STAYS — dark mode is a real preference
+       that changes nothing being measured. Inside it, Role and Version
+       are hidden because they change what the prototype shows. */
     'body.tst-testing .vp-viewport-pills,body.tst-testing .cmt-wrap,',
-    'body.tst-testing .vp-opts-wrap,body.tst-testing .tst-wrap{display:none !important;}',
+    'body.tst-testing .tst-wrap{display:none !important;}',
+    'body.tst-testing #vp-opt-external,body.tst-testing #vp-opt-internal,',
+    'body.tst-testing #vp-opt-final,',
+    'body.tst-testing #vp-opts-dd .vp-opts-section-label:nth-of-type(1),',
+    'body.tst-testing #vp-opts-dd .vp-opts-section-label:nth-of-type(2),',
+    'body.tst-testing #vp-opts-dd .vp-opts-divider:nth-of-type(1),',
+    'body.tst-testing #vp-opts-dd .vp-opts-divider:nth-of-type(2){display:none !important;}',
     /* Comment layer is authoring furniture. A tester should never see a
        pin, a card, the hint strip or the drawer during a session. */
     'body.tst-testing .cmt-pin,body.tst-testing .cmt-card,body.tst-testing .cmt-hint,',
-    'body.tst-testing .cmt-menu,body.tst-testing .cmt-drawer,body.tst-testing .cmt-drawer-scrim,',
-    'body.tst-testing .vp-right-cluster{display:none !important;}',
+    'body.tst-testing .cmt-menu,body.tst-testing .cmt-drawer,',
+    'body.tst-testing .cmt-drawer-scrim{display:none !important;}',
     '.tst-dev-tag{display:inline-block;font-size:10px;font-weight:600;letter-spacing:0.03em;',
     '  text-transform:uppercase;color:#555;background:#f0eeec;border-radius:100px;padding:2px 8px;}',
     /* Step flash on successful match */
@@ -132,26 +143,6 @@ var tstState = {
     '  background:#171614;color:#fff;font-family:var(--font,sans-serif);font-size:12px;',
     '  padding:8px 16px;border-radius:100px;box-shadow:0 4px 14px rgba(0,0,0,0.3);max-width:80vw;',
     '  text-align:center;}',
-    /* ── TESTER MODE CHROME ────────────────────────────────────────
-       A tester link pins the prototype to the surface the workflow was
-       recorded on, so viewport pills would let them invalidate their own
-       session. Comment pins are review chrome, not product. The Test
-       button reopens the admin panel. All three go. Dark mode survives
-       because it is a genuine preference and changes nothing being
-       measured — it lives in the Options dropdown, which stays. */
-    'body.tst-testing .vp-viewport-pills{display:none !important;}',
-    'body.tst-testing .cmt-wrap{display:none !important;}',
-    'body.tst-testing .tst-wrap{display:none !important;}',
-    /* Role and Version change what the prototype SHOWS, so they would
-       also invalidate a run — hide those rows and their labels/dividers,
-       leaving Appearance and Onboarding. */
-    'body.tst-testing #vp-opt-external,body.tst-testing #vp-opt-internal,',
-    'body.tst-testing #vp-opt-final{display:none !important;}',
-    'body.tst-testing .vp-opts-dd > .vp-opts-section-label:nth-of-type(1),',
-    'body.tst-testing .vp-opts-dd > .vp-opts-section-label:nth-of-type(2),',
-    'body.tst-testing .vp-opts-dd > .vp-opts-divider:nth-of-type(1),',
-    'body.tst-testing .vp-opts-dd > .vp-opts-divider:nth-of-type(2){display:none !important;}',
-    /* Task recall button — sits beside the run bar's own controls */
     '.tst-flash{position:fixed;border-radius:50%;width:34px;height:34px;border:3px solid #1f9d55;',
     '  z-index:2999;pointer-events:none;animation:tstflash 0.5s ease-out forwards;margin:-17px 0 0 -17px;}',
     '@keyframes tstflash{from{transform:scale(0.5);opacity:1;}to{transform:scale(1.6);opacity:0;}}',
@@ -558,7 +549,23 @@ function tstDevApply(view, orient) {
     if (typeof setView === 'function') setView(view);
     if (view !== 'desktop' && typeof setOrientation === 'function') setOrientation(view, orient || 'portrait');
   } catch (e) { console.warn('[testing] view switch failed', e); }
+  tstReassert();
 }
+
+/* setView() rebuilds body.className from scratch ('view-' + view), which
+   wipes tst-testing — and tstDevApply calls setView at the start of every
+   run to pin the surface. That is why the toolbar reappeared the moment a
+   test began: the class hiding it had just been destroyed. Re-assert after
+   any class rewrite, from wherever it came. */
+function tstReassert() {
+  if (tstState.testing && !document.body.classList.contains('tst-testing')) {
+    document.body.classList.add('tst-testing');
+  }
+}
+(function () {
+  new MutationObserver(tstReassert)
+    .observe(document.body, { attributes: true, attributeFilter: ['class'] });
+})();
 
 function tstWfSteps(wf) {
   return (wf.checkpoints || []).filter(function (s) { return !s.meta; });

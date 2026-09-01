@@ -41,15 +41,15 @@ const TP_EXTRA_TICKETS = [
    colors come from the --phase-* tokens in shared.css so a column rail, the
    pill on its cards, and the map marker for the same truck can never drift. */
 const TP_PHASE_ORDER = [
-  { key:'Waiting to Load', token:'--phase-waiting-to-load', dwellLimit: 30 },
-  { key:'Loading',         token:'--phase-loading',         dwellLimit: 20 },
-  { key:'Loaded',          token:'--phase-loaded',          dwellLimit: 15 },
-  { key:'In Transit',      token:'--phase-to-job',          dwellLimit: 60 },
-  { key:'On Site',         token:'--phase-on-site',         dwellLimit: 25 },
-  { key:'Pouring',         token:'--phase-pouring',         dwellLimit: 55 },
-  { key:'Washing',         token:'--phase-washing',         dwellLimit: 20 },
-  { key:'Return to Plant', token:'--phase-return-to-plant', dwellLimit: 60 },
-  { key:'Ignition Off',    token:'--phase-ignition-off',    dwellLimit: 15 },
+  { key:'Waiting to Load', css:'waiting-to-load', token:'--phase-waiting-to-load', dwellLimit: 30 },
+  { key:'Loading',         css:'loading',         token:'--phase-loading',         dwellLimit: 20 },
+  { key:'Loaded',          css:'loaded',          token:'--phase-loaded',          dwellLimit: 15 },
+  { key:'In Transit',      css:'to-job',          token:'--phase-to-job',          dwellLimit: 60 },
+  { key:'On Site',         css:'on-site',         token:'--phase-on-site',         dwellLimit: 25 },
+  { key:'Pouring',         css:'pouring',         token:'--phase-pouring',         dwellLimit: 55 },
+  { key:'Washing',         css:'washing',         token:'--phase-washing',         dwellLimit: 20 },
+  { key:'Return to Plant', css:'return-to-plant', token:'--phase-return-to-plant', dwellLimit: 60 },
+  { key:'Ignition Off',    css:'ignition-off',    token:'--phase-ignition-off',    dwellLimit: 15 },
 ];
 
 /* ── 3. Dwell model ─────────────────────────────────────────────────────────
@@ -78,18 +78,17 @@ function tpIsOverdue(t) {
 }
 
 /* ── 4. Filtering ───────────────────────────────────────────────────────────
-   tkDeskPhase is shared by the Ticket List and the Phases board: both toolbars
-   open the same filter, so switching views keeps the filter you set. The
-   Ticket List's own rendering lives in app-01, so rather than reimplement it
-   we wrap tkRebuildTable() and hide the rows that fall out (see section 4b). */
-let tpOverdueOnly = false;
+   tkDeskPhase is shared by the Ticket List, the Fleet map and this board: all
+   three toolbars open the same filter, so switching views keeps the filter you
+   set. The Ticket List's own rendering lives in app-01, so rather than
+   reimplement it we wrap tkRebuildTable() and hide the rows that fall out
+   (see section 4b). */
 let tkDeskPhase = null;
 
 function tpFiltered() {
   const q = (document.getElementById('tp-search-input')?.value || '').toLowerCase().trim();
   return TK_DATA.filter(t => {
     if (tkDeskPhase && t.phase !== tkDeskPhase) return false;
-    if (tpOverdueOnly && !tpIsOverdue(t)) return false;
     if (!q) return true;
     return t.truck.includes(q)
       || t.ticket.toLowerCase().includes(q)
@@ -100,12 +99,6 @@ function tpFiltered() {
       || t.phase.toLowerCase().includes(q)
       || (t.driver || '').toLowerCase().includes(q);
   });
-}
-
-function tpToggleOverdue(btn) {
-  tpOverdueOnly = !tpOverdueOnly;
-  btn.classList.toggle('on', tpOverdueOnly);
-  tpRender();
 }
 
 /* ── 4b. Desktop Filters control ────────────────────────────────────────────
@@ -199,74 +192,90 @@ document.addEventListener('click', function () {
   });
 });
 
-/* ── 5. Stat band ───────────────────────────────────────────────────────────
-   Hairline-divided row, not boxed cards. Counts are derived from the filtered
-   set so the band always describes what is actually on screen.              */
-function tpRenderStats(rows) {
-  const el = document.getElementById('tp-statband');
-  if (!el) return;
-  const onJob   = rows.filter(t => ['In Transit','On Site','Pouring'].includes(t.phase)).length;
-  const atPlant = rows.filter(t => ['Waiting to Load','Loading','Loaded','Return to Plant'].includes(t.phase)).length;
-  const overdue = rows.filter(tpIsOverdue).length;
-  const alerts  = rows.reduce((n, t) => n + (t.alerts || 0), 0);
+/* ── 6. Ticket card ─────────────────────────────────────────────────────────
+   One card component, used by the Phases board here and by the Fleet map rail
+   in app-10. Defining it in the earlier-loading file means app-10 can call it
+   rather than keeping a second copy in sync.                                */
 
-  const stat = (label, value, tone) =>
-    '<div class="tp-stat">' +
-      '<div class="tp-stat-label">' + label + '</div>' +
-      '<div class="tp-stat-value' + (tone ? ' ' + tone : '') + '">' + value + '</div>' +
-    '</div>';
-
-  el.innerHTML =
-    stat('Live tickets', rows.length) +
-    stat('On the job', onJob) +
-    stat('At the plant', atPlant) +
-    stat('Over phase time', overdue, overdue ? 'warn' : '') +
-    stat('Active alerts', alerts, alerts ? 'err' : '');
+/* Stable per-ticket minutes, so a card shows the same numbers on every render */
+function tkCardMins(ticket, salt) {
+  let h = 0;
+  const str = ticket.ticket + salt;
+  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) & 0xffff;
+  return 4 + (h % 56);
 }
 
-/* ── 6. Card + column ───────────────────────────────────────────────────── */
-function tpCard(t) {
-  const idx = TK_DATA.indexOf(t);
-  const mins = tpDwell(t);
-  const over = tpIsOverdue(t);
+/* opts: { idPrefix, onClick, hover } — the Fleet map needs its own click
+   behaviour and hover pairing; the board just opens the drawer. */
+function tkTicketCard(t, idx, opts) {
+  opts = opts || {};
+  const prefix = opts.idPrefix || 'tk-card-';
+  const click = opts.onClick || ('tkOpenDrawer(' + idx + ')');
+  const hover = opts.hover
+    ? ' onmouseenter="' + opts.hover + '(' + idx + ')" onmouseleave="' + opts.hover + '(-1)"'
+    : '';
+  const dwell = tkCardMins(t, ':dwell');
+  const eta = tkCardMins(t, ':eta');
+  const onJob = ['In Transit', 'On Site', 'Pouring'].indexOf(t.phase) !== -1;
+  const row = (k, v) =>
+    '<div class="tf-row"><span class="tf-k">' + k + '</span><span class="tf-link">' + v + '</span></div>';
+
   return '' +
-    '<div class="tp-card" onclick="tkOpenDrawer(' + idx + ')">' +
-      '<div class="tp-card-top">' +
-        '<span class="tp-card-ticket">' + t.ticket + '</span>' +
-        (t.alerts ? tkAlertBadge(t.alerts) : '') +
+    '<article class="tf-card" id="' + prefix + idx + '" onclick="' + click + '"' + hover + '>' +
+      '<div class="tf-card-top">' +
+        '<div class="tf-card-id">' +
+          '<div class="tf-truck">' + t.truck + '</div>' +
+          '<div class="tf-driver">' + (t.driver || '\u2014') + '</div>' +
+          '<div class="tf-since">Loaded ' + dwell + ' min ago</div>' +
+        '</div>' +
+        '<div class="tf-card-chips">' +
+          '<span class="tf-chip">' + (t.temp || '\u2014') + '</span>' +
+          '<span class="tf-chip' + (parseFloat(t.slump) > 5 ? ' warn' : '') + '">' + t.slump + '</span>' +
+          (t.alerts ? tkAlertBadge(t.alerts) : '') +
+        '</div>' +
       '</div>' +
-      '<div class="tp-card-truck">Truck ' + t.truck + '</div>' +
-      '<div class="tp-card-meta">' + t.customer + ' · ' + t.mix + ' · ' + t.size + '</div>' +
-      '<div class="tp-card-foot">' +
-        '<span class="tp-card-loc" title="' + t.location + '">' + t.location + '</span>' +
-        '<span class="tp-dwell' + (over ? ' over' : '') + '" title="Time in phase">' +
-          '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="currentColor" stroke-width="1.1"/><path d="M5 2.8V5l1.6 1" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>' +
-          tpDwellLabel(mins) +
+      '<div class="tf-rows">' +
+        row('Customer', t.customer) + row('Order', t.order) +
+        row('Ticket', t.ticket) + row('Mix', t.mix) +
+      '</div>' +
+      '<div class="tf-card-foot">' +
+        '<span class="tf-foot-phase">' + tkPhasePill(t.phase) +
+          '<span class="tf-for">for <b>' + dwell + ' min</b></span>' +
         '</span>' +
+        (onJob ? '<span class="tf-eta">ETA in <b>' + eta + ' min</b></span>' : '') +
       '</div>' +
-    '</div>';
+    '</article>';
 }
 
+/* ── 6b. Lanes ──────────────────────────────────────────────────────────────
+   One lane per phase, always present. An empty lane collapses to a rail with
+   its name turned on its side — you can still see the phase exists and where
+   it sits in the lifecycle — and expands to full width the moment a truck
+   lands in it.                                                              */
 function tpColumn(phase, rows) {
-  const cards = rows.filter(t => t.phase === phase.key);
-  const body = cards.length
-    ? cards.map(tpCard).join('')
-    : '<div class="tp-empty">No trucks in this phase</div>';
+  const cards = rows.filter(o => o.t.phase === phase.key);
+  const label = (typeof TK_PHASES !== 'undefined' && TK_PHASES[phase.key])
+    ? TK_PHASES[phase.key].label : phase.key;
+
   return '' +
-    '<section class="tp-col" style="--tp-accent:var(' + phase.token + ');">' +
-      '<header class="tp-col-head">' +
-        tkPhasePill(phase.key) +
-        '<span class="tp-col-count">' + cards.length + '</span>' +
+    '<section class="tp-lane ' + phase.css + (cards.length ? '' : ' empty') + '">' +
+      '<header class="tp-lane-head">' +
+        '<span class="tp-lane-dot ' + phase.css + '"></span>' +
+        '<span class="tp-lane-name">' + label + '</span>' +
+        '<span class="tp-lane-count">' + cards.length + '</span>' +
       '</header>' +
-      '<div class="tp-col-body">' + body + '</div>' +
+      '<div class="tp-lane-body">' +
+        cards.map(o => tkTicketCard(o.t, o.i, { idPrefix: 'tp-card-' })).join('') +
+      '</div>' +
     '</section>';
 }
 
 function tpRender() {
   const board = document.getElementById('tp-board');
   if (!board) return;
-  const rows = tpFiltered();
-  tpRenderStats(rows);
+  const rows = tpFiltered().map(t => ({ t: t, i: TK_DATA.indexOf(t) }));
+  const count = document.getElementById('tp-count');
+  if (count) count.textContent = rows.length + (rows.length === 1 ? ' ticket' : ' tickets');
   board.innerHTML = TP_PHASE_ORDER.map(p => tpColumn(p, rows)).join('');
 }
 

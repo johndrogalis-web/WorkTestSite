@@ -479,12 +479,9 @@ window.tkOpenDrawer = function (idx) {
    the old fixed 1100px. Column order is regrouped so Target Slump sits next
    to Actual Slump, which reads better than the original interleave.        */
 
-/* Severity leads the row and Status is gone. Status repeated the phase pill
-   the group header already carries, and burying the out-of-spec signal eight
-   columns in was why the table scanned worse than the mobile card stack. */
 const TKS_COLS = [
-  { key:'sev',    label:''             },
   { key:'date',   label:'Date & Time'  },
+  { key:'status', label:'Status'       },
   { key:'slump',  label:'Actual Slump' },
   { key:'target', label:'Target Slump' },
   { key:'water',  label:'Water added'  },
@@ -493,7 +490,6 @@ const TKS_COLS = [
   { key:'revs',   label:'Total revs'   },
   { key:'temp',   label:'Temp'         },
   { key:'size',   label:'Load size'    },
-  { key:'pad',    label:''             },
 ];
 
 /* Mock phase groups, lifted verbatim from app-01's tkRenderStatus so the two
@@ -518,12 +514,6 @@ function tksToggleRow(key) {
 }
 
 function tksCell(col, row) {
-  if (col.key === 'pad') return '';
-  if (col.key === 'sev') {
-    var bad = tksOutOfSpec(row);
-    return '<span class="tks-sev' + (bad ? ' bad' : '') + '">' +
-      (bad ? TKS_WARN_SVG : '') + '</span>';
-  }
   if (col.key === 'date') {
     return '<span class="tks-date-t">' + row.date + '</span>' +
            '<span class="tks-date-d">' + row.dateD + '</span>';
@@ -535,12 +525,6 @@ function tksCell(col, row) {
 
 /* Same test tkSlumpBadge uses to decide the red chip — reused here to colour
    the card icon, so an out-of-spec reading is visible before you open it. */
-/* "4 readings \u00b7 24m 18s" — the line that lets you skip a whole group
-   without reading it. The card stack had it; the table did not. */
-function tksGroupLabel(g) {
-  return g.count + (g.count === 1 ? ' reading' : ' readings') +
-         (g.elapsed ? ' \u00b7 ' + g.elapsed : '');
-}
 function tksOutOfSpec(row) {
   const n = parseFloat(row.slump), t = parseFloat(row.target) || 4.0;
   return isFinite(n) && Math.abs(n - t) > 1.5;
@@ -554,7 +538,7 @@ const TKS_CLOCK_SVG = '<svg width="11" height="11" viewBox="0 0 12 12" fill="non
 function tksCards() {
   return '<div class="tks-cards"><div class="ct-list">' + TKS_GROUPS.map((g, gi) => {
     const collapsed = tkStatusCollapsed[g.phase];
-    const label = tksGroupLabel(g);
+    const label = g.count + (g.count === 1 ? ' reading' : ' readings') + (g.elapsed ? ' \u00b7 ' + g.elapsed : '');
 
     let evts = '';
     for (let i = 0; i < g.count; i++) {
@@ -600,23 +584,42 @@ function tksCards() {
 }
 
 
-/* ── Drag-to-scroll for the status table ────────────────────────────────────
-   On a real tablet the browser handles this: touch-action:pan-x plus native
-   momentum scrolling. But the prototype runs inside a desktop browser with the
-   tablet as a fixed-size div, so a finger is a mouse and there is nothing to
-   flick. This adds pointer dragging on top, which makes the table grabbable in
-   the prototype and is skipped on genuine touch input so it never fights the
-   browser's own inertia.
+/* ── Drag-to-scroll for horizontal rails ────────────────────────────────────
+   Applies to anything carrying .tk-dragscroll: the Status table, the Phases
+   board, the Fleet map card rail.
 
-   Bound once at the document level rather than per-render, because
-   tkRenderStatus() replaces the whole subtree on every group collapse. */
+   Two problems it solves. On a real tablet the browser handles horizontal
+   panning, but the prototype runs inside a desktop browser where a finger is a
+   mouse and there is nothing to flick. And on macOS the overlay scrollbar is
+   invisible until you scroll, so a wide rail looks like a clipped one — you
+   can't tell there is more to the right.
+
+   So: grab and drag with the pointer, and a plain vertical wheel scrolls the
+   rail sideways when there is nothing vertical under the cursor to scroll.
+
+   Bound once at the document level, because these containers are replaced
+   wholesale on every render. */
 
 let tksDragEl = null, tksDragX = 0, tksDragLeft = 0, tksDragMoved = false, tksSwallowClick = false;
+
+/* Is there something between the cursor and the rail that scrolls vertically?
+   If so the wheel belongs to it — a lane of cards, not the board. */
+function tksVerticalUnder(target, rail) {
+  let el = target;
+  while (el && el !== rail) {
+    if (el.scrollHeight - el.clientHeight > 2) {
+      const oy = getComputedStyle(el).overflowY;
+      if (oy === 'auto' || oy === 'scroll') return true;
+    }
+    el = el.parentElement;
+  }
+  return false;
+}
 
 function tksInstallDragScroll() {
   document.addEventListener('pointerdown', function (e) {
     if (e.pointerType === 'touch') return;          /* let the device scroll it */
-    const el = e.target.closest && e.target.closest('.tks-scroll-x');
+    const el = e.target.closest && e.target.closest('.tk-dragscroll');
     if (!el || el.scrollWidth <= el.clientWidth) return;
     tksDragEl = el; tksDragX = e.clientX; tksDragLeft = el.scrollLeft; tksDragMoved = false;
     el.classList.add('tks-dragging');
@@ -635,7 +638,7 @@ function tksInstallDragScroll() {
     if (!tksDragEl) return;
     tksDragEl.classList.remove('tks-dragging');
     if (tksDragMoved) {
-      /* A drag that ends over a phase header shouldn't also collapse it. */
+      /* A drag that ends over a card or a phase header shouldn't also click it. */
       tksSwallowClick = true;
       setTimeout(function () { tksSwallowClick = false; }, 0);
     }
@@ -646,10 +649,19 @@ function tksInstallDragScroll() {
 
   document.addEventListener('click', function (e) {
     if (!tksSwallowClick) return;
-    if (e.target.closest && e.target.closest('.tks-scroll-x')) {
+    if (e.target.closest && e.target.closest('.tk-dragscroll')) {
       e.stopPropagation(); e.preventDefault();
     }
   }, true);
+
+  document.addEventListener('wheel', function (e) {
+    const el = e.target.closest && e.target.closest('.tk-dragscroll');
+    if (!el || el.scrollWidth <= el.clientWidth) return;
+    if (e.deltaX !== 0) return;                     /* trackpad already panning */
+    if (tksVerticalUnder(e.target, el)) return;     /* the wheel belongs to a lane */
+    el.scrollLeft += e.deltaY;
+    e.preventDefault();
+  }, { passive: false });
 }
 
 window.tkRenderStatus = function (t) {
@@ -663,6 +675,9 @@ window.tkRenderStatus = function (t) {
   tkxRescueSummary();
   scroll.style.overflowX = 'hidden';   /* the grid fits; nothing to scroll across */
 
+  /* Header and every data row emit exactly one cell per column, in the same
+     order, and styles.css pins each to its own grid track. Belt and braces:
+     an incomplete row can't drag the rest of the table out of alignment. */
   const head = TKS_COLS.map(c =>
     '<div class="tks-th tks-c-' + c.key + '">' + c.label + '</div>').join('');
 
@@ -672,7 +687,7 @@ window.tkRenderStatus = function (t) {
       '<div class="tks-group" onclick="tkStatusToggleGroup(\'' + g.phase.replace(/'/g, "\\'") + '\')">' +
         '<svg class="tks-group-chev' + (collapsed ? ' closed' : '') + '" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1.5l5 5 5-5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>' +
         tkPhasePill(g.phase) +
-        '<span class="tks-group-elapsed">' + tksGroupLabel(g) + '</span>' +
+        (g.elapsed ? '<span class="tks-group-elapsed">' + g.elapsed + '</span>' : '') +
       '</div>';
     if (collapsed) return group;
 
@@ -688,7 +703,7 @@ window.tkRenderStatus = function (t) {
   /* Both layouts go in; CSS shows the table or the cards depending on the
      frame, so rotating swaps them without a re-render. */
   scroll.innerHTML =
-    '<div class="tks-scroll-x"><div class="tks-tbl">' + head + body + '</div></div>' +
+    '<div class="tks-scroll-x tk-dragscroll"><div class="tks-tbl">' + head + body + '</div></div>' +
     tksCards();
   tkxDockSummary('status');            /* and put the panel back underneath */
 };

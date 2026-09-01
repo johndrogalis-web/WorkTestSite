@@ -460,9 +460,8 @@
   body.dark .sen-chip.active { border-color: #e3f200 !important; background: rgba(227,242,0,0.1) !important; }
   body.dark .sen-chip.active .sen-chip-label,
   body.dark .sen-chip.active .sen-chip-val { color: #e3f200 !important; }
-  /* dt-cols-toggle.on — checkbox: lime fill is a selection surface, tick goes dark */
-  body.dark .dt-cols-toggle.on { background: #e3f200 !important; border-color: #e3f200 !important; color: #000000 !important; }
-  body.dark .dt-cols-toggle::after { border-color: #000000; }
+  /* dt-cols-toggle.on */
+  body.dark .dt-cols-toggle.on { background: #e3f200 !important; color: #000000 !important; }
   /* tb-seg-btn active */
   /* Mobile log detail — comp-card chevrons, back button, section accordion */
   body.dark .detail-scroll svg path[stroke="#36322d9e"] { stroke: rgba(255,255,255,0.3) !important; }
@@ -533,8 +532,8 @@
   body.dark #vp-dark-icon { color: #e3f200; }
 
   /* Manual Control cards — dark mode token overrides */
-  body.dark :is(#dt-state-manual,.tkmc-scope),
-  body.dark :is(#state-manual,.tkmc-scope) {
+  body.dark #dt-state-manual,
+  body.dark #state-manual {
     --mc-card:          #211f1c;
     --mc-text-1:        #ffffff;
     --mc-text-2:        rgba(255,255,255,0.75);
@@ -559,8 +558,8 @@
     --mc-disabled-bg:   rgba(255,255,255,0.06);
     --mc-disabled-text: rgba(255,255,255,0.25);
   }
-  body.dark :is(#dt-state-manual,.tkmc-scope) .btn-primary,
-  body.dark :is(#state-manual,.tkmc-scope) .btn-primary { color: #000000; }
+  body.dark #dt-state-manual .btn-primary,
+  body.dark #state-manual .btn-primary { color: #000000; }
   body.dark .dt-side-ed-empty-svg { opacity: 0.9; }
   /* Sad face dots, document paper, magnifier glass interior — light blue-grey */
   body.dark .dt-side-ed-empty-svg path[fill="#F6F4F2"] { fill: #b8cef5 !important; }
@@ -1657,29 +1656,29 @@
   }
 
   /* ── DESKTOP MANUAL CONTROL ── */
-  :is(#dt-state-manual,.tkmc-scope) .dt-mc-section { display:flex; flex-direction:column; gap:12px; margin-bottom:20px; }
-  :is(#dt-state-manual,.tkmc-scope) .dt-mc-section-hdr {
+  #dt-state-manual .dt-mc-section { display:flex; flex-direction:column; gap:12px; margin-bottom:20px; }
+  #dt-state-manual .dt-mc-section-hdr {
     display:flex; align-items:center; justify-content:space-between;
     font-size:11px; font-weight:600; letter-spacing:0.5px; text-transform:uppercase;
     color:var(--soft); padding-bottom:8px; border-bottom:1px solid var(--border);
     cursor:pointer; user-select:none;
   }
-  :is(#dt-state-manual,.tkmc-scope) .dt-mc-section-hdr:hover { color:var(--defined); }
-  :is(#dt-state-manual,.tkmc-scope) .dt-mc-section-cards {
+  #dt-state-manual .dt-mc-section-hdr:hover { color:var(--defined); }
+  #dt-state-manual .dt-mc-section-cards {
     display:grid; grid-template-columns:repeat(4, minmax(200px, 1fr)); gap:14px;
     padding:3px; margin:-3px;
     overflow:visible;
     position:relative;
   }
-  body.view-tablet :is(#dt-state-manual,.tkmc-scope) .dt-mc-section-cards {
+  body.view-tablet #dt-state-manual .dt-mc-section-cards {
     grid-template-columns:repeat(3, minmax(0, 1fr));
   }
-  :is(#dt-state-manual,.tkmc-scope) .dt-mc-section-cards > div { min-width:0; }
-  :is(#dt-state-manual,.tkmc-scope) .dt-mc-section { position:relative; }
-  :is(#dt-state-manual,.tkmc-scope) .dt-mc-section.collapsed .dt-mc-section-cards { display:none; }
+  #dt-state-manual .dt-mc-section-cards > div { min-width:0; }
+  #dt-state-manual .dt-mc-section { position:relative; }
+  #dt-state-manual .dt-mc-section.collapsed .dt-mc-section-cards { display:none; }
   /* Desktop mc-card height locked to 260px matching mobile design */
-  /* Apply all :is(#state-manual,.tkmc-scope) MC card tokens and styles to desktop wrapper */
-  :is(#dt-state-manual,.tkmc-scope) {
+  /* Apply all #state-manual MC card tokens and styles to desktop wrapper */
+  #dt-state-manual {
     --mc-card: #ffffff; --mc-text-1: #1a1814; --mc-text-2: #4a4540;
     --mc-text-3: rgba(40,36,30,0.5); --mc-border: rgba(54,50,45,0.13);
     --mc-border-med: rgba(54,50,45,0.24); --mc-blue: #1594ef;
@@ -1692,84 +1691,84 @@
     --mc-disabled-bg: rgba(54,50,45,0.06); --mc-disabled-text: rgba(54,50,45,0.3);
   }
   /* Mirror all mc-card rules for dt-state-manual */
-  :is(#dt-state-manual,.tkmc-scope) .mc-card { background:var(--mc-card); border:1px solid var(--mc-border); border-radius:20px; padding:20px; width:100%; height:260px; min-height:260px; max-height:260px; display:flex; flex-direction:column; position:relative; overflow:hidden; transition:border-color 0.4s ease, box-shadow 0.4s ease; font-family:'Inter', sans-serif; box-sizing:border-box; }
-  :is(#dt-state-manual,.tkmc-scope) .mc-card.mc-input-card { height:260px; min-height:260px; max-height:260px; }
-  :is(#dt-state-manual,.tkmc-scope) .mc-card.state-pending    { border-color:rgba(21,148,239,0.45);  box-shadow:0 0 0 3px rgba(21,148,239,0.07); }
-  :is(#dt-state-manual,.tkmc-scope) .mc-card.state-success    { border-color:rgba(30,98,82,0.4);     box-shadow:0 0 0 3px rgba(30,98,82,0.06); }
-  :is(#dt-state-manual,.tkmc-scope) .mc-card.state-error      { border-color:rgba(193,60,45,0.4);    box-shadow:0 0 0 3px rgba(193,60,45,0.06); }
-  :is(#dt-state-manual,.tkmc-scope) .mc-card.state-error-heavy{ border-color:rgba(139,26,15,0.55);   box-shadow:0 0 0 4px rgba(139,26,15,0.1); }
-  :is(#dt-state-manual,.tkmc-scope) .mc-card.state-partial    { border-color:rgba(180,110,0,0.45);   box-shadow:0 0 0 3px rgba(180,110,0,0.07); }
-  :is(#dt-state-manual,.tkmc-scope) .mc-card.state-confirm    { border-color:rgba(180,110,0,0.45);   box-shadow:0 0 0 3px rgba(180,110,0,0.07); }
-  :is(#dt-state-manual,.tkmc-scope) .mc-card.state-disabled   { border-color:var(--mc-border);       background:rgba(240,237,233,0.6); }
-  :is(#dt-state-manual,.tkmc-scope) .mc-card.state-warn       { border-color:rgba(180,110,0,0.45);   box-shadow:0 0 0 3px rgba(180,110,0,0.07); }
-  :is(#dt-state-manual,.tkmc-scope) .mc-card.state-major      { border-color:rgba(139,26,15,0.55);   box-shadow:0 0 0 4px rgba(139,26,15,0.1); }
-  :is(#dt-state-manual,.tkmc-scope) .progress-track { position:absolute; bottom:0; left:0; right:0; height:3px; background:rgba(21,148,239,0.1); overflow:hidden; opacity:0; transition:opacity 0.2s; }
-  :is(#dt-state-manual,.tkmc-scope) .progress-track.visible { opacity:1; }
-  :is(#dt-state-manual,.tkmc-scope) .progress-fill { height:100%; width:0%; border-radius:0 2px 2px 0; transition:width 0s, background-color 0.3s; }
-  :is(#dt-state-manual,.tkmc-scope) .signal-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; background:rgba(54,50,45,0.22); transition:background 0.35s ease; position:relative; }
-  :is(#dt-state-manual,.tkmc-scope) .signal-dot.pulsing::after { content:''; position:absolute; inset:-3px; border-radius:50%; border:1.5px solid var(--mc-blue); animation:ring-pulse 1s ease-out infinite; opacity:0; }
-  :is(#dt-state-manual,.tkmc-scope) .dot-blue      { background:var(--mc-blue) !important; }
-  :is(#dt-state-manual,.tkmc-scope) .dot-green     { background:var(--mc-green) !important; }
-  :is(#dt-state-manual,.tkmc-scope) .dot-amber     { background:var(--mc-amber) !important; }
-  :is(#dt-state-manual,.tkmc-scope) .dot-red       { background:var(--mc-red) !important; }
-  :is(#dt-state-manual,.tkmc-scope) .dot-red-heavy { background:var(--mc-red-heavy) !important; }
-  :is(#dt-state-manual,.tkmc-scope) .dot-muted     { background:rgba(54,50,45,0.22) !important; }
-  :is(#dt-state-manual,.tkmc-scope) .card-header { height:36px; flex-shrink:0; display:flex; align-items:center; gap:8px; margin-bottom:10px; }
-  :is(#dt-state-manual,.tkmc-scope) .card-title  { flex:1; font-size:14px; font-weight:600; letter-spacing:-0.28px; color:var(--mc-text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  :is(#dt-state-manual,.tkmc-scope) .header-badge { flex-shrink:0; font-size:11px; font-weight:500; padding:3px 8px; border-radius:20px; letter-spacing:-0.1px; white-space:nowrap; transition:opacity 0.2s, transform 0.2s; }
-  :is(#dt-state-manual,.tkmc-scope) .badge-hidden      { visibility:hidden; padding:0; width:0; overflow:hidden; }
-  :is(#dt-state-manual,.tkmc-scope) .badge-ok          { background:var(--mc-green-bg);      color:var(--mc-green-text); }
-  :is(#dt-state-manual,.tkmc-scope) .badge-error       { background:var(--mc-red-bg);        color:var(--mc-red); }
-  :is(#dt-state-manual,.tkmc-scope) .badge-error-heavy { background:var(--mc-red-heavy-bg);  color:var(--mc-red-heavy); }
-  :is(#dt-state-manual,.tkmc-scope) .badge-warn        { background:var(--mc-amber-bg);      color:var(--mc-amber); }
-  :is(#dt-state-manual,.tkmc-scope) .badge-partial     { background:var(--mc-partial-bg);    color:var(--mc-partial); }
-  :is(#dt-state-manual,.tkmc-scope) .badge-disabled    { background:var(--mc-disabled-bg);   color:var(--mc-disabled-text); }
-  :is(#dt-state-manual,.tkmc-scope) .card-input-zone { height:42px; flex-shrink:0; display:flex; align-items:center; margin-bottom:16px; position:relative; }
-  :is(#dt-state-manual,.tkmc-scope) .slot-input { width:100%; height:38px; padding:0 14px; border:1px solid var(--mc-border); border-radius:10px; font-family:'Inter', sans-serif; font-size:13px; color:var(--mc-text-3); background:transparent; outline:none; letter-spacing:-0.26px; transition:border-color 0.15s, color 0.15s; -moz-appearance:textfield; -webkit-appearance:none; appearance:none; box-shadow:none; }
-  :is(#dt-state-manual,.tkmc-scope) .slot-input::-webkit-inner-spin-button,
-  :is(#dt-state-manual,.tkmc-scope) .slot-input::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
-  :is(#dt-state-manual,.tkmc-scope) .slot-input:focus   { border-color:var(--mc-blue); color:var(--mc-text-1); }
-  :is(#dt-state-manual,.tkmc-scope) .slot-input.has-val { color:var(--mc-text-1); }
-  :is(#dt-state-manual,.tkmc-scope) .slot-pill { display:inline-flex; align-items:center; gap:6px; padding:7px 12px; border-radius:9px; font-size:12px; font-weight:500; transform-origin:left center; animation:pill-in 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards; white-space:normal; word-break:break-word; }
-  :is(#dt-state-manual,.tkmc-scope) .pdot { width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
-  :is(#dt-state-manual,.tkmc-scope) .pill-success     { background:var(--mc-green-bg);     color:var(--mc-green-text); }
-  :is(#dt-state-manual,.tkmc-scope) .pill-error       { background:var(--mc-red-bg);       color:var(--mc-red); }
-  :is(#dt-state-manual,.tkmc-scope) .pill-error-heavy { background:var(--mc-red-heavy-bg); color:var(--mc-red-heavy); }
-  :is(#dt-state-manual,.tkmc-scope) .pill-partial     { background:var(--mc-partial-bg);   color:var(--mc-partial); }
-  :is(#dt-state-manual,.tkmc-scope) .pill-warning     { background:var(--mc-amber-bg);     color:var(--mc-amber); }
-  :is(#dt-state-manual,.tkmc-scope) .pill-disabled    { background:var(--mc-disabled-bg);  color:var(--mc-disabled-text); }
-  :is(#dt-state-manual,.tkmc-scope) .pill-wrap        { margin-bottom:8px; flex-shrink:0; }
-  :is(#dt-state-manual,.tkmc-scope) .card-metric-zone { flex:1; min-height:0; display:flex; flex-direction:column; justify-content:flex-end; padding-bottom:4px; }
-  :is(#dt-state-manual,.tkmc-scope) .metric-row       { display:flex; align-items:baseline; gap:5px; line-height:1; }
-  :is(#dt-state-manual,.tkmc-scope) .mv-sm      { font-family:'DM Mono',monospace; font-size:28px; font-weight:400; letter-spacing:-0.5px; color:var(--mc-text-1); line-height:1; transition:color 0.3s; }
-  :is(#dt-state-manual,.tkmc-scope) .mv-sm-unit { font-size:13px; font-weight:600; color:var(--mc-text-1); }
-  :is(#dt-state-manual,.tkmc-scope) .mv-lg      { font-family:'DM Mono',monospace; font-size:36px; font-weight:400; letter-spacing:-1.5px; color:var(--mc-text-1); line-height:1; transition:color 0.3s; }
-  :is(#dt-state-manual,.tkmc-scope) .mv-lg-unit { font-size:16px; font-weight:600; color:var(--mc-text-1); }
-  :is(#dt-state-manual,.tkmc-scope) .mv-word-sm { font-family:'Inter',sans-serif; font-size:28px; font-weight:300; letter-spacing:-0.5px; color:var(--mc-text-1); line-height:1; }
-  :is(#dt-state-manual,.tkmc-scope) .mv-word-lg { font-family:'Inter',sans-serif; font-size:28px; font-weight:300; letter-spacing:-0.5px; color:var(--mc-text-1); line-height:1.15; }
-  :is(#dt-state-manual,.tkmc-scope) .mv-muted   { color:var(--mc-text-3) !important; }
-  :is(#dt-state-manual,.tkmc-scope) .mv-timed-out { font-family:'Inter',sans-serif; font-size:22px; font-weight:500; letter-spacing:-0.4px; color:var(--mc-red); line-height:1; }
-  :is(#dt-state-manual,.tkmc-scope) .mv-degree  { font-family:'DM Mono',monospace; font-size:40px; font-weight:400; letter-spacing:-1px; color:var(--mc-text-1); line-height:1; transition:color 0.3s; }
-  :is(#dt-state-manual,.tkmc-scope) .mv-degree-warn  { color:var(--mc-amber) !important; }
-  :is(#dt-state-manual,.tkmc-scope) .mv-degree-major { color:var(--mc-red-heavy) !important; }
-  :is(#dt-state-manual,.tkmc-scope) .metric-sub { font-size:12px; color:var(--mc-text-3); letter-spacing:-0.2px; margin-top:4px; transition:color 0.3s; }
-  :is(#dt-state-manual,.tkmc-scope) .card-status { height:18px; flex-shrink:0; display:flex; align-items:center; gap:5px; font-size:12px; letter-spacing:-0.2px; overflow:hidden; margin-bottom:10px; transition:opacity 0.2s; }
-  :is(#dt-state-manual,.tkmc-scope) .sk { color:var(--mc-text-3); }
-  :is(#dt-state-manual,.tkmc-scope) .sv { color:var(--mc-text-2); font-weight:500; transition:color 0.3s; }
-  :is(#dt-state-manual,.tkmc-scope) .card-btn-zone { height:44px; flex-shrink:0; display:flex; gap:8px; position:relative; }
-  :is(#dt-state-manual,.tkmc-scope) .mc-btn { flex:1; height:100%; border-radius:32px; border:none; font-family:'Inter',sans-serif; font-size:13px; font-weight:600; letter-spacing:-0.26px; cursor:pointer; transition:background 0.2s ease, opacity 0.15s, transform 0.1s, color 0.2s; position:relative; overflow:hidden; }
-  :is(#dt-state-manual,.tkmc-scope) .mc-btn:disabled { opacity:0.38; cursor:not-allowed; }
-  :is(#dt-state-manual,.tkmc-scope) .btn-primary { background:var(--mc-blue); color:#fff; }
-  :is(#dt-state-manual,.tkmc-scope) .btn-primary:hover:not(:disabled) { opacity:0.88; }
-  :is(#dt-state-manual,.tkmc-scope) .btn-ghost   { background:transparent; color:var(--mc-text-2); border:1px solid var(--mc-border-med); }
-  :is(#dt-state-manual,.tkmc-scope) .btn-danger  { background:var(--mc-red); color:#fff; }
-  :is(#dt-state-manual,.tkmc-scope) .btn-partial { background:var(--mc-partial-bg); color:var(--mc-partial); border:1px solid var(--mc-partial-border); }
-  :is(#dt-state-manual,.tkmc-scope) .confirm-split { animation:confirm-split-in 0.22s cubic-bezier(0.22,1,0.36,1) both; }
-  :is(#dt-state-manual,.tkmc-scope) .anim-in { animation:anim-in 0.3s cubic-bezier(0.22,1,0.36,1) both; }
-  :is(#dt-state-manual,.tkmc-scope) .anim-in-delay-1 { animation-delay:0.04s; }
-  :is(#dt-state-manual,.tkmc-scope) .anim-in-delay-2 { animation-delay:0.09s; }
-  :is(#dt-state-manual,.tkmc-scope) .anim-in-delay-3 { animation-delay:0.14s; }
-  :is(#dt-state-manual,.tkmc-scope) .anim-in-delay-4 { animation-delay:0.20s; }
+  #dt-state-manual .mc-card { background:var(--mc-card); border:1px solid var(--mc-border); border-radius:20px; padding:20px; width:100%; height:260px; min-height:260px; max-height:260px; display:flex; flex-direction:column; position:relative; overflow:hidden; transition:border-color 0.4s ease, box-shadow 0.4s ease; font-family:'Inter', sans-serif; box-sizing:border-box; }
+  #dt-state-manual .mc-card.mc-input-card { height:260px; min-height:260px; max-height:260px; }
+  #dt-state-manual .mc-card.state-pending    { border-color:rgba(21,148,239,0.45);  box-shadow:0 0 0 3px rgba(21,148,239,0.07); }
+  #dt-state-manual .mc-card.state-success    { border-color:rgba(30,98,82,0.4);     box-shadow:0 0 0 3px rgba(30,98,82,0.06); }
+  #dt-state-manual .mc-card.state-error      { border-color:rgba(193,60,45,0.4);    box-shadow:0 0 0 3px rgba(193,60,45,0.06); }
+  #dt-state-manual .mc-card.state-error-heavy{ border-color:rgba(139,26,15,0.55);   box-shadow:0 0 0 4px rgba(139,26,15,0.1); }
+  #dt-state-manual .mc-card.state-partial    { border-color:rgba(180,110,0,0.45);   box-shadow:0 0 0 3px rgba(180,110,0,0.07); }
+  #dt-state-manual .mc-card.state-confirm    { border-color:rgba(180,110,0,0.45);   box-shadow:0 0 0 3px rgba(180,110,0,0.07); }
+  #dt-state-manual .mc-card.state-disabled   { border-color:var(--mc-border);       background:rgba(240,237,233,0.6); }
+  #dt-state-manual .mc-card.state-warn       { border-color:rgba(180,110,0,0.45);   box-shadow:0 0 0 3px rgba(180,110,0,0.07); }
+  #dt-state-manual .mc-card.state-major      { border-color:rgba(139,26,15,0.55);   box-shadow:0 0 0 4px rgba(139,26,15,0.1); }
+  #dt-state-manual .progress-track { position:absolute; bottom:0; left:0; right:0; height:3px; background:rgba(21,148,239,0.1); overflow:hidden; opacity:0; transition:opacity 0.2s; }
+  #dt-state-manual .progress-track.visible { opacity:1; }
+  #dt-state-manual .progress-fill { height:100%; width:0%; border-radius:0 2px 2px 0; transition:width 0s, background-color 0.3s; }
+  #dt-state-manual .signal-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; background:rgba(54,50,45,0.22); transition:background 0.35s ease; position:relative; }
+  #dt-state-manual .signal-dot.pulsing::after { content:''; position:absolute; inset:-3px; border-radius:50%; border:1.5px solid var(--mc-blue); animation:ring-pulse 1s ease-out infinite; opacity:0; }
+  #dt-state-manual .dot-blue      { background:var(--mc-blue) !important; }
+  #dt-state-manual .dot-green     { background:var(--mc-green) !important; }
+  #dt-state-manual .dot-amber     { background:var(--mc-amber) !important; }
+  #dt-state-manual .dot-red       { background:var(--mc-red) !important; }
+  #dt-state-manual .dot-red-heavy { background:var(--mc-red-heavy) !important; }
+  #dt-state-manual .dot-muted     { background:rgba(54,50,45,0.22) !important; }
+  #dt-state-manual .card-header { height:36px; flex-shrink:0; display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  #dt-state-manual .card-title  { flex:1; font-size:14px; font-weight:600; letter-spacing:-0.28px; color:var(--mc-text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #dt-state-manual .header-badge { flex-shrink:0; font-size:11px; font-weight:500; padding:3px 8px; border-radius:20px; letter-spacing:-0.1px; white-space:nowrap; transition:opacity 0.2s, transform 0.2s; }
+  #dt-state-manual .badge-hidden      { visibility:hidden; padding:0; width:0; overflow:hidden; }
+  #dt-state-manual .badge-ok          { background:var(--mc-green-bg);      color:var(--mc-green-text); }
+  #dt-state-manual .badge-error       { background:var(--mc-red-bg);        color:var(--mc-red); }
+  #dt-state-manual .badge-error-heavy { background:var(--mc-red-heavy-bg);  color:var(--mc-red-heavy); }
+  #dt-state-manual .badge-warn        { background:var(--mc-amber-bg);      color:var(--mc-amber); }
+  #dt-state-manual .badge-partial     { background:var(--mc-partial-bg);    color:var(--mc-partial); }
+  #dt-state-manual .badge-disabled    { background:var(--mc-disabled-bg);   color:var(--mc-disabled-text); }
+  #dt-state-manual .card-input-zone { height:42px; flex-shrink:0; display:flex; align-items:center; margin-bottom:16px; position:relative; }
+  #dt-state-manual .slot-input { width:100%; height:38px; padding:0 14px; border:1px solid var(--mc-border); border-radius:10px; font-family:'Inter', sans-serif; font-size:13px; color:var(--mc-text-3); background:transparent; outline:none; letter-spacing:-0.26px; transition:border-color 0.15s, color 0.15s; -moz-appearance:textfield; -webkit-appearance:none; appearance:none; box-shadow:none; }
+  #dt-state-manual .slot-input::-webkit-inner-spin-button,
+  #dt-state-manual .slot-input::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+  #dt-state-manual .slot-input:focus   { border-color:var(--mc-blue); color:var(--mc-text-1); }
+  #dt-state-manual .slot-input.has-val { color:var(--mc-text-1); }
+  #dt-state-manual .slot-pill { display:inline-flex; align-items:center; gap:6px; padding:7px 12px; border-radius:9px; font-size:12px; font-weight:500; transform-origin:left center; animation:pill-in 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards; white-space:normal; word-break:break-word; }
+  #dt-state-manual .pdot { width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
+  #dt-state-manual .pill-success     { background:var(--mc-green-bg);     color:var(--mc-green-text); }
+  #dt-state-manual .pill-error       { background:var(--mc-red-bg);       color:var(--mc-red); }
+  #dt-state-manual .pill-error-heavy { background:var(--mc-red-heavy-bg); color:var(--mc-red-heavy); }
+  #dt-state-manual .pill-partial     { background:var(--mc-partial-bg);   color:var(--mc-partial); }
+  #dt-state-manual .pill-warning     { background:var(--mc-amber-bg);     color:var(--mc-amber); }
+  #dt-state-manual .pill-disabled    { background:var(--mc-disabled-bg);  color:var(--mc-disabled-text); }
+  #dt-state-manual .pill-wrap        { margin-bottom:8px; flex-shrink:0; }
+  #dt-state-manual .card-metric-zone { flex:1; min-height:0; display:flex; flex-direction:column; justify-content:flex-end; padding-bottom:4px; }
+  #dt-state-manual .metric-row       { display:flex; align-items:baseline; gap:5px; line-height:1; }
+  #dt-state-manual .mv-sm      { font-family:'DM Mono',monospace; font-size:28px; font-weight:400; letter-spacing:-0.5px; color:var(--mc-text-1); line-height:1; transition:color 0.3s; }
+  #dt-state-manual .mv-sm-unit { font-size:13px; font-weight:600; color:var(--mc-text-1); }
+  #dt-state-manual .mv-lg      { font-family:'DM Mono',monospace; font-size:36px; font-weight:400; letter-spacing:-1.5px; color:var(--mc-text-1); line-height:1; transition:color 0.3s; }
+  #dt-state-manual .mv-lg-unit { font-size:16px; font-weight:600; color:var(--mc-text-1); }
+  #dt-state-manual .mv-word-sm { font-family:'Inter',sans-serif; font-size:28px; font-weight:300; letter-spacing:-0.5px; color:var(--mc-text-1); line-height:1; }
+  #dt-state-manual .mv-word-lg { font-family:'Inter',sans-serif; font-size:28px; font-weight:300; letter-spacing:-0.5px; color:var(--mc-text-1); line-height:1.15; }
+  #dt-state-manual .mv-muted   { color:var(--mc-text-3) !important; }
+  #dt-state-manual .mv-timed-out { font-family:'Inter',sans-serif; font-size:22px; font-weight:500; letter-spacing:-0.4px; color:var(--mc-red); line-height:1; }
+  #dt-state-manual .mv-degree  { font-family:'DM Mono',monospace; font-size:40px; font-weight:400; letter-spacing:-1px; color:var(--mc-text-1); line-height:1; transition:color 0.3s; }
+  #dt-state-manual .mv-degree-warn  { color:var(--mc-amber) !important; }
+  #dt-state-manual .mv-degree-major { color:var(--mc-red-heavy) !important; }
+  #dt-state-manual .metric-sub { font-size:12px; color:var(--mc-text-3); letter-spacing:-0.2px; margin-top:4px; transition:color 0.3s; }
+  #dt-state-manual .card-status { height:18px; flex-shrink:0; display:flex; align-items:center; gap:5px; font-size:12px; letter-spacing:-0.2px; overflow:hidden; margin-bottom:10px; transition:opacity 0.2s; }
+  #dt-state-manual .sk { color:var(--mc-text-3); }
+  #dt-state-manual .sv { color:var(--mc-text-2); font-weight:500; transition:color 0.3s; }
+  #dt-state-manual .card-btn-zone { height:44px; flex-shrink:0; display:flex; gap:8px; position:relative; }
+  #dt-state-manual .mc-btn { flex:1; height:100%; border-radius:32px; border:none; font-family:'Inter',sans-serif; font-size:13px; font-weight:600; letter-spacing:-0.26px; cursor:pointer; transition:background 0.2s ease, opacity 0.15s, transform 0.1s, color 0.2s; position:relative; overflow:hidden; }
+  #dt-state-manual .mc-btn:disabled { opacity:0.38; cursor:not-allowed; }
+  #dt-state-manual .btn-primary { background:var(--mc-blue); color:#fff; }
+  #dt-state-manual .btn-primary:hover:not(:disabled) { opacity:0.88; }
+  #dt-state-manual .btn-ghost   { background:transparent; color:var(--mc-text-2); border:1px solid var(--mc-border-med); }
+  #dt-state-manual .btn-danger  { background:var(--mc-red); color:#fff; }
+  #dt-state-manual .btn-partial { background:var(--mc-partial-bg); color:var(--mc-partial); border:1px solid var(--mc-partial-border); }
+  #dt-state-manual .confirm-split { animation:confirm-split-in 0.22s cubic-bezier(0.22,1,0.36,1) both; }
+  #dt-state-manual .anim-in { animation:anim-in 0.3s cubic-bezier(0.22,1,0.36,1) both; }
+  #dt-state-manual .anim-in-delay-1 { animation-delay:0.04s; }
+  #dt-state-manual .anim-in-delay-2 { animation-delay:0.09s; }
+  #dt-state-manual .anim-in-delay-3 { animation-delay:0.14s; }
+  #dt-state-manual .anim-in-delay-4 { animation-delay:0.20s; }
 
   /* ct- timeline styles now handled inline in dtBuildTimeline */
 
@@ -3360,30 +3359,19 @@
     padding:6px 4px; border-radius:6px; cursor:pointer;
   }
   .dt-cols-pop-row:hover { background:var(--layer-2); }
-  /* Column visibility control — checkbox, not a switch. A switch implies a
-     setting that takes effect elsewhere; these are selections within a list,
-     so the checkbox reads correctly and matches Trinity list-select grammar.
-     JS still only adds/removes .on, so no script changes are needed. */
   .dt-cols-toggle {
-    width:18px; height:18px; border-radius:var(--radius-sm);
-    background:var(--layer-1); border:1.5px solid var(--border-mid);
-    cursor:pointer; position:relative; flex-shrink:0; box-sizing:border-box;
-    transition:background 0.15s, border-color 0.15s;
+    width:32px; height:18px; border-radius:9px;
+    background:var(--border); border:none; cursor:pointer;
+    position:relative; flex-shrink:0; transition:background 0.2s;
     padding:0;
   }
-  .dt-cols-pop-row:hover .dt-cols-toggle { border-color:var(--soft); }
-  .dt-cols-toggle.on { background:var(--blue); border-color:var(--blue); }
-  .dt-cols-pop-row:hover .dt-cols-toggle.on { border-color:var(--blue); }
-  /* Checkmark — 2px border tick, hidden until .on */
+  .dt-cols-toggle.on { background:#1594ef; }
   .dt-cols-toggle::after {
-    content:''; position:absolute;
-    left:5px; top:1px; width:4px; height:9px;
-    border:solid #ffffff; border-width:0 2px 2px 0;
-    border-radius:1px;
-    transform:rotate(45deg);
-    opacity:0; transition:opacity 0.12s;
+    content:''; position:absolute; top:2px; left:2px;
+    width:14px; height:14px; border-radius:7px;
+    background:white; transition:left 0.2s;
   }
-  .dt-cols-toggle.on::after { opacity:1; }
+  .dt-cols-toggle.on::after { left:16px; }
   .dt-cols-pop-label {
     flex:1; font-size:13px; color:var(--strong);
     letter-spacing:-0.26px; font-family:var(--font);
@@ -4777,8 +4765,8 @@
 
   /* ─── MANUAL CONTROL CARDS ──────────────────────── */
 
-  /* ── Manual Control card system — scoped to :is(#state-manual,.tkmc-scope) ── */
-  :is(#state-manual,.tkmc-scope) { --mc-card: #ffffff; --mc-text-1: #1a1814; --mc-text-2: #4a4540; --mc-text-3: rgba(40,36,30,0.5); --mc-border: rgba(54,50,45,0.13); --mc-border-med: rgba(54,50,45,0.24); --mc-blue: #1594ef; --mc-blue-bg: #e3f0fc; --mc-blue-text: #1056a8; --mc-green: #2ECF1D; --mc-green-text: #1e6252; --mc-green-bg: #d5f1d2; --mc-amber: #b46e00; --mc-amber-bg: #fff0d4; --mc-red: #c13c2d; --mc-red-bg: #fde8e6; --mc-red-heavy: #8b1a0f; --mc-red-heavy-bg: #fbd0cc; --mc-partial: #7a4d00; --mc-partial-bg: #fff7ec; --mc-partial-border: rgba(180,110,0,0.25); --mc-disabled-bg: rgba(54,50,45,0.06); --mc-disabled-text: rgba(54,50,45,0.3); }
+  /* ── Manual Control card system — scoped to #state-manual ── */
+  #state-manual { --mc-card: #ffffff; --mc-text-1: #1a1814; --mc-text-2: #4a4540; --mc-text-3: rgba(40,36,30,0.5); --mc-border: rgba(54,50,45,0.13); --mc-border-med: rgba(54,50,45,0.24); --mc-blue: #1594ef; --mc-blue-bg: #e3f0fc; --mc-blue-text: #1056a8; --mc-green: #2ECF1D; --mc-green-text: #1e6252; --mc-green-bg: #d5f1d2; --mc-amber: #b46e00; --mc-amber-bg: #fff0d4; --mc-red: #c13c2d; --mc-red-bg: #fde8e6; --mc-red-heavy: #8b1a0f; --mc-red-heavy-bg: #fbd0cc; --mc-partial: #7a4d00; --mc-partial-bg: #fff7ec; --mc-partial-border: rgba(180,110,0,0.25); --mc-disabled-bg: rgba(54,50,45,0.06); --mc-disabled-text: rgba(54,50,45,0.3); }
 
   /* Grid */
   .mc-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; overflow:visible; position:relative; }
@@ -4786,112 +4774,112 @@
   .mc-grid-full { margin-bottom:12px; width:100%; }
 
   /* Card — fixed height, never expands */
-  :is(#state-manual,.tkmc-scope) .mc-card { background:var(--mc-card); border:1px solid var(--mc-border); border-radius:20px; padding:20px; width:100%; height:260px; min-height:260px; max-height:260px; display:flex; flex-direction:column; position:relative; overflow:hidden; transition:border-color 0.4s ease, box-shadow 0.4s ease; font-family:'Inter', sans-serif; box-sizing:border-box; }
-  :is(#state-manual,.tkmc-scope) .mc-card.mc-input-card { height:auto; min-height:240px; max-height:none; }
-  :is(#state-manual,.tkmc-scope) .mc-card.state-pending    { border-color:rgba(21,148,239,0.45);  box-shadow:0 0 0 3px rgba(21,148,239,0.07); }
-  :is(#state-manual,.tkmc-scope) .mc-card.state-success    { border-color:rgba(30,98,82,0.4);     box-shadow:0 0 0 3px rgba(30,98,82,0.06); }
-  :is(#state-manual,.tkmc-scope) .mc-card.state-error      { border-color:rgba(193,60,45,0.4);    box-shadow:0 0 0 3px rgba(193,60,45,0.06); }
-  :is(#state-manual,.tkmc-scope) .mc-card.state-error-heavy{ border-color:rgba(139,26,15,0.55);   box-shadow:0 0 0 4px rgba(139,26,15,0.1); }
-  :is(#state-manual,.tkmc-scope) .mc-card.state-partial    { border-color:rgba(180,110,0,0.45);   box-shadow:0 0 0 3px rgba(180,110,0,0.07); }
-  :is(#state-manual,.tkmc-scope) .mc-card.state-confirm    { border-color:rgba(180,110,0,0.45);   box-shadow:0 0 0 3px rgba(180,110,0,0.07); }
-  :is(#state-manual,.tkmc-scope) .mc-card.state-disabled   { border-color:var(--mc-border);       background:rgba(240,237,233,0.6); }
-  :is(#state-manual,.tkmc-scope) .mc-card.state-warn       { border-color:rgba(180,110,0,0.45);   box-shadow:0 0 0 3px rgba(180,110,0,0.07); }
-  :is(#state-manual,.tkmc-scope) .mc-card.state-major      { border-color:rgba(139,26,15,0.55);   box-shadow:0 0 0 4px rgba(139,26,15,0.1); }
+  #state-manual .mc-card { background:var(--mc-card); border:1px solid var(--mc-border); border-radius:20px; padding:20px; width:100%; height:260px; min-height:260px; max-height:260px; display:flex; flex-direction:column; position:relative; overflow:hidden; transition:border-color 0.4s ease, box-shadow 0.4s ease; font-family:'Inter', sans-serif; box-sizing:border-box; }
+  #state-manual .mc-card.mc-input-card { height:auto; min-height:240px; max-height:none; }
+  #state-manual .mc-card.state-pending    { border-color:rgba(21,148,239,0.45);  box-shadow:0 0 0 3px rgba(21,148,239,0.07); }
+  #state-manual .mc-card.state-success    { border-color:rgba(30,98,82,0.4);     box-shadow:0 0 0 3px rgba(30,98,82,0.06); }
+  #state-manual .mc-card.state-error      { border-color:rgba(193,60,45,0.4);    box-shadow:0 0 0 3px rgba(193,60,45,0.06); }
+  #state-manual .mc-card.state-error-heavy{ border-color:rgba(139,26,15,0.55);   box-shadow:0 0 0 4px rgba(139,26,15,0.1); }
+  #state-manual .mc-card.state-partial    { border-color:rgba(180,110,0,0.45);   box-shadow:0 0 0 3px rgba(180,110,0,0.07); }
+  #state-manual .mc-card.state-confirm    { border-color:rgba(180,110,0,0.45);   box-shadow:0 0 0 3px rgba(180,110,0,0.07); }
+  #state-manual .mc-card.state-disabled   { border-color:var(--mc-border);       background:rgba(240,237,233,0.6); }
+  #state-manual .mc-card.state-warn       { border-color:rgba(180,110,0,0.45);   box-shadow:0 0 0 3px rgba(180,110,0,0.07); }
+  #state-manual .mc-card.state-major      { border-color:rgba(139,26,15,0.55);   box-shadow:0 0 0 4px rgba(139,26,15,0.1); }
 
   /* Progress bar */
-  :is(#state-manual,.tkmc-scope) .progress-track { position:absolute; bottom:0; left:0; right:0; height:3px; background:rgba(21,148,239,0.1); overflow:hidden; opacity:0; transition:opacity 0.2s; }
-  :is(#state-manual,.tkmc-scope) .progress-track.visible { opacity:1; }
-  :is(#state-manual,.tkmc-scope) .progress-fill { height:100%; width:0%; border-radius:0 2px 2px 0; transition:width 0s, background-color 0.3s; }
+  #state-manual .progress-track { position:absolute; bottom:0; left:0; right:0; height:3px; background:rgba(21,148,239,0.1); overflow:hidden; opacity:0; transition:opacity 0.2s; }
+  #state-manual .progress-track.visible { opacity:1; }
+  #state-manual .progress-fill { height:100%; width:0%; border-radius:0 2px 2px 0; transition:width 0s, background-color 0.3s; }
 
   /* Signal dot */
-  :is(#state-manual,.tkmc-scope) .signal-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; background:rgba(54,50,45,0.22); transition:background 0.35s ease; position:relative; }
-  :is(#state-manual,.tkmc-scope) .signal-dot.pulsing::after { content:''; position:absolute; inset:-3px; border-radius:50%; border:1.5px solid var(--mc-blue); animation:ring-pulse 1s ease-out infinite; opacity:0; }
-  :is(#state-manual,.tkmc-scope) .dot-blue      { background:var(--mc-blue) !important; }
-  :is(#state-manual,.tkmc-scope) .dot-green     { background:var(--mc-green) !important; }
-  :is(#state-manual,.tkmc-scope) .dot-amber     { background:var(--mc-amber) !important; }
-  :is(#state-manual,.tkmc-scope) .dot-red       { background:var(--mc-red) !important; }
-  :is(#state-manual,.tkmc-scope) .dot-red-heavy { background:var(--mc-red-heavy) !important; }
-  :is(#state-manual,.tkmc-scope) .dot-muted     { background:rgba(54,50,45,0.22) !important; }
+  #state-manual .signal-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; background:rgba(54,50,45,0.22); transition:background 0.35s ease; position:relative; }
+  #state-manual .signal-dot.pulsing::after { content:''; position:absolute; inset:-3px; border-radius:50%; border:1.5px solid var(--mc-blue); animation:ring-pulse 1s ease-out infinite; opacity:0; }
+  #state-manual .dot-blue      { background:var(--mc-blue) !important; }
+  #state-manual .dot-green     { background:var(--mc-green) !important; }
+  #state-manual .dot-amber     { background:var(--mc-amber) !important; }
+  #state-manual .dot-red       { background:var(--mc-red) !important; }
+  #state-manual .dot-red-heavy { background:var(--mc-red-heavy) !important; }
+  #state-manual .dot-muted     { background:rgba(54,50,45,0.22) !important; }
 
   /* Card header */
-  :is(#state-manual,.tkmc-scope) .card-header { height:36px; flex-shrink:0; display:flex; align-items:center; gap:8px; margin-bottom:10px; }
-  :is(#state-manual,.tkmc-scope) .card-title  { flex:1; font-size:14px; font-weight:600; letter-spacing:-0.28px; color:var(--mc-text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #state-manual .card-header { height:36px; flex-shrink:0; display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  #state-manual .card-title  { flex:1; font-size:14px; font-weight:600; letter-spacing:-0.28px; color:var(--mc-text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
   /* Header badge */
-  :is(#state-manual,.tkmc-scope) .header-badge { flex-shrink:0; font-size:11px; font-weight:500; padding:3px 8px; border-radius:20px; letter-spacing:-0.1px; white-space:nowrap; transition:opacity 0.2s, transform 0.2s; }
-  :is(#state-manual,.tkmc-scope) .badge-hidden      { visibility:hidden; padding:0; width:0; overflow:hidden; }
-  :is(#state-manual,.tkmc-scope) .badge-ok          { background:var(--mc-green-bg);      color:var(--mc-green-text); }
-  :is(#state-manual,.tkmc-scope) .badge-error       { background:var(--mc-red-bg);        color:var(--mc-red); }
-  :is(#state-manual,.tkmc-scope) .badge-error-heavy { background:var(--mc-red-heavy-bg);  color:var(--mc-red-heavy); }
-  :is(#state-manual,.tkmc-scope) .badge-warn        { background:var(--mc-amber-bg);      color:var(--mc-amber); }
-  :is(#state-manual,.tkmc-scope) .badge-partial     { background:var(--mc-partial-bg);    color:var(--mc-partial); }
-  :is(#state-manual,.tkmc-scope) .badge-disabled    { background:var(--mc-disabled-bg);   color:var(--mc-disabled-text); }
+  #state-manual .header-badge { flex-shrink:0; font-size:11px; font-weight:500; padding:3px 8px; border-radius:20px; letter-spacing:-0.1px; white-space:nowrap; transition:opacity 0.2s, transform 0.2s; }
+  #state-manual .badge-hidden      { visibility:hidden; padding:0; width:0; overflow:hidden; }
+  #state-manual .badge-ok          { background:var(--mc-green-bg);      color:var(--mc-green-text); }
+  #state-manual .badge-error       { background:var(--mc-red-bg);        color:var(--mc-red); }
+  #state-manual .badge-error-heavy { background:var(--mc-red-heavy-bg);  color:var(--mc-red-heavy); }
+  #state-manual .badge-warn        { background:var(--mc-amber-bg);      color:var(--mc-amber); }
+  #state-manual .badge-partial     { background:var(--mc-partial-bg);    color:var(--mc-partial); }
+  #state-manual .badge-disabled    { background:var(--mc-disabled-bg);   color:var(--mc-disabled-text); }
 
   /* Input zone */
-  :is(#state-manual,.tkmc-scope) .card-input-zone { height:42px; flex-shrink:0; display:flex; align-items:center; margin-bottom:16px; position:relative; }
-  :is(#state-manual,.tkmc-scope) .slot-input { width:100%; height:38px; padding:0 14px; border:1px solid var(--mc-border); border-radius:10px; font-family:'Inter', sans-serif; font-size:13px; color:var(--mc-text-3); background:transparent; outline:none; letter-spacing:-0.26px; transition:border-color 0.15s, color 0.15s; -moz-appearance:textfield; -webkit-appearance:none; appearance:none; }
-  :is(#state-manual,.tkmc-scope) .slot-input::-webkit-inner-spin-button,
-  :is(#state-manual,.tkmc-scope) .slot-input::-webkit-outer-spin-button { -webkit-appearance:none; }
-  :is(#state-manual,.tkmc-scope) .slot-input:focus   { border-color:var(--mc-blue); color:var(--mc-text-1); }
-  :is(#state-manual,.tkmc-scope) .slot-input:disabled { opacity:0.45; cursor:not-allowed; }
-  :is(#state-manual,.tkmc-scope) .slot-input.has-val  { color:var(--mc-text-1); }
+  #state-manual .card-input-zone { height:42px; flex-shrink:0; display:flex; align-items:center; margin-bottom:16px; position:relative; }
+  #state-manual .slot-input { width:100%; height:38px; padding:0 14px; border:1px solid var(--mc-border); border-radius:10px; font-family:'Inter', sans-serif; font-size:13px; color:var(--mc-text-3); background:transparent; outline:none; letter-spacing:-0.26px; transition:border-color 0.15s, color 0.15s; -moz-appearance:textfield; -webkit-appearance:none; appearance:none; }
+  #state-manual .slot-input::-webkit-inner-spin-button,
+  #state-manual .slot-input::-webkit-outer-spin-button { -webkit-appearance:none; }
+  #state-manual .slot-input:focus   { border-color:var(--mc-blue); color:var(--mc-text-1); }
+  #state-manual .slot-input:disabled { opacity:0.45; cursor:not-allowed; }
+  #state-manual .slot-input.has-val  { color:var(--mc-text-1); }
 
   /* Pill */
-  :is(#state-manual,.tkmc-scope) .slot-pill { display:inline-flex; align-items:center; gap:6px; padding:7px 12px; border-radius:9px; font-size:12px; font-weight:500; transform-origin:left center; animation:pill-in 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards; white-space:normal; word-break:break-word; }
-  :is(#state-manual,.tkmc-scope) .pdot { width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
-  :is(#state-manual,.tkmc-scope) .pill-success     { background:var(--mc-green-bg);     color:var(--mc-green-text); }
-  :is(#state-manual,.tkmc-scope) .pill-error       { background:var(--mc-red-bg);       color:var(--mc-red); }
-  :is(#state-manual,.tkmc-scope) .pill-error-heavy { background:var(--mc-red-heavy-bg); color:var(--mc-red-heavy); }
-  :is(#state-manual,.tkmc-scope) .pill-partial     { background:var(--mc-partial-bg);   color:var(--mc-partial); }
-  :is(#state-manual,.tkmc-scope) .pill-warning     { background:var(--mc-amber-bg);     color:var(--mc-amber); }
-  :is(#state-manual,.tkmc-scope) .pill-disabled    { background:var(--mc-disabled-bg);  color:var(--mc-disabled-text); }
-  :is(#state-manual,.tkmc-scope) .pill-wrap        { margin-bottom:8px; flex-shrink:0; }
+  #state-manual .slot-pill { display:inline-flex; align-items:center; gap:6px; padding:7px 12px; border-radius:9px; font-size:12px; font-weight:500; transform-origin:left center; animation:pill-in 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards; white-space:normal; word-break:break-word; }
+  #state-manual .pdot { width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
+  #state-manual .pill-success     { background:var(--mc-green-bg);     color:var(--mc-green-text); }
+  #state-manual .pill-error       { background:var(--mc-red-bg);       color:var(--mc-red); }
+  #state-manual .pill-error-heavy { background:var(--mc-red-heavy-bg); color:var(--mc-red-heavy); }
+  #state-manual .pill-partial     { background:var(--mc-partial-bg);   color:var(--mc-partial); }
+  #state-manual .pill-warning     { background:var(--mc-amber-bg);     color:var(--mc-amber); }
+  #state-manual .pill-disabled    { background:var(--mc-disabled-bg);  color:var(--mc-disabled-text); }
+  #state-manual .pill-wrap        { margin-bottom:8px; flex-shrink:0; }
 
   /* Metric zone */
-  :is(#state-manual,.tkmc-scope) .card-metric-zone { flex:1; min-height:0; display:flex; flex-direction:column; justify-content:flex-end; padding-bottom:4px; }
-  :is(#state-manual,.tkmc-scope) .metric-row       { display:flex; align-items:baseline; gap:5px; line-height:1; }
-  :is(#state-manual,.tkmc-scope) .mv-sm            { font-family:'DM Mono', monospace; font-size:28px; font-weight:400; letter-spacing:-0.5px; color:var(--mc-text-1); line-height:1; transition:color 0.3s; }
-  :is(#state-manual,.tkmc-scope) .mv-sm-unit       { font-size:13px; font-weight:600; color:var(--mc-text-1); }
-  :is(#state-manual,.tkmc-scope) .mv-lg            { font-family:'DM Mono', monospace; font-size:40px; font-weight:400; letter-spacing:-1.5px; color:var(--mc-text-1); line-height:1; transition:color 0.3s; }
-  :is(#state-manual,.tkmc-scope) .mv-lg-unit       { font-size:20px; font-weight:600; color:var(--mc-text-1); }
-  :is(#state-manual,.tkmc-scope) .mv-word-sm       { font-family:'Inter', sans-serif; font-size:28px; font-weight:300; letter-spacing:-0.5px; color:var(--mc-text-1); line-height:1; }
-  :is(#state-manual,.tkmc-scope) .mv-word-lg       { font-family:'Inter', sans-serif; font-size:28px; font-weight:300; letter-spacing:-0.5px; color:var(--mc-text-1); line-height:1.15; }
-  :is(#state-manual,.tkmc-scope) .mv-muted         { color:var(--mc-text-3) !important; }
-  :is(#state-manual,.tkmc-scope) .mv-timed-out     { font-family:'Inter', sans-serif; font-size:22px; font-weight:500; letter-spacing:-0.4px; color:var(--mc-red); line-height:1; }
-  :is(#state-manual,.tkmc-scope) .mv-degree        { font-family:'DM Mono', monospace; font-size:40px; font-weight:400; letter-spacing:-1px; color:var(--mc-text-1); line-height:1; transition:color 0.3s; }
-  :is(#state-manual,.tkmc-scope) .mv-degree-warn   { color:var(--mc-amber) !important; }
-  :is(#state-manual,.tkmc-scope) .mv-degree-major  { color:var(--mc-red-heavy) !important; }
-  :is(#state-manual,.tkmc-scope) .metric-sub       { font-size:12px; color:var(--mc-text-3); letter-spacing:-0.2px; margin-top:4px; transition:color 0.3s; }
+  #state-manual .card-metric-zone { flex:1; min-height:0; display:flex; flex-direction:column; justify-content:flex-end; padding-bottom:4px; }
+  #state-manual .metric-row       { display:flex; align-items:baseline; gap:5px; line-height:1; }
+  #state-manual .mv-sm            { font-family:'DM Mono', monospace; font-size:28px; font-weight:400; letter-spacing:-0.5px; color:var(--mc-text-1); line-height:1; transition:color 0.3s; }
+  #state-manual .mv-sm-unit       { font-size:13px; font-weight:600; color:var(--mc-text-1); }
+  #state-manual .mv-lg            { font-family:'DM Mono', monospace; font-size:40px; font-weight:400; letter-spacing:-1.5px; color:var(--mc-text-1); line-height:1; transition:color 0.3s; }
+  #state-manual .mv-lg-unit       { font-size:20px; font-weight:600; color:var(--mc-text-1); }
+  #state-manual .mv-word-sm       { font-family:'Inter', sans-serif; font-size:28px; font-weight:300; letter-spacing:-0.5px; color:var(--mc-text-1); line-height:1; }
+  #state-manual .mv-word-lg       { font-family:'Inter', sans-serif; font-size:28px; font-weight:300; letter-spacing:-0.5px; color:var(--mc-text-1); line-height:1.15; }
+  #state-manual .mv-muted         { color:var(--mc-text-3) !important; }
+  #state-manual .mv-timed-out     { font-family:'Inter', sans-serif; font-size:22px; font-weight:500; letter-spacing:-0.4px; color:var(--mc-red); line-height:1; }
+  #state-manual .mv-degree        { font-family:'DM Mono', monospace; font-size:40px; font-weight:400; letter-spacing:-1px; color:var(--mc-text-1); line-height:1; transition:color 0.3s; }
+  #state-manual .mv-degree-warn   { color:var(--mc-amber) !important; }
+  #state-manual .mv-degree-major  { color:var(--mc-red-heavy) !important; }
+  #state-manual .metric-sub       { font-size:12px; color:var(--mc-text-3); letter-spacing:-0.2px; margin-top:4px; transition:color 0.3s; }
 
   /* Status line */
-  :is(#state-manual,.tkmc-scope) .card-status { height:auto; min-height:18px; flex-shrink:0; display:flex; align-items:center; gap:5px; font-size:12px; letter-spacing:-0.2px; overflow:hidden; margin-bottom:10px; transition:opacity 0.2s; white-space:nowrap; }
-  :is(#state-manual,.tkmc-scope) .sk { color:var(--mc-text-3); white-space:nowrap; flex-shrink:0; }
-  :is(#state-manual,.tkmc-scope) .sv { color:var(--mc-text-2); font-weight:500; transition:color 0.3s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #state-manual .card-status { height:auto; min-height:18px; flex-shrink:0; display:flex; align-items:center; gap:5px; font-size:12px; letter-spacing:-0.2px; overflow:hidden; margin-bottom:10px; transition:opacity 0.2s; white-space:nowrap; }
+  #state-manual .sk { color:var(--mc-text-3); white-space:nowrap; flex-shrink:0; }
+  #state-manual .sv { color:var(--mc-text-2); font-weight:500; transition:color 0.3s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
   /* Button zone */
-  :is(#state-manual,.tkmc-scope) .card-btn-zone { height:44px; flex-shrink:0; display:flex; gap:8px; position:relative; }
-  :is(#state-manual,.tkmc-scope) .mc-btn { flex:1; height:100%; border-radius:32px; border:none; font-family:'Inter', sans-serif; font-size:13px; font-weight:600; letter-spacing:-0.26px; cursor:pointer; transition:background 0.2s ease, opacity 0.15s, transform 0.1s, color 0.2s; position:relative; overflow:hidden; }
-  :is(#state-manual,.tkmc-scope) .mc-btn::after { content:''; position:absolute; inset:0; background:rgba(255,255,255,0.2); transform:scale(0); border-radius:inherit; transition:transform 0.3s ease, opacity 0.3s; opacity:0; }
-  :is(#state-manual,.tkmc-scope) .mc-btn:active::after           { transform:scale(1); opacity:1; }
-  :is(#state-manual,.tkmc-scope) .mc-btn:active:not(:disabled)   { transform:scale(0.98); }
-  :is(#state-manual,.tkmc-scope) .mc-btn:disabled                { opacity:0.38; cursor:not-allowed; transform:none !important; }
-  :is(#state-manual,.tkmc-scope) .btn-primary { background:var(--mc-blue); color:#fff; }
-  :is(#state-manual,.tkmc-scope) .btn-primary:hover:not(:disabled) { opacity:0.88; }
-  :is(#state-manual,.tkmc-scope) .btn-ghost   { background:transparent; color:var(--mc-text-2); border:1px solid var(--mc-border-med); }
-  :is(#state-manual,.tkmc-scope) .btn-ghost:hover:not(:disabled)   { border-color:var(--mc-text-2); }
-  :is(#state-manual,.tkmc-scope) .btn-danger  { background:var(--mc-red); color:#fff; }
-  :is(#state-manual,.tkmc-scope) .btn-danger:hover:not(:disabled)  { opacity:0.88; }
-  :is(#state-manual,.tkmc-scope) .btn-partial { background:var(--mc-partial-bg); color:var(--mc-partial); border:1px solid var(--mc-partial-border); }
-  :is(#state-manual,.tkmc-scope) .btn-partial:hover:not(:disabled) { background:#fde9c0; }
+  #state-manual .card-btn-zone { height:44px; flex-shrink:0; display:flex; gap:8px; position:relative; }
+  #state-manual .mc-btn { flex:1; height:100%; border-radius:32px; border:none; font-family:'Inter', sans-serif; font-size:13px; font-weight:600; letter-spacing:-0.26px; cursor:pointer; transition:background 0.2s ease, opacity 0.15s, transform 0.1s, color 0.2s; position:relative; overflow:hidden; }
+  #state-manual .mc-btn::after { content:''; position:absolute; inset:0; background:rgba(255,255,255,0.2); transform:scale(0); border-radius:inherit; transition:transform 0.3s ease, opacity 0.3s; opacity:0; }
+  #state-manual .mc-btn:active::after           { transform:scale(1); opacity:1; }
+  #state-manual .mc-btn:active:not(:disabled)   { transform:scale(0.98); }
+  #state-manual .mc-btn:disabled                { opacity:0.38; cursor:not-allowed; transform:none !important; }
+  #state-manual .btn-primary { background:var(--mc-blue); color:#fff; }
+  #state-manual .btn-primary:hover:not(:disabled) { opacity:0.88; }
+  #state-manual .btn-ghost   { background:transparent; color:var(--mc-text-2); border:1px solid var(--mc-border-med); }
+  #state-manual .btn-ghost:hover:not(:disabled)   { border-color:var(--mc-text-2); }
+  #state-manual .btn-danger  { background:var(--mc-red); color:#fff; }
+  #state-manual .btn-danger:hover:not(:disabled)  { opacity:0.88; }
+  #state-manual .btn-partial { background:var(--mc-partial-bg); color:var(--mc-partial); border:1px solid var(--mc-partial-border); }
+  #state-manual .btn-partial:hover:not(:disabled) { background:#fde9c0; }
 
   /* Animations */
-  :is(#state-manual,.tkmc-scope) .anim-in { animation:anim-in-mc 0.3s cubic-bezier(0.22,1,0.36,1) both; }
-  :is(#state-manual,.tkmc-scope) .anim-in-delay-1 { animation-delay:0.04s; }
-  :is(#state-manual,.tkmc-scope) .anim-in-delay-2 { animation-delay:0.09s; }
-  :is(#state-manual,.tkmc-scope) .anim-in-delay-3 { animation-delay:0.14s; }
-  :is(#state-manual,.tkmc-scope) .anim-in-delay-4 { animation-delay:0.20s; }
-  :is(#state-manual,.tkmc-scope) .confirm-split   { animation:confirm-split-in 0.22s cubic-bezier(0.22,1,0.36,1) both; }
-  :is(#state-manual,.tkmc-scope) .confirm-split:nth-child(2) { animation-delay:0.05s; }
+  #state-manual .anim-in { animation:anim-in-mc 0.3s cubic-bezier(0.22,1,0.36,1) both; }
+  #state-manual .anim-in-delay-1 { animation-delay:0.04s; }
+  #state-manual .anim-in-delay-2 { animation-delay:0.09s; }
+  #state-manual .anim-in-delay-3 { animation-delay:0.14s; }
+  #state-manual .anim-in-delay-4 { animation-delay:0.20s; }
+  #state-manual .confirm-split   { animation:confirm-split-in 0.22s cubic-bezier(0.22,1,0.36,1) both; }
+  #state-manual .confirm-split:nth-child(2) { animation-delay:0.05s; }
   @keyframes mc-row-in { 0% { opacity:0; transform:translateY(-4px); background:rgba(21,148,239,0.05); } 100% { opacity:1; transform:translateY(0); background:transparent; } }
 
   /* Territory selector dropdown animation */
@@ -5228,7 +5216,7 @@
 
   /* The mount wrapper needs relative parent context */
   .mc-grid { position:relative; }
-  :is(#dt-state-manual,.tkmc-scope) .dt-mc-section-cards { position:relative; }
+  #dt-state-manual .dt-mc-section-cards { position:relative; }
 
   /* The card wrapper — normal state */
   #mc-unit-canerrors,
@@ -5333,7 +5321,7 @@
     color:var(--soft); cursor:pointer;
     transition:all 0.15s; z-index:5;
   }
-  :is(#dt-state-manual,.tkmc-scope) .can-flip-hint {
+  #dt-state-manual .can-flip-hint {
     top:12px; right:12px;
     width:30px; height:30px;
   }
@@ -8648,36 +8636,29 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
    everything around it adopts the spec: bracketed meta rows,
    and the status strip becomes a neutral boxed footer holding
    a colored chip rather than a full-bleed colored band. */
-/* Reverted to the Trinity ComponentCard spec (Figma 63631:17571), same
-   correction as .dt-co-card below. The card carries no padding and the
-   status band is full-bleed — it IS the bottom edge of the card, not a
-   chip sitting inside it. Body owns the padding; band owns 20/10. */
 .co-card,
 .co-card--empty,
 .co-card--pending {
-  border-radius: 20px;
-  box-shadow: none;
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
 }
 .co-card {
-  border: 1px solid rgba(54,50,45,0.62);
-  padding: 0;
-  gap: 0;
-  overflow: hidden;
-  position: relative;     /* anchors .co-tcg-replace-btn */
+  border: 1px solid var(--border);
+  padding: 14px;          /* card padding moves off the body */
+  gap: 10px;
+  overflow: visible;      /* footer insets now, so no clipping needed */
 }
-.co-card-body { padding: 20px 20px 14px; gap: 8px; }
+.co-card-body { padding: 0; gap: 8px; }
 
 /* Description line = the spec's hint line */
 .co-card .co-desc-text { font-size: 12px; color: var(--subtle); letter-spacing: -0.24px; }
 
 /* Meta rows: label left, value right, hairline-bracketed */
-/* Meta rows read as more Desc lines per the spec: no rules, no inset.
-   Only the label/value split survives from the unification pass. */
 .co-card .co-meta {
-  border-top: none;
-  border-bottom: none;
-  padding: 0;
-  gap: 2px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 0;
+  gap: 8px;
 }
 .co-card .co-meta-row {
   justify-content: space-between;
@@ -8692,9 +8673,11 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
    tested worse — reverted per feedback). Radius/padding stay at the
    spec's footer values, just filled edge to edge with the state tint. */
 .co-card .co-card-strip {
-  border-radius: 0;
-  padding: 10px 20px;
-  gap: 8px;
+  border-radius: var(--card-foot-radius);
+  /* Was a flat 8px, which pulled the footer text 6px left of the body's
+     14px and made every card look off-axis. Match the body. */
+  padding: 8px 14px;
+  gap: 7px;
   /* Long reasons wrap now, so the dot has to hold the first line
      instead of floating to the centre of a two-line block. */
   align-items: flex-start;
@@ -8740,18 +8723,12 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
    State classes live on the CARD here (.clean/.warn/.alarm),
    not the strip, so the chip selectors follow that scheme. */
 .dt-co-card {
-  /* Reverted to the Trinity ComponentCard spec (Figma 63631:17571).
-     The unification pass above had put 20px padding on the CARD and
-     zeroed the body, which pulled the status band in off the edges and
-     turned it into a floating chip. The band is full-bleed by design:
-     it is the bottom edge of the card, not an element inside it.
-     Card owns no padding; the body owns 20/20/14; the band owns 20/10. */
-  border: 1px solid rgba(54,50,45,0.62);
-  border-radius: 20px;
-  box-shadow: none;
-  padding: 0;
-  gap: 0;
-  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  padding: 20px;
+  gap: 10px;
+  overflow: visible;
   /* The wrench button (.dt-co-tcg-replace-btn) is position:absolute at
      top:12/right:12. Until now the only rule giving this card a
      position was scoped to .dt-replace-mode, so outside replace mode
@@ -8761,15 +8738,13 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
      above is why it was drawn rather than clipped. */
   position: relative;
 }
-.dt-co-card-body { padding: 20px 20px 14px; gap: 8px; }
+.dt-co-card-body { padding: 0; }
 
-/* Meta rows read as more Desc lines per the spec: no rules above or
-   below, no inset. Only the label/value split survives from the pass. */
 .dt-co-card-meta {
-  border-top: none;
-  border-bottom: none;
-  padding: 0;
-  gap: 2px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 0;
+  gap: 8px;
 }
 .dt-co-card-meta-row { justify-content: space-between; align-items: baseline; gap: 12px; }
 .dt-co-card-meta-label { color: var(--soft); }
@@ -8782,8 +8757,8 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
    them, so this block only needs to add the radius + fix the label,
    which no longer needs pill padding. */
 .dt-co-card .dt-co-card-strip {
-  border-radius: 0;
-  padding: 10px 20px;
+  border-radius: var(--card-foot-radius);
+  padding: 8px;
   gap: 8px;
   /* Long reasons wrap now, so the dot holds the first line rather than
      centring itself against a two-line block. */
@@ -8804,28 +8779,14 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
 }
 
   /* ═══ TICKETS — PHASES BOARD ════════════════════════════════════════════════
-     Owned by app-07-tickets-phases.js. Reuses .tk-topbar / .tk-filterbar /
-     .tk-seg / .tk-phase-pill from the Ticket List so the two views read as one
-     page with two representations. Everything new is tp-.
+     One lane per phase, always present. Cards are tkTicketCard from app-07, the
+     same component the Fleet map rail uses, so a ticket looks identical on both
+     pages. An empty lane collapses to a rail with its name on its side and
+     expands the moment a truck lands in it.
      ═════════════════════════════════════════════════════════════════════════ */
 
   #dt-page-tphases { display:none; flex-direction:column; flex:1; min-width:0; overflow:hidden; }
   #dt-page-tphases.active { display:flex; }
-
-  /* Stat band — hairline-divided row, not boxed cards */
-  .tp-statband {
-    display:flex; align-items:stretch; flex-shrink:0;
-    margin:0 28px; border:1px solid var(--border);
-    border-radius:var(--radius-md); background:var(--layer-1); overflow:hidden;
-  }
-  body.dark .tp-statband { background:#1e1c1a; border-color:rgba(255,255,255,0.08); }
-  .tp-stat { flex:1; display:flex; flex-direction:column; gap:6px; padding:14px 18px; min-width:0; border-right:1px solid var(--border); }
-  body.dark .tp-stat { border-color:rgba(255,255,255,0.08); }
-  .tp-stat:last-child { border-right:none; }
-  .tp-stat-label { font-size:12px; color:var(--soft); letter-spacing:-0.2px; white-space:nowrap; }
-  .tp-stat-value { font-size:22px; font-weight:500; color:var(--strong); letter-spacing:-0.55px; line-height:1; }
-  .tp-stat-value.warn { color:var(--amber); }
-  .tp-stat-value.err  { color:var(--red); }
 
   /* Desktop Filters popover rows — reuses .dt-cols-popover chrome from the
      Columns control on the same toolbar, so the two read as one family. */
@@ -8846,90 +8807,106 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
   body.dark .tp-filter-count { background:#e3f200; color:#000; }
 
   /* Zebra striping over a filtered list. :nth-child still counts hidden rows,
-     so JS tags the visible ones and these rules take over on source order
-     (same specificity as the :nth-child rule they replace). */
+     so JS tags the visible ones and these rules take over on source order. */
   .tk-table tbody tr.tp-alt   { background:var(--layer-2); }
   .tk-table tbody tr.tp-noalt { background:var(--layer-1); }
   body.dark .tk-table tbody tr.tp-alt   { background:rgba(255,255,255,0.03); }
   body.dark .tk-table tbody tr.tp-noalt { background:#1e1c1a; }
 
-  /* Overdue toggle — quiet outline pill, fills only while it is on */
-  .tp-toggle-btn.on { background:var(--blue); border-color:var(--blue); color:#fff; }
-  body.dark .tp-toggle-btn.on { background:#e3f200; border-color:#e3f200; color:#000; }
+  /* Icon-only toolbar button (export) */
+  .tk-export-btn { padding:0 12px; }
 
-  /* Board — horizontal rail of phase columns */
+  /* ── Board ───────────────────────────────────────────────────────────────
+     Horizontal rail of lanes. Lanes are separated by a hairline rather than a
+     gap, so a collapsed lane still reads as a slot in the lifecycle. */
   .tp-board {
-    flex:1; min-height:0; display:flex; align-items:stretch; gap:14px;
+    flex:1; min-width:0; min-height:0; display:flex; align-items:stretch;
     overflow-x:auto; overflow-y:hidden; padding:16px 28px 28px;
+    cursor:grab; scrollbar-width:thin;
   }
-  .tp-col {
-    flex:0 0 264px; display:flex; flex-direction:column; min-height:0;
-    background:var(--layer-2); border:1px solid var(--border);
-    border-radius:var(--radius-md); overflow:hidden;
-  }
-  body.dark .tp-col { background:rgba(255,255,255,0.03); border-color:rgba(255,255,255,0.08); }
+  /* A visible track, because an invisible one reads as a clipped board */
+  .tp-board::-webkit-scrollbar { height:10px; }
+  .tp-board::-webkit-scrollbar-thumb { background:var(--border-mid); border-radius:8px; }
+  .tp-board::-webkit-scrollbar-track { background:transparent; }
 
-  /* Column header — phase pill carries the color, a top rail echoes it */
-  .tp-col-head {
-    display:flex; align-items:center; justify-content:space-between; gap:8px;
-    padding:12px 12px 10px; flex-shrink:0;
-    border-top:3px solid var(--tp-accent, var(--border));
-    border-bottom:1px solid var(--border);
+  /* Lanes grow to fill the board. 316px is the preferred width, not a fixed
+     one: on a wide monitor the leftover space goes into the lanes rather than
+     sitting empty on the right, and on a narrow one they hold at 284px and the
+     board scrolls. The cap stops a card sprawling on an ultrawide. */
+  .tp-lane {
+    flex:1 1 316px; min-width:268px; max-width:440px;
+    display:flex; flex-direction:column;
+    border-left:1px solid var(--border); background:var(--layer-2);
+    transition:flex-basis 0.24s ease;
   }
-  body.dark .tp-col-head { border-bottom-color:rgba(255,255,255,0.08); }
-  .tp-col-count {
-    font-size:13px; font-weight:500; color:var(--soft); letter-spacing:-0.26px;
-    min-width:20px; text-align:right; flex-shrink:0;
+  .tp-lane:first-child { border-left:none; }
+  body.dark .tp-lane { background:rgba(255,255,255,0.02); border-color:rgba(255,255,255,0.08); }
+
+  /* The phase colour lives on a rail at the lane's leading edge */
+  .tp-lane-head {
+    display:flex; align-items:center; gap:8px; flex-shrink:0;
+    padding:12px 16px; position:relative;
+  }
+  .tp-lane-head::before {
+    content:''; position:absolute; left:0; top:10px; bottom:10px; width:4px;
+    border-radius:0 2px 2px 0; background:currentColor;
+  }
+  .tp-lane-dot { width:10px; height:10px; border-radius:2px; flex-shrink:0; background:currentColor; }
+  .tp-lane-name {
+    font-family:var(--font); font-size:16px; font-weight:500;
+    color:var(--strong); letter-spacing:-0.32px; white-space:nowrap;
+  }
+  .tp-lane-count {
+    font-family:var(--font); font-size:16px; color:var(--subtle);
+    letter-spacing:-0.32px; flex-shrink:0;
   }
 
-  /* min-height:0 — without it the column body refuses to scroll inside the flex column */
-  .tp-col-body {
+  /* Lane colour — one token drives the rail and the square */
+  .tp-lane.waiting-to-load .tp-lane-head { color:var(--phase-waiting-to-load); }
+  .tp-lane.loading         .tp-lane-head { color:var(--phase-loading); }
+  .tp-lane.loaded          .tp-lane-head { color:var(--phase-loaded); }
+  .tp-lane.to-job          .tp-lane-head { color:var(--phase-to-job); }
+  .tp-lane.on-site         .tp-lane-head { color:var(--phase-on-site); }
+  .tp-lane.pouring         .tp-lane-head { color:var(--phase-pouring); }
+  .tp-lane.washing         .tp-lane-head { color:var(--phase-washing); }
+  .tp-lane.return-to-plant .tp-lane-head { color:var(--phase-return-to-plant); }
+  .tp-lane.ignition-off    .tp-lane-head { color:var(--phase-ignition-off); }
+
+  /* min-height:0 — without it the lane body refuses to scroll inside the flex column */
+  .tp-lane-body {
     flex:1; min-height:0; overflow-y:auto;
-    display:flex; flex-direction:column; gap:8px; padding:10px;
+    display:flex; flex-direction:column; gap:10px; padding:0 16px 16px;
   }
 
-  /* Ticket card */
-  .tp-card {
-    background:var(--layer-1); border:1px solid var(--border);
-    border-radius:12px; padding:10px 12px; cursor:pointer;
-    display:flex; flex-direction:column; gap:6px;
-    transition:background 0.12s, border-color 0.12s;
+  /* ── Collapsed lane ──────────────────────────────────────────────────────
+     No trucks in this phase: the lane narrows to a rail and the name turns on
+     its side. Still visible, still in lifecycle order, costs 52px instead of
+     316. It expands back as soon as a card lands in it. */
+  .tp-lane.empty { flex:0 0 52px; min-width:52px; max-width:52px; }
+  .tp-lane.empty .tp-lane-head {
+    flex-direction:column; gap:10px; padding:12px 0 16px;
+    writing-mode:vertical-rl; align-items:center; justify-content:flex-start;
   }
-  body.dark .tp-card { background:#1e1c1a; border-color:rgba(255,255,255,0.08); }
-  .tp-card:hover { background:rgba(48,105,227,0.05); border-color:var(--border-mid); }
-  body.dark .tp-card:hover { background:rgba(227,242,0,0.05); }
+  .tp-lane.empty .tp-lane-head::before { left:0; right:auto; width:4px; top:10px; bottom:10px; }
+  .tp-lane.empty .tp-lane-name { font-size:13px; color:var(--soft); }
+  .tp-lane.empty .tp-lane-count { font-size:13px; }
+  .tp-lane.empty .tp-lane-body { display:none; }
 
-  .tp-card-top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-  .tp-card-ticket { font-size:14px; font-weight:500; color:var(--strong); letter-spacing:-0.28px; }
-  .tp-card-truck {
-    font-size:14px; color:var(--blue-link); text-decoration:underline;
-    letter-spacing:-0.28px; cursor:pointer; width:fit-content;
-  }
-  body.dark .tp-card-truck { color:var(--strong); }
-  .tp-card-meta {
-    font-size:12px; color:var(--soft); letter-spacing:-0.2px;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
-  .tp-card-foot { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:2px; }
-  .tp-card-loc {
-    font-size:12px; color:var(--subtle); letter-spacing:-0.2px;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0;
-  }
+  /* ── Device frames ───────────────────────────────────────────────────────
+     The board is a horizontal scroller everywhere, so lanes only need to get
+     narrower, not restructure. Collapsed lanes shrink further since a phone
+     can afford even less of a rail. */
+  body.view-tablet #dt-page-tphases .tp-board { padding:12px 16px 16px; }
+  body.view-tablet #dt-page-tphases .tp-lane { flex:0 0 288px; min-width:288px; max-width:288px; }
+  body.view-tablet #dt-page-tphases .tp-lane.empty { flex:0 0 46px; min-width:46px; max-width:46px; }
 
-  /* Dwell chip — neutral by default, solid amber once the phase runs long */
-  .tp-dwell {
-    display:inline-flex; align-items:center; gap:4px; flex-shrink:0;
-    padding:2px 8px; border-radius:32px; font-size:12px; letter-spacing:-0.2px;
-    color:var(--soft); border:1px solid var(--border); background:none;
-  }
-  .tp-dwell.over { background:var(--amber); border-color:var(--amber); color:#36322d; font-weight:500; }
-
-  .tp-empty {
-    font-size:12px; color:var(--subtle); letter-spacing:-0.2px;
-    text-align:center; padding:18px 8px; border:1px dashed var(--border);
-    border-radius:12px;
-  }
-  body.dark .tp-empty { border-color:rgba(255,255,255,0.08); }
+  body.view-mobile #dt-page-tphases .tp-board { padding:10px 12px 12px; }
+  body.view-mobile #dt-page-tphases .tp-lane { flex:0 0 268px; min-width:268px; max-width:268px; }
+  body.view-mobile #dt-page-tphases .tp-lane.empty { flex:0 0 40px; min-width:40px; max-width:40px; }
+  body.view-mobile #dt-page-tphases .tp-lane-head { padding:10px 12px; }
+  body.view-mobile #dt-page-tphases .tp-lane-name,
+  body.view-mobile #dt-page-tphases .tp-lane-count { font-size:14px; }
+  body.view-mobile #dt-page-tphases .tp-lane-body { padding:0 12px 12px; }
 
   /* ═══ TICKETS — MOBILE + TABLET ═════════════════════════════════════════════
      Owned by app-08-tickets-mobile-tablet.js.
@@ -8965,14 +8942,31 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
     font-family:var(--font); font-size:12px; color:var(--soft);
     letter-spacing:-0.24px; margin-top:2px;
   }
-  .mtk-new-btn {
-    display:inline-flex; align-items:center; gap:6px; flex-shrink:0;
-    height:36px; padding:0 14px; background:none;
-    border:1px solid var(--border); border-radius:32px;
-    font-family:var(--font); font-size:13px; font-weight:500;
-    color:var(--strong); letter-spacing:-0.26px; cursor:pointer;
+  /* The title line ends with the timestamp rather than a New button; New moved
+     down to the actions row as an icon. Baseline-aligned so the small text sits
+     on the cap line of "Tickets" rather than floating at the top. */
+  .mtk-updated {
+    flex-shrink:0; font-family:var(--font); font-size:11px; color:var(--soft);
+    letter-spacing:-0.22px; white-space:nowrap; align-self:flex-end; padding-bottom:3px;
   }
-  .mtk-new-btn:active { background:var(--layer-2); }
+
+  /* Actions row — icon-only circles, then the view switch hard right. */
+  .mtk-actions {
+    display:flex; align-items:center; gap:8px; padding:0 16px 10px; flex-shrink:0;
+  }
+  .mtk-actions .tv-seg { margin-left:auto; }
+  .mtk-icon-btn {
+    position:relative; flex-shrink:0;
+    width:36px; height:36px; display:inline-flex;
+    align-items:center; justify-content:center;
+    background:none; border:1px solid var(--border); border-radius:50%;
+    color:var(--strong); cursor:pointer; padding:0;
+  }
+  .mtk-icon-btn:active { background:var(--layer-2); }
+  /* The count badge rides the corner now that there is no label to sit beside. */
+  .mtk-icon-btn .mtk-filter-count {
+    position:absolute; top:-3px; right:-3px;
+  }
 
   .mtk-toolbar { display:flex; align-items:center; gap:8px; padding:0 16px 10px; }
   .mtk-search-field {
@@ -9144,6 +9138,13 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
   body.view-mobile.orient-landscape #mob-page-tickets .mtk-toolbar {
     flex:1 1 auto; min-width:0; padding:0 8px 8px;
   }
+  /* Landscape puts the three rows on one line, so the actions row stops
+     stretching and just holds its controls. */
+  body.view-mobile.orient-landscape #mob-page-tickets .mtk-actions {
+    flex:0 0 auto; padding:0 16px 8px;
+  }
+  body.view-mobile.orient-landscape #mob-page-tickets .mtk-actions .tv-seg { margin-left:8px; }
+  body.view-mobile.orient-landscape #mob-page-tickets .mtk-updated { display:none; }
   /* Landscape carries all eleven desktop columns across 736px of usable width.
      Type and padding drop another step to make that fit; Location takes the
      flexible track because it is the only value that can safely ellipsis. */
@@ -9187,6 +9188,21 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
     color:var(--strong); letter-spacing:-0.28px; cursor:pointer;
   }
   .ttk-btn:hover { background:var(--layer-2); }
+
+  /* Actions row — table controls left, view switch hard right. Split out of the
+     search row so search gets the full width, matching the mock. */
+  .ttk-actions {
+    display:flex; align-items:center; gap:8px;
+    margin-bottom:10px; flex-shrink:0;
+  }
+  .ttk-actions .tv-seg { margin-left:auto; }
+  .ttk-icon-btn {
+    flex-shrink:0; width:44px; height:44px;
+    display:inline-flex; align-items:center; justify-content:center;
+    background:none; border:1px solid var(--border); border-radius:50%;
+    color:var(--strong); cursor:pointer; padding:0;
+  }
+  .ttk-icon-btn:hover { background:var(--layer-2); }
 
   /* Phase filter — same move as mobile: it lives under Filters, not in a strip */
   .ttk-filter-wrap { position:relative; flex-shrink:0; }
@@ -9250,6 +9266,7 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
      the chip strip tighten up. */
   body.view-tablet.orient-landscape #tb-page-tickets .tb-page-header { margin-bottom:8px; }
   body.view-tablet.orient-landscape #tb-page-tickets .ttk-btn { height:40px; }
+  body.view-tablet.orient-landscape #tb-page-tickets .ttk-icon-btn { width:40px; height:40px; }
   body.view-tablet.orient-landscape #tb-page-tickets .tb-td { padding:6px 10px; font-size:13px; }
   body.view-tablet.orient-landscape #tb-page-tickets .tb-th { padding:6px 10px; font-size:13px; }
   body.view-tablet.orient-landscape #tb-page-tickets .tb-td-trunc { max-width:160px; }
@@ -9419,18 +9436,19 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
     scrollbar-width:thin; -webkit-overflow-scrolling:touch;
     touch-action:pan-x; overscroll-behavior-x:contain;
   }
-  .tks-scroll-x.tks-dragging { cursor:grabbing; user-select:none; }
-  .tks-scroll-x.tks-dragging * { cursor:grabbing; }
-  /* Tablet portrait is the one frame the table overruns, so it is the one that
-     advertises the grab. */
+  /* Grab-and-drag applies to every horizontal rail: the Status table, the
+     Phases board, the Fleet map card rail. macOS hides its overlay scrollbar
+     until you scroll, so without this a wide rail just looks clipped. */
+  .tk-dragscroll { touch-action:pan-x; overscroll-behavior-x:contain; }
+  .tk-dragscroll.tks-dragging { cursor:grabbing; user-select:none; }
+  .tk-dragscroll.tks-dragging * { cursor:grabbing; }
+  /* Tablet portrait is the one frame the Status table overruns, so it is the
+     one that advertises the grab. */
   body.view-tablet:not(.orient-landscape) #dt-ticket-drawer .tks-scroll-x { cursor:grab; }
 
   .tks-tbl {
     display:grid; width:100%; font-family:var(--font);
-    /* sev gutter, date, 8 data columns, then a pad track that absorbs the
-       leftover width. Date is fixed now — it was 1fr, which is why the
-       header floated a third of the way across the table. */
-    grid-template-columns:34px 130px 96px 96px 96px 86px 96px 82px 74px 82px 1fr;
+    grid-template-columns:minmax(136px,1fr) 84px 96px 96px 96px 86px 96px 82px 74px 82px;
   }
   .tks-th, .tks-td {
     display:flex; align-items:center; min-width:0;
@@ -9441,7 +9459,7 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
     position:sticky; top:0; z-index:2;
     background:var(--layer-1); border-bottom:1px solid var(--border);
     font-weight:500; color:var(--strong); white-space:nowrap;
-    align-items:flex-end; justify-content:flex-start; padding-bottom:10px;
+    align-items:flex-end; padding-bottom:10px;
   }
   .tks-td {
     color:var(--defined); min-height:44px;
@@ -9449,22 +9467,27 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
   }
   .tks-td.alt { background:var(--layer-2); }
 
+  /* Every cell declares its own column. Auto-placement made the grid fragile:
+     one extra or missing cell in a row and every row after it slid a track
+     sideways, cascading down the table. With explicit columns a stray element
+     can't shift anything — it lands on top of its own track and the rest of
+     the table stays square. */
+  .tks-c-date   { grid-column:1; }
+  .tks-c-status { grid-column:2; }
+  .tks-c-slump  { grid-column:3; }
+  .tks-c-target { grid-column:4; }
+  .tks-c-water  { grid-column:5; }
+  .tks-c-fluid  { grid-column:6; }
+  .tks-c-admix  { grid-column:7; }
+  .tks-c-revs   { grid-column:8; }
+  .tks-c-temp   { grid-column:9; }
+  .tks-c-size   { grid-column:10; }
+
   /* Date cell stacks time over date, as it did in the original */
   .tks-c-date { flex-direction:column; align-items:flex-start; justify-content:center; gap:1px; }
   .tks-th.tks-c-date { flex-direction:row; align-items:flex-end; }
-  /* Severity gutter — the first thing the eye hits, same red as the slump
-     chip so an out-of-spec row is findable without reading any number. */
-  .tks-c-sev { justify-content:center; padding-left:8px; padding-right:0; }
-  .tks-c-pad { padding:0; }
-  .tks-sev {
-    width:18px; height:18px; border-radius:var(--radius-sm); flex-shrink:0;
-    display:flex; align-items:center; justify-content:center;
-  }
-  .tks-sev.bad { background:var(--red); }
-  body.view-mobile.orient-landscape .tks-sev { width:15px; height:15px; }
-
-  .tks-date-t { color:var(--defined); line-height:1.25; }
-  .tks-date-d { color:var(--soft); line-height:1.25; }
+  .tks-date-t { color:var(--defined); line-height:1.25; white-space:nowrap; }
+  .tks-date-d { color:var(--soft); line-height:1.25; white-space:nowrap; }
 
   /* Phase group — a banded section row, matching .tb-group-row in the tablet
      Diagnostic Center table */
@@ -9484,7 +9507,7 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
 
   /* Mobile landscape — all ten fit at 11px across ~766px */
   body.view-mobile.orient-landscape #dt-ticket-drawer .tks-tbl {
-    grid-template-columns:26px 104px 76px 78px 76px 68px 76px 62px 44px 60px 1fr;
+    grid-template-columns:minmax(92px,1fr) 66px 76px 78px 76px 68px 76px 62px 44px 60px;
   }
   body.view-mobile.orient-landscape #dt-ticket-drawer .tks-th,
   body.view-mobile.orient-landscape #dt-ticket-drawer .tks-td {
@@ -9495,91 +9518,12 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
   /* Tablet — one set of widths for both orientations. Portrait is ~140px short
      of the full set, so the scroller slides; landscape has room to spare. */
   body.view-tablet #dt-ticket-drawer .tks-tbl {
-    grid-template-columns:34px 126px 98px 98px 102px 88px 98px 84px 76px 86px 1fr;
+    grid-template-columns:minmax(126px,1fr) 84px 98px 98px 102px 88px 98px 84px 76px 86px;
   }
   body.view-tablet:not(.orient-landscape) #dt-ticket-drawer .tks-tbl { min-width:940px; }
 
   /* Desktop — the base grid above already fits the drawer pane */
   body.view-desktop #dt-ticket-drawer .tks-scroll-x { overflow-x:auto; }
-
-
-  /* ═══ TICKET DRAWER — MANUAL CONTROL TAB ═════════════════════════════════
-     Owned by app-10-ticket-manual.js. The cards themselves are the shared
-     .mc-card component; everything here is the frame around them plus the
-     adjustment log. Two cards side by side, log underneath, single column
-     once the drawer is narrower than ~640px.
-     ═════════════════════════════════════════════════════════════════════════ */
-
-  /* One row: water card, admix card, log. .tkmc-cards is display:contents so
-     the two mounts sit directly on the parent grid instead of nesting a
-     second track system inside column one. */
-  .tkmc-wrap {
-    display:grid; grid-template-columns:1fr 1fr 1.55fr; gap:16px;
-    align-items:start; font-family:var(--font);
-  }
-  .tkmc-cards { display:contents; }
-  /* Opts this subtree into the .mc-card kit scoped above. */
-  .tkmc-scope .mc-card,
-  .tkmc-scope .mc-card.mc-input-card {
-    height:auto; min-height:0; max-height:none;
-  }
-  .tkmc-mount { position:relative; min-width:0; }
-
-  .tkmc-log {
-    /* Matches the tallest card so the row bottoms line up */
-    align-self:stretch; min-height:340px;
-    display:flex; flex-direction:column;
-    border:1px solid var(--border); border-radius:var(--radius-lg);
-    background:var(--layer-1); overflow:hidden;
-  }
-  body.dark .tkmc-log { background:#1e1c1a; border-color:rgba(255,255,255,0.1); }
-  .tkmc-log-head {
-    display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
-    padding:14px 16px 10px;
-  }
-  .tkmc-log-title { font-size:13px; font-weight:600; letter-spacing:-0.26px; color:var(--strong); }
-  .tkmc-log-sub { font-size:11px; color:var(--soft); letter-spacing:-0.1px; margin-top:2px; }
-  .tkmc-log-clear {
-    font-size:11px; color:var(--soft); background:none; border:none; cursor:pointer;
-    font-family:var(--font); padding:3px 8px; border-radius:var(--radius-sm);
-    letter-spacing:-0.1px;
-  }
-  .tkmc-log-clear:hover { color:var(--strong); background:var(--layer-2); }
-
-  .tkmc-log-thead, .tkmc-log-row {
-    display:grid; grid-template-columns:84px 1fr 78px 88px; gap:8px;
-    padding:7px 16px; align-items:center;
-  }
-  .tkmc-log-thead {
-    border-top:1px solid var(--border); border-bottom:1px solid var(--border);
-    font-size:10px; font-weight:600; letter-spacing:0.4px; text-transform:uppercase;
-    color:var(--soft);
-  }
-  .tkmc-log-row {
-    border-bottom:1px solid var(--border); font-size:12px; letter-spacing:-0.2px;
-    animation:mc-row-in 0.25s cubic-bezier(0.22,1,0.36,1) both;
-  }
-  .tkmc-log-row > span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .tkmc-log-time { color:var(--soft); }
-  .tkmc-log-cmd { color:var(--strong); font-weight:500; }
-  .tkmc-log-val, .tkmc-log-result { color:var(--soft); }
-  .tkmc-log-body { flex:1; min-height:0; overflow-y:auto; }
-  .tkmc-log-empty {
-    padding:24px 16px; text-align:center; font-size:12px; color:var(--soft);
-    letter-spacing:-0.1px;
-  }
-  .tkmc-log-foot {
-    display:flex; justify-content:flex-end; padding:8px 16px;
-    border-top:1px solid var(--border); font-size:11px; color:var(--soft);
-    letter-spacing:-0.1px;
-  }
-
-  /* Mobile portrait and tablet portrait both hand this tab a narrow column */
-  body.view-mobile .tkmc-wrap,
-  body.view-tablet:not(.orient-landscape) .tkmc-wrap { grid-template-columns:1fr; }
-  body.view-mobile .tkmc-log { min-height:0; }
-  body.view-mobile .tkmc-log-thead,
-  body.view-mobile .tkmc-log-row { grid-template-columns:70px 1fr 62px 72px; padding:7px 12px; }
 
   /* ═══ TICKET DRAWER — MAP TAB ═══════════════════════════════════════════════
      Figma: Trinity Design Overview, node 2651:104717. Full-bleed map, floating
@@ -9732,3 +9676,476 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
   body.view-mobile.orient-landscape #dt-ticket-drawer .tkm-step { width:30px; height:30px; }
   body.view-mobile.orient-landscape #dt-ticket-drawer .tkm-legend { left:236px; bottom:8px; right:8px; }
   body.view-mobile.orient-landscape #dt-ticket-drawer .tkm-controls { bottom:48px; }
+
+  /* ═══ TICKETS — FLEET MAP ═══════════════════════════════════════════════════
+     Card rail beside a full-height map. Pins, legend and controls are the
+     Diagnostic Center map's own components (.dc-map-marker, .dc-map-legend,
+     .dc-map-ctrl-btn), so a phase colour means the same thing on both maps.
+     Owned by app-10.
+     ═════════════════════════════════════════════════════════════════════════ */
+
+  #dt-page-tfleet { display:none; flex-direction:column; flex:1; min-width:0; overflow:hidden; }
+  #dt-page-tfleet.active { display:flex; }
+
+  .tf-body { flex:1; min-height:0; display:flex; gap:0; padding:0 28px 28px; }
+
+  /* Rail */
+  .tf-rail {
+    flex:0 0 330px; min-height:0; overflow-y:auto;
+    display:flex; flex-direction:column; gap:10px;
+    padding-right:14px;
+  }
+  .tf-empty {
+    font-family:var(--font); font-size:13px; color:var(--subtle);
+    letter-spacing:-0.2px; text-align:center; padding:32px 8px;
+  }
+
+  .tf-card {
+    background:var(--layer-1); border:1px solid var(--border);
+    border-radius:var(--radius-md); padding:14px 16px; cursor:pointer;
+    font-family:var(--font); flex-shrink:0;
+    transition:border-color 0.12s, background 0.12s;
+  }
+  body.dark .tf-card { background:#1e1c1a; border-color:rgba(255,255,255,0.08); }
+  .tf-card:hover, .tf-card.hover { border-color:var(--border-mid); background:rgba(48,105,227,0.04); }
+  body.dark .tf-card:hover, body.dark .tf-card.hover { background:rgba(227,242,0,0.04); }
+
+  .tf-card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+  .tf-truck { font-size:16px; font-weight:500; color:var(--strong); letter-spacing:-0.32px; line-height:1.25; }
+  .tf-driver { font-size:16px; font-weight:500; color:var(--strong); letter-spacing:-0.32px; line-height:1.25; }
+  .tf-since { font-size:13px; color:var(--soft); letter-spacing:-0.26px; margin-top:4px; }
+  .tf-card-chips { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+  .tf-chip {
+    padding:3px 8px; border-radius:var(--radius-sm);
+    background:var(--layer-2); color:var(--strong);
+    font-size:13px; letter-spacing:-0.26px; white-space:nowrap;
+  }
+  .tf-chip.warn { background:#c7f2e6; color:#1e6252; }
+  body.dark .tf-chip { background:rgba(255,255,255,0.07); }
+
+  .tf-rows { margin-top:12px; display:flex; flex-direction:column; gap:4px; }
+  .tf-row { display:flex; align-items:baseline; gap:12px; font-size:13px; letter-spacing:-0.26px; }
+  .tf-k { color:var(--soft); flex:0 0 84px; }
+  .tf-link { color:var(--blue-link); text-decoration:underline; }
+  body.dark .tf-link { color:var(--strong); }
+
+  .tf-card-foot {
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px; margin-top:14px; flex-wrap:wrap;
+  }
+  .tf-foot-phase { display:inline-flex; align-items:center; gap:8px; }
+  .tf-for, .tf-eta { font-size:13px; color:var(--soft); letter-spacing:-0.26px; white-space:nowrap; }
+  .tf-for b, .tf-eta b { color:var(--strong); font-weight:500; }
+
+  /* Map */
+  .tf-map-wrap {
+    flex:1; min-width:0; position:relative;
+    border-radius:var(--radius-md); overflow:hidden;
+    border:1px solid var(--border); background:#dde7ec;
+  }
+  body.dark .tf-map-wrap { background:#1a1917; border-color:rgba(255,255,255,0.08); }
+  .tf-map { position:absolute; inset:0; z-index:1; }
+  .tf-controls { position:absolute; top:12px; right:12px; bottom:44px; z-index:10; }
+  .tf-legend { right:0; padding:4px 8px; gap:8px; }
+
+  /* Pins carry the truck number. A card click flies the map here and selects
+     the pin; clicking the pin is what opens the ticket drawer. */
+  .tf-pin { transform:translateX(-50%); }
+  .tf-pin.selected {
+    outline:2px solid #fff; outline-offset:2px;
+    box-shadow:0 2px 8px rgba(54,50,45,0.5), inset 0 1px 1px rgba(255,255,255,0.24);
+    z-index:2;
+  }
+  .tf-card.active {
+    border-color:var(--blue); background:rgba(48,105,227,0.05);
+    box-shadow:inset 3px 0 0 var(--blue);
+  }
+  body.dark .tf-card.active {
+    border-color:#e3f200; background:rgba(227,242,0,0.05);
+    box-shadow:inset 3px 0 0 #e3f200;
+  }
+
+  /* ── Tablet ──────────────────────────────────────────────────────────────
+     Portrait has no room for a 330px rail beside a usable map, so the rail
+     becomes a horizontal strip under it — the pattern the tablet Diagnostic
+     Center map already uses with .tbm-card-strip. */
+  body.view-tablet #dt-page-tfleet .tf-body { padding:0 16px 16px; }
+  body.view-tablet:not(.orient-landscape) #dt-page-tfleet .tf-body { flex-direction:column-reverse; gap:12px; }
+  body.view-tablet:not(.orient-landscape) #dt-page-tfleet .tf-rail {
+    flex:0 0 auto; max-height:230px; flex-direction:row; overflow-x:auto; overflow-y:hidden;
+    padding-right:0; scrollbar-width:none;
+  }
+  body.view-tablet:not(.orient-landscape) #dt-page-tfleet .tf-rail { cursor:grab; }
+  body.view-tablet:not(.orient-landscape) #dt-page-tfleet .tf-card { flex:0 0 300px; }
+  body.view-tablet.orient-landscape #dt-page-tfleet .tf-rail { flex:0 0 300px; }
+
+  /* ── Mobile ──────────────────────────────────────────────────────────────
+     Map takes the frame, cards ride along the bottom edge one at a time. */
+  body.view-mobile #dt-page-tfleet .tf-body { flex-direction:column-reverse; padding:0 12px 12px; gap:10px; }
+  body.view-mobile #dt-page-tfleet .tf-rail {
+    flex:0 0 auto; flex-direction:row; overflow-x:auto; overflow-y:hidden;
+    padding-right:0; scrollbar-width:none;
+  }
+  body.view-mobile #dt-page-tfleet .tf-rail { cursor:grab; }
+  body.view-mobile #dt-page-tfleet .tf-card { flex:0 0 268px; padding:12px 14px; }
+  body.view-mobile #dt-page-tfleet .tf-rows { margin-top:8px; }
+  body.view-mobile:not(.orient-landscape) #dt-page-tfleet .tf-rail { max-height:212px; }
+  body.view-mobile.orient-landscape #dt-page-tfleet .tf-rail { max-height:150px; }
+  body.view-mobile.orient-landscape #dt-page-tfleet .tf-rows { display:none; }
+
+
+  /* ═══ MANUAL CONTROL — PORTABLE SCOPE ═══════════════════════════════════════
+     The Manual Control card styles were written against #dt-state-manual, the
+     All Trucks drawer's panel. The ticket drawer needs the same cards, and the
+     cards themselves are single-instance (one CardInstance per MC_CARD_DEF,
+     mounted once), so app-11 moves the real nodes between panels rather than
+     cloning them.
+
+     Moving them out of #dt-state-manual would strip every one of those styles,
+     so each rule is mirrored here against .mc-scope, a class both panels carry.
+     Generated from the #dt-state-manual rules above — if you edit one, edit
+     its twin.
+     ═════════════════════════════════════════════════════════════════════════ */
+
+  body.dark .mc-scope {
+    --mc-card:          #211f1c;
+    --mc-text-1:        #ffffff;
+    --mc-text-2:        rgba(255,255,255,0.75);
+    --mc-text-3:        rgba(255,255,255,0.4);
+    --mc-border:        rgba(255,255,255,0.1);
+    --mc-border-med:    rgba(255,255,255,0.18);
+    --mc-blue:          #e3f200;
+    --mc-blue-bg:       rgba(227,242,0,0.15);
+    --mc-blue-text:     #000000;
+    --mc-green:         #2ecf1d;
+    --mc-green-text:    #5de054;
+    --mc-green-bg:      rgba(46,207,29,0.12);
+    --mc-amber:         #ffba0d;
+    --mc-amber-bg:      rgba(255,186,13,0.12);
+    --mc-red:           #ff6b6b;
+    --mc-red-bg:        rgba(215,1,0,0.15);
+    --mc-red-heavy:     #ff4444;
+    --mc-red-heavy-bg:  rgba(215,1,0,0.22);
+    --mc-partial:       #ffba0d;
+    --mc-partial-bg:    rgba(255,186,13,0.12);
+    --mc-partial-border:rgba(255,186,13,0.25);
+    --mc-disabled-bg:   rgba(255,255,255,0.06);
+    --mc-disabled-text: rgba(255,255,255,0.25);
+  }
+  body.dark .mc-scope .btn-primary { color: #000000; }
+  .mc-scope .dt-mc-section { display:flex; flex-direction:column; gap:12px; margin-bottom:20px; }
+  .mc-scope .dt-mc-section-hdr {
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:11px; font-weight:600; letter-spacing:0.5px; text-transform:uppercase;
+    color:var(--soft); padding-bottom:8px; border-bottom:1px solid var(--border);
+    cursor:pointer; user-select:none;
+  }
+  .mc-scope .dt-mc-section-hdr:hover { color:var(--defined); }
+  .mc-scope .dt-mc-section-cards {
+    display:grid; grid-template-columns:repeat(4, minmax(200px, 1fr)); gap:14px;
+    padding:3px; margin:-3px;
+    overflow:visible;
+    position:relative;
+  }
+  body.view-tablet .mc-scope .dt-mc-section-cards {
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+  }
+  .mc-scope .dt-mc-section-cards > div { min-width:0; }
+  .mc-scope .dt-mc-section { position:relative; }
+  .mc-scope .dt-mc-section.collapsed .dt-mc-section-cards { display:none; }
+  .mc-scope {
+    --mc-card: #ffffff; --mc-text-1: #1a1814; --mc-text-2: #4a4540;
+    --mc-text-3: rgba(40,36,30,0.5); --mc-border: rgba(54,50,45,0.13);
+    --mc-border-med: rgba(54,50,45,0.24); --mc-blue: #1594ef;
+    --mc-blue-bg: #e3f0fc; --mc-blue-text: #1056a8; --mc-green: #2ECF1D;
+    --mc-green-text: #1e6252; --mc-green-bg: #d5f1d2; --mc-amber: #b46e00;
+    --mc-amber-bg: #fff0d4; --mc-red: #c13c2d; --mc-red-bg: #fde8e6;
+    --mc-red-heavy: #8b1a0f; --mc-red-heavy-bg: #fbd0cc;
+    --mc-partial: #7a4d00; --mc-partial-bg: #fff7ec;
+    --mc-partial-border: rgba(180,110,0,0.25);
+    --mc-disabled-bg: rgba(54,50,45,0.06); --mc-disabled-text: rgba(54,50,45,0.3);
+  }
+  .mc-scope .mc-card { background:var(--mc-card); border:1px solid var(--mc-border); border-radius:20px; padding:20px; width:100%; height:260px; min-height:260px; max-height:260px; display:flex; flex-direction:column; position:relative; overflow:hidden; transition:border-color 0.4s ease, box-shadow 0.4s ease; font-family:'Inter', sans-serif; box-sizing:border-box; }
+  .mc-scope .mc-card.mc-input-card { height:260px; min-height:260px; max-height:260px; }
+  .mc-scope .mc-card.state-pending { border-color:rgba(21,148,239,0.45);  box-shadow:0 0 0 3px rgba(21,148,239,0.07); }
+  .mc-scope .mc-card.state-success { border-color:rgba(30,98,82,0.4);     box-shadow:0 0 0 3px rgba(30,98,82,0.06); }
+  .mc-scope .mc-card.state-error { border-color:rgba(193,60,45,0.4);    box-shadow:0 0 0 3px rgba(193,60,45,0.06); }
+  .mc-scope .mc-card.state-error-heavy { border-color:rgba(139,26,15,0.55);   box-shadow:0 0 0 4px rgba(139,26,15,0.1); }
+  .mc-scope .mc-card.state-partial { border-color:rgba(180,110,0,0.45);   box-shadow:0 0 0 3px rgba(180,110,0,0.07); }
+  .mc-scope .mc-card.state-confirm { border-color:rgba(180,110,0,0.45);   box-shadow:0 0 0 3px rgba(180,110,0,0.07); }
+  .mc-scope .mc-card.state-disabled { border-color:var(--mc-border);       background:rgba(240,237,233,0.6); }
+  .mc-scope .mc-card.state-warn { border-color:rgba(180,110,0,0.45);   box-shadow:0 0 0 3px rgba(180,110,0,0.07); }
+  .mc-scope .mc-card.state-major { border-color:rgba(139,26,15,0.55);   box-shadow:0 0 0 4px rgba(139,26,15,0.1); }
+  .mc-scope .progress-track { position:absolute; bottom:0; left:0; right:0; height:3px; background:rgba(21,148,239,0.1); overflow:hidden; opacity:0; transition:opacity 0.2s; }
+  .mc-scope .progress-track.visible { opacity:1; }
+  .mc-scope .progress-fill { height:100%; width:0%; border-radius:0 2px 2px 0; transition:width 0s, background-color 0.3s; }
+  .mc-scope .signal-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; background:rgba(54,50,45,0.22); transition:background 0.35s ease; position:relative; }
+  .mc-scope .signal-dot.pulsing::after { content:''; position:absolute; inset:-3px; border-radius:50%; border:1.5px solid var(--mc-blue); animation:ring-pulse 1s ease-out infinite; opacity:0; }
+  .mc-scope .dot-blue { background:var(--mc-blue) !important; }
+  .mc-scope .dot-green { background:var(--mc-green) !important; }
+  .mc-scope .dot-amber { background:var(--mc-amber) !important; }
+  .mc-scope .dot-red { background:var(--mc-red) !important; }
+  .mc-scope .dot-red-heavy { background:var(--mc-red-heavy) !important; }
+  .mc-scope .dot-muted { background:rgba(54,50,45,0.22) !important; }
+  .mc-scope .card-header { height:36px; flex-shrink:0; display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .mc-scope .card-title { flex:1; font-size:14px; font-weight:600; letter-spacing:-0.28px; color:var(--mc-text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .mc-scope .header-badge { flex-shrink:0; font-size:11px; font-weight:500; padding:3px 8px; border-radius:20px; letter-spacing:-0.1px; white-space:nowrap; transition:opacity 0.2s, transform 0.2s; }
+  .mc-scope .badge-hidden { visibility:hidden; padding:0; width:0; overflow:hidden; }
+  .mc-scope .badge-ok { background:var(--mc-green-bg);      color:var(--mc-green-text); }
+  .mc-scope .badge-error { background:var(--mc-red-bg);        color:var(--mc-red); }
+  .mc-scope .badge-error-heavy { background:var(--mc-red-heavy-bg);  color:var(--mc-red-heavy); }
+  .mc-scope .badge-warn { background:var(--mc-amber-bg);      color:var(--mc-amber); }
+  .mc-scope .badge-partial { background:var(--mc-partial-bg);    color:var(--mc-partial); }
+  .mc-scope .badge-disabled { background:var(--mc-disabled-bg);   color:var(--mc-disabled-text); }
+  .mc-scope .card-input-zone { height:42px; flex-shrink:0; display:flex; align-items:center; margin-bottom:16px; position:relative; }
+  .mc-scope .slot-input { width:100%; height:38px; padding:0 14px; border:1px solid var(--mc-border); border-radius:10px; font-family:'Inter', sans-serif; font-size:13px; color:var(--mc-text-3); background:transparent; outline:none; letter-spacing:-0.26px; transition:border-color 0.15s, color 0.15s; -moz-appearance:textfield; -webkit-appearance:none; appearance:none; box-shadow:none; }
+  .mc-scope .slot-input::-webkit-inner-spin-button, .mc-scope .slot-input::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+  .mc-scope .slot-input:focus { border-color:var(--mc-blue); color:var(--mc-text-1); }
+  .mc-scope .slot-input.has-val { color:var(--mc-text-1); }
+  .mc-scope .slot-pill { display:inline-flex; align-items:center; gap:6px; padding:7px 12px; border-radius:9px; font-size:12px; font-weight:500; transform-origin:left center; animation:pill-in 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards; white-space:normal; word-break:break-word; }
+  .mc-scope .pdot { width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
+  .mc-scope .pill-success { background:var(--mc-green-bg);     color:var(--mc-green-text); }
+  .mc-scope .pill-error { background:var(--mc-red-bg);       color:var(--mc-red); }
+  .mc-scope .pill-error-heavy { background:var(--mc-red-heavy-bg); color:var(--mc-red-heavy); }
+  .mc-scope .pill-partial { background:var(--mc-partial-bg);   color:var(--mc-partial); }
+  .mc-scope .pill-warning { background:var(--mc-amber-bg);     color:var(--mc-amber); }
+  .mc-scope .pill-disabled { background:var(--mc-disabled-bg);  color:var(--mc-disabled-text); }
+  .mc-scope .pill-wrap { margin-bottom:8px; flex-shrink:0; }
+  .mc-scope .card-metric-zone { flex:1; min-height:0; display:flex; flex-direction:column; justify-content:flex-end; padding-bottom:4px; }
+  .mc-scope .metric-row { display:flex; align-items:baseline; gap:5px; line-height:1; }
+  .mc-scope .mv-sm { font-family:'DM Mono',monospace; font-size:28px; font-weight:400; letter-spacing:-0.5px; color:var(--mc-text-1); line-height:1; transition:color 0.3s; }
+  .mc-scope .mv-sm-unit { font-size:13px; font-weight:600; color:var(--mc-text-1); }
+  .mc-scope .mv-lg { font-family:'DM Mono',monospace; font-size:36px; font-weight:400; letter-spacing:-1.5px; color:var(--mc-text-1); line-height:1; transition:color 0.3s; }
+  .mc-scope .mv-lg-unit { font-size:16px; font-weight:600; color:var(--mc-text-1); }
+  .mc-scope .mv-word-sm { font-family:'Inter',sans-serif; font-size:28px; font-weight:300; letter-spacing:-0.5px; color:var(--mc-text-1); line-height:1; }
+  .mc-scope .mv-word-lg { font-family:'Inter',sans-serif; font-size:28px; font-weight:300; letter-spacing:-0.5px; color:var(--mc-text-1); line-height:1.15; }
+  .mc-scope .mv-muted { color:var(--mc-text-3) !important; }
+  .mc-scope .mv-timed-out { font-family:'Inter',sans-serif; font-size:22px; font-weight:500; letter-spacing:-0.4px; color:var(--mc-red); line-height:1; }
+  .mc-scope .mv-degree { font-family:'DM Mono',monospace; font-size:40px; font-weight:400; letter-spacing:-1px; color:var(--mc-text-1); line-height:1; transition:color 0.3s; }
+  .mc-scope .mv-degree-warn { color:var(--mc-amber) !important; }
+  .mc-scope .mv-degree-major { color:var(--mc-red-heavy) !important; }
+  .mc-scope .metric-sub { font-size:12px; color:var(--mc-text-3); letter-spacing:-0.2px; margin-top:4px; transition:color 0.3s; }
+  .mc-scope .card-status { height:18px; flex-shrink:0; display:flex; align-items:center; gap:5px; font-size:12px; letter-spacing:-0.2px; overflow:hidden; margin-bottom:10px; transition:opacity 0.2s; }
+  .mc-scope .sk { color:var(--mc-text-3); }
+  .mc-scope .sv { color:var(--mc-text-2); font-weight:500; transition:color 0.3s; }
+  .mc-scope .card-btn-zone { height:44px; flex-shrink:0; display:flex; gap:8px; position:relative; }
+  .mc-scope .mc-btn { flex:1; height:100%; border-radius:32px; border:none; font-family:'Inter',sans-serif; font-size:13px; font-weight:600; letter-spacing:-0.26px; cursor:pointer; transition:background 0.2s ease, opacity 0.15s, transform 0.1s, color 0.2s; position:relative; overflow:hidden; }
+  .mc-scope .mc-btn:disabled { opacity:0.38; cursor:not-allowed; }
+  .mc-scope .btn-primary { background:var(--mc-blue); color:#fff; }
+  .mc-scope .btn-primary:hover:not(:disabled) { opacity:0.88; }
+  .mc-scope .btn-ghost { background:transparent; color:var(--mc-text-2); border:1px solid var(--mc-border-med); }
+  .mc-scope .btn-danger { background:var(--mc-red); color:#fff; }
+  .mc-scope .btn-partial { background:var(--mc-partial-bg); color:var(--mc-partial); border:1px solid var(--mc-partial-border); }
+  .mc-scope .confirm-split { animation:confirm-split-in 0.22s cubic-bezier(0.22,1,0.36,1) both; }
+  .mc-scope .anim-in { animation:anim-in 0.3s cubic-bezier(0.22,1,0.36,1) both; }
+  .mc-scope .anim-in-delay-1 { animation-delay:0.04s; }
+  .mc-scope .anim-in-delay-2 { animation-delay:0.09s; }
+  .mc-scope .anim-in-delay-3 { animation-delay:0.14s; }
+  .mc-scope .anim-in-delay-4 { animation-delay:0.20s; }
+  .mc-scope .dt-mc-section-cards { position:relative; }
+  .mc-scope .can-flip-hint {
+    top:12px; right:12px;
+    width:30px; height:30px;
+  }
+
+  /* ═══ TICKET DRAWER — MANUAL CONTROL TAB ════════════════════════════════════
+     Hosts the real Add Water / Add Admix cards, borrowed from the All Trucks
+     panel by app-11, plus the adjustment log. The panel carries .mc-scope so
+     the mirrored card styles apply while the cards are parented here.
+     ═════════════════════════════════════════════════════════════════════════ */
+
+  /* Three across: Add Water, Add Admix, adjustment log. The log is a sibling
+     of the card slots, not a block underneath them, so it takes the row height
+     and scrolls internally. */
+  .tkmc-panel {
+    display:grid; grid-template-columns:1fr 1fr 1.35fr;
+    gap:16px; padding:16px; font-family:var(--font); align-items:start;
+  }
+  .tkmc-slot { min-width:0; }
+
+  .tkmc-log {
+    min-width:0; display:flex; flex-direction:column;
+    min-height:260px; max-height:340px;
+    border:1px solid var(--border); border-radius:var(--radius-md);
+    background:var(--layer-1); overflow:hidden;
+  }
+  #tkmc-log-body { flex:1; min-height:0; overflow-y:auto; }
+  body.dark .tkmc-log { background:#1e1c1a; border-color:rgba(255,255,255,0.08); }
+  .tkmc-log-head {
+    display:flex; align-items:flex-start; justify-content:space-between;
+    gap:12px; padding:14px 16px 10px;
+  }
+  .tkmc-log-title { font-size:14px; font-weight:500; color:var(--strong); letter-spacing:-0.28px; }
+  .tkmc-log-sub { font-size:12px; color:var(--soft); letter-spacing:-0.2px; margin-top:2px; }
+  .tkmc-log-clear {
+    background:none; border:none; cursor:pointer; padding:3px 8px; border-radius:6px;
+    font-family:var(--font); font-size:12px; color:var(--soft); letter-spacing:-0.2px;
+  }
+  .tkmc-log-clear:hover { background:var(--layer-2); color:var(--strong); }
+
+  .tkmc-log-cols, .tkmc-log-row {
+    display:grid; grid-template-columns:96px 1fr 110px 120px;
+    gap:12px; padding:8px 16px; align-items:center;
+  }
+  .tkmc-log-cols {
+    border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+    font-size:10px; font-weight:600; letter-spacing:0.4px;
+    text-transform:uppercase; color:var(--soft);
+  }
+  .tkmc-log-row {
+    border-bottom:1px solid var(--border);
+    font-size:13px; color:var(--defined); letter-spacing:-0.26px;
+  }
+  .tkmc-log-row span:nth-child(2) { color:var(--strong); font-weight:500; }
+  .tkmc-log-row span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .tkmc-log-empty {
+    padding:28px 16px; text-align:center;
+    font-size:13px; color:var(--subtle); letter-spacing:-0.2px;
+  }
+  .tkmc-log-foot {
+    padding:8px 16px; border-top:1px solid var(--border);
+    font-size:12px; color:var(--soft); letter-spacing:-0.2px; text-align:right;
+  }
+
+  /* Device frames — the cards are 260px tall and the log needs real width, so
+     three across only survives on desktop and tablet landscape. */
+  body.view-tablet:not(.orient-landscape) #dt-ticket-drawer .tkmc-panel {
+    grid-template-columns:1fr 1fr;
+  }
+  body.view-tablet:not(.orient-landscape) #dt-ticket-drawer .tkmc-log { grid-column:1 / -1; }
+  body.view-mobile #dt-ticket-drawer .tkmc-panel {
+    grid-template-columns:1fr; padding:12px; gap:12px;
+  }
+  body.view-mobile #dt-ticket-drawer .tkmc-log-cols,
+  body.view-mobile #dt-ticket-drawer .tkmc-log-row { grid-template-columns:72px 1fr 68px; gap:8px; padding:8px 12px; }
+  body.view-mobile #dt-ticket-drawer .tkmc-log-cols span:nth-child(4),
+  body.view-mobile #dt-ticket-drawer .tkmc-log-row span:nth-child(4) { display:none; }
+
+  /* ═══ TICKETS — FLEET MAP + PHASES ON DEVICE FRAMES ═════════════════════════
+     The mobile overlay and the tablet page carry all three views, switched by
+     a segmented control instead of nav routes. Map layout follows app-04's
+     Diagnostic Center maps: map fills the frame, cards ride in a horizontal
+     strip underneath (.mom-card-strip / .tbm-card-strip). Owned by app-12.
+     ═════════════════════════════════════════════════════════════════════════ */
+
+  /* Trinity icon switch (Figma 3215:129959). Three 60x44 cells sharing hairline
+     borders, the seam collapsed with a -1px margin, 32px radius on the outer
+     ends only, and the selected cell filled solid. Icon-only: the view name is
+     carried by the page subtitle, which tvNavGo keeps in step. */
+  .tv-seg {
+    display:inline-flex; align-items:center; flex-shrink:0;
+    margin:0 16px 10px; padding:0;
+    background:none; border:none; border-radius:0;
+  }
+  .tv-seg-item {
+    flex:0 0 auto; width:60px; height:44px; padding:0; margin-left:-1px;
+    display:inline-flex; align-items:center; justify-content:center;
+    background:none; border:1px solid var(--border); border-radius:0;
+    color:var(--soft); cursor:pointer;
+    font-family:var(--font); font-size:0; line-height:0;
+  }
+  .tv-seg-item:first-child { margin-left:0; border-radius:32px 0 0 32px; }
+  .tv-seg-item:last-child  { border-radius:0 32px 32px 0; }
+  .tv-seg-item svg { width:20px; height:20px; display:block; }
+  .tv-seg-item:hover { background:var(--layer-2); }
+  /* Raised so the filled cell's own border wins over both neighbours' seams.
+     Selection blue matches the nav pill rather than the near-black in the Figma
+     switch node, so a selected view and a selected nav item read as one state. */
+  .tv-seg-item.active {
+    background:var(--blue); border-color:var(--blue); color:#ffffff;
+    position:relative; z-index:1;
+  }
+  .tv-seg-item.active:hover { background:var(--blue); }
+  body.dark .tv-seg-item { border-color:rgba(255,255,255,0.16); }
+  body.dark .tv-seg-item.active,
+  body.dark .tv-seg-item.active:hover { background:#e3f200; border-color:#e3f200; color:#000; }
+
+  /* Map view — map on top, card strip below */
+  .tv-map { flex:1; min-height:0; display:flex; flex-direction:column; }
+  .tv-map-area {
+    flex:1; min-height:0; position:relative; overflow:hidden;
+    background:#dde7ec; border-top:1px solid var(--border);
+  }
+  body.dark .tv-map-area { background:#1a1917; }
+  .tv-leaflet { position:absolute; inset:0; z-index:1; }
+
+  .tv-legend {
+    position:absolute; left:0; right:0; bottom:0; z-index:10;
+    display:flex; align-items:center; gap:12px;
+    padding:4px 10px; overflow-x:auto; scrollbar-width:none;
+    background:rgba(229,229,229,0.87);
+    backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
+  }
+  .tv-legend::-webkit-scrollbar { display:none; }
+  .tv-legend-item {
+    display:inline-flex; align-items:center; gap:5px; flex-shrink:0;
+    font-family:var(--font); font-size:11px; color:var(--strong); letter-spacing:-0.18px;
+    white-space:nowrap;
+  }
+  .tv-legend-dot { width:9px; height:9px; border-radius:50%; background:var(--phase-ignition-off); }
+  .tv-legend-dot.waiting-to-load { background:var(--phase-waiting-to-load); }
+  .tv-legend-dot.loading         { background:var(--phase-loading); }
+  .tv-legend-dot.loaded          { background:var(--phase-loaded); }
+  .tv-legend-dot.to-job          { background:var(--phase-to-job); }
+  .tv-legend-dot.on-site         { background:var(--phase-on-site); }
+  .tv-legend-dot.pouring         { background:var(--phase-pouring); }
+  .tv-legend-dot.washing         { background:var(--phase-washing); }
+  .tv-legend-dot.return-to-plant { background:var(--phase-return-to-plant); }
+  .tv-legend-dot.ignition-off    { background:var(--phase-ignition-off); }
+
+  /* Card strip — same card component, laid out sideways */
+  .tv-strip {
+    flex:0 0 auto; display:flex; gap:10px;
+    padding:12px 16px; overflow-x:auto; overflow-y:hidden;
+    scrollbar-width:none; cursor:grab; background:var(--base);
+  }
+  .tv-strip::-webkit-scrollbar { display:none; }
+  .tv-strip .tf-card { flex:0 0 268px; padding:12px 14px; }
+  .tv-strip-empty {
+    padding:24px 8px; font-family:var(--font); font-size:13px;
+    color:var(--subtle); letter-spacing:-0.2px;
+  }
+
+  /* Phases board inside a device frame */
+  .tv-board { padding:12px 16px 16px; }
+
+  /* ── Mobile portrait ─────────────────────────────────────────────────── */
+  /* The mobile toolbar runs 36px controls, so the switch steps down with it
+     rather than towering over the search field beside it. */
+  body.view-mobile .tv-seg-item { width:52px; height:36px; }
+  body.view-mobile .tv-seg-item svg { width:18px; height:18px; }
+  body.view-mobile:not(.orient-landscape) .tv-strip { max-height:212px; }
+  body.view-mobile:not(.orient-landscape) .tv-map-area { min-height:240px; }
+
+  /* ── Mobile landscape ────────────────────────────────────────────────
+     Height is the scarce axis: the strip goes beside the map, not under it,
+     and the cards drop their detail rows. */
+  body.view-mobile.orient-landscape .tv-map { flex-direction:row; }
+  body.view-mobile.orient-landscape .tv-strip {
+    flex:0 0 250px; flex-direction:column; overflow-x:hidden; overflow-y:auto;
+    padding:10px 12px; cursor:default;
+  }
+  body.view-mobile.orient-landscape .tv-strip .tf-card { flex:0 0 auto; }
+  body.view-mobile.orient-landscape .tv-strip .tf-rows { display:none; }
+  /* Landscape has the width to put the switch on the toolbar line instead of
+     spending a row on it. */
+  body.view-mobile.orient-landscape .tv-seg { margin:0; }
+  body.view-mobile.orient-landscape .mtk-toolbar { align-items:center; }
+
+  /* ── Tablet ──────────────────────────────────────────────────────────── */
+  /* 44px matches .ttk-btn, so the switch sits on the toolbar row rather than
+     taking a row of its own. */
+  body.view-tablet .tv-seg { margin:0; }
+  body.view-tablet.orient-landscape #tb-page-tickets .tv-seg-item { height:40px; }
+  body.view-tablet .tv-strip { padding:12px 0; }
+  body.view-tablet .tv-strip .tf-card { flex:0 0 300px; }
+  body.view-tablet .tv-map-area { border-radius:var(--radius-md); border:1px solid var(--border); }
+  body.view-tablet:not(.orient-landscape) .tv-strip { max-height:236px; }
+
+  /* Tablet landscape has the width for the rail beside the map, like desktop */
+  body.view-tablet.orient-landscape .tv-map { flex-direction:row-reverse; gap:12px; }
+  body.view-tablet.orient-landscape .tv-strip {
+    flex:0 0 320px; flex-direction:column; overflow-x:hidden; overflow-y:auto;
+    padding:0; cursor:default;
+  }
+  body.view-tablet.orient-landscape .tv-strip .tf-card { flex:0 0 auto; }

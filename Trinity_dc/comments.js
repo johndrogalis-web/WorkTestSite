@@ -36,14 +36,19 @@ var cmtState = {
     /* Pin — Figma-style teardrop: rounded square, sharp bottom-left */
     '.cmt-pin{position:absolute;width:28px;height:28px;margin:-28px 0 0 0;',
     '  border-radius:14px 14px 14px 2px;background:#3069e3;color:#fff;',
-    '  display:flex;align-items:center;justify-content:center;',
+    '  align-items:center;justify-content:center;',
     '  font-family:var(--font,sans-serif);font-size:12px;font-weight:600;',
     '  box-shadow:0 2px 8px rgba(0,0,0,0.35);cursor:pointer;z-index:1200;',
     '  border:2px solid #fff;user-select:none;}',
     '.cmt-pin.cmt-done{background:#8a8d94;}',
     '.cmt-pin.cmt-done::after{content:"";position:absolute;top:-4px;right:-4px;width:12px;height:12px;',
     '  border-radius:50%;background:#1f9d55;border:2px solid #fff;}',
-    'body.cmt-hidden .cmt-pin{display:none;}',
+    /* Fail-safe direction: pins are hidden UNLESS body.cmt-show is
+       present. setView() rebuilds body.className from scratch, and any
+       future code that does the same now hides the annotation layer
+       instead of dumping review pins into a live test. */
+    '.cmt-pin{display:none;}',
+    'body.cmt-show .cmt-pin{display:flex;}',
     /* Composer + bubble share a card look */
     '.cmt-card{position:absolute;width:260px;background:#fff;border:1px solid rgba(0,0,0,0.12);',
     '  border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,0.22);z-index:1450;',
@@ -103,7 +108,7 @@ function cmtToggleMode() {
 }
 function cmtSetVisible(on) {
   cmtState.visible = !!on;
-  document.body.classList.toggle('cmt-hidden', !cmtState.visible);
+  document.body.classList.toggle('cmt-show', cmtState.visible);
   var eye = document.getElementById('cmt-eye');
   if (eye) eye.classList.toggle('cmt-eye-off', !cmtState.visible);
   if (!cmtState.visible) cmtCloseCard();
@@ -389,13 +394,12 @@ function cmtRefresh() {
 /* Re-render on view/orientation change — container sizes shift */
 (function () {
   var mo = new MutationObserver(function () {
-    /* setView() rebuilds body.className from scratch ('view-' + view),
-       wiping cmt-hidden and revealing every pin — tester links hit this
-       on boot when they force the workflow's device. Re-assert our own
-       classes whenever anyone rewrites the attribute. The guards keep
+    /* setView() rebuilds body.className from scratch ('view-' + view).
+       Hidden is now the CSS default, so a clobber while hidden needs no
+       repair — only a SHOWN state has to be re-asserted. The guards keep
        the re-add from re-triggering this observer into a loop. */
-    if (!cmtState.visible && !document.body.classList.contains('cmt-hidden')) {
-      document.body.classList.add('cmt-hidden');
+    if (cmtState.visible && !document.body.classList.contains('cmt-show')) {
+      document.body.classList.add('cmt-show');
     }
     if (cmtState.mode && !document.body.classList.contains('cmt-mode')) {
       document.body.classList.add('cmt-mode');
@@ -406,10 +410,10 @@ function cmtRefresh() {
   mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
 })();
 
-/* Set the class immediately rather than inside cmtRefresh: the first
-   render is async, but a stale cmt-hidden-less body would let pins
-   paint for a frame before the class landed. */
-if (!cmtState.visible) document.body.classList.add('cmt-hidden');
+/* Hidden is the CSS default now — nothing to set at boot. A visible
+   preference (only ever set by a human toggling the eye) adds cmt-show
+   through cmtSetVisible. */
+if (cmtState.visible) document.body.classList.add('cmt-show');
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', cmtRefresh);
 else cmtRefresh();

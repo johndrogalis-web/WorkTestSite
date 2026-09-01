@@ -177,6 +177,10 @@
         <!-- Onboarding section — demo remote control. In production the same
              dcTourLaunch() entry point would hang off a real help affordance. -->
         <div class="vp-opts-section-label">Onboarding</div>
+        <div class="vp-opts-row" id="vp-opt-wsreset" onclick="obReset()">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;"><path d="M12 7a5 5 0 1 1-1.5-3.6M12 1.5V4.5H9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Reset workspace setup</span>
+        </div>
         <div class="vp-opts-row" id="vp-opt-onboarding" onclick="dcTourLaunch()">
           <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M5.4 5.3c.2-.9 1-1.4 1.9-1.3.9.1 1.5.8 1.5 1.6 0 1.1-1.6 1.3-1.6 2.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7.1" cy="10" r="0.75" fill="currentColor"/></svg>
           <span>Show Onboarding</span>
@@ -189,6 +193,42 @@
 <div class="phone-wrap" id="phone-wrap">
 <div class="phone">
 <div class="phone-notch"></div>
+
+  <!-- ═══ LOGIN — prototype entry point (app-14-login.js, Trinity 3208:172786) ═══
+       One node for all three viewports; layout keys off body.view-*, never a
+       media query, since the frames are fixed-size divs in a desktop browser. -->
+  <div id="login-screen">
+    <div class="lg-form-pane">
+      <div class="lg-card">
+        <svg class="lg-wordmark" width="169" height="42" viewBox="0 0 96 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Verifi"><path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="var(--strong)"/></svg>
+
+        <div class="lg-fields">
+          <div class="lg-field">
+            <label class="lg-label" for="lg-email">E-mail</label>
+            <input id="lg-email" class="lg-input" type="email" value="Label@email.com" onkeydown="lgKey(event)">
+          </div>
+          <div class="lg-field">
+            <label class="lg-label" for="lg-pass">Password</label>
+            <input id="lg-pass" class="lg-input" type="password" value="12345" onkeydown="lgKey(event)">
+          </div>
+
+          <button class="lg-forgot" type="button">Forgot Password?</button>
+
+          <button class="lg-btn-primary" type="button" onclick="lgDismiss()">Log in</button>
+
+          <button class="lg-btn-sso" type="button" onclick="lgDismiss()">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="0" y="0" width="7.4" height="7.4" fill="#F25022"/><rect x="8.6" y="0" width="7.4" height="7.4" fill="#7FBA00"/><rect x="0" y="8.6" width="7.4" height="7.4" fill="#00A4EF"/><rect x="8.6" y="8.6" width="7.4" height="7.4" fill="#FFB900"/></svg>
+            <span>Microsoft Single Sign- On</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="lg-image-pane">
+      <img class="lg-image" src="https://johndrogalis-web.github.io/WorkTestSite/Trinity_dc/Img/LoginImg.png" alt="">
+    </div>
+  </div>
+
 
   <!-- Coming Soon overlay — shown on tablet + desktop until those views are built -->
   <div class="coming-soon-overlay">
@@ -4314,6 +4354,9 @@
        Full-bleed overlay over s-main, same pattern as #mob-page-update.
        Landscape-only columns carry .lsc-col.
   ═══════════════════════════════════════════════════ -->
+  <!-- ═══ WORKSPACE SETUP — first-run wizard, built by app-15-onboarding.js ═══ -->
+  <div id="ob-screen"></div>
+
   <!-- ═══ MOBILE DASHBOARDS — full-bleed overlay, same pattern as tickets/update (app-13) ═══ -->
   <div id="mob-page-dashboard">
     <div class="top-nav" style="flex-shrink:0;">
@@ -4690,6 +4733,8 @@
 <script src="app-11-ticket-manual.js"></script>
 <script src="app-12-tickets-device-views.js"></script>
 <script src="app-13-dashboard.js"></script>
+<script src="app-14-login.js"></script>
+<script src="app-15-onboarding.js"></script>
 <script src="comments.js"></script>
 <script src="testing.js"></script>
 <!-- Leaflet — JS for the Maps page. Loaded after the inline script so

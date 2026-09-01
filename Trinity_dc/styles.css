@@ -10370,3 +10370,194 @@ body.view-tablet #tb-page-dashboard .db-card-title { font-size:15px; }
 /* Landscape frames get more columns to breathe */
 body.view-mobile.orient-landscape #mob-page-dashboard .db-dev-grid,
 body.view-tablet.orient-landscape #tb-page-dashboard .db-dev-grid { grid-template-columns:1fr 1fr; }
+
+/* ═══════════════════════════════════════════════════════════════
+   LOGIN — prototype entry point (app-14-login.js)
+   Trinity node 3208:172786. One markup node, three layouts driven
+   by body.view-* (never media queries — the frames are fixed-size
+   divs inside a desktop browser).
+   ═══════════════════════════════════════════════════════════════ */
+
+#login-screen {
+  display:none; position:absolute; inset:0; z-index:9500;
+  background:var(--base); font-family:var(--font);
+  padding:16px; gap:16px; box-sizing:border-box;
+  opacity:1; transition:opacity 0.24s ease;
+}
+#login-screen.lg-out { opacity:0; pointer-events:none; }
+
+/* ── Panes ── */
+.lg-form-pane { flex:1 1 0; min-width:0; display:flex; align-items:center; justify-content:center; }
+.lg-image-pane { flex:1 1 0; min-width:0; border-radius:var(--radius-lg); overflow:hidden; position:relative;
+  background:linear-gradient(180deg,#f0f9fe 0%,#8dabe5 55%,#295ccc 100%); }
+.lg-image { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+
+/* ── Card ── */
+.lg-card {
+  width:100%; max-width:397px; box-sizing:border-box;
+  display:flex; flex-direction:column; align-items:center; gap:48px;
+  padding:48px; border-radius:var(--radius-lg);
+  background:rgba(217,217,217,0.02); backdrop-filter:blur(62.5px); -webkit-backdrop-filter:blur(62.5px);
+}
+.lg-wordmark { width:169px; height:42px; flex-shrink:0; display:block; }
+
+.lg-fields { display:flex; flex-direction:column; gap:24px; width:100%; }
+.lg-field { display:flex; flex-direction:column; gap:5px; width:100%; }
+.lg-label { font-size:12px; color:var(--defined); letter-spacing:-0.24px; padding:4px 0; line-height:1.3; }
+.lg-input {
+  width:100%; box-sizing:border-box; background:#fff;
+  border:1px solid var(--border); border-radius:var(--radius-lg);
+  padding:12px 16px; font-family:var(--font); font-size:14px; letter-spacing:-0.28px;
+  color:var(--strong); outline:none;
+}
+body.dark .lg-input { background:var(--layer-1); }
+.lg-input:focus { border-color:var(--blue); }
+
+.lg-forgot {
+  align-self:center; background:none; border:none; padding:4px 0; cursor:pointer;
+  font-family:var(--font); font-size:14px; letter-spacing:-0.28px;
+  color:var(--defined); text-decoration:underline;
+}
+
+/* Figma ships this button lime. Lime is the outdated accent: blue in light
+   mode, lime only on dark surfaces. */
+.lg-btn-primary {
+  width:100%; height:40px; border:none; border-radius:var(--radius-lg); cursor:pointer;
+  background:var(--blue); color:#fff;
+  font-family:var(--font); font-size:14px; font-weight:500; letter-spacing:-0.28px;
+}
+.lg-btn-primary:hover { filter:brightness(1.06); }
+body.dark .lg-btn-primary { background:#e3f200; color:#000; }
+
+.lg-btn-sso {
+  width:100%; height:40px; box-sizing:border-box; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  background:none; border:1px solid var(--border); border-radius:var(--radius-lg);
+  font-family:var(--font); font-size:14px; font-weight:500; letter-spacing:-0.28px; color:var(--strong);
+}
+.lg-btn-sso:hover { border-color:var(--border-mid); }
+.lg-btn-sso svg { width:16px; height:16px; flex-shrink:0; }
+
+/* ── Desktop: two panes side by side ── */
+body.view-desktop #login-screen { flex-direction:row; }
+
+/* ── Tablet + mobile: stacked, form above the image, whole thing scrolls ── */
+body.view-tablet #login-screen,
+body.view-mobile #login-screen {
+  flex-direction:column; gap:0; padding:0;
+  overflow-y:auto; -webkit-overflow-scrolling:touch; display:none;
+}
+body.view-tablet #login-screen .lg-form-pane,
+body.view-mobile #login-screen .lg-form-pane { flex:0 0 auto; width:100%; padding:32px 16px 40px; box-sizing:border-box; }
+body.view-tablet #login-screen .lg-card,
+body.view-mobile #login-screen .lg-card { background:none; backdrop-filter:none; -webkit-backdrop-filter:none; max-width:600px; padding:24px 24px 0; gap:40px; }
+body.view-tablet #login-screen .lg-image-pane,
+body.view-mobile #login-screen .lg-image-pane { flex:0 0 auto; width:calc(100% - 32px); margin:0 16px 16px; aspect-ratio:3/4; position:relative; }
+
+body.view-tablet #login-screen .lg-wordmark { width:340px; height:84px; }
+body.view-mobile #login-screen .lg-card { padding:16px 16px 0; gap:32px; }
+body.view-mobile #login-screen .lg-wordmark { width:200px; height:50px; }
+body.view-mobile #login-screen .lg-image-pane { aspect-ratio:3/4.4; }
+
+/* ═══════════════════════════════════════════════════════════════
+   WORKSPACE SETUP — first-run wizard (app-15-onboarding.js)
+   Left pane asks, right pane shows the real dashboard at scale.
+   ═══════════════════════════════════════════════════════════════ */
+
+#ob-screen {
+  display:none; position:absolute; inset:0; z-index:9400;
+  background:var(--base); font-family:var(--font);
+  opacity:1; transition:opacity 0.24s ease; overflow:hidden;
+}
+#ob-screen.ob-out { opacity:0; pointer-events:none; }
+
+.ob-left { flex:1 1 0; min-width:0; display:flex; flex-direction:column; justify-content:center; padding:48px 56px; position:relative; }
+.ob-left-inner { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:28px; text-align:center; }
+.ob-title { font-size:44px; font-weight:400; line-height:1.15; letter-spacing:-1.3px; color:var(--strong); }
+.ob-title-lg { font-size:52px; letter-spacing:-1.6px; }
+
+.ob-dots { display:flex; align-items:center; gap:8px; }
+.ob-dot { width:9px; height:9px; border-radius:9px; background:var(--border-mid); opacity:0.55; transition:all 0.2s; }
+.ob-dot.on { width:34px; background:var(--strong); opacity:1; }
+
+.ob-options { display:flex; flex-wrap:wrap; gap:16px; justify-content:center; margin-top:12px; }
+.ob-opt {
+  padding:26px 34px; border-radius:60px; cursor:pointer; background:none;
+  border:1px solid var(--border); color:var(--strong);
+  font-family:var(--font); font-size:20px; letter-spacing:-0.4px;
+  transition:border-color 0.15s, transform 0.15s;
+}
+.ob-opt:hover { border-color:var(--border-mid); }
+.ob-opt.on { border:1.6px solid var(--strong); }
+
+.ob-foot { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-shrink:0; }
+.ob-back {
+  width:44px; height:44px; border-radius:50%; cursor:pointer;
+  background:none; border:1px solid var(--border); color:var(--strong);
+  display:flex; align-items:center; justify-content:center;
+}
+.ob-back:hover { border-color:var(--border-mid); }
+
+/* Lime is the outdated accent — blue in light, lime only on dark. */
+.ob-cta {
+  height:52px; padding:0 34px; border:none; border-radius:52px; cursor:pointer;
+  background:var(--blue); color:#fff;
+  font-family:var(--font); font-size:17px; font-weight:500; letter-spacing:-0.34px;
+}
+.ob-cta:hover { filter:brightness(1.06); }
+body.dark .ob-cta { background:#e3f200; color:#000; }
+.ob-left-inner .ob-cta { margin-top:12px; }
+
+/* ── Right pane: blurred hero + the live preview ── */
+.ob-right { flex:1 1 0; min-width:0; position:relative; display:flex; align-items:center; justify-content:center;
+  padding:24px; box-sizing:border-box; overflow:hidden; border-radius:var(--radius-lg); margin:16px 16px 16px 0; }
+.ob-bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter:blur(48px); transform:scale(1.15); }
+
+.ob-preview {
+  position:relative; width:100%; max-width:1100px; overflow:hidden;
+  border-radius:12px; background:var(--base);
+  box-shadow:0 24px 70px rgba(0,0,0,0.32), 0 0 0 1px rgba(255,255,255,0.14);
+}
+.ob-stage {
+  width:1360px; height:860px; transform-origin:top left;
+  display:flex; background:var(--base); overflow:hidden;
+}
+
+/* ── Preview rail (static replica) ── */
+.ob-rail { flex:0 0 236px; display:flex; flex-direction:column; padding:20px 14px; gap:3px; background:var(--base); border-right:1px solid var(--border); }
+.ob-rail-brand { display:flex; align-items:center; gap:6px; padding:0 10px 22px; font-size:22px; font-weight:500; color:var(--strong); letter-spacing:-0.6px; }
+.ob-rail-item { padding:11px 14px; border-radius:32px; font-size:15px; color:var(--soft); letter-spacing:-0.3px; }
+.ob-rail-item.on { background:var(--blue); color:#fff; font-weight:500; }
+body.dark .ob-rail-item.on { background:#e3f200; color:#000; }
+.ob-rail-foot { margin-top:auto; display:flex; flex-direction:column; gap:3px; }
+
+/* ── Preview canvas ── */
+.ob-canvas { flex:1; min-width:0; padding:24px 28px; display:flex; flex-direction:column; overflow:hidden; }
+.ob-canvas-head { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:18px; }
+.ob-canvas .db-zone { display:flex; flex-direction:column; }
+.ob-canvas .db-row + .db-row { margin-top:14px; }
+.ob-canvas .db-card { min-height:190px; }
+.ob-canvas .db-row:not(.db-row-top) .db-card { min-height:280px; }
+
+.ob-skel { background:var(--layer-1); }
+.ob-map-stub {
+  position:relative; min-height:280px;
+  background:linear-gradient(160deg,#cfe4ef 0%,#dbe9d8 55%,#e8e4d6 100%);
+  border:1px solid var(--border); border-radius:var(--radius-md);
+}
+.ob-map-search { position:absolute; top:16px; left:18px; background:var(--layer-1); border:1px solid var(--border); border-radius:32px; padding:9px 16px; font-size:13px; color:var(--subtle); }
+.ob-map-pill { position:absolute; top:16px; right:18px; background:var(--layer-1); border:1px solid var(--border); border-radius:32px; padding:9px 16px; font-size:13px; font-weight:500; color:var(--strong); }
+
+/* ── Device frames: no room for a preview, so it is the questions alone ── */
+body.view-tablet #ob-screen,
+body.view-mobile #ob-screen { flex-direction:column; display:none; }
+body.view-tablet #ob-screen .ob-right,
+body.view-mobile #ob-screen .ob-right { display:none; }
+body.view-tablet #ob-screen .ob-left { padding:32px 28px; }
+body.view-mobile #ob-screen .ob-left { padding:24px 18px; }
+body.view-tablet #ob-screen .ob-title { font-size:34px; letter-spacing:-1px; }
+body.view-mobile #ob-screen .ob-title { font-size:26px; letter-spacing:-0.7px; }
+body.view-mobile #ob-screen .ob-title-lg { font-size:30px; }
+body.view-mobile #ob-screen .ob-options { flex-direction:column; width:100%; gap:10px; }
+body.view-mobile #ob-screen .ob-opt { width:100%; padding:16px 20px; font-size:16px; }
+body.view-tablet #ob-screen .ob-opt { padding:20px 24px; font-size:17px; }

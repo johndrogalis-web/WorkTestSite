@@ -111,16 +111,27 @@ function rtEnsureDesktop() {
   });
 }
 
+/* "Visible" used to mean "inline style.display is not none". That held
+   while every desktop page toggled its own inline display. app-13's
+   Dashboards page hides the other pages some other way, so #dt-page-trucks
+   kept a blank inline display while the dashboard was on screen, the
+   router believed trucks was showing, skipped dtNavGo, and opened the
+   truck drawer on top of the dashboard. Ask the layout engine instead:
+   a page is on screen only if it has a laid-out box with height. */
+function rtDtPageOnScreen(page) {
+  var el = document.getElementById('dt-page-' + page);
+  if (!el) return null;
+  if (page === 'home' && !el.classList.contains('active')) return null;
+  var cs = getComputedStyle(el);
+  if (cs.display === 'none' || cs.visibility === 'hidden') return null;
+  var r = el.getBoundingClientRect();
+  return (r.width > 0 && r.height > 0) ? el : null;
+}
+
 function rtEnsureDtPage(page) {
   return rtEnsureDesktop().then(function () {
-    var el = document.getElementById('dt-page-' + page);
-    var visible = el && el.style.display !== 'none' &&
-      (page !== 'home' || el.classList.contains('active'));
-    if (!visible) dtNavGo(page);
-    return rtWaitFor(function () {
-      var p = document.getElementById('dt-page-' + page);
-      return p && p.style.display !== 'none' ? p : null;
-    });
+    if (!rtDtPageOnScreen(page)) dtNavGo(page);
+    return rtWaitFor(function () { return rtDtPageOnScreen(page); });
   });
 }
 
@@ -160,7 +171,7 @@ rtRegister('desktop', function () {
    inside them isn't hash-written yet). A page-level jump still lands
    you on the right screen with the pin rendered — better than no
    button while deep resolvers for those pages get built. */
-['home', 'units', 'tickets', 'update', 'map'].forEach(function (page) {
+['home', 'dashboard', 'units', 'tickets', 'update', 'map'].forEach(function (page) {
   rtRegister('desktop/' + page, function () {
     return rtEnsureDtPage(page).then(function () {
       rtCloseOtherDrawers(null);
@@ -640,7 +651,7 @@ function rtCmtJump(c) {
   el.textContent =
     '@keyframes rtPinFlash{0%,100%{transform:scale(1);box-shadow:0 2px 8px rgba(0,0,0,0.35);}' +
     '50%{transform:scale(1.35);box-shadow:0 0 0 6px rgba(48,105,227,0.28),0 2px 8px rgba(0,0,0,0.35);}}' +
-    '.cmt-pin.cmt-flash{animation:rtPinFlash 0.65s ease-in-out 3;z-index:1300;}';
+    '.cmt-pin.cmt-flash{animation:rtPinFlash 0.65s ease-in-out 3;z-index:9655;}';
   document.head.appendChild(el);
 })();
 
@@ -677,6 +688,17 @@ function rtCmtJump(c) {
   var q = new URLSearchParams(location.search);
   var jump = q.get('jump');
   if (!jump) return;
+  /* A deep link is an authenticated context, exactly like ?test= links,
+     which app-14 already skips login for. Hide the overlay the same way
+     lgInit does (display + session flag) rather than calling lgDismiss,
+     whose landing / onboarding side effects would race the jump. */
+  (function rtSkipLogin() {
+    var lg = document.getElementById('login-screen');
+    if (!lg) return;
+    lg.classList.add('lg-out');
+    lg.style.display = 'none';
+    try { sessionStorage.setItem('vfLoggedIn', '1'); } catch (e) {}
+  })();
   setTimeout(function () {
     rtGoTo(jump)
       .catch(function (e) { console.warn('[router] ?jump failed', e); })

@@ -11822,3 +11822,74 @@ body.view-mobile .so-foot { padding:12px 14px; }
   body.view-tablet.orient-landscape .rc-panel { min-height:0; }
   body.view-tablet.orient-landscape .rc-table { min-width:0; }
   body.view-tablet.orient-landscape .rc-settings-row { flex-wrap:nowrap; }
+
+  /* ── Dashboard setup: widget previews (app-22) ─────────────────────────────
+     The library item is now a title row plus a miniature of the real widget.
+     Item width sets the scale: at the old 324px panel two-up left 134px per
+     item and the 360px stage shrank to 0.45, which is a silhouette. The
+     drawer below is 600px, so an item is ~276px and the scale lands near
+     0.77, where the type is still readable. */
+
+  .db-lib-grid { grid-template-columns:1fr 1fr; gap:12px; }
+  .db-lib-item { padding:10px 10px 10px; min-height:0; }
+  .db-lib-item-head { display:flex; align-items:flex-start; justify-content:space-between;
+    gap:8px; margin-bottom:8px; }
+  .db-lib-item .db-lib-check, .db-lib-item .db-lib-drag { position:static; flex-shrink:0; }
+  .db-lib-item .db-lib-drag { font-size:12px; }
+
+  /* The frame crops, the stage scales. transform-origin at the top left keeps
+     the card's own corner in the frame's corner at any scale. */
+  .dbp-frame { position:relative; height:162px; overflow:hidden; border-radius:10px;
+    background:var(--layer-2); pointer-events:none; }
+  .dbp-stage { position:absolute; top:0; left:0; width:360px; transform-origin:top left; }
+  .dbp-stage .db-card { min-height:210px; }
+  .dbp-frame .db-card { box-shadow:none; }
+
+  /* Fleet map only: a real Leaflet instance cannot be inside a CSS scale, so
+     this one renders 1:1 in a shorter frame. */
+  .db-lib-item.dbp-raw .dbp-frame { height:150px; }
+  .db-lib-item.dbp-raw .dbp-stage { position:relative; width:100%; transform:none; }
+  .db-lib-item.dbp-raw .dbp-stage .db-card { min-height:150px; height:150px; }
+  .db-lib-item.dbp-raw .db-map-wrap, .db-lib-item.dbp-raw .db-map { height:150px; }
+  /* The search field and the arrow pill belong to the full-size widget; at
+     this size they crowd out the map they sit on. */
+  .db-lib-item.dbp-raw .db-map-search, .db-lib-item.dbp-raw .db-map-pill { display:none; }
+
+  /* ── Dashboard setup: the library is a drawer ──────────────────────────────
+     It used to reserve 352px of the page and shove the dashboard sideways, so
+     entering setup re-laid-out the very thing you were about to arrange. It
+     now slides over the page instead. #dt-page-dashboard is position:relative
+     and overflow:hidden, so the parked drawer is clipped rather than adding a
+     scrollbar.
+
+     No scrim, deliberately. The dashboard behind this is the drop target: you
+     drag widgets out of the drawer and onto it, so dimming it or catching
+     clicks on it would break the one interaction the drawer exists for. */
+
+  .db-editing .db-scroll { padding-right:28px; }
+
+  .db-library { display:block; width:600px; visibility:hidden; transform:translateX(100%);
+    transition:transform 0.26s ease, visibility 0s linear 0.26s; }
+  .db-editing .db-library { visibility:visible; transform:translateX(0);
+    transition:transform 0.26s ease, visibility 0s; }
+
+
+
+  /* ── Dashboard setup drawer: sticky head, one shelf ────────────────────────
+     The drawer overlays the page, so the Save changes button in the page
+     header goes out of reach the moment the library scrolls. The head stays
+     put and carries Done, which is the same commit. */
+
+  .db-library { padding-top:0; }
+  .db-lib-head { position:sticky; top:0; z-index:3; background:var(--layer-1);
+    padding:20px 0 12px; margin-bottom:2px; border-bottom:1px solid var(--border); }
+  .dbp-head-actions { display:flex; align-items:center; gap:10px; }
+  /* One solid button per container, and this is the commit. */
+  .dbp-done { height:36px; padding:0 20px; border:none; border-radius:32px; cursor:pointer;
+    font-family:var(--font); font-size:14px; letter-spacing:-0.28px;
+    background:var(--strong); color:var(--layer-1); }
+  .dbp-done:hover { filter:brightness(1.12); }
+
+  /* The shelf is one line. Five quarter cards fill it; there is no second
+     line to wrap onto, so a sixth is refused at the drop instead. */
+  .db-row-top { flex-wrap:nowrap; }

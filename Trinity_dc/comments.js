@@ -38,7 +38,7 @@ var cmtState = {
     '  border-radius:14px 14px 14px 2px;background:#3069e3;color:#fff;',
     '  align-items:center;justify-content:center;',
     '  font-family:var(--font,sans-serif);font-size:12px;font-weight:600;',
-    '  box-shadow:0 2px 8px rgba(0,0,0,0.35);cursor:pointer;z-index:1200;',
+    '  box-shadow:0 2px 8px rgba(0,0,0,0.35);cursor:pointer;z-index:9650;',
     '  border:2px solid #fff;user-select:none;}',
     '.cmt-pin.cmt-done{background:#8a8d94;}',
     '.cmt-pin.cmt-done::after{content:"";position:absolute;top:-4px;right:-4px;width:12px;height:12px;',
@@ -51,7 +51,7 @@ var cmtState = {
     'body.cmt-show .cmt-pin{display:flex;}',
     /* Composer + bubble share a card look */
     '.cmt-card{position:absolute;width:260px;background:#fff;border:1px solid rgba(0,0,0,0.12);',
-    '  border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,0.22);z-index:1450;',
+    '  border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,0.22);z-index:9700;',
     '  font-family:var(--font,sans-serif);padding:12px;display:flex;flex-direction:column;gap:8px;}',
     '.cmt-card select,.cmt-card textarea,.cmt-card input{width:100%;box-sizing:border-box;',
     '  font-family:inherit;font-size:12.5px;border:1px solid rgba(0,0,0,0.18);border-radius:8px;',
@@ -70,7 +70,7 @@ var cmtState = {
     '.cmt-author{font-size:12.5px;font-weight:600;color:#1a1a1a;}',
     '.cmt-text{font-size:12.5px;color:#333;line-height:1.45;white-space:pre-wrap;word-break:break-word;}',
     '.cmt-err{font-size:11px;color:#c0392b;}',
-    '.cmt-hint{position:fixed;top:54px;left:50%;transform:translateX(-50%);z-index:2000;',
+    '.cmt-hint{position:fixed;top:54px;left:50%;transform:translateX(-50%);z-index:10000;',
     '  background:#171614;color:#fff;font-family:var(--font,sans-serif);font-size:12px;',
     '  padding:7px 14px;border-radius:100px;box-shadow:0 4px 14px rgba(0,0,0,0.3);}'
   ].join('\n');
@@ -429,11 +429,11 @@ else cmtRefresh();
 /* ── Drawer styles ── */
 (function () {
   var css = [
-    '.cmt-drawer-scrim{position:fixed;inset:0;background:rgba(0,0,0,0.28);z-index:2590;',
+    '.cmt-drawer-scrim{position:fixed;inset:0;background:rgba(0,0,0,0.28);z-index:10590;',
     '  opacity:0;pointer-events:none;transition:opacity 0.25s;}',
     '.cmt-drawer-scrim.open{opacity:1;pointer-events:auto;}',
     '.cmt-drawer{position:fixed;top:0;right:0;bottom:0;width:372px;max-width:92vw;background:#fff;',
-    '  z-index:2600;box-shadow:-8px 0 32px rgba(0,0,0,0.2);display:flex;flex-direction:column;',
+    '  z-index:10600;box-shadow:-8px 0 32px rgba(0,0,0,0.2);display:flex;flex-direction:column;',
     '  font-family:var(--font,sans-serif);transform:translateX(102%);transition:transform 0.28s cubic-bezier(0.22,1,0.36,1);}',
     '.cmt-drawer.open{transform:translateX(0);}',
     '.cmt-dh{display:flex;align-items:center;gap:8px;padding:16px 16px 10px;flex-shrink:0;}',
@@ -467,7 +467,7 @@ else cmtRefresh();
     '.cmt-dd-btn svg{display:block;}',
     /* Caret menu — matches the toolbar dropdown pattern (Options) */
     '.cmt-menu{position:absolute;top:calc(100% + 6px);right:0;min-width:170px;background:#2a2a2a;',
-    '  border:1px solid rgba(255,255,255,0.14);border-radius:10px;padding:4px;z-index:2700;',
+    '  border:1px solid rgba(255,255,255,0.14);border-radius:10px;padding:4px;z-index:10700;',
     '  box-shadow:0 8px 28px rgba(0,0,0,0.4);display:none;flex-direction:column;gap:2px;}',
     '.cmt-menu.open{display:flex;}',
     '.cmt-menu-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;',

@@ -45,7 +45,7 @@ var tstState = {
     /* Panels */
     '.tst-panel{position:fixed;top:52px;right:12px;width:320px;max-height:calc(100vh - 70px);',
     '  overflow-y:auto;background:#fff;border:1px solid rgba(0,0,0,0.12);border-radius:14px;',
-    '  box-shadow:0 10px 32px rgba(0,0,0,0.25);z-index:3000;font-family:var(--font,sans-serif);',
+    '  box-shadow:0 10px 32px rgba(0,0,0,0.25);z-index:11000;font-family:var(--font,sans-serif);',
     '  padding:14px;display:flex;flex-direction:column;gap:10px;}',
     '.tst-h{font-size:14px;font-weight:600;color:#171614;display:flex;align-items:center;justify-content:space-between;}',
     '.tst-x{cursor:pointer;color:#8a8d94;font-size:16px;line-height:1;padding:2px 6px;}',
@@ -78,7 +78,7 @@ var tstState = {
     /* Docked top by default: the bottom of the viewport is where the
        prototype puts its own primary actions, so a bar down there sat
        on top of the thing the tester was trying to click. */
-    '.tst-bar{position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:3000;',
+    '.tst-bar{position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:11000;',
     '  background:#171614;color:#fff;border-radius:100px;padding:10px 16px;display:flex;gap:12px;',
     '  align-items:center;font-family:var(--font,sans-serif);font-size:12.5px;box-shadow:0 8px 28px rgba(0,0,0,0.35);',
     '  cursor:grab;user-select:none;-webkit-user-select:none;}',
@@ -134,17 +134,17 @@ var tstState = {
     '.tst-ping::before{content:"";position:absolute;inset:-14px;border-radius:50%;',
     '  border:3px solid #d3542f;animation:tstping 1.4s ease-out infinite;}',
     '@keyframes tstping{from{transform:scale(0.4);opacity:1;}to{transform:scale(1.5);opacity:0;}}',
-    '.tst-veil{position:fixed;inset:0;z-index:2990;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);',
+    '.tst-veil{position:fixed;inset:0;z-index:10990;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);',
     '  background:rgba(246,244,242,0.45);display:flex;flex-direction:column;gap:12px;',
     '  align-items:center;justify-content:center;font-family:var(--font,sans-serif);}',
     '.tst-veil-msg{background:#171614;color:#fff;font-size:13px;padding:10px 20px;border-radius:100px;',
     '  box-shadow:0 8px 28px rgba(0,0,0,0.3);}',
-    '.tst-toast{position:fixed;top:54px;left:50%;transform:translateX(-50%);z-index:3001;',
+    '.tst-toast{position:fixed;top:54px;left:50%;transform:translateX(-50%);z-index:11001;',
     '  background:#171614;color:#fff;font-family:var(--font,sans-serif);font-size:12px;',
     '  padding:8px 16px;border-radius:100px;box-shadow:0 4px 14px rgba(0,0,0,0.3);max-width:80vw;',
     '  text-align:center;}',
     '.tst-flash{position:fixed;border-radius:50%;width:34px;height:34px;border:3px solid #1f9d55;',
-    '  z-index:2999;pointer-events:none;animation:tstflash 0.5s ease-out forwards;margin:-17px 0 0 -17px;}',
+    '  z-index:10999;pointer-events:none;animation:tstflash 0.5s ease-out forwards;margin:-17px 0 0 -17px;}',
     '@keyframes tstflash{from{transform:scale(0.5);opacity:1;}to{transform:scale(1.6);opacity:0;}}',
     /* Heat map overlay */
     '.tst-heat-layer{position:absolute;top:0;left:0;pointer-events:none;z-index:1400;overflow:hidden;}',
@@ -179,7 +179,7 @@ var tstState = {
        its own room and the dashboard gets a permanent home in the
        footer instead of living two levels deep under Results. */
     '.tst-drawer{position:fixed;top:52px;right:0;bottom:0;width:420px;max-width:92vw;background:#fff;',
-    '  border-left:1px solid rgba(0,0,0,0.12);box-shadow:-10px 0 34px rgba(0,0,0,0.16);z-index:3000;',
+    '  border-left:1px solid rgba(0,0,0,0.12);box-shadow:-10px 0 34px rgba(0,0,0,0.16);z-index:11000;',
     '  display:flex;flex-direction:column;font-family:var(--font,sans-serif);animation:tstdrin 0.16s ease-out;}',
     '@keyframes tstdrin{from{transform:translateX(28px);opacity:0;}to{transform:none;opacity:1;}}',
     '.tst-dr-head{flex:0 0 auto;padding:14px 18px 0;display:flex;flex-direction:column;gap:12px;}',
@@ -220,7 +220,7 @@ var tstState = {
     '.tst-wrap{position:relative;}',
     '.tst-menu{display:none;position:absolute;top:calc(100% + 6px);right:0;min-width:190px;',
     '  background:#fff;border:1px solid rgba(0,0,0,0.12);border-radius:10px;',
-    '  box-shadow:0 10px 28px rgba(0,0,0,0.22);padding:5px;z-index:3100;font-family:var(--font,sans-serif);}',
+    '  box-shadow:0 10px 28px rgba(0,0,0,0.22);padding:5px;z-index:11100;font-family:var(--font,sans-serif);}',
     '.tst-menu.open{display:block;}',
     '.tst-menu-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:7px;',
     '  font-size:12px;color:#171614;cursor:pointer;white-space:nowrap;}',
@@ -240,14 +240,14 @@ var tstState = {
     '  --tst-face:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}',
     /* Session frame — a permanent, unmissable "you are being observed"
        edge. One element, pointer-events:none, removed with the mode. */
-    '#tst-frame{position:fixed;inset:0;pointer-events:none;z-index:2996;',
+    '#tst-frame{position:fixed;inset:0;pointer-events:none;z-index:10996;',
     '  box-shadow:inset 0 0 0 2px var(--tst-ink);}',
-    '#tst-frame-tag{position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:2997;',
+    '#tst-frame-tag{position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:10997;',
     '  pointer-events:none;background:var(--tst-ink);color:#fff;font-family:var(--tst-face);',
     '  font-size:9.5px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;',
     '  padding:3px 12px 4px;border-radius:0 0 7px 7px;}',
     /* Scrim behind the start / finish moments */
-    '#tst-scrim{position:fixed;inset:0;z-index:2994;background:rgba(23,21,52,0.42);',
+    '#tst-scrim{position:fixed;inset:0;z-index:10994;background:rgba(23,21,52,0.42);',
     '  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}',
     /* Panel — the only shell a tester ever sees */
     '.tst-panel{font-family:var(--tst-face);background:var(--tst-paper);border:2px solid var(--tst-ink);',
@@ -291,13 +291,30 @@ var tstState = {
 })();
 
 /* ── IO ── */
+/* Apps Script answers with an HTML page (sign-in, "unable to open",
+   or a rendered stack trace) instead of JSON whenever the deployment
+   or the script itself fails. r.json() on that produces the opaque
+   "Unexpected token '<'" error, so read text first and, when it is
+   not JSON, say what kind of page came back. */
+function tstParse_(r) {
+  return r.text().then(function (t) {
+    try { return JSON.parse(t); }
+    catch (e) {
+      var kind = /accounts\.google\.com|Sign in/i.test(t) ? 'Google sign-in page (deployment access is not "Anyone")'
+               : /unable to open|not found/i.test(t) ? 'Google "unable to open" page (deployment URL is archived or wrong)'
+               : /Exception|Error/i.test(t) ? 'Apps Script error page (check Executions in the script editor)'
+               : 'non-JSON reply';
+      throw new Error('Backend returned ' + kind + ' (HTTP ' + r.status + '). First 120 chars: ' + t.slice(0, 120).replace(/\s+/g, ' '));
+    }
+  });
+}
 function tstGet(qs, cb) {
-  fetch(TST_API + qs).then(function (r) { return r.json(); }).then(cb)
+  fetch(TST_API + qs).then(tstParse_).then(cb)
     .catch(function (e) { console.warn('[testing] load failed', e); });
 }
 function tstPost(payload, cb) {
   fetch(TST_API, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) })
-    .then(function (r) { return r.json(); }).then(cb)
+    .then(tstParse_).then(cb)
     .catch(function (e) { console.warn('[testing] save failed', e); if (cb) cb({ ok: false, error: String(e) }); });
 }
 

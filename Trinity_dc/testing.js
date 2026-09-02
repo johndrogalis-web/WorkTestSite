@@ -130,7 +130,7 @@ var tstState = {
     '.tst-ses-row:last-child{border-bottom:none;}',
     /* Location ping — deep-linked from the dashboard */
     '.tst-ping{position:absolute;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;',
-    '  background:#d3542f;border:3px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,0.4);z-index:1500;cursor:pointer;}',
+    '  background:#d3542f;border:3px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,0.4);z-index:9660;cursor:pointer;}',
     '.tst-ping::before{content:"";position:absolute;inset:-14px;border-radius:50%;',
     '  border:3px solid #d3542f;animation:tstping 1.4s ease-out infinite;}',
     '@keyframes tstping{from{transform:scale(0.4);opacity:1;}to{transform:scale(1.5);opacity:0;}}',
@@ -147,7 +147,7 @@ var tstState = {
     '  z-index:10999;pointer-events:none;animation:tstflash 0.5s ease-out forwards;margin:-17px 0 0 -17px;}',
     '@keyframes tstflash{from{transform:scale(0.5);opacity:1;}to{transform:scale(1.6);opacity:0;}}',
     /* Heat map overlay */
-    '.tst-heat-layer{position:absolute;top:0;left:0;pointer-events:none;z-index:1400;overflow:hidden;}',
+    '.tst-heat-layer{position:absolute;top:0;left:0;pointer-events:none;z-index:9640;overflow:hidden;}',
     '.tst-heat-blob{position:absolute;border-radius:50%;pointer-events:none;',
     '  background:radial-gradient(circle closest-side,rgba(211,84,47,0.55),rgba(211,84,47,0.22) 55%,rgba(211,84,47,0) 100%);}',
     '.tst-heat-blob.hit{background:radial-gradient(circle closest-side,rgba(31,157,85,0.55),rgba(31,157,85,0.22) 55%,rgba(31,157,85,0) 100%);}',
@@ -310,12 +310,85 @@ function tstParse_(r) {
 }
 function tstGet(qs, cb) {
   fetch(TST_API + qs).then(tstParse_).then(cb)
-    .catch(function (e) { console.warn('[testing] load failed', e); });
+    .catch(function (e) { console.warn('[testing] load failed', e); tstLoadFailed_(e); });
+}
+
+/* A failed read used to log to the console and leave "Loading\u2026" on
+   screen forever, which reads as "slow" when it is actually "dead".
+   Replace whichever placeholder is showing with the reason and a retry. */
+function tstLoadFailed_(e) {
+  ['tst-list', 'tst-results', 'tst-heat-body'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (!el || !/Loading/.test(el.textContent)) return;
+    el.innerHTML = '<div class="tst-sub" style="color:#b3261e;">Could not reach the testing backend. ' +
+      tstEsc(String(e && e.message || e)) + '</div>' +
+      '<div class="tst-item-row"><button class="tst-chip" onclick="tstOpenAdminPanel()">Retry</button></div>';
+  });
 }
 function tstPost(payload, cb) {
   fetch(TST_API, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) })
     .then(tstParse_).then(cb)
-    .catch(function (e) { console.warn('[testing] save failed', e); if (cb) cb({ ok: false, error: String(e) }); });
+    .catch(function (e) {
+      console.warn('[testing] save reply unreadable, re-reading the sheet to check whether the write landed', e);
+      if (!cb) return;
+      if (!tstVerifySave_(payload, e, cb)) cb({ ok: false, error: String(e) });
+    });
+}
+
+/* Apps Script answers a POST with a redirect to script.googleusercontent.com,
+   and that hop has been returning a 404 page while doPost itself ran and
+   wrote the row. A garbled reply is therefore not evidence of a failed
+   save. Re-read the sheet and look for the row we just asked for; only
+   when it is genuinely absent do we report failure. "Saved" now means
+   "present in the sheet", not "the reply reached us". */
+function tstVerifySave_(payload, err, cb) {
+  var proto = encodeURIComponent(TST_PROTOTYPE);
+  var since = Date.now() - 120000;
+  var fail = function () { cb({ ok: false, error: String(err) }); };
+  var ok = function (row) {
+    console.warn('[testing] reply was unreadable but the write is in the sheet; treating as saved', row.id);
+    cb({ ok: true, id: row.id, recovered: true });
+  };
+  var same = function (a, b) { return JSON.stringify(a) === JSON.stringify(b); };
+  var a = payload.action;
+
+  if (a === 'addWorkflow' || a === 'updateWorkflow' || a === 'setWorkflowStatus') {
+    fetch(TST_API + '?action=list&prototype=' + proto + '&all=1').then(tstParse_).then(function (res) {
+      var list = res.workflows || [];
+      var hit = null;
+      if (a === 'addWorkflow') {
+        hit = list.filter(function (w) {
+          return w.name === payload.name && w.instruction === payload.instruction &&
+                 new Date(w.created).getTime() >= since;
+        }).sort(function (x, y) { return new Date(y.created) - new Date(x.created); })[0] || null;
+      } else {
+        var w = list.find(function (x) { return String(x.id) === String(payload.id); });
+        if (w) {
+          if (a === 'setWorkflowStatus') { if (w.status === payload.status) hit = w; }
+          else if ((payload.name === undefined || w.name === payload.name) &&
+                   (payload.instruction === undefined || w.instruction === payload.instruction) &&
+                   (payload.checkpoints === undefined || same(w.checkpoints, payload.checkpoints))) hit = w;
+        }
+      }
+      if (hit) ok(hit); else fail();
+    }).catch(fail);
+    return true;
+  }
+
+  if (a === 'addSession') {
+    fetch(TST_API + '?action=results&prototype=' + proto).then(tstParse_).then(function (res) {
+      var rows = (res.sessions || []).filter(function (s) {
+        return String(s.user) === String(payload.user) &&
+               String(s.outcome) === String(payload.outcome) &&
+               String(s.workflow_id || '') === String(payload.workflow_id || '') &&
+               Number(s.duration_s) === Number(payload.duration_s || 0) &&
+               new Date(s.timestamp).getTime() >= since;
+      });
+      if (rows.length) ok(rows[rows.length - 1]); else fail();
+    }).catch(fail);
+    return true;
+  }
+  return false;
 }
 
 /* ── Tester IP — Apps Script cannot see the client address, so the
@@ -824,7 +897,23 @@ function tstValNext() {
    there first. Recordings made before routes existed have none, so the
    replay starts from wherever the previous task left off — which is
    also how a real tester run starts, so the verdict stays honest. */
+/* The sign-in screen is an overlay, not a route: it never writes a hash,
+   so a recording that began there stored the dashboard route underneath
+   it and every replay started past the tester's first step. The recorder
+   now stores whether login was showing, and every start path restores it.
+   Recordings made before the flag existed have no `login` key and are
+   left alone. */
+function tstLoginShowing() {
+  var el = document.getElementById('login-screen');
+  return !!(el && el.style.display !== 'none' && !el.classList.contains('lg-out'));
+}
+function tstApplyStart(meta) {
+  tstDevApply(meta ? meta.view : 'desktop', meta ? meta.orientation : 'portrait');
+  if (meta && meta.login === true && typeof lgShow === 'function') lgShow();
+}
+
 function tstValReset(meta, then) {
+  if (meta && meta.login === true && typeof lgShow === 'function') lgShow();
   var route = (meta && meta.route) || null;
   if (route && typeof rtCanResolve === 'function' && rtCanResolve(route)) {
     try {
@@ -1151,7 +1240,9 @@ function tstBeginRecording(editingId) {
      switch because setView writes the hash. Older workflows have no
      route and simply replay from wherever the page already is. */
   setTimeout(function () {
-    if (tstState.rec) tstState.rec.route = location.hash.replace(/^#/, '');
+    if (!tstState.rec) return;
+    tstState.rec.route = location.hash.replace(/^#/, '');
+    tstState.rec.login = tstLoginShowing();
   }, 400);
   tstRenderBar();
 }
@@ -1195,7 +1286,7 @@ function tstRecFinish(btn) {
   if (!rec.steps.length) { alert('No steps recorded yet \u2014 click through the task first.'); return; }
   btn.disabled = true; btn.innerHTML = '<span class="tst-spin"></span>';
   var dev = rec.device || { view: tstCurView(), orientation: tstCurOrient() };
-  var meta = { meta: 1, view: dev.view, orientation: dev.orientation, route: rec.route || '' };
+  var meta = { meta: 1, view: dev.view, orientation: dev.orientation, route: rec.route || '', login: !!rec.login };
   var checkpoints = [meta].concat(rec.steps);
   var done = function (res) {
     tstRecCancel();
@@ -1350,7 +1441,7 @@ function tstBeginRun(wf) {
   tstClosePanel();
   /* Put the prototype in the surface the workflow was recorded on */
   var meta = (wf.checkpoints && wf.checkpoints[0] && wf.checkpoints[0].meta) ? wf.checkpoints[0] : null;
-  tstDevApply(meta ? meta.view : 'desktop', meta ? meta.orientation : 'portrait');
+  tstApplyStart(meta);
 
   setTimeout(function () {
     var now = Date.now();
@@ -1651,7 +1742,7 @@ function tstSaveGoal(btn) {
      requirement while defining zero steps to match against. */
   tstPost({
     action: 'addWorkflow', prototype: TST_PROTOTYPE, name: name, instruction: inst, author: '',
-    checkpoints: [{ meta: 1, kind: 'goal', view: goalDev.view, orientation: goalDev.orientation }]
+    checkpoints: [{ meta: 1, kind: 'goal', view: goalDev.view, orientation: goalDev.orientation, login: tstLoginShowing() }]
   }, function (res) {
     if (!res.ok) { alert('Save failed: ' + res.error); btn.disabled = false; return; }
     tstOpenAdminPanel();
@@ -1661,7 +1752,7 @@ function tstSaveGoal(btn) {
 function tstBeginGoal(wf) {
   tstClosePanel();
   var meta = (wf.checkpoints && wf.checkpoints[0] && wf.checkpoints[0].meta) ? wf.checkpoints[0] : null;
-  tstDevApply(meta ? meta.view : 'desktop', meta ? meta.orientation : 'portrait');
+  tstApplyStart(meta);
   setTimeout(function () {
     tstBeginExplore(wf);
     tstShowInstruction(wf);

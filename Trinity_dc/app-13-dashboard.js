@@ -32,6 +32,128 @@
    Load order: last of the app-* files (after app-12).
    ========================================================================== */
 
+/* ── Canonical account. Every surface that names the company reads this. ── */
+var VF_COMPANY = 'Cemex AZ';
+var VF_HOME_PLANT = 'Phoenix Central';
+
+/* ── Kit: dropdown ────────────────────────────────────────────────────────────
+   The design-system select, modelled on the truck-clone picker in the unit
+   configuration flow: a pill trigger with a chevron, a popover with a search
+   row and a scrolling list, selected rows tinted with the selection colour.
+   Native <select> elements render the OS picker, which never matched the
+   system; every select in the newer surfaces goes through this instead.
+
+     vfDd({ id, options, value, placeholder, search, multi, onChange, tags })
+
+   options are strings or { v, label }. multi keeps an array of values and
+   shows them as tags in the trigger. onChange is a global function name and
+   receives (value, id). Lives here because app-13 is the first of the newer
+   files to load, so everything after it can rely on it at render time. */
+
+var vfDdState = {};
+
+function vfDd(o) {
+  var id = o.id;
+  var opts = (o.options || []).map(function (x) { return (typeof x === 'string') ? { v:x, label:x } : x; });
+  var st = vfDdState[id] = {
+    options: opts, multi: !!o.multi, search: (o.search !== undefined) ? !!o.search : opts.length > 6,
+    value: o.multi ? (o.value || []).slice() : (o.value !== undefined ? o.value : null),
+    placeholder: o.placeholder || 'Select', onChange: o.onChange || null, tags: !!o.tags, q: ''
+  };
+  return '<div class="vf-dd' + (o.cls ? ' ' + o.cls : '') + '" id="' + id + '">'
+    + '<button type="button" class="vf-dd-trigger" onclick="vfDdToggle(\'' + id + '\',event)">'
+      + '<span class="vf-dd-label">' + vfDdLabel(st) + '</span>'
+      + '<svg width="11" height="7" viewBox="0 0 12 8" fill="none"><path d="M1 1.5l5 5 5-5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>'
+    + '</button>'
+    + '<div class="vf-dd-pop">'
+      + (st.search ? '<div class="vf-dd-search"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M10 10l2.5 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>'
+          + '<input type="text" placeholder="Search" oninput="vfDdFilter(\'' + id + '\',this.value)" onclick="event.stopPropagation()" autocomplete="off"></div>' : '')
+      + '<div class="vf-dd-list">' + vfDdRows(id) + '</div>'
+    + '</div></div>';
+}
+
+function vfDdLabel(st) {
+  var esc = function (s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+  if (st.multi) {
+    if (!st.value.length) return '<span class="vf-dd-ph">' + esc(st.placeholder) + '</span>';
+    var lab = function (v) { var o = st.options.filter(function (x) { return x.v === v; })[0]; return o ? o.label : v; };
+    if (st.tags) return '<span class="vf-dd-tags">' + st.value.map(function (v) {
+      return '<span class="am-tag">' + esc(lab(v)).toUpperCase() + '</span>'; }).join('') + '</span>';
+    return esc(st.value.map(lab).join(', '));
+  }
+  if (st.value === null || st.value === '') return '<span class="vf-dd-ph">' + esc(st.placeholder) + '</span>';
+  var o = st.options.filter(function (x) { return x.v === st.value; })[0];
+  return esc(o ? o.label : st.value);
+}
+
+function vfDdRows(id) {
+  var st = vfDdState[id]; if (!st) return '';
+  var q = st.q.toLowerCase();
+  var rows = st.options.filter(function (o) { return !q || String(o.label).toLowerCase().indexOf(q) >= 0; });
+  if (!rows.length) return '<div class="vf-dd-empty">No matches</div>';
+  return rows.map(function (o) {
+    var on = st.multi ? st.value.indexOf(o.v) >= 0 : st.value === o.v;
+    return '<div class="vf-dd-row' + (on ? ' on' : '') + '" onclick="vfDdPick(\'' + id + '\',' + JSON.stringify(String(o.v)).replace(/"/g, '&quot;') + ',event)">'
+      + '<span>' + String(o.label).replace(/</g, '&lt;') + '</span>'
+      + (on ? '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' : '')
+      + '</div>';
+  }).join('');
+}
+
+function vfDdToggle(id, e) {
+  if (e) e.stopPropagation();
+  var el = document.getElementById(id); if (!el) return;
+  var open = el.classList.contains('open');
+  vfDdCloseAll();
+  if (!open) {
+    el.classList.add('open');
+    var inp = el.querySelector('.vf-dd-search input');
+    if (inp) setTimeout(function () { inp.focus(); }, 0);
+    /* Flip up when there is no room below. */
+    var pop = el.querySelector('.vf-dd-pop'), r = el.getBoundingClientRect();
+    var host = el.closest('.am-dr-body, .pf-body, .am-scroll, .db-scroll') || document.body;
+    var hr = host.getBoundingClientRect();
+    el.classList.toggle('up', (hr.bottom - r.bottom) < 260 && (r.top - hr.top) > 260);
+    void pop;
+  }
+}
+
+function vfDdCloseAll() {
+  document.querySelectorAll('.vf-dd.open').forEach(function (d) { d.classList.remove('open'); });
+}
+
+function vfDdFilter(id, q) {
+  var st = vfDdState[id]; if (!st) return;
+  st.q = q || '';
+  var list = document.getElementById(id);
+  if (list) { var l = list.querySelector('.vf-dd-list'); if (l) l.innerHTML = vfDdRows(id); }
+}
+
+function vfDdPick(id, v, e) {
+  if (e) e.stopPropagation();
+  var st = vfDdState[id]; if (!st) return;
+  /* Restore original type: options may be numbers. */
+  var opt = st.options.filter(function (o) { return String(o.v) === v; })[0];
+  var val = opt ? opt.v : v;
+  if (st.multi) {
+    var i = st.value.indexOf(val);
+    if (i >= 0) st.value.splice(i, 1); else st.value.push(val);
+  } else {
+    st.value = val;
+  }
+  var el = document.getElementById(id);
+  if (el) {
+    var lab = el.querySelector('.vf-dd-label'); if (lab) lab.innerHTML = vfDdLabel(st);
+    var l = el.querySelector('.vf-dd-list'); if (l) l.innerHTML = vfDdRows(id);
+    if (!st.multi) el.classList.remove('open');
+  }
+  if (st.onChange && typeof window[st.onChange] === 'function') window[st.onChange](st.value, id);
+}
+
+function vfDdValue(id) { var st = vfDdState[id]; return st ? st.value : null; }
+
+document.addEventListener('click', vfDdCloseAll);
+
 /* ── 0. Small helpers ─────────────────────────────────────────────────────── */
 
 function dbEsc(s) {
@@ -917,6 +1039,11 @@ function dbDeskShow() {
   dbNavLight(true);
   dbRenderDesktop();
   dbSetHash('desktop');
+  /* toggleDarkMode() repaints the nav by calling dtNavGo(dtUnitsActivePage).
+     app-04 owns that variable and never sets it to 'dashboard', so without
+     this a theme flip would navigate away from the page you are standing on.
+     Claiming it routes that refresh back through our own wrapper instead. */
+  try { if (typeof dtUnitsActivePage !== 'undefined') dtUnitsActivePage = 'dashboard'; } catch (e) {}
 }
 
 var dbOrigNavGo = (typeof dtNavGo === 'function') ? dtNavGo : null;
@@ -1013,10 +1140,14 @@ function dbTabletClose() {
 function dbTabletPill(on) {
   var el = document.getElementById('tb-nav-dashboard');
   if (!el) return;
+  var dark = document.body.classList.contains('dark');
   var span = el.querySelector('span');
-  if (on) { el.dataset.active = '1'; el.style.background = 'var(--blue)'; }
+  if (on) { el.dataset.active = '1'; el.style.background = dark ? '#e3f200' : 'var(--blue)'; }
   else    { delete el.dataset.active; el.style.background = ''; }
-  if (span) { span.style.color = on ? '#ffffff' : 'rgba(54,50,45,0.5)'; span.style.fontWeight = on ? '500' : ''; }
+  if (span) {
+    span.style.color = on ? (dark ? '#000' : '#ffffff') : (dark ? 'rgba(255,255,255,0.5)' : 'rgba(54,50,45,0.5)');
+    span.style.fontWeight = on ? '500' : '';
+  }
 }
 
 /* Any other tablet destination closes this page first. */
@@ -1070,6 +1201,24 @@ function dbMobileClose() {
   });
 })();
 
+/* Re-tint the active nav pill when the theme flips underneath us. Dark mode
+   swaps the selection colour from blue to lime, and both pills are painted
+   inline, so a class-level rule cannot catch it. */
+(function dbWatchTheme() {
+  var wasDark = document.body.classList.contains('dark');
+  new MutationObserver(function () {
+    var isDark = document.body.classList.contains('dark');
+    if (isDark === wasDark) return;
+    wasDark = isDark;
+    var deskOn = document.getElementById('dt-nav-dashboard');
+    if (deskOn && deskOn.dataset.active) { dbNavLight(true); dbRenderDesktop(); }
+    var tbOn = document.getElementById('tb-nav-dashboard');
+    if (tbOn && tbOn.dataset.active) { dbTabletPill(true); dbRenderDevice('db-tb-mount', 't'); }
+    var mob = document.getElementById('mob-page-dashboard');
+    if (mob && mob.style.display === 'flex') dbRenderDevice('db-mob-mount', 'm');
+  }).observe(document.body, { attributes:true, attributeFilter:['class'] });
+})();
+
 /* ── 13. Landing route ────────────────────────────────────────────────────────
    app-06's applyHashRoute only knows two sections, trucks and units. Every
    other route — update, map, tickets, tfleet, tphases, dashboard — falls
@@ -1089,7 +1238,9 @@ function dbMobileClose() {
   var section = parts[1];
 
   var isDeepLink = (section === 'units') || (section === 'trucks' && !!parts[2]);
-  if (isDeepLink) return;
+  /* Sections owned by later modules restore themselves; do not race them. */
+  var ownedLater = (section === 'account' || section === 'insights');
+  if (isDeepLink || ownedLater) return;
 
   var view = parts[0];
   if (view !== 'mobile' && view !== 'tablet' && view !== 'desktop') {

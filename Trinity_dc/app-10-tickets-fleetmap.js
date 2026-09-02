@@ -220,7 +220,12 @@ function tkPagesShow(id) {
 function tkPagesRelease() {
   TK_PAGES.forEach(function (p) {
     const el = document.getElementById(p);
-    if (el) el.style.display = '';
+    if (!el) return;
+    el.style.display = '';
+    /* tkPagesShow also set .active, and styles.css renders .active as flex.
+       Clearing only the inline display left the Ticket List visible under
+       whatever page came next (Dashboard stacked below it). */
+    el.classList.remove('active');
   });
 }
 

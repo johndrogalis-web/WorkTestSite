@@ -11494,3 +11494,331 @@ body.view-mobile .so-res-arrow { transform:rotate(90deg); }
 body.view-mobile .so-res-v { font-size:23px; }
 body.view-mobile .so-item { flex-direction:column; gap:8px; }
 body.view-mobile .so-foot { padding:12px 14px; }
+
+
+  /* ═══ RETURNED CONCRETE — Returned Loads (app-21) ═══════════════════════════
+     Page shell mirrors #dt-page-insights: a flex column that owns its own
+     scroller, so the shell never has to know what is inside. Split panel is a
+     two-column flex with min-widths rather than a media query, per the house
+     rule that responsive rules key off body classes and not viewport width. */
+
+  #dt-page-returned { display:none; flex-direction:column; flex:1; min-width:0; min-height:0;
+    overflow:hidden; background:var(--layer-1); font-family:var(--font); }
+  #dt-page-returned .rc-scroll { flex:1; min-height:0; overflow-y:auto; padding:26px 32px 40px;
+    display:flex; flex-direction:column; }
+
+  /* Hidden measuring surface: breadcrumbs are sampled off the legacy bezier
+     paths with getPointAtLength, which needs the path in the document. */
+  .rc-sampler { position:absolute; width:0; height:0; overflow:hidden; pointer-events:none; opacity:0; }
+
+  .rc-head { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; flex-wrap:wrap; }
+  .rc-title { margin-bottom:4px; }
+  .rc-sub { font-size:13px; color:var(--soft); letter-spacing:-0.26px; margin-bottom:18px; }
+  .rc-head-actions { display:flex; gap:10px; flex-shrink:0; }
+
+  /* Returned loads / Uptime: two views of the section, so text tabs, the same
+     grammar the ticket drawer uses. */
+  .rc-views { display:flex; gap:22px; border-bottom:1px solid var(--border); margin-bottom:20px; }
+  .rc-view { background:none; border:none; padding:0 0 10px; cursor:pointer; font-family:var(--font);
+    font-size:15px; color:var(--soft); letter-spacing:-0.3px; position:relative; }
+  .rc-view:hover { color:var(--strong); }
+  .rc-view.active { color:var(--strong); }
+  .rc-view.active::after { content:''; position:absolute; left:0; right:0; bottom:-1px; height:2px;
+    background:var(--strong); }
+
+  .rc-filters { margin-bottom:18px; }
+  .rc-daterange { height:42px; gap:10px; }
+  .rc-f-cust { min-width:240px; }
+
+  /* Billing settings — a card, not a filter bar. These change what is
+     billable, so they read as a producer setting that was set once. */
+  .rc-settings { background:var(--layer-2); border-color:var(--border); padding:16px 18px 18px; margin-bottom:24px; }
+  .rc-settings-cap { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:500;
+    color:var(--strong); letter-spacing:-0.28px; margin-bottom:14px; }
+  .rc-settings-cap span { font-weight:400; font-size:12.5px; color:var(--subtle); letter-spacing:-0.25px; }
+  .rc-settings-row { display:flex; gap:24px; flex-wrap:wrap; align-items:flex-end; }
+  .rc-settings .in-f-l { display:flex; align-items:center; gap:6px; }
+  .rc-f-round { min-width:340px; }
+
+  .rc-tip { width:15px; height:15px; border-radius:50%; border:1px solid var(--border-mid);
+    color:var(--soft); font-size:10px; font-style:normal; display:inline-flex; align-items:center;
+    justify-content:center; cursor:help; position:relative; flex-shrink:0; }
+  .rc-tip:hover, .rc-tip:focus { color:var(--strong); border-color:var(--strong); outline:none; }
+  .rc-tip-pop { display:none; position:absolute; bottom:calc(100% + 8px); left:-8px; width:270px;
+    background:var(--layer-1); color:var(--defined); border:1px solid var(--border);
+    border-radius:var(--radius-sm); box-shadow:0 8px 24px rgba(54,50,45,0.16); padding:10px 12px;
+    font-size:12.5px; line-height:1.45; letter-spacing:-0.25px; z-index:60; text-align:left; }
+  .rc-tip:hover .rc-tip-pop, .rc-tip:focus .rc-tip-pop { display:block; }
+  body.dark .rc-tip-pop { box-shadow:0 8px 24px rgba(0,0,0,0.5); }
+
+  /* Rounding: four exclusive options that need comparing at a glance, so a
+     segmented control. Selection surfaces use --blue in light, lime in dark,
+     which is what --am-select already resolves to. */
+  .rc-seg { display:inline-flex; border:1px solid var(--border); border-radius:var(--radius-pill, 32px);
+    background:var(--layer-1); padding:3px; height:42px; align-items:center; }
+  .rc-seg-btn { border:none; background:none; cursor:pointer; font-family:var(--font); font-size:13.5px;
+    letter-spacing:-0.27px; color:var(--soft); padding:0 14px; height:34px; border-radius:32px;
+    white-space:nowrap; }
+  .rc-seg-btn:hover { color:var(--strong); }
+  .rc-seg-btn.on { background:var(--am-select); color:var(--am-on-select); }
+
+  .rc-tabs { display:flex; gap:20px; border-bottom:1px solid var(--border); margin-bottom:4px; }
+  .rc-tab { background:none; border:none; padding:0 0 9px; cursor:pointer; font-family:var(--font);
+    font-size:14px; color:var(--soft); letter-spacing:-0.28px; position:relative;
+    display:inline-flex; align-items:center; gap:7px; }
+  .rc-tab:hover { color:var(--strong); }
+  .rc-tab.active { color:var(--strong); }
+  .rc-tab.active::after { content:''; position:absolute; left:0; right:0; bottom:-1px; height:2px;
+    background:var(--strong); }
+  .rc-tab-n { font-size:11.5px; font-weight:500; color:var(--soft); background:var(--layer-2);
+    border-radius:32px; padding:1px 8px; }
+
+  /* ── Split: table left, journey right ── */
+  .rc-split { display:flex; gap:24px; align-items:stretch; flex:1; min-height:520px; }
+  .rc-left { flex:1 1 0; min-width:0; display:flex; flex-direction:column; }
+  .rc-right { flex:0 0 46%; min-width:0; display:flex; }
+  .rc-panel { flex:1; min-width:0; display:flex; flex-direction:column;
+    border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden;
+    background:var(--layer-1); }
+
+  .rc-table-wrap { flex:1; min-height:0; overflow-y:auto; }
+  .rc-table { min-width:0; }
+  /* One grid, header and rows off the same tracks, so a short row can never
+     drag the table out of alignment. */
+  .rc-tr { grid-template-columns:88px 104px minmax(0, 1.5fr) 104px 68px 82px 44px 96px; gap:8px;
+    padding:9px 12px; cursor:pointer; }
+  .rc-tr.am-th { cursor:default; }
+  .rc-tr .num { text-align:right; }
+  .rc-tr:not(.am-th):hover { background:rgba(48,105,227,0.05); }
+  body.dark .rc-tr:not(.am-th):hover { background:rgba(227,242,0,0.07); }
+  .rc-tr.sel { background:rgba(48,105,227,0.10); box-shadow:inset 2px 0 0 var(--blue); border-radius:8px; }
+  body.dark .rc-tr.sel { background:rgba(227,242,0,0.12); box-shadow:inset 2px 0 0 #e3f200; }
+
+  .rc-stack { display:flex; flex-direction:column; gap:1px; white-space:nowrap; overflow:hidden; }
+  .rc-stack b { font-weight:400; color:var(--defined); overflow:hidden; text-overflow:ellipsis; }
+  .rc-stack em { font-style:normal; font-size:11.5px; color:var(--subtle); letter-spacing:-0.23px;
+    overflow:hidden; text-overflow:ellipsis; }
+  .rc-dump { color:var(--soft) !important; }
+  .rc-bill { font-weight:500; color:var(--strong); }
+  .rc-link { background:none; border:none; padding:0; cursor:pointer; font-family:var(--font);
+    font-size:14px; letter-spacing:-0.28px; color:var(--blue-link); text-decoration:underline; }
+  body.dark .rc-link { color:var(--strong); }
+
+  .rc-empty { padding:26px 14px; font-size:13.5px; color:var(--soft); letter-spacing:-0.27px;
+    line-height:1.5; max-width:440px; }
+  .rc-foot { display:flex; align-items:center; justify-content:space-between; padding:12px 14px 0;
+    border-top:1px solid var(--border); margin-top:8px; font-size:13px; color:var(--soft);
+    letter-spacing:-0.26px; }
+  .rc-foot b { color:var(--strong); font-weight:500; }
+
+  /* ── Receipt strip: batched, poured, discharged, billed ── */
+  .rc-receipt { display:flex; align-items:stretch; gap:0; padding:14px 16px;
+    border-bottom:1px solid var(--border); background:var(--layer-2); flex-wrap:nowrap; }
+  .rc-rc-step, .rc-rc-bill { flex:1 1 0; min-width:0; padding-right:12px; }
+  .rc-rc-step + .rc-rc-step, .rc-rc-bill { padding-left:14px; border-left:1px solid var(--border); }
+  .rc-rc-bill { flex:0 0 auto; text-align:right; padding-right:0; }
+  .rc-rc-k { display:flex; align-items:center; gap:6px; font-size:10.5px; font-weight:500;
+    letter-spacing:0.05em; text-transform:uppercase; color:var(--subtle); white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis; }
+  .rc-rc-bill .rc-rc-k { justify-content:flex-end; }
+  .rc-rc-v { font-size:13px; font-weight:500; color:var(--strong); letter-spacing:-0.26px; margin-top:3px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .rc-rc-bill .rc-rc-v { font-size:17px; }
+  .rc-rc-m { font-size:10.5px; color:var(--subtle); margin-top:1px; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis; }
+  .rc-rc-none { font-weight:400; color:var(--soft); white-space:normal; }
+
+  /* ── Map ── */
+  .rc-map-stage { position:relative; flex:1; min-height:360px; }
+  .rc-map { position:absolute; inset:0; }
+  .rc-map-chip { position:absolute; top:12px; left:12px; z-index:500; background:var(--layer-1);
+    border:1px solid var(--border); border-radius:var(--radius-sm); padding:6px 10px; font-size:12.5px;
+    font-weight:500; color:var(--strong); letter-spacing:-0.25px; box-shadow:0 2px 8px rgba(54,50,45,0.12); }
+  .rc-map-chip span { font-weight:400; color:var(--soft); }
+  .rc-map-controls { position:absolute; right:12px; bottom:12px; z-index:500; }
+
+  .rc-legend { position:absolute; top:12px; right:12px; z-index:500; background:var(--layer-1);
+    border:1px solid var(--border); border-radius:var(--radius-sm); padding:8px 10px;
+    box-shadow:0 2px 8px rgba(54,50,45,0.12); }
+  .rc-legend-h { font-size:10px; font-weight:500; letter-spacing:0.05em; text-transform:uppercase;
+    color:var(--subtle); margin:4px 0 3px; }
+  .rc-legend-h:first-child { margin-top:0; }
+  .rc-legend-r { display:flex; align-items:center; gap:7px; font-size:11.5px; color:var(--defined);
+    letter-spacing:-0.23px; padding:1px 0; white-space:nowrap; }
+
+  /* Locations are neutral: red and amber are alert colours in Trinity and
+     nothing else. The two trail legs carry the phase tokens they actually
+     are, so a leg here and a group header on the Status tab agree. */
+  .rc-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; background:var(--strong); }
+  .rc-dot-plant { background:var(--strong); }
+  .rc-dot-job { background:var(--soft); box-shadow:inset 0 0 0 1.5px var(--layer-1); }
+  .rc-dot-dis { background:var(--strong); box-shadow:0 0 0 2px var(--layer-1), 0 0 0 3.5px var(--strong); }
+  .rc-dot-out { background:var(--phase-to-job); }
+  .rc-dot-back { background:var(--phase-return-to-plant); }
+
+  .rc-pin { font-size:12.5px; padding:5px 8px; }
+  .rc-pin-plant { background:var(--strong); }
+  .rc-pin-job { background:var(--soft); }
+  .rc-pin-dis, .rc-pin-dual { background:var(--strong); box-shadow:0 0 0 2px var(--layer-1),
+    0 1px 2px rgba(0,0,0,0.4); }
+  body.dark .rc-pin { color:#000; }
+
+  .rc-crumb { display:block; width:8px; height:8px; border-radius:50%;
+    box-shadow:0 0 0 1.5px var(--layer-1); }
+  .rc-crumb-out { background:var(--phase-to-job); }
+  .rc-crumb-back { background:var(--phase-return-to-plant); }
+  .rc-trail-out { stroke:var(--phase-to-job); fill:none; }
+  .rc-trail-back { stroke:var(--phase-return-to-plant); fill:none; stroke-dasharray:6 5; }
+
+  .rc-soon { border:1px solid var(--border); border-radius:var(--radius-md); padding:40px;
+    text-align:center; }
+  .rc-soon-t { font-size:18px; font-weight:500; color:var(--strong); letter-spacing:-0.36px; }
+  .rc-soon-d { font-size:13.5px; color:var(--soft); letter-spacing:-0.27px; line-height:1.5;
+    max-width:420px; margin:8px auto 0; }
+
+  /* ── Returned Concrete: device frames ─────────────────────────────────────
+     One markup, three frames. Everything below keys off body.view-* rather
+     than a media query, since media queries never fire inside a fixed-size
+     device frame. */
+
+  #tb-page-returned { display:none; flex-direction:column; flex:1; min-height:0; overflow:hidden;
+    background:var(--layer-1); font-family:var(--font); }
+  /* 54px clears the island in portrait; landscape turns that offset into a
+     left inset, which is the shell's own safe-area rule. */
+  #mob-page-returned { display:none; position:absolute; inset:0; background:var(--layer-1); z-index:200;
+    flex-direction:column; overflow:hidden; padding-top:54px; font-family:var(--font); }
+  #rc-tb-mount, #rc-mob-mount { flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
+  /* The mount clips; the scroller inside it is what actually scrolls. Without
+     this the device frames render the page and then refuse to move. */
+  #rc-tb-mount .rc-scroll, #rc-mob-mount .rc-scroll { flex:1; min-height:0; overflow-y:auto;
+    -webkit-overflow-scrolling:touch; }
+  #rc-tb-mount .rc-scroll { padding:18px 18px 32px; }
+  #rc-mob-mount .rc-scroll { padding:14px 14px 28px; }
+
+  /* Tablet: the split becomes a stack. The table keeps all eight columns and
+     slides sideways inside its own scroller, the way the Status table does,
+     rather than hiding fields behind a chevron. */
+  body.view-tablet .rc-split { flex-direction:column; min-height:0; }
+  body.view-tablet .rc-right { flex:0 0 auto; }
+  body.view-tablet .rc-panel { min-height:330px; }
+  body.view-tablet .rc-table-wrap { overflow-x:auto; overflow-y:visible; }
+  body.view-tablet .rc-table { min-width:820px; }
+  body.view-tablet .rc-settings-row { gap:16px; }
+  body.view-tablet .rc-f-round { min-width:0; }
+  body.view-tablet .am-title.rc-title { font-size:24px; }
+
+  /* Mobile: cards instead of a table, and the journey panel becomes a sheet.
+     Both markups are always in the DOM and CSS chooses, so rotating the frame
+     swaps layouts with no re-render. */
+  .rc-cards { display:none; flex-direction:column; gap:8px; padding:12px 0 4px; }
+  body.view-mobile .rc-cards { display:flex; }
+  body.view-mobile .rc-table, body.view-mobile .rc-foot { display:none; }
+  body.view-mobile .rc-split { flex-direction:column; }
+  body.view-mobile .rc-head { flex-direction:column; }
+  body.view-mobile .am-title.rc-title { font-size:22px; }
+  body.view-mobile .rc-head-actions { width:100%; }
+  body.view-mobile .rc-head-actions .am-pill { flex:1; justify-content:center; }
+  body.view-mobile .rc-settings-row { flex-direction:column; align-items:stretch; gap:14px; }
+  body.view-mobile .rc-f-round, body.view-mobile .rc-f-cust { min-width:0; }
+  body.view-mobile .rc-seg { width:100%; overflow-x:auto; }
+  body.view-mobile .rc-seg-btn { flex:1; padding:0 8px; font-size:12.5px; }
+  body.view-mobile .rc-tip-pop { left:auto; right:-8px; width:230px; }
+
+  .rc-card { border:1px solid var(--border); border-radius:var(--radius-md); padding:12px 14px;
+    background:var(--layer-1); cursor:pointer; }
+  .rc-card.sel { border-color:var(--blue); box-shadow:inset 2px 0 0 var(--blue); }
+  body.dark .rc-card.sel { border-color:#e3f200; box-shadow:inset 2px 0 0 #e3f200; }
+  .rc-card-top { display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+  .rc-card-bill { font-size:15px; font-weight:500; color:var(--strong); letter-spacing:-0.3px; white-space:nowrap; }
+  .rc-card-cust { font-size:14px; color:var(--defined); letter-spacing:-0.28px; margin-top:6px; }
+  .rc-card-addr { font-size:12px; color:var(--subtle); letter-spacing:-0.24px; margin-top:2px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rc-card-meta { display:flex; flex-wrap:wrap; gap:4px 12px; margin-top:8px; font-size:11.5px;
+    color:var(--soft); letter-spacing:-0.23px; }
+
+  /* The sheet. Off-canvas until a load is tapped, which is the same
+     one-thing-at-a-time read the desktop split gives you. */
+  .rc-sheet-close { display:none; }
+  body.view-mobile .rc-right { position:static; }
+  /* Absolute, not fixed. Fixed positions against the browser viewport, which
+     escapes the device frame entirely and threw the sheet across the whole
+     window. Absolute resolves to #mob-page-returned, the nearest positioned
+     ancestor, so the sheet stays inside the phone. The overflow on the mount
+     between them does not clip it, because the containing block sits above
+     that mount. Same reason the ticket drawer lives at .phone level. */
+  body.view-mobile .rc-panel { position:absolute; left:0; right:0; bottom:0; top:auto; height:74%;
+    z-index:9400; border-radius:var(--radius-md) var(--radius-md) 0 0; border-bottom:none;
+    box-shadow:0 -8px 32px rgba(54,50,45,0.22); transform:translateY(101%);
+    transition:transform 0.24s ease; }
+  body.view-mobile .rc-panel.on { transform:translateY(0); }
+  body.dark.view-mobile .rc-panel { box-shadow:0 -8px 32px rgba(0,0,0,0.6); }
+  body.view-mobile .rc-sheet-close { display:inline-flex; align-items:center; gap:6px;
+    align-self:flex-end; margin:10px 14px 0; background:none; border:none; cursor:pointer;
+    font-family:var(--font); font-size:13px; color:var(--soft); letter-spacing:-0.26px; }
+  /* Four steps do not fit one phone row, and letting flex wrap them put the
+     bill above the discharge. A 2x2 grid keeps the order the story runs in:
+     batched, poured, discharged, billed. */
+  body.view-mobile .rc-receipt { display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; }
+  body.view-mobile .rc-rc-step, body.view-mobile .rc-rc-bill { flex:none; padding:0; border-left:none;
+    text-align:left; }
+  body.view-mobile .rc-rc-bill .rc-rc-k { justify-content:flex-start; }
+  body.view-mobile .rc-rc-bill .rc-rc-v { font-size:15px; }
+  body.view-mobile .rc-legend { display:none; }
+  body.view-mobile .rc-map-stage { min-height:240px; }
+
+  /* ── Returned Concrete: mobile landscape ──────────────────────────────────
+     390px of height and 844 of width, so the page trades vertical chrome for
+     the horizontal room it just gained: header and actions share a row, the
+     three billing settings go side by side, and the sheet comes up nearly
+     full height because there is no room to peek at the list behind it. */
+
+  body.view-mobile.orient-landscape #mob-page-returned { padding-top:0; padding-left:52px; }
+  body.view-mobile.orient-landscape #mob-page-returned .top-nav { padding-top:6px; padding-bottom:6px; }
+  body.view-mobile.orient-landscape #rc-mob-mount .rc-scroll { padding:10px 24px 20px 0; }
+
+  body.view-mobile.orient-landscape .rc-head { flex-direction:row; align-items:center;
+    justify-content:space-between; gap:16px; }
+  body.view-mobile.orient-landscape .am-title.rc-title { font-size:19px; margin-bottom:2px; }
+  body.view-mobile.orient-landscape .rc-sub { margin-bottom:8px; font-size:12px; }
+  body.view-mobile.orient-landscape .rc-head-actions { width:auto; }
+  body.view-mobile.orient-landscape .rc-head-actions .am-pill { flex:0 0 auto; height:34px; font-size:13px; }
+  body.view-mobile.orient-landscape .rc-views { margin-bottom:12px; gap:18px; }
+  body.view-mobile.orient-landscape .rc-view { font-size:14px; padding-bottom:8px; }
+
+  /* Filters and settings go back to rows: the width is there now. */
+  body.view-mobile.orient-landscape .rc-filters { margin-bottom:12px; }
+  body.view-mobile.orient-landscape .rc-settings { padding:12px 14px 14px; margin-bottom:14px; }
+  body.view-mobile.orient-landscape .rc-settings-cap { margin-bottom:10px; }
+  body.view-mobile.orient-landscape .rc-settings-row { flex-direction:row; flex-wrap:wrap; gap:12px 16px; }
+  body.view-mobile.orient-landscape .rc-settings-row .in-f { flex:1 1 30%; min-width:150px; }
+  body.view-mobile.orient-landscape .rc-f-round { flex:1 1 100%; }
+  body.view-mobile.orient-landscape .rc-seg { width:auto; }
+  body.view-mobile.orient-landscape .rc-seg-btn { flex:0 0 auto; }
+  body.view-mobile.orient-landscape .rc-tip-pop { width:280px; }
+
+  /* Two cards across, since a landscape card only needs half the width to
+     say the same four things. */
+  body.view-mobile.orient-landscape .rc-cards { flex-direction:row; flex-wrap:wrap; gap:8px; }
+  body.view-mobile.orient-landscape .rc-card { flex:1 1 calc(50% - 4px); min-width:0; }
+
+  body.view-mobile.orient-landscape .rc-panel { height:92%; }
+  /* Landscape has the width for one row again, so the grid goes back to flex. */
+  body.view-mobile.orient-landscape .rc-receipt { display:flex; flex-wrap:nowrap; gap:0; padding:10px 14px; }
+  body.view-mobile.orient-landscape .rc-rc-step, body.view-mobile.orient-landscape .rc-rc-bill { flex:1 1 0;
+    padding-right:12px; }
+  body.view-mobile.orient-landscape .rc-rc-step + .rc-rc-step,
+  body.view-mobile.orient-landscape .rc-rc-bill { border-left:1px solid var(--border); padding-left:14px; }
+  body.view-mobile.orient-landscape .rc-rc-bill { text-align:right; }
+  body.view-mobile.orient-landscape .rc-rc-bill .rc-rc-k { justify-content:flex-end; }
+  body.view-mobile.orient-landscape .rc-legend { display:block; }
+  body.view-mobile.orient-landscape .rc-map-stage { min-height:180px; }
+  body.view-mobile.orient-landscape .rc-sheet-close { margin:6px 14px 0; }
+
+  /* ── Tablet landscape ──────────────────────────────────────────────────────
+     1194x834: the table no longer needs its own sideways scroller, and the
+     journey panel can sit beside it again the way it does on desktop. */
+  body.view-tablet.orient-landscape .rc-split { flex-direction:row; min-height:420px; }
+  body.view-tablet.orient-landscape .rc-right { flex:0 0 42%; }
+  body.view-tablet.orient-landscape .rc-panel { min-height:0; }
+  body.view-tablet.orient-landscape .rc-table { min-width:0; }
+  body.view-tablet.orient-landscape .rc-settings-row { flex-wrap:nowrap; }

@@ -8630,152 +8630,38 @@ body.dark .tbm-card:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.32); }
   gap: 8px;
 }
 
-/* ─── Component status cards ──────────────────────────────
-   Takes the full card grammar, not just chrome. The big mono
-   value stays (it's what makes the sensor grid scannable) but
-   everything around it adopts the spec: bracketed meta rows,
-   and the status strip becomes a neutral boxed footer holding
-   a colored chip rather than a full-bleed colored band. */
-.co-card,
-.co-card--empty,
-.co-card--pending {
-  border-radius: var(--card-radius);
-  box-shadow: var(--card-shadow);
-}
-.co-card {
-  border: 1px solid var(--border);
-  padding: 14px;          /* card padding moves off the body */
-  gap: 10px;
-  overflow: visible;      /* footer insets now, so no clipping needed */
-}
-.co-card-body { padding: 0; gap: 8px; }
+/* ─── Component status cards: NOT part of the unified truck-card chrome ─
+   .co-card (mobile/tablet drawer) and .dt-co-card (desktop drawer) follow
+   the Trinity Component Card (file Lx7MN3Ztd0qxhyF7rVAiOa, node
+   63631:17571): 20px radius, 0.62 hairline, big DM Mono value, and a
+   full-bleed colored status strip along the bottom. The base rules
+   earlier in this file already implement that spec, so nothing here
+   restyles them. The block that used to sit here forced them into the
+   8px-radius / inset-footer truck-card grammar; that was reverted.
+   Only the bug fixes that block carried are kept below. */
 
-/* Description line = the spec's hint line */
-.co-card .co-desc-text { font-size: 12px; color: var(--subtle); letter-spacing: -0.24px; }
+/* The wrench button is position:absolute; without this the card is not a
+   positioned ancestor and the button escapes to the container corner. */
+.dt-co-card { position: relative; }
 
-/* Meta rows: label left, value right, hairline-bracketed */
-.co-card .co-meta {
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 10px 0;
-  gap: 8px;
-}
-.co-card .co-meta-row {
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-  font-size: 12px;
-}
-.co-card .co-meta-row > span:first-child { font-size: 13px; color: var(--soft); }
-.co-card .co-meta-row > span:last-child  { color: var(--strong); text-align: right; }
-
-/* Footer: the box itself is the full state color (pill-inside-neutral-box
-   tested worse — reverted per feedback). Radius/padding stay at the
-   spec's footer values, just filled edge to edge with the state tint. */
-.co-card .co-card-strip {
-  border-radius: var(--card-foot-radius);
-  /* Was a flat 8px, which pulled the footer text 6px left of the body's
-     14px and made every card look off-axis. Match the body. */
-  padding: 8px 14px;
-  gap: 7px;
-  /* Long reasons wrap now, so the dot has to hold the first line
-     instead of floating to the centre of a two-line block. */
-  align-items: flex-start;
-}
-.co-card .co-strip-dot { margin-top: 4px; }
-/* The base rule sets white-space:nowrap, and the card is overflow:hidden.
-   Together they clipped any status longer than the card is wide —
-   "Warning · Approaching limit" lost its last word. Reasons are the
-   whole point of the strip, so wrap rather than truncate. */
-.co-card .co-strip-label {
-  font-size: 12px; font-weight: 500;
+/* Long strip reasons wrap instead of clipping or spilling past the card. */
+.co-card .co-strip-label,
+.dt-co-card .dt-co-card-strip-label {
   white-space: normal;
   overflow-wrap: anywhere;
-  line-height: 15px;
   min-width: 0;
   flex: 1;
 }
-/* A long unit or value should shorten the row, not push past the card */
+.co-card .co-card-strip,
+.dt-co-card .dt-co-card-strip { align-items: flex-start; }
+.co-card .co-strip-dot        { margin-top: 3px; }
+.dt-co-card .dt-co-card-strip-dot { margin-top: 4px; }
+
+/* A long unit or value shortens the row rather than pushing past the card. */
 .co-card .co-val-row { min-width: 0; flex-wrap: wrap; }
 .co-card .co-card-head { min-width: 0; }
 .co-card .co-card-head > span:first-of-type {
   min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.co-card .co-strip--normal  { background: #d5f1d2; }
-.co-card .co-strip--normal  .co-strip-label { color: #15322f; }
-.co-card .co-strip--warn    { background: var(--amber); }
-.co-card .co-strip--warn    .co-strip-label { color: #894f18; }
-.co-card .co-strip--alarm   { background: #ffd0d0; }
-.co-card .co-strip--alarm   .co-strip-label { color: var(--red); }
-.co-card .co-strip--pending { background: #ffefa9; }
-.co-card .co-strip--pending .co-strip-label { color: var(--strong); }
-.co-card .co-strip--grey,
-.co-card .co-strip--empty   { background: var(--layer-2); }
-.co-card .co-strip--grey    .co-strip-label,
-.co-card .co-strip--empty   .co-strip-label { color: var(--soft); }
-
-/* ─── Desktop component status cards (.dt-co-card) ──────────
-   Third copy of the component card, desktop drawer only —
-   missed in the first unification pass because it's a separate
-   dt- prefixed family rendered from app-06, not shared markup.
-   Same treatment as .co-card: spec chrome, bracketed meta rows,
-   status band → neutral inset footer with a colored chip.
-   State classes live on the CARD here (.clean/.warn/.alarm),
-   not the strip, so the chip selectors follow that scheme. */
-.dt-co-card {
-  border: 1px solid var(--border);
-  border-radius: var(--card-radius);
-  box-shadow: var(--card-shadow);
-  padding: 20px;
-  gap: 10px;
-  overflow: visible;
-  /* The wrench button (.dt-co-tcg-replace-btn) is position:absolute at
-     top:12/right:12. Until now the only rule giving this card a
-     position was scoped to .dt-replace-mode, so outside replace mode
-     the button had no positioned ancestor on its own card and escaped
-     to the nearest one — rendering as a stray grey circle floating over
-     whichever card sat at that container's top-right. overflow:visible
-     above is why it was drawn rather than clipped. */
-  position: relative;
-}
-.dt-co-card-body { padding: 0; }
-
-.dt-co-card-meta {
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 10px 0;
-  gap: 8px;
-}
-.dt-co-card-meta-row { justify-content: space-between; align-items: baseline; gap: 12px; }
-.dt-co-card-meta-label { color: var(--soft); }
-.dt-co-card-meta-row > span:last-child { color: var(--strong); text-align: right; }
-
-/* Footer: box itself is the full state color again (pill-inside-neutral-box
-   reverted per feedback). Radius stays at the spec's footer value; the
-   original per-state .dt-co-card.STATE .dt-co-card-strip background
-   rules already do this job on their own now that nothing overrides
-   them, so this block only needs to add the radius + fix the label,
-   which no longer needs pill padding. */
-.dt-co-card .dt-co-card-strip {
-  border-radius: var(--card-foot-radius);
-  padding: 8px;
-  gap: 8px;
-  /* Long reasons wrap now, so the dot holds the first line rather than
-     centring itself against a two-line block. */
-  align-items: flex-start;
-}
-.dt-co-card .dt-co-card-strip-dot { margin-top: 4px; }
-/* The base rule sets white-space:nowrap and this card is overflow:visible,
-   so a status longer than the card spilled OUT of it and over the
-   neighbour instead of clipping. Reasons are the point of the strip,
-   so wrap rather than truncate. */
-.dt-co-card .dt-co-card-strip-label {
-  font-size: 13px;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  line-height: 16px;
-  min-width: 0;
-  flex: 1;
 }
 
   /* ═══ TICKETS — PHASES BOARD ════════════════════════════════════════════════

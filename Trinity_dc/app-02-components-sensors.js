@@ -3229,18 +3229,35 @@ function tcgDoRemove(isDesktop) {
     });
   }
 
-  /* The consequence the sheet promised. dtSetMode owns the badge, the mobile
-     pill, the popover state and truck.truckMode, so it is the one call. */
-  if (typeof dtSetMode === 'function') dtSetMode('maintenance');
-
   tcgBanner(truck);
 
   if (typeof coInstallCancel === 'function') coInstallCancel();
   tcgRerender();
 
+  /* The consequence the sheet promised. This runs AFTER tcgRerender because
+     dtOpenTruck / tbBuildOverview rebuild the drawer header from truck data
+     and reset the badge to "Ignition on"; setting the mode first was being
+     undone a line later. dtSetMode owns truck.truckMode and the popover;
+     the badges are asserted directly as well so the pill reads Maintenance
+     on desktop and tablet regardless of which header just re-rendered. */
+  if (typeof dtSetMode === 'function') { try { dtSetMode('maintenance'); } catch (e) {} }
+  tcgAssertMaintBadge();
+
   if (typeof amToast === 'function') {
     amToast('TCG removed' + (truck ? ' from truck ' + truck : '') + ' \u00b7 unit in Maintenance');
   }
+}
+
+/* Header pill → Maintenance on every drawer that has one. Same class scheme
+   coConfirmOperational uses to put it back to live. */
+function tcgAssertMaintBadge() {
+  [['dt-drawer-ign-badge', 'dt-drawer-ign-text'], ['tb-drawer-ign-badge', 'tb-drawer-ign-text']]
+    .forEach(function (pair) {
+      var badge = document.getElementById(pair[0]);
+      var text  = document.getElementById(pair[1]);
+      if (badge) badge.className = 'dt-drawer-ign-badge maint';
+      if (text)  text.textContent = 'Maintenance';
+    });
 }
 
 /* The banner is where the truck says what it is waiting for. Install TCG goes

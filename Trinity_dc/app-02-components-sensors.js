@@ -4108,3 +4108,66 @@ function coConfirmOperational() {
   }, 200);
 }
 
+
+/* ══ TCG / INSTALL SHEET — CLOSING THE DRAWER ABANDONS THE WORKFLOW ═══════
+   The sheet (#co-install-bar) is mounted inside the truck drawer: #drawer on
+   mobile, #tb-drawer-main on tablet, #dt-drawer-main on desktop. Closing the
+   drawer only slid its host off-screen, so the bar survived in the DOM and
+   the next open resumed mid-flow — a half-answered "Remove TCG" confirm still
+   sitting there, with no memory of how it got there.
+
+   The fix does not live in the close handlers. There are several of them (the
+   X button, Esc, the scrim, view switches, drawer-to-drawer pivots) and each
+   one is an assumption waiting to be broken. All three drawers signal open
+   state the same way, with .open on the drawer root, so that is the invariant
+   to watch: .open leaves, the sheet leaves with it. Any future close path is
+   covered for free.
+
+   Teardown routes through coInstallCancel() so the scan timer dies too. The
+   guard is deliberately not TCG-specific — the regular component install
+   panel is drawer-scoped in exactly the same way and should abandon on close
+   for exactly the same reason.
+   ────────────────────────────────────────────────────────────────────────── */
+(function () {
+  var DRAWER_IDS = ['drawer', 'tb-drawer', 'dt-drawer'];
+
+  /* Single teardown path. coInstallCancel clears window._coScanTimer and
+     removes the bar; the direct remove is only a fallback for load order. */
+  function coAbandonSheet() {
+    var bar = document.getElementById('co-install-bar');
+    if (!bar) return;
+    if (typeof coInstallCancel === 'function') coInstallCancel();
+    else bar.remove();
+  }
+  window.coAbandonSheet = coAbandonSheet;
+
+  function watchDrawer(el) {
+    var wasOpen = el.classList.contains('open');
+    var obs = new MutationObserver(function () {
+      var isOpen = el.classList.contains('open');
+      /* .closing is the mobile drawer's exit animation class — it can land a
+         frame before .open is dropped, so treat it as a close signal too. */
+      var closing = el.classList.contains('closing');
+      if ((wasOpen && !isOpen) || (isOpen && closing)) coAbandonSheet();
+      wasOpen = isOpen && !closing;
+    });
+    obs.observe(el, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  function installGuard() {
+    DRAWER_IDS.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el || el.dataset.coCloseGuard === '1') return;
+      el.dataset.coCloseGuard = '1';
+      watchDrawer(el);
+    });
+  }
+
+  /* installGuard is idempotent (the data attribute latches), so run it now for
+     the normal case — these scripts sit at the bottom of body, the drawers
+     already exist — and again on the lifecycle events, so no single assumption
+     about parse timing has to hold. */
+  installGuard();
+  document.addEventListener('DOMContentLoaded', installGuard);
+  window.addEventListener('load', installGuard);
+})();

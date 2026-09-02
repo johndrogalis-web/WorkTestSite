@@ -2996,7 +2996,7 @@ function coOpenTcgReplace(isDesktop) {
     main.style.position = 'relative';
     bar.style.cssText = 'position:absolute;left:0;right:0;bottom:0;z-index:50;background:var(--layer-1);border-top:1px solid var(--border);padding:18px 24px 24px;box-shadow:0 -8px 24px rgba(54,50,45,0.1);animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);max-height:calc(100% - 60px);overflow:hidden;';
     main.appendChild(bar);
-    coRenderTcgConfirmStage(true); /* pass true so confirm routes back through desktop/tablet path */
+    tcgRenderChoice(true); /* pass true so confirm routes back through desktop/tablet path */
     return;
   }
 
@@ -3014,10 +3014,10 @@ function coOpenTcgReplace(isDesktop) {
     sc.appendChild(bar);
   }
 
-  coRenderTcgConfirmStage(isDesktop);
+  tcgRenderChoice(isDesktop);
 }
 
-/* Stage A render */
+/* Stage A render — reached from the chooser's Replace row. */
 function coRenderTcgConfirmStage(isDesktop) {
   var bar = document.getElementById('co-install-bar');
   if (!bar) return;
@@ -3070,6 +3070,212 @@ function coRenderTcgConfirmStage(isDesktop) {
     +   '<button onclick="coInstallCancel()" style="flex:0 0 auto;min-width:110px;background:none;border:1px solid var(--border);border-radius:32px;padding:12px 20px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;color:var(--strong);cursor:pointer;">Cancel</button>'
     +   '<button onclick="coTcgContinueToScan(' + (isDesktop?'true':'false') + ')" style="flex:1;background:'+coPrimaryBtnBg()+';color:'+coPrimaryBtnColor()+';border:none;border-radius:32px;padding:12px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">Continue</button>'
     + '</div>';
+}
+
+
+/* ══ TCG: replace or remove ════════════════════════════════════════════════
+   The card had one action and no way to take the gateway off the truck.
+   Replace Components skips TCG on purpose in both dtReplaceCardTap and
+   coReplaceCardTap, because the gateway is the unit's radio and pulling it is
+   not the same act as pulling a sensor. That is a reason for a dedicated
+   path, not a reason for no path.
+
+   So the wrench asks which one you meant. coOpenTcgReplace mounts the sheet
+   as it always did and now renders the chooser into it; Replace hands
+   straight back to coRenderTcgConfirmStage below, so that flow is unchanged.
+
+   Remove is honest about what it costs: every component reaches Verifi
+   through the gateway, so removing it stops telemetry, slump readings and
+   water commands for the whole unit, and the truck moves to Maintenance. That
+   consequence is the point of the change rather than a side effect. An
+   incomplete unit is not a unit running badly, it is one that cannot report,
+   and leaving the truck Active would put a truck on the board that looks fine
+   and answers nothing. The sheet says so before you commit, not after.
+
+   The removal writes exactly the state a normal component removal writes
+   (dtRemovedComponents, moRemovedCards, the CC_TRUCKS entry), so every view
+   renders the empty install slot it already knows how to render.
+   ────────────────────────────────────────────────────────────────────────── */
+
+
+function tcgBar() { return document.getElementById('co-install-bar'); }
+
+function tcgTruckNum() {
+  if (document.body.classList.contains('view-tablet')) {
+    return (typeof tbDrawerTruck !== 'undefined' && tbDrawerTruck) ? tbDrawerTruck.num : null;
+  }
+  if (typeof dtDrawerTruckNum !== 'undefined' && dtDrawerTruckNum) return dtDrawerTruckNum;
+  var lab = document.getElementById('drawer-truck-num');
+  return lab ? lab.textContent.replace('Truck:', '').trim() : null;
+}
+
+/* ── The chooser ──────────────────────────────────────────────────────────
+   Two destinations, so two rows rather than a menu that opens a menu. Replace
+   sits first and reads as the ordinary one; Remove carries the consequence in
+   its own subtitle, so the cost is visible before the sheet that asks you to
+   confirm it. */
+
+function tcgRenderChoice(isDesktop) {
+  var bar = tcgBar();
+  if (!bar) return;
+  var d = isDesktop ? 'true' : 'false';
+
+  bar.style.display = 'flex';
+  bar.style.flexDirection = 'column';
+  bar.style.minHeight = '0';
+  bar.innerHTML =
+    '<div class="tcg-sheet-head">'
+    +   '<div class="tcg-sheet-icon">'
+    +     '<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="2.5" y="5.5" width="15" height="9" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M6 9.5h3M13.8 9.5h.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>'
+    +   '</div>'
+    +   '<div><div class="tcg-sheet-t">TCG</div>'
+    +     '<div class="tcg-sheet-s">Telematics Control Gateway</div></div>'
+    + '</div>'
+    + '<div class="tcg-choice-list">'
+    +   '<button class="tcg-choice" onclick="tcgChoose(\'replace\',' + d + ')">'
+    +     '<div class="tcg-choice-l"><div class="tcg-choice-t">Replace TCG</div>'
+    +       '<div class="tcg-choice-s">Swap in a new gateway. The unit ID stays the same and the other components reconnect on their own.</div></div>'
+    +     '<svg class="tcg-choice-chev" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2.5 9.5 7 5 11.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    +   '</button>'
+    +   '<button class="tcg-choice" onclick="tcgChoose(\'remove\',' + d + ')">'
+    +     '<div class="tcg-choice-l"><div class="tcg-choice-t">Remove TCG</div>'
+    +       '<div class="tcg-choice-s">Take the gateway off the truck without a replacement. The unit stops reporting and the truck moves to Maintenance.</div></div>'
+    +     '<svg class="tcg-choice-chev" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2.5 9.5 7 5 11.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    +   '</button>'
+    + '</div>'
+    + '<div class="tcg-sheet-foot">'
+    +   '<button class="tcg-btn-quiet" onclick="coInstallCancel()">Cancel</button>'
+    + '</div>';
+}
+
+function tcgChoose(which, isDesktop) {
+  if (which === 'replace') {
+    /* Straight back into app-02's flow, unchanged. */
+    if (typeof coRenderTcgConfirmStage === 'function') coRenderTcgConfirmStage(isDesktop);
+    return;
+  }
+  tcgRenderRemoveConfirm(isDesktop);
+}
+
+/* ── Remove: confirm ──────────────────────────────────────────────────────── */
+
+function tcgRenderRemoveConfirm(isDesktop) {
+  var bar = tcgBar();
+  if (!bar) return;
+  var comps = (typeof coGetTruckCompList === 'function') ? coGetTruckCompList(isDesktop) : [];
+  var truck = tcgTruckNum();
+
+  var bullets = comps.length
+    ? comps.map(function (n) {
+        return '<div class="tcg-go-dark-row"><span class="tcg-go-dark-dot"></span><span>' + n + '</span></div>';
+      }).join('')
+    : '<div class="tcg-go-dark-none">No other components are installed on this unit.</div>';
+
+  bar.style.display = 'flex';
+  bar.style.flexDirection = 'column';
+  bar.style.minHeight = '0';
+  bar.innerHTML =
+    '<div class="tcg-sheet-head">'
+    +   '<div class="tcg-sheet-icon tcg-sheet-icon-warn">'
+    +     '<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 2.5 18.5 17H1.5L10 2.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M10 8v3.6M10 14h.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>'
+    +   '</div>'
+    +   '<div><div class="tcg-sheet-t">Remove TCG</div>'
+    +     '<div class="tcg-sheet-s">' + (truck ? 'Truck ' + truck + ' \u00b7 ' : '') + 'Telematics Control Gateway</div></div>'
+    + '</div>'
+    + '<div class="tcg-sheet-body">'
+    +   '<div class="tcg-sheet-p">Every component on this unit reaches Verifi through the gateway. '
+    +     'Removing it with nothing in its place stops telemetry, slump readings and water commands '
+    +     'for the whole unit until a new TCG is installed.</div>'
+    +   (comps.length
+        ? '<div class="tcg-sheet-cap">These stop reporting</div><div class="tcg-go-dark">' + bullets + '</div>'
+        : bullets)
+    +   '<div class="tcg-consequence">'
+    +     '<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2"/><path d="M8 4.6v4M8 10.9h.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>'
+    +     '<div><b>The truck moves to Maintenance.</b> An incomplete unit is not a unit running badly, '
+    +       'it is one that cannot report, so the board should not show this truck as active. '
+    +       'Set it back to Ignition on once a new TCG is installed.</div>'
+    +   '</div>'
+    + '</div>'
+    + '<div class="tcg-sheet-foot">'
+    +   '<button class="tcg-btn-quiet" onclick="tcgRenderChoice(' + (isDesktop ? 'true' : 'false') + ')">Back</button>'
+    +   '<button class="tcg-btn-commit" onclick="tcgDoRemove(' + (isDesktop ? 'true' : 'false') + ')">Remove TCG</button>'
+    + '</div>';
+}
+
+/* ── Remove: commit ───────────────────────────────────────────────────────
+   Writes exactly the state a normal component removal writes, so every view
+   renders the empty install slot it already knows how to render. */
+
+function tcgStamp() {
+  var n = new Date();
+  return (n.getMonth() + 1) + '/' + n.getDate() + '/' + String(n.getFullYear()).slice(-2)
+    + '  ' + n.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+function tcgDoRemove(isDesktop) {
+  var stamp = tcgStamp();
+  var truck = tcgTruckNum();
+
+  if (!window.dtRemovedComponents) window.dtRemovedComponents = {};
+  if (!window.moRemovedCards) window.moRemovedCards = {};
+  window.dtRemovedComponents.TCG = stamp;
+  window.moRemovedCards.TCG = stamp;
+
+  if (typeof CC_TRUCKS !== 'undefined') {
+    CC_TRUCKS.forEach(function (t) {
+      if (!t.components) return;
+      var c = t.components.find(function (x) { return x.name === 'TCG'; });
+      if (c) { c.state = 'empty'; c.evt = 'Not installed'; c.dot = 'rgba(54,50,45,0.2)'; c.removedDate = stamp; }
+    });
+  }
+
+  /* The consequence the sheet promised. dtSetMode owns the badge, the mobile
+     pill, the popover state and truck.truckMode, so it is the one call. */
+  if (typeof dtSetMode === 'function') dtSetMode('maintenance');
+
+  tcgBanner(truck);
+
+  if (typeof coInstallCancel === 'function') coInstallCancel();
+  tcgRerender();
+
+  if (typeof amToast === 'function') {
+    amToast('TCG removed' + (truck ? ' from truck ' + truck : '') + ' \u00b7 unit in Maintenance');
+  }
+}
+
+/* The banner is where the truck says what it is waiting for. Install TCG goes
+   back through the same flow the wrench opens. */
+function tcgBanner(truck) {
+  var bg = (typeof coBannerBg === 'function') ? coBannerBg() : 'rgba(217,119,6,0.08)';
+  var bd = (typeof coBannerBorder === 'function') ? coBannerBorder() : 'rgba(217,119,6,0.3)';
+  var inner =
+    '<div class="tcg-banner-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none">'
+    + '<path d="M8 3v5M8 10h.01" stroke="#d97706" stroke-width="1.5" stroke-linecap="round"/>'
+    + '<circle cx="8" cy="8" r="6.5" stroke="#d97706" stroke-width="1.2"/></svg></div>'
+    + '<div class="tcg-banner-txt"><div class="tcg-banner-t">TCG removed \u00b7 unit not reporting</div>'
+    + '<div class="tcg-banner-s">' + (truck ? 'Truck ' + truck + ' is' : 'This truck is') + ' in Maintenance until a new gateway is installed</div></div>'
+    + '<button class="tcg-banner-btn" onclick="coOpenTcgReplace(false)">Install TCG</button>';
+
+  [['dt-error-banner', '12px 24px'], ['tb-error-banner', '12px 20px'], ['co-replace-toolbar', '12px 16px']]
+    .forEach(function (pair) {
+      var el = document.getElementById(pair[0]);
+      if (!el) return;
+      el.style.cssText = 'flex-shrink:0;background:' + bg + ';border-top:1px solid ' + bd
+        + ';padding:' + pair[1] + ';display:flex;align-items:center;gap:10px;';
+      el.innerHTML = inner;
+    });
+  if (typeof coSetNavDot === 'function') coSetNavDot(true);
+}
+
+function tcgRerender() {
+  if (typeof renderConditions === 'function') { try { renderConditions(); } catch (e) {} }
+  if (typeof dtDrawerTruckNum !== 'undefined' && dtDrawerTruckNum && typeof dtOpenTruck === 'function') {
+    try { dtOpenTruck(dtDrawerTruckNum); } catch (e) {}
+  }
+  if (typeof tbDrawerTruck !== 'undefined' && tbDrawerTruck && typeof tbBuildOverview === 'function') {
+    var scroll = document.getElementById('tb-drawer-scroll');
+    if (scroll) { try { tbBuildOverview(tbDrawerTruck, scroll); } catch (e) {} }
+  }
 }
 
 /* Stage B — TCG cannot be auto-discovered by scan (it IS the radio that would

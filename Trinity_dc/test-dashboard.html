@@ -147,11 +147,28 @@ function median(arr){ if(!arr.length) return 0; var s=arr.slice().sort(function(
 function fmtS(s){ s=Number(s)||0; return s>=90 ? Math.round(s/6)/10+'m' : Math.round(s*10)/10+'s'; }
 function wfSteps(wf){ return (wf.checkpoints||[]).filter(function(s){return !s.meta;}); }
 
+/* Same guard as testing.js: Apps Script hands back an HTML page (sign-in,
+   "unable to open", or a rendered error) when the deployment or script
+   fails. Name the page kind instead of surfacing the JSON parser's
+   "Unexpected token '<'". */
+function tstParse_(r){
+  return r.text().then(function(t){
+    try { return JSON.parse(t); }
+    catch(e){
+      var kind = /accounts\.google\.com|Sign in/i.test(t) ? 'Google sign-in page (deployment access is not "Anyone")'
+               : /unable to open|not found/i.test(t) ? 'Google "unable to open" page (deployment URL is archived or wrong)'
+               : /Exception|Error/i.test(t) ? 'Apps Script error page (check Executions in the script editor)'
+               : 'non-JSON reply';
+      throw new Error('Backend returned ' + kind + ' (HTTP ' + r.status + ')');
+    }
+  });
+}
+
 function loadAll(){
   document.getElementById('updated').textContent = 'Loading…';
   Promise.all([
-    fetch(TST_API+'?action=list&all=1').then(function(r){return r.json();}),
-    fetch(TST_API+'?action=results').then(function(r){return r.json();})
+    fetch(TST_API+'?action=list&all=1').then(tstParse_),
+    fetch(TST_API+'?action=results').then(tstParse_)
   ]).then(function(res){
     ALL.workflows = (res[0].ok && res[0].workflows) || [];
     ALL.sessions  = (res[1].ok && res[1].sessions)  || [];
@@ -160,7 +177,7 @@ function loadAll(){
     buildFilters();
     applyFilters();
   }).catch(function(e){
-    document.getElementById('updated').textContent = 'Load failed — check the API URL. ' + e;
+    document.getElementById('updated').textContent = 'Load failed. ' + (e && e.message || e);
   });
 }
 

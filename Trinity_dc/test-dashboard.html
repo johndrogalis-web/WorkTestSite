@@ -5,166 +5,279 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prototype Testing — Dashboard</title>
 <style>
-  /* Standalone on purpose: no dependency on any prototype's files, so
-     one copy of this page serves every prototype from the shared sheet. */
+  /* ── Trinity tokens, inlined ──
+     shared.css is linked below and wins when this page sits next to it
+     in the deployed suite. These are the same values, copied so the file
+     still renders correctly on its own — the standalone promise in the
+     original comment holds, it just no longer means "looks unrelated to
+     the product it reports on". */
   :root {
-    --base:#f6f4f2; --layer:#fff; --border:rgba(0,0,0,0.10);
-    --strong:#171614; --defined:#3f3c38; --soft:#8a8d94; --subtle:#b3b0ac;
-    --blue:#3069e3; --green:#1f9d55; --red:#d3542f; --amber:#b8860b;
-    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    --base:#f6f4f2; --layer-1:#fff; --layer-2:#f6f4f2;
+    --strong:#36322d; --defined:#36322dc2; --soft:#36322d9e; --subtle:#36322d80;
+    --border:#36322d24; --border-mid:rgba(54,50,45,0.30);
+    --blue:#3069e3; --blue-link:#295ccc; --red:#d70100; --amber:#ffba0d;
+    --radius-sm:4px; --radius-md:16px; --radius-lg:24px;
+    --font:'ABC Repro',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
   }
+  /* Dashboard-only tokens. Trinity has no chart palette, so these are
+     derived from it rather than invented: tracks and grids are the
+     text colour at low alpha, so they follow the theme automatically. */
+  :root {
+    --track:rgba(54,50,45,0.08);
+    --hairline:rgba(54,50,45,0.09);
+    --pos:#1f7a44; --pos-bg:#e2f5e9;
+    --neg:#b03a2a; --neg-bg:#fbe4e0;
+    --ribbon:rgba(54,50,45,0.13); --node:rgba(54,50,45,0.45);
+    --shadow:0 1px 2px rgba(54,50,45,0.04);
+    --shadow-up:0 8px 28px rgba(54,50,45,0.14);
+  }
+  body.dark {
+    --track:rgba(229,229,229,0.10);
+    --hairline:rgba(229,229,229,0.10);
+    --pos:#6ddc9d; --pos-bg:rgba(31,157,85,0.18);
+    --neg:#ff9d8a; --neg-bg:rgba(215,1,0,0.20);
+    --ribbon:rgba(229,229,229,0.14); --node:rgba(229,229,229,0.45);
+    --shadow:none; --shadow-up:0 8px 28px rgba(0,0,0,0.5);
+  }
+
   * { box-sizing:border-box; }
-  body { margin:0; background:var(--base); font-family:var(--font); color:var(--strong); }
-  .wrap { max-width:1080px; margin:0 auto; padding:28px 24px 64px; }
-  header { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:20px; }
-  h1 { font-size:20px; font-weight:600; margin:0; letter-spacing:-0.3px; }
-  .sub { font-size:12px; color:var(--soft); }
-  select, button.refresh {
-    font-family:var(--font); font-size:12.5px; color:var(--strong);
-    background:var(--layer); border:1px solid var(--border); border-radius:100px;
-    padding:7px 14px; outline:none; cursor:pointer;
+  html { -webkit-font-smoothing:antialiased; }
+  body { margin:0; background:var(--base); font-family:var(--font); color:var(--strong);
+         font-size:13px; line-height:1.45; }
+
+  /* ── Top bar ──
+     Sticky because the two filters govern every number below it. Losing
+     sight of which prototype you are looking at while scrolling a page
+     of percentages is how a dashboard misleads. */
+  .topbar { position:sticky; top:0; z-index:20; background:color-mix(in srgb,var(--base) 88%,transparent);
+            backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+            border-bottom:1px solid var(--border); }
+  .topbar-in { max-width:1160px; margin:0 auto; padding:14px 28px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+  .brand { display:flex; align-items:center; gap:11px; margin-right:auto; }
+  .mark { width:30px; height:30px; border-radius:9px; flex:0 0 auto; background:var(--strong);
+          position:relative; }
+  .mark::after { content:""; position:absolute; left:8px; right:8px; top:9px; height:2px; border-radius:2px;
+                 background:var(--base); box-shadow:0 5px 0 var(--base); }
+  h1 { font-size:15px; font-weight:600; margin:0; letter-spacing:-0.2px; line-height:1.2; }
+  .sub { font-size:11.5px; color:var(--soft); }
+  .controls { display:flex; align-items:flex-end; gap:9px; flex-wrap:wrap; }
+  .fld { display:flex; flex-direction:column; gap:4px; }
+  .fld > span { font-size:9.5px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase;
+                color:var(--subtle); padding-left:2px; }
+
+  select, .btn, .ans-bar input {
+    font-family:inherit; font-size:12.5px; color:var(--strong); background:var(--layer-1);
+    border:1px solid var(--border-mid); border-radius:100px; padding:0 14px; height:33px;
+    outline:none; cursor:pointer; transition:border-color .12s, background .12s;
   }
-  .spacer { flex:1; }
+  select { -webkit-appearance:none; appearance:none; padding-right:30px; max-width:230px;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M1 1l4 4 4-4' fill='none' stroke='%2336322d' stroke-width='1.5' stroke-linecap='round'/></svg>");
+    background-repeat:no-repeat; background-position:right 12px center; }
+  body.dark select { background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M1 1l4 4 4-4' fill='none' stroke='%23e5e5e5' stroke-width='1.5' stroke-linecap='round'/></svg>"); }
+  select:hover, .btn:hover, .ans-bar input:hover { border-color:var(--strong); }
+  select:focus-visible, .btn:focus-visible, input:focus-visible { border-color:var(--blue); box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 22%,transparent); }
+  .btn-primary { background:var(--strong); color:var(--base); border-color:var(--strong); font-weight:500; }
+  .btn-primary:hover { opacity:0.86; }
+  .btn-icon { width:33px; padding:0; display:inline-flex; align-items:center; justify-content:center; font-size:14px; }
 
-  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin-bottom:20px; }
-  .card { background:var(--layer); border:1px solid var(--border); border-radius:14px; padding:16px; }
-  .card .num { font-size:26px; font-weight:600; letter-spacing:-0.5px; }
-  .card .lbl { font-size:11.5px; color:var(--soft); margin-top:2px; }
+  .wrap { max-width:1160px; margin:0 auto; padding:26px 28px 80px; }
 
-  .panel { background:var(--layer); border:1px solid var(--border); border-radius:14px; padding:18px; margin-bottom:16px; }
-  .panel h2 { font-size:13.5px; font-weight:600; margin:0 0 12px; }
-  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  @media (max-width:860px){ .grid2 { grid-template-columns:1fr; } }
+  /* ── Section rules ──
+     The page used to be seven co-equal panels in a column, which read as
+     a list of leftovers. Labelled groups give it an argument: how many,
+     how well, where they went, what they said. */
+  .sect { display:flex; align-items:center; gap:14px; margin:34px 0 13px;
+          font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--subtle); }
+  .sect::after { content:""; flex:1; height:1px; background:var(--border); }
 
-  /* Hand-rolled charts — zero dependencies */
-  .bars { display:flex; align-items:flex-end; gap:4px; height:140px; }
-  .bars .b { flex:1; background:var(--blue); border-radius:3px 3px 0 0; min-height:2px; position:relative; }
+  /* ── Stat cards ── */
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(158px,1fr)); gap:10px; }
+  .card { background:var(--layer-1); border:1px solid var(--border); border-radius:var(--radius-md);
+          padding:15px 17px 14px; box-shadow:var(--shadow); }
+  .card .lbl { font-size:9.5px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:var(--subtle); }
+  .card .num { font-size:29px; font-weight:600; letter-spacing:-1px; line-height:1.15; margin-top:7px;
+               font-variant-numeric:tabular-nums; }
+  .card .num em { font-style:normal; font-size:12.5px; font-weight:400; color:var(--soft); letter-spacing:0; }
+
+  /* ── Panels ── */
+  .panel { background:var(--layer-1); border:1px solid var(--border); border-radius:var(--radius-md);
+           padding:18px 20px; margin-bottom:12px; box-shadow:var(--shadow); }
+  .panel-h { display:flex; align-items:baseline; gap:10px; margin-bottom:12px; }
+  .panel-h h2 { font-size:13px; font-weight:600; margin:0; letter-spacing:-0.1px; }
+  .panel-note { font-size:11px; color:var(--subtle); margin-left:auto; text-align:right; }
+  .lede { font-size:11.5px; color:var(--soft); margin:-6px 0 13px; max-width:62ch; line-height:1.5; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:900px){ .grid2 { grid-template-columns:1fr; } }
+
+  /* ── 30-day bars ── */
+  .bars { display:flex; align-items:flex-end; gap:3px; height:78px; }
+  .bars .b { flex:1; background:var(--blue); border-radius:2px 2px 0 0; min-height:2px; position:relative;
+             opacity:0.85; transition:opacity .1s; }
+  .bars .b.zero { background:var(--track); }
+  .bars .b:hover { opacity:1; }
   .bars .b:hover::after {
-    content:attr(data-tip); position:absolute; bottom:calc(100% + 4px); left:50%; transform:translateX(-50%);
-    background:var(--strong); color:#fff; font-size:10.5px; padding:3px 8px; border-radius:6px; white-space:nowrap; z-index:5;
+    content:attr(data-tip); position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%);
+    background:var(--strong); color:var(--base); font-size:10.5px; padding:4px 9px; border-radius:var(--radius-sm);
+    white-space:nowrap; z-index:5; box-shadow:var(--shadow-up); font-variant-numeric:tabular-nums;
   }
-  .bars-x { display:flex; gap:4px; margin-top:6px; }
+  .bars-x { display:flex; gap:3px; margin-top:7px; border-top:1px solid var(--hairline); padding-top:6px; }
   .bars-x span { flex:1; font-size:9.5px; color:var(--subtle); text-align:center; overflow:hidden; white-space:nowrap; }
 
-  .hrow { display:flex; align-items:center; gap:10px; font-size:12px; padding:5px 0; }
-  .hrow .name { flex:0 0 200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .hrow .track { flex:1; height:10px; background:#f0eeec; border-radius:5px; overflow:hidden; }
-  .hrow .fill { height:100%; border-radius:5px; background:var(--green); }
+  /* ── Horizontal bar rows ── */
+  .hrow { display:flex; align-items:center; gap:12px; font-size:12px; padding:6px 0; }
+  .hrow + .hrow { border-top:1px solid var(--hairline); }
+  .hrow .name { flex:0 0 46%; max-width:230px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--defined); }
+  .hrow .track { flex:1; height:9px; background:var(--track); border-radius:5px; overflow:hidden; }
+  .hrow .fill { height:100%; border-radius:5px; background:var(--pos); }
   .hrow .fill.blue { background:var(--blue); }
   .hrow .fill.friction { background:var(--red); }
-  .hrow .val { flex:0 0 74px; text-align:right; font-variant-numeric:tabular-nums; color:var(--defined); }
-  .miss { margin:2px 0 6px 210px; font-size:11px; color:var(--soft); }
-  .miss .m { display:flex; gap:6px; align-items:baseline; padding:1.5px 0; }
-  .miss .m b { color:var(--red); font-weight:600; min-width:26px; }
+  .hrow .val { flex:0 0 96px; text-align:right; font-variant-numeric:tabular-nums; color:var(--soft); font-size:11.5px; }
+  .miss { margin:0 0 8px calc(46% + 12px); font-size:11px; color:var(--soft); }
+  .miss .m { display:flex; gap:7px; align-items:baseline; padding:2px 0; }
+  .miss .m b { color:var(--red); font-weight:600; min-width:26px; font-variant-numeric:tabular-nums; }
   .miss .m .where { color:var(--subtle); }
-  .miss .m a.mlink { color:var(--blue); text-decoration:none; font-weight:500; }
-  .miss .m a.mlink:hover { text-decoration:underline; }
-  #friction-heat a { font-size:12px; font-weight:500; color:var(--blue); text-decoration:none; margin-left:8px; }
-  #friction-heat a:hover { text-decoration:underline; }
-  .sk-group { font-size:13px; font-weight:600; color:var(--strong); margin:14px 0 6px; }
-  .sk-group:first-child { margin-top:0; }
-  .sk-wrap { overflow-x:auto; }
-  .sk-node { fill:#6b7280; cursor:pointer; }
-  .sk-node:hover { fill:var(--blue); }
-  .sk-ribbon { fill:#dfe3e8; }
-  .sk-end { fill:url(#skHatch); }
-  .sk-lbl { font-size:11px; fill:var(--defined); font-family:var(--font); }
-  .sk-user { font-size:11px; fill:var(--soft); font-family:var(--font); text-anchor:end; }
-  .sk-tip { position:fixed; z-index:50; background:#171614; color:#fff; border-radius:8px;
-            padding:8px 10px; font-size:11.5px; max-width:230px; pointer-events:none;
-            box-shadow:0 6px 20px rgba(0,0,0,0.3); display:none; }
-  .sk-tip b { display:block; font-size:12.5px; margin-bottom:2px; }
-  .sk-tip a { color:#9dc0ff; pointer-events:auto; }
-  @media (max-width:860px){ .miss { margin-left:0; } }
-  .badge { font-size:10px; border-radius:100px; padding:2px 8px; font-weight:600; }
-  .badge.bad { background:#fbe4e0; color:#b03a2a; }
-  .badge.arch { background:#eee; color:#777; }
+  .miss .m a.mlink, #friction-heat a, #paths-heat a {
+    color:var(--blue-link); text-decoration:none; font-weight:500; }
+  .miss .m a.mlink:hover, #friction-heat a:hover, #paths-heat a:hover { text-decoration:underline; }
+  #friction-heat, #paths-heat { font-size:11.5px; }
+  @media (max-width:900px){ .miss { margin-left:0; } .hrow .name { flex-basis:38%; } }
 
+  /* ── Sankey ── */
+  .sk-group { font-size:12px; font-weight:600; margin:18px 0 7px; }
+  .sk-group:first-child { margin-top:0; }
+  .sk-wrap { overflow-x:auto; margin:0 -4px; padding:0 4px; }
+  .sk-node { fill:var(--node); cursor:pointer; transition:fill .12s; }
+  .sk-node:hover { fill:var(--blue); }
+  .sk-ribbon { fill:var(--ribbon); }
+  .sk-end { fill:url(#skHatch); }
+  .sk-hatch-bg { fill:var(--neg-bg); }
+  .sk-hatch-line { stroke:var(--neg); }
+  .sk-lbl { font-size:11px; fill:var(--defined); font-family:var(--font); }
+  .sk-user { font-size:11px; fill:var(--subtle); font-family:var(--font); text-anchor:end; }
+  .sk-tip { position:fixed; z-index:50; background:var(--strong); color:var(--base); border-radius:var(--radius-sm);
+            padding:9px 11px; font-size:11.5px; max-width:240px; pointer-events:none;
+            box-shadow:var(--shadow-up); display:none; }
+  .sk-tip b { display:block; font-size:12.5px; margin-bottom:3px; }
+  .sk-tip a { color:#9dc0ff; pointer-events:auto; }
+
+  .badge { font-size:10px; border-radius:100px; padding:2px 8px; font-weight:600; letter-spacing:0.01em; }
+  .badge.bad { background:var(--neg-bg); color:var(--neg); }
+  .badge.arch { background:var(--track); color:var(--subtle); }
+
+  /* ── Table ── */
+  .panel-flush { padding-bottom:6px; }
+  .tbl-scroll { overflow-x:auto; margin:0 -20px; padding:0 20px; }
   table { width:100%; border-collapse:collapse; font-size:12px; }
-  th { text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.4px; color:var(--soft); font-weight:600; padding:6px 10px; border-bottom:1px solid var(--border); }
-  td { padding:7px 10px; border-bottom:1px solid #f2f0ee; color:var(--defined); }
+  th { text-align:left; font-size:9.5px; text-transform:uppercase; letter-spacing:0.07em; color:var(--subtle);
+       font-weight:600; padding:0 12px 8px; border-bottom:1px solid var(--border); white-space:nowrap; }
+  td { padding:9px 12px; border-bottom:1px solid var(--hairline); color:var(--defined); white-space:nowrap; }
   tr:last-child td { border-bottom:none; }
-  .empty { color:var(--soft); font-size:12.5px; padding:20px 0; text-align:center; }
+  tbody tr:hover td { background:var(--layer-2); }
+  td:first-child, th:first-child { padding-left:2px; }
+  .num-col { text-align:right; font-variant-numeric:tabular-nums; }
+  td.who { color:var(--strong); font-weight:500; }
+  .geo { color:var(--soft); }
+  .empty { color:var(--subtle); font-size:12px; padding:26px 0; text-align:center; }
 
   /* ── Post-task answers ── */
-  .ans-bar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:-4px 0 14px; }
-  .ans-bar select, .ans-bar input {
-    font-family:var(--font); font-size:12.5px; color:var(--strong); background:var(--layer);
-    border:1px solid var(--border); border-radius:100px; padding:7px 14px; outline:none;
-  }
-  .ans-bar input { min-width:190px; cursor:text; }
-  .seg { display:inline-flex; align-items:center; gap:7px; background:var(--strong); color:#fff;
-         border-radius:100px; padding:5px 8px 5px 12px; font-size:11.5px; }
+  .ans-bar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:0 0 15px; }
+  .ans-bar input { cursor:text; min-width:200px; }
+  .seg { display:inline-flex; align-items:center; gap:8px; background:var(--strong); color:var(--base);
+         border-radius:100px; padding:0 9px 0 14px; height:33px; font-size:11.5px; }
   .seg b { font-weight:600; }
-  .seg span { cursor:pointer; opacity:0.6; font-size:13px; line-height:1; padding:0 2px; }
+  .seg span { cursor:pointer; opacity:0.55; font-size:14px; line-height:1; padding:0 3px; }
   .seg span:hover { opacity:1; }
-  .ans-q { border-top:1px solid var(--border); padding-top:15px; margin-top:15px; }
+  .ans-q { border-top:1px solid var(--hairline); padding-top:17px; margin-top:17px; }
   .ans-q:first-child { border-top:none; padding-top:0; margin-top:0; }
-  .ans-h { font-size:12.5px; font-weight:600; line-height:1.35; }
-  .ans-meta { font-size:11px; color:var(--soft); margin:2px 0 9px; }
-  .ans-d { display:flex; align-items:center; gap:10px; font-size:12px; padding:3px 0; cursor:pointer; }
-  .ans-d:hover .fill { filter:brightness(1.12); }
-  .ans-d .name { flex:0 0 190px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--defined); }
-  .ans-d .track { flex:1; height:12px; background:#f0eeec; border-radius:6px; overflow:hidden; }
-  .ans-d .fill { height:100%; border-radius:6px; background:var(--blue); }
+  .ans-h { font-size:12.5px; font-weight:600; line-height:1.4; }
+  .ans-meta { font-size:11px; color:var(--soft); margin:3px 0 11px; font-variant-numeric:tabular-nums; }
+  .ans-d { display:flex; align-items:center; gap:12px; font-size:12px; padding:4px 0; cursor:pointer;
+           border-radius:var(--radius-sm); }
+  .ans-d:hover { background:var(--layer-2); }
+  .ans-d .name { flex:0 0 170px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--defined); }
+  .ans-d .track { flex:1; height:11px; background:var(--track); border-radius:6px; overflow:hidden; }
+  .ans-d .fill { height:100%; border-radius:6px; background:var(--blue); transition:background .12s; }
   .ans-d.on .fill { background:var(--strong); }
-  .ans-d .val { flex:0 0 60px; text-align:right; font-variant-numeric:tabular-nums; color:var(--soft); }
-  .vrb { border-left:2px solid #e6e2de; padding:3px 0 3px 11px; margin:8px 0; font-size:12.5px;
-         color:var(--defined); line-height:1.45; }
-  .vrb .who { display:block; font-size:10.5px; color:var(--soft); margin-top:3px; }
-  .vrb.blank { color:var(--subtle); font-style:italic; }
-  .more { font-size:11.5px; color:var(--blue); cursor:pointer; font-weight:500; }
+  .ans-d .val { flex:0 0 46px; text-align:right; font-variant-numeric:tabular-nums; color:var(--soft); }
+  .vrb { border-left:2px solid var(--border-mid); padding:2px 0 2px 13px; margin:10px 0; font-size:12.5px;
+         color:var(--defined); line-height:1.5; }
+  .vrb .who { display:block; font-size:10.5px; color:var(--subtle); margin-top:4px; }
+  .more { display:inline-block; margin-top:4px; font-size:11.5px; color:var(--blue-link); cursor:pointer; font-weight:500; }
   .more:hover { text-decoration:underline; }
-  @media (max-width:860px){ .ans-d .name { flex-basis:120px; } }
+  @media (max-width:900px){ .ans-d .name { flex-basis:110px; } }
+
+  @media (max-width:700px){
+    .topbar-in, .wrap { padding-left:16px; padding-right:16px; }
+    .brand { width:100%; margin-right:0; }
+    .controls { width:100%; }
+    .fld { flex:1; } .fld select { width:100%; max-width:none; }
+  }
 </style>
+<!-- Real Trinity tokens when the file is deployed beside them. Loaded
+     after the fallback block so it overrides, and harmless when absent. -->
+<link rel="stylesheet" href="shared.css">
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div>
-      <h1>Prototype Testing</h1>
-      <div class="sub" id="updated">Loading…</div>
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <span class="mark"></span>
+      <div>
+        <h1>Prototype testing</h1>
+        <div class="sub" id="updated">Loading&hellip;</div>
+      </div>
     </div>
-    <div class="spacer"></div>
-    <select id="proto-sel" onchange="applyFilters()"></select>
-    <select id="wf-sel" onchange="applyFilters()"></select>
-    <button class="refresh" onclick="loadAll()">Refresh</button>
-  </header>
+    <div class="controls">
+      <label class="fld"><span>Prototype</span>
+        <select id="proto-sel" onchange="applyFilters()"></select></label>
+      <label class="fld"><span>Workflow</span>
+        <select id="wf-sel" onchange="applyFilters()"></select></label>
+      <button class="btn btn-icon" id="dark-btn" onclick="toggleDark()" title="Toggle dark mode">&#9682;</button>
+      <button class="btn btn-primary" onclick="loadAll()">Refresh</button>
+    </div>
+  </div>
+</div>
 
+<div class="wrap">
   <div class="cards" id="cards"></div>
 
+  <div class="sect">Activity</div>
+  <div class="panel">
+    <div class="panel-h"><h2>Sessions per day</h2><span class="panel-note">Last 30 days</span></div>
+    <div id="chart-days"><div class="empty">&mdash;</div></div>
+  </div>
+
+  <div class="sect">Task performance</div>
   <div class="grid2">
     <div class="panel">
-      <h2>Sessions per day — last 30 days</h2>
-      <div id="chart-days"><div class="empty">—</div></div>
+      <div class="panel-h"><h2>Completion rate</h2><span class="panel-note">By workflow</span></div>
+      <div id="chart-completion"><div class="empty">&mdash;</div></div>
     </div>
     <div class="panel">
-      <h2>Completion rate by workflow</h2>
-      <div id="chart-completion"><div class="empty">—</div></div>
+      <div class="panel-h"><h2>Median time</h2><span class="panel-note">Completed runs only</span></div>
+      <div id="chart-time"><div class="empty">&mdash;</div></div>
     </div>
   </div>
 
   <div class="panel">
-    <h2>Median time by workflow</h2>
-    <div id="chart-time"><div class="empty">—</div></div>
+    <div class="panel-h"><h2 id="friction-h">Step friction</h2><span id="friction-heat"></span></div>
+    <p class="lede">Time and misclicks for each step of a single task. Pick one workflow above to fill this in.</p>
+    <div id="chart-friction"><div class="empty">&mdash;</div></div>
   </div>
 
+  <div class="sect">Where people went</div>
   <div class="panel">
-    <h2 id="friction-h">Step friction <span id="friction-heat"></span></h2>
-    <div class="sub" style="margin:-8px 0 10px;">Pick a single workflow above to see time and misclicks per step.</div>
-    <div id="chart-friction"><div class="empty">—</div></div>
+    <div class="panel-h"><h2>Exploration paths</h2><span id="paths-heat"></span></div>
+    <p class="lede">Where people went when nobody gave them a task. Ribbon thickness is sessions; hatched
+      bars are where they stopped.</p>
+    <div id="chart-paths"><div class="empty">&mdash;</div></div>
   </div>
 
+  <div class="sect">What testers said</div>
   <div class="panel">
-    <h2>Exploration paths <span id="paths-heat"></span></h2>
-    <div class="sub" style="margin:-8px 0 10px;">Where people went when nobody gave them a task. Ribbon thickness is sessions; hatched bars are where they stopped.</div>
-    <div id="chart-paths"><div class="empty">—</div></div>
-  </div>
-
-  <div class="panel">
-    <h2>Post-task answers <span id="ans-n" class="sub" style="font-weight:400;"></span></h2>
-    <div class="sub" style="margin:-8px 0 10px;">What testers said after the run. Click any bar to filter the whole
-      panel to the people who answered that way — the open-text answers below then belong to that group.</div>
+    <div class="panel-h"><h2>Post-task answers</h2><span class="panel-note" id="ans-n"></span></div>
+    <p class="lede">Click any bar to filter the whole panel to the people who answered that way. The
+      open-text answers below then belong to that group.</p>
     <div class="ans-bar">
       <select id="q-sel" onchange="applyFilters()"></select>
       <select id="q-out" onchange="applyFilters()">
@@ -172,15 +285,16 @@
         <option value="completed">Completed only</option>
         <option value="gaveup">Gave up only</option>
       </select>
-      <input id="q-find" placeholder="Search answers…" oninput="applyFilters()">
+      <input id="q-find" placeholder="Search answers&hellip;" oninput="applyFilters()">
       <span id="q-seg"></span>
     </div>
-    <div id="chart-answers"><div class="empty">—</div></div>
+    <div id="chart-answers"><div class="empty">&mdash;</div></div>
   </div>
 
-  <div class="panel">
-    <h2>Recent sessions</h2>
-    <div id="sessions-table"><div class="empty">—</div></div>
+  <div class="sect">Sessions</div>
+  <div class="panel panel-flush">
+    <div class="panel-h"><h2>Recent sessions</h2><span class="panel-note">Newest 50</span></div>
+    <div id="sessions-table"><div class="empty">&mdash;</div></div>
   </div>
 </div>
 
@@ -189,6 +303,17 @@
 var TST_API = 'https://script.google.com/macros/s/AKfycbzS0d5DyWuuecdbT6If2Y5AaXBNsK0dCUGYOYemdxQ-FON0thzyzw2yDvYjqwNjT0HIhg/exec';
 
 var ALL = { workflows: [], sessions: [] };
+
+/* ── Theme ──
+   Trinity already ships a full dark palette on body.dark, and this page
+   gets read side by side with a prototype that has its own toggle.
+   Matching it costs one class and one key. Applied before first paint
+   because the script tag sits at the end of the body. */
+function toggleDark(){
+  var on = document.body.classList.toggle('dark');
+  try{ localStorage.setItem('tst_dash_dark', on ? '1' : '0'); }catch(e){}
+}
+try{ if(localStorage.getItem('tst_dash_dark') === '1') document.body.classList.add('dark'); }catch(e){}
 
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 function median(arr){ if(!arr.length) return 0; var s=arr.slice().sort(function(a,b){return a-b;}); var m=Math.floor(s.length/2); return s.length%2?s[m]:(s[m-1]+s[m])/2; }
@@ -213,19 +338,23 @@ function tstParse_(r){
 }
 
 function loadAll(){
-  document.getElementById('updated').textContent = 'Loading…';
+  document.getElementById('updated').textContent = 'Loading\u2026';
   Promise.all([
     fetch(TST_API+'?action=list&all=1').then(tstParse_),
     fetch(TST_API+'?action=results').then(tstParse_)
   ]).then(function(res){
     ALL.workflows = (res[0].ok && res[0].workflows) || [];
     ALL.sessions  = (res[1].ok && res[1].sessions)  || [];
-    document.getElementById('updated').textContent =
-      'Updated ' + new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+    var upd = document.getElementById('updated');
+    upd.style.color = '';
+    upd.textContent = ALL.sessions.length + (ALL.sessions.length===1?' session':' sessions') + ' \u00b7 updated ' +
+      new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
     buildFilters();
     applyFilters();
   }).catch(function(e){
-    document.getElementById('updated').textContent = 'Load failed. ' + (e && e.message || e);
+    var el = document.getElementById('updated');
+    el.textContent = 'Load failed. ' + (e && e.message || e);
+    el.style.color = 'var(--red)';
   });
 }
 
@@ -385,7 +514,7 @@ function sankeySVG(ses){
 
   var svg = ['<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">'];
   svg.push('<defs><pattern id="skHatch" width="6" height="6" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">' +
-           '<rect width="6" height="6" fill="#fbe6df"/><line x1="0" y1="0" x2="0" y2="6" stroke="#d3542f" stroke-width="3"/></pattern></defs>');
+           '<rect class="sk-hatch-bg" width="6" height="6"/><line class="sk-hatch-line" x1="0" y1="0" x2="0" y2="6" stroke-width="3"/></pattern></defs>');
 
   /* ── Ribbons, drawn first so nodes sit on top ── */
   for(var d=0; d<maxDepth-1; d++){
@@ -448,17 +577,17 @@ function renderCards(ses){
   var mis = ses.reduce(function(a,s){return a+(Number(s.misclicks_total)||0);},0);
   var goals = ses.filter(function(s){ return String(s.mode||'')==='explore'; }).length;
   document.getElementById('cards').innerHTML =
-    card(ses.length + (goals ? ' <span style="font-size:12px;color:var(--soft);font-weight:400;">('+goals+' goal)</span>' : ''),'Sessions') +
+    card(ses.length + (goals ? ' <em>'+goals+' goal</em>' : ''),'Sessions') +
     card(Object.keys(users).length,'Testers') +
     card(ses.length?Math.round(comp.length/ses.length*100)+'%':'—','Completed') +
     card(comp.length?fmtS(medAll):'—','Median time') +
     card(ses.length?Math.round(mis/ses.length*10)/10:'—','Misclicks / session');
 }
-function card(num,lbl){ return '<div class="card"><div class="num">'+num+'</div><div class="lbl">'+lbl+'</div></div>'; }
+function card(num,lbl){ return '<div class="card"><div class="lbl">'+lbl+'</div><div class="num">'+num+'</div></div>'; }
 
 function renderDays(ses){
   var host = document.getElementById('chart-days');
-  if(!ses.length){ host.innerHTML='<div class="empty">No sessions yet</div>'; return; }
+  if(!ses.length){ host.innerHTML='<div class="empty">Nothing recorded in this range</div>'; return; }
   var days=[], counts={};
   for(var i=29;i>=0;i--){
     var d=new Date(); d.setDate(d.getDate()-i);
@@ -472,9 +601,12 @@ function renderDays(ses){
   var max=Math.max.apply(null,days.map(function(k){return counts[k];})) || 1;
   host.innerHTML = '<div class="bars">'+days.map(function(k){
     var v=counts[k];
-    return '<div class="b" style="height:'+Math.max(2,Math.round(v/max*100))+'%" data-tip="'+k+' · '+v+'"></div>';
+    var lbl=''; try{ lbl=new Date(k+'T12:00:00').toLocaleDateString([],{month:'short',day:'numeric'}); }catch(e){ lbl=k; }
+    return '<div class="b'+(v?'':' zero')+'" style="height:'+(v?Math.max(6,Math.round(v/max*100)):4)+'%" '+
+      'data-tip="'+lbl+' \u00b7 '+v+(v===1?' session':' sessions')+'"></div>';
   }).join('')+'</div><div class="bars-x">'+days.map(function(k,i){
-    return '<span>'+(i%5===0?k.slice(5):'')+'</span>';
+    var lbl=''; if(i%6===0){ try{ lbl=new Date(k+'T12:00:00').toLocaleDateString([],{month:'short',day:'numeric'}); }catch(e){ lbl=k.slice(5); } }
+    return '<span>'+lbl+'</span>';
   }).join('')+'</div>';
 }
 
@@ -486,7 +618,7 @@ function renderCompletion(ses, proto){
       '<span class="track"><span class="fill" style="width:'+pct+'%"></span></span>'+
       '<span class="val">'+pct+'% · '+g.ses.length+' runs</span></div>';
   });
-  host.innerHTML = rows.join('') || '<div class="empty">No sessions yet</div>';
+  host.innerHTML = rows.join('') || '<div class="empty">No completed or abandoned runs yet</div>';
 }
 
 function renderTime(ses, proto){
@@ -498,7 +630,7 @@ function renderTime(ses, proto){
     return '<div class="hrow"><span class="name" title="'+esc(g.name)+'">'+esc(g.name)+'</span>'+
       '<span class="track"><span class="fill blue" style="width:'+Math.max(3,Math.round(meds[i]/max*100))+'%"></span></span>'+
       '<span class="val">'+(g.comp.length?fmtS(meds[i]):'—')+'</span></div>';
-  }).join('') || '<div class="empty">No sessions yet</div>';
+  }).join('') || '<div class="empty">No completed runs to time yet</div>';
 }
 
 function groupByWf(ses, proto){
@@ -795,9 +927,11 @@ function jsq(s){
 
 function renderTable(ses){
   var host = document.getElementById('sessions-table');
-  if(!ses.length){ host.innerHTML='<div class="empty">No sessions yet</div>'; return; }
+  if(!ses.length){ host.innerHTML='<div class="empty">No sessions match these filters</div>'; return; }
   var rows = ses.slice().sort(function(a,b){return new Date(b.timestamp)-new Date(a.timestamp);}).slice(0,50);
-  host.innerHTML = '<table><tr><th>Tester</th><th>Workflow</th><th>Prototype</th><th>View</th><th>Outcome</th><th>Time</th><th>Misclicks</th><th>Answers</th><th>When</th><th>Location</th></tr>'+
+  host.innerHTML = '<div class="tbl-scroll"><table><thead><tr><th>Tester</th><th>Workflow</th><th>Prototype</th>'+
+    '<th>View</th><th>Outcome</th><th class="num-col">Time</th><th class="num-col">Misclicks</th>'+
+    '<th class="num-col">Answers</th><th>When</th><th>Location</th></tr></thead><tbody>'+
     rows.map(function(s){
       var when=''; try{ when=new Date(s.timestamp).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }catch(e){}
       var ip=String(s.ip||'').trim();
@@ -811,11 +945,12 @@ function renderTable(ses){
       var ansCell = ans.length
         ? '<span title="'+escA(ans.map(function(a){ return a.q+'  \u2192  '+a.a; }).join('\n\n'))+'">'+ans.length+'</span>'
         : '\u2014';
-      return '<tr><td>'+esc(s.user)+'</td><td>'+esc(s.workflow_name||s.workflow_id)+'</td><td>'+esc(s.prototype)+'</td>'+
+      return '<tr><td class="who">'+esc(s.user)+'</td><td>'+esc(s.workflow_name||s.workflow_id)+'</td><td>'+esc(s.prototype)+'</td>'+
         '<td>'+esc(s.view)+(s.orientation&&s.view!=='desktop'?' · '+esc(s.orientation):'')+'</td>'+
         '<td>'+(s.outcome==='completed'?'Completed':'<span class="badge bad">Gave up</span>')+'</td>'+
-        '<td>'+fmtS(s.duration_s)+'</td><td>'+(s.misclicks_total||0)+'</td><td>'+ansCell+'</td><td>'+when+'</td><td>'+loc+'</td></tr>';
-    }).join('')+'</table>';
+        '<td class="num-col">'+fmtS(s.duration_s)+'</td><td class="num-col">'+(s.misclicks_total||0)+'</td>'+
+        '<td class="num-col">'+ansCell+'</td><td>'+when+'</td><td>'+loc+'</td></tr>';
+    }).join('')+'</tbody></table></div>';
   geoResolve();
 }
 

@@ -85,6 +85,37 @@
   td { padding:7px 10px; border-bottom:1px solid #f2f0ee; color:var(--defined); }
   tr:last-child td { border-bottom:none; }
   .empty { color:var(--soft); font-size:12.5px; padding:20px 0; text-align:center; }
+
+  /* ── Post-task answers ── */
+  .ans-bar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:-4px 0 14px; }
+  .ans-bar select, .ans-bar input {
+    font-family:var(--font); font-size:12.5px; color:var(--strong); background:var(--layer);
+    border:1px solid var(--border); border-radius:100px; padding:7px 14px; outline:none;
+  }
+  .ans-bar input { min-width:190px; cursor:text; }
+  .seg { display:inline-flex; align-items:center; gap:7px; background:var(--strong); color:#fff;
+         border-radius:100px; padding:5px 8px 5px 12px; font-size:11.5px; }
+  .seg b { font-weight:600; }
+  .seg span { cursor:pointer; opacity:0.6; font-size:13px; line-height:1; padding:0 2px; }
+  .seg span:hover { opacity:1; }
+  .ans-q { border-top:1px solid var(--border); padding-top:15px; margin-top:15px; }
+  .ans-q:first-child { border-top:none; padding-top:0; margin-top:0; }
+  .ans-h { font-size:12.5px; font-weight:600; line-height:1.35; }
+  .ans-meta { font-size:11px; color:var(--soft); margin:2px 0 9px; }
+  .ans-d { display:flex; align-items:center; gap:10px; font-size:12px; padding:3px 0; cursor:pointer; }
+  .ans-d:hover .fill { filter:brightness(1.12); }
+  .ans-d .name { flex:0 0 190px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--defined); }
+  .ans-d .track { flex:1; height:12px; background:#f0eeec; border-radius:6px; overflow:hidden; }
+  .ans-d .fill { height:100%; border-radius:6px; background:var(--blue); }
+  .ans-d.on .fill { background:var(--strong); }
+  .ans-d .val { flex:0 0 60px; text-align:right; font-variant-numeric:tabular-nums; color:var(--soft); }
+  .vrb { border-left:2px solid #e6e2de; padding:3px 0 3px 11px; margin:8px 0; font-size:12.5px;
+         color:var(--defined); line-height:1.45; }
+  .vrb .who { display:block; font-size:10.5px; color:var(--soft); margin-top:3px; }
+  .vrb.blank { color:var(--subtle); font-style:italic; }
+  .more { font-size:11.5px; color:var(--blue); cursor:pointer; font-weight:500; }
+  .more:hover { text-decoration:underline; }
+  @media (max-width:860px){ .ans-d .name { flex-basis:120px; } }
 </style>
 </head>
 <body>
@@ -128,6 +159,23 @@
     <h2>Exploration paths <span id="paths-heat"></span></h2>
     <div class="sub" style="margin:-8px 0 10px;">Where people went when nobody gave them a task. Ribbon thickness is sessions; hatched bars are where they stopped.</div>
     <div id="chart-paths"><div class="empty">—</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>Post-task answers <span id="ans-n" class="sub" style="font-weight:400;"></span></h2>
+    <div class="sub" style="margin:-8px 0 10px;">What testers said after the run. Click any bar to filter the whole
+      panel to the people who answered that way — the open-text answers below then belong to that group.</div>
+    <div class="ans-bar">
+      <select id="q-sel" onchange="applyFilters()"></select>
+      <select id="q-out" onchange="applyFilters()">
+        <option value="">All outcomes</option>
+        <option value="completed">Completed only</option>
+        <option value="gaveup">Gave up only</option>
+      </select>
+      <input id="q-find" placeholder="Search answers…" oninput="applyFilters()">
+      <span id="q-seg"></span>
+    </div>
+    <div id="chart-answers"><div class="empty">—</div></div>
   </div>
 
   <div class="panel">
@@ -228,6 +276,7 @@ function applyFilters(){
   renderTime(ses, proto);
   renderFriction(guided, wfId);
   renderPaths(all);
+  renderAnswers(all);
   renderTable(all);
 }
 
@@ -576,21 +625,196 @@ function renderFriction(ses, wfId){
   }).join('');
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   POST-TASK ANSWERS
+
+   Answers arrive denormalized on the session: [{q, type, a}]. The
+   question TEXT is the key, not an id, which is deliberate — a
+   question reworded next month becomes its own series instead of
+   silently pooling with the old wording and averaging two different
+   questions together.
+
+   Sessions predating this feature read back with answers:[] from the
+   backend, so nothing here special-cases history.
+
+   The segment is the point of the panel. Clicking a rating filters
+   every OTHER question to the people who gave it, which is how you get
+   from "mean 4.2" to reading what the three people who said 2 typed in
+   the box underneath.
+   ═══════════════════════════════════════════════════════════════ */
+
+var ANS_SEG = null;      /* {q, v} — one clicked bar */
+var ANS_OPEN = {};       /* question text -> verbatims expanded */
+
+function ansOf(s){ return Array.isArray(s.answers) ? s.answers : []; }
+function ansFilled(a){ return String(a.a === undefined || a.a === null ? '' : a.a).trim() !== ''; }
+
+function ansSeg(q, v){
+  if (ANS_SEG && ANS_SEG.q === q && String(ANS_SEG.v) === String(v)) ANS_SEG = null;
+  else ANS_SEG = { q:q, v:v };
+  applyFilters();
+}
+function ansClearSeg(){ ANS_SEG = null; applyFilters(); }
+function ansMore(q){ ANS_OPEN[q] = !ANS_OPEN[q]; applyFilters(); }
+
+function renderAnswers(ses){
+  var host = document.getElementById('chart-answers');
+  var nEl  = document.getElementById('ans-n');
+  var segEl= document.getElementById('q-seg');
+  var withAns = ses.filter(function(s){ return ansOf(s).length; });
+
+  /* Question order follows first appearance, so the panel reads in the
+     order testers were asked rather than alphabetically. */
+  var seen = {}, qlist = [];
+  withAns.forEach(function(s){
+    ansOf(s).forEach(function(a){
+      var q = String(a.q||''); if(!q || seen[q]) return;
+      seen[q] = 1; qlist.push({ q:q, type:String(a.type||'text') });
+    });
+  });
+
+  var sel = document.getElementById('q-sel');
+  var cur = sel.value;
+  sel.innerHTML = '<option value="">All questions</option>' + qlist.map(function(x){
+    var lbl = x.q.length > 58 ? x.q.slice(0,56)+'\u2026' : x.q;
+    return '<option value="'+esc(x.q)+'"'+(x.q===cur?' selected':'')+'>'+esc(lbl)+'</option>';
+  }).join('');
+  if (cur && !seen[cur]) { sel.value = ''; cur = ''; }
+
+  /* A segment on a question that just filtered out of view would be an
+     invisible filter, so it is dropped rather than left dangling. */
+  if (ANS_SEG && !seen[ANS_SEG.q]) ANS_SEG = null;
+  segEl.innerHTML = ANS_SEG
+    ? '<span class="seg">answered <b>'+esc(ANS_SEG.v)+'</b>'+
+      '<span onclick="ansClearSeg()" title="Clear">\u00D7</span></span>'
+    : '';
+
+  if(!withAns.length){
+    nEl.textContent = '';
+    host.innerHTML = '<div class="empty">No answers yet \u2014 add questions to a workflow from the Test panel</div>';
+    return;
+  }
+
+  var outcome = document.getElementById('q-out').value;
+  var find = (document.getElementById('q-find').value||'').trim().toLowerCase();
+
+  var pool = withAns.filter(function(s){
+    if(outcome === 'completed' && s.outcome !== 'completed') return false;
+    if(outcome === 'gaveup' && s.outcome === 'completed') return false;
+    if(ANS_SEG && !ansOf(s).some(function(a){
+      return String(a.q) === ANS_SEG.q && String(a.a) === String(ANS_SEG.v); })) return false;
+    if(find && !ansOf(s).some(function(a){
+      return String(a.a||'').toLowerCase().indexOf(find) !== -1; })) return false;
+    return true;
+  });
+
+  var totalAnswers = 0;
+  pool.forEach(function(s){ ansOf(s).forEach(function(a){ if(ansFilled(a)) totalAnswers++; }); });
+  nEl.textContent = '\u00b7 ' + pool.length + (pool.length===1?' session':' sessions') +
+                    ', ' + totalAnswers + ' answered';
+
+  if(!pool.length){
+    host.innerHTML = '<div class="empty">Nothing matches those filters</div>';
+    return;
+  }
+
+  var show = cur ? qlist.filter(function(x){ return x.q === cur; }) : qlist;
+  host.innerHTML = show.map(function(x){ return ansBlock(x, pool, !!cur); }).join('') ||
+    '<div class="empty">\u2014</div>';
+}
+
+function ansBlock(x, pool, single){
+  /* Collect this question's answers along with who gave them, so a
+     verbatim can be attributed without a second pass over the pool. */
+  var rows = [];
+  pool.forEach(function(s){
+    ansOf(s).forEach(function(a){
+      if(String(a.q) !== x.q) return;
+      rows.push({ a: a.a === undefined || a.a === null ? '' : a.a, s: s });
+    });
+  });
+  var filled = rows.filter(function(r){ return String(r.a).trim() !== ''; });
+  var head = '<div class="ans-q"><div class="ans-h">'+esc(x.q)+'</div>';
+
+  if(!filled.length){
+    return head + '<div class="ans-meta">Asked '+rows.length+' '+(rows.length===1?'time':'times')+
+      ', answered none. A question everybody skips is usually the wrong question.</div></div>';
+  }
+
+  var meta = filled.length + ' of ' + rows.length + ' answered';
+
+  if(x.type === 'scale' || x.type === 'choice'){
+    var counts = {};
+    filled.forEach(function(r){ var k = String(r.a); counts[k] = (counts[k]||0)+1; });
+    var keys = Object.keys(counts);
+    /* Numeric scales read low-to-high; choices read most-picked-first,
+       because their order carries no meaning. */
+    if(x.type === 'scale' && keys.every(function(k){ return !isNaN(Number(k)); })){
+      keys.sort(function(a,b){ return Number(a)-Number(b); });
+      var sum = 0; filled.forEach(function(r){ sum += Number(r.a)||0; });
+      meta += ' \u00b7 mean ' + (sum/filled.length).toFixed(1);
+    } else {
+      keys.sort(function(a,b){ return counts[b]-counts[a]; });
+    }
+    var max = Math.max.apply(null, keys.map(function(k){ return counts[k]; })) || 1;
+    var bars = keys.map(function(k){
+      var on = ANS_SEG && ANS_SEG.q === x.q && String(ANS_SEG.v) === k;
+      return '<div class="ans-d'+(on?' on':'')+'" onclick="ansSeg(\''+jsq(x.q)+'\',\''+jsq(k)+'\')" '+
+        'title="Filter to these '+counts[k]+'">'+
+        '<span class="name">'+esc(k)+'</span>'+
+        '<span class="track"><span class="fill" style="width:'+Math.max(3,Math.round(counts[k]/max*100))+'%"></span></span>'+
+        '<span class="val">'+counts[k]+'</span></div>';
+    }).join('');
+    return head + '<div class="ans-meta">'+meta+'</div>' + bars + '</div>';
+  }
+
+  /* Open text — the verbatims ARE the finding, so they are the body */
+  var cap = single || ANS_OPEN[x.q] ? filled.length : 6;
+  var body = filled.slice(0, cap).map(function(r){
+    var when=''; try{ when=new Date(r.s.timestamp).toLocaleDateString([], {month:'short',day:'numeric'}); }catch(e){}
+    return '<div class="vrb">'+esc(r.a)+
+      '<span class="who">'+esc(r.s.user||'anon')+' \u00b7 '+esc(r.s.workflow_name||r.s.workflow_id||'\u2014')+
+      ' \u00b7 '+(r.s.outcome==='completed'?'completed':'gave up')+(when?' \u00b7 '+when:'')+'</span></div>';
+  }).join('');
+  var more = (!single && filled.length > cap)
+    ? '<span class="more" onclick="ansMore(\''+jsq(x.q)+'\')">Show '+(filled.length-cap)+' more</span>'
+    : (!single && ANS_OPEN[x.q] && filled.length > 6
+        ? '<span class="more" onclick="ansMore(\''+jsq(x.q)+'\')">Show fewer</span>' : '');
+  return head + '<div class="ans-meta">'+meta+'</div>' + body + more + '</div>';
+}
+
+/* Question text goes into an inline onclick, so quotes and backslashes
+   have to survive the trip through the HTML attribute AND the JS
+   string literal inside it. */
+function escA(s){ return esc(s).replace(/"/g,'&quot;'); }
+
+function jsq(s){
+  return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'")
+                  .replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+
 function renderTable(ses){
   var host = document.getElementById('sessions-table');
   if(!ses.length){ host.innerHTML='<div class="empty">No sessions yet</div>'; return; }
   var rows = ses.slice().sort(function(a,b){return new Date(b.timestamp)-new Date(a.timestamp);}).slice(0,50);
-  host.innerHTML = '<table><tr><th>Tester</th><th>Workflow</th><th>Prototype</th><th>View</th><th>Outcome</th><th>Time</th><th>Misclicks</th><th>When</th><th>Location</th></tr>'+
+  host.innerHTML = '<table><tr><th>Tester</th><th>Workflow</th><th>Prototype</th><th>View</th><th>Outcome</th><th>Time</th><th>Misclicks</th><th>Answers</th><th>When</th><th>Location</th></tr>'+
     rows.map(function(s){
       var when=''; try{ when=new Date(s.timestamp).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }catch(e){}
       var ip=String(s.ip||'').trim();
       var loc = ip
         ? '<span class="geo" data-geo-ip="'+esc(ip)+'">'+(GEO_CACHE[ip]?geoLabel(GEO_CACHE[ip]):'\u2026')+'</span>'
         : '\u2014';
+      /* Answers get a count with the full text on hover rather than a
+         column of truncated prose. The panel above is where they are
+         meant to be read; this is just a marker for which rows have any. */
+      var ans = ansOf(s).filter(ansFilled);
+      var ansCell = ans.length
+        ? '<span title="'+escA(ans.map(function(a){ return a.q+'  \u2192  '+a.a; }).join('\n\n'))+'">'+ans.length+'</span>'
+        : '\u2014';
       return '<tr><td>'+esc(s.user)+'</td><td>'+esc(s.workflow_name||s.workflow_id)+'</td><td>'+esc(s.prototype)+'</td>'+
         '<td>'+esc(s.view)+(s.orientation&&s.view!=='desktop'?' · '+esc(s.orientation):'')+'</td>'+
         '<td>'+(s.outcome==='completed'?'Completed':'<span class="badge bad">Gave up</span>')+'</td>'+
-        '<td>'+fmtS(s.duration_s)+'</td><td>'+(s.misclicks_total||0)+'</td><td>'+when+'</td><td>'+loc+'</td></tr>';
+        '<td>'+fmtS(s.duration_s)+'</td><td>'+(s.misclicks_total||0)+'</td><td>'+ansCell+'</td><td>'+when+'</td><td>'+loc+'</td></tr>';
     }).join('')+'</table>';
   geoResolve();
 }

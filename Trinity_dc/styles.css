@@ -11382,11 +11382,12 @@ body.view-mobile .so-item { flex-direction:column; gap:8px; }
 body.view-mobile .so-foot { padding:12px 14px; }
 
 
-  /* ═══ RETURNED CONCRETE — Returned Loads (app-21) ═══════════════════════════
+  /* ═══ RETURNED CONCRETE — Returned Concrete Insights (app-21) ══════════════
      Page shell mirrors #dt-page-insights: a flex column that owns its own
-     scroller, so the shell never has to know what is inside. Split panel is a
-     two-column flex with min-widths rather than a media query, per the house
-     rule that responsive rules key off body classes and not viewport width. */
+     scroller, so the shell never has to know what is inside. Second pass:
+     the split panel is gone (the map lives in the drawer now), a stat band
+     and a paywalled analysis block came in. Responsive rules key off body
+     classes and not viewport width, per the house rule. */
 
   #dt-page-returned { display:none; flex-direction:column; flex:1; min-width:0; min-height:0;
     overflow:hidden; background:var(--layer-1); font-family:var(--font); }
@@ -11399,22 +11400,77 @@ body.view-mobile .so-foot { padding:12px 14px; }
 
   .rc-head { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; flex-wrap:wrap; }
   .rc-title { margin-bottom:4px; }
-  .rc-sub { font-size:13px; color:var(--soft); letter-spacing:-0.26px; margin-bottom:18px; }
+  .rc-sub { font-size:13px; color:var(--soft); letter-spacing:-0.26px; margin-bottom:22px; }
+  .rc-sub b { color:var(--strong); font-weight:500; }
   .rc-head-actions { display:flex; gap:10px; flex-shrink:0; }
 
-  /* Returned loads / Uptime: two views of the section, so text tabs, the same
-     grammar the ticket drawer uses. */
-  .rc-views { display:flex; gap:22px; border-bottom:1px solid var(--border); margin-bottom:20px; }
-  .rc-view { background:none; border:none; padding:0 0 10px; cursor:pointer; font-family:var(--font);
-    font-size:15px; color:var(--soft); letter-spacing:-0.3px; position:relative; }
-  .rc-view:hover { color:var(--strong); }
-  .rc-view.active { color:var(--strong); }
-  .rc-view.active::after { content:''; position:absolute; left:0; right:0; bottom:-1px; height:2px;
-    background:var(--strong); }
+  .rc-ghost { background:none; border:none; cursor:pointer; font-family:var(--font); font-size:13.5px;
+    font-weight:500; letter-spacing:-0.27px; color:var(--defined); padding:8px 14px; border-radius:32px;
+    white-space:nowrap; }
+  .rc-ghost:hover { background:var(--layer-2); color:var(--strong); }
+  .rc-danger { background:var(--red); border-color:var(--red); color:#fff; }
+  .rc-danger:hover { border-color:var(--red); filter:brightness(1.08); }
+  .am-tag-success { background:#d5f1d2; color:#15322f; }
+  body.dark .am-tag-success { background:#15322f; color:#d5f1d2; }
 
+  /* ── Section headers ── */
+  .rc-sec-h { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:18px; }
+  .rc-sec-h--analysis { margin-top:34px; }
+  .rc-sec-t { font-size:18px; font-weight:500; color:var(--strong); letter-spacing:-0.36px; line-height:1.2; }
+  .rc-sec-s { font-size:13px; color:var(--soft); letter-spacing:-0.26px; margin-top:4px; }
+  .rc-updated { white-space:nowrap; margin-top:4px; }
+
+  /* ── Impact at a glance: a hairline-divided stat band, not boxed cards.
+     Each stat is a button because it opens its own trend in the drawer. ── */
+  .rc-stats { display:flex; }
+  .rc-stat { flex:1; min-width:0; padding:0 24px 8px; border:none; border-right:1px solid var(--border);
+    background:none; text-align:left; display:flex; flex-direction:column; gap:8px; cursor:pointer;
+    font-family:var(--font); border-radius:0; }
+  .rc-stat:first-child { padding-left:0; }
+  .rc-stat:last-child { border-right:none; }
+  .rc-stat:hover .rc-stat-l { text-decoration:underline; text-underline-offset:3px; }
+  .rc-stat-l { font-size:16px; color:var(--strong); letter-spacing:-0.32px; line-height:1.3; }
+  .rc-stat-v { font-size:40px; font-weight:500; color:var(--strong); letter-spacing:-1.2px; line-height:1; }
+  .rc-stat-v small { font-size:16px; font-weight:400; letter-spacing:-0.32px; color:var(--soft); margin-left:6px; }
+  .rc-stat-m { font-size:13px; color:var(--soft); letter-spacing:-0.26px; line-height:1.4; }
+  .rc-stat-f { display:flex; align-items:center; gap:8px; margin-top:2px; min-height:22px; }
+  .rc-stat-f .am-tag { gap:5px; }
+
+  /* ── Analysis: view switcher (blue in light, lime in dark, via --am-select) ── */
+  .rc-modes { display:inline-flex; border:1px solid var(--border); border-radius:32px; overflow:hidden; flex-shrink:0; }
+  .rc-mode { border:none; border-right:1px solid var(--border); background:none; cursor:pointer;
+    font-family:var(--font); font-size:14px; letter-spacing:-0.28px; color:var(--soft); padding:0 20px;
+    height:42px; white-space:nowrap; }
+  .rc-mode:last-child { border-right:none; }
+  .rc-mode:hover { color:var(--strong); }
+  .rc-mode.on { background:var(--am-select); color:var(--am-on-select); font-weight:500; }
+
+  /* ── Paywall. The analysis block is real markup underneath, blurred and
+     inert, so unlocking is a class change and not a second render path. ── */
+  .rc-gate { position:relative; min-height:420px; }
+  .rc-gate.locked > .rc-gated { filter:blur(7px); pointer-events:none; user-select:none; opacity:.72; }
+  .rc-paywall { position:absolute; inset:0; display:flex; align-items:flex-start; justify-content:center;
+    padding-top:88px; z-index:5; }
+  .rc-paywall-card { width:min(440px, 100%); background:var(--layer-1); border:1px solid var(--border);
+    border-radius:var(--radius-md); box-shadow:0 12px 32px rgba(20,18,16,0.14); padding:28px 32px 22px;
+    display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center; }
+  body.dark .rc-paywall-card { border-color:var(--border-mid); box-shadow:0 12px 32px rgba(0,0,0,0.5); }
+  .rc-paywall-t { font-size:19px; font-weight:600; letter-spacing:-0.38px; color:var(--strong); }
+  .rc-paywall-p { font-size:13.5px; color:var(--soft); letter-spacing:-0.13px; line-height:1.5; max-width:340px; margin-bottom:8px; }
+  .rc-pts { list-style:none; margin:0 0 12px; padding:0; display:flex; flex-direction:column; gap:6px;
+    text-align:left; font-size:13px; color:var(--defined); letter-spacing:-0.13px; }
+  .rc-pts li { display:flex; gap:8px; align-items:flex-start; line-height:1.4; }
+  .rc-pts svg { flex-shrink:0; margin-top:3px; color:var(--strong); }
+  .rc-pts--warn svg { color:var(--strong); }
+  .rc-unlock { height:42px; }
+
+  /* ── Filters row: date, customer, then the quiet Filters / Columns pills ── */
   .rc-filters { margin-bottom:18px; }
   .rc-daterange { height:42px; gap:10px; }
   .rc-f-cust { min-width:240px; }
+  .rc-f-btns { min-width:0; }
+  .rc-f-row { display:flex; gap:10px; }
+  .rc-f-row .am-pill { height:42px; }
 
   /* Billing settings — a card, not a filter bar. These change what is
      billable, so they read as a producer setting that was set once. */
@@ -11437,9 +11493,6 @@ body.view-mobile .so-foot { padding:12px 14px; }
   .rc-tip:hover .rc-tip-pop, .rc-tip:focus .rc-tip-pop { display:block; }
   body.dark .rc-tip-pop { box-shadow:0 8px 24px rgba(0,0,0,0.5); }
 
-  /* Rounding: four exclusive options that need comparing at a glance, so a
-     segmented control. Selection surfaces use --blue in light, lime in dark,
-     which is what --am-select already resolves to. */
   .rc-seg { display:inline-flex; border:1px solid var(--border); border-radius:var(--radius-pill, 32px);
     background:var(--layer-1); padding:3px; height:42px; align-items:center; }
   .rc-seg-btn { border:none; background:none; cursor:pointer; font-family:var(--font); font-size:13.5px;
@@ -11459,26 +11512,21 @@ body.view-mobile .so-foot { padding:12px 14px; }
   .rc-tab-n { font-size:11.5px; font-weight:500; color:var(--soft); background:var(--layer-2);
     border-radius:32px; padding:1px 8px; }
 
-  /* ── Split: table left, journey right ── */
-  .rc-split { display:flex; gap:24px; align-items:stretch; flex:1; min-height:520px; }
-  .rc-left { flex:1 1 0; min-width:0; display:flex; flex-direction:column; }
-  .rc-right { flex:0 0 46%; min-width:0; display:flex; }
-  .rc-panel { flex:1; min-width:0; display:flex; flex-direction:column;
-    border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden;
-    background:var(--layer-1); }
-
-  .rc-table-wrap { flex:1; min-height:0; overflow-y:auto; }
+  /* ── Tables. One grid per table, header and rows off the same tracks. ── */
+  .rc-table-wrap { min-height:0; overflow-x:auto; }
   .rc-table { min-width:0; }
-  /* One grid, header and rows off the same tracks, so a short row can never
-     drag the table out of alignment. */
   .rc-tr { grid-template-columns:88px 104px minmax(0, 1.5fr) 104px 68px 82px 44px 96px; gap:8px;
     padding:9px 12px; cursor:pointer; }
+  .rc-tr--removed { grid-template-columns:88px 104px minmax(0, 1.3fr) 104px 68px 82px 44px minmax(180px, 1fr); }
+  .rc-tr--inv { grid-template-columns:110px minmax(0, 1.6fr) 60px 100px 110px 110px 90px; }
+  .rc-tr--rt { grid-template-columns:96px 72px minmax(0, 1.4fr) 110px 84px 84px 72px minmax(160px, 1.2fr); }
+  .rc-tr--line { grid-template-columns:84px 150px 56px minmax(0, 1fr) 70px 82px 82px 90px; cursor:default; }
+  .rc-tr--line-all { grid-template-columns:84px 150px minmax(0, 1.2fr) 56px minmax(0, 1fr) 70px 82px 82px 90px; }
   .rc-tr.am-th { cursor:default; }
   .rc-tr .num { text-align:right; }
-  .rc-tr:not(.am-th):hover { background:rgba(48,105,227,0.05); }
-  body.dark .rc-tr:not(.am-th):hover { background:rgba(227,242,0,0.07); }
-  .rc-tr.sel { background:rgba(48,105,227,0.10); box-shadow:inset 2px 0 0 var(--blue); border-radius:8px; }
-  body.dark .rc-tr.sel { background:rgba(227,242,0,0.12); box-shadow:inset 2px 0 0 #e3f200; }
+  .rc-tr:not(.am-th):not(.rc-tr--line):hover { background:rgba(48,105,227,0.05); }
+  body.dark .rc-tr:not(.am-th):not(.rc-tr--line):hover { background:rgba(227,242,0,0.07); }
+  .rc-table--inv { min-width:760px; }
 
   .rc-stack { display:flex; flex-direction:column; gap:1px; white-space:nowrap; overflow:hidden; }
   .rc-stack b { font-weight:400; color:var(--defined); overflow:hidden; text-overflow:ellipsis; }
@@ -11489,17 +11537,74 @@ body.view-mobile .so-foot { padding:12px 14px; }
   .rc-link { background:none; border:none; padding:0; cursor:pointer; font-family:var(--font);
     font-size:14px; letter-spacing:-0.28px; color:var(--blue-link); text-decoration:underline; }
   body.dark .rc-link { color:var(--strong); }
+  .rc-reason { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .rc-reason > span { overflow:hidden; text-overflow:ellipsis; color:var(--defined); }
+  .rc-reason .rc-link { font-size:13px; flex-shrink:0; }
+
+  /* Return-risk cell: an amber warning badge with a count, then the signals.
+     Amber is the Trinity warning token; red is reserved for errors. */
+  .rc-risk { display:flex; align-items:center; gap:8px; }
+  .rc-risk em { font-style:normal; font-size:12.5px; color:var(--soft); letter-spacing:-0.25px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rc-badge { display:inline-flex; align-items:center; gap:5px; padding:4px 8px; border-radius:8px;
+    background:var(--amber); color:#36322d; font-size:12px; font-weight:600; line-height:1; flex-shrink:0; }
 
   .rc-empty { padding:26px 14px; font-size:13.5px; color:var(--soft); letter-spacing:-0.27px;
     line-height:1.5; max-width:440px; }
   .rc-foot { display:flex; align-items:center; justify-content:space-between; padding:12px 14px 0;
     border-top:1px solid var(--border); margin-top:8px; font-size:13px; color:var(--soft);
-    letter-spacing:-0.26px; }
+    letter-spacing:-0.26px; gap:16px; }
   .rc-foot b { color:var(--strong); font-weight:500; }
 
+  /* ── Real time widgets: three boxed mini-tables ── */
+  .rc-widgets { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16px; margin-top:24px; }
+  .rc-widget { padding:16px 16px 10px; min-width:0; }
+  .rc-widget-h { display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:10px; }
+  .rc-widget-t { font-size:15px; font-weight:500; color:var(--strong); letter-spacing:-0.3px; }
+  .rc-widget-s { font-size:12px; color:var(--soft); white-space:nowrap; }
+  .rc-mini { display:flex; flex-direction:column; font-size:13px; color:var(--defined); }
+  .rc-mini-r { display:grid; grid-template-columns:minmax(0, 1.4fr) 44px minmax(48px, 1fr) 52px; gap:10px;
+    align-items:center; padding:7px 4px; border-bottom:1px solid var(--border); }
+  .rc-mini-r:last-child { border-bottom:none; }
+  .rc-mini-r > span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rc-mini-r .num { text-align:right; }
+  .rc-mini-h { font-size:12px; font-weight:500; color:var(--strong); }
+  .rc-bar { display:block; position:relative; height:6px; background:var(--layer-2); border-radius:3px; overflow:hidden; }
+  .rc-bar i { position:absolute; left:0; top:0; bottom:0; background:var(--defined); border-radius:3px; }
+
+  /* ── Drawer. Same scrim and panel as the account module's truck drawer,
+     mounted at .phone level so it stays inside every device frame. ── */
+  #rc-drawer { display:none; position:absolute; inset:0; z-index:9350; font-family:var(--font);
+    align-items:stretch; justify-content:flex-end; opacity:1; transition:opacity 0.2s ease; }
+  #rc-drawer.am-out { opacity:0; pointer-events:none; }
+  #rc-drawer.am-out .am-drawer { transform:translateX(100%); }
+  #rc-drawer .am-drawer { width:min(980px, calc(100% - 56px)); }
+  body.view-tablet #rc-drawer .am-drawer { width:calc(100% - 40px); }
+  body.view-mobile #rc-drawer .am-drawer { width:100%; border-left:none; }
+  .rc-dr-title { font-size:24px; letter-spacing:-0.72px; gap:10px; }
+  .rc-dr-sub { font-size:14px; color:var(--soft); }
+  .rc-dr-body { padding:22px 30px 40px; }
+
+  .rc-d-alert { display:flex; align-items:center; gap:10px; background:var(--layer-2);
+    border-left:3px solid var(--amber); border-radius:var(--radius-sm); padding:10px 14px;
+    font-size:13px; color:var(--defined); letter-spacing:-0.13px; margin-bottom:16px; }
+  .rc-d-alert b { color:var(--strong); font-weight:500; }
+  .rc-d-grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:14px 18px;
+    background:var(--layer-2); border-radius:var(--radius-md); padding:16px; margin-bottom:8px; }
+  .rc-d-grid--3 { grid-template-columns:repeat(3, minmax(0, 1fr)); margin-bottom:16px; }
+  .rc-d-k { font-size:10.5px; font-weight:500; color:var(--subtle); text-transform:uppercase;
+    letter-spacing:0.05em; margin-bottom:3px; }
+  .rc-d-v { font-size:14px; color:var(--strong); letter-spacing:-0.14px; }
+  .rc-d-v small { display:block; font-size:12px; color:var(--soft); margin-top:1px; }
+  .rc-d-sec { font-size:11px; font-weight:500; color:var(--subtle); text-transform:uppercase;
+    letter-spacing:0.05em; margin:18px 0 8px; }
+  .rc-d-p { font-size:13.5px; color:var(--defined); line-height:1.55; letter-spacing:-0.13px; margin:0 0 10px; }
+  .rc-d-p b { color:var(--strong); font-weight:500; }
+  .rc-d-actions { display:flex; gap:8px; flex-wrap:wrap; border-top:1px solid var(--border); padding-top:16px; margin-top:16px; }
+
   /* ── Receipt strip: batched, poured, discharged, billed ── */
-  .rc-receipt { display:flex; align-items:stretch; gap:0; padding:14px 16px;
-    border-bottom:1px solid var(--border); background:var(--layer-2); flex-wrap:nowrap; }
+  .rc-receipt { display:flex; align-items:stretch; gap:0; padding:14px 16px; background:var(--layer-2); flex-wrap:nowrap; }
+  .rc-receipt--card { border:1px solid var(--border); border-radius:var(--radius-md); }
   .rc-rc-step, .rc-rc-bill { flex:1 1 0; min-width:0; padding-right:12px; }
   .rc-rc-step + .rc-rc-step, .rc-rc-bill { padding-left:14px; border-left:1px solid var(--border); }
   .rc-rc-bill { flex:0 0 auto; text-align:right; padding-right:0; }
@@ -11512,55 +11617,84 @@ body.view-mobile .so-foot { padding:12px 14px; }
   .rc-rc-bill .rc-rc-v { font-size:17px; }
   .rc-rc-m { font-size:10.5px; color:var(--subtle); margin-top:1px; white-space:nowrap;
     overflow:hidden; text-overflow:ellipsis; }
-  .rc-rc-none { font-weight:400; color:var(--soft); white-space:normal; }
-
-  /* ── Map ── */
-  .rc-map-stage { position:relative; flex:1; min-height:360px; }
-  .rc-map { position:absolute; inset:0; }
-  .rc-map-chip { position:absolute; top:12px; left:12px; z-index:500; background:var(--layer-1);
-    border:1px solid var(--border); border-radius:var(--radius-sm); padding:6px 10px; font-size:12.5px;
-    font-weight:500; color:var(--strong); letter-spacing:-0.25px; box-shadow:0 2px 8px rgba(54,50,45,0.12); }
-  .rc-map-chip span { font-weight:400; color:var(--soft); }
-  .rc-map-controls { position:absolute; right:12px; bottom:12px; z-index:500; }
-
-  .rc-legend { position:absolute; top:12px; right:12px; z-index:500; background:var(--layer-1);
-    border:1px solid var(--border); border-radius:var(--radius-sm); padding:8px 10px;
-    box-shadow:0 2px 8px rgba(54,50,45,0.12); }
-  .rc-legend-h { font-size:10px; font-weight:500; letter-spacing:0.05em; text-transform:uppercase;
-    color:var(--subtle); margin:4px 0 3px; }
-  .rc-legend-h:first-child { margin-top:0; }
-  .rc-legend-r { display:flex; align-items:center; gap:7px; font-size:11.5px; color:var(--defined);
-    letter-spacing:-0.23px; padding:1px 0; white-space:nowrap; }
-
-  /* Locations are neutral: red and amber are alert colours in Trinity and
-     nothing else. The two trail legs carry the phase tokens they actually
-     are, so a leg here and a group header on the Status tab agree. */
   .rc-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; background:var(--strong); }
   .rc-dot-plant { background:var(--strong); }
   .rc-dot-job { background:var(--soft); box-shadow:inset 0 0 0 1.5px var(--layer-1); }
   .rc-dot-dis { background:var(--strong); box-shadow:0 0 0 2px var(--layer-1), 0 0 0 3.5px var(--strong); }
-  .rc-dot-out { background:var(--phase-to-job); }
-  .rc-dot-back { background:var(--phase-return-to-plant); }
 
-  .rc-pin { font-size:12.5px; padding:5px 8px; }
-  .rc-pin-plant { background:var(--strong); }
-  .rc-pin-job { background:var(--soft); }
-  .rc-pin-dis, .rc-pin-dual { background:var(--strong); box-shadow:0 0 0 2px var(--layer-1),
-    0 1px 2px rgba(0,0,0,0.4); }
-  body.dark .rc-pin { color:#000; }
+  .rc-d-sec--row { display:flex; justify-content:space-between; gap:12px; align-items:baseline; }
+  .rc-d-sec-r { text-transform:none; letter-spacing:-0.24px; font-weight:400; }
 
-  .rc-crumb { display:block; width:8px; height:8px; border-radius:50%;
-    box-shadow:0 0 0 1.5px var(--layer-1); }
-  .rc-crumb-out { background:var(--phase-to-job); }
-  .rc-crumb-back { background:var(--phase-return-to-plant); }
-  .rc-trail-out { stroke:var(--phase-to-job); fill:none; }
-  .rc-trail-back { stroke:var(--phase-return-to-plant); fill:none; stroke-dasharray:6 5; }
+  /* ── Readings by phase: the ticket drawer's Status-table grammar. Phase
+     group rows carry the phase chip (dc-tc-phase-chip, same token as the
+     Status tab) and the phase duration; readings sit beneath, zebra'd. ── */
+  .rc-rd-wrap { overflow-x:auto; border-top:1px solid var(--border); }
+  .rc-rd { min-width:860px; font-size:13.5px; color:var(--defined); letter-spacing:-0.27px; }
+  .rc-rd-row { display:grid; grid-template-columns:112px minmax(96px, 1fr) 78px 78px 88px 72px 80px 72px 60px 72px;
+    gap:8px; align-items:center; padding:10px 10px; border-bottom:1px solid var(--border); min-height:50px; }
+  .rc-rd-row > span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rc-rd-row .num { text-align:right; }
+  .rc-rd-row.zebra { background:var(--layer-2); }
+  .rc-rd-head { font-size:13.5px; font-weight:500; color:var(--strong); min-height:44px; padding:8px 10px;
+    border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--layer-1); z-index:2; }
+  .rc-rd-time { display:flex; flex-direction:column; gap:1px; }
+  .rc-rd-time b { font-weight:400; color:var(--defined); }
+  .rc-rd-time em { font-style:normal; font-size:12px; color:var(--subtle); }
+  .rc-rd-gh { display:flex; align-items:center; gap:10px; width:100%; background:var(--layer-2); border:none;
+    border-bottom:1px solid var(--border); padding:10px 10px; cursor:pointer; font-family:var(--font);
+    text-align:left; color:var(--strong); }
+  .rc-rd-gh svg { color:var(--soft); transition:transform 0.15s; flex-shrink:0; }
+  .rc-rd-group.collapsed .rc-rd-gh svg { transform:rotate(-90deg); }
+  .rc-rd-group.collapsed .rc-rd-rows { display:none; }
+  .rc-rd-dur { font-size:12.5px; color:var(--soft); letter-spacing:-0.25px; }
+  .rc-rd-note { margin-left:auto; font-size:12.5px; color:var(--defined); letter-spacing:-0.25px; white-space:nowrap; }
+  body.dark .rc-rd-gh { background:rgba(255,255,255,0.05); }
+  /* Slump: red badge when off target by more than an inch. Red is the alert
+     colour and this is the one alert in the table. */
+  .rc-rd-slump { display:inline-block; padding:3px 7px; border-radius:4px; font-size:12.5px; }
+  .rc-rd-slump.off { background:var(--red); color:#fff; font-weight:500; }
+  .rc-rd-load { color:var(--strong); font-weight:500; }
 
-  .rc-soon { border:1px solid var(--border); border-radius:var(--radius-md); padding:40px;
-    text-align:center; }
-  .rc-soon-t { font-size:18px; font-weight:500; color:var(--strong); letter-spacing:-0.36px; }
-  .rc-soon-d { font-size:13.5px; color:var(--soft); letter-spacing:-0.27px; line-height:1.5;
-    max-width:420px; margin:8px auto 0; }
+  /* ── Trend chart (stat drawer) ── */
+  .rc-chart-wrap { position:relative; border:1px solid var(--border); border-radius:var(--radius-md); padding:12px 12px 4px; }
+  .rc-chart { width:100%; height:auto; display:block; }
+  .rc-chart .grid { stroke:var(--border); }
+  .rc-chart .axis { fill:var(--soft); font-size:11px; font-family:var(--font); }
+  .rc-chart .line { stroke:var(--strong); fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+  .rc-chart .area { fill:var(--strong); opacity:.06; }
+  .rc-chart .pt { fill:var(--layer-1); stroke:var(--strong); stroke-width:2; }
+  .rc-chart .val { fill:var(--strong); font-size:11.5px; font-weight:500; font-family:var(--font); }
+  .rc-chart-wrap.locked .rc-chart { filter:blur(6px); opacity:.7; }
+  .rc-chart-wrap .rc-paywall { align-items:center; padding-top:0; }
+
+  /* ── Invoice document (invoice drawer) ── */
+  .rc-inv { border:1px solid var(--border); border-radius:var(--radius-md); padding:24px 28px; background:var(--layer-1); }
+  .rc-inv-head { display:flex; justify-content:space-between; gap:24px; margin-bottom:18px; flex-wrap:wrap; }
+  .rc-inv-brand { font-size:20px; font-weight:600; letter-spacing:-0.4px; color:var(--strong); }
+  .rc-inv-meta { font-size:12.5px; color:var(--soft); line-height:1.6; }
+  .rc-inv-meta b { color:var(--strong); font-weight:500; }
+  .rc-inv-to { text-align:right; }
+  .rc-inv-rate { display:inline-flex; align-items:center; gap:6px; }
+  .rc-inv-rate input { width:64px; height:30px; border:1px solid var(--border); border-radius:32px; padding:0 10px;
+    font-family:var(--font); font-size:13px; color:var(--strong); background:var(--layer-1); text-align:right; }
+  .rc-inv-total { display:flex; justify-content:flex-end; gap:32px; padding:14px 12px 0; font-size:14px; color:var(--strong); }
+  .rc-inv-total b { font-weight:600; font-size:18px; letter-spacing:-0.36px; }
+  .rc-inv-note { font-size:12px; color:var(--soft); margin-top:16px; line-height:1.5; }
+
+  /* ── Modal: confirm and destructive decisions only ── */
+  #rc-modal { display:none; position:absolute; inset:0; z-index:9500; align-items:center; justify-content:center;
+    padding:24px; background:rgba(20,18,16,0.42); font-family:var(--font); }
+  body.dark #rc-modal { background:rgba(0,0,0,0.6); }
+  .rc-modal-card { width:min(480px, 100%); background:var(--layer-1); border:1px solid var(--border);
+    border-radius:var(--radius-md); padding:24px 24px 20px; box-shadow:0 16px 48px rgba(20,18,16,0.22);
+    display:flex; flex-direction:column; gap:12px; }
+  body.dark .rc-modal-card { box-shadow:0 16px 48px rgba(0,0,0,0.6); }
+  .rc-modal-t { font-size:17px; font-weight:600; letter-spacing:-0.34px; color:var(--strong); }
+  .rc-modal-p { font-size:13.5px; color:var(--defined); line-height:1.55; letter-spacing:-0.13px; }
+  .rc-modal-p b { color:var(--strong); font-weight:500; }
+  .rc-modal-foot { display:flex; justify-content:flex-end; gap:8px; margin-top:6px; }
+  .rc-select { height:40px; width:100%; border:1px solid var(--border); border-radius:32px; padding:0 14px;
+    font-family:var(--font); font-size:14px; color:var(--strong); background:var(--layer-1); cursor:pointer; outline:none; }
 
   /* ── Returned Concrete: device frames ─────────────────────────────────────
      One markup, three frames. Everything below keys off body.view-* rather
@@ -11574,46 +11708,58 @@ body.view-mobile .so-foot { padding:12px 14px; }
   #mob-page-returned { display:none; position:absolute; inset:0; background:var(--layer-1); z-index:200;
     flex-direction:column; overflow:hidden; padding-top:54px; font-family:var(--font); }
   #rc-tb-mount, #rc-mob-mount { flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
-  /* The mount clips; the scroller inside it is what actually scrolls. Without
-     this the device frames render the page and then refuse to move. */
   #rc-tb-mount .rc-scroll, #rc-mob-mount .rc-scroll { flex:1; min-height:0; overflow-y:auto;
     -webkit-overflow-scrolling:touch; }
   #rc-tb-mount .rc-scroll { padding:18px 18px 32px; }
   #rc-mob-mount .rc-scroll { padding:14px 14px 28px; }
 
-  /* Tablet: the split becomes a stack. The table keeps all eight columns and
-     slides sideways inside its own scroller, the way the Status table does,
-     rather than hiding fields behind a chevron. */
-  body.view-tablet .rc-split { flex-direction:column; min-height:0; }
-  body.view-tablet .rc-right { flex:0 0 auto; }
-  body.view-tablet .rc-panel { min-height:330px; }
-  body.view-tablet .rc-table-wrap { overflow-x:auto; overflow-y:visible; }
+  /* Tablet: the stat band goes 2x2, the widgets stack, tables slide sideways
+     inside their own scroller rather than hiding columns. */
+  body.view-tablet .rc-stats { display:grid; grid-template-columns:1fr 1fr; gap:16px 0; }
+  body.view-tablet .rc-stat:nth-child(2) { border-right:none; }
+  body.view-tablet .rc-stat:nth-child(3) { padding-left:0; }
   body.view-tablet .rc-table { min-width:820px; }
+  body.view-tablet .rc-widgets { grid-template-columns:1fr; }
   body.view-tablet .rc-settings-row { gap:16px; }
   body.view-tablet .rc-f-round { min-width:0; }
   body.view-tablet .am-title.rc-title { font-size:24px; }
+  body.view-tablet .rc-d-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
 
-  /* Mobile: cards instead of a table, and the journey panel becomes a sheet.
-     Both markups are always in the DOM and CSS chooses, so rotating the frame
-     swaps layouts with no re-render. */
+  /* Mobile: cards instead of the loads table; the other tables scroll. */
   .rc-cards { display:none; flex-direction:column; gap:8px; padding:12px 0 4px; }
   body.view-mobile .rc-cards { display:flex; }
-  body.view-mobile .rc-table, body.view-mobile .rc-foot { display:none; }
-  body.view-mobile .rc-split { flex-direction:column; }
-  body.view-mobile .rc-head { flex-direction:column; }
+  body.view-mobile #rc-table .rc-table, body.view-mobile #rc-table .rc-foot { display:none; }
+  body.view-mobile .rc-table { min-width:760px; }
+  body.view-mobile .rc-head, body.view-mobile .rc-sec-h { flex-direction:column; align-items:stretch; }
+  body.view-mobile .rc-sec-h .rc-ghost { align-self:flex-start; padding-left:0; }
+  body.view-mobile .rc-modes { display:flex; }
+  body.view-mobile .rc-mode { flex:1; padding:0 8px; }
   body.view-mobile .am-title.rc-title { font-size:22px; }
   body.view-mobile .rc-head-actions { width:100%; }
   body.view-mobile .rc-head-actions .am-pill { flex:1; justify-content:center; }
+  body.view-mobile .rc-stats { display:flex; flex-direction:column; }
+  body.view-mobile .rc-stat { border-right:none; padding:0 0 16px; border-bottom:1px solid var(--border); }
+  body.view-mobile .rc-stat:last-child { border-bottom:none; }
+  body.view-mobile .rc-stat-v { font-size:32px; }
+  body.view-mobile .rc-gate.locked .rc-paywall { padding-top:32px; }
+  body.view-mobile .rc-paywall-card { padding:20px; }
   body.view-mobile .rc-settings-row { flex-direction:column; align-items:stretch; gap:14px; }
   body.view-mobile .rc-f-round, body.view-mobile .rc-f-cust { min-width:0; }
   body.view-mobile .rc-seg { width:100%; overflow-x:auto; }
   body.view-mobile .rc-seg-btn { flex:1; padding:0 8px; font-size:12.5px; }
   body.view-mobile .rc-tip-pop { left:auto; right:-8px; width:230px; }
+  body.view-mobile .rc-widgets { grid-template-columns:1fr; }
+  body.view-mobile .rc-dr-body { padding:16px 16px 32px; }
+  body.view-mobile .rc-dr-title { font-size:20px; }
+  body.view-mobile .rc-d-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+  body.view-mobile .rc-receipt { display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; }
+  body.view-mobile .rc-rc-step, body.view-mobile .rc-rc-bill { flex:none; padding:0; border-left:none; text-align:left; }
+  body.view-mobile .rc-rc-bill .rc-rc-k { justify-content:flex-start; }
+  body.view-mobile .rc-rc-bill .rc-rc-v { font-size:15px; }
+    body.view-mobile .rc-d-actions .am-pill { flex:1 1 100%; justify-content:center; }
 
   .rc-card { border:1px solid var(--border); border-radius:var(--radius-md); padding:12px 14px;
     background:var(--layer-1); cursor:pointer; }
-  .rc-card.sel { border-color:var(--blue); box-shadow:inset 2px 0 0 var(--blue); }
-  body.dark .rc-card.sel { border-color:#e3f200; box-shadow:inset 2px 0 0 #e3f200; }
   .rc-card-top { display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
   .rc-card-bill { font-size:15px; font-weight:500; color:var(--strong); letter-spacing:-0.3px; white-space:nowrap; }
   .rc-card-cust { font-size:14px; color:var(--defined); letter-spacing:-0.28px; margin-top:6px; }
@@ -11622,56 +11768,22 @@ body.view-mobile .so-foot { padding:12px 14px; }
   .rc-card-meta { display:flex; flex-wrap:wrap; gap:4px 12px; margin-top:8px; font-size:11.5px;
     color:var(--soft); letter-spacing:-0.23px; }
 
-  /* The sheet. Off-canvas until a load is tapped, which is the same
-     one-thing-at-a-time read the desktop split gives you. */
-  .rc-sheet-close { display:none; }
-  body.view-mobile .rc-right { position:static; }
-  /* Absolute, not fixed. Fixed positions against the browser viewport, which
-     escapes the device frame entirely and threw the sheet across the whole
-     window. Absolute resolves to #mob-page-returned, the nearest positioned
-     ancestor, so the sheet stays inside the phone. The overflow on the mount
-     between them does not clip it, because the containing block sits above
-     that mount. Same reason the ticket drawer lives at .phone level. */
-  body.view-mobile .rc-panel { position:absolute; left:0; right:0; bottom:0; top:auto; height:74%;
-    z-index:9400; border-radius:var(--radius-md) var(--radius-md) 0 0; border-bottom:none;
-    box-shadow:0 -8px 32px rgba(54,50,45,0.22); transform:translateY(101%);
-    transition:transform 0.24s ease; }
-  body.view-mobile .rc-panel.on { transform:translateY(0); }
-  body.dark.view-mobile .rc-panel { box-shadow:0 -8px 32px rgba(0,0,0,0.6); }
-  body.view-mobile .rc-sheet-close { display:inline-flex; align-items:center; gap:6px;
-    align-self:flex-end; margin:10px 14px 0; background:none; border:none; cursor:pointer;
-    font-family:var(--font); font-size:13px; color:var(--soft); letter-spacing:-0.26px; }
-  /* Four steps do not fit one phone row, and letting flex wrap them put the
-     bill above the discharge. A 2x2 grid keeps the order the story runs in:
-     batched, poured, discharged, billed. */
-  body.view-mobile .rc-receipt { display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; }
-  body.view-mobile .rc-rc-step, body.view-mobile .rc-rc-bill { flex:none; padding:0; border-left:none;
-    text-align:left; }
-  body.view-mobile .rc-rc-bill .rc-rc-k { justify-content:flex-start; }
-  body.view-mobile .rc-rc-bill .rc-rc-v { font-size:15px; }
-  body.view-mobile .rc-legend { display:none; }
-  body.view-mobile .rc-map-stage { min-height:240px; }
-
   /* ── Returned Concrete: mobile landscape ──────────────────────────────────
      390px of height and 844 of width, so the page trades vertical chrome for
-     the horizontal room it just gained: header and actions share a row, the
-     three billing settings go side by side, and the sheet comes up nearly
-     full height because there is no room to peek at the list behind it. */
-
+     the horizontal room it just gained. */
   body.view-mobile.orient-landscape #mob-page-returned { padding-top:0; padding-left:52px; }
   body.view-mobile.orient-landscape #mob-page-returned .top-nav { padding-top:6px; padding-bottom:6px; }
   body.view-mobile.orient-landscape #rc-mob-mount .rc-scroll { padding:10px 24px 20px 0; }
-
   body.view-mobile.orient-landscape .rc-head { flex-direction:row; align-items:center;
     justify-content:space-between; gap:16px; }
   body.view-mobile.orient-landscape .am-title.rc-title { font-size:19px; margin-bottom:2px; }
   body.view-mobile.orient-landscape .rc-sub { margin-bottom:8px; font-size:12px; }
   body.view-mobile.orient-landscape .rc-head-actions { width:auto; }
   body.view-mobile.orient-landscape .rc-head-actions .am-pill { flex:0 0 auto; height:34px; font-size:13px; }
-  body.view-mobile.orient-landscape .rc-views { margin-bottom:12px; gap:18px; }
-  body.view-mobile.orient-landscape .rc-view { font-size:14px; padding-bottom:8px; }
-
-  /* Filters and settings go back to rows: the width is there now. */
+  body.view-mobile.orient-landscape .rc-stats { display:grid; grid-template-columns:1fr 1fr; gap:12px 0; }
+  body.view-mobile.orient-landscape .rc-stat { border-bottom:none; border-right:1px solid var(--border); padding:0 16px 4px; }
+  body.view-mobile.orient-landscape .rc-stat:nth-child(odd) { padding-left:0; }
+  body.view-mobile.orient-landscape .rc-stat:nth-child(even) { border-right:none; }
   body.view-mobile.orient-landscape .rc-filters { margin-bottom:12px; }
   body.view-mobile.orient-landscape .rc-settings { padding:12px 14px 14px; margin-bottom:14px; }
   body.view-mobile.orient-landscape .rc-settings-cap { margin-bottom:10px; }
@@ -11681,14 +11793,8 @@ body.view-mobile .so-foot { padding:12px 14px; }
   body.view-mobile.orient-landscape .rc-seg { width:auto; }
   body.view-mobile.orient-landscape .rc-seg-btn { flex:0 0 auto; }
   body.view-mobile.orient-landscape .rc-tip-pop { width:280px; }
-
-  /* Two cards across, since a landscape card only needs half the width to
-     say the same four things. */
   body.view-mobile.orient-landscape .rc-cards { flex-direction:row; flex-wrap:wrap; gap:8px; }
   body.view-mobile.orient-landscape .rc-card { flex:1 1 calc(50% - 4px); min-width:0; }
-
-  body.view-mobile.orient-landscape .rc-panel { height:92%; }
-  /* Landscape has the width for one row again, so the grid goes back to flex. */
   body.view-mobile.orient-landscape .rc-receipt { display:flex; flex-wrap:nowrap; gap:0; padding:10px 14px; }
   body.view-mobile.orient-landscape .rc-rc-step, body.view-mobile.orient-landscape .rc-rc-bill { flex:1 1 0;
     padding-right:12px; }
@@ -11696,151 +11802,3 @@ body.view-mobile .so-foot { padding:12px 14px; }
   body.view-mobile.orient-landscape .rc-rc-bill { border-left:1px solid var(--border); padding-left:14px; }
   body.view-mobile.orient-landscape .rc-rc-bill { text-align:right; }
   body.view-mobile.orient-landscape .rc-rc-bill .rc-rc-k { justify-content:flex-end; }
-  body.view-mobile.orient-landscape .rc-legend { display:block; }
-  body.view-mobile.orient-landscape .rc-map-stage { min-height:180px; }
-  body.view-mobile.orient-landscape .rc-sheet-close { margin:6px 14px 0; }
-
-  /* ── Tablet landscape ──────────────────────────────────────────────────────
-     1194x834: the table no longer needs its own sideways scroller, and the
-     journey panel can sit beside it again the way it does on desktop. */
-  body.view-tablet.orient-landscape .rc-split { flex-direction:row; min-height:420px; }
-  body.view-tablet.orient-landscape .rc-right { flex:0 0 42%; }
-  body.view-tablet.orient-landscape .rc-panel { min-height:0; }
-  body.view-tablet.orient-landscape .rc-table { min-width:0; }
-  body.view-tablet.orient-landscape .rc-settings-row { flex-wrap:nowrap; }
-
-  /* ── Dashboard setup: widget previews (app-22) ─────────────────────────────
-     The library item is now a title row plus a miniature of the real widget.
-     Item width sets the scale: at the old 324px panel two-up left 134px per
-     item and the 360px stage shrank to 0.45, which is a silhouette. The
-     drawer below is 600px, so an item is ~276px and the scale lands near
-     0.77, where the type is still readable. */
-
-  .db-lib-grid { grid-template-columns:1fr 1fr; gap:12px; }
-  .db-lib-item { padding:10px 10px 10px; min-height:0; }
-  .db-lib-item-head { display:flex; align-items:flex-start; justify-content:space-between;
-    gap:8px; margin-bottom:8px; }
-  .db-lib-item .db-lib-check, .db-lib-item .db-lib-drag { position:static; flex-shrink:0; }
-  .db-lib-item .db-lib-drag { font-size:12px; }
-
-  /* The frame crops, the stage scales. transform-origin at the top left keeps
-     the card's own corner in the frame's corner at any scale. */
-  .dbp-frame { position:relative; height:162px; overflow:hidden; border-radius:10px;
-    background:var(--layer-2); pointer-events:none; }
-  .dbp-stage { position:absolute; top:0; left:0; width:360px; transform-origin:top left; }
-  .dbp-stage .db-card { min-height:210px; }
-  .dbp-frame .db-card { box-shadow:none; }
-
-  /* Fleet map only: a real Leaflet instance cannot be inside a CSS scale, so
-     this one renders 1:1 in a shorter frame. */
-  .db-lib-item.dbp-raw .dbp-frame { height:150px; }
-  .db-lib-item.dbp-raw .dbp-stage { position:relative; width:100%; transform:none; }
-  .db-lib-item.dbp-raw .dbp-stage .db-card { min-height:150px; height:150px; }
-  .db-lib-item.dbp-raw .db-map-wrap, .db-lib-item.dbp-raw .db-map { height:150px; }
-  /* The search field and the arrow pill belong to the full-size widget; at
-     this size they crowd out the map they sit on. */
-  .db-lib-item.dbp-raw .db-map-search, .db-lib-item.dbp-raw .db-map-pill { display:none; }
-
-  /* ── Dashboard setup: the library is a drawer ──────────────────────────────
-     It used to reserve 352px of the page and shove the dashboard sideways, so
-     entering setup re-laid-out the very thing you were about to arrange. It
-     now slides over the page instead. #dt-page-dashboard is position:relative
-     and overflow:hidden, so the parked drawer is clipped rather than adding a
-     scrollbar.
-
-     No scrim, deliberately. The dashboard behind this is the drop target: you
-     drag widgets out of the drawer and onto it, so dimming it or catching
-     clicks on it would break the one interaction the drawer exists for. */
-
-  /* The dashboard yields the drawer's width so every card stays reachable
-     for its remove button and drag handle. The padding animates on the same
-     0.26s curve as the drawer so the two move as one. */
-  .db-scroll { transition:padding-right 0.26s ease; }
-  .db-editing .db-scroll { padding-right:628px; }
-
-  .db-library { display:block; width:600px; visibility:hidden; transform:translateX(100%);
-    transition:transform 0.26s ease, visibility 0s linear 0.26s; }
-  .db-editing .db-library { visibility:visible; transform:translateX(0);
-    transition:transform 0.26s ease, visibility 0s; }
-
-
-
-  /* ── Dashboard setup drawer: sticky head, one shelf ────────────────────────
-     The drawer overlays the page, so the Save changes button in the page
-     header goes out of reach the moment the library scrolls. The head stays
-     put and carries Done, which is the same commit. */
-
-  .db-library { padding-top:0; }
-  .db-lib-head { position:sticky; top:0; z-index:3; background:var(--layer-1);
-    padding:20px 0 12px; margin-bottom:2px; border-bottom:1px solid var(--border); }
-  .dbp-head-actions { display:flex; align-items:center; gap:10px; }
-  /* One solid button per container, and this is the commit. */
-  .dbp-done { height:36px; padding:0 20px; border:none; border-radius:32px; cursor:pointer;
-    font-family:var(--font); font-size:14px; letter-spacing:-0.28px;
-    background:var(--strong); color:var(--layer-1); }
-  .dbp-done:hover { filter:brightness(1.12); }
-
-  /* The shelf is one line. Five quarter cards fill it; there is no second
-     line to wrap onto, so a sixth is refused at the drop instead. */
-  .db-row-top { flex-wrap:nowrap; }
-
-  /* ── TCG remove (app-23) ───────────────────────────────────────────────────
-     Same bottom-sheet anatomy app-02 uses for Replace TCG: pinned head, one
-     scrolling middle, pinned footer, so a long list can never push the commit
-     buttons off a short landscape drawer. */
-
-  .tcg-sheet-head { display:flex; align-items:center; gap:12px; padding-bottom:14px; flex-shrink:0; }
-  .tcg-sheet-icon { width:36px; height:36px; border-radius:50%; flex-shrink:0; display:flex;
-    align-items:center; justify-content:center; background:var(--layer-2); color:var(--strong); }
-  .tcg-sheet-icon-warn { background:rgba(217,119,6,0.12); color:#d97706; }
-  .tcg-sheet-t { font-size:16px; font-weight:600; color:var(--strong); letter-spacing:-0.32px; }
-  .tcg-sheet-s { font-size:12px; color:var(--soft); letter-spacing:-0.24px; }
-
-  .tcg-sheet-body { flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; }
-  .tcg-sheet-p { font-size:13px; color:var(--strong); letter-spacing:-0.26px; line-height:1.5; }
-  .tcg-sheet-cap { font-size:11px; font-weight:600; color:var(--soft); letter-spacing:0.3px;
-    text-transform:uppercase; margin:14px 0 4px; }
-  .tcg-go-dark { border-top:1px solid var(--border); padding:6px 0; }
-  .tcg-go-dark-row { display:flex; align-items:center; gap:8px; padding:3px 0; font-size:13px;
-    color:var(--strong); letter-spacing:-0.26px; }
-  .tcg-go-dark-dot { width:5px; height:5px; border-radius:50%; background:var(--soft); flex-shrink:0; }
-  .tcg-go-dark-none { font-size:12px; color:var(--soft); font-style:italic; }
-
-  /* The consequence gets its own block because it is the part of this sheet
-     that is not reversible by clicking Back. */
-  .tcg-consequence { display:flex; gap:9px; margin-top:14px; padding:10px 12px;
-    border-radius:var(--radius-sm); background:rgba(217,119,6,0.08); color:#d97706;
-    font-size:12.5px; line-height:1.5; letter-spacing:-0.25px; }
-  .tcg-consequence b { color:#d97706; }
-  .tcg-consequence svg { flex-shrink:0; margin-top:1px; }
-  body.dark .tcg-consequence { background:rgba(255,186,13,0.12); color:var(--amber); }
-  body.dark .tcg-consequence b { color:var(--amber); }
-
-  /* Two destinations, listed rather than nested in a menu. */
-  .tcg-choice-list { flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
-  .tcg-choice { display:flex; align-items:center; gap:12px; width:100%; text-align:left; cursor:pointer;
-    background:none; border:1px solid var(--border); border-radius:var(--radius-md); padding:12px 14px;
-    font-family:var(--font); color:var(--strong); }
-  .tcg-choice:hover { border-color:var(--border-mid); background:var(--layer-2); }
-  .tcg-choice-l { flex:1; min-width:0; }
-  .tcg-choice-t { font-size:14px; font-weight:500; letter-spacing:-0.28px; }
-  .tcg-choice-s { font-size:12px; color:var(--soft); letter-spacing:-0.24px; line-height:1.45; margin-top:2px; }
-  .tcg-choice-chev { color:var(--subtle); flex-shrink:0; }
-
-  .tcg-sheet-foot { display:flex; gap:8px; padding-top:14px; flex-shrink:0; }
-  .tcg-btn-quiet { flex:0 0 auto; min-width:110px; background:none; border:1px solid var(--border);
-    border-radius:32px; padding:12px 20px; font-size:14px; font-weight:500; font-family:var(--font);
-    letter-spacing:-0.28px; color:var(--strong); cursor:pointer; }
-  .tcg-btn-commit { flex:1; border:none; border-radius:32px; padding:12px; font-size:14px;
-    font-weight:500; font-family:var(--font); letter-spacing:-0.28px; cursor:pointer;
-    background:var(--am-select); color:var(--am-on-select); }
-
-  .tcg-banner-icon { width:28px; height:28px; border-radius:50%; background:rgba(217,119,6,0.12);
-    display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .tcg-banner-txt { flex:1; min-width:0; }
-  .tcg-banner-t { font-size:13px; font-weight:500; color:var(--strong); letter-spacing:-0.26px; }
-  .tcg-banner-s { font-size:12px; color:#92400e; letter-spacing:-0.24px; }
-  body.dark .tcg-banner-s { color:#ffffff; }
-  .tcg-banner-btn { flex-shrink:0; background:#d97706; color:#fff; border:none; border-radius:20px;
-    padding:7px 12px; font-size:12px; font-weight:500; font-family:var(--font); letter-spacing:-0.24px;
-    cursor:pointer; white-space:nowrap; }

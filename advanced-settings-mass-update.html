@@ -2390,7 +2390,7 @@ function sendFix(){
 }
 
 /* ---- MVP single-setting panel ---- */
-let mvpSetting = 'front_discharge';
+let mvpSetting = null;   // no default — user must pick a setting before results render
 let mvpValue = null;
 function seedMvpValue(){
   const s = SETTINGS.find(x=>x.id===mvpSetting);
@@ -2470,7 +2470,12 @@ function renderMvp(){
     ft.className = 'cmp-field-text placeholder';
     document.getElementById('mvpTypeDisplay').textContent = '—';
     document.getElementById('mvpValueControl').innerHTML = '';
-    document.getElementById('mvpResult').innerHTML = `<div class="cmp-hint">Pick a setting above to view and update its value across the selected trucks.</div>`;
+    const n = selected.size;
+    document.getElementById('mvpResult').innerHTML = `<div class="cmp-hint">${
+      n === 0
+        ? 'Select trucks on the left and pick a setting above to see results.'
+        : `<strong style="color:var(--text)">${n} truck${n===1?'':'s'} selected.</strong> Pick a setting above to see its current value on ${n===1?'this truck':'these trucks'}.`
+    }</div>`;
     document.getElementById('mvpSendBtn').disabled = true;
     return;
   }

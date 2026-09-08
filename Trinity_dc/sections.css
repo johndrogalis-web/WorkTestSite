@@ -928,3 +928,25 @@ body.view-tablet .ba-pop { max-width:calc(100% + 120px); }
 /* The Slump cell's second line carries two numbers; let it use the full cell
    rather than clipping mid-number. */
 .ba-two small { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FIX 2026-09-08 — column scrollers collapsing their children on mobile
+   ---------------------------------------------------------------------------
+   .ba-scroll and .sl-scroll are flex columns that scroll. A flex child in
+   a column shrinks to fit when the column overflows, and once a child has
+   overflow other than visible (the tab strip and segmented control both
+   get overflow-x:auto on mobile) its minimum height becomes 0, so it
+   shrank to its 1px border. Every direct child of a scroller now keeps its
+   own height; the scroller scrolls instead.
+
+   The search field is the am-* kit's, sized for a row with flex-basis 330px.
+   In the mobile column that basis became its HEIGHT — the 330px square. It
+   is a full-width, 44px field there.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+#dt-page-batch .ba-scroll > *, #ba-tb-mount .ba-scroll > *, #ba-mob-mount .ba-scroll > *,
+#dt-page-slump .sl-scroll > *, #sl-tb-mount .sl-scroll > *, #sl-mob-mount .sl-scroll > * { flex-shrink:0; }
+
+body.view-mobile .ba-toolbar .am-search,
+body.view-mobile .sl-toolbar .am-search { flex:none; width:100%; box-sizing:border-box; }

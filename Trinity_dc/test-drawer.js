@@ -1,7 +1,7 @@
 const { JSDOM } = require('jsdom'); const fs = require('fs');
 let html = fs.readFileSync('index.html','utf8');
 // strip external scripts (leaflet, comments, testing) we do not want
-html = html.replace(/<script src="https:[^"]*"><\/script>/g,"").replace(/<script src="(comments|testing)\.js"><\/script>/g,"");
+html = html.replace(/<script src="https:[^"]*"><\/script>/g,"").replace(/<script src="(comments|testing|testing-questions|tooling)\.js"><\/script>/g,"");
 html = html.replace(/<link[^>]*>/g,'');
 const dom = new JSDOM(html, { runScripts:'dangerously', resources:'usable', url:'file://'+process.cwd()+'/index.html', pretendToBeVisual:true,
   beforeParse(w){ w.L = undefined; w.requestAnimationFrame = f=>setTimeout(f,0); w.matchMedia = ()=>({matches:false,addListener(){},addEventListener(){}}); w.HTMLCanvasElement.prototype.getContext = ()=>null; w.scrollTo=()=>{}; } });

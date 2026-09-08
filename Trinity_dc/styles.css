@@ -11802,3 +11802,61 @@ body.view-mobile .so-foot { padding:12px 14px; }
   body.view-mobile.orient-landscape .rc-rc-bill { border-left:1px solid var(--border); padding-left:14px; }
   body.view-mobile.orient-landscape .rc-rc-bill { text-align:right; }
   body.view-mobile.orient-landscape .rc-rc-bill .rc-rc-k { justify-content:flex-end; }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   DASHBOARDS — WIDGET LIBRARY PREVIEWS (dashboard.js, app-22 block)
+   ───────────────────────────────────────────────────────────────
+   app-22 renders each library item with the real card inside a
+   .dbp-frame > .dbp-stage and scales the stage to the item width
+   (dbpFit). It shipped without this stylesheet, so the grid stayed
+   two-up and the unscaled card sat in the middle of a 134px item.
+
+   Additive: every rule here is new or scoped under .db-library, so
+   the original library rules above are untouched. Appended at the
+   end of the file so it wins the cascade on equal specificity.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* One column. The panel is 324px and the canvas already makes room for it
+   (.db-editing .db-scroll padding-right:352px above). Two columns here would
+   scale the card to 0.37 and 12px type to 4px; widening the drawer to fix
+   that starves the top shelf on anything under a 1920px window. */
+.db-library .db-lib-grid { grid-template-columns:1fr; }
+
+/* Sticky head so Done is always reachable. The negative margins pull
+   it over the panel's own padding so the sticky edge is the panel edge. */
+.db-library .db-lib-head { position:sticky; top:-20px; z-index:5; background:var(--layer-1);
+  margin:-20px -18px 0; padding:20px 18px 12px; border-bottom:1px solid var(--border); }
+.dbp-head-actions { display:flex; align-items:center; gap:8px; margin-top:10px; }
+.dbp-done { display:inline-flex; align-items:center; height:32px; padding:0 16px; border:none;
+  border-radius:32px; background:var(--am-select); color:var(--am-on-select); font-family:var(--font);
+  font-size:13px; font-weight:500; letter-spacing:-0.26px; cursor:pointer; white-space:nowrap; }
+.dbp-done:hover { filter:brightness(1.06); }
+
+/* Item: title row on top, preview below. The placed check / drag handle
+   keep their existing absolute bottom-right position. */
+.db-library .db-lib-item { padding:12px 12px 30px; }
+.db-lib-item-head { display:flex; align-items:flex-start; justify-content:space-between; gap:8px;
+  margin-bottom:10px; min-height:16px; }
+
+/* The frame is the window; the stage is a fixed 360px board scaled into it.
+   pointer-events:none keeps the whole item one drag target and stops the
+   preview's own buttons from firing. */
+.dbp-frame { position:relative; z-index:0; height:168px; overflow:hidden; border-radius:12px;
+  pointer-events:none; user-select:none; }
+/* z-index:0 on the frame makes it a stacking context, which is what keeps
+   Leaflet's z-index:400 panes inside the frame instead of painting over the
+   sticky head as the panel scrolls. */
+.dbp-stage { position:absolute; top:0; left:0; width:360px; transform-origin:0 0; }
+.dbp-stage > .db-card { width:360px; min-height:200px; box-shadow:0 1px 3px rgba(54,50,45,0.06); }
+.dbp-stage .db-card.db-drop-target { outline:none; }
+
+/* Fleet map: unscaled (Leaflet cannot measure inside a CSS scale), shorter
+   frame, real still map through dbInitMaps. */
+.db-lib-item.dbp-raw .dbp-frame { height:150px; }
+.db-lib-item.dbp-raw .dbp-stage { position:static; width:auto; transform:none !important; }
+.db-lib-item.dbp-raw .dbp-stage > .db-card,
+.db-lib-item.dbp-raw .dbp-stage > .db-card.db-w-fleet-map.db-size-q { width:auto; min-height:0; height:150px; }
+
+body.dark .db-library .db-lib-head { background:var(--layer-1); }
+body.dark .dbp-stage > .db-card { box-shadow:none; }

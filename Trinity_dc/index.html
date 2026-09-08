@@ -10,11 +10,38 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""/>
 <link rel="stylesheet" href="styles.css">
-<!-- Slump Tests feature stylesheet (app-24). Loaded after styles.css; adds no
-     page rules to styles.css so the diff stays reviewable. -->
-<link rel="stylesheet" href="app-24-slump.css">
-<link rel="stylesheet" href="app-25-batch.css">
+<!-- Concept-section stylesheet (sl- and ba- rules, formerly app-24-slump.css
+     and app-25-batch.css). Loaded after styles.css so it wins on ties. -->
+<link rel="stylesheet" href="sections.css">
 <!-- build:1778170116 -->
+
+<!-- ─── WHERE IS IT — prefix → file → nav item ─────────────────────────
+     See an id or class in the inspector? Its prefix names the file.
+     One nav item lives in ONE place: its own file, or a "FILE:" banner
+     block inside a bundle. Rules and the bundle plan: STRUCTURE.md.
+     Superseded originals live in archive/ and are not loaded.
+
+       prefix        file                          nav item / role
+       ───────────── ───────────────────────────── ───────────────────────────
+       dt- ud- co- mc- sen- swu- dc- hm-
+                     app-01 … app-06 (core, split)  Diagnostic Center, all frames
+       tb-  s-  mob- app-05 / app-03 / app-04       tablet + mobile frames (core)
+       tk- tl-       app-01-tickets-trucklogs.js    Tickets → Ticket List table (core)
+       tp- tf- tv- mtk- ttk- tks- tkd- tkx- tkm- tkmc- so-
+                     tickets.js                     Tickets: Phases, Fleet map, device
+                                                    frames, ticket drawer (app-07+08+10+12+20)
+       db-  dbp-     dashboard.js                   Dashboards  (app-13 + app-22)
+       lg- ob- pf- am-
+                     account.js                     Login, setup wizard, My Profile,
+                                                    Settings + amToast/am-* kit (app-14+15+16+17)
+       in- rc- sl- ba-
+                     sections.js (+ sections.css)   Insights, Returned Concrete, Slump Tests,
+                                                    Batch Assistant (app-18+21+24+25; css 24+25)
+       cmt- rt- tst- vc-
+                     tooling.js                     Authoring layer: review pins, hash routes,
+                                                    workflow testing, frame continuity
+                                                    (comments + router + testing + testing-questions + app-23)
+──────────────────────────────────────────────────────────────────── -->
 
 <!-- ─── TEST-SESSION GATE ──────────────────────────────────────────
      Runs synchronously in <head>, before a single pixel of the
@@ -4926,26 +4953,11 @@
 <script src="app-04-softwareupdate-maps.js"></script>
 <script src="app-05-tablet-views.js"></script>
 <script src="app-06-desktop-core.js"></script>
-<script src="app-07-tickets-phases.js"></script>
-<script src="app-08-tickets-mobile-tablet.js"></script>
-<script src="app-10-tickets-fleetmap.js"></script>
-<script src="app-12-tickets-device-views.js"></script>
-<script src="app-13-dashboard.js"></script>
-<script src="app-14-login.js"></script>
-<script src="app-15-onboarding.js"></script>
-<script src="app-16-profile.js"></script>
-<script src="app-17-account.js"></script>
-<script src="app-18-insights.js"></script>
-<script src="app-20-ticket-drawer.js"></script>
-<script src="app-21-returned-loads.js"></script>
-<script src="app-22-widget-previews.js"></script>
-<script src="app-24-slump-tests.js"></script>
-<script src="app-25-batch-assistant.js"></script>
-<script src="comments.js"></script>
-<script src="router.js"></script>
-<script src="testing.js"></script>
-<script src="testing-questions.js"></script>
-<script src="app-23-viewport-continuity.js"></script>
+<script src="tickets.js"></script>              <!-- bundle: app-07 + 08 + 10 + 12 + 20 -->
+<script src="dashboard.js"></script>            <!-- bundle: app-13 + app-22 -->
+<script src="account.js"></script>              <!-- bundle: app-14 + 15 + 16 + 17 -->
+<script src="sections.js"></script>             <!-- bundle: app-18 + 21 + 24 + 25 -->
+<script src="tooling.js"></script>              <!-- bundle: comments + router + testing + testing-questions + app-23 -->
 <!-- Leaflet — JS for the Maps page. Loaded after the inline script so
      dcMapInit() can probe `typeof L === 'undefined'` and self-retry if
      the CDN is slow. -->

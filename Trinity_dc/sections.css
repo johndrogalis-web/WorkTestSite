@@ -1,0 +1,930 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   sections.css — stylesheet for the concept sections in sections.js
+   ---------------------------------------------------------------------------
+   Straight concatenation of two former stylesheets, original order, nothing
+   edited. Search "FILE:" to jump.
+
+     1. app-24-slump.css   sl-  Slump Tests
+     2. app-25-batch.css   ba-  Batch Assistant
+
+   Loaded after styles.css, same as the two files it replaces. Insights (in-)
+   and Returned Concrete (rc-) rules stay in styles.css under their own
+   section headers.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+
+/* ═══ FILE: app-24-slump.css ══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   app-24-slump.css
+   SLUMP TESTS — page, quick add flow, batch grid, detail drawer (app-24)
+   ---------------------------------------------------------------------------
+   Prefix: sl-  (st- was already taken by the settings menu in index.html)
+
+   Page shell mirrors #dt-page-returned: a flex column that owns its own
+   scroller, so the shell never has to know what is inside.
+
+   Every responsive rule keys off a body class (view-desktop / view-tablet /
+   view-mobile), never a media query — the device frames are fixed-size divs
+   inside a desktop browser and media queries never fire inside them.
+
+   Tokens only. The one hardcoded family is the phase color set, which comes
+   from shared.css --phase-* and is reused through .dc-tc-phase-chip.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Page shell ─────────────────────────────────────────────────────────── */
+
+#dt-page-slump { display:none; flex-direction:column; flex:1; min-width:0; min-height:0;
+  overflow:hidden; background:var(--layer-1); font-family:var(--font); }
+#dt-page-slump .sl-scroll { flex:1; min-height:0; overflow-y:auto; padding:26px 32px 40px;
+  display:flex; flex-direction:column; }
+#sl-tb-mount .sl-scroll, #sl-mob-mount .sl-scroll { flex:1; min-height:0; overflow-y:auto;
+  display:flex; flex-direction:column; }
+#sl-tb-mount .sl-scroll { padding:18px 18px 32px; }
+#sl-mob-mount .sl-scroll { padding:14px 14px 96px; }
+
+#tb-page-slump { display:none; flex:1; flex-direction:column; min-height:0; overflow:hidden;
+  background:var(--layer-1); font-family:var(--font); }
+/* Mobile pages are an absolute overlay inside the phone frame, matching
+   #mob-page-returned and #mob-page-insights — including the 54px status-bar
+   inset. Being positioned also anchors the FAB to this page rather than to the
+   browser viewport. */
+#mob-page-slump { display:none; position:absolute; inset:0; z-index:200;
+  background:var(--layer-1); flex-direction:column; overflow:hidden;
+  padding-top:54px; font-family:var(--font); }
+body.view-mobile.orient-landscape #mob-page-slump { padding-top:0; padding-left:52px; }
+body.view-mobile.orient-landscape #mob-page-slump .top-nav { padding-top:6px; padding-bottom:6px; }
+#sl-tb-mount, #sl-mob-mount { flex:1; min-height:0; display:flex; flex-direction:column;
+  overflow:hidden; }
+
+/* ── Head ───────────────────────────────────────────────────────────────── */
+
+.sl-head { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; flex-wrap:wrap; }
+.sl-title { margin-bottom:4px; }
+.sl-sub { font-size:13px; color:var(--soft); letter-spacing:-0.26px; margin-bottom:22px; }
+.sl-sub b { color:var(--strong); font-weight:500; }
+.sl-head-actions { display:flex; gap:10px; flex-shrink:0; }
+
+.sl-ghost { background:none; border:none; cursor:pointer; font-family:var(--font); font-size:13.5px;
+  font-weight:500; letter-spacing:-0.27px; color:var(--defined); padding:8px 14px;
+  border-radius:var(--radius-pill, 32px); white-space:nowrap; }
+.sl-ghost:hover { background:var(--layer-2); color:var(--strong); }
+
+/* ── Stat band. Hairline-divided flex row, not boxed cards. ─────────────── */
+
+.sl-stats { display:flex; border-bottom:1px solid var(--border); padding-bottom:18px; margin-bottom:20px; }
+.sl-stat { flex:1; min-width:0; padding:0 24px; border-right:1px solid var(--border);
+  display:flex; flex-direction:column; gap:6px; }
+.sl-stat:first-child { padding-left:0; }
+.sl-stat:last-child { border-right:none; }
+.sl-stat-l { font-size:14px; color:var(--strong); letter-spacing:-0.28px; line-height:1.3; }
+.sl-stat-v { font-size:34px; font-weight:500; color:var(--strong); letter-spacing:-1.02px; line-height:1; }
+.sl-stat-v small { font-size:14px; font-weight:400; letter-spacing:-0.28px; color:var(--soft); margin-left:6px; }
+.sl-stat-m { font-size:12.5px; color:var(--soft); letter-spacing:-0.25px; line-height:1.4; min-height:18px; }
+
+/* ── Toolbar ────────────────────────────────────────────────────────────── */
+
+.sl-toolbar { display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+.sl-tb-right { margin-left:auto; display:flex; gap:10px; align-items:center; }
+
+.sl-seg { display:inline-flex; border:1px solid var(--border); border-radius:var(--radius-pill, 32px);
+  background:var(--layer-1); padding:3px; height:42px; align-items:center; }
+.sl-seg-btn { border:none; background:none; cursor:pointer; font-family:var(--font); font-size:13.5px;
+  letter-spacing:-0.27px; color:var(--soft); padding:0 14px; height:34px;
+  border-radius:var(--radius-pill, 32px); white-space:nowrap; }
+.sl-seg-btn:hover { color:var(--strong); }
+.sl-seg-btn.on { background:var(--am-select); color:var(--am-on-select); }
+
+/* ── Table. One grid, header and rows off the same tracks. ─────────────── */
+
+.sl-table-wrap { min-height:0; overflow-x:auto; }
+.sl-table { min-width:1080px; display:flex; flex-direction:column; font-size:14px;
+  color:var(--defined); letter-spacing:-0.14px; }
+.sl-tr { display:grid; align-items:center; gap:8px; padding:9px 12px; border-radius:var(--radius-sm);
+  min-height:44px; cursor:pointer;
+  grid-template-columns:112px 100px 74px 92px 96px 84px 76px 64px 112px minmax(0, 1fr); }
+.sl-tr > span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.sl-th { font-size:13.5px; font-weight:500; color:var(--strong); border-bottom:1px solid var(--border);
+  cursor:default; border-radius:0; }
+.sl-tr.zebra { background:var(--layer-2); }
+.sl-tr:not(.sl-th):hover { background:rgba(48,105,227,0.05); }
+body.dark .sl-tr:not(.sl-th):hover { background:rgba(227,242,0,0.07); }
+.sl-tr .num { text-align:right; }
+.sl-dim { color:var(--subtle); }
+.sl-strong { color:var(--strong); font-weight:500; }
+
+/* Entity references. Blue link in light, white in dark. Never lime, never mono. */
+.sl-link { color:var(--blue-link); text-decoration:underline; text-underline-offset:2px;
+  cursor:pointer; font-weight:400; }
+body.dark .sl-link { color:var(--strong); }
+
+/* Delta: neutral by default, severity only when it crosses tolerance. */
+.sl-delta { font-variant-numeric:tabular-nums; }
+.sl-delta.over { color:var(--strong); font-weight:500; }
+
+.sl-foot { display:flex; align-items:center; justify-content:space-between; gap:16px;
+  border-top:1px solid var(--border); padding-top:14px; margin-top:6px; flex-wrap:wrap;
+  font-size:13px; color:var(--soft); letter-spacing:-0.26px; }
+
+/* ── Empty state ────────────────────────────────────────────────────────── */
+
+.sl-empty { display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center;
+  padding:56px 24px; border:1px dashed var(--border); border-radius:var(--radius-md); }
+.sl-empty-t { font-size:16px; font-weight:500; color:var(--strong); letter-spacing:-0.32px; }
+.sl-empty-s { font-size:13px; color:var(--soft); letter-spacing:-0.26px; max-width:380px; line-height:1.5; }
+
+/* ── Mobile card list (replaces the table) ─────────────────────────────── */
+
+.sl-cards { display:none; flex-direction:column; gap:8px; padding:4px 0; }
+body.view-mobile .sl-cards { display:flex; }
+body.view-mobile .sl-table-wrap, body.view-mobile .sl-foot { display:none; }
+
+.sl-card { border:1px solid var(--border); border-radius:var(--radius-md); padding:14px;
+  display:flex; flex-direction:column; gap:8px; cursor:pointer; background:var(--layer-1); }
+.sl-card:active { border-color:var(--border-mid); }
+.sl-card-top { display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+.sl-card-m { font-size:24px; font-weight:500; color:var(--strong); letter-spacing:-0.72px; line-height:1; }
+.sl-card-m span { font-size:13px; font-weight:400; color:var(--soft); margin-left:4px; letter-spacing:-0.26px; }
+.sl-card-k { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:12.5px; color:var(--soft); letter-spacing:-0.25px; }
+.sl-card-k b { color:var(--defined); font-weight:400; }
+
+/* ── Quick add: the floating action, mobile only ───────────────────────── */
+
+.sl-fab { display:none; position:absolute; right:16px; bottom:22px; z-index:120;
+  align-items:center; gap:9px; height:52px; padding:0 22px; border:none; cursor:pointer;
+  border-radius:var(--radius-pill, 32px); background:var(--am-select); color:var(--am-on-select);
+  font-family:var(--font); font-size:15px; font-weight:500; letter-spacing:-0.3px;
+  box-shadow:0 6px 20px rgba(54,50,45,0.22); }
+body.view-mobile #mob-page-slump .sl-fab { display:inline-flex; }
+body.dark .sl-fab { box-shadow:0 6px 20px rgba(0,0,0,0.5); }
+
+/* ── Sidebar quick add (desktop + tablet). Extension: not in today's IA. ─ */
+
+.sl-quick { display:flex; align-items:center; gap:9px; margin:0 8px 10px; height:42px; padding:0 14px;
+  border:none; cursor:pointer; border-radius:var(--radius-pill, 32px);
+  background:var(--am-select); color:var(--am-on-select);
+  font-family:var(--font); font-size:14px; font-weight:500; letter-spacing:-0.28px; width:calc(100% - 16px); }
+.sl-quick:hover { filter:brightness(1.06); }
+.sl-quick-hint { margin-left:auto; font-size:11.5px; font-weight:400; opacity:0.72; white-space:nowrap; }
+
+/* ── Drawer. The account module's drawer, mounted at .phone level so it
+   stays inside whichever device frame is showing. ─────────────────────── */
+
+#sl-drawer { display:none; position:absolute; inset:0; z-index:9350; font-family:var(--font);
+  align-items:stretch; justify-content:flex-end; opacity:1; transition:opacity 0.2s ease; }
+#sl-drawer.am-out { opacity:0; pointer-events:none; }
+#sl-drawer.am-out .am-drawer { transform:translateX(100%); }
+#sl-drawer .am-drawer { width:min(680px, calc(100% - 56px)); }
+body.view-tablet #sl-drawer .am-drawer { width:calc(100% - 40px); }
+body.view-mobile #sl-drawer .am-drawer { width:100%; border-left:none; }
+.sl-dr-title { font-size:24px; letter-spacing:-0.72px; gap:10px; }
+.sl-dr-sub { font-size:14px; color:var(--soft); }
+.sl-dr-body { padding:22px 30px 40px; }
+body.view-mobile .sl-dr-body { padding:16px 16px 24px; }
+
+/* Sticky commit bar at the foot of the drawer */
+.sl-dr-foot { flex-shrink:0; border-top:1px solid var(--border); padding:14px 30px;
+  display:flex; align-items:center; gap:10px; background:var(--layer-1); }
+body.view-mobile .sl-dr-foot { padding:12px 16px; }
+.sl-dr-foot .sl-spacer { flex:1; }
+
+/* ── Stepper rail inside the quick add drawer ──────────────────────────── */
+
+.sl-steps { display:flex; align-items:center; gap:0; padding:0 30px 18px; flex-shrink:0; }
+body.view-mobile .sl-steps { padding:0 16px 14px; }
+.sl-step { display:flex; align-items:center; gap:8px; font-size:12.5px; letter-spacing:-0.25px;
+  color:var(--subtle); white-space:nowrap; }
+.sl-step-n { width:22px; height:22px; border-radius:50%; border:1px solid var(--border);
+  display:inline-flex; align-items:center; justify-content:center; font-size:11.5px; flex-shrink:0; }
+.sl-step.on { color:var(--strong); }
+.sl-step.on .sl-step-n { background:var(--am-select); color:var(--am-on-select); border-color:transparent; font-weight:500; }
+.sl-step.done { color:var(--defined); cursor:pointer; }
+.sl-step.done .sl-step-n { border-color:var(--border-mid); }
+.sl-step-line { flex:1; height:1px; background:var(--border); margin:0 10px; min-width:12px; }
+body.view-mobile .sl-step-lbl { display:none; }
+
+/* ── Step 1: load picker ───────────────────────────────────────────────── */
+
+.sl-pick-search { display:flex; align-items:center; gap:9px; border:1px solid var(--border);
+  border-radius:var(--radius-pill, 32px); padding:0 16px; height:44px; background:var(--layer-1);
+  margin-bottom:14px; }
+.sl-pick-search input { flex:1; min-width:0; border:none; background:none; outline:none;
+  font-family:var(--font); font-size:14px; color:var(--strong); letter-spacing:-0.28px; }
+.sl-pick-search input::placeholder { color:var(--subtle); }
+
+.sl-group-h { display:flex; align-items:center; gap:8px; font-size:11px; font-weight:500;
+  color:var(--subtle); text-transform:uppercase; letter-spacing:0.05em; margin:18px 0 8px; }
+.sl-group-h:first-child { margin-top:0; }
+.sl-group-h i { flex:1; height:1px; background:var(--border); font-style:normal; }
+
+.sl-load { display:grid; grid-template-columns:auto minmax(0, 1fr) auto; gap:4px 14px;
+  align-items:center; width:100%; text-align:left; border:1px solid var(--border);
+  border-radius:var(--radius-md); padding:12px 14px; background:var(--layer-1); cursor:pointer;
+  margin-bottom:8px; font-family:var(--font); }
+.sl-load:hover { border-color:var(--border-mid); }
+.sl-load.on { border-color:var(--blue); box-shadow:inset 0 0 0 1px var(--blue); }
+body.dark .sl-load.on { border-color:var(--strong); box-shadow:inset 0 0 0 1px var(--strong); }
+.sl-load-truck { grid-row:span 2; font-size:19px; font-weight:500; color:var(--strong);
+  letter-spacing:-0.38px; padding-right:14px; border-right:1px solid var(--border); align-self:stretch;
+  display:flex; flex-direction:column; justify-content:center; gap:2px; }
+.sl-load-truck small { display:block; font-size:10.5px; font-weight:500; color:var(--subtle);
+  text-transform:uppercase; letter-spacing:0.05em; }
+.sl-load-main { font-size:14px; color:var(--strong); letter-spacing:-0.28px; }
+.sl-load-meta { grid-column:2; font-size:12.5px; color:var(--soft); letter-spacing:-0.25px;
+  display:flex; flex-wrap:wrap; gap:2px 12px; }
+.sl-load-right { grid-row:span 2; display:flex; flex-direction:column; align-items:flex-end; gap:5px; }
+.sl-load-t { font-size:12.5px; color:var(--soft); letter-spacing:-0.25px; white-space:nowrap; }
+
+/* ── Step 2: pour picker. The field that does not exist today. ─────────── */
+
+.sl-pours { display:flex; flex-direction:column; gap:8px; }
+.sl-pour { display:grid; grid-template-columns:auto minmax(0, 1fr) auto; gap:3px 14px; align-items:center;
+  width:100%; text-align:left; border:1px solid var(--border); border-radius:var(--radius-md);
+  padding:14px; background:var(--layer-1); cursor:pointer; font-family:var(--font); }
+.sl-pour:hover { border-color:var(--border-mid); }
+.sl-pour.on { border-color:var(--blue); box-shadow:inset 0 0 0 1px var(--blue); }
+body.dark .sl-pour.on { border-color:var(--strong); box-shadow:inset 0 0 0 1px var(--strong); }
+.sl-pour-n { grid-row:span 2; width:44px; height:44px; border-radius:50%; background:var(--layer-2);
+  display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:500;
+  color:var(--strong); letter-spacing:-0.3px; flex-shrink:0; }
+.sl-pour.on .sl-pour-n { background:var(--am-select); color:var(--am-on-select); }
+.sl-pour-t { font-size:15px; font-weight:500; color:var(--strong); letter-spacing:-0.3px; }
+.sl-pour-s { grid-column:2; font-size:12.5px; color:var(--soft); letter-spacing:-0.25px;
+  display:flex; flex-wrap:wrap; gap:2px 12px; }
+.sl-pour-r { grid-row:span 2; text-align:right; font-size:12.5px; color:var(--soft);
+  letter-spacing:-0.25px; white-space:nowrap; }
+.sl-pour-r b { display:block; font-size:15px; font-weight:500; color:var(--strong); letter-spacing:-0.3px; }
+
+/* ── Step 3: measurement ──────────────────────────────────────────────── */
+
+.sl-measure { display:flex; flex-direction:column; align-items:center; gap:4px;
+  background:var(--layer-2); border-radius:var(--radius-md); padding:22px 16px; margin-bottom:18px; }
+.sl-measure-k { font-size:11px; font-weight:500; color:var(--subtle); text-transform:uppercase;
+  letter-spacing:0.05em; }
+.sl-stepper { display:flex; align-items:center; gap:18px; }
+.sl-step-btn { width:56px; height:56px; border-radius:50%; border:1px solid var(--border-mid);
+  background:var(--layer-1); cursor:pointer; font-family:var(--font); font-size:26px; font-weight:400;
+  line-height:1; color:var(--strong); flex-shrink:0; }
+.sl-step-btn:hover { border-color:var(--strong); }
+.sl-step-btn:active { background:var(--layer-2); }
+.sl-measure-v { font-size:52px; font-weight:500; color:var(--strong); letter-spacing:-1.56px;
+  line-height:1; min-width:150px; text-align:center; font-variant-numeric:tabular-nums; }
+.sl-measure-v small { font-size:17px; font-weight:400; color:var(--soft); letter-spacing:-0.34px; margin-left:6px; }
+.sl-measure-h { font-size:12.5px; color:var(--soft); letter-spacing:-0.25px; margin-top:6px; text-align:center; }
+.sl-measure-h b { color:var(--strong); font-weight:500; }
+
+.sl-field { margin-bottom:16px; }
+.sl-flabel { font-size:13px; font-weight:500; color:var(--strong); letter-spacing:-0.26px; margin-bottom:7px;
+  display:flex; align-items:center; gap:8px; }
+.sl-flabel span { font-weight:400; color:var(--subtle); }
+.sl-input { width:100%; box-sizing:border-box; background:var(--layer-2); border:1px solid var(--border);
+  border-radius:var(--radius-pill, 32px); padding:0 18px; height:48px; font-family:var(--font);
+  font-size:15px; color:var(--strong); letter-spacing:-0.3px; outline:none; }
+.sl-input:focus { border-color:var(--blue); }
+.sl-input::placeholder { color:var(--subtle); }
+textarea.sl-input { height:auto; min-height:80px; padding:14px 18px; border-radius:var(--radius-md);
+  resize:vertical; line-height:1.5; }
+.sl-fgrid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+body.view-mobile .sl-fgrid { grid-template-columns:1fr; }
+
+.sl-choice { display:flex; gap:8px; flex-wrap:wrap; }
+.sl-choice-btn { flex:1 1 0; min-width:120px; border:1px solid var(--border); background:var(--layer-1);
+  border-radius:var(--radius-md); padding:14px; cursor:pointer; font-family:var(--font);
+  font-size:14px; color:var(--defined); letter-spacing:-0.28px; text-align:left; }
+.sl-choice-btn small { display:block; font-size:12px; color:var(--subtle); margin-top:3px; letter-spacing:-0.24px; }
+.sl-choice-btn:hover { border-color:var(--border-mid); }
+.sl-choice-btn.on { border-color:var(--blue); box-shadow:inset 0 0 0 1px var(--blue); color:var(--strong); }
+body.dark .sl-choice-btn.on { border-color:var(--strong); box-shadow:inset 0 0 0 1px var(--strong); }
+
+.sl-disclose { background:none; border:none; padding:0; cursor:pointer; font-family:var(--font);
+  font-size:13.5px; font-weight:500; color:var(--blue-link); letter-spacing:-0.27px;
+  display:inline-flex; align-items:center; gap:7px; margin:4px 0 16px; }
+body.dark .sl-disclose { color:var(--strong); }
+
+.sl-photo { display:flex; align-items:center; gap:14px; border:1px dashed var(--border);
+  border-radius:var(--radius-md); padding:16px; cursor:pointer; background:none;
+  font-family:var(--font); width:100%; text-align:left; }
+.sl-photo:hover { border-color:var(--border-mid); }
+.sl-photo-i { width:44px; height:44px; border-radius:var(--radius-sm); background:var(--layer-2);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.sl-photo-t { font-size:14px; font-weight:500; color:var(--strong); letter-spacing:-0.28px; }
+.sl-photo-s { font-size:12.5px; color:var(--soft); letter-spacing:-0.25px; margin-top:2px; }
+
+/* ── Step 4: confirm. The derived record, so a wrong pick is caught here. ─ */
+
+.sl-confirm-hero { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
+  background:var(--layer-2); border-radius:var(--radius-md); padding:18px; margin-bottom:6px; }
+.sl-confirm-v { font-size:38px; font-weight:500; color:var(--strong); letter-spacing:-1.14px; line-height:1; }
+.sl-confirm-v small { font-size:15px; font-weight:400; color:var(--soft); letter-spacing:-0.3px; margin-left:5px; }
+.sl-confirm-d { font-size:13px; color:var(--soft); letter-spacing:-0.26px; margin-left:auto; text-align:right; }
+.sl-confirm-d b { display:block; font-size:17px; font-weight:500; color:var(--strong); letter-spacing:-0.34px; }
+
+.sl-kv { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:14px 18px;
+  background:var(--layer-2); border-radius:var(--radius-md); padding:16px; margin-bottom:8px; }
+body.view-mobile .sl-kv { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+.sl-k { font-size:10.5px; font-weight:500; color:var(--subtle); text-transform:uppercase;
+  letter-spacing:0.05em; margin-bottom:3px; }
+.sl-v { font-size:14px; color:var(--strong); letter-spacing:-0.14px; }
+.sl-v small { display:block; font-size:12px; color:var(--soft); margin-top:1px; }
+.sl-sec { font-size:11px; font-weight:500; color:var(--subtle); text-transform:uppercase;
+  letter-spacing:0.05em; margin:20px 0 8px; }
+.sl-auto-note { display:flex; gap:9px; align-items:flex-start; font-size:12.5px; color:var(--soft);
+  letter-spacing:-0.25px; line-height:1.5; margin:8px 0 0; }
+.sl-auto-note b { color:var(--strong); font-weight:500; }
+
+/* ── Validation notices. Severity grammar: error / warning / info. ─────── */
+
+.sl-notice { display:flex; align-items:flex-start; gap:10px; border-radius:var(--radius-sm);
+  padding:11px 14px; font-size:13px; color:var(--defined); letter-spacing:-0.13px;
+  line-height:1.5; margin-bottom:10px; background:var(--layer-2); border-left:3px solid var(--border-mid); }
+.sl-notice b { color:var(--strong); font-weight:500; }
+.sl-notice--error { border-left-color:var(--red); }
+.sl-notice--warning { border-left-color:var(--amber); }
+.sl-notice--info { border-left-color:var(--blue); }
+.sl-notice-x { margin-left:auto; background:none; border:none; cursor:pointer; padding:0;
+  font-family:var(--font); font-size:12.5px; font-weight:500; color:var(--blue-link);
+  white-space:nowrap; letter-spacing:-0.25px; }
+body.dark .sl-notice-x { color:var(--strong); }
+
+/* ── Batch grid. The notebook case: many rows, keyboard, one date. ─────── */
+
+.sl-batch-bar { display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  background:var(--layer-2); border-radius:var(--radius-md); padding:14px 16px; margin-bottom:14px; }
+.sl-batch-bar .sl-bb-k { font-size:10.5px; font-weight:500; color:var(--subtle);
+  text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px; }
+.sl-bb-field { display:flex; flex-direction:column; }
+.sl-bb-input { background:var(--layer-1); border:1px solid var(--border); border-radius:var(--radius-sm);
+  padding:0 12px; height:38px; font-family:var(--font); font-size:14px; color:var(--strong);
+  letter-spacing:-0.28px; outline:none; }
+.sl-bb-input:focus { border-color:var(--blue); }
+.sl-bb-note { font-size:12.5px; color:var(--soft); letter-spacing:-0.25px; line-height:1.45;
+  max-width:340px; margin-left:auto; }
+
+.sl-grid-wrap { overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius-md);
+  margin-bottom:14px; }
+.sl-grid { min-width:940px; display:flex; flex-direction:column; }
+.sl-grow { display:grid; grid-template-columns:minmax(180px, 1.4fr) 132px 96px 108px 88px 96px 84px 40px;
+  gap:0; align-items:stretch; border-bottom:1px solid var(--border); }
+.sl-grow:last-child { border-bottom:none; }
+.sl-grow.sl-ghead { background:var(--layer-2); }
+.sl-gcell { padding:0; border-right:1px solid var(--border); min-width:0; display:flex; align-items:stretch; }
+.sl-gcell:last-child { border-right:none; }
+.sl-ghead .sl-gcell { padding:9px 12px; font-size:12px; font-weight:500; color:var(--strong);
+  letter-spacing:-0.24px; align-items:center; }
+.sl-gin { width:100%; min-width:0; border:none; background:none; outline:none; font-family:var(--font);
+  font-size:13.5px; color:var(--strong); letter-spacing:-0.27px; padding:0 12px; height:46px; }
+.sl-gin::placeholder { color:var(--subtle); }
+.sl-gin:focus { background:rgba(48,105,227,0.05); }
+body.dark .sl-gin:focus { background:rgba(227,242,0,0.07); }
+select.sl-gin { cursor:pointer; appearance:none; -webkit-appearance:none; }
+.sl-gin.sl-bad { background:rgba(215,1,0,0.07); }
+.sl-gx { background:none; border:none; cursor:pointer; width:100%; color:var(--subtle);
+  font-size:16px; line-height:1; font-family:var(--font); }
+.sl-gx:hover { color:var(--red); }
+.sl-grid-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+
+body.view-mobile .sl-batch-bar { flex-direction:column; align-items:stretch; }
+body.view-mobile .sl-bb-note { margin-left:0; max-width:none; }
+
+/* ── Detail drawer body bits ───────────────────────────────────────────── */
+
+.sl-trace { display:flex; align-items:flex-end; gap:3px; height:64px; padding:14px 16px;
+  background:var(--layer-2); border-radius:var(--radius-md); margin-bottom:8px; }
+.sl-trace i { flex:1; min-width:0; background:var(--border-mid); border-radius:1px; display:block; }
+.sl-trace i.on { background:var(--strong); }
+.sl-trace-x { display:flex; justify-content:space-between; font-size:11px; color:var(--subtle);
+  letter-spacing:-0.22px; padding:0 16px; margin-bottom:16px; }
+
+.sl-dr-actions { display:flex; gap:8px; flex-wrap:wrap; border-top:1px solid var(--border);
+  padding-top:16px; margin-top:20px; }
+/* Destructive action. Outline, never solid, and never beside a solid primary —
+   the drawer's commit bar is empty on a saved test, so this is the only
+   emphasis in the container. */
+.sl-dr-actions .sl-danger-pill { color:var(--red); border-color:var(--border); }
+.sl-dr-actions .sl-danger-pill:hover { border-color:var(--red); }
+body.view-mobile .sl-dr-actions .am-pill { flex:1 1 100%; justify-content:center; }
+
+/* ── Responsive: tablet ────────────────────────────────────────────────── */
+
+body.view-tablet .am-title.sl-title { font-size:24px; }
+body.view-tablet .sl-stats { display:grid; grid-template-columns:1fr 1fr; gap:16px 0; }
+body.view-tablet .sl-stat:nth-child(2) { border-right:none; }
+body.view-tablet .sl-stat:nth-child(3) { padding-left:0; }
+body.view-tablet .sl-stat-v { font-size:28px; }
+body.view-tablet .sl-kv { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+
+/* ── Responsive: mobile ───────────────────────────────────────────────── */
+
+body.view-mobile .am-title.sl-title { font-size:22px; }
+body.view-mobile .sl-head, body.view-mobile .sl-toolbar { flex-direction:column; align-items:stretch; }
+body.view-mobile .sl-head-actions { width:100%; }
+body.view-mobile .sl-head-actions .am-pill { flex:1; justify-content:center; }
+body.view-mobile .sl-tb-right { margin-left:0; flex-wrap:wrap; }
+body.view-mobile .sl-seg { width:100%; overflow-x:auto; }
+body.view-mobile .sl-seg-btn { flex:1; padding:0 8px; font-size:12.5px; }
+body.view-mobile .sl-stats { display:flex; flex-direction:column; }
+body.view-mobile .sl-stat { border-right:none; padding:0 0 14px; border-bottom:1px solid var(--border); }
+body.view-mobile .sl-stat:last-child { border-bottom:none; padding-bottom:0; }
+body.view-mobile .sl-stat-v { font-size:30px; }
+body.view-mobile .sl-load-truck { font-size:17px; }
+body.view-mobile .sl-measure-v { font-size:44px; min-width:120px; }
+body.view-mobile .sl-step-btn { width:52px; height:52px; }
+body.view-mobile .sl-batch-wrap { display:none; }
+
+/* ── Concept marker ───────────────────────────────────────────────────────
+   This page is an idea, not a change to the product. The strip is deliberately
+   NOT dismissible: a dismissed banner disappears from screenshots, which is
+   exactly where the misunderstanding starts. Neutral ramp, not amber — amber
+   and red are reserved for data alerts and a concept label is not an alert. */
+
+.sl-wip { display:flex; align-items:flex-start; gap:12px; margin-bottom:20px;
+  padding:13px 16px; border:1px dashed var(--border-mid); border-radius:var(--radius-md);
+  background:var(--layer-2); }
+.sl-wip-tag { flex-shrink:0; display:inline-flex; align-items:center; height:22px; padding:0 10px;
+  border-radius:var(--radius-pill, 32px); background:var(--strong); color:var(--base);
+  font-size:10.5px; font-weight:500; letter-spacing:0.06em; text-transform:uppercase; }
+.sl-wip-t { font-size:13px; color:var(--defined); letter-spacing:-0.26px; line-height:1.5; }
+.sl-wip-t b { color:var(--strong); font-weight:500; }
+body.view-mobile .sl-wip { flex-direction:column; gap:9px; }
+
+/* Sidebar pill. Outline in the neutral ramp so it never reads like the blue
+   "New" pill on Returned Concrete, which marks something that shipped. */
+.sl-nav-pill { font-size:10.5px; font-weight:500; color:var(--soft); border:1.5px solid var(--border-mid);
+  border-radius:var(--radius-pill, 32px); padding:1px 7px; letter-spacing:0.04em;
+  text-transform:uppercase; white-space:nowrap; }
+
+/* Drawer + wizard header tag, so a screenshot of the flow carries the label. */
+.sl-dr-title .sl-wip-tag { align-self:center; }
+
+/* The desktop/tablet sub-nav rows are plain divs, so give them a row layout
+   once a pill is present. Scoped by id so no other nav row is touched. */
+#dt-nav-slump, #tb-nav-slump { display:flex; align-items:center; gap:8px; }
+/* --base flips with the mode and is the correct contrast against both active
+   fills: light on blue in light mode, dark on lime in dark mode. One rule. */
+#dt-nav-slump[data-active] .sl-nav-pill, #tb-nav-slump[data-active] .sl-nav-pill {
+  color:var(--base); border-color:var(--base); }
+
+/* The photo row's title and subtitle were inline spans, so they ran together
+   on one line. Both are block-level. */
+.sl-photo-t, .sl-photo-s { display:block; }
+
+/* ── Coming soon gate ─────────────────────────────────────────────────────
+   Centred panel on an otherwise empty page. Neutral ramp: this is a status,
+   not an alert, so nothing here borrows red or amber. */
+
+.sl-scroll--gated { align-items:center; justify-content:center; }
+.sl-gate { display:flex; flex-direction:column; align-items:flex-start; gap:14px;
+  max-width:520px; padding:32px; border:1px dashed var(--border-mid);
+  border-radius:var(--radius-lg); background:var(--layer-2); }
+.sl-gate-tag { display:inline-flex; align-items:center; height:24px; padding:0 12px;
+  border-radius:var(--radius-pill, 32px); background:var(--strong); color:var(--base);
+  font-size:10.5px; font-weight:500; letter-spacing:0.06em; text-transform:uppercase; }
+.sl-gate-t { font-size:24px; font-weight:500; color:var(--strong); letter-spacing:-0.72px;
+  line-height:1.2; margin-top:2px; }
+.sl-gate-s { font-size:14px; color:var(--defined); letter-spacing:-0.14px; line-height:1.6; }
+.sl-gate .am-pill { margin-top:4px; }
+body.view-mobile .sl-gate { padding:22px; }
+body.view-mobile .sl-gate-t { font-size:20px; }
+
+/* The concept strip's "Hide again" sits at the end of the copy, not floated
+   away from it, since the strip is a column on mobile. */
+.sl-wip .sl-notice-x { align-self:flex-start; flex-shrink:0; }
+
+/* Sub-nav label. The other Tickets children carry their colour inline in
+   index.html; this one is driven from CSS instead, because slNavLight used to
+   clear the inline value and left the row near-black. The literal rgba is the
+   value the sibling rows use, kept verbatim so the four items match. */
+#dt-nav-slump .sl-nav-lbl, #tb-nav-slump .sl-nav-lbl { flex:1; min-width:0;
+  color:rgba(54,50,45,0.5); }
+body.dark #dt-nav-slump .sl-nav-lbl, body.dark #tb-nav-slump .sl-nav-lbl { color:var(--subtle); }
+#dt-nav-slump[data-active] .sl-nav-lbl, #tb-nav-slump[data-active] .sl-nav-lbl {
+  color:#fff; font-weight:500; }
+body.dark #dt-nav-slump[data-active] .sl-nav-lbl,
+body.dark #tb-nav-slump[data-active] .sl-nav-lbl { color:#000; }
+
+
+/* ═══ FILE: app-25-batch.css ══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   app-25-batch.css
+   BATCH ASSISTANT — plant-scoped live monitoring (app-25)
+   ---------------------------------------------------------------------------
+   Prefix: ba-
+
+   Page shell mirrors #dt-page-returned: a flex column that owns its own
+   scroller. Responsive rules key off body classes, never media queries.
+
+   Two hardcoded color families, both mandated rather than chosen:
+
+     --ba-state-*   the in-cab load management colors (HUB-2541). Grey /
+                    Orange / Green / Blue are what the driver already sees on
+                    the drum display, so the batchman's screen has to agree.
+                    Same exception as the phase pills in shared.css.
+     --ba-up-*      buildup status green / amber / red (HUB-2390). Severity,
+                    so it borrows the alert ramp rather than inventing one.
+
+   Everything else is tokens.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --ba-state-measured:    #1f7a3d;  /* green  — Verifi measured it            */
+  --ba-state-water:       #b5610f;  /* orange — managed with water            */
+  --ba-state-admix:       #1e5f9c;  /* blue   — managed with admix            */
+  --ba-state-none:        #5c5852;  /* grey   — not measured                  */
+  --ba-up-ok:             #1f7a3d;
+  --ba-up-warn:           #b5610f;
+  --ba-up-bad:            #a51513;
+}
+body.dark {
+  --ba-state-measured:    #7fd39a;
+  --ba-state-water:       #f0b878;
+  --ba-state-admix:       #8ec4f0;
+  --ba-state-none:        #a8a49d;
+  --ba-up-ok:             #7fd39a;
+  --ba-up-warn:           #f0b878;
+  --ba-up-bad:            #f09b99;
+}
+
+/* ── Page shell ─────────────────────────────────────────────────────────── */
+
+#dt-page-batch { display:none; flex-direction:column; flex:1; min-width:0; min-height:0;
+  overflow:hidden; background:var(--layer-1); font-family:var(--font); }
+#dt-page-batch .ba-scroll { flex:1; min-height:0; overflow-y:auto; padding:26px 32px 40px;
+  display:flex; flex-direction:column; }
+#ba-tb-mount .ba-scroll, #ba-mob-mount .ba-scroll { flex:1; min-height:0; overflow-y:auto;
+  -webkit-overflow-scrolling:touch; display:flex; flex-direction:column; }
+#ba-tb-mount .ba-scroll { padding:18px 18px 32px; }
+#ba-mob-mount .ba-scroll { padding:14px 14px 32px; }
+
+#tb-page-batch { display:none; flex:1; flex-direction:column; min-height:0; overflow:hidden;
+  background:var(--layer-1); font-family:var(--font); }
+
+/* Mobile pages are an absolute overlay inside the phone frame, not a sibling
+   in the flow. This was position:relative, so the page rendered underneath
+   the screen it came from instead of covering it — two hamburger bars, the
+   Diagnostic Center still showing through. Values match #mob-page-returned
+   and #mob-page-insights exactly, including the 54px status-bar inset. */
+#mob-page-batch { display:none; position:absolute; inset:0; z-index:200;
+  background:var(--layer-1); flex-direction:column; overflow:hidden;
+  padding-top:54px; font-family:var(--font); }
+body.view-mobile.orient-landscape #mob-page-batch { padding-top:0; padding-left:52px; }
+body.view-mobile.orient-landscape #mob-page-batch .top-nav { padding-top:6px; padding-bottom:6px; }
+
+/* The mounts have to be flex containers themselves, or .ba-scroll's flex:1 has
+   nothing to measure against and the page does not scroll. */
+#ba-tb-mount, #ba-mob-mount { flex:1; min-height:0; display:flex; flex-direction:column;
+  overflow:hidden; }
+
+/* ── Concept marker ────────────────────────────────────────────────────── */
+
+.ba-wip { display:flex; align-items:flex-start; gap:12px; margin-bottom:20px;
+  padding:13px 16px; border:1px dashed var(--border-mid); border-radius:var(--radius-md);
+  background:var(--layer-2); }
+.ba-wip-tag { flex-shrink:0; display:inline-flex; align-items:center; height:22px; padding:0 10px;
+  border-radius:var(--radius-pill, 32px); background:var(--strong); color:var(--base);
+  font-size:10.5px; font-weight:500; letter-spacing:0.06em; text-transform:uppercase; }
+.ba-wip-t { font-size:13px; color:var(--defined); letter-spacing:-0.26px; line-height:1.5; }
+.ba-wip-t b { color:var(--strong); font-weight:500; }
+body.view-mobile .ba-wip { flex-direction:column; gap:9px; }
+.ba-nav-pill { font-size:10.5px; font-weight:500; color:var(--soft); border:1.5px solid var(--border-mid);
+  border-radius:var(--radius-pill, 32px); padding:1px 7px; letter-spacing:0.04em;
+  text-transform:uppercase; white-space:nowrap; }
+#dt-nav-batch[data-active] .ba-nav-pill, #tb-nav-batch[data-active] .ba-nav-pill {
+  color:var(--base); border-color:var(--base); }
+
+/* ── Head ───────────────────────────────────────────────────────────────── */
+
+.ba-head { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; flex-wrap:wrap; }
+.ba-title { margin-bottom:4px; }
+.ba-sub { font-size:13px; color:var(--soft); letter-spacing:-0.26px; margin-bottom:20px;
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.ba-sub b { color:var(--strong); font-weight:500; }
+.ba-head-actions { display:flex; gap:10px; flex-shrink:0; align-items:center; }
+
+/* Live indicator. The one place a green dot is not a severity signal: it means
+   the feed is connected. Paired with the word "Live" so it never stands alone. */
+.ba-live { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:500;
+  color:var(--defined); letter-spacing:-0.25px; white-space:nowrap; }
+.ba-live-dot { width:8px; height:8px; border-radius:50%; background:var(--ba-up-ok);
+  box-shadow:0 0 0 3px rgba(31,122,61,0.16); }
+body.dark .ba-live-dot { box-shadow:0 0 0 3px rgba(127,211,154,0.18); }
+.ba-live.off { color:var(--subtle); }
+.ba-live.off .ba-live-dot { background:var(--subtle); box-shadow:none; }
+
+/* ── Plant scope. Requested twice: lock a profile to one plant (HUB-3966)
+   and filter by plant inside a location (VSE-620). One control, both jobs. ─ */
+
+.ba-scope { position:relative; }
+.ba-scope-btn { display:inline-flex; align-items:center; gap:10px; height:44px; padding:0 16px;
+  border:1px solid var(--border); border-radius:var(--radius-pill, 32px); background:var(--layer-1);
+  cursor:pointer; font-family:var(--font); font-size:14px; color:var(--strong); letter-spacing:-0.28px; }
+.ba-scope-btn:hover { border-color:var(--border-mid); }
+.ba-scope-btn small { font-size:10.5px; font-weight:500; color:var(--subtle);
+  text-transform:uppercase; letter-spacing:0.05em; }
+.ba-pop { position:absolute; top:calc(100% + 8px); left:0; z-index:200; min-width:280px;
+  background:var(--layer-1); border:1px solid var(--border); border-radius:var(--radius-md);
+  box-shadow:0 12px 34px rgba(54,50,45,0.18); padding:8px; }
+body.dark .ba-pop { box-shadow:0 12px 34px rgba(0,0,0,0.55); }
+.ba-pop--right { left:auto; right:0; }
+.ba-pop-h { font-size:10.5px; font-weight:500; color:var(--subtle); text-transform:uppercase;
+  letter-spacing:0.05em; padding:8px 10px 6px; }
+.ba-pop-row { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:var(--radius-sm);
+  cursor:pointer; font-size:14px; color:var(--defined); letter-spacing:-0.28px; }
+.ba-pop-row:hover { background:var(--layer-2); }
+.ba-pop-row.on { color:var(--strong); font-weight:500; }
+.ba-pop-row .ba-tick { width:16px; flex-shrink:0; color:var(--blue); }
+body.dark .ba-pop-row .ba-tick { color:var(--strong); }
+.ba-pop-row .ba-count { margin-left:auto; font-size:12.5px; color:var(--subtle); font-weight:400; }
+.ba-pop-div { height:1px; background:var(--border); margin:6px 4px; }
+.ba-pop-note { font-size:12px; color:var(--soft); letter-spacing:-0.24px; line-height:1.45;
+  padding:4px 10px 8px; }
+
+/* Lock switch */
+.ba-lock { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:var(--radius-sm);
+  cursor:pointer; font-size:13.5px; color:var(--defined); letter-spacing:-0.27px; }
+.ba-lock:hover { background:var(--layer-2); }
+.ba-switch { width:34px; height:20px; border-radius:var(--radius-pill, 32px); background:var(--border-mid);
+  flex-shrink:0; position:relative; transition:background 0.16s; }
+.ba-switch i { position:absolute; top:3px; left:3px; width:14px; height:14px; border-radius:50%;
+  background:var(--layer-1); transition:transform 0.16s; display:block; }
+.ba-lock.on .ba-switch { background:var(--am-select); }
+.ba-lock.on .ba-switch i { transform:translateX(14px); background:var(--am-on-select); }
+
+/* ── Stat band. Reads as one sentence, like the live screen does. ───────── */
+
+.ba-stats { display:flex; align-items:stretch; border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border); padding:16px 0; margin-bottom:20px; }
+.ba-stat { flex:1; min-width:0; padding:0 22px; border-right:1px solid var(--border);
+  display:flex; flex-direction:column; gap:5px; }
+.ba-stat:first-child { padding-left:0; }
+.ba-stat:last-child { border-right:none; }
+.ba-stat-l { font-size:13px; color:var(--soft); letter-spacing:-0.26px; }
+.ba-stat-v { font-size:30px; font-weight:500; color:var(--strong); letter-spacing:-0.9px; line-height:1; }
+.ba-stat-v small { font-size:14px; font-weight:400; letter-spacing:-0.28px; color:var(--soft); margin-left:5px; }
+.ba-stat-m { font-size:12px; color:var(--subtle); letter-spacing:-0.24px; min-height:17px; }
+.ba-stat button { background:none; border:none; padding:0; cursor:pointer; font-family:var(--font);
+  font-size:12px; color:var(--blue-link); letter-spacing:-0.24px; text-align:left; }
+body.dark .ba-stat button { color:var(--strong); }
+
+/* ── Tabs ───────────────────────────────────────────────────────────────── */
+
+.ba-tabs { display:flex; gap:22px; border-bottom:1px solid var(--border); margin-bottom:18px; }
+.ba-tab { background:none; border:none; padding:0 0 10px; cursor:pointer; font-family:var(--font);
+  font-size:14px; color:var(--soft); letter-spacing:-0.28px; position:relative;
+  display:inline-flex; align-items:center; gap:7px; white-space:nowrap; }
+.ba-tab:hover { color:var(--strong); }
+.ba-tab.on { color:var(--strong); }
+.ba-tab.on::after { content:''; position:absolute; left:0; right:0; bottom:-1px; height:2px;
+  background:var(--strong); }
+.ba-tab-n { font-size:11.5px; font-weight:500; color:var(--soft); background:var(--layer-2);
+  border-radius:var(--radius-pill, 32px); padding:1px 8px; }
+body.view-mobile .ba-tabs { overflow-x:auto; gap:16px; }
+
+/* ── Toolbar ────────────────────────────────────────────────────────────── */
+
+.ba-toolbar { display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+.ba-tb-right { margin-left:auto; display:flex; gap:10px; align-items:center; position:relative; }
+
+/* ── Section panels ────────────────────────────────────────────────────── */
+
+.ba-panel { border:1px solid var(--border); border-radius:var(--radius-md); margin-bottom:18px;
+  overflow:hidden; }
+.ba-panel-h { display:flex; align-items:center; gap:12px; padding:14px 16px;
+  border-bottom:1px solid var(--border); background:var(--layer-2); }
+.ba-panel-t { font-size:15px; font-weight:500; color:var(--strong); letter-spacing:-0.3px; }
+.ba-panel-s { font-size:12.5px; color:var(--soft); letter-spacing:-0.25px; }
+.ba-panel-r { margin-left:auto; display:flex; gap:8px; align-items:center; }
+.ba-panel-b { padding:0; }
+.ba-panel-b--pad { padding:16px; }
+
+/* ── Tables ─────────────────────────────────────────────────────────────── */
+
+.ba-table-wrap { overflow-x:auto; }
+.ba-table { display:flex; flex-direction:column; font-size:13.5px; color:var(--defined);
+  letter-spacing:-0.13px; }
+.ba-tr { display:grid; align-items:center; gap:10px; padding:9px 16px; min-height:46px; }
+.ba-tr > span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ba-th { font-size:12.5px; font-weight:500; color:var(--strong); border-bottom:1px solid var(--border);
+  position:sticky; top:0; background:var(--layer-1); z-index:2; cursor:default; }
+.ba-tr.zebra { background:var(--layer-2); }
+.ba-tr:not(.ba-th) { cursor:pointer; }
+.ba-tr:not(.ba-th):hover { background:rgba(48,105,227,0.05); }
+body.dark .ba-tr:not(.ba-th):hover { background:rgba(227,242,0,0.07); }
+.ba-tr .num { text-align:right; font-variant-numeric:tabular-nums; }
+.ba-dim { color:var(--subtle); }
+.ba-strong { color:var(--strong); font-weight:500; }
+.ba-link { color:var(--blue-link); text-decoration:underline; text-underline-offset:2px; cursor:pointer; }
+body.dark .ba-link { color:var(--strong); }
+
+/* Waiting-to-load panel (HUB-1061) */
+.ba-tr--wait { grid-template-columns:150px 90px 128px 118px minmax(0, 1fr); }
+/* Batch accuracy: tracks are generated from the visible column set, so the
+   grid-template-columns lives inline on the row. */
+.ba-tr--acc { }
+/* Water & buildup */
+.ba-tr--water { grid-template-columns:86px minmax(0, 1.2fr) 108px 104px 96px minmax(0, 1fr); }
+
+.ba-two { display:flex; flex-direction:column; gap:1px; line-height:1.25; }
+.ba-two small { font-size:11.5px; color:var(--subtle); }
+
+/* ── State cell. The answer to six separate column requests: management
+   state, wet/dry and buildup encoded once, glanceable, raw numbers still
+   in their own columns behind it. ──────────────────────────────────────── */
+
+.ba-state { display:inline-flex; align-items:center; gap:7px; min-width:0; }
+.ba-state-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.ba-state-dot.measured { background:var(--ba-state-measured); }
+.ba-state-dot.water    { background:var(--ba-state-water); }
+.ba-state-dot.admix    { background:var(--ba-state-admix); }
+.ba-state-dot.none     { background:var(--ba-state-none); }
+.ba-state-l { font-size:13px; color:var(--defined); overflow:hidden; text-overflow:ellipsis;
+  white-space:nowrap; }
+
+/* Wet / dry. Direction is a glyph, not a colour — colour only when the load
+   leaves the tolerance band, and then it is the alert ramp. */
+.ba-band { display:inline-flex; align-items:center; gap:5px; font-variant-numeric:tabular-nums;
+  font-size:13px; color:var(--defined); white-space:nowrap; }
+.ba-band-g { font-size:11px; color:var(--subtle); }
+.ba-band.out { color:var(--strong); font-weight:500; }
+.ba-band.out .ba-band-g { color:var(--amber); }
+.ba-band.bad .ba-band-g { color:var(--red); }
+.ba-band.in .ba-band-g { color:var(--subtle); }
+
+/* Buildup dot (HUB-2390, extended to the loads list by HUB-2616) */
+.ba-up { display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+.ba-up-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.ba-up-dot.ok   { background:var(--ba-up-ok); }
+.ba-up-dot.warn { background:var(--ba-up-warn); }
+.ba-up-dot.bad  { background:var(--ba-up-bad); }
+.ba-up-l { font-size:12.5px; color:var(--soft); }
+
+/* NM / small-load markers keep their own quiet treatment rather than reading
+   as a zero. */
+.ba-nm { font-size:11.5px; font-weight:500; color:var(--subtle); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:1px 6px; letter-spacing:0.02em; }
+
+/* ── Alert strip: water carried back in the drum (HUB-4184) ────────────── */
+
+.ba-alert { display:flex; align-items:flex-start; gap:11px; padding:12px 16px; margin-bottom:18px;
+  border-radius:var(--radius-md); background:var(--layer-2); border-left:3px solid var(--amber);
+  font-size:13px; color:var(--defined); letter-spacing:-0.13px; line-height:1.5; }
+.ba-alert b { color:var(--strong); font-weight:500; }
+.ba-alert-x { margin-left:auto; background:none; border:none; cursor:pointer; padding:0;
+  font-family:var(--font); font-size:12.5px; font-weight:500; color:var(--blue-link);
+  white-space:nowrap; letter-spacing:-0.25px; flex-shrink:0; }
+body.dark .ba-alert-x { color:var(--strong); }
+
+/* ── Bars used by the water and buildup tab ───────────────────────────── */
+
+.ba-bar { display:block; position:relative; height:6px; background:var(--layer-2);
+  border-radius:3px; overflow:hidden; }
+.ba-bar i { position:absolute; left:0; top:0; bottom:0; background:var(--defined);
+  border-radius:3px; display:block; }
+.ba-bar i.warn { background:var(--amber); }
+
+/* ── Tolerance editor (HUB-2580) ──────────────────────────────────────── */
+
+.ba-tol { min-width:340px; }
+.ba-tol-row { display:grid; grid-template-columns:minmax(0, 1fr) 78px 78px; gap:10px;
+  align-items:center; padding:8px 10px; }
+.ba-tol-row.head { font-size:10.5px; font-weight:500; color:var(--subtle);
+  text-transform:uppercase; letter-spacing:0.05em; padding-bottom:2px; }
+.ba-tol-l { font-size:13.5px; color:var(--strong); letter-spacing:-0.27px; }
+.ba-tol-l small { display:block; font-size:11.5px; color:var(--subtle); }
+.ba-tol-in { width:100%; box-sizing:border-box; background:var(--layer-2); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:0 10px; height:36px; font-family:var(--font);
+  font-size:13.5px; color:var(--strong); letter-spacing:-0.27px; outline:none; text-align:right; }
+.ba-tol-in:focus { border-color:var(--blue); }
+
+/* ── Empty state / footer ─────────────────────────────────────────────── */
+
+.ba-empty { display:flex; flex-direction:column; align-items:center; gap:9px; text-align:center;
+  padding:44px 24px; }
+.ba-empty-t { font-size:15px; font-weight:500; color:var(--strong); letter-spacing:-0.3px; }
+.ba-empty-s { font-size:13px; color:var(--soft); letter-spacing:-0.26px; max-width:360px; line-height:1.5; }
+.ba-foot { display:flex; align-items:center; justify-content:space-between; gap:16px;
+  padding:12px 16px; border-top:1px solid var(--border); flex-wrap:wrap;
+  font-size:12.5px; color:var(--soft); letter-spacing:-0.25px; }
+
+/* ── Mobile cards ─────────────────────────────────────────────────────── */
+
+.ba-cards { display:none; flex-direction:column; gap:8px; padding:12px 0 4px; }
+body.view-mobile .ba-cards { display:flex; }
+body.view-mobile .ba-table-wrap, body.view-mobile .ba-foot { display:none; }
+.ba-card { border:1px solid var(--border); border-radius:var(--radius-md); padding:13px;
+  display:flex; flex-direction:column; gap:8px; cursor:pointer; background:var(--layer-1); }
+.ba-card-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.ba-card-t { font-size:17px; font-weight:500; color:var(--strong); letter-spacing:-0.34px; }
+.ba-card-t small { font-size:12px; font-weight:400; color:var(--soft); margin-left:6px; }
+.ba-card-k { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:12.5px; color:var(--soft);
+  letter-spacing:-0.25px; }
+.ba-card-k b { color:var(--defined); font-weight:400; }
+
+/* ── Drawer ───────────────────────────────────────────────────────────── */
+
+#ba-drawer { display:none; position:absolute; inset:0; z-index:9350; font-family:var(--font);
+  align-items:stretch; justify-content:flex-end; opacity:1; transition:opacity 0.2s ease; }
+#ba-drawer.am-out { opacity:0; pointer-events:none; }
+#ba-drawer.am-out .am-drawer { transform:translateX(100%); }
+#ba-drawer .am-drawer { width:min(720px, calc(100% - 56px)); }
+body.view-tablet #ba-drawer .am-drawer { width:calc(100% - 40px); }
+body.view-mobile #ba-drawer .am-drawer { width:100%; border-left:none; }
+.ba-dr-title { font-size:24px; letter-spacing:-0.72px; gap:10px; }
+.ba-dr-sub { font-size:14px; color:var(--soft); }
+.ba-dr-body { padding:22px 30px 40px; }
+body.view-mobile .ba-dr-body { padding:16px 16px 28px; }
+
+.ba-kv { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:14px 18px;
+  background:var(--layer-2); border-radius:var(--radius-md); padding:16px; margin-bottom:8px; }
+body.view-mobile .ba-kv { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+.ba-k { font-size:10.5px; font-weight:500; color:var(--subtle); text-transform:uppercase;
+  letter-spacing:0.05em; margin-bottom:3px; }
+.ba-v { font-size:14px; color:var(--strong); letter-spacing:-0.14px; }
+.ba-v small { display:block; font-size:12px; color:var(--soft); margin-top:1px; }
+.ba-sec { font-size:11px; font-weight:500; color:var(--subtle); text-transform:uppercase;
+  letter-spacing:0.05em; margin:20px 0 8px; }
+.ba-dr-actions { display:flex; gap:8px; flex-wrap:wrap; border-top:1px solid var(--border);
+  padding-top:16px; margin-top:20px; }
+body.view-mobile .ba-dr-actions .am-pill { flex:1 1 100%; justify-content:center; }
+
+/* Slump ladder in the drawer: ticketed, target, initial, tested on one axis
+   so the batchman can see which number disagrees with which. */
+.ba-ladder { background:var(--layer-2); border-radius:var(--radius-md); padding:18px 16px 12px; }
+.ba-lad-row { display:grid; grid-template-columns:118px minmax(0, 1fr) 66px; gap:12px;
+  align-items:center; padding:6px 0; }
+.ba-lad-l { font-size:12.5px; color:var(--soft); letter-spacing:-0.25px; }
+.ba-lad-v { font-size:13.5px; font-weight:500; color:var(--strong); text-align:right;
+  font-variant-numeric:tabular-nums; }
+.ba-lad-bar { position:relative; height:8px; background:var(--layer-1); border-radius:4px; }
+.ba-lad-bar i { position:absolute; top:0; bottom:0; border-radius:4px; display:block;
+  background:var(--defined); }
+.ba-lad-bar i.tick { width:2px; background:var(--strong); border-radius:1px; }
+.ba-lad-band { position:absolute; top:-4px; bottom:-4px; background:rgba(48,105,227,0.10);
+  border-radius:4px; display:block; }
+body.dark .ba-lad-band { background:rgba(227,242,0,0.10); }
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+
+body.view-tablet .am-title.ba-title { font-size:24px; }
+body.view-tablet .ba-stats { display:grid; grid-template-columns:1fr 1fr; gap:14px 0; }
+body.view-tablet .ba-stat:nth-child(2) { border-right:none; }
+body.view-tablet .ba-stat:nth-child(3) { padding-left:0; }
+body.view-tablet .ba-stat-v { font-size:26px; }
+body.view-tablet .ba-kv { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+
+body.view-mobile .am-title.ba-title { font-size:22px; }
+body.view-mobile .ba-head, body.view-mobile .ba-toolbar { flex-direction:column; align-items:stretch; }
+body.view-mobile .ba-head-actions { width:100%; flex-wrap:wrap; }
+body.view-mobile .ba-scope, body.view-mobile .ba-scope-btn { width:100%; }
+body.view-mobile .ba-tb-right { margin-left:0; flex-wrap:wrap; }
+body.view-mobile .ba-stats { display:flex; flex-direction:column; gap:14px; }
+body.view-mobile .ba-stat { border-right:none; padding:0 0 12px; border-bottom:1px solid var(--border); }
+body.view-mobile .ba-stat:last-child { border-bottom:none; padding-bottom:0; }
+body.view-mobile .ba-pop { left:0; right:0; min-width:0; }
+body.view-mobile .ba-tol { min-width:0; }
+body.view-mobile .ba-tol-row { grid-template-columns:minmax(0, 1fr) 66px 66px; }
+
+/* ── Horizontal containment ───────────────────────────────────────────────
+   The page was pushing the document wider than the device frame: the sidebar
+   clipped, the stat band cut off, panel headers running past the edge. Cause
+   is flexbox's automatic minimum size — a flex item defaults to min-width
+   auto, so any child wider than its share (a table with a min-width, a header
+   row that will not wrap) grows its parent instead of scrolling inside it.
+
+   Every flex chain from the scroller down gets min-width:0 so the overflow
+   lands on .ba-table-wrap, which is the one element that is allowed to scroll
+   sideways. */
+
+#dt-page-batch .ba-scroll, #ba-tb-mount .ba-scroll, #ba-mob-mount .ba-scroll {
+  min-width:0; max-width:100%; overflow-x:hidden; }
+
+.ba-wip, .ba-head, .ba-stats, .ba-tabs, .ba-toolbar, .ba-panel, .ba-alert,
+.ba-panel-h, .ba-panel-b, .ba-foot, .ba-cards, .ba-card, .ba-grid-actions {
+  min-width:0; max-width:100%; }
+
+/* Direct flex children that carry prose or a table and must be allowed to
+   shrink rather than push. */
+.ba-wip-t, .ba-alert > span, .ba-panel-t, .ba-panel-s, .ba-head > div,
+.ba-stat, .ba-card-k, .ba-card-t { min-width:0; }
+.ba-panel-t, .ba-panel-s { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ba-panel-r { flex-shrink:0; }
+
+/* The scroll surface. Tables inside it may be wider than the page; nothing
+   else may be. */
+.ba-table-wrap { min-width:0; max-width:100%; overflow-x:auto; overflow-y:hidden; }
+.ba-table { min-width:0; }
+
+/* Head actions wrap instead of forcing width when the two scope pills plus a
+   pinned badge no longer fit. */
+.ba-head-actions { flex-wrap:wrap; min-width:0; }
+.ba-scope { min-width:0; max-width:100%; }
+.ba-scope-btn { max-width:100%; }
+.ba-scope-btn > *:not(svg) { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* Popovers must not widen the page either. */
+.ba-pop { max-width:min(360px, calc(100vw - 32px)); box-sizing:border-box; }
+body.view-tablet .ba-pop { max-width:calc(100% + 120px); }
+
+/* The Slump cell's second line carries two numbers; let it use the full cell
+   rather than clipping mid-number. */
+.ba-two small { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }

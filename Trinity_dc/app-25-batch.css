@@ -1,0 +1,364 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   app-25-batch.css
+   BATCH ASSISTANT — plant-scoped live monitoring (app-25)
+   ---------------------------------------------------------------------------
+   Prefix: ba-
+
+   Page shell mirrors #dt-page-returned: a flex column that owns its own
+   scroller. Responsive rules key off body classes, never media queries.
+
+   Two hardcoded color families, both mandated rather than chosen:
+
+     --ba-state-*   the in-cab load management colors (HUB-2541). Grey /
+                    Orange / Green / Blue are what the driver already sees on
+                    the drum display, so the batchman's screen has to agree.
+                    Same exception as the phase pills in shared.css.
+     --ba-up-*      buildup status green / amber / red (HUB-2390). Severity,
+                    so it borrows the alert ramp rather than inventing one.
+
+   Everything else is tokens.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --ba-state-measured:    #1f7a3d;  /* green  — Verifi measured it            */
+  --ba-state-water:       #b5610f;  /* orange — managed with water            */
+  --ba-state-admix:       #1e5f9c;  /* blue   — managed with admix            */
+  --ba-state-none:        #5c5852;  /* grey   — not measured                  */
+  --ba-up-ok:             #1f7a3d;
+  --ba-up-warn:           #b5610f;
+  --ba-up-bad:            #a51513;
+}
+body.dark {
+  --ba-state-measured:    #7fd39a;
+  --ba-state-water:       #f0b878;
+  --ba-state-admix:       #8ec4f0;
+  --ba-state-none:        #a8a49d;
+  --ba-up-ok:             #7fd39a;
+  --ba-up-warn:           #f0b878;
+  --ba-up-bad:            #f09b99;
+}
+
+/* ── Page shell ─────────────────────────────────────────────────────────── */
+
+#dt-page-batch { display:none; flex-direction:column; flex:1; min-width:0; min-height:0;
+  overflow:hidden; background:var(--layer-1); font-family:var(--font); }
+#dt-page-batch .ba-scroll { flex:1; min-height:0; overflow-y:auto; padding:26px 32px 40px;
+  display:flex; flex-direction:column; }
+#ba-tb-mount .ba-scroll, #ba-mob-mount .ba-scroll { flex:1; min-height:0; overflow-y:auto;
+  display:flex; flex-direction:column; }
+#ba-tb-mount .ba-scroll { padding:18px 18px 32px; }
+#ba-mob-mount .ba-scroll { padding:14px 14px 32px; }
+
+#tb-page-batch { display:none; flex:1; flex-direction:column; min-height:0; overflow:hidden;
+  background:var(--layer-1); font-family:var(--font); }
+#mob-page-batch { display:none; flex-direction:column; flex:1; min-height:0; overflow:hidden;
+  background:var(--layer-1); font-family:var(--font); }
+
+/* ── Concept marker ────────────────────────────────────────────────────── */
+
+.ba-wip { display:flex; align-items:flex-start; gap:12px; margin-bottom:20px;
+  padding:13px 16px; border:1px dashed var(--border-mid); border-radius:var(--radius-md);
+  background:var(--layer-2); }
+.ba-wip-tag { flex-shrink:0; display:inline-flex; align-items:center; height:22px; padding:0 10px;
+  border-radius:var(--radius-pill, 32px); background:var(--strong); color:var(--base);
+  font-size:10.5px; font-weight:500; letter-spacing:0.06em; text-transform:uppercase; }
+.ba-wip-t { font-size:13px; color:var(--defined); letter-spacing:-0.26px; line-height:1.5; }
+.ba-wip-t b { color:var(--strong); font-weight:500; }
+body.view-mobile .ba-wip { flex-direction:column; gap:9px; }
+.ba-nav-pill { font-size:10.5px; font-weight:500; color:var(--soft); border:1.5px solid var(--border-mid);
+  border-radius:var(--radius-pill, 32px); padding:1px 7px; letter-spacing:0.04em;
+  text-transform:uppercase; white-space:nowrap; }
+#dt-nav-batch[data-active] .ba-nav-pill, #tb-nav-batch[data-active] .ba-nav-pill {
+  color:var(--base); border-color:var(--base); }
+
+/* ── Head ───────────────────────────────────────────────────────────────── */
+
+.ba-head { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; flex-wrap:wrap; }
+.ba-title { margin-bottom:4px; }
+.ba-sub { font-size:13px; color:var(--soft); letter-spacing:-0.26px; margin-bottom:20px;
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.ba-sub b { color:var(--strong); font-weight:500; }
+.ba-head-actions { display:flex; gap:10px; flex-shrink:0; align-items:center; }
+
+/* Live indicator. The one place a green dot is not a severity signal: it means
+   the feed is connected. Paired with the word "Live" so it never stands alone. */
+.ba-live { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:500;
+  color:var(--defined); letter-spacing:-0.25px; white-space:nowrap; }
+.ba-live-dot { width:8px; height:8px; border-radius:50%; background:var(--ba-up-ok);
+  box-shadow:0 0 0 3px rgba(31,122,61,0.16); }
+body.dark .ba-live-dot { box-shadow:0 0 0 3px rgba(127,211,154,0.18); }
+.ba-live.off { color:var(--subtle); }
+.ba-live.off .ba-live-dot { background:var(--subtle); box-shadow:none; }
+
+/* ── Plant scope. Requested twice: lock a profile to one plant (HUB-3966)
+   and filter by plant inside a location (VSE-620). One control, both jobs. ─ */
+
+.ba-scope { position:relative; }
+.ba-scope-btn { display:inline-flex; align-items:center; gap:10px; height:44px; padding:0 16px;
+  border:1px solid var(--border); border-radius:var(--radius-pill, 32px); background:var(--layer-1);
+  cursor:pointer; font-family:var(--font); font-size:14px; color:var(--strong); letter-spacing:-0.28px; }
+.ba-scope-btn:hover { border-color:var(--border-mid); }
+.ba-scope-btn small { font-size:10.5px; font-weight:500; color:var(--subtle);
+  text-transform:uppercase; letter-spacing:0.05em; }
+.ba-pop { position:absolute; top:calc(100% + 8px); left:0; z-index:200; min-width:280px;
+  background:var(--layer-1); border:1px solid var(--border); border-radius:var(--radius-md);
+  box-shadow:0 12px 34px rgba(54,50,45,0.18); padding:8px; }
+body.dark .ba-pop { box-shadow:0 12px 34px rgba(0,0,0,0.55); }
+.ba-pop--right { left:auto; right:0; }
+.ba-pop-h { font-size:10.5px; font-weight:500; color:var(--subtle); text-transform:uppercase;
+  letter-spacing:0.05em; padding:8px 10px 6px; }
+.ba-pop-row { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:var(--radius-sm);
+  cursor:pointer; font-size:14px; color:var(--defined); letter-spacing:-0.28px; }
+.ba-pop-row:hover { background:var(--layer-2); }
+.ba-pop-row.on { color:var(--strong); font-weight:500; }
+.ba-pop-row .ba-tick { width:16px; flex-shrink:0; color:var(--blue); }
+body.dark .ba-pop-row .ba-tick { color:var(--strong); }
+.ba-pop-row .ba-count { margin-left:auto; font-size:12.5px; color:var(--subtle); font-weight:400; }
+.ba-pop-div { height:1px; background:var(--border); margin:6px 4px; }
+.ba-pop-note { font-size:12px; color:var(--soft); letter-spacing:-0.24px; line-height:1.45;
+  padding:4px 10px 8px; }
+
+/* Lock switch */
+.ba-lock { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:var(--radius-sm);
+  cursor:pointer; font-size:13.5px; color:var(--defined); letter-spacing:-0.27px; }
+.ba-lock:hover { background:var(--layer-2); }
+.ba-switch { width:34px; height:20px; border-radius:var(--radius-pill, 32px); background:var(--border-mid);
+  flex-shrink:0; position:relative; transition:background 0.16s; }
+.ba-switch i { position:absolute; top:3px; left:3px; width:14px; height:14px; border-radius:50%;
+  background:var(--layer-1); transition:transform 0.16s; display:block; }
+.ba-lock.on .ba-switch { background:var(--am-select); }
+.ba-lock.on .ba-switch i { transform:translateX(14px); background:var(--am-on-select); }
+
+/* ── Stat band. Reads as one sentence, like the live screen does. ───────── */
+
+.ba-stats { display:flex; align-items:stretch; border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border); padding:16px 0; margin-bottom:20px; }
+.ba-stat { flex:1; min-width:0; padding:0 22px; border-right:1px solid var(--border);
+  display:flex; flex-direction:column; gap:5px; }
+.ba-stat:first-child { padding-left:0; }
+.ba-stat:last-child { border-right:none; }
+.ba-stat-l { font-size:13px; color:var(--soft); letter-spacing:-0.26px; }
+.ba-stat-v { font-size:30px; font-weight:500; color:var(--strong); letter-spacing:-0.9px; line-height:1; }
+.ba-stat-v small { font-size:14px; font-weight:400; letter-spacing:-0.28px; color:var(--soft); margin-left:5px; }
+.ba-stat-m { font-size:12px; color:var(--subtle); letter-spacing:-0.24px; min-height:17px; }
+.ba-stat button { background:none; border:none; padding:0; cursor:pointer; font-family:var(--font);
+  font-size:12px; color:var(--blue-link); letter-spacing:-0.24px; text-align:left; }
+body.dark .ba-stat button { color:var(--strong); }
+
+/* ── Tabs ───────────────────────────────────────────────────────────────── */
+
+.ba-tabs { display:flex; gap:22px; border-bottom:1px solid var(--border); margin-bottom:18px; }
+.ba-tab { background:none; border:none; padding:0 0 10px; cursor:pointer; font-family:var(--font);
+  font-size:14px; color:var(--soft); letter-spacing:-0.28px; position:relative;
+  display:inline-flex; align-items:center; gap:7px; white-space:nowrap; }
+.ba-tab:hover { color:var(--strong); }
+.ba-tab.on { color:var(--strong); }
+.ba-tab.on::after { content:''; position:absolute; left:0; right:0; bottom:-1px; height:2px;
+  background:var(--strong); }
+.ba-tab-n { font-size:11.5px; font-weight:500; color:var(--soft); background:var(--layer-2);
+  border-radius:var(--radius-pill, 32px); padding:1px 8px; }
+body.view-mobile .ba-tabs { overflow-x:auto; gap:16px; }
+
+/* ── Toolbar ────────────────────────────────────────────────────────────── */
+
+.ba-toolbar { display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+.ba-tb-right { margin-left:auto; display:flex; gap:10px; align-items:center; position:relative; }
+
+/* ── Section panels ────────────────────────────────────────────────────── */
+
+.ba-panel { border:1px solid var(--border); border-radius:var(--radius-md); margin-bottom:18px;
+  overflow:hidden; }
+.ba-panel-h { display:flex; align-items:center; gap:12px; padding:14px 16px;
+  border-bottom:1px solid var(--border); background:var(--layer-2); }
+.ba-panel-t { font-size:15px; font-weight:500; color:var(--strong); letter-spacing:-0.3px; }
+.ba-panel-s { font-size:12.5px; color:var(--soft); letter-spacing:-0.25px; }
+.ba-panel-r { margin-left:auto; display:flex; gap:8px; align-items:center; }
+.ba-panel-b { padding:0; }
+.ba-panel-b--pad { padding:16px; }
+
+/* ── Tables ─────────────────────────────────────────────────────────────── */
+
+.ba-table-wrap { overflow-x:auto; }
+.ba-table { display:flex; flex-direction:column; font-size:13.5px; color:var(--defined);
+  letter-spacing:-0.13px; }
+.ba-tr { display:grid; align-items:center; gap:10px; padding:9px 16px; min-height:46px; }
+.ba-tr > span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ba-th { font-size:12.5px; font-weight:500; color:var(--strong); border-bottom:1px solid var(--border);
+  position:sticky; top:0; background:var(--layer-1); z-index:2; cursor:default; }
+.ba-tr.zebra { background:var(--layer-2); }
+.ba-tr:not(.ba-th) { cursor:pointer; }
+.ba-tr:not(.ba-th):hover { background:rgba(48,105,227,0.05); }
+body.dark .ba-tr:not(.ba-th):hover { background:rgba(227,242,0,0.07); }
+.ba-tr .num { text-align:right; font-variant-numeric:tabular-nums; }
+.ba-dim { color:var(--subtle); }
+.ba-strong { color:var(--strong); font-weight:500; }
+.ba-link { color:var(--blue-link); text-decoration:underline; text-underline-offset:2px; cursor:pointer; }
+body.dark .ba-link { color:var(--strong); }
+
+/* Waiting-to-load panel (HUB-1061) */
+.ba-tr--wait { grid-template-columns:150px 90px 128px 118px minmax(0, 1fr); }
+/* Batch accuracy: tracks are generated from the visible column set, so the
+   grid-template-columns lives inline on the row. */
+.ba-tr--acc { }
+/* Water & buildup */
+.ba-tr--water { grid-template-columns:86px minmax(0, 1.2fr) 108px 104px 96px minmax(0, 1fr); }
+
+.ba-two { display:flex; flex-direction:column; gap:1px; line-height:1.25; }
+.ba-two small { font-size:11.5px; color:var(--subtle); }
+
+/* ── State cell. The answer to six separate column requests: management
+   state, wet/dry and buildup encoded once, glanceable, raw numbers still
+   in their own columns behind it. ──────────────────────────────────────── */
+
+.ba-state { display:inline-flex; align-items:center; gap:7px; min-width:0; }
+.ba-state-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.ba-state-dot.measured { background:var(--ba-state-measured); }
+.ba-state-dot.water    { background:var(--ba-state-water); }
+.ba-state-dot.admix    { background:var(--ba-state-admix); }
+.ba-state-dot.none     { background:var(--ba-state-none); }
+.ba-state-l { font-size:13px; color:var(--defined); overflow:hidden; text-overflow:ellipsis;
+  white-space:nowrap; }
+
+/* Wet / dry. Direction is a glyph, not a colour — colour only when the load
+   leaves the tolerance band, and then it is the alert ramp. */
+.ba-band { display:inline-flex; align-items:center; gap:5px; font-variant-numeric:tabular-nums;
+  font-size:13px; color:var(--defined); white-space:nowrap; }
+.ba-band-g { font-size:11px; color:var(--subtle); }
+.ba-band.out { color:var(--strong); font-weight:500; }
+.ba-band.out .ba-band-g { color:var(--amber); }
+.ba-band.bad .ba-band-g { color:var(--red); }
+.ba-band.in .ba-band-g { color:var(--subtle); }
+
+/* Buildup dot (HUB-2390, extended to the loads list by HUB-2616) */
+.ba-up { display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+.ba-up-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.ba-up-dot.ok   { background:var(--ba-up-ok); }
+.ba-up-dot.warn { background:var(--ba-up-warn); }
+.ba-up-dot.bad  { background:var(--ba-up-bad); }
+.ba-up-l { font-size:12.5px; color:var(--soft); }
+
+/* NM / small-load markers keep their own quiet treatment rather than reading
+   as a zero. */
+.ba-nm { font-size:11.5px; font-weight:500; color:var(--subtle); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:1px 6px; letter-spacing:0.02em; }
+
+/* ── Alert strip: water carried back in the drum (HUB-4184) ────────────── */
+
+.ba-alert { display:flex; align-items:flex-start; gap:11px; padding:12px 16px; margin-bottom:18px;
+  border-radius:var(--radius-md); background:var(--layer-2); border-left:3px solid var(--amber);
+  font-size:13px; color:var(--defined); letter-spacing:-0.13px; line-height:1.5; }
+.ba-alert b { color:var(--strong); font-weight:500; }
+.ba-alert-x { margin-left:auto; background:none; border:none; cursor:pointer; padding:0;
+  font-family:var(--font); font-size:12.5px; font-weight:500; color:var(--blue-link);
+  white-space:nowrap; letter-spacing:-0.25px; flex-shrink:0; }
+body.dark .ba-alert-x { color:var(--strong); }
+
+/* ── Bars used by the water and buildup tab ───────────────────────────── */
+
+.ba-bar { display:block; position:relative; height:6px; background:var(--layer-2);
+  border-radius:3px; overflow:hidden; }
+.ba-bar i { position:absolute; left:0; top:0; bottom:0; background:var(--defined);
+  border-radius:3px; display:block; }
+.ba-bar i.warn { background:var(--amber); }
+
+/* ── Tolerance editor (HUB-2580) ──────────────────────────────────────── */
+
+.ba-tol { min-width:340px; }
+.ba-tol-row { display:grid; grid-template-columns:minmax(0, 1fr) 78px 78px; gap:10px;
+  align-items:center; padding:8px 10px; }
+.ba-tol-row.head { font-size:10.5px; font-weight:500; color:var(--subtle);
+  text-transform:uppercase; letter-spacing:0.05em; padding-bottom:2px; }
+.ba-tol-l { font-size:13.5px; color:var(--strong); letter-spacing:-0.27px; }
+.ba-tol-l small { display:block; font-size:11.5px; color:var(--subtle); }
+.ba-tol-in { width:100%; box-sizing:border-box; background:var(--layer-2); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:0 10px; height:36px; font-family:var(--font);
+  font-size:13.5px; color:var(--strong); letter-spacing:-0.27px; outline:none; text-align:right; }
+.ba-tol-in:focus { border-color:var(--blue); }
+
+/* ── Empty state / footer ─────────────────────────────────────────────── */
+
+.ba-empty { display:flex; flex-direction:column; align-items:center; gap:9px; text-align:center;
+  padding:44px 24px; }
+.ba-empty-t { font-size:15px; font-weight:500; color:var(--strong); letter-spacing:-0.3px; }
+.ba-empty-s { font-size:13px; color:var(--soft); letter-spacing:-0.26px; max-width:360px; line-height:1.5; }
+.ba-foot { display:flex; align-items:center; justify-content:space-between; gap:16px;
+  padding:12px 16px; border-top:1px solid var(--border); flex-wrap:wrap;
+  font-size:12.5px; color:var(--soft); letter-spacing:-0.25px; }
+
+/* ── Mobile cards ─────────────────────────────────────────────────────── */
+
+.ba-cards { display:none; flex-direction:column; gap:8px; padding:12px 0 4px; }
+body.view-mobile .ba-cards { display:flex; }
+body.view-mobile .ba-table-wrap, body.view-mobile .ba-foot { display:none; }
+.ba-card { border:1px solid var(--border); border-radius:var(--radius-md); padding:13px;
+  display:flex; flex-direction:column; gap:8px; cursor:pointer; background:var(--layer-1); }
+.ba-card-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.ba-card-t { font-size:17px; font-weight:500; color:var(--strong); letter-spacing:-0.34px; }
+.ba-card-t small { font-size:12px; font-weight:400; color:var(--soft); margin-left:6px; }
+.ba-card-k { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:12.5px; color:var(--soft);
+  letter-spacing:-0.25px; }
+.ba-card-k b { color:var(--defined); font-weight:400; }
+
+/* ── Drawer ───────────────────────────────────────────────────────────── */
+
+#ba-drawer { display:none; position:absolute; inset:0; z-index:9350; font-family:var(--font);
+  align-items:stretch; justify-content:flex-end; opacity:1; transition:opacity 0.2s ease; }
+#ba-drawer.am-out { opacity:0; pointer-events:none; }
+#ba-drawer.am-out .am-drawer { transform:translateX(100%); }
+#ba-drawer .am-drawer { width:min(720px, calc(100% - 56px)); }
+body.view-tablet #ba-drawer .am-drawer { width:calc(100% - 40px); }
+body.view-mobile #ba-drawer .am-drawer { width:100%; border-left:none; }
+.ba-dr-title { font-size:24px; letter-spacing:-0.72px; gap:10px; }
+.ba-dr-sub { font-size:14px; color:var(--soft); }
+.ba-dr-body { padding:22px 30px 40px; }
+body.view-mobile .ba-dr-body { padding:16px 16px 28px; }
+
+.ba-kv { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:14px 18px;
+  background:var(--layer-2); border-radius:var(--radius-md); padding:16px; margin-bottom:8px; }
+body.view-mobile .ba-kv { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+.ba-k { font-size:10.5px; font-weight:500; color:var(--subtle); text-transform:uppercase;
+  letter-spacing:0.05em; margin-bottom:3px; }
+.ba-v { font-size:14px; color:var(--strong); letter-spacing:-0.14px; }
+.ba-v small { display:block; font-size:12px; color:var(--soft); margin-top:1px; }
+.ba-sec { font-size:11px; font-weight:500; color:var(--subtle); text-transform:uppercase;
+  letter-spacing:0.05em; margin:20px 0 8px; }
+.ba-dr-actions { display:flex; gap:8px; flex-wrap:wrap; border-top:1px solid var(--border);
+  padding-top:16px; margin-top:20px; }
+body.view-mobile .ba-dr-actions .am-pill { flex:1 1 100%; justify-content:center; }
+
+/* Slump ladder in the drawer: ticketed, target, initial, tested on one axis
+   so the batchman can see which number disagrees with which. */
+.ba-ladder { background:var(--layer-2); border-radius:var(--radius-md); padding:18px 16px 12px; }
+.ba-lad-row { display:grid; grid-template-columns:118px minmax(0, 1fr) 66px; gap:12px;
+  align-items:center; padding:6px 0; }
+.ba-lad-l { font-size:12.5px; color:var(--soft); letter-spacing:-0.25px; }
+.ba-lad-v { font-size:13.5px; font-weight:500; color:var(--strong); text-align:right;
+  font-variant-numeric:tabular-nums; }
+.ba-lad-bar { position:relative; height:8px; background:var(--layer-1); border-radius:4px; }
+.ba-lad-bar i { position:absolute; top:0; bottom:0; border-radius:4px; display:block;
+  background:var(--defined); }
+.ba-lad-bar i.tick { width:2px; background:var(--strong); border-radius:1px; }
+.ba-lad-band { position:absolute; top:-4px; bottom:-4px; background:rgba(48,105,227,0.10);
+  border-radius:4px; display:block; }
+body.dark .ba-lad-band { background:rgba(227,242,0,0.10); }
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+
+body.view-tablet .am-title.ba-title { font-size:24px; }
+body.view-tablet .ba-stats { display:grid; grid-template-columns:1fr 1fr; gap:14px 0; }
+body.view-tablet .ba-stat:nth-child(2) { border-right:none; }
+body.view-tablet .ba-stat:nth-child(3) { padding-left:0; }
+body.view-tablet .ba-stat-v { font-size:26px; }
+body.view-tablet .ba-kv { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+
+body.view-mobile .am-title.ba-title { font-size:22px; }
+body.view-mobile .ba-head, body.view-mobile .ba-toolbar { flex-direction:column; align-items:stretch; }
+body.view-mobile .ba-head-actions { width:100%; flex-wrap:wrap; }
+body.view-mobile .ba-scope, body.view-mobile .ba-scope-btn { width:100%; }
+body.view-mobile .ba-tb-right { margin-left:0; flex-wrap:wrap; }
+body.view-mobile .ba-stats { display:flex; flex-direction:column; gap:14px; }
+body.view-mobile .ba-stat { border-right:none; padding:0 0 12px; border-bottom:1px solid var(--border); }
+body.view-mobile .ba-stat:last-child { border-bottom:none; padding-bottom:0; }
+body.view-mobile .ba-pop { left:0; right:0; min-width:0; }
+body.view-mobile .ba-tol { min-width:0; }
+body.view-mobile .ba-tol-row { grid-template-columns:minmax(0, 1fr) 66px 66px; }

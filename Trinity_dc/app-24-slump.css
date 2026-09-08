@@ -435,7 +435,6 @@ body.view-mobile .sl-wip { flex-direction:column; gap:9px; }
 /* The desktop/tablet sub-nav rows are plain divs, so give them a row layout
    once a pill is present. Scoped by id so no other nav row is touched. */
 #dt-nav-slump, #tb-nav-slump { display:flex; align-items:center; gap:8px; }
-#dt-nav-slump span:first-child, #tb-nav-slump span:first-child { flex:1; min-width:0; }
 /* --base flips with the mode and is the correct contrast against both active
    fills: light on blue in light mode, dark on lime in dark mode. One rule. */
 #dt-nav-slump[data-active] .sl-nav-pill, #tb-nav-slump[data-active] .sl-nav-pill {
@@ -466,3 +465,15 @@ body.view-mobile .sl-gate-t { font-size:20px; }
 /* The concept strip's "Hide again" sits at the end of the copy, not floated
    away from it, since the strip is a column on mobile. */
 .sl-wip .sl-notice-x { align-self:flex-start; flex-shrink:0; }
+
+/* Sub-nav label. The other Tickets children carry their colour inline in
+   index.html; this one is driven from CSS instead, because slNavLight used to
+   clear the inline value and left the row near-black. The literal rgba is the
+   value the sibling rows use, kept verbatim so the four items match. */
+#dt-nav-slump .sl-nav-lbl, #tb-nav-slump .sl-nav-lbl { flex:1; min-width:0;
+  color:rgba(54,50,45,0.5); }
+body.dark #dt-nav-slump .sl-nav-lbl, body.dark #tb-nav-slump .sl-nav-lbl { color:var(--subtle); }
+#dt-nav-slump[data-active] .sl-nav-lbl, #tb-nav-slump[data-active] .sl-nav-lbl {
+  color:#fff; font-weight:500; }
+body.dark #dt-nav-slump[data-active] .sl-nav-lbl,
+body.dark #tb-nav-slump[data-active] .sl-nav-lbl { color:#000; }

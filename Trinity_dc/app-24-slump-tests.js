@@ -1210,19 +1210,22 @@ function slQuickAdd() {
    load after app-21 so both pages compose rather than clobber. */
 
 function slNavLight(on) {
-  var el = document.getElementById('dt-nav-slump');
-  if (!el) return;
   var dark = document.body.classList.contains('dark');
-  var span = el.querySelector('span');
-  if (on) {
-    el.dataset.active = '1';
-    el.style.background = dark ? '#e3f200' : 'var(--blue)';
-    if (span) { span.style.color = dark ? '#000' : '#fff'; span.style.fontWeight = '500'; }
-  } else {
-    delete el.dataset.active;
-    el.style.background = '';
-    if (span) { span.style.color = ''; span.style.fontWeight = ''; }
-  }
+  ['dt-nav-slump', 'tb-nav-slump'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    if (on) {
+      el.dataset.active = '1';
+      el.style.background = dark ? '#e3f200' : 'var(--blue)';
+    } else {
+      delete el.dataset.active;
+      el.style.background = '';
+    }
+  });
+  /* Label and pill colours come from CSS keyed on [data-active]. Writing them
+     inline and clearing them to '' was wiping the muted colour the sub-nav
+     markup carries, which left the row reading near-black once the user
+     navigated away from the page. */
 }
 
 var SL_SIBLINGS = ['dt-page-dashboard', 'dt-page-account', 'dt-page-insights', 'dt-page-returned'];

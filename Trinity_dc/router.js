@@ -710,3 +710,284 @@ function rtCmtJump(c) {
       });
   }, 400);
 })();
+
+/* ═══════════════════════════════════════════════════════════════════
+   EVERY PAGE GETS A URL  (added on top of the engine above)
+   ───────────────────────────────────────────────────────────────────
+   What was missing, and why each piece is here:
+
+   1  RESOLVERS. The engine only knew trucks, units and six desktop
+      page-level routes. Insights, Returned Concrete, Slump Tests,
+      Batch Assistant, Fleet map and Phases had no resolver at all, on
+      any surface, so a pasted URL fell through to the dashboard
+      fallback. All of them are registered below for desktop, tablet
+      and mobile.
+
+   2  HASH WRITERS. app-06 wraps dtNavGo to write the hash, but every
+      section module since app-13 replaces window.dtNavGo and returns
+      early for its own key — so navigating to Insights, Returned
+      Concrete, Slump Tests or Batch Assistant wrote nothing. router.js
+      loads after app-25, so window.dtNavGo here is the end of that
+      wrapper chain: wrapping it once catches every key. The section
+      entry points (inNav / rcNav / slNav / baNav) are wrapped too,
+      because on tablet and mobile they never reach dtNavGo.
+
+   3  HASHCHANGE. Nothing listened. applyHashRoute is a one-shot at
+      load, so the back button did nothing and editing the hash by hand
+      did nothing — the only way in was ?jump=. A listener closes that
+      loop, guarded so the hash we just wrote does not re-drive the UI.
+
+   Route grammar is unchanged: <surface>/<page>[/<sub>]. The raw keys
+   stay canonical because comments.js has already stored routes in that
+   form and those pins have to keep resolving. Readable aliases are
+   registered alongside them, so #batch-assistant and #desktop/batch
+   both work and neither breaks the other.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Which surface are we on ─────────────────────────────────────── */
+
+function rtSurface() {
+  var c = document.body.classList;
+  if (c.contains('view-mobile')) return 'mobile';
+  if (c.contains('view-tablet')) return 'tablet';
+  return 'desktop';
+}
+
+/* Write a hash and remember it, so the hashchange listener can tell a
+   navigation we caused from one the user caused. Prefers app-06's
+   setHash when it exists so there is still one writer. */
+RT.lastWritten = null;
+RT.driving = false;
+
+function rtSetHash(parts) {
+  var route = parts.filter(Boolean).join('/');
+  RT.lastWritten = route;
+  if (typeof setHash === 'function') { setHash(parts); return; }
+  try { location.hash = '#' + route; } catch (e) {}
+}
+
+/* app-06's setHash does not know about RT.lastWritten, so record every
+   hash it writes as well — otherwise its own navigations would look
+   like user edits and re-drive the UI a second time. */
+(function rtRecordSetHash() {
+  if (typeof setHash !== 'function' || setHash.__rtRecord) return;
+  var orig = setHash;
+  window.setHash = function (parts) {
+    try { RT.lastWritten = [].concat(parts).filter(Boolean).join('/'); } catch (e) {}
+    return orig.apply(this, arguments);
+  };
+  window.setHash.__rtRecord = true;
+})();
+
+/* ── The sections that had no routes ─────────────────────────────────
+   Each has one entry point that dispatches by body class, so the
+   resolver only has to put the right frame up and then call it. */
+
+var RT_SECTIONS = [
+  { slug:'insights', alias:'insights',          nav:'inNav', dt:'insights',
+    tb:'tb-page-insights', mo:'mob-page-insights' },
+  { slug:'returned', alias:'returned-concrete', nav:'rcNav', dt:'returned',
+    tb:'tb-page-returned', mo:'mob-page-returned' },
+  { slug:'slump',    alias:'slump-tests',       nav:'slNav', dt:'slump',
+    tb:'tb-page-slump',    mo:'mob-page-slump' },
+  { slug:'batch',    alias:'batch-assistant',   nav:'baNav', dt:'batch',
+    tb:'tb-page-batch',    mo:'mob-page-batch' }
+];
+
+function rtOpenSection(sec, surface) {
+  if (surface === 'desktop') {
+    return rtEnsureDtPage(sec.dt).then(function () { rtCloseOtherDrawers(null); });
+  }
+  var pageId = surface === 'tablet' ? sec.tb : sec.mo;
+  return rtEnsureView(surface).then(function () {
+    if (typeof window[sec.nav] !== 'function') {
+      console.warn('[router] no entry point', sec.nav);
+      return;
+    }
+    window[sec.nav]();
+    return rtWaitFor(function () { return rtVisible(pageId) ? 1 : null; });
+  });
+}
+
+RT_SECTIONS.forEach(function (sec) {
+  ['desktop', 'tablet', 'mobile'].forEach(function (surface) {
+    function res() { return rtOpenSection(sec, surface); }
+    rtRegister(surface + '/' + sec.slug, res);
+    /* Readable alias, same resolver. */
+    if (sec.alias !== sec.slug) rtRegister(surface + '/' + sec.alias, res);
+  });
+  /* Bare slug: no surface named, so stay on whichever frame is up. */
+  rtRegister(sec.slug, function () { return rtOpenSection(sec, rtSurface()); });
+  if (sec.alias !== sec.slug) {
+    rtRegister(sec.alias, function () { return rtOpenSection(sec, rtSurface()); });
+  }
+});
+
+/* ── Batch Assistant tabs ────────────────────────────────────────────
+   The only one of the four with sub-state worth a URL: three tabs a
+   batchman switches between all shift. */
+
+var RT_BA_TABS = { live:1, acc:1, water:1 };
+var RT_BA_ALIAS = { live:'live', 'batch-accuracy':'acc', 'water-buildup':'water' };
+
+['desktop', 'tablet', 'mobile'].forEach(function (surface) {
+  rtRegister(surface + '/batch/:tab', function (p) {
+    var tab = RT_BA_TABS[p.tab] ? p.tab : RT_BA_ALIAS[p.tab];
+    if (!tab) { console.warn('[router] unknown batch tab', p.tab); tab = 'live'; }
+    var sec = RT_SECTIONS[3];
+    return rtOpenSection(sec, surface).then(function () {
+      if (typeof baSetTab === 'function') baSetTab(tab);
+    });
+  });
+});
+
+/* ── Tickets: Fleet map and Phases ───────────────────────────────────
+   Desktop has its own page container per sub-view; tablet and mobile
+   route all three through tvNavGo. */
+
+var RT_TV = { tickets:'list', tfleet:'map', tphases:'phases' };
+var RT_TV_ALIAS = { 'ticket-list':'tickets', 'fleet-map':'tfleet', phases:'tphases' };
+
+Object.keys(RT_TV).forEach(function (key) {
+  rtRegister('desktop/' + key, function () {
+    return rtEnsureDtPage(key).then(function () { rtCloseOtherDrawers(null); });
+  });
+  ['tablet', 'mobile'].forEach(function (surface) {
+    rtRegister(surface + '/' + key, function () {
+      return rtEnsureView(surface).then(function () {
+        if (typeof tvNavGo === 'function') tvNavGo(RT_TV[key]);
+      });
+    });
+  });
+});
+/* 'desktop/tickets' is registered twice now — once by the original page
+   list above and once here. rtMatch keeps the first best score, so the
+   original wins and behaviour is unchanged. The aliases below are the
+   only new names. */
+Object.keys(RT_TV_ALIAS).forEach(function (alias) {
+  var key = RT_TV_ALIAS[alias];
+  ['desktop', 'tablet', 'mobile'].forEach(function (surface) {
+    rtRegister(surface + '/' + alias, function () { return rtGoTo(surface + '/' + key); });
+  });
+  rtRegister(alias, function () { return rtGoTo(rtSurface() + '/' + key); });
+});
+
+/* Bare page slugs for the screens the engine already resolved, so a URL
+   does not have to name the surface. */
+['home', 'dashboard', 'trucks', 'units', 'update', 'map'].forEach(function (page) {
+  rtRegister(page, function () { return rtGoTo(rtSurface() + '/' + page); });
+});
+rtRegister('all-trucks',       function () { return rtGoTo(rtSurface() + '/trucks'); });
+rtRegister('software-update',  function () { return rtGoTo(rtSurface() + '/update'); });
+rtRegister('fleet-update',     function () { return rtGoTo(rtSurface() + '/update'); });
+
+/* ── Hash writers for the sections that wrote nothing ────────────────
+   router.js loads after app-25, so window.dtNavGo is the end of the
+   wrapper chain: every key passes through here, including the ones the
+   section modules intercept and return early on. */
+
+(function rtSectionHashWriters() {
+  var DT_KEYS = { home:1, dashboard:1, trucks:1, units:1, tickets:1, tfleet:1, tphases:1,
+    update:1, map:1, insights:1, returned:1, slump:1, batch:1 };
+
+  if (typeof dtNavGo === 'function' && !dtNavGo.__rtPageHash) {
+    var origNav = window.dtNavGo;
+    window.dtNavGo = function (key) {
+      var out = origNav.apply(this, arguments);
+      if (DT_KEYS[key]) rtSetHash(['desktop', key]);
+      return out;
+    };
+    window.dtNavGo.__rtPageHash = true;
+  }
+
+  /* On tablet and mobile these never reach dtNavGo, so they need their
+     own writer. The surface is read after the call, because the entry
+     point is what decides which frame ends up on screen. */
+  RT_SECTIONS.forEach(function (sec) {
+    var name = sec.nav;
+    if (typeof window[name] !== 'function' || window[name].__rtPageHash) return;
+    var orig = window[name];
+    window[name] = function () {
+      var out = orig.apply(this, arguments);
+      rtSetHash([rtSurface(), sec.slug]);
+      return out;
+    };
+    window[name].__rtPageHash = true;
+  });
+
+  /* Batch tabs. */
+  if (typeof baSetTab === 'function' && !baSetTab.__rtPageHash) {
+    var origTab = window.baSetTab;
+    window.baSetTab = function (tab) {
+      var out = origTab.apply(this, arguments);
+      rtSetHash([rtSurface(), 'batch', tab]);
+      return out;
+    };
+    window.baSetTab.__rtPageHash = true;
+  }
+
+  /* Tickets sub-views on tablet and mobile. */
+  if (typeof tvNavGo === 'function' && !tvNavGo.__rtPageHash) {
+    var TV_BACK = { list:'tickets', map:'tfleet', phases:'tphases' };
+    var origTv = window.tvNavGo;
+    window.tvNavGo = function (which) {
+      var out = origTv.apply(this, arguments);
+      var key = TV_BACK[which];
+      if (key) rtSetHash([rtSurface(), key]);
+      return out;
+    };
+    window.tvNavGo.__rtPageHash = true;
+  }
+})();
+
+/* ── hashchange: back, forward, and hand-edited URLs ─────────────────
+   Three guards, each for a failure this listener would otherwise cause:
+
+     RT.driving   a resolver calls setView and nav functions, which write
+                  the hash themselves; without this the listener would
+                  re-enter mid-resolve.
+     lastWritten  a normal click writes the hash, which fires this event.
+                  Re-driving the UI to where it already is rebuilds
+                  tables and flashes the screen.
+     canResolve   app-06 writes hashes this file has no resolver for
+                  (sub-tab state inside Map and Software Update). Those
+                  are left alone rather than bounced to a fallback. */
+
+window.addEventListener('hashchange', function () {
+  var h = String(location.hash || '').replace(/^#/, '');
+  if (!h) return;
+  if (RT.driving) return;
+  if (h === RT.lastWritten) return;
+  if (!rtCanResolve(h)) return;
+  RT.driving = true;
+  rtGoTo(h)
+    .catch(function (e) { console.warn('[router] hashchange failed', h, e); })
+    .then(function () {
+      RT.lastWritten = String(location.hash || '').replace(/^#/, '');
+      RT.driving = false;
+    });
+});
+
+/* A hash present at load with no ?jump= means someone pasted a URL or
+   reloaded on a page. app-06's applyHashRoute handles trucks and units;
+   anything it does not know still needs driving, and an unresolvable
+   hash is left for it. Runs after the ?jump= block above, and defers to
+   it — an explicit jump link wins. */
+(function rtBootFromHash() {
+  var q = new URLSearchParams(location.search);
+  if (q.get('jump')) return;
+  var h = String(location.hash || '').replace(/^#/, '');
+  if (!h || !rtCanResolve(h)) return;
+  /* Only take over for routes app-06's restore does not cover, so the
+     two do not fight over the same screen. */
+  if (/^(desktop|tablet|mobile)\/(trucks|units)(\/|$)/.test(h)) return;
+  setTimeout(function () {
+    RT.driving = true;
+    rtGoTo(h)
+      .catch(function (e) { console.warn('[router] boot route failed', h, e); })
+      .then(function () {
+        RT.lastWritten = String(location.hash || '').replace(/^#/, '');
+        RT.driving = false;
+      });
+  }, 450);
+})();

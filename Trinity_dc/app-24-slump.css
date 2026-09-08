@@ -28,10 +28,17 @@
 
 #tb-page-slump { display:none; flex:1; flex-direction:column; min-height:0; overflow:hidden;
   background:var(--layer-1); font-family:var(--font); }
-/* position:relative so the FAB, which is absolute, anchors to the page and
-   stays inside the device frame rather than the browser viewport. */
-#mob-page-slump { display:none; position:relative; flex-direction:column; flex:1; min-height:0;
-  overflow:hidden; background:var(--layer-1); font-family:var(--font); }
+/* Mobile pages are an absolute overlay inside the phone frame, matching
+   #mob-page-returned and #mob-page-insights — including the 54px status-bar
+   inset. Being positioned also anchors the FAB to this page rather than to the
+   browser viewport. */
+#mob-page-slump { display:none; position:absolute; inset:0; z-index:200;
+  background:var(--layer-1); flex-direction:column; overflow:hidden;
+  padding-top:54px; font-family:var(--font); }
+body.view-mobile.orient-landscape #mob-page-slump { padding-top:0; padding-left:52px; }
+body.view-mobile.orient-landscape #mob-page-slump .top-nav { padding-top:6px; padding-bottom:6px; }
+#sl-tb-mount, #sl-mob-mount { flex:1; min-height:0; display:flex; flex-direction:column;
+  overflow:hidden; }
 
 /* ── Head ───────────────────────────────────────────────────────────────── */
 

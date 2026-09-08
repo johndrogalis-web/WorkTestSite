@@ -45,14 +45,28 @@ body.dark {
 #dt-page-batch .ba-scroll { flex:1; min-height:0; overflow-y:auto; padding:26px 32px 40px;
   display:flex; flex-direction:column; }
 #ba-tb-mount .ba-scroll, #ba-mob-mount .ba-scroll { flex:1; min-height:0; overflow-y:auto;
-  display:flex; flex-direction:column; }
+  -webkit-overflow-scrolling:touch; display:flex; flex-direction:column; }
 #ba-tb-mount .ba-scroll { padding:18px 18px 32px; }
 #ba-mob-mount .ba-scroll { padding:14px 14px 32px; }
 
 #tb-page-batch { display:none; flex:1; flex-direction:column; min-height:0; overflow:hidden;
   background:var(--layer-1); font-family:var(--font); }
-#mob-page-batch { display:none; flex-direction:column; flex:1; min-height:0; overflow:hidden;
-  background:var(--layer-1); font-family:var(--font); }
+
+/* Mobile pages are an absolute overlay inside the phone frame, not a sibling
+   in the flow. This was position:relative, so the page rendered underneath
+   the screen it came from instead of covering it — two hamburger bars, the
+   Diagnostic Center still showing through. Values match #mob-page-returned
+   and #mob-page-insights exactly, including the 54px status-bar inset. */
+#mob-page-batch { display:none; position:absolute; inset:0; z-index:200;
+  background:var(--layer-1); flex-direction:column; overflow:hidden;
+  padding-top:54px; font-family:var(--font); }
+body.view-mobile.orient-landscape #mob-page-batch { padding-top:0; padding-left:52px; }
+body.view-mobile.orient-landscape #mob-page-batch .top-nav { padding-top:6px; padding-bottom:6px; }
+
+/* The mounts have to be flex containers themselves, or .ba-scroll's flex:1 has
+   nothing to measure against and the page does not scroll. */
+#ba-tb-mount, #ba-mob-mount { flex:1; min-height:0; display:flex; flex-direction:column;
+  overflow:hidden; }
 
 /* ── Concept marker ────────────────────────────────────────────────────── */
 

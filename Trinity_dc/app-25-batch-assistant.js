@@ -157,13 +157,13 @@ var BA_LOADS = [
 var BA_COLS = [
   { k:'truck',   l:'Truck',         w:'78px',            on:true,  lock:true },
   { k:'loaded',  l:'Loaded at',     w:'96px',            on:true,  lock:true },
-  { k:'driver',  l:'Driver',        w:'minmax(0, 1fr)',  on:true },
-  { k:'mix',     l:'Mix code',      w:'92px',            on:true },
-  { k:'state',   l:'State',         w:'168px',           on:true,  lock:true },
-  { k:'slump',   l:'Slump',         w:'132px',           on:true,  lock:true },
+  { k:'driver',  l:'Driver',        w:'146px',           on:true },
+  { k:'mix',     l:'Mix code',      w:'88px',            on:true },
+  { k:'state',   l:'State',         w:'152px',           on:true,  lock:true },
+  { k:'slump',   l:'Slump',         w:'152px',           on:true,  lock:true },
   { k:'temp',    l:'Temp',          w:'70px',            on:true },
-  { k:'maxwater',l:'Max water',     w:'92px',            on:true },
-  { k:'wateradj',l:'Water adj',     w:'92px',            on:true },
+  { k:'maxwater',l:'Max water',     w:'96px',            on:true },
+  { k:'wateradj',l:'Water adj',     w:'96px',            on:true },
   { k:'tested',  l:'Tested',        w:'78px',            on:true },
   { k:'leave',   l:'Leave plant',   w:'104px',           on:false },
   { k:'size',    l:'Size',          w:'80px',            on:false },
@@ -446,7 +446,8 @@ function baLive() {
       + '<span class="ba-panel-s">' + rows.length + ' truck' + (rows.length === 1 ? '' : 's') + '</span>'
       + '<span class="ba-panel-r"><span class="ba-live"><span class="ba-live-dot"></span>'
         + 'Updating</span></span></div>'
-      + '<div class="ba-panel-b"><div class="ba-table-wrap"><div class="ba-table">' + head + body + '</div></div>'
+      + '<div class="ba-panel-b"><div class="ba-table-wrap"><div class="ba-table" style="min-width:720px;">'
+        + head + body + '</div></div>'
       + '<div class="ba-cards" style="padding:12px 13px;">' + cards + '</div></div></div>'
     + baLiveNext();
 }
@@ -475,7 +476,8 @@ function baLiveNext() {
     + '<span class="ba-panel-t">Needs a look</span>'
     + '<span class="ba-panel-s">outside tolerance</span>'
     + '<span class="ba-panel-r"><button class="am-pill" onclick="baSetTab(\'acc\')">See all batches</button></span>'
-    + '</div><div class="ba-panel-b"><div class="ba-table-wrap"><div class="ba-table">' + body + '</div></div>'
+    + '</div><div class="ba-panel-b"><div class="ba-table-wrap">'
+      + '<div class="ba-table" style="min-width:700px;">' + body + '</div></div>'
     + '</div></div>';
 }
 
@@ -512,7 +514,7 @@ function baCells(l) {
     slump:    '<span class="ba-two"><span class="ba-strong">'
                 + (l.initial == null ? '<span class="ba-nm">' + baEsc(l.initialNote || 'NM') + '</span>'
                    : baN(l.initial) + ' in')
-              + '</span><small>target ' + baN(l.target) + ' \u00b7 ticketed ' + baN(l.ticketed) + '</small></span>',
+              + '</span><small>target ' + baN(l.target) + ' \u00b7 tkt ' + baN(l.ticketed) + '</small></span>',
     temp:     l.temp == null ? '<span class="ba-dim">\u2014</span>' : l.temp + ' \u00b0F',
     maxwater: baN(l.maxWater) + '<span class="ba-dim"> gal/yd\u00b3</span>',
     wateradj: l.waterAdj == null ? '<span class="ba-dim">\u2014</span>'
@@ -530,17 +532,26 @@ function baVisCols() { return BA_COLS.filter(function (c) { return c.on; }); }
 
 function baAcc() {
   var cols = baVisCols();
-  var tracks = cols.map(function (c) { return c.w; }).join(' ');
+  /* Trailing spacer soaks up whatever is left over. Without it grid hands the
+     slack to whichever track is flexible, which is what opened the gap. */
+  var tracks = cols.map(function (c) { return c.w; }).join(' ') + ' minmax(0, 1fr)';
   var loads = baLoads();
+  /* Real minimum: the fixed tracks plus a floor for each flexible one, plus
+     the gaps and the row padding. Guessing at 100px a column made the table
+     either clip or scroll when it did not need to. */
+  var minW = cols.reduce(function (a, c) {
+    var m = /^(\d+)px$/.exec(c.w);
+    return a + (m ? parseInt(m[1], 10) : 150);
+  }, 0) + cols.length * 10 + 32;
 
   var head = '<div class="ba-tr ba-th" style="grid-template-columns:' + tracks + ';">'
-    + cols.map(function (c) { return '<span>' + c.l + '</span>'; }).join('') + '</div>';
+    + cols.map(function (c) { return '<span>' + c.l + '</span>'; }).join('') + '<span></span></div>';
 
   var body = loads.length ? loads.map(function (l, i) {
     var cells = baCells(l);
     return '<div class="ba-tr' + (i % 2 ? ' zebra' : '') + '" style="grid-template-columns:' + tracks
       + ';" onclick="baOpenLoad(\'' + l.ticket + '\')">'
-      + cols.map(function (c) { return '<span>' + cells[c.k] + '</span>'; }).join('') + '</div>';
+      + cols.map(function (c) { return '<span>' + cells[c.k] + '</span>'; }).join('') + '<span></span></div>';
   }).join('') : '<div class="ba-empty"><div class="ba-empty-t">No batches</div>'
       + '<div class="ba-empty-s">Nothing was batched at ' + baEsc(baPlant) + ' in this range.</div></div>';
 
@@ -559,7 +570,7 @@ function baAcc() {
 
   var nm = loads.filter(function (l) { return baDelta(l) == null; }).length;
   return '<div class="ba-panel"><div class="ba-panel-b">'
-    + '<div class="ba-table-wrap"><div class="ba-table" style="min-width:' + (cols.length * 100) + 'px;">'
+    + '<div class="ba-table-wrap"><div class="ba-table" style="min-width:' + minW + 'px;">'
       + head + body + '</div></div>'
     + '<div class="ba-cards" style="padding:12px 13px;">' + cards + '</div>'
     + '<div class="ba-foot"><span>' + loads.length + ' batches \u00b7 ' + nm + ' not measured</span>'

@@ -362,3 +362,48 @@ body.view-mobile .ba-stat:last-child { border-bottom:none; padding-bottom:0; }
 body.view-mobile .ba-pop { left:0; right:0; min-width:0; }
 body.view-mobile .ba-tol { min-width:0; }
 body.view-mobile .ba-tol-row { grid-template-columns:minmax(0, 1fr) 66px 66px; }
+
+/* ── Horizontal containment ───────────────────────────────────────────────
+   The page was pushing the document wider than the device frame: the sidebar
+   clipped, the stat band cut off, panel headers running past the edge. Cause
+   is flexbox's automatic minimum size — a flex item defaults to min-width
+   auto, so any child wider than its share (a table with a min-width, a header
+   row that will not wrap) grows its parent instead of scrolling inside it.
+
+   Every flex chain from the scroller down gets min-width:0 so the overflow
+   lands on .ba-table-wrap, which is the one element that is allowed to scroll
+   sideways. */
+
+#dt-page-batch .ba-scroll, #ba-tb-mount .ba-scroll, #ba-mob-mount .ba-scroll {
+  min-width:0; max-width:100%; overflow-x:hidden; }
+
+.ba-wip, .ba-head, .ba-stats, .ba-tabs, .ba-toolbar, .ba-panel, .ba-alert,
+.ba-panel-h, .ba-panel-b, .ba-foot, .ba-cards, .ba-card, .ba-grid-actions {
+  min-width:0; max-width:100%; }
+
+/* Direct flex children that carry prose or a table and must be allowed to
+   shrink rather than push. */
+.ba-wip-t, .ba-alert > span, .ba-panel-t, .ba-panel-s, .ba-head > div,
+.ba-stat, .ba-card-k, .ba-card-t { min-width:0; }
+.ba-panel-t, .ba-panel-s { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ba-panel-r { flex-shrink:0; }
+
+/* The scroll surface. Tables inside it may be wider than the page; nothing
+   else may be. */
+.ba-table-wrap { min-width:0; max-width:100%; overflow-x:auto; overflow-y:hidden; }
+.ba-table { min-width:0; }
+
+/* Head actions wrap instead of forcing width when the two scope pills plus a
+   pinned badge no longer fit. */
+.ba-head-actions { flex-wrap:wrap; min-width:0; }
+.ba-scope { min-width:0; max-width:100%; }
+.ba-scope-btn { max-width:100%; }
+.ba-scope-btn > *:not(svg) { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* Popovers must not widen the page either. */
+.ba-pop { max-width:min(360px, calc(100vw - 32px)); box-sizing:border-box; }
+body.view-tablet .ba-pop { max-width:calc(100% + 120px); }
+
+/* The Slump cell's second line carries two numbers; let it use the full cell
+   rather than clipping mid-number. */
+.ba-two small { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }

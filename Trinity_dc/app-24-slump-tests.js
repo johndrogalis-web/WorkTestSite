@@ -780,6 +780,18 @@ function slWizPaint() {
       : 'Pick the load this test came from',
     body, foot);
 }
+/* Repaint just the body and hold the scroll position. Everything that stays on
+   one step goes through here; only a step change needs slWizPaint, which
+   rebuilds the header, the rail and the commit bar too. */
+function slWizBody() {
+  var b = document.getElementById('sl-dr-body');
+  if (!b) { slWizPaint(); return; }
+  var top = b.scrollTop;
+  var s = slWiz.step;
+  b.innerHTML = s === 1 ? slWiz1() : s === 2 ? slWiz2() : s === 3 ? slWiz3() : slWiz4();
+  b.scrollTop = top;
+}
+
 function slPourLabel() {
   if (slWiz.pour === 'plant') return 'at the plant';
   if (slWiz.pour == null) return 'no pour';
@@ -835,7 +847,7 @@ function slLoadBtn(l) {
 }
 function slWizQ(v) {
   slWiz.q = v;
-  slWizPaint();
+  slWizBody();
   var input = document.querySelector('#sl-dr-body .sl-pick-search input');
   if (input) { input.focus(); try { input.setSelectionRange(v.length, v.length); } catch (e) {} }
 }
@@ -896,11 +908,17 @@ function slWizPour(n) { slWiz.pour = n; slWiz.pourSet = true; slWizPaint(); }
 function slWizTime(v) { slWiz.time = v; slWizPaint(); }
 
 /* Step 3 — the measurement. Big targets: this happens with gloves on. */
-function slWiz3() {
+function slMeasureHint() {
   var l = slLoad(slWiz.ticket);
   var p = (slWiz.pour === 'plant' || slWiz.pour == null) ? null : slPour(l, slWiz.pour);
-  var v = p ? p.verifi : null;
-  var d = v == null ? null : slWiz.slump - v;
+  var v = p ? p.verifi : null, d = v == null ? null : slWiz.slump - v;
+  return 'Ticketed <b>' + slNum(l.ticketed) + ' in</b>'
+    + (v == null ? '' : ' \u00b7 Verifi at this pour <b>' + slNum(v) + ' in</b>'
+      + ' \u00b7 \u0394 <b>' + (d > 0 ? '+' : '') + d.toFixed(2) + '</b>');
+}
+
+function slWiz3() {
+  var l = slLoad(slWiz.ticket);
 
   var out = '<div class="sl-measure">'
     + '<div class="sl-measure-k">Measured slump</div>'
@@ -909,9 +927,7 @@ function slWiz3() {
       + '<div class="sl-measure-v">' + slNum(slWiz.slump) + '<small>in</small></div>'
       + '<button class="sl-step-btn" onclick="slWizSlump(0.25)">+</button>'
     + '</div>'
-    + '<div class="sl-measure-h">Ticketed <b>' + slNum(l.ticketed) + ' in</b>'
-      + (v == null ? '' : ' \u00b7 Verifi at this pour <b>' + slNum(v) + ' in</b>'
-        + ' \u00b7 \u0394 <b>' + (d > 0 ? '+' : '') + d.toFixed(2) + '</b>') + '</div>'
+    + '<div class="sl-measure-h">' + slMeasureHint() + '</div>'
   + '</div>';
 
   out += '<div class="sl-field"><div class="sl-flabel">Shape</div><div class="sl-choice">'
@@ -954,12 +970,28 @@ function slField(label, unit, key, val) {
     + '<input class="sl-input" inputmode="decimal" placeholder="\u2014" value="' + slEsc(val)
     + '" onchange="slWizSet(\'' + key + '\',this.value)"></div>';
 }
+/* Tapping +/- must not rebuild the drawer. It writes the two nodes that
+   changed and nothing else, so the panel does not flash, the scroll position
+   holds, and the note textarea keeps focus if the tester was typing in it. */
 function slWizSlump(step) {
   slWiz.slump = Math.max(0, Math.round((slWiz.slump + step) * 100) / 100);
-  slWizPaint();
+  var v = document.querySelector('#sl-dr-body .sl-measure-v');
+  var h = document.querySelector('#sl-dr-body .sl-measure-h');
+  if (!v || !h) { slWizBody(); return; }
+  v.innerHTML = slNum(slWiz.slump) + '<small>in</small>';
+  h.innerHTML = slMeasureHint();
 }
-function slWizShape(v) { slWiz.shape = v; slWizPaint(); }
-function slWizMore() { slWiz.more = !slWiz.more; slWizPaint(); }
+
+/* Shape is a class swap on two buttons, not a rebuild. */
+function slWizShape(v) {
+  slWiz.shape = v;
+  var btns = document.querySelectorAll('#sl-dr-body .sl-choice-btn');
+  if (!btns.length) { slWizBody(); return; }
+  btns[0].className = 'sl-choice-btn' + (v === 'true' ? ' on' : '');
+  btns[1].className = 'sl-choice-btn' + (v === 'collapsed' ? ' on' : '');
+}
+
+function slWizMore() { slWiz.more = !slWiz.more; slWizBody(); }
 function slWizSet(k, v) { slWiz[k] = v; }
 
 /* Step 4 — the derived record, before it is committed. */

@@ -10,6 +10,9 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""/>
 <link rel="stylesheet" href="styles.css">
+<!-- Slump Tests feature stylesheet (app-24). Loaded after styles.css; adds no
+     page rules to styles.css so the diff stays reviewable. -->
+<link rel="stylesheet" href="app-24-slump.css">
 <!-- build:1778170116 -->
 
 <!-- ─── TEST-SESSION GATE ──────────────────────────────────────────
@@ -1559,6 +1562,13 @@
       <div class="dt-sidebar-brand">
         <svg width="72" height="18" viewBox="0 0 96 24" fill="none"><path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z" fill="var(--strong)"/></svg>
       </div>
+      <!-- Quick add — EXTENSION. See the desktop sidebar note. -->
+      <button class="sl-quick" onclick="slQuickAdd()">
+        <span style="font-size:16px;line-height:1;">+</span>
+        <span>Quick add</span>
+        <span class="sl-quick-hint">slump test</span>
+      </button>
+
       <!-- Nav items — exact copy of desktop sidebar -->
       <div class="dt-nav-section">
         <div class="dt-nav-item">
@@ -1583,6 +1593,10 @@
           </div>
           <div id="tb-nav-tphases" onclick="tvNavGo('phases')" style="padding:10px 12px 10px 44px;border-radius:32px;cursor:pointer;" onmouseenter="if(!this.dataset.active)this.style.background='rgba(54,50,45,0.04)'" onmouseleave="if(!this.dataset.active)this.style.background=''">
             <span style="font-size:14px;color:rgba(54,50,45,0.5);letter-spacing:-0.28px;font-family:var(--font);">Phases</span>
+          </div>
+          <div id="tb-nav-slump" onclick="slNav()" style="padding:10px 12px 10px 44px;border-radius:32px;cursor:pointer;" onmouseenter="if(!this.dataset.active)this.style.background='rgba(54,50,45,0.04)'" onmouseleave="if(!this.dataset.active)this.style.background=''">
+            <span style="font-size:14px;color:rgba(54,50,45,0.5);letter-spacing:-0.28px;font-family:var(--font);">Slump Tests</span>
+            <span class="sl-nav-pill">Concept</span>
           </div>
         </div>
         <!-- Diagnostic Center — expanded -->
@@ -1737,6 +1751,11 @@
       <!-- RETURNED CONCRETE — tablet target (app-21) -->
       <div id="tb-page-returned">
         <div id="rc-tb-mount"></div>
+      </div>
+
+      <!-- SLUMP TESTS — tablet target (app-24) -->
+      <div id="tb-page-slump">
+        <div id="sl-tb-mount"></div>
       </div>
 
       <div id="tb-page-units" style="display:none;flex:1;display:none;flex-direction:column;min-height:0;overflow:hidden;">
@@ -2463,6 +2482,15 @@
         </svg>
       </div>
 
+      <!-- Quick add — EXTENSION, not in today's IA. Borrowed forward from the
+           proposed nav because burying "Add Slump Test" in an Actions dropdown
+           is half the discoverability problem. Flagged for review. -->
+      <button class="sl-quick" onclick="slQuickAdd()">
+        <span style="font-size:16px;line-height:1;">+</span>
+        <span>Quick add</span>
+        <span class="sl-quick-hint">slump test</span>
+      </button>
+
       <!-- Nav items -->
       <div class="dt-nav-section">
         <!-- Home -->
@@ -2493,6 +2521,13 @@
             </div>
             <div id="dt-nav-tphases" onclick="dtNavGo('tphases')" style="padding:10px 12px 10px 44px;border-radius:32px;cursor:pointer;" onmouseenter="if(!this.dataset.active)this.style.background='rgba(54,50,45,0.04)'" onmouseleave="if(!this.dataset.active)this.style.background=''">
               <span style="font-size:14px;color:rgba(54,50,45,0.5);letter-spacing:-0.28px;font-family:var(--font);">Phases</span>
+            </div>
+            <!-- Slump Tests (app-24). Sits under Tickets because a slump test is a
+                 measurement against one pour of one load, and the ticket is the
+                 object it hangs off. Nothing else in the IA moved. -->
+            <div id="dt-nav-slump" onclick="slNav()" style="padding:10px 12px 10px 44px;border-radius:32px;cursor:pointer;" onmouseenter="if(!this.dataset.active)this.style.background='rgba(54,50,45,0.04)'" onmouseleave="if(!this.dataset.active)this.style.background=''">
+              <span style="font-size:14px;color:rgba(54,50,45,0.5);letter-spacing:-0.28px;font-family:var(--font);">Slump Tests</span>
+              <span class="sl-nav-pill">Concept</span>
             </div>
           </div>
         </div>
@@ -3703,6 +3738,9 @@
       <!-- RETURNED CONCRETE — shell built by app-21-returned-loads.js -->
       <div id="dt-page-returned"></div>
 
+      <!-- SLUMP TESTS — shell built by app-24-slump-tests.js -->
+      <div id="dt-page-slump"></div>
+
       <div id="dt-page-home">
         <div class="hm-wrap" id="hm-wrap"></div>
       </div><!-- /dt-page-home -->
@@ -4222,6 +4260,7 @@
               <div class="sn-sub-item" onclick="tvNavGo('list')">Ticket List</div>
               <div class="sn-sub-item" onclick="tvNavGo('map')">Fleet map</div>
               <div class="sn-sub-item" onclick="tvNavGo('phases')">Phases</div>
+              <div class="sn-sub-item" onclick="slNav()" style="display:flex;align-items:center;gap:8px;">Slump Tests <span class="sl-nav-pill">Concept</span></div>
             </div>
             <!-- Diagnostic Center — expanded + active -->
             <div class="sn-item expanded" id="sn-diag" onclick="toggleNavItem('sn-diag','sn-diag-sub')">
@@ -4443,6 +4482,25 @@
     </div>
     <div id="rc-mob-mount"></div>
   </div><!-- /mob-page-returned -->
+
+  <!-- ═══ MOBILE SLUMP TESTS (app-24) ═══
+       The FAB, not a sidebar item: the field case is one-handed and the action
+       has to be reachable without opening the nav. -->
+  <div id="mob-page-slump">
+    <div class="top-nav" style="flex-shrink:0;">
+      <button onclick="openNav()" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;flex-shrink:0;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 12H14" stroke="#36322D" stroke-width="1.5" stroke-linecap="round"/><path d="M2 8H14" stroke="#36322D" stroke-width="1.5" stroke-linecap="round"/><path d="M2 4H14" stroke="#36322D" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+      <div style="position:absolute;left:50%;transform:translateX(-50%);">
+        <svg width="28" height="16" viewBox="0 0 28 16" fill="none"><path d="M10.3958 0H0V3.1785H9.15381L0.367992 15.9386H8.00383L12.6497 3.22457C13.1097 1.98081 12.4197 0 10.3958 0ZM16.6517 0C14.6277 0 13.9377 1.98081 14.3977 3.22457L19.0436 15.9386H26.6794L17.8936 3.1785H27.0474V0H16.6517Z" fill="#36322D"/></svg>
+      </div>
+      <div style="margin-left:auto;width:40px;height:40px;flex-shrink:0;"></div>
+    </div>
+    <div id="sl-mob-mount"></div>
+    <button class="sl-fab" onclick="slWizOpen()">
+      <span style="font-size:19px;line-height:1;">+</span>Log slump test
+    </button>
+  </div><!-- /mob-page-slump -->
 
   <!-- ═══ MOBILE ACCOUNT MANAGEMENT (app-17) ═══ -->
   <div id="mob-page-account">
@@ -4839,6 +4897,7 @@
 <script src="app-20-ticket-drawer.js"></script>
 <script src="app-21-returned-loads.js"></script>
 <script src="app-22-widget-previews.js"></script>
+<script src="app-24-slump-tests.js"></script>
 <script src="comments.js"></script>
 <script src="router.js"></script>
 <script src="testing.js"></script>

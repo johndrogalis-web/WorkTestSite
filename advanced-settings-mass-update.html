@@ -841,6 +841,17 @@ table.hist td.dim{color:var(--muted)}
 }
 .mvp-toggle.on{background:var(--blue);border-color:var(--blue)}
 .mvp-toggle.on::after{left:16px;background:#fff}
+.mvp-toggle:focus-visible{outline:2px solid var(--blue-hi);outline-offset:2px}
+.mvp-toggle-wrap{display:flex;align-items:center;gap:10px;height:34px}
+.mvp-toggle-label{font-size:13px;font-weight:700;color:var(--muted);min-width:26px}
+.mvp-toggle-label.on{color:var(--text)}
+.mvp-impact{
+  font-size:13px;color:var(--muted);font-weight:500;line-height:1.5;
+  margin-top:16px;padding:11px 14px;border-radius:var(--radius-sm);
+  background:var(--panel-2);border:1px solid var(--border);
+}
+.mvp-impact b{color:var(--text);font-weight:700}
+.mvp-impact.idle{background:transparent;border-color:transparent;padding:11px 0 0;color:var(--faint)}
 .cmp-pop-item.selected{background:var(--panel-2)}
 .mvp-pop-check{width:12px;height:12px;flex-shrink:0;color:var(--blue-hi)}
 .status-cell.differs{color:var(--amber)}
@@ -1122,7 +1133,8 @@ table.tt td.dim{color:var(--muted)}
           <div id="mvpValueControl"></div>
         </div>
       </div>
-      <button class="btn btn-primary" id="mvpSendBtn" onclick="sendMvpUpdate()" style="margin-top:16px;margin-bottom:24px">Send update</button>
+      <div class="mvp-impact idle" id="mvpImpact"></div>
+      <button class="btn btn-primary" id="mvpSendBtn" onclick="sendMvpUpdate()" style="margin-top:14px;margin-bottom:24px">Send update</button>
       <div id="mvpResult"></div>
     </div>
 
@@ -2445,7 +2457,13 @@ document.addEventListener('click', ()=>{ const p=document.getElementById('mvpPop
 function setMvpValue(v){ mvpValue = v; renderMvp(); }
 function buildMvpControl(s){
   if(s.type==='toggle'){
-    return `<div class="mvp-toggle${mvpValue===true?' on':''}" onclick="setMvpValue(${mvpValue===true?'false':'true'})"></div>`;
+    const on = mvpValue===true, next = on?'false':'true';
+    return `<div class="mvp-toggle-wrap">
+      <div class="mvp-toggle${on?' on':''}" role="switch" aria-checked="${on}" aria-label="${s.name}" tabindex="0"
+        onclick="setMvpValue(${next})"
+        onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();setMvpValue(${next})}"></div>
+      <span class="mvp-toggle-label${on?' on':''}">${on?'On':'Off'}</span>
+    </div>`;
   }
   if(s.type==='select'){
     return `<select class="sel-input" style="width:220px" onchange="setMvpValue(this.value)">
@@ -2477,6 +2495,7 @@ function renderMvp(){
         : `<strong style="color:var(--text)">${n} truck${n===1?'':'s'} selected.</strong> Pick a setting above to see its current value on ${n===1?'this truck':'these trucks'}.`
     }</div>`;
     document.getElementById('mvpSendBtn').disabled = true;
+    setMvpImpact('', true);
     return;
   }
   ft.textContent = s.name + (s.unit?` (${s.unit})`:'');
@@ -2484,6 +2503,22 @@ function renderMvp(){
   document.getElementById('mvpTypeDisplay').innerHTML = `<span>${typeLabel(s)}</span>${CHEV}`;
   document.getElementById('mvpValueControl').innerHTML = buildMvpControl(s);
   renderMvpResult();
+}
+function setMvpImpact(html, idle){
+  const el = document.getElementById('mvpImpact');
+  if(!el) return;
+  el.innerHTML = html;
+  el.classList.toggle('idle', !!idle);
+}
+/* Spells out the action in words so a Boolean push reads as On/Off, not a silent value. */
+function mvpActionText(s, p, n){
+  if(!p.ok) return null;
+  const val = `<b class="newval">${fmtParsed(s, p.value)}</b>`;
+  const trucks = `<b>${n}</b> truck${n===1?'':'s'}`;
+  if(s.type==='toggle'){
+    return `You are turning <b>${s.fw||s.name}</b> ${p.value===true?'<b class="newval">ON</b>':'<b class="newval">OFF</b>'} for ${trucks}.`;
+  }
+  return `You are setting <b>${s.fw||s.name}</b> to ${val} for ${trucks}.`;
 }
 function renderMvpResult(){
   const s = SETTINGS.find(x=>x.id===mvpSetting);
@@ -2493,6 +2528,7 @@ function renderMvpResult(){
   if(selected.size===0){
     box.innerHTML = `<div class="cmp-hint">Select trucks on the left to load them here.</div>`;
     btn.disabled = true;
+    setMvpImpact('Select trucks to enable this update.', true);
     return;
   }
   const p = mvpParsed();
@@ -2540,6 +2576,15 @@ function renderMvpResult(){
       <tbody>${rows}</tbody>
     </table></div>`;
 
+  const act = mvpActionText(s, p, selected.size);
+  if(act){
+    const noop = (inSync===total && total>0)
+      ? ` All ${total===1?'it':'of them'} already report this value; sending will re-stamp ${total===1?'it':'them'}.`
+      : (differ>0 ? ` <b>${differ}</b> will change.` : '');
+    setMvpImpact(act + noop, false);
+  } else {
+    setMvpImpact('Enter a value to enable this update.', true);
+  }
   btn.disabled = !p.ok;
 }
 function sendMvpUpdate(){
@@ -2562,7 +2607,10 @@ function sendMvpUpdate(){
     }, delay);
   });
   const n = targets.length;
-  showToast(`Update sent to ${n} truck${n===1?'':'s'} — awaiting confirmation`);
+  const what = s.type==='toggle'
+    ? `${s.fw||s.name} turned ${p.value===true?'ON':'OFF'}`
+    : `${s.fw||s.name} set to ${fmtParsed(s, p.value)}`;
+  showToast(`${what} on ${n} truck${n===1?'':'s'} — awaiting confirmation`);
 }
 
 

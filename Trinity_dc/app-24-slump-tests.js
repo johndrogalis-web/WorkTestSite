@@ -176,6 +176,7 @@ var SL_TESTS = [
 var slMode  = 'd';                /* 'd' desktop · 't' tablet · 'm' mobile     */
 var slView  = 'all';              /* 'all' · 'review' · 'batch'                */
 var slQ     = '';
+var slGate  = true;               /* true = show Coming soon instead of the page */
 var slDrawer = null;              /* { kind:'test'|'wizard', key }             */
 var slWiz   = null;
 var slBatch = null;
@@ -306,6 +307,31 @@ function slRows() {
 }
 
 /* ── Render: head + stats ─────────────────────────────────────────────────── */
+
+/* ── Gate ────────────────────────────────────────────────────────────────
+   The nav item stays in place, but the section reads as Coming soon by
+   default. The concept behind it is reachable on request rather than deleted,
+   because the design direction here is not this file's call to make.
+
+   Locked: there is no reveal control in the UI. The concept still renders if
+   slGate is set to false from the console, which is how it gets demoed, but
+   nothing in the interface can open it. Nobody clicking around the prototype
+   can reach the concept and mistake it for a decision. */
+function slGatePanel() {
+  return '<div class="sl-gate">'
+    + '<span class="sl-gate-tag">Coming soon</span>'
+    + '<div class="sl-gate-t">Slump Tests</div>'
+    + '<div class="sl-gate-s">This section is not built. Today\u2019s Slump Test Report still lives in '
+      + 'the Hub and is unchanged.<br><br>There is an early concept behind this screen for how a test '
+      + 'could attach to a specific load and pour instead of being typed in by hand. Whether to take '
+      + 'that direction is the call of whoever owns this area, not something settled here.</div>'
+  + '</div>';
+}
+function slReveal(on) {
+  slGate = !on;
+  slDrawerClose();
+  slRender();
+}
 
 /* ── Concept marker ──────────────────────────────────────────────────────
    Deliberately not dismissible. A banner that can be closed vanishes from
@@ -562,6 +588,7 @@ function slBatchSave() {
 /* ── Render: page ─────────────────────────────────────────────────────────── */
 
 function slHtml() {
+  if (slGate) return '<div class="sl-scroll sl-scroll--gated">' + slGatePanel() + '</div>';
   return '<div class="sl-scroll">' + slWip() + slHead() + slToolbar()
     + (slView === 'batch' ? slBatchView() : slTable()) + '</div>';
 }
@@ -1151,6 +1178,7 @@ function slNav() {
 /* Quick add from the sidebar: land on the page, then open the wizard. */
 function slQuickAdd() {
   slNav();
+  if (slGate) return;   /* land on the Coming soon panel, do not force the flow open */
   setTimeout(function () { slWizOpen(); }, 60);
 }
 

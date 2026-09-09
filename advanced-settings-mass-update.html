@@ -1167,7 +1167,6 @@ table.tt td.dim{color:var(--muted)}
               <button class="clear-all" onclick="clearCompareSettings()">Clear All</button>
             </div>
             <div class="cmp-pop-list" id="cmpPopList"></div>
-            <button class="cmp-pop-add" onclick="openAddSetting(event)">＋&nbsp; Add a setting</button>
           </div>
           <div class="cmp-colfilter" id="cmpColFilterWrap" style="display:none">
             <div class="search-box">
@@ -1227,7 +1226,7 @@ table.tt td.dim{color:var(--muted)}
 <div class="modal-backdrop" id="addBackdrop">
   <div class="modal" style="width:620px">
     <h2>Add a setting</h2>
-    <div class="sub">For a setting the Hub catalog doesn't list yet. It goes out under the firmware key built from the name, so the name has to match what the firmware expects.</div>
+    <div class="sub">A one-time push for a setting the Hub catalog doesn't carry. It goes out under the firmware key built from the name, so the name has to match what the firmware expects. It is sent to the selected trucks once, straight from here, and is not saved to the fleet settings.</div>
     <div id="addDup"></div>
     <div class="add-grid">
       <div class="add-row">
@@ -1256,7 +1255,7 @@ table.tt td.dim{color:var(--muted)}
     <div class="sub" id="addImpact" style="margin-top:18px;margin-bottom:0"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeAddSetting()">Cancel</button>
-      <button class="btn btn-primary" id="addSaveBtn" onclick="saveAddSetting()">Add setting</button>
+      <button class="btn btn-primary" id="addSaveBtn" onclick="saveAddSetting()">Push</button>
     </div>
   </div>
 </div>
@@ -1294,7 +1293,6 @@ const SECTIONS = [
   {id:'hose', name:'Fluid Hose Length Settings'},
   {id:'loadtrans', name:'Load Transition Settings'},
   {id:'location', name:'Location Monitor Settings'},
-  {id:'custom', name:'Custom Settings'},
   {id:'advanced', name:'Advanced Settings'},
 ];
 
@@ -1997,7 +1995,7 @@ function renderCmpPop(){
     const sel = compareSettings.includes(s.id);
     return `<button class="cmp-pop-item" title="${s.fw||s.name}" onclick="toggleCompareSetting('${s.id}')">
       <div class="cb ${sel?'checked':''}">${CHECK}</div>
-      ${s.name}${s.unit?` (${s.unit})`:''}${s.custom?`<span class="custom-tag">Not in HUB</span>`:''}<span class="type-tag">${typeLabel(s)}</span>${s.custom?`<span class="cust-rm" title="Remove this setting" onclick="event.stopPropagation();removeCustomSetting('${s.id}')">×</span>`:''}
+      ${s.name}${s.unit?` (${s.unit})`:''}<span class="type-tag">${typeLabel(s)}</span>
     </button>`;
   }).join('');
   const items = eligible; // pool for the All Settings checkbox below
@@ -2152,7 +2150,7 @@ function setPageVersion(v){
   if(document.getElementById('logsBackdrop').classList.contains('open')) renderLogsDrawer();
 }
 function eligibleSettings(q){
-  return SETTINGS.filter(s=>!s.locked && s.functional!==false
+  return SETTINGS.filter(s=>!s.locked && !s.oneshot && s.functional!==false
     && (!q || s.name.toLowerCase().includes(q) || (s.fw||'').toLowerCase().includes(q)));
 }
 function setColFilter(v){ cmpColFilter = v; renderCompare(); }
@@ -2448,6 +2446,7 @@ function sendFix(){
 
 /* ---- add a setting the Hub catalog doesn't carry yet ---- */
 let custSeq = 0;
+let oneShotId = null;
 let addValue = null;
 const HUB_TYPE_MAP = {Integer:'number', Float:'number', Boolean:'toggle', String:'text', Dropdown:'select'};
 
@@ -2546,67 +2545,86 @@ function renderAddState(){
         </button>
       </div>`
     : '';
-  const ok = !!name && !!fw && !dupe && addValueOk(t, opts);
-  document.getElementById('addSaveBtn').disabled = !ok;
+  const n = selected.size;
+  const ok = !!name && !!fw && !dupe && addValueOk(t, opts) && n>0;
+  const btn = document.getElementById('addSaveBtn');
+  btn.disabled = !ok;
+  btn.textContent = n>0 ? `Push to ${n} truck${n===1?'':'s'}` : 'Push';
   const imp = document.getElementById('addImpact');
   if(dupe){ imp.innerHTML = ''; return; }
   if(!name){ imp.innerHTML = 'Name the setting to continue.'; return; }
   if(t==='Dropdown' && opts.length<2){ imp.innerHTML = 'A dropdown needs at least two choices.'; return; }
   if(!addValueOk(t, opts)){ imp.innerHTML = 'Enter the value you want pushed.'; return; }
+  if(n===0){ imp.innerHTML = 'Select trucks on the left before pushing.'; return; }
   const shown = t==='Boolean' ? (addValue?'On':'Off') : `${addValue}`;
-  imp.innerHTML = `Adds <b>${fw}</b> as ${t.toLowerCase()} and reads it back across your ${selected.size} selected truck${selected.size===1?'':'s'}. Nothing goes out until you press <b>Send update</b>, with <b class="newval">${shown}</b> queued as the value.`;
-}
-/* variation value for the demo fleet, so a new setting reads like a real one */
-function altForCustom(s){
-  if(s.type==='toggle') return !s.def;
-  if(s.type==='select') return s.options[1]!==undefined ? s.options[1] : s.def;
-  if(s.type==='text') return s.def;
-  const n = Number(s.def);
-  if(s.hubType==='Integer'){ const a = Math.round(n*1.25); return a===n ? n+1 : a; }
-  return Math.round(n*1.25*1000)/1000;
+  imp.innerHTML = `Pushes <b>${fw}</b> as ${t.toLowerCase()} = <b class="newval">${shown}</b> to your ${n} selected truck${n===1?'':'s'} the moment you confirm. One time only — nothing is saved to the fleet settings.`;
 }
 function saveAddSetting(){
   const name = (document.getElementById('addName').value||'').trim();
   const fw = fwFromName(name);
   const t = document.getElementById('addType').value;
   const opts = addOptionList();
-  if(!name || !fw || !addValueOk(t, opts)) return;
+  const targets = [...selected];
+  if(!name || !fw || !addValueOk(t, opts) || targets.length===0) return;
+  clearOneShot(true);
   const val = addValue;
   const id = 'cust_' + (++custSeq);
-  const s = {id, sec:'custom', name, fw, type:HUB_TYPE_MAP[t], hubType:t, def:val, custom:true, hidden:true};
+  const s = {id, sec:'custom', name, fw, type:HUB_TYPE_MAP[t], hubType:t, def:val,
+             custom:true, oneshot:true, noFakeHistory:true};
   if(t==='Dropdown') s.options = opts;
-  s.alt = altForCustom(s);
   SETTINGS.push(s);
-  TRUCKS.forEach(tr=>{ state[tr.id][id] = genEntry(tr, s); });
+  oneShotId = id;
+  // the Hub has never carried this key, so no truck has a stored value for it
+  TRUCKS.forEach(tr=>{
+    state[tr.id][id] = {value:null, lastUpdated:null, source:null, submitter:null, status:'novalue'};
+  });
   closeAddSetting();
-  if(pageVersion==='mvp'){
-    mvpSetting = id;
-    mvpValue = val;
-  } else if(!compareSettings.includes(id)){
-    compareSettings.push(id);
-  }
+  mvpSetting = id;
+  mvpValue = val;
+  // this modal is the send step — out the door right away
+  targets.forEach(tid=>{
+    state[tid][id] = {...state[tid][id], status:'pending', source:'Hub', submitter:'You', pendingValue:val};
+  });
+  confirmPush(s, targets);
   renderMvpPop();
-  if(document.getElementById('cmpPopList')) renderCmpPop();
   renderAll();
-  showToast(`${name} added — not in the HUB catalog yet`);
+  const what = s.type==='toggle'
+    ? `${fw} pushed ${val===true?'ON':'OFF'}`
+    : `${fw} pushed as ${fmtParsed(s, val)}`;
+  showToast(`${what} to ${targets.length} truck${targets.length===1?'':'s'} — one time, awaiting confirmation`);
+}
+/* trucks acknowledge on their own clock */
+function confirmPush(s, targets){
+  const now = 'Aug 31, 2026';
+  targets.forEach((tid,i)=>{
+    const delay = (i===targets.length-1 && targets.length>2) ? 9000 : 1500 + Math.random()*4500;
+    setTimeout(()=>{
+      const e = state[tid][s.id];
+      if(!e || !SETTINGS.some(x=>x.id===s.id)) return;   // push was cleared while in flight
+      state[tid][s.id] = {value:e.pendingValue, lastUpdated:now, source:'Hub', submitter:'You', status:'confirmed'};
+      getHistory(tid, s.id).unshift({value:e.pendingValue, date:now, submitter:'You', source:'Hub'});
+      if(pageVersion==='mvp') renderMvpResult();
+    }, delay);
+  });
+}
+/* a one-time push lives only until it is sent or replaced — it is never saved to the catalog */
+function clearOneShot(quiet){
+  if(!oneShotId) return;
+  const i = SETTINGS.findIndex(x=>x.id===oneShotId);
+  const nm = i>=0 ? SETTINGS[i].name : '';
+  if(i>=0) SETTINGS.splice(i,1);
+  TRUCKS.forEach(tr=>{ delete state[tr.id][oneShotId]; });
+  if(mvpSetting===oneShotId){ mvpSetting = null; mvpValue = null; }
+  oneShotId = null;
+  document.getElementById('mvpSendBtn').style.display = '';
+  if(quiet) return;
+  renderMvpPop();
+  renderAll();
+  if(nm) showToast(`${nm} discarded`);
 }
 function useExistingSetting(sid){
   closeAddSetting();
-  if(pageVersion==='mvp') selectMvpSetting(sid);
-  else { if(!compareSettings.includes(sid)) compareSettings.push(sid); renderCmpPop(); renderCompare(); }
-}
-function removeCustomSetting(sid){
-  const i = SETTINGS.findIndex(x=>x.id===sid);
-  if(i<0 || !SETTINGS[i].custom) return;
-  const nm = SETTINGS[i].name;
-  SETTINGS.splice(i,1);
-  TRUCKS.forEach(tr=>{ delete state[tr.id][sid]; });
-  compareSettings = compareSettings.filter(x=>x!==sid);
-  if(mvpSetting===sid){ mvpSetting = null; mvpValue = null; }
-  renderMvpPop();
-  if(document.getElementById('cmpPopList')) renderCmpPop();
-  renderAll();
-  showToast(`${nm} removed`);
+  selectMvpSetting(sid);
 }
 document.addEventListener('keydown', e=>{
   if(e.key==='Escape' && document.getElementById('addBackdrop').classList.contains('visible')) closeAddSetting();
@@ -2638,7 +2656,7 @@ function renderMvpPop(){
     const sel = mvpSetting===s.id;
     return `<button class="cmp-pop-item${sel?' selected':''}" title="${s.fw||s.name}" onclick="selectMvpSetting('${s.id}')">
       <span class="mvp-pop-check">${sel?CHECK:''}</span>
-      ${s.name}${s.unit?` (${s.unit})`:''}${s.custom?`<span class="custom-tag">Not in HUB</span>`:''}<span class="type-tag">${typeLabel(s)}</span>${s.custom?`<span class="cust-rm" title="Remove this setting" onclick="event.stopPropagation();removeCustomSetting('${s.id}')">×</span>`:''}
+      ${s.name}${s.unit?` (${s.unit})`:''}<span class="type-tag">${typeLabel(s)}</span>
     </button>`;
   }).join('');
   const basicHtml = SECTIONS.filter(sec=>sec.id!=='advanced').map(sec=>{
@@ -2658,6 +2676,7 @@ function renderMvpPop(){
   list.innerHTML = (basicHtml + advHtml) || `<div style="padding:14px;color:var(--faint);font-size:12.5px">No matching settings</div>`;
 }
 function selectMvpSetting(sid){
+  if(oneShotId && sid!==oneShotId) clearOneShot(true);
   mvpSetting = sid;
   seedMvpValue();
   document.getElementById('mvpPop').classList.remove('open');
@@ -2712,7 +2731,16 @@ function renderMvp(){
   ft.textContent = s.name + (s.unit?` (${s.unit})`:'');
   ft.className = 'cmp-field-text';
   document.getElementById('mvpTypeDisplay').innerHTML = `<span>${typeLabel(s)}</span>${CHEV}`;
-  document.getElementById('mvpValueControl').innerHTML = buildMvpControl(s);
+  const sendBtn = document.getElementById('mvpSendBtn');
+  if(s.oneshot){
+    // already sent from the modal — show what went out, no re-send
+    document.getElementById('mvpValueControl').innerHTML =
+      `<div class="mvp-type-display" style="cursor:default">${fmtVal(s, s.def)}</div>`;
+    sendBtn.style.display = 'none';
+  } else {
+    document.getElementById('mvpValueControl').innerHTML = buildMvpControl(s);
+    sendBtn.style.display = '';
+  }
   renderMvpResult();
 }
 function setMvpImpact(html, idle){
@@ -2726,6 +2754,10 @@ function mvpActionText(s, p, n){
   if(!p.ok) return null;
   const val = `<b class="newval">${fmtParsed(s, p.value)}</b>`;
   const trucks = `<b>${n}</b> truck${n===1?'':'s'}`;
+  if(s.oneshot){
+    const shown = s.type==='toggle' ? (p.value===true?'<b class="newval">ON</b>':'<b class="newval">OFF</b>') : val;
+    return `One-time push sent: <b>${s.fw||s.name}</b> went out ${s.type==='toggle'?shown:`as ${shown}`} to ${trucks}. Nothing was saved to the fleet settings.`;
+  }
   if(s.type==='toggle'){
     return `You are turning <b>${s.fw||s.name}</b> ${p.value===true?'<b class="newval">ON</b>':'<b class="newval">OFF</b>'} for ${trucks}.`;
   }
@@ -2748,11 +2780,21 @@ function renderMvpResult(){
   const inSync = p.ok ? r.entries.filter(e=>e.value!==null && JSON.stringify(e.value)===JSON.stringify(p.value)).length : 0;
   const differ = total - r.noVal - inSync;
 
-  const chips = [`<span class="sum-chip${inSync>0?' confirmed':''}"><span class="dot"></span>${inSync} match${p.ok?` @ ${fmtVal(s,p.value)}`:''}</span>`];
-  if(differ>0) chips.push(`<span class="sum-chip mixed"><span class="dot"></span>${differ} ${differ===1?"doesn't":"don't"} match</span>`);
-  if(r.noVal>0) chips.push(`<span class="sum-chip"><span class="dot"></span>${r.noVal} no value</span>`);
+  const one = !!s.oneshot;
+  const pushedOk = one ? r.entries.filter(e=>e.status==='confirmed').length : 0;
+  const chips = one
+    ? [`<span class="sum-chip mixed"><span class="dot"></span>One-time push</span>`,
+       `<span class="sum-chip${pushedOk===total?' confirmed':''}"><span class="dot"></span>${pushedOk} of ${total} confirmed${p.ok?` @ ${fmtVal(s,p.value)}`:''}</span>`]
+    : [`<span class="sum-chip${inSync>0?' confirmed':''}"><span class="dot"></span>${inSync} match${p.ok?` @ ${fmtVal(s,p.value)}`:''}</span>`];
+  if(!one && differ>0) chips.push(`<span class="sum-chip mixed"><span class="dot"></span>${differ} ${differ===1?"doesn't":"don't"} match</span>`);
+  if(!one && r.noVal>0) chips.push(`<span class="sum-chip"><span class="dot"></span>${r.noVal} no value</span>`);
 
-  const warn = (r.noVal===total)
+  const warn = one
+    ? `<div class="warn-banner" style="gap:14px">
+        <span style="flex:1;line-height:1.5">Sent as a one-time push. <b>${s.fw||s.name}</b> is not in the HUB catalog, so nothing is stored on the fleet and there is no value to compare against later. Add it to the catalog if it needs managing going forward.</span>
+        <button class="btn btn-ghost" style="flex:none;padding:5px 12px;font-size:11.5px;white-space:nowrap" onclick="clearOneShot()">Clear</button>
+      </div>`
+    : (r.noVal===total)
     ? `<div class="warn-banner">No value was reported for ${s.fw||s.name} by any of the ${total} selected truck${total===1?'':'s'} in the last 90 days. Confirm the setting name is spelled correctly and that the trucks have reported since it was applied.</div>`
     : '';
 
@@ -2762,7 +2804,8 @@ function renderMvpResult(){
       const e = state[tid][s.id];
       let st, label;
       if(e.status==='pending'){ st='pending'; label='Pending'; }
-      else if(e.value===null){ st='novalue'; label='No value'; }
+      else if(one && e.status==='confirmed'){ st='confirmed'; label='Pushed'; }
+      else if(e.value===null){ st='novalue'; label=one?'Not in HUB':'No value'; }
       else if(p.ok && JSON.stringify(e.value)===JSON.stringify(p.value)){ st='confirmed'; label='Matches'; }
       else { st='differs'; label="Doesn't match"; }
       return `<tr>
@@ -2778,50 +2821,41 @@ function renderMvpResult(){
 
   box.innerHTML = `${warn}
     <div class="summary-bar">
-      <div class="summary-count"><span class="label">Setting</span><span class="num" style="font-size:14px">${s.fw||s.name}${s.custom?`<span class="custom-tag">Not in HUB</span>`:''}</span></div>
+      <div class="summary-count"><span class="label">Setting</span><span class="num" style="font-size:14px">${s.fw||s.name}${one?`<span class="custom-tag">One-time push</span>`:''}</span></div>
       <div class="summary-count"><span class="label">Trucks selected</span><span class="num">${total}</span></div>
       <div class="summary-chips">${chips.join('')}</div>
     </div>
     <div class="cmp-table-wrap"><table class="tt">
-      <thead><tr><th>Truck Name</th><th>Settings</th><th>Type</th><th>Current Value</th><th>Last Updated</th><th>Source</th><th>Status</th></tr></thead>
+      <thead><tr><th>Truck Name</th><th>Settings</th><th>Type</th><th>${one?'Pushed Value':'Current Value'}</th><th>Last Updated</th><th>Source</th><th>Status</th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>`;
 
   const act = mvpActionText(s, p, selected.size);
   if(act){
-    const noop = (inSync===total && total>0)
+    const noop = one ? '' : (inSync===total && total>0)
       ? ` All ${total===1?'it':'of them'} already report this value; sending will re-stamp ${total===1?'it':'them'}.`
       : (differ>0 ? ` <b>${differ}</b> will change.` : '');
     setMvpImpact(act + noop, false);
   } else {
     setMvpImpact('Enter a value to enable this update.', true);
   }
-  btn.disabled = !p.ok;
+  btn.disabled = one ? true : !p.ok;
 }
 function sendMvpUpdate(){
   const s = SETTINGS.find(x=>x.id===mvpSetting);
   const p = mvpParsed();
   if(!s || !p.ok || selected.size===0) return;
   const targets = [...selected];
-  const now = 'Aug 31, 2026';
   targets.forEach(tid=>{
     state[tid][s.id] = {...state[tid][s.id], status:'pending', source:'Hub', submitter:'You', pendingValue:p.value};
   });
   renderMvpResult();
-  targets.forEach((tid,i)=>{
-    const delay = (i===targets.length-1 && targets.length>2) ? 9000 : 1500 + Math.random()*4500;
-    setTimeout(()=>{
-      const e = state[tid][s.id];
-      state[tid][s.id] = {value:e.pendingValue, lastUpdated:now, source:'Hub', submitter:'You', status:'confirmed'};
-      getHistory(tid, s.id).unshift({value:e.pendingValue, date:now, submitter:'You', source:'Hub'});
-      if(pageVersion==='mvp') renderMvpResult();
-    }, delay);
-  });
+  confirmPush(s, targets);
   const n = targets.length;
   const what = s.type==='toggle'
     ? `${s.fw||s.name} turned ${p.value===true?'ON':'OFF'}`
     : `${s.fw||s.name} set to ${fmtParsed(s, p.value)}`;
-  showToast(`${what} on ${n} truck${n===1?'':'s'} — awaiting confirmation`);
+  showToast(`${what} on ${n} truck${n===1?'':'s'} — ${s.oneshot?'one-time push, awaiting confirmation':'awaiting confirmation'}`);
 }
 
 

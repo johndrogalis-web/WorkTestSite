@@ -2183,7 +2183,7 @@ function renderCompare(){
       stat = `<span class="cmp-stat">${c.r.entries.length} Trucks<span class="sep">|</span>All Match: <b>${fmtVal(c.s, c.r.groups[0]?.value)}</b></span>`;
     } else {
       const nv = c.r.noVal>0 ? `<span class="sep">|</span>No Value: <b>${c.r.noVal}</b>` : '';
-      stat = `<span class="cmp-stat">${c.r.entries.length} Trucks<span class="sep">|</span>Differ: <b>${c.mismatch} of ${c.r.entries.length}</b>${nv}</span>`;
+      stat = `<span class="cmp-stat">${c.r.entries.length} Trucks<span class="sep">|</span>Don't match: <b>${c.mismatch} of ${c.r.entries.length}</b>${nv}</span>`;
     }
     return `<th><div class="cmp-head-name" title="${c.s.fw||c.s.name}">${c.s.name}${c.s.unit?` <span class="setting-unit">${c.s.unit}</span>`:''}${c.s.custom?`<span class="custom-tag">Not in HUB</span>`:''}</div>
       <div class="cmp-head-meta"><button class="fix-btn" onclick="openFix('${c.s.id}')">Update</button>${stat}</div></th>`;
@@ -2537,8 +2537,8 @@ function renderMvpResult(){
   const inSync = p.ok ? r.entries.filter(e=>e.value!==null && JSON.stringify(e.value)===JSON.stringify(p.value)).length : 0;
   const differ = total - r.noVal - inSync;
 
-  const chips = [`<span class="sum-chip${inSync>0?' confirmed':''}"><span class="dot"></span>${inSync} in sync${p.ok?` @ ${fmtVal(s,p.value)}`:''}</span>`];
-  if(differ>0) chips.push(`<span class="sum-chip mixed"><span class="dot"></span>${differ} differ</span>`);
+  const chips = [`<span class="sum-chip${inSync>0?' confirmed':''}"><span class="dot"></span>${inSync} match${p.ok?` @ ${fmtVal(s,p.value)}`:''}</span>`];
+  if(differ>0) chips.push(`<span class="sum-chip mixed"><span class="dot"></span>${differ} don't match</span>`);
   if(r.noVal>0) chips.push(`<span class="sum-chip"><span class="dot"></span>${r.noVal} no value</span>`);
 
   const warn = (r.noVal===total)
@@ -2552,8 +2552,8 @@ function renderMvpResult(){
       let st, label;
       if(e.status==='pending'){ st='pending'; label='Pending'; }
       else if(e.value===null){ st='novalue'; label='No value'; }
-      else if(p.ok && JSON.stringify(e.value)===JSON.stringify(p.value)){ st='confirmed'; label='In sync'; }
-      else { st='differs'; label='Differs'; }
+      else if(p.ok && JSON.stringify(e.value)===JSON.stringify(p.value)){ st='confirmed'; label='Matches'; }
+      else { st='differs'; label="Doesn't match"; }
       return `<tr>
         <td>${truckName(tid)}</td>
         <td>${s.fw||s.name}</td>

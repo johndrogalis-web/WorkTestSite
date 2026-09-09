@@ -14,6 +14,14 @@
     --dim: #6a6a6a;
     --orange: #e08a4c;
     --border: #333;
+    /* component-health cell tokens (page-level, theme-swapped below) */
+    --c-ok: #3fbf5f;
+    --c-warn: #e08a4c;
+    --c-warn-ink: #e08a4c;
+    --c-alarm: #d64545;
+    --c-alarm-ink: #e06a6a;
+    --c-pop-bg: #2b2b2b;
+    --c-pop-border: #3d3d3d;
   }
   body {
     background: var(--bg);
@@ -121,6 +129,73 @@
   .dot.on::after { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--text); }
   .dot.off { border-color: var(--muted); }
   .dot.prog { border-color: var(--text); font-size: 9px; }
+  /* ---------- Component health cell (landing table) ----------
+     One scannable data field per truck: n/total parts reporting
+     clean, plus the offending part names when the count is short.
+     Rendered from the same mcsCardsFor/fdmCardsFor data the
+     drawer's Measurement Component cards use, so the two can
+     never drift. */
+  /* Phase 1_Timeline and above only — Current State keeps today's
+     six columns untouched (body.comp-col is set by setProtoView). */
+  body:not(.comp-col) .comp-h, body:not(.comp-col) .comp-cell { display: none; }
+  /* Phase 1+ : Components replaces the Alert column — the fault
+     text it carried now lives in the rollover panel */
+  body.comp-col .alert-h, body.comp-col td.alert { display: none; }
+  .comp-cell { white-space: nowrap; position: relative; }
+  .comp {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 14px; color: var(--text);
+  }
+  .comp .cdot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: var(--c-ok); }
+  .comp .ccount { font-variant-numeric: tabular-nums; color: var(--muted); }
+  .comp .cbad {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600; letter-spacing: .2px;
+    padding: 2px 8px; border-radius: 11px;
+  }
+  .comp.warn  .cdot { background: var(--c-warn); }
+  .comp.warn  .ccount { color: var(--c-warn-ink); }
+  .comp.warn  .cbad { color: var(--c-warn-ink); background: color-mix(in srgb, var(--c-warn) 16%, transparent); }
+  .comp.alarm .cdot { background: var(--c-alarm); }
+  .comp.alarm .ccount { color: var(--c-alarm-ink); }
+  .comp.alarm .cbad { color: var(--c-alarm-ink); background: color-mix(in srgb, var(--c-alarm) 16%, transparent); }
+  .comp-cell:hover .cbad { box-shadow: inset 0 0 0 1px currentColor; }
+
+  /* Rollover expansion — the collapsed cell never grows the row, so
+     every faulting part (2, 3, 5 or all 11) is listed here instead. */
+  .comp-pop {
+    position: absolute; left: 6px; top: calc(100% - 10px);
+    z-index: 40; min-width: 268px; max-width: 320px;
+    padding: 10px 4px 6px;
+    background: var(--c-pop-bg); border: 1px solid var(--c-pop-border);
+    border-radius: 8px; box-shadow: 0 10px 28px rgba(0,0,0,.34);
+    opacity: 0; visibility: hidden; transform: translateY(-4px);
+    transition: opacity .12s ease, transform .12s ease;
+    white-space: normal; cursor: pointer;
+  }
+  .comp-cell:hover .comp-pop { opacity: 1; visibility: visible; transform: translateY(0); }
+  .comp-pop.up { top: auto; bottom: calc(100% - 10px); }
+  .comp-pop .cp-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 0 12px 8px; font-size: 12px; color: var(--muted);
+  }
+  .comp-pop .cp-head b { color: var(--text); font-weight: 600; }
+  .comp-pop .cp-row {
+    display: flex; align-items: flex-start; gap: 9px;
+    padding: 7px 12px; border-radius: 5px;
+  }
+  .comp-pop .cp-row:nth-child(odd) { background: color-mix(in srgb, var(--text) 5%, transparent); }
+  .comp-pop .cp-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+  .comp-pop .cp-row.warn  .cp-dot { background: var(--c-warn); }
+  .comp-pop .cp-row.alarm .cp-dot { background: var(--c-alarm); }
+  .comp-pop .cp-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .comp-pop .cp-name { font-size: 12.5px; font-weight: 600; color: var(--text); }
+  .comp-pop .cp-fault { font-size: 11.5px; line-height: 1.4; color: var(--muted); }
+  .comp-pop .cp-foot {
+    padding: 8px 12px 2px; font-size: 11.5px; color: var(--dim);
+    border-top: 1px solid var(--c-pop-border); margin-top: 6px;
+  }
+
   .pager { display: flex; align-items: center; justify-content: flex-end; gap: 22px; margin-top: 26px; color: var(--muted); font-size: 12.5px; }
   .pager .ppsel { border: 1px solid var(--border); border-radius: 3px; padding: 3px 8px; color: var(--text); display: inline-flex; gap: 8px; align-items: center; }
   .pager .arrows { display: flex; gap: 18px; font-size: 15px; }
@@ -920,6 +995,13 @@
     --dim: #36322d80;
     --orange: #c05f21;
     --border: #36322d24;
+    --c-ok: #188038;
+    --c-warn: #b45309;
+    --c-warn-ink: #9a5108;
+    --c-alarm: #c62828;
+    --c-alarm-ink: #b3261e;
+    --c-pop-bg: #ffffff;
+    --c-pop-border: #36322d24;
   }
   body.light .sidebar { background: #ffffff; border-right: 1px solid var(--border); }
   body.light .select, body.light .search { background: #ffffff; }
@@ -1200,6 +1282,13 @@
     --dim: var(--t-subtle);
     --border: var(--t-border);
     --orange: var(--t-amber);
+    --c-ok: var(--t-ok);
+    --c-warn: var(--t-amber);
+    --c-warn-ink: var(--t-amber-ink);
+    --c-alarm: var(--t-red);
+    --c-alarm-ink: var(--t-red-ink);
+    --c-pop-bg: var(--t-layer2);
+    --c-pop-border: var(--t-border-mid);
     font-family: 'ABC Repro', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   }
   body.trinity.light {
@@ -1370,6 +1459,12 @@
             <span>Final + Trinity</span>
           </div>
           <div class="vp-opts-divider"></div>
+          <div class="vp-opts-section-label">Prototype Data</div>
+          <div class="vp-opts-row" onclick="event.stopPropagation();toggleFaultDemo()" style="justify-content:space-between;">
+            <span style="display:flex;align-items:center;gap:8px;">&#9888;&#65039; More broken parts</span>
+            <div class="vp-dark-toggle" id="vp-fault-toggle"><div class="knob"></div></div>
+          </div>
+          <div class="vp-opts-divider"></div>
           <div class="vp-opts-section-label">Appearance</div>
           <div class="vp-opts-row" onclick="event.stopPropagation();toggleDarkMode()" style="justify-content:space-between;">
             <span id="vp-theme-label" style="display:flex;align-items:center;gap:8px;">&#127769; Dark Mode</span>
@@ -1517,12 +1612,13 @@
         <table>
           <thead>
             <tr>
-              <th>Truck Name</th><th>System<br>Version</th><th>At Plant</th><th>Alert</th><th>Connection</th><th>Ignition</th>
+              <th>Truck Name</th><th>System<br>Version</th><th class="comp-h">Components</th><th>At Plant</th><th class="alert-h">Alert</th><th>Connection</th><th>Ignition</th>
             </tr>
           </thead>
           <tbody>
             <tr class="trow" onclick="openDrawer('1219')">
               <td class="tname">1219</td><td class="ver">V5</td>
+              <td class="comp-cell" data-truck="1219"></td>
               <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
               <td class="alert"></td>
               <td><span class="conn">((&#8226;))</span></td>
@@ -1530,6 +1626,7 @@
             </tr>
             <tr class="trow" onclick="openDrawer('1341')">
               <td class="tname">1341</td><td class="ver">V5</td>
+              <td class="comp-cell" data-truck="1341"></td>
               <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
               <td class="alert">Flow rate is lower than expected</td>
               <td><span class="conn">((&#8226;))</span></td>
@@ -1537,6 +1634,7 @@
             </tr>
             <tr class="trow" onclick="openDrawer('1408')">
               <td class="tname">1408</td><td class="ver">--</td>
+              <td class="comp-cell" data-truck="1408"></td>
               <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
               <td class="alert">Flow rate is lower than expected <span class="plus">&#9888; +1</span></td>
               <td><span class="conn off">&#128683;</span></td>
@@ -1544,6 +1642,7 @@
             </tr>
             <tr class="trow" onclick="openDrawer('1416')">
               <td class="tname">1416</td><td class="ver">V5</td>
+              <td class="comp-cell" data-truck="1416"></td>
               <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
               <td class="alert">Flow rate is lower than expected</td>
               <td><span class="conn">((&#8226;))</span></td>
@@ -1551,6 +1650,7 @@
             </tr>
             <tr class="trow" onclick="openDrawer('1894')">
               <td class="tname">1894</td><td class="ver">V5</td>
+              <td class="comp-cell" data-truck="1894"></td>
               <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
               <td class="alert"></td>
               <td><span class="conn">((&#8226;))</span></td>
@@ -1558,6 +1658,7 @@
             </tr>
             <tr class="trow" onclick="openDrawer('1921')">
               <td class="tname">1921</td><td class="ver">V5</td>
+              <td class="comp-cell" data-truck="1921"></td>
               <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
               <td class="alert">Flow rate is lower than expected</td>
               <td><span class="conn">((&#8226;))</span></td>
@@ -1565,6 +1666,7 @@
             </tr>
             <tr class="trow" onclick="openDrawer('1968')">
               <td class="tname">1968</td><td class="ver">V5</td>
+              <td class="comp-cell" data-truck="1968"></td>
               <td><span class="atplant"><span class="fic">&#127981;</span> Yes</span></td>
               <td class="alert">Flow rate is lower than expected</td>
               <td><span class="conn">((&#8226;))</span></td>
@@ -1572,6 +1674,7 @@
             </tr>
             <tr class="trow" onclick="openDrawer('2105')">
               <td class="tname">2105</td><td class="ver">V5</td>
+              <td class="comp-cell" data-truck="2105"></td>
               <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
               <td class="alert">Accelerometer not working</td>
               <td><span class="conn">((&#8226;))</span></td>
@@ -1579,6 +1682,7 @@
             </tr>
             <tr class="trow" onclick="openDrawer('2356')">
               <td class="tname">2356</td><td class="ver">V5</td>
+              <td class="comp-cell" data-truck="2356"></td>
               <td><span class="atplant"><span class="fic">&#127981;</span> Yes</span></td>
               <td class="alert"></td>
               <td><span class="conn">((&#8226;))</span></td>
@@ -1586,6 +1690,7 @@
             </tr>
             <tr class="trow" onclick="openDrawer('2541')">
               <td class="tname">2541</td><td class="ver">V5</td>
+              <td class="comp-cell" data-truck="2541"></td>
               <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
               <td class="alert">Flow rate is lower than expected</td>
               <td><span class="conn">((&#8226;))</span></td>
@@ -1982,6 +2087,9 @@ function setProtoView(mode) {
      flips its --dc-* token layer (the migration scaffolding kept in
      the CSS since the preview toggle was removed). */
   const trin = mode.indexOf('trinity') > -1;
+  /* Components column ships in Phase 1_Timeline and above only —
+     Current State (either skin) keeps today's six columns */
+  document.body.classList.toggle('comp-col', mode !== 'current' && mode !== 'current-trinity');
   document.body.classList.toggle('trinity', trin);
   document.getElementById('drawer').classList.toggle('trinity', trin);
   closeDrawer();
@@ -3280,6 +3388,121 @@ function toggleDarkMode() {
     ? '&#9728;&#65039; Light Mode'
     : '&#127769; Dark Mode';
 }
+
+/* ══════════════════════════════════════════════════════════════
+   COMPONENT HEALTH — landing table data field
+   Single scannable cell per truck. Reads the exact same card
+   arrays the drawer renders (mcsCardsFor + fdmCardsFor), so the
+   count and the named parts always match what the user sees when
+   they open the truck. Cards with no explicit state are clean.
+══════════════════════════════════════════════════════════════ */
+/* Short labels for the table — full names stay on the cards */
+const COMP_SHORT = {
+  'DPS pressure': 'DPS',
+  'IOX supply voltage': 'IOX',
+  'Water meter flow rate': 'Water flow',
+  'Admix meter flow rate': 'Admix flow'
+};
+
+/* Prototype-only: extra component faults so the 3-fault and
+   5-fault rollovers can be reviewed. Off unless the Options
+   toggle is on; when on it feeds the drawer cards too, so the
+   table and the truck detail always agree. */
+let DC_FAULT_DEMO = false;
+const DEMO_FAULTS = {
+  '1408': { 'WDS': ['warn', 'Drum temp reading out of range'] },
+  '2105': { 'DPS pressure': ['warn', 'Pressure drift above tolerance'],
+            'DRS': ['warn', 'Rotation count intermittent'],
+            'ED': ['alarm', 'Display not responding'] },
+  '2541': { 'CWR': ['warn', 'Accelerometer not working'],
+            'CPS': ['warn', 'Charge pressure below expected'],
+            'ICD': ['alarm', 'In-cab display offline'],
+            'IOX supply voltage': ['warn', 'Supply voltage dipping under load'] }
+};
+function applyDemoFaults(num, cards) {
+  const m = (DC_FAULT_DEMO && DEMO_FAULTS[num]) || {};
+  cards.forEach(c => { const f = m[c.name]; if (f) { c.state = f[0]; c.fault = f[1]; } });
+  return cards;
+}
+/* Wrap the card builders once so every consumer — table cell and
+   drawer cards alike — reads the same fault set */
+const _mcsCardsFor = mcsCardsFor, _fdmCardsFor = fdmCardsFor;
+mcsCardsFor = num => applyDemoFaults(num, _mcsCardsFor(num));
+fdmCardsFor = num => applyDemoFaults(num, _fdmCardsFor(num));
+
+function componentHealthFor(num) {
+  const cards = mcsCardsFor(num).concat(fdmCardsFor(num));
+  const bad = cards
+    .map(c => ({ name: COMP_SHORT[c.name] || c.name, state: c.state || 'clean', fault: c.fault }))
+    .filter(c => c.state === 'warn' || c.state === 'alarm');
+  const worst = bad.some(c => c.state === 'alarm') ? 'alarm' : (bad.length ? 'warn' : 'ok');
+  return { total: cards.length, ok: cards.length - bad.length, bad, worst };
+}
+
+function renderComponentCells() {
+  const cells = Array.from(document.querySelectorAll('.comp-cell'));
+  cells.forEach((td, i) => {
+    const h = componentHealthFor(td.dataset.truck);
+    /* Collapsed chip stays one line at any fault count:
+       1–2 faults name the parts, 3+ collapse to a count. The
+       rollover carries the full list either way. */
+    const chip = !h.bad.length ? ''
+      : h.bad.length <= 2
+        ? `<span class="cbad">${h.bad.map(c => c.name).join(', ')}</span>`
+        : `<span class="cbad">${h.bad.length} parts</span>`;
+
+    const rows = h.bad.map(c => `
+        <div class="cp-row ${c.state}">
+          <span class="cp-dot"></span>
+          <span class="cp-txt">
+            <span class="cp-name">${c.name}</span>
+            <span class="cp-fault">${c.fault || (c.state === 'alarm' ? 'Alarm state' : 'Outside expected range')}</span>
+          </span>
+        </div>`).join('');
+
+    /* Bottom rows flip the panel upward so it never clips */
+    const up = i >= cells.length - 3 ? ' up' : '';
+    const pop = h.bad.length ? `
+      <div class="comp-pop${up}">
+        <div class="cp-head"><b>${h.bad.length} of ${h.total} parts need attention</b><span>${h.ok} OK</span></div>
+        ${rows}
+        <div class="cp-foot">Open truck for component detail</div>
+      </div>` : '';
+
+    td.innerHTML = `<span class="comp ${h.worst}">
+        <span class="cdot"></span>
+        <span class="ccount">${h.ok}/${h.total}</span>
+        ${chip}
+      </span>${pop}`;
+    td.title = h.bad.length ? '' : `All ${h.total} components operating normally`;
+  });
+  syncAlertCells();
+}
+
+/* Alert column follows the same fault set, so its "+n" counter
+   can't disagree with the Components cell */
+function syncAlertCells() {
+  document.querySelectorAll('.comp-cell').forEach(td => {
+    const alertTd = td.parentElement.querySelector('td.alert');
+    if (!alertTd) return;
+    if (alertTd.dataset.orig === undefined) alertTd.dataset.orig = alertTd.innerHTML;
+    if (!DC_FAULT_DEMO) { alertTd.innerHTML = alertTd.dataset.orig; return; }
+    const bad = componentHealthFor(td.dataset.truck).bad;
+    if (!bad.length) { alertTd.innerHTML = ''; return; }
+    const lead = bad.find(c => c.fault) || bad[0];
+    const rest = bad.length - 1;
+    alertTd.innerHTML = (lead.fault || lead.name) +
+      (rest > 0 ? ` <span class="plus">&#9888; +${rest}</span>` : '');
+  });
+}
+
+function toggleFaultDemo() {
+  DC_FAULT_DEMO = !DC_FAULT_DEMO;
+  document.getElementById('vp-fault-toggle').classList.toggle('on', DC_FAULT_DEMO);
+  renderComponentCells();
+  buildOverview(dcCurrentTruck || '1219');
+}
+renderComponentCells();
 
 /* Prime overview so the drawer isn't empty on first paint */
 buildOverview('1219');

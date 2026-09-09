@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Advanced Settings — Fleet Configuration</title>
+<title>Advanced Settings Mass Update</title>
 <script>
   (function(){
     var t = "dark";
@@ -563,6 +563,10 @@ body.nav-collapsed .menu-col{display:none}
   background:var(--muted);color:var(--bg);
   padding:2px 8px;border-radius:9px;margin-left:8px;vertical-align:middle;
 }
+.add-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
+.add-row.full{grid-column:1/-1}
+.add-row .cmp-label{margin-bottom:6px}
+.add-opt{color:var(--faint);font-weight:500;text-transform:none;letter-spacing:0}
 .cmp-hint{color:var(--faint);font-size:13px;padding:24px;border:1px dashed var(--border);border-radius:var(--radius);text-align:center}
 
 .cmp-table-wrap{background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--radius);overflow:auto;max-height:calc(100vh - 340px)}
@@ -1120,6 +1124,7 @@ table.tt td.dim{color:var(--muted)}
               </div>
             </div>
             <div class="cmp-pop-list" id="mvpPopList"></div>
+            <button class="cmp-pop-add" onclick="openAddSetting(event)">＋&nbsp; Add a setting</button>
           </div>
         </div>
       </div>
@@ -1162,6 +1167,7 @@ table.tt td.dim{color:var(--muted)}
               <button class="clear-all" onclick="clearCompareSettings()">Clear All</button>
             </div>
             <div class="cmp-pop-list" id="cmpPopList"></div>
+            <button class="cmp-pop-add" onclick="openAddSetting(event)">＋&nbsp; Add a setting</button>
           </div>
           <div class="cmp-colfilter" id="cmpColFilterWrap" style="display:none">
             <div class="search-box">
@@ -1217,6 +1223,44 @@ table.tt td.dim{color:var(--muted)}
   </div>
 </div>
 
+<!-- Add-a-setting modal -->
+<div class="modal-backdrop" id="addBackdrop">
+  <div class="modal" style="width:620px">
+    <h2>Add a setting</h2>
+    <div class="sub">For a setting the Hub catalog doesn't list yet. It goes out under the firmware key built from the name, so the name has to match what the firmware expects.</div>
+    <div id="addDup"></div>
+    <div class="add-grid">
+      <div class="add-row">
+        <div class="cmp-label">Setting name</div>
+        <input id="addName" class="num-input" style="width:100%" type="text" placeholder="e.g. Max Drum Idle Minutes" oninput="onAddNameInput()">
+      </div>
+      <div class="add-row">
+        <div class="cmp-label">Type</div>
+        <select id="addType" class="sel-input" style="width:100%" onchange="onAddTypeChange()">
+          <option value="Integer">Integer</option>
+          <option value="Float">Float (decimal)</option>
+          <option value="Boolean">Boolean (toggle)</option>
+          <option value="String">String</option>
+          <option value="Dropdown">Dropdown (list of choices)</option>
+        </select>
+      </div>
+      <div class="add-row full" id="addOptionsRow">
+        <div class="cmp-label">Choices <span class="add-opt">comma separated, two or more</span></div>
+        <input id="addOptions" class="num-input" style="width:100%" type="text" placeholder="Off, Low, High" oninput="onAddOptionsInput()">
+      </div>
+      <div class="add-row full">
+        <div class="cmp-label">Value to push</div>
+        <div id="addValueCtl"></div>
+      </div>
+    </div>
+    <div class="sub" id="addImpact" style="margin-top:18px;margin-bottom:0"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeAddSetting()">Cancel</button>
+      <button class="btn btn-primary" id="addSaveBtn" onclick="saveAddSetting()">Add setting</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ============ DATA MODEL ============ */
 
@@ -1250,6 +1294,7 @@ const SECTIONS = [
   {id:'hose', name:'Fluid Hose Length Settings'},
   {id:'loadtrans', name:'Load Transition Settings'},
   {id:'location', name:'Location Monitor Settings'},
+  {id:'custom', name:'Custom Settings'},
   {id:'advanced', name:'Advanced Settings'},
 ];
 
@@ -1952,7 +1997,7 @@ function renderCmpPop(){
     const sel = compareSettings.includes(s.id);
     return `<button class="cmp-pop-item" title="${s.fw||s.name}" onclick="toggleCompareSetting('${s.id}')">
       <div class="cb ${sel?'checked':''}">${CHECK}</div>
-      ${s.name}${s.unit?` (${s.unit})`:''}<span class="type-tag">${typeLabel(s)}</span>
+      ${s.name}${s.unit?` (${s.unit})`:''}${s.custom?`<span class="custom-tag">Not in HUB</span>`:''}<span class="type-tag">${typeLabel(s)}</span>${s.custom?`<span class="cust-rm" title="Remove this setting" onclick="event.stopPropagation();removeCustomSetting('${s.id}')">×</span>`:''}
     </button>`;
   }).join('');
   const items = eligible; // pool for the All Settings checkbox below
@@ -2401,6 +2446,172 @@ function sendFix(){
   showToast(`Consistency update sent to ${n} truck${n===1?'':'s'} — awaiting confirmation`);
 }
 
+/* ---- add a setting the Hub catalog doesn't carry yet ---- */
+let custSeq = 0;
+let addValue = null;
+const HUB_TYPE_MAP = {Integer:'number', Float:'number', Boolean:'toggle', String:'text', Dropdown:'select'};
+
+function fwFromName(n){
+  return String(n||'').toUpperCase().replace(/[^A-Z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+}
+function addOptionList(){
+  return (document.getElementById('addOptions').value||'').split(',').map(x=>x.trim()).filter(Boolean);
+}
+function openAddSetting(e){
+  if(e) e.stopPropagation();
+  document.querySelectorAll('.cmp-pop').forEach(p=>p.classList.remove('open'));
+  // carry over whatever was typed in the settings search
+  const typed = ((pageVersion==='mvp'
+    ? document.getElementById('mvpSearch').value
+    : document.getElementById('cmpSearch').value)||'').trim();
+  addValue = null;
+  document.getElementById('addName').value = typed;
+  document.getElementById('addOptions').value = '';
+  document.getElementById('addType').value = 'Integer';
+  document.getElementById('addDup').innerHTML = '';
+  onAddTypeChange();
+  document.getElementById('addBackdrop').classList.add('visible');
+  setTimeout(()=>document.getElementById('addName').focus(), 0);
+}
+function closeAddSetting(){ document.getElementById('addBackdrop').classList.remove('visible'); }
+function onAddNameInput(){ renderAddState(); }
+function onAddTypeChange(){
+  const t = document.getElementById('addType').value;
+  document.getElementById('addOptionsRow').style.display = (t==='Dropdown') ? '' : 'none';
+  if(t==='Boolean') addValue = false;
+  else if(t==='Dropdown') addValue = addOptionList()[0] ?? null;
+  else if(t==='String') addValue = '';
+  else addValue = null;
+  renderAddValue();
+  renderAddState();
+}
+function onAddOptionsInput(){
+  const opts = addOptionList();
+  if(!opts.includes(addValue)) addValue = opts[0] ?? null;
+  renderAddValue();
+  renderAddState();
+}
+function setAddValue(v){ addValue = v; renderAddValue(); renderAddState(); }
+function renderAddValue(){
+  const t = document.getElementById('addType').value;
+  const box = document.getElementById('addValueCtl');
+  if(t==='Boolean'){
+    const on = addValue===true, next = on?'false':'true';
+    box.innerHTML = `<div class="mvp-toggle-wrap">
+      <div class="mvp-toggle${on?' on':''}" role="switch" aria-checked="${on}" aria-label="Value to push" tabindex="0"
+        onclick="setAddValue(${next})"
+        onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();setAddValue(${next})}"></div>
+      <span class="mvp-toggle-label${on?' on':''}">${on?'On':'Off'}</span>
+    </div>`;
+    return;
+  }
+  if(t==='Dropdown'){
+    const opts = addOptionList();
+    box.innerHTML = opts.length
+      ? `<select class="sel-input" style="width:240px" onchange="setAddValue(this.value)">
+          ${opts.map(o=>`<option value="${o.replace(/"/g,'&quot;')}" ${o===addValue?'selected':''}>${o}</option>`).join('')}
+        </select>`
+      : `<div class="cust-hint">Enter the choices above first.</div>`;
+    return;
+  }
+  if(t==='String'){
+    box.innerHTML = `<input class="num-input" type="text" style="width:240px" placeholder="Enter value"
+      value="${String(addValue??'').replace(/"/g,'&quot;')}" oninput="addValue=this.value;renderAddState()">`;
+    return;
+  }
+  const step = t==='Float' ? 'any' : '1';
+  box.innerHTML = `<input class="num-input" type="number" step="${step}" style="width:240px" placeholder="Enter value"
+    value="${addValue===null||addValue===undefined?'':addValue}"
+    oninput="addValue=(this.value===''?null:parseFloat(this.value));renderAddState()">`;
+}
+function addValueOk(t, opts){
+  if(t==='Boolean') return addValue===true || addValue===false;
+  if(t==='Dropdown') return opts.length>1 && opts.includes(addValue);
+  if(t==='String') return String(addValue??'').trim()!=='';
+  return typeof addValue==='number' && !isNaN(addValue);
+}
+function renderAddState(){
+  const name = (document.getElementById('addName').value||'').trim();
+  const fw = fwFromName(name);
+  const t = document.getElementById('addType').value;
+  const opts = addOptionList();
+  // already in the catalog? offer the real one instead of a duplicate
+  const dupe = name.length>2 ? SETTINGS.find(x=>
+    x.name.toLowerCase()===name.toLowerCase() || (fw && (x.fw||'').toUpperCase()===fw)) : null;
+  document.getElementById('addDup').innerHTML = dupe
+    ? `<div class="cust-nomatch" style="margin-bottom:18px">
+        <b>${dupe.name}</b> is already in the catalog${dupe.sec==='advanced'?' under Advanced Settings':(dupe.custom?', added by you':'')}. Use it instead of adding a duplicate.
+        <button class="cust-match sel" style="margin-top:10px" onclick="useExistingSetting('${dupe.id}')">
+          Open ${dupe.name}<span class="type-tag">${typeLabel(dupe)}</span>
+        </button>
+      </div>`
+    : '';
+  const ok = !!name && !!fw && !dupe && addValueOk(t, opts);
+  document.getElementById('addSaveBtn').disabled = !ok;
+  const imp = document.getElementById('addImpact');
+  if(dupe){ imp.innerHTML = ''; return; }
+  if(!name){ imp.innerHTML = 'Name the setting to continue.'; return; }
+  if(t==='Dropdown' && opts.length<2){ imp.innerHTML = 'A dropdown needs at least two choices.'; return; }
+  if(!addValueOk(t, opts)){ imp.innerHTML = 'Enter the value you want pushed.'; return; }
+  const shown = t==='Boolean' ? (addValue?'On':'Off') : `${addValue}`;
+  imp.innerHTML = `Adds <b>${fw}</b> as ${t.toLowerCase()} and reads it back across your ${selected.size} selected truck${selected.size===1?'':'s'}. Nothing goes out until you press <b>Send update</b>, with <b class="newval">${shown}</b> queued as the value.`;
+}
+/* variation value for the demo fleet, so a new setting reads like a real one */
+function altForCustom(s){
+  if(s.type==='toggle') return !s.def;
+  if(s.type==='select') return s.options[1]!==undefined ? s.options[1] : s.def;
+  if(s.type==='text') return s.def;
+  const n = Number(s.def);
+  if(s.hubType==='Integer'){ const a = Math.round(n*1.25); return a===n ? n+1 : a; }
+  return Math.round(n*1.25*1000)/1000;
+}
+function saveAddSetting(){
+  const name = (document.getElementById('addName').value||'').trim();
+  const fw = fwFromName(name);
+  const t = document.getElementById('addType').value;
+  const opts = addOptionList();
+  if(!name || !fw || !addValueOk(t, opts)) return;
+  const val = addValue;
+  const id = 'cust_' + (++custSeq);
+  const s = {id, sec:'custom', name, fw, type:HUB_TYPE_MAP[t], hubType:t, def:val, custom:true, hidden:true};
+  if(t==='Dropdown') s.options = opts;
+  s.alt = altForCustom(s);
+  SETTINGS.push(s);
+  TRUCKS.forEach(tr=>{ state[tr.id][id] = genEntry(tr, s); });
+  closeAddSetting();
+  if(pageVersion==='mvp'){
+    mvpSetting = id;
+    mvpValue = val;
+  } else if(!compareSettings.includes(id)){
+    compareSettings.push(id);
+  }
+  renderMvpPop();
+  if(document.getElementById('cmpPopList')) renderCmpPop();
+  renderAll();
+  showToast(`${name} added — not in the HUB catalog yet`);
+}
+function useExistingSetting(sid){
+  closeAddSetting();
+  if(pageVersion==='mvp') selectMvpSetting(sid);
+  else { if(!compareSettings.includes(sid)) compareSettings.push(sid); renderCmpPop(); renderCompare(); }
+}
+function removeCustomSetting(sid){
+  const i = SETTINGS.findIndex(x=>x.id===sid);
+  if(i<0 || !SETTINGS[i].custom) return;
+  const nm = SETTINGS[i].name;
+  SETTINGS.splice(i,1);
+  TRUCKS.forEach(tr=>{ delete state[tr.id][sid]; });
+  compareSettings = compareSettings.filter(x=>x!==sid);
+  if(mvpSetting===sid){ mvpSetting = null; mvpValue = null; }
+  renderMvpPop();
+  if(document.getElementById('cmpPopList')) renderCmpPop();
+  renderAll();
+  showToast(`${nm} removed`);
+}
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && document.getElementById('addBackdrop').classList.contains('visible')) closeAddSetting();
+});
+
 /* ---- MVP single-setting panel ---- */
 let mvpSetting = null;   // no default — user must pick a setting before results render
 let mvpValue = null;
@@ -2427,7 +2638,7 @@ function renderMvpPop(){
     const sel = mvpSetting===s.id;
     return `<button class="cmp-pop-item${sel?' selected':''}" title="${s.fw||s.name}" onclick="selectMvpSetting('${s.id}')">
       <span class="mvp-pop-check">${sel?CHECK:''}</span>
-      ${s.name}${s.unit?` (${s.unit})`:''}<span class="type-tag">${typeLabel(s)}</span>
+      ${s.name}${s.unit?` (${s.unit})`:''}${s.custom?`<span class="custom-tag">Not in HUB</span>`:''}<span class="type-tag">${typeLabel(s)}</span>${s.custom?`<span class="cust-rm" title="Remove this setting" onclick="event.stopPropagation();removeCustomSetting('${s.id}')">×</span>`:''}
     </button>`;
   }).join('');
   const basicHtml = SECTIONS.filter(sec=>sec.id!=='advanced').map(sec=>{
@@ -2538,7 +2749,7 @@ function renderMvpResult(){
   const differ = total - r.noVal - inSync;
 
   const chips = [`<span class="sum-chip${inSync>0?' confirmed':''}"><span class="dot"></span>${inSync} match${p.ok?` @ ${fmtVal(s,p.value)}`:''}</span>`];
-  if(differ>0) chips.push(`<span class="sum-chip mixed"><span class="dot"></span>${differ} don't match</span>`);
+  if(differ>0) chips.push(`<span class="sum-chip mixed"><span class="dot"></span>${differ} ${differ===1?"doesn't":"don't"} match</span>`);
   if(r.noVal>0) chips.push(`<span class="sum-chip"><span class="dot"></span>${r.noVal} no value</span>`);
 
   const warn = (r.noVal===total)
@@ -2567,7 +2778,7 @@ function renderMvpResult(){
 
   box.innerHTML = `${warn}
     <div class="summary-bar">
-      <div class="summary-count"><span class="label">Setting</span><span class="num" style="font-size:14px">${s.fw||s.name}</span></div>
+      <div class="summary-count"><span class="label">Setting</span><span class="num" style="font-size:14px">${s.fw||s.name}${s.custom?`<span class="custom-tag">Not in HUB</span>`:''}</span></div>
       <div class="summary-count"><span class="label">Trucks selected</span><span class="num">${total}</span></div>
       <div class="summary-chips">${chips.join('')}</div>
     </div>

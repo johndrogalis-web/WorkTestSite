@@ -563,8 +563,8 @@ body.nav-collapsed .menu-col{display:none}
   background:var(--muted);color:var(--bg);
   padding:2px 8px;border-radius:9px;margin-left:8px;vertical-align:middle;
 }
-.add-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
-.add-row.full{grid-column:1/-1}
+.add-grid{display:flex;flex-direction:column;gap:16px}
+#addValueCtl .num-input,#addValueCtl .sel-input{width:100%}
 .add-row .cmp-label{margin-bottom:6px}
 .add-opt{color:var(--faint);font-weight:500;text-transform:none;letter-spacing:0}
 .cmp-hint{color:var(--faint);font-size:13px;padding:24px;border:1px dashed var(--border);border-radius:var(--radius);text-align:center}
@@ -1224,7 +1224,7 @@ table.tt td.dim{color:var(--muted)}
 
 <!-- Add-a-setting modal -->
 <div class="modal-backdrop" id="addBackdrop">
-  <div class="modal" style="width:620px">
+  <div class="modal" style="width:520px">
     <h2>Add a setting</h2>
     <div class="sub">A one-time push for a setting the Hub catalog doesn't carry. It goes out under the firmware key built from the name, so the name has to match what the firmware expects. It is sent to the selected trucks once, straight from here, and is not saved to the fleet settings.</div>
     <div id="addDup"></div>
@@ -1243,11 +1243,11 @@ table.tt td.dim{color:var(--muted)}
           <option value="Dropdown">Dropdown (list of choices)</option>
         </select>
       </div>
-      <div class="add-row full" id="addOptionsRow">
+      <div class="add-row" id="addOptionsRow">
         <div class="cmp-label">Choices <span class="add-opt">comma separated, two or more</span></div>
         <input id="addOptions" class="num-input" style="width:100%" type="text" placeholder="Off, Low, High" oninput="onAddOptionsInput()">
       </div>
-      <div class="add-row full">
+      <div class="add-row">
         <div class="cmp-label">Value to push</div>
         <div id="addValueCtl"></div>
       </div>
@@ -2507,19 +2507,19 @@ function renderAddValue(){
   if(t==='Dropdown'){
     const opts = addOptionList();
     box.innerHTML = opts.length
-      ? `<select class="sel-input" style="width:240px" onchange="setAddValue(this.value)">
+      ? `<select class="sel-input" onchange="setAddValue(this.value)">
           ${opts.map(o=>`<option value="${o.replace(/"/g,'&quot;')}" ${o===addValue?'selected':''}>${o}</option>`).join('')}
         </select>`
       : `<div class="cust-hint">Enter the choices above first.</div>`;
     return;
   }
   if(t==='String'){
-    box.innerHTML = `<input class="num-input" type="text" style="width:240px" placeholder="Enter value"
+    box.innerHTML = `<input class="num-input" type="text" placeholder="Enter value"
       value="${String(addValue??'').replace(/"/g,'&quot;')}" oninput="addValue=this.value;renderAddState()">`;
     return;
   }
   const step = t==='Float' ? 'any' : '1';
-  box.innerHTML = `<input class="num-input" type="number" step="${step}" style="width:240px" placeholder="Enter value"
+  box.innerHTML = `<input class="num-input" type="number" step="${step}" placeholder="Enter value"
     value="${addValue===null||addValue===undefined?'':addValue}"
     oninput="addValue=(this.value===''?null:parseFloat(this.value));renderAddState()">`;
 }

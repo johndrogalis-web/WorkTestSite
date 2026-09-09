@@ -892,6 +892,117 @@
   .dc-leg-on { width: 20px; height: 4px; border-radius: 2px; background: var(--dc-seg-on); }
   .dc-leg-off { width: 20px; height: 4px; border-radius: 2px; background: var(--dc-seg-off); }
 
+  /* ============================================================
+     COMPONENT TIMELINE v2 (Phase 1_Timeline and above)
+     Message-driven tracks. Every state is named — nothing is left
+     as unexplained grey — and ignition/power gets its own lane so
+     a mass dropout reads as a cause, not a coincidence.
+     ============================================================ */
+  .dc-tl2-meta { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; font-size: 11.5px; color: var(--dc-soft); padding: 0 0 12px; }
+  .dc-tl2-meta b { color: var(--dc-strong); font-weight: 600; }
+  .dc-tl2-meta .oc { color: var(--dc-warn); }
+  .dc-tl2 { display: grid; grid-template-columns: max-content 1fr; column-gap: 14px; align-items: center; }
+  .dc-tl2 > .lbl { height: 30px; display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--dc-strong); white-space: nowrap; }
+  .dc-tl2 > .lbl.lane { font-size: 11.5px; font-weight: 600; color: var(--dc-soft); text-transform: uppercase; letter-spacing: .4px; }
+  .dc-tl2 > .lbl.na { color: var(--dc-subtle); }
+  .dc-tl2 > .lbl.axis, .dc-tl2 > .trk.axis { height: 20px; }
+  .dc-tl2 > .trk { position: relative; height: 30px; }
+  .dc-tl2 > .trk::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 13px; height: 4px;
+    border-radius: 2px; background: color-mix(in srgb, var(--dc-strong) 7%, transparent);
+  }
+  .dc-tl2 > .trk.rule { border-top: 1px solid var(--dc-border); }
+  .dc-tl2 > .lbl.rule { border-top: 1px solid transparent; }
+  .dc-tl2-axis { position: relative; height: 100%; font-size: 10.5px; color: var(--dc-soft); }
+  .dc-tl2-axis span { position: absolute; top: 4px; transform: translateX(-50%); }
+
+  .dc-sp { position: absolute; border-radius: 3px; display: flex; align-items: center; overflow: hidden; cursor: pointer; }
+  .dc-sp .spl { font-size: 10px; font-weight: 600; padding: 0 6px; white-space: nowrap; }
+  .dc-sp.ok { top: 12px; height: 6px; background: var(--dc-seg-on); }
+  .dc-sp.warn  { top: 4px; height: 22px; background: var(--dc-warn); }
+  .dc-sp.warn .spl { color: var(--dc-pill-warn-ink); }
+  .dc-sp.alarm { top: 4px; height: 22px; background: var(--dc-alarm); }
+  .dc-sp.alarm .spl { color: #fff; }
+  .dc-sp.nodata {
+    top: 5px; height: 20px; border: 1px dashed color-mix(in srgb, var(--dc-alarm) 60%, transparent);
+    background: repeating-linear-gradient(135deg,
+      color-mix(in srgb, var(--dc-alarm) 22%, transparent) 0 5px,
+      transparent 5px 10px);
+  }
+  .dc-sp.nodata .spl { color: var(--dc-strip-alarm-ink); }
+  .dc-sp.off {
+    top: 11px; height: 8px; border-radius: 4px;
+    background: repeating-linear-gradient(135deg,
+      color-mix(in srgb, var(--dc-strong) 13%, transparent) 0 4px,
+      transparent 4px 8px);
+  }
+  .dc-sp.future {
+    top: 13px; height: 4px; border-radius: 2px; cursor: help;
+    background: repeating-linear-gradient(90deg,
+      color-mix(in srgb, var(--dc-strong) 18%, transparent) 0 2px,
+      transparent 2px 7px);
+  }
+  .dc-sp.ign-on { top: 5px; height: 20px; background: color-mix(in srgb, var(--dc-ok) 28%, transparent); }
+  .dc-sp.ign-on .spl { color: var(--dc-strong); }
+  .dc-sp.ign-off {
+    top: 5px; height: 20px; border: 1px solid var(--dc-border);
+    background: repeating-linear-gradient(135deg,
+      color-mix(in srgb, var(--dc-strong) 10%, transparent) 0 5px,
+      transparent 5px 10px);
+  }
+  .dc-sp.ign-off .spl { color: var(--dc-soft); }
+  .dc-sp.ign-unknown {
+    top: 5px; height: 20px; border: 1px dashed color-mix(in srgb, var(--dc-alarm) 60%, transparent);
+    background: repeating-linear-gradient(135deg,
+      color-mix(in srgb, var(--dc-alarm) 22%, transparent) 0 5px,
+      transparent 5px 10px);
+  }
+  .dc-sp.ign-unknown .spl { color: var(--dc-strip-alarm-ink); }
+  .dc-na-strip {
+    position: absolute; left: 0; right: 0; top: 7px; height: 16px;
+    display: flex; align-items: center; padding: 0 8px;
+    border-radius: 3px; border: 1px dashed var(--dc-border);
+    font-size: 10.5px; color: var(--dc-subtle); font-style: italic;
+  }
+
+  .dc-tk { position: absolute; top: 8px; height: 14px; width: 2px; border-radius: 1px; background: color-mix(in srgb, var(--dc-strong) 34%, transparent); cursor: pointer; z-index: 1; }
+  .dc-tk::after { content: ""; position: absolute; inset: -6px -2px; }
+  .dc-tk:hover { background: var(--dc-strong); }
+  .dc-tk.oc { top: 4px; height: 22px; width: 3px; background: var(--dc-warn); z-index: 3; }
+  .dc-tk.oc.alarm { background: var(--dc-alarm); }
+  .dc-now { position: absolute; top: 0; bottom: 0; width: 1px; background: color-mix(in srgb, var(--dc-strong) 45%, transparent); }
+  .dc-now.lead::after {
+    content: "NOW"; position: absolute; top: -14px; left: 3px;
+    font-size: 9px; font-weight: 700; letter-spacing: .5px; color: var(--dc-soft);
+  }
+
+  .dc-tl-legend .lg { width: 18px; height: 8px; border-radius: 3px; flex-shrink: 0; }
+  .dc-tl-legend .lg.ok { height: 5px; background: var(--dc-seg-on); }
+  .dc-tl-legend .lg.warn { background: var(--dc-warn); }
+  .dc-tl-legend .lg.alarm { background: var(--dc-alarm); }
+  .dc-tl-legend .lg.nodata { border: 1px dashed color-mix(in srgb, var(--dc-alarm) 60%, transparent);
+    background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--dc-alarm) 22%, transparent) 0 4px, transparent 4px 8px); }
+  .dc-tl-legend .lg.off { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--dc-strong) 13%, transparent) 0 4px, transparent 4px 8px); }
+  .dc-tl-legend .lg.na { border: 1px dashed var(--dc-border); background: transparent; }
+  .dc-tl-legend .lg.tick { width: 3px; height: 13px; background: color-mix(in srgb, var(--dc-strong) 40%, transparent); }
+  .dc-tl-legend .lg.tick.oc { background: var(--dc-warn); }
+
+  /* Shared hover card for tracks, spans and message ticks */
+  .dc-tip {
+    position: fixed; z-index: 20000; max-width: 300px; padding: 10px 12px;
+    background: var(--c-pop-bg); border: 1px solid var(--c-pop-border);
+    border-radius: 8px; box-shadow: 0 10px 28px rgba(0,0,0,.36);
+    font-size: 11.5px; line-height: 1.5; color: var(--text);
+    opacity: 0; visibility: hidden; transition: opacity .1s ease; pointer-events: none;
+  }
+  .dc-tip.on { opacity: 1; visibility: visible; }
+  .dc-tip .tt { font-size: 12.5px; font-weight: 600; margin-bottom: 3px; }
+  .dc-tip .tm { color: var(--muted); }
+  .dc-tip .tc { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--c-pop-border); }
+  .dc-tip .tc div { color: var(--muted); }
+  .dc-tip .tc b { color: var(--text); font-weight: 600; }
+  .dc-tip .th { margin-top: 7px; font-size: 11px; color: var(--dim); }
+
 
   /* ============================================================
      PROTOTYPE CONTROL BAR
@@ -1490,7 +1601,7 @@
         <div class="tk-act clickable" id="tk-act-ov" onclick="tkView('overview')" style="display:none;"><span class="ai">&#9638;</span> OVERVIEW</div>
         <div class="tk-act clickable" id="tk-act-ct" onclick="tkView('timeline')"><span class="ai">&#128200;</span> <span id="tk-act-ct-label">COMPONENT TIMELINE</span></div>
         <div class="tk-act" title="View not rebuilt in Current State"><span class="ai">&#127899;</span> MANUAL CONTROL</div>
-        <div class="tk-act" title="View not rebuilt in Current State"><span class="ai">&#128196;</span> TRUCK LOG</div>
+        <div class="tk-act" id="tk-act-tl" title="View not rebuilt in Current State" onclick="tkLogClick()"><span class="ai">&#128196;</span> TRUCK LOG</div>
       </div>
     </div>
 
@@ -1498,6 +1609,7 @@
          content stays on the page underneath it — faithful to how
          today's product actually behaves. -->
     <div id="tk-view-timeline" style="display:none;"></div>
+    <div id="tk-view-logs" style="display:none;"></div>
 
     <!-- Timeline_Overview view: the Final overview panel is moved
          in here (live DOM node, not a copy) and returned on close -->
@@ -2098,6 +2210,7 @@ function setProtoView(mode) {
 
 function openTakeover(name) {
   const a = TRUCK_ALERTS[name] || {};
+  dcCurrentTruck = name;   /* the timeline + logs read this */
   document.getElementById('tk-truck').textContent = 'TRUCK ' + name;
 
   /* Ignition + connectivity mirror the truck's state */
@@ -2155,6 +2268,9 @@ function openTakeover(name) {
   const asDrawer = tkIsDrawerMode();
   document.getElementById('tk-act-ct-label').textContent = asDrawer ? 'TIMELINE' : 'COMPONENT TIMELINE';
   document.getElementById('tk-act-ov').style.display = asDrawer ? '' : 'none';
+  const tlAct = document.getElementById('tk-act-tl');
+  tlAct.classList.toggle('clickable', asDrawer);
+  tlAct.title = asDrawer ? 'Truck Log' : 'View not rebuilt in Current State';
   document.getElementById('takeover').classList.toggle('as-drawer', asDrawer);
   if (asDrawer) document.getElementById('overlay').classList.add('open');
   if (dcViewMode === 'current-overview') tkMountFinalOverview(name);
@@ -2183,6 +2299,33 @@ function tkMountFinalOverview(num) {
   }
   buildOverview(num);
 }
+/* Truck Log inside the phase takeover: borrow the LIVE logs panel
+   (same ids, same filters, same JSON inspector) rather than
+   duplicating it, so the timeline drill-down has somewhere to land */
+let dcLogsHome = null;
+function tkMountLogs(num) {
+  const panel = document.getElementById('panel-logs');
+  const host = document.getElementById('tk-view-logs');
+  if (panel.parentElement !== host) {
+    dcLogsHome = { parent: panel.parentElement, next: panel.nextElementSibling };
+    host.appendChild(panel);
+    panel.classList.add('active');
+  }
+  if (!dcLogsCache[num]) buildLogs(num);
+}
+function tkReturnLogs() {
+  if (!dcLogsHome) return;
+  const panel = document.getElementById('panel-logs');
+  if (panel.parentElement === document.getElementById('tk-view-logs')) {
+    dcLogsHome.next ? dcLogsHome.parent.insertBefore(panel, dcLogsHome.next) : dcLogsHome.parent.appendChild(panel);
+  }
+  dcLogsHome = null;
+}
+function tkLogClick() {
+  if (!tkIsDrawerMode()) return;   /* Current State: still not rebuilt */
+  tkView('logs');
+}
+
 function tkReturnFinalOverview() {
   if (!dcOvHome) return;
   const panel = document.getElementById('panel-overview');
@@ -2197,6 +2340,7 @@ function tkReturnFinalOverview() {
 function closeTakeover() {
   document.getElementById('takeover').classList.remove('open');
   tkReturnFinalOverview(); /* send the Final overview panel home */
+  tkReturnLogs();          /* and the logs panel */
   if (!document.getElementById('drawer').classList.contains('open')) {
     document.getElementById('overlay').classList.remove('open');
     document.body.style.overflow = '';
@@ -2218,19 +2362,28 @@ function tkView(v) {
   if (v === 'timeline' && tkIsDrawerMode()) {
     buildTimeline(document.getElementById('tk-view-timeline'));
   }
+  if (v === 'logs') tkMountLogs(dcCurrentTruck);
+  else tkReturnLogs();
   const finalOv = dcViewMode === 'current-overview';
   document.getElementById('tk-view-overview').style.display =
     finalOv ? 'none' : ((v === 'timeline' && dcViewMode === 'current-timeline') ? 'none' : '');
   document.getElementById('tk-view-final-ov').style.display =
     (finalOv && v === 'overview') ? '' : 'none';
   document.getElementById('tk-view-timeline').style.display = v === 'timeline' ? '' : 'none';
+  document.getElementById('tk-view-logs').style.display = v === 'logs' ? '' : 'none';
+  if (v === 'logs') {
+    document.getElementById('tk-view-overview').style.display = 'none';
+    document.getElementById('tk-view-final-ov').style.display = 'none';
+  }
+  document.getElementById('tk-act-tl').classList.toggle('active', v === 'logs');
   document.getElementById('tk-act-ct').classList.toggle('active', v === 'timeline');
   const ovEl = document.getElementById('tk-act-ov');
   if (ovEl) ovEl.classList.toggle('active', v === 'overview' && tkIsDrawerMode());
   document.getElementById('takeover').scrollTop = 0;
 }
 function tkBack() {
-  if (tkCurrentView !== 'overview') tkView('overview');
+  if (tkCurrentView === 'logs') tkView('timeline');
+  else if (tkCurrentView !== 'overview') tkView('overview');
   else closeTakeover();
 }
 function tkLegendToggle() {
@@ -2479,34 +2632,199 @@ function badgeHtml(kind) {
 }
 
 let dcTlRoot = null; /* container the timeline component is mounted in */
+
+/* ══════════════════════════════════════════════════════════════
+   COMPONENT TIMELINE — Phase 1_Timeline and above
+   Rebuilt against the review feedback:
+   1. Tracks are driven by the truck's system-status message
+      stream — the 15-minute heartbeat plus every off-cycle
+      message a state change triggers — not hourly buckets.
+   2. Every state is named: Healthy / Warning / Alarm / No data
+      received / Ignition off / Not installed. Nothing is left as
+      unexplained grey.
+   3. Ignition + power has its own lane, so "everything died at
+      once" reads as a cause instead of something to infer.
+   4. Any span or message tick drills into Truck Log at that
+      timestamp — the timeline is the way into the detail.
+   Current State keeps its own hourly icon grid (tkRenderTimeline).
+══════════════════════════════════════════════════════════════ */
+const DC_BEAT_MIN = 15;           /* heartbeat cadence while ignition is on */
+const DC_TRUCK_VER = { '1408': '--' };  /* everything else reports V5 */
+
+/* Timeline row -> the Measurement Component card it reports for,
+   so the table cell, the cards and this view share one fault set */
+const DC_TL_ROWS = [
+  { row: 'Iox / Robotex',    card: null, legacyOnly: true },
+  { row: 'Charge',           card: 'CPS' },
+  { row: 'Discharge',        card: 'DPS pressure' },
+  { row: 'Drum',             card: 'DRS' },
+  { row: 'Internal Display', card: 'ICD' },
+  { row: 'External Display', card: 'ED' },
+  { row: 'Bus power',        card: 'IOX supply voltage' },
+  { row: 'CWR',              card: 'CWR' },
+  { row: 'WDS',              card: 'WDS' },
+  { row: 'Water flow',       card: 'Water meter flow rate' }
+];
+const DC_STATE_LABEL = {
+  ok: 'Healthy', warn: 'Warning', alarm: 'Alarm',
+  nodata: 'No data received', off: 'Ignition off', future: 'Not reached yet'
+};
+
+function dcVerOf(num) { return DC_TRUCK_VER[num] || 'V5'; }
+function dcHash(str) { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function dcRng(seed) { let x = seed || 1; return () => (x = (Math.imul(x, 1664525) + 1013904223) >>> 0) / 4294967296; }
+function dcDayDate(idx) { const d = new Date(); d.setDate(d.getDate() - (6 - idx)); d.setHours(0,0,0,0); return d; }
+function dcHM(min) { const h = Math.floor(min / 60), m = Math.round(min % 60); return ('0'+h).slice(-2) + ':' + ('0'+m).slice(-2); }
+
+const dcStreamCache = {};
+function dcClearStreams() { Object.keys(dcStreamCache).forEach(k => delete dcStreamCache[k]); }
+
+/* One day of messages for one truck, derived once and cached */
+function dcDayStream(num, idx) {
+  const key = num + '|' + idx + '|' + (DC_FAULT_DEMO ? 'd' : 'n');
+  if (dcStreamCache[key]) return dcStreamCache[key];
+  const rnd = dcRng(dcHash(key));
+  const isToday = idx === 6;
+  const base = dcDayDate(idx);
+  const now = new Date();
+  const nowMin = isToday ? (now.getHours() * 60 + now.getMinutes()) : 1440;
+
+  /* Today's faults are the live ones the cards and the table show.
+     Earlier days get their own plausible set so history varies. */
+  const badSet = {};
+  if (isToday) {
+    componentHealthFor(num).bad.forEach(b => { badSet[b.name] = b; });
+  } else {
+    const pool = DC_TL_ROWS.filter(d => d.card);
+    const n = rnd() < .5 ? 0 : (rnd() < .72 ? 1 : 2);
+    for (let i = 0; i < n; i++) {
+      const d = pool[Math.floor(rnd() * pool.length)];
+      const short = COMP_SHORT[d.card] || d.card;
+      badSet[short] = { name: short, state: rnd() < .22 ? 'alarm' : 'warn',
+        fault: rnd() < .5 ? 'Reading outside expected range' : 'Sensor stopped reporting mid-shift' };
+    }
+  }
+
+  const ignOn = 288 + Math.floor(rnd() * 72);                     /* ~04:48 – 06:00 */
+  const ignOff = isToday ? null : Math.min(1392, 984 + Math.floor(rnd() * 150));
+  const runEnd = ignOff === null ? nowMin : ignOff;
+  /* A dead TCG takes the whole truck off the network */
+  const tcg = badSet['TCG'];
+  const dropAt = tcg ? Math.max(ignOn + 45, Math.min(runEnd - 20, ignOn + 90 + Math.floor(rnd() * 240))) : null;
+  const lastMsg = dropAt !== null ? dropAt : runEnd;
+
+  const rows = DC_TL_ROWS.map(def => {
+    if (def.legacyOnly) {
+      const v5 = dcVerOf(num) === 'V5';
+      return { row: def.row, na: true,
+        naText: v5 ? 'Not installed — V5 hardware' : 'Unknown — no system version reported',
+        naTip: v5 ? 'V5 trucks carry no Iox / Robotex module, so this row will never report. It is not a data gap.'
+                  : 'This truck has not reported a system version, so its hardware list is unknown. Nothing can be concluded from this row.' };
+    }
+    const short = COMP_SHORT[def.card] || def.card;
+    const bad = badSet[short] || null;
+    const spans = [];
+    const push = (from, to, state, note) => { if (to - from > 0.5) spans.push({ from, to, state, note }); };
+    push(0, ignOn, 'off', 'Ignition off — no reporting expected');
+    let cur = ignOn, faultAt = null;
+    if (bad) {
+      faultAt = Math.min(lastMsg - 10, ignOn + 45 + Math.floor(rnd() * 260));
+      push(cur, faultAt, 'ok', 'Reporting on the 15-minute cadence');
+      cur = faultAt;
+    }
+    push(cur, lastMsg, bad ? bad.state : 'ok', bad ? bad.fault : 'Reporting on the 15-minute cadence');
+    if (dropAt !== null) push(lastMsg, runEnd, 'nodata', 'No status messages received — TCG offline');
+    if (isToday) { if (nowMin < 1440) push(nowMin, 1440, 'future', 'Later today — no messages yet'); }
+    else push(runEnd, 1440, 'off', 'Ignition off — no reporting expected');
+    return { row: def.row, card: def.card, short: short, spans: spans, faultAt: faultAt, bad: bad };
+  });
+
+  /* Message stream: heartbeat + one off-cycle message per change */
+  const msgs = [];
+  for (let m = ignOn; m <= lastMsg; m += DC_BEAT_MIN) msgs.push({ min: m, oc: false, changes: [] });
+  rows.forEach(r => {
+    if (r.faultAt !== null && r.faultAt !== undefined && r.bad) {
+      msgs.push({ min: r.faultAt, oc: true, sev: r.bad.state,
+        changes: [{ row: r.row, to: r.bad.state, note: r.bad.fault }] });
+    }
+  });
+  if (dropAt !== null) {
+    msgs.push({ min: dropAt, oc: true, sev: 'alarm',
+      changes: [{ row: 'All components', to: 'nodata', note: 'Last message before the TCG went offline' }] });
+  }
+  msgs.sort((a, b) => a.min - b.min);
+  msgs.forEach((m, i) => {
+    m.sec = Math.round(base.getTime() / 1000) + Math.round(m.min * 60) + (i % 7) * 3;
+    m.delay = '00:0' + (m.oc ? 1 : (i % 3));
+  });
+
+  const worst = (dropAt !== null || Object.keys(badSet).some(k => badSet[k].state === 'alarm')) ? 'alarm'
+              : (Object.keys(badSet).length ? 'warn' : 'ok');
+  const out = { ignOn, ignOff, runEnd, nowMin, isToday, dropAt, lastMsg, rows, msgs, base, worst,
+                ocCount: msgs.filter(m => m.oc).length };
+  dcStreamCache[key] = out;
+  return out;
+}
+
+/* ── Hover card ── */
+let dcTipEl = null;
+const dcTips = [];
+function dcTipInit() {
+  if (dcTipEl) return;
+  dcTipEl = document.createElement('div');
+  dcTipEl.className = 'dc-tip';
+  document.body.appendChild(dcTipEl);
+}
+function dcTipShow(i, ev) {
+  dcTipInit();
+  dcTipEl.innerHTML = dcTips[i] || '';
+  dcTipEl.classList.add('on');
+  dcTipMove(ev);
+}
+function dcTipMove(ev) {
+  if (!dcTipEl) return;
+  const pad = 14, w = dcTipEl.offsetWidth, h = dcTipEl.offsetHeight;
+  let x = ev.clientX + pad, y = ev.clientY + pad;
+  if (x + w > window.innerWidth - 8) x = ev.clientX - w - pad;
+  if (y + h > window.innerHeight - 8) y = ev.clientY - h - pad;
+  dcTipEl.style.left = x + 'px';
+  dcTipEl.style.top = Math.max(8, y) + 'px';
+}
+function dcTipHide() { if (dcTipEl) dcTipEl.classList.remove('on'); }
+function dcTip(html) { dcTips.push(html); return dcTips.length - 1; }
+
+/* ── Build ── */
+let dcTlTruck = null;
 function buildTimeline(target) {
-  /* Renders into the Final drawer tab by default, or any container
-     (the +Timeline view mounts it inside the takeover-drawer) */
   const panel = target || document.getElementById('panel-timeline');
   dcTlRoot = panel;
+  /* A different truck always opens on today */
+  if (dcTlTruck !== dcCurrentTruck) { dcActiveDay = 6; dcTlTruck = dcCurrentTruck; }
   const today = new Date();
   const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-
-  const dayCells = Array.from({length:7}, (_, i) => {
+  const dayCells = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today);
     d.setDate(today.getDate() - (6 - i));
     const lbl = i === 6 ? 'Today' : DAY_NAMES[d.getDay()];
-    const num = (d.getMonth()+1) + '/' + d.getDate();
+    const num = (d.getMonth() + 1) + '/' + d.getDate();
     return `<div class="dc-day${i === dcActiveDay ? ' sel' : ''}" id="dc-day-${i}" onclick="dcSelectDay(${i})">
       <div class="dc-day-inner">
         <div><div class="dc-day-lbl">${lbl}</div><div class="dc-day-num">${num}</div></div>
-        ${badgeHtml(DC_DAY_BADGES[i])}
+        ${badgeHtml(dcDayStream(dcCurrentTruck, i).worst)}
       </div>
     </div>`;
   }).join('');
 
-  const labels = DC_COMPONENTS.map(n => `<div class="dc-tl-label">${n}</div>`).join('');
-  const axis = `<div class="dc-tl-axis"><span>00:00</span><span>04:00</span><span>08:00</span><span>12:00</span><span>16:00</span><span>20:00</span><span>24:00</span></div>`;
   const legend = `<div class="dc-tl-legend">
-    <span><span class="dc-leg-on"></span>Ignition on</span>
-    <span><span class="dc-leg-off"></span>Ignition off</span>
-    <span><span class="dc-badge-alarm">${ALARM_ICON}</span>Alarm</span>
-    <span><span class="dc-badge-warn">${WARN_ICON}</span>Warning</span>
+    <span><span class="lg ok"></span>Healthy</span>
+    <span><span class="lg warn"></span>Warning</span>
+    <span><span class="lg alarm"></span>Alarm</span>
+    <span><span class="lg nodata"></span>No data received</span>
+    <span><span class="lg nodata"></span>Ignition state unknown</span>
+    <span><span class="lg off"></span>Ignition off</span>
+    <span><span class="lg na"></span>Not installed</span>
+    <span><span class="lg tick"></span>Status message</span>
+    <span><span class="lg tick oc"></span>Off-cycle message</span>
   </div>`;
 
   panel.innerHTML = `
@@ -2520,12 +2838,11 @@ function buildTimeline(target) {
       </div>
     </div>
     <div class="dc-tl-box">
-      <div class="dc-tl-grid">
-        <div></div><div>${axis}</div>
-        <div style="display:flex;flex-direction:column;">${labels}</div>
-        <div class="dc-tl-rows" id="dc-tl-rows"></div>
-        <div></div><div>${legend}</div>
-      </div>
+      <div class="dc-tl2-meta" id="dc-tl2-meta"></div>
+      <div class="dc-tl2" id="dc-tl2"
+           onmouseover="dcTlOver(event)" onmousemove="dcTipMove(event)"
+           onmouseout="dcTipHide()" onclick="dcTlClick(event)"></div>
+      ${legend}
     </div>`;
   dcSelectDay(dcActiveDay);
 }
@@ -2545,25 +2862,183 @@ function dcSelectDay(idx) {
   if (lblEl) lblEl.textContent = (idx === 6 ? 'Today ' : DAY_NAMES[d.getDay()] + ' ') + (d.getMonth()+1) + '/' + d.getDate() + '/' + d.getFullYear();
   dcRenderRows(idx);
 }
-function dcTimelineNav(dir) {
-  dcSelectDay(Math.max(0, Math.min(6, dcActiveDay + dir)));
-}
+function dcTimelineNav(dir) { dcSelectDay(Math.max(0, Math.min(6, dcActiveDay + dir))); }
+
 function dcRenderRows(idx) {
   if (!dcTlRoot) return;
-  const container = dcTlRoot.querySelector('#dc-tl-rows');
-  if (!container) return;
-  const dayRows = DC_TIMELINE_DAYS[idx] || DC_TIMELINE_DAYS[6];
-  container.innerHTML = dayRows.map(segs => {
-    const track = segs.map((s, si) => {
-      const isLast = si === segs.length - 1;
-      const flexVal = isLast ? '1 1 0' : s.m + ' 0 0';
-      const thin = s.t === 'g' || s.t === 'x';
-      const inner = thin ? '' :
-        `<span class="sl"><span style="display:inline-flex;flex-shrink:0;">${s.t === 'w' ? WARN_ICON : ALARM_ICON}</span><span style="flex-shrink:0;">${s.label}</span></span>`;
-      return `<div class="dc-seg ${s.t}" style="flex:${flexVal};${thin ? 'min-width:0;' : ''}">${inner}</div>`;
-    }).join('');
-    return `<div class="dc-tl-row"><div class="dc-tl-track">${track}</div></div>`;
+  const host = dcTlRoot.querySelector('#dc-tl2');
+  if (!host) return;
+  const num = dcCurrentTruck;
+  const st = dcDayStream(num, idx);
+  const pct = m => (Math.max(0, Math.min(1440, m)) / 1440 * 100);
+  const nowMark = st.isToday ? `<span class="dc-now lead" style="left:${pct(st.nowMin)}%"></span>` : '';
+  const nowMarkPlain = st.isToday ? `<span class="dc-now" style="left:${pct(st.nowMin)}%"></span>` : '';
+
+  /* Header line: the cadence question, answered in words */
+  const metaEl = dcTlRoot.querySelector('#dc-tl2-meta');
+  if (metaEl) {
+    metaEl.innerHTML =
+      `<span><b>${st.msgs.length}</b> status messages</span>` +
+      `<span class="oc"><b>${st.ocCount}</b> off-cycle (sent on change)</span>` +
+      `<span>Heartbeat <b>every ${DC_BEAT_MIN} min</b> while ignition is on</span>` +
+      `<span>Last message <b>${st.msgs.length ? dcHM(st.msgs[st.msgs.length-1].min) : '--'}</b></span>` +
+      `<span>Click any block or tick to open it in Truck Log</span>`;
+  }
+
+  const axis = `<div class="dc-tl2-axis">` +
+    [0,4,8,12,16,20,24].map(h => `<span style="left:${pct(h*60)}%">${('0'+h).slice(-2)}:00</span>`).join('') +
+    `</div>`;
+
+  /* Message lane */
+  const ticks = st.msgs.map(m => {
+    const tip = dcTip(
+      `<div class="tt">${dcHM(m.min)} · System status</div>` +
+      `<div class="tm">${m.oc ? 'Off-cycle — sent because something changed' : 'On the ' + DC_BEAT_MIN + '-minute heartbeat'}</div>` +
+      `<div class="tm">Delay ${m.delay}</div>` +
+      (m.changes.length ? `<div class="tc">${m.changes.map(c =>
+        `<div><b>${c.row}</b> → ${DC_STATE_LABEL[c.to] || c.to}<br>${c.note}</div>`).join('')}</div>` : '') +
+      `<div class="th">Click to open this message in Truck Log</div>`);
+    return `<span class="dc-tk${m.oc ? ' oc' : ''}${m.sev === 'alarm' ? ' alarm' : ''}" style="left:${pct(m.min)}%"
+             data-tip="${tip}" data-sec="${m.sec}"></span>`;
   }).join('');
+
+  /* Ignition / power lane */
+  const ignSpans = [];
+  const ignPush = (from, to, on, label, tipHtml) => {
+    if (to - from <= 0.5) return;
+    ignSpans.push(`<span class="dc-sp ${on ? 'ign-on' : 'ign-off'}" style="left:${pct(from)}%;width:${pct(to)-pct(from)}%"
+      data-tip="${dcTip(tipHtml)}" data-sec="${Math.round(st.base.getTime()/1000 + from*60)}">
+      <span class="spl">${label}</span></span>`);
+  };
+  ignPush(0, st.ignOn, false, 'IGNITION OFF',
+    `<div class="tt">Ignition off</div><div class="tm">00:00 – ${dcHM(st.ignOn)}</div><div class="tm">Truck powered down — no component reporting is expected in this window.</div>`);
+  const ignKnownTo = st.dropAt !== null ? st.lastMsg : st.runEnd;
+  ignPush(st.ignOn, ignKnownTo, true, 'IGNITION ON · ' + dcHM(st.ignOn) + ' – ' + (st.dropAt !== null ? dcHM(ignKnownTo) : (st.isToday ? 'now' : dcHM(st.runEnd))),
+    `<div class="tt">Ignition on</div><div class="tm">${dcHM(st.ignOn)} – ${st.dropAt !== null ? dcHM(ignKnownTo) : (st.isToday ? 'now' : dcHM(st.runEnd))}</div><div class="tm">Components report every ${DC_BEAT_MIN} minutes in this window.</div>`);
+  if (st.dropAt !== null) {
+    const endUnknown = st.isToday ? st.nowMin : 1440;
+    ignSpans.push(`<span class="dc-sp ign-unknown" style="left:${pct(ignKnownTo)}%;width:${pct(endUnknown)-pct(ignKnownTo)}%"
+      data-tip="${dcTip(`<div class="tt">Ignition state unknown</div><div class="tm">${dcHM(ignKnownTo)} – ${endUnknown >= 1440 ? '24:00' : 'now'}</div><div class="tm">The TCG stopped sending, so ignition and power cannot be reported for this window. This is a gap in what the truck told us, not a reading.</div><div class="th">Click to open Truck Log at the last message</div>`)}"
+      data-sec="${Math.round(st.base.getTime()/1000 + ignKnownTo*60)}">
+      <span class="spl">IGNITION UNKNOWN · NO MESSAGES</span></span>`);
+  }
+  if (!st.isToday && st.dropAt === null) ignPush(st.runEnd, 1440, false, 'IGNITION OFF',
+    `<div class="tt">Ignition off</div><div class="tm">${dcHM(st.runEnd)} – 24:00</div><div class="tm">Truck powered down — every component stopping here is the shutdown, not a fault.</div>`);
+
+  /* Component rows */
+  const rowHtml = st.rows.map(r => {
+    if (r.na) {
+      const tip = dcTip(`<div class="tt">${r.row}</div><div class="tm">${r.naTip}</div>`);
+      return { lbl: `<div class="lbl na">${r.row}</div>`,
+               trk: `<div class="trk"><span class="dc-na-strip" data-tip="${tip}">${r.naText}</span></div>` };
+    }
+    const spans = r.spans.map(sp => {
+      /* No-data windows are counted strictly inside, so the last
+         message before the gap isn't counted as being in it */
+      const msgsIn = sp.state === 'nodata'
+        ? st.msgs.filter(m => m.min > sp.from && m.min <= sp.to).length
+        : st.msgs.filter(m => m.min >= sp.from && m.min < sp.to).length;
+      const wide = (sp.to - sp.from) / 1440 * 100 > 9;
+      const label = (sp.state === 'warn' || sp.state === 'alarm') ? DC_STATE_LABEL[sp.state]
+                  : (sp.state === 'nodata' ? 'No data' : '');
+      const tip = dcTip(
+        `<div class="tt">${r.row} — ${DC_STATE_LABEL[sp.state]}</div>` +
+        `<div class="tm">${dcHM(sp.from)} – ${sp.to >= 1440 ? '24:00' : dcHM(sp.to)}</div>` +
+        (sp.note ? `<div class="tm">${sp.note}</div>` : '') +
+        (sp.state === 'off' || sp.state === 'future' ? '' :
+          `<div class="tm">${msgsIn} status message${msgsIn === 1 ? '' : 's'} received in this window</div>`) +
+        (sp.state === 'nodata' ? `<div class="tm">Last message before the gap: <b>${dcHM(sp.from)}</b></div>` : '') +
+        (sp.state === 'future' ? '' : `<div class="th">Click to open Truck Log at ${dcHM(sp.from)}</div>`));
+      return `<span class="dc-sp ${sp.state}" style="left:${pct(sp.from)}%;width:${pct(sp.to)-pct(sp.from)}%"
+        data-tip="${tip}"${sp.state === 'future' ? '' : ` data-sec="${Math.round(st.base.getTime()/1000 + sp.from*60)}"`}>
+        ${wide && label ? `<span class="spl">${label}</span>` : ''}</span>`;
+    }).join('');
+    return { lbl: `<div class="lbl">${r.row}</div>`, trk: `<div class="trk">${spans}${nowMarkPlain}</div>` };
+  });
+
+  host.innerHTML =
+    `<div class="lbl axis"></div><div class="trk axis">${axis}</div>` +
+    `<div class="lbl lane">Status messages</div><div class="trk">${ticks}${nowMark}</div>` +
+    `<div class="lbl lane">Ignition / power</div><div class="trk">${ignSpans.join('')}${nowMarkPlain}</div>` +
+    rowHtml.map((r, i) => (i === 0 ? r.lbl.replace('class="lbl', 'class="lbl rule') + r.trk.replace('class="trk', 'class="trk rule') : r.lbl + r.trk)).join('');
+}
+
+function dcTlOver(ev) {
+  const el = ev.target.closest('[data-tip]');
+  if (!el) { dcTipHide(); return; }
+  dcTipShow(+el.dataset.tip, ev);
+}
+function dcTlClick(ev) {
+  const el = ev.target.closest('[data-sec]');
+  if (!el) return;
+  dcTlDrill(+el.dataset.sec);
+}
+
+/* ── Drill into Truck Log at a timestamp ──
+   The timeline is the way into the detail, so a span or tick
+   lands in the log rows for that window, not just "the logs". */
+function dcTlDrill(sec) {
+  dcTipHide();
+  dcIngestStreamLogs(dcCurrentTruck);
+  const inTakeover = document.getElementById('takeover').classList.contains('open');
+  if (inTakeover) tkView('logs'); else dcTab('logs');
+  const from = sec - 8 * 60, to = sec + 8 * 60;
+  document.getElementById('dc-log-from').value = dcToLocalInput(from);
+  document.getElementById('dc-log-to').value = dcToLocalInput(to);
+  document.getElementById('dc-log-type').value = 'all';
+  document.getElementById('dc-log-source').value = 'all';
+  document.getElementById('dc-log-search').value = '';
+  dcLogsFilterChange();
+  /* Select the row closest to the clicked time */
+  if (dcLogsFiltered.length) {
+    let best = 0, bd = Infinity;
+    dcLogsFiltered.forEach((r, i) => { const d = Math.abs(r.sec - sec); if (d < bd) { bd = d; best = i; } });
+    dcSelectLog(best);
+  }
+}
+
+/* Fold the timeline's own message stream into the log cache so the
+   drill-down shows the very messages the timeline was drawn from */
+const dcStreamIngested = {};
+function dcIngestStreamLogs(num) {
+  if (!dcLogsCache[num]) dcLogsCache[num] = dcGenLogs(num);
+  const key = num + '|' + (DC_FAULT_DEMO ? 'd' : 'n');
+  if (dcStreamIngested[key]) return;
+  dcStreamIngested[key] = true;
+  const MAC = '125765328520';
+  const rows = [];
+  for (let idx = 0; idx < 7; idx++) {
+    const st = dcDayStream(num, idx);
+    st.msgs.forEach(m => {
+      const d = new Date(m.sec * 1000);
+      const time = ('0'+(d.getMonth()+1)).slice(-2) + '/' + ('0'+d.getDate()).slice(-2) + '/' + d.getFullYear() + ' ' +
+                   d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      const comps = {};
+      st.rows.forEach(r => {
+        if (r.na) { comps[r.row] = 'NOT_INSTALLED'; return; }
+        const sp = r.spans.find(x => m.min >= x.from && m.min <= x.to);
+        comps[r.row] = sp ? { ok: 'HEALTHY', warn: 'WARNING', alarm: 'ALARM', nodata: 'NO_DATA', off: 'IGNITION_OFF', future: 'UNKNOWN' }[sp.state] : 'UNKNOWN';
+      });
+      rows.push({
+        time, sec: m.sec, delay: m.delay, mac: MAC, type: 'Event', sub: 'SystemStatus', source: 'TRUCK',
+        lat: null, lng: null,
+        json: {
+          message_type: 'Event',
+          time: { seconds: m.sec, microseconds: 126403 },
+          sender_mac_id: MAC, accountId: '12', truckId: '254', truckName: String(num), pbversion: 4,
+          event: {
+            event_type: 'SystemStatus',
+            trigger: m.oc ? 'STATE_CHANGE' : 'CADENCE_' + DC_BEAT_MIN + 'MIN',
+            ignition: m.min >= st.ignOn && m.min <= st.runEnd ? 'ON' : 'OFF',
+            changed: m.changes.map(c => ({ component: c.row, state: c.to.toUpperCase(), detail: c.note })),
+            component_status: comps,
+            system_status: { batteryVoltage: 12.9, signalStrength: -64, firmware: '26.2.3', canErrors: 0 }
+          }
+        }
+      });
+    });
+  }
+  dcLogsCache[num] = dcLogsCache[num].concat(rows).sort((a, b) => b.sec - a.sec);
 }
 
 /* ══════════════════ MANUAL CONTROL ══════════════════
@@ -3499,6 +3974,7 @@ function syncAlertCells() {
 function toggleFaultDemo() {
   DC_FAULT_DEMO = !DC_FAULT_DEMO;
   document.getElementById('vp-fault-toggle').classList.toggle('on', DC_FAULT_DEMO);
+  dcClearStreams();
   renderComponentCells();
   buildOverview(dcCurrentTruck || '1219');
 }

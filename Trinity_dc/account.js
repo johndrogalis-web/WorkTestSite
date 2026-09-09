@@ -52,10 +52,12 @@ function lgDismiss() {
   el.classList.add('lg-out');
   setTimeout(function () { el.style.display = 'none'; }, 260);
   try { sessionStorage.setItem('vfLoggedIn', '1'); } catch (e) {}
-  /* First-timers get the workspace wizard; everyone else lands on the board
-     they already built. app-15 owns that decision. */
-  if (typeof obMaybe === 'function') obMaybe();
-  else lgLand();
+  /* Everyone lands on Dashboards, first login included. The workspace wizard
+     used to gate the first run; it now sits behind "Reset workspace setup" in
+     the top-bar options menu (obReset), so a first-time user sees the product
+     rather than a four-step form. app-13's default layout carries the board
+     until they build their own. */
+  lgLand();
 }
 
 /* Signing in lands on Dashboards, whichever frame you are in. Each viewport
@@ -690,12 +692,12 @@ function pfNav() {
 
 /* ============================================================================
    app-17-account.js
-   ACCOUNT MANAGEMENT + the Settings menu
+   ACCOUNT MANAGEMENT + the Settings nav row
    ----------------------------------------------------------------------------
-   The Settings row in the nav carries a chevron and opens two choices: Log out,
-   which returns to the login screen, and Go to settings, which lands on this
-   page. Seven tabs: Company, Units, Trucks, Users, Plants, Permissions,
-   Software Download.
+   The Settings row in the nav footer lands on this page directly — no chevron,
+   no flyout. Log out is its own row at the bottom of the footer and is the only
+   route back to the login screen. Seven tabs: Company, Units, Trucks, Users,
+   Plants, Permissions, Software Download.
 
    Tables are declared once as column definitions and rendered two ways: a real
    table on desktop and tablet, a stack of key/value cards on mobile. One
@@ -1142,38 +1144,35 @@ function amMobileClose() {
 
 /* ── Settings menu ────────────────────────────────────────────────────────── */
 
+/* Settings used to be a flyout: one nav row that opened a two-item menu
+   holding "Go to settings" and "Log out". The chevron promised a submenu
+   that only ever held one real destination, so the row now goes straight
+   to Settings and Log out is its own row at the bottom of the footer.
+   stMenuToggle is kept as a no-op alias so any stale ?test= link or
+   hash route that still calls it lands on Settings rather than throwing. */
+
 function stMenuToggle(e, scope) {
   if (e) e.stopPropagation();
-  var id = 'st-menu-' + scope;
-  var el = document.getElementById(id);
-  if (!el) return;
-  var open = el.classList.toggle('open');
-  if (open) {
-    setTimeout(function () {
-      document.addEventListener('click', function close() {
-        el.classList.remove('open');
-        document.removeEventListener('click', close);
-      }, { once:true });
-    }, 0);
-  }
+  stGoSettings(scope);
 }
 
 function stGoSettings(scope) {
-  var el = document.getElementById('st-menu-' + scope);
-  if (el) el.classList.remove('open');
   amTab = 'company';
   if (scope === 'mob') amMobileOpen();
   else if (scope === 'tb') amTabletOpen();
   else if (typeof dtNavGo === 'function') dtNavGo('account');
 }
 
+/* Log out is the only way back to the login screen. It tears down every open
+   surface first — account panel, profile, and the tablet/mobile nav drawers —
+   so signing back in lands on a clean Dashboards rather than behind a panel
+   left open from the previous session. */
 function stLogout(scope) {
-  var el = document.getElementById('st-menu-' + scope);
-  if (el) el.classList.remove('open');
   amTabletClose();
   amMobileClose();
   if (typeof pfClose === 'function') pfClose();
   if (typeof closeNav === 'function') closeNav();
+  if (typeof tbNavClose === 'function') tbNavClose();
   if (typeof lgShow === 'function') lgShow();
 }
 

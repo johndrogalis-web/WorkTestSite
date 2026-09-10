@@ -1000,7 +1000,6 @@ body.vp-m .form-submit-wrap .btn-primary{width:100%}
             <select class="f-select" id="fShape" onchange="drawShape()">
               <option value="true" selected>True</option>
               <option value="shear">Shear</option>
-              <option value="collapse">Collapse</option>
             </select>
             <div class="shape-viz"><svg id="shapeSvg" width="48" height="40" viewBox="0 0 94 70"></svg></div>
           </div>
@@ -1290,12 +1289,9 @@ function drawShape(){
   if(v==='true'){
     // Verifi true-slump asset (39x46), scaled to sit on the ground line
     inner = `<g transform="translate(24,10.8) scale(1.2)"><path d="M1 28.9859V45H37.9581C37.9581 45 38.0524 40.6232 37.9581 37.8213C37.7537 31.7519 36.8548 22.3594 36.8548 22.3594C36.8548 22.3594 35.2 12.6957 34.3726 10.4869C33.5452 8.27807 32.6642 5.18046 29.9597 3.30819C27.3362 1.49199 21.9613 1.09935 21.9613 1.09935C21.9613 1.09935 15.9436 0.653272 12.3081 1.65156C9.89205 2.31497 8.32134 2.67364 6.51613 4.41261C4.60712 6.25156 3.48226 8.27807 3.48226 8.27807C3.48226 8.27807 0.99976 12.4196 1 17.3895C1.00024 22.3594 1 28.9859 1 28.9859Z" fill="#0063CD" stroke="black" stroke-width="2"/></g>`;
-  } else if(v==='shear'){
-    // one side slides off
-    inner = `<path d="M22 66 C23 48 26 34 31 26 C34 21 44 20 48 24 L70 46 C74 50 72 60 66 63 C54 68 34 68 22 66 Z" fill="#0063CD" stroke="black" stroke-width="2.4" stroke-linejoin="round"/>`;
   } else {
-    // collapse: low wide blob
-    inner = `<path d="M10 66 C10 52 26 46 47 46 C68 46 84 52 84 66 Z" fill="#0063CD" stroke="black" stroke-width="2.4" stroke-linejoin="round"/>`;
+    // shear: one side slides off
+    inner = `<path d="M22 66 C23 48 26 34 31 26 C34 21 44 20 48 24 L70 46 C74 50 72 60 66 63 C54 68 34 68 22 66 Z" fill="#0063CD" stroke="black" stroke-width="2.4" stroke-linejoin="round"/>`;
   }
   svg.innerHTML = inner + `<line x1="4" y1="67" x2="90" y2="67" stroke="${line}" stroke-width="1.5" opacity=".45"/>`;
 }
@@ -1693,7 +1689,7 @@ function finishImport(count){
   const rows = [];
   const shown = Math.min(count, 6);
   const testers = ['Campbell','Ortiz','Nguyen','B. Cooper'];
-  const shapes = ['True','True','True','Shear','True','Collapse'];
+  const shapes = ['True','True','True','Shear','True','Shear'];
   for(let i=0;i<shown;i++){
     const tr = trucks[i % trucks.length];
     const x = FLEET[tr][0];

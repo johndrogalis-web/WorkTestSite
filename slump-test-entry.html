@@ -325,6 +325,16 @@ tbody tr:hover{background:var(--hover-row)}
 }
 .td-muted{color:var(--faint)}
 .td-notes{max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.act-cell{text-align:center}
+.del-btn{
+  background:none;border:0;color:var(--blue-hi);cursor:pointer;
+  padding:7px;border-radius:6px;display:inline-flex;transition:background .12s,color .12s;
+}
+.del-btn:hover{background:var(--blue-tint)}
+.toast-action{
+  background:none;border:0;color:var(--blue-hi);font-family:inherit;font-size:13.5px;
+  font-weight:700;cursor:pointer;padding:0;margin-left:4px;text-decoration:underline;
+}
 
 /* ---------- pagination ---------- */
 .pager{
@@ -447,6 +457,17 @@ body.vp-m .pager-range{min-width:0}
 .radio-inline .radio-row{padding:4px 0}
 .shape-row{display:flex;align-items:center;gap:16px}
 .shape-viz{width:52px;height:44px;flex-shrink:0;display:flex;align-items:flex-end;justify-content:center}
+/* collapsed note accordion */
+.note-toggle{
+  display:flex;align-items:center;gap:8px;background:none;border:0;
+  color:var(--muted);font-family:inherit;font-size:13px;font-weight:700;
+  cursor:pointer;padding:6px 0;letter-spacing:.02em;
+}
+.note-toggle:hover{color:var(--text)}
+.note-toggle svg{transition:transform .15s}
+.note-toggle.open svg{transform:rotate(90deg)}
+.note-body{display:none;margin-top:8px}
+.note-body.open{display:block}
 .form-submit-wrap{display:flex;justify-content:center;margin-top:30px}
 .form-submit-wrap .btn-primary{min-width:220px;justify-content:center;padding:13px}
 
@@ -571,10 +592,10 @@ tr.detail-row, tr.detail-row:hover{background:var(--row-dark)}
    ============================================================ */
 .phone-wrap, .phone-body{display:contents} /* pass-through on desktop/tablet */
 .phone-notch, .status-bar{display:none}
-body.vp-m{background:#d4d0cb;overflow:auto}
-html.theme-dark body.vp-m{background:#101011}
-body.vp-m .phone-wrap{display:flex;justify-content:center;padding:28px 0 40px}
-body.vp-m .phone-body{
+body.vp-m, body.vp-t{background:#d4d0cb;overflow:auto}
+html.theme-dark body.vp-m, html.theme-dark body.vp-t{background:#101011}
+body.vp-m .phone-wrap, body.vp-t .phone-wrap{display:flex;justify-content:center;padding:28px 0 40px}
+body.vp-m .phone-body, body.vp-t .phone-body{
   display:flex;flex-direction:column;position:relative;
   width:393px;height:852px;background:var(--bg);
   border-radius:44px;overflow:hidden;
@@ -582,6 +603,7 @@ body.vp-m .phone-body{
   box-shadow:0 0 0 1px rgba(255,255,255,.12), 0 0 0 10px #1a1a1a,
              0 0 0 11px rgba(255,255,255,.08), 0 32px 80px rgba(0,0,0,.6);
 }
+body.vp-t .phone-body{width:834px;height:1112px;border-radius:30px} /* iPad portrait */
 body.vp-m .phone-notch{
   display:block;position:absolute;top:12px;left:50%;transform:translateX(-50%);
   width:120px;height:34px;background:#0a0a0a;border-radius:20px;z-index:100;
@@ -594,22 +616,21 @@ body.vp-m .status-bar{
 .status-bar-icons{display:flex;align-items:center;gap:6px}
 
 /* real small screens: same layout, no decorative frame */
-body.vp-m.vp-real{background:var(--bg)}
-body.vp-m.vp-real .phone-wrap{padding:0}
-body.vp-m.vp-real .phone-body{width:100%;height:calc(100vh - 44px);border-radius:0;box-shadow:none}
-body.vp-m.vp-real .phone-notch, body.vp-m.vp-real .status-bar{display:none}
+body.vp-real{background:var(--bg)}
+body.vp-real .phone-wrap{padding:0}
+body.vp-real .phone-body{width:100% !important;height:calc(100vh - 44px) !important;border-radius:0 !important;box-shadow:none !important}
+body.vp-real .phone-notch, body.vp-real .status-bar{display:none !important}
 
 /* ============================================================
    TABLET (body.vp-t) and MOBILE (body.vp-m) simulated viewports
    ============================================================ */
 body.vp-m .m-appbar, body.vp-t .m-appbar{display:flex}
-body.vp-m .m-appbar{background:#171719}
+body.vp-m .m-appbar, body.vp-t .m-appbar{background:#171719}
+body.vp-t .m-appbar{height:58px;padding-top:10px}
 body.vp-m .rail, body.vp-t .rail{display:none}
-body.vp-t .shell{height:calc(100vh - 88px)}
-body.vp-m .shell{flex:1;min-height:0;height:auto}
-body.vp-t .main{max-width:834px;margin:0 auto;padding:18px 20px 80px;border-left:1px solid var(--border-soft);border-right:1px solid var(--border-soft)}
+body.vp-m .shell, body.vp-t .shell{flex:1;min-height:0;height:auto}
+body.vp-t .main{padding:18px 20px 80px}
 body.vp-m .main{padding:14px 12px 60px}
-body.vp-t .m-appbar{max-width:834px;margin:0 auto;width:100%}
 
 /* tabs */
 body.vp-m .tabs{gap:18px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none}
@@ -644,11 +665,11 @@ body.vp-m .tbl-wrap{overflow-x:hidden}
 body.vp-m th, body.vp-m td{padding:12px 8px;font-size:13px}
 
 /* slump table: mobile keeps chevron, Date, Time, Tester, Truck */
-body.vp-m #slumpTable th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(5)):not(:nth-child(6)),
-body.vp-m #slumpTable tr:not(.detail-row) td:not(.exp-cell):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(5)):not(:nth-child(6)){display:none}
+body.vp-m #slumpTable th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(5)):not(:nth-child(6)):not(:last-child),
+body.vp-m #slumpTable tr:not(.detail-row) td:not(.exp-cell):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(5)):not(:nth-child(6)):not(.act-cell){display:none}
 /* tablet adds Build Up Status, Location, Ticket Number */
-body.vp-t #slumpTable th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(5)):not(:nth-child(6)):not(:nth-child(11)):not(:nth-child(19)):not(:nth-child(20)),
-body.vp-t #slumpTable tr:not(.detail-row) td:not(.exp-cell):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(5)):not(:nth-child(6)):not(:nth-child(11)):not(:nth-child(19)):not(:nth-child(20)){display:none}
+body.vp-t #slumpTable th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(5)):not(:nth-child(6)):not(:nth-child(11)):not(:nth-child(19)):not(:nth-child(20)):not(:last-child),
+body.vp-t #slumpTable tr:not(.detail-row) td:not(.exp-cell):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(5)):not(:nth-child(6)):not(:nth-child(11)):not(:nth-child(19)):not(:nth-child(20)):not(.act-cell){display:none}
 
 /* load table: mobile keeps chevron, Time, Truck, Location, Status */
 body.vp-m #loadTable th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(4)):not(:nth-child(6)):not(:nth-child(11)),
@@ -657,6 +678,8 @@ body.vp-m #loadTable tr:not(.detail-row) td:not(.exp-cell):not(:nth-child(2)):no
 body.vp-t #loadTable th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(4)):not(:nth-child(6)):not(:nth-child(7)):not(:nth-child(8)):not(:nth-child(11)),
 body.vp-t #loadTable tr:not(.detail-row) td:not(.exp-cell):not(:nth-child(2)):not(:nth-child(4)):not(:nth-child(6)):not(:nth-child(7)):not(:nth-child(8)):not(:nth-child(11)){display:none}
 
+body.vp-m .act-cell, body.vp-m #slumpTable th:last-child{padding-left:2px;padding-right:8px}
+body.vp-m tbody tr:not(.detail-row), body.vp-t tbody tr:not(.detail-row){cursor:pointer}
 /* truncate tester on mobile */
 body.vp-m #slumpTable td:nth-child(5){max-width:82px;overflow:hidden;text-overflow:ellipsis}
 
@@ -666,17 +689,16 @@ body.vp-m.vp-real .drawer{border-radius:0}
 body.vp-m .drawer-backdrop{inset:0}
 body.vp-m .drawer-head{padding-top:56px} /* clear the notch/status area */
 body.vp-m .toast{position:absolute;bottom:22px;width:max-content;max-width:86%}
-body.vp-t .drawer{width:560px}
+body.vp-t .drawer{width:560px;top:0}
+body.vp-t .drawer-backdrop{inset:0}
+body.vp-t .drawer-head{padding-top:34px} /* clear the rounded frame corners */
 body.vp-m .f-grid{grid-template-columns:1fr}
 body.vp-m #modeChooser, body.vp-t #modeChooser{display:none}
 body.vp-m .drawer-body, body.vp-m .drawer-head{padding-left:18px;padding-right:18px}
 body.vp-m .drawer-rule{margin:0 18px}
 body.vp-m .form-submit-wrap .btn-primary{width:100%}
 
-@media (max-width:860px){
-  .f-grid{grid-template-columns:1fr}
-  .drawer{width:100vw}
-}
+
 </style>
 </head>
 <body>
@@ -700,6 +722,9 @@ body.vp-m .form-submit-wrap .btn-primary{width:100%}
       <div class="vp-opts-dd" id="vpOptsDd" onclick="event.stopPropagation()">
         <div class="vp-dd-label">Version</div>
         <button class="vp-opt-row active" onclick="void(0)">MVP <span class="vp-check">✓</span></button>
+        <div class="vp-dd-div"></div>
+        <div class="vp-dd-label">Explorations</div>
+        <button class="vp-opt-row" onclick="toggleTestType()">Show slump test type <span class="vp-switch on" id="testTypeSwitch"></span></button>
         <div class="vp-dd-div"></div>
         <button class="vp-opt-row" onclick="toggleTheme()">Dark mode <span class="vp-switch" id="themeSwitch"></span></button>
       </div>
@@ -811,9 +836,9 @@ body.vp-m .form-submit-wrap .btn-primary{width:100%}
             <th>Customer</th><th>Order</th><th>Mix Code</th><th>Size</th><th>Status</th><th>Current ?Ticketed Slump</th>
           </tr></thead>
           <tbody id="loadTbody">
-            <tr data-truck="71750" data-ticket="66097" data-mix="10369262" data-customer="W&amp;S Concrete INC" data-location="Wildwood" data-date="06/25/2026"><td class="exp-cell"><button class="exp-btn" onclick="toggleRowDetail(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></td><td class="td-time">8:12 AM<span>Thu 25th June</span></td><td>NT</td><td>71750</td><td></td><td>Wildwood (-)</td><td>W&amp;S Concrete INC</td><td>454</td><td>10369262</td><td class="td-muted">-</td><td><span class="chip-tojob">To Job</span></td><td class="td-muted">-</td></tr>
-            <tr data-truck="71750" data-ticket="66098" data-mix="10369262" data-customer="W&amp;S Concrete INC" data-location="Wildwood" data-date="06/25/2026"><td class="exp-cell"><button class="exp-btn" onclick="toggleRowDetail(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></td><td class="td-time">8:12 AM<span>Thu 25th June</span></td><td>NT</td><td>71750</td><td></td><td>Wildwood (-)</td><td>W&amp;S Concrete INC</td><td>454</td><td>10369262</td><td class="td-muted">-</td><td><span class="chip-tojob">To Job</span></td><td class="td-muted">-</td></tr>
-            <tr data-truck="71750" data-ticket="66097" data-mix="10369262" data-customer="W&amp;S Concrete INC" data-location="Wildwood" data-date="06/25/2026"><td class="exp-cell"><button class="exp-btn" onclick="toggleRowDetail(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></td><td class="td-time">8:12 AM<span>Thu 25th June</span></td><td>NT</td><td>71750</td><td></td><td>Wildwood (-)</td><td>W&amp;S Concrete INC</td><td>454</td><td>10369262</td><td class="td-muted">-</td><td><span class="chip-tojob">To Job</span></td><td class="td-muted">-</td></tr>
+            <tr data-truck="71750" data-ticket="66097" data-mix="10369262" data-customer="W&amp;S Concrete INC" data-location="Wildwood" data-date="06/25/2026"><td class="exp-cell"><button class="exp-btn" title="Show details"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></td><td class="td-time">8:12 AM<span>Thu 25th June</span></td><td>NT</td><td>71750</td><td></td><td>Wildwood (-)</td><td>W&amp;S Concrete INC</td><td>454</td><td>10369262</td><td class="td-muted">-</td><td><span class="chip-tojob">To Job</span></td><td class="td-muted">-</td></tr>
+            <tr data-truck="71750" data-ticket="66098" data-mix="10369262" data-customer="W&amp;S Concrete INC" data-location="Wildwood" data-date="06/25/2026"><td class="exp-cell"><button class="exp-btn" title="Show details"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></td><td class="td-time">8:12 AM<span>Thu 25th June</span></td><td>NT</td><td>71750</td><td></td><td>Wildwood (-)</td><td>W&amp;S Concrete INC</td><td>454</td><td>10369262</td><td class="td-muted">-</td><td><span class="chip-tojob">To Job</span></td><td class="td-muted">-</td></tr>
+            <tr data-truck="71750" data-ticket="66097" data-mix="10369262" data-customer="W&amp;S Concrete INC" data-location="Wildwood" data-date="06/25/2026"><td class="exp-cell"><button class="exp-btn" title="Show details"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></td><td class="td-time">8:12 AM<span>Thu 25th June</span></td><td>NT</td><td>71750</td><td></td><td>Wildwood (-)</td><td>W&amp;S Concrete INC</td><td>454</td><td>10369262</td><td class="td-muted">-</td><td><span class="chip-tojob">To Job</span></td><td class="td-muted">-</td></tr>
           </tbody>
         </table>
       </div>
@@ -864,7 +889,7 @@ body.vp-m .form-submit-wrap .btn-primary{width:100%}
             <th>Verifi Slump Reason</th><th>Next Valid Slump</th><th>Slump Difference</th><th>Verifi Slump Time</th>
             <th>Next Valid Slump Time</th><th>Time Diff (minutes)</th><th>Location</th><th>Ticket Number</th>
             <th>Ticketed Slump</th><th>Order</th><th>Load Size</th><th>Shape</th><th>Angle Degrees</th>
-            <th>Concrete Temperature</th><th>Air Content</th><th>Unit Weight</th><th>Notes</th><th>Sensor Data</th>
+            <th>Concrete Temperature</th><th>Air Content</th><th>Unit Weight</th><th>Notes</th><th>Sensor Data</th><th>Actions</th>
           </tr></thead>
           <tbody id="slumpTbody"></tbody>
         </table>
@@ -915,23 +940,25 @@ body.vp-m .form-submit-wrap .btn-primary{width:100%}
 
     <!-- ============ MODE 1: single test form (Option B long form) ============ -->
     <div id="modeForm">
+      <div id="testTypeSection">
       <div class="form-sec-label">Select slump test type</div>
       <div class="radio-inline">
         <label class="radio-row">
-          <input type="radio" name="testType" value="Slump test" checked>
+          <input type="radio" name="testType" value="Slump test" checked onchange="onTestTypeChange()">
           <span class="radio-dot"></span>
           <span class="radio-text">Slump test</span>
         </label>
         <label class="radio-row">
-          <input type="radio" name="testType" value="Slump flow test">
+          <input type="radio" name="testType" value="Slump flow test" onchange="onTestTypeChange()">
           <span class="radio-dot"></span>
           <span class="radio-text">Slump flow test</span>
         </label>
         <label class="radio-row">
-          <input type="radio" name="testType" value="Flow test">
+          <input type="radio" name="testType" value="Flow test" onchange="onTestTypeChange()">
           <span class="radio-dot"></span>
           <span class="radio-text">Flow test</span>
         </label>
+      </div>
       </div>
 
       <div class="form-sec-label" style="font-size:19px;margin-top:30px">Test details</div>
@@ -1006,8 +1033,13 @@ body.vp-m .form-submit-wrap .btn-primary{width:100%}
         </div>
 
         <div class="f-field full">
-          <label class="f-label" for="fNote">Notes</label>
-          <textarea class="f-textarea" id="fNote" style="min-height:96px" placeholder=""></textarea>
+          <button type="button" class="note-toggle" id="noteToggle" onclick="toggleNote()" aria-expanded="false" aria-controls="noteBody">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+            <span id="noteToggleLabel">Add a note</span>
+          </button>
+          <div class="note-body" id="noteBody">
+            <textarea class="f-textarea" id="fNote" style="min-height:96px" placeholder="" oninput="updateNoteLabel()"></textarea>
+          </div>
         </div>
       </div>
 
@@ -1077,6 +1109,7 @@ body.vp-m .form-submit-wrap .btn-primary{width:100%}
 <div class="toast" id="toast">
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
   <span id="toastMsg"></span>
+  <button class="toast-action" id="toastAction" style="display:none"></button>
 </div>
 </div><!-- /phone-body -->
 </div><!-- /phone-wrap -->
@@ -1143,6 +1176,10 @@ function resetDrawer(){
   document.getElementById('fTester').value='';
   document.getElementById('fShape').value='true';
   drawShape();
+  document.getElementById('noteBody').classList.remove('open');
+  document.getElementById('noteToggle').classList.remove('open');
+  document.getElementById('noteToggle').setAttribute('aria-expanded','false');
+  updateNoteLabel();
   // csv state
   resetCsv();
 }
@@ -1253,7 +1290,40 @@ function resetTimeSelect(){
 }
 function clearInvalid(id){ document.getElementById(id).classList.remove('invalid'); }
 
+/* collapsed-by-default note accordion */
+function toggleNote(){
+  const body = document.getElementById('noteBody');
+  const btn = document.getElementById('noteToggle');
+  const open = !body.classList.contains('open');
+  body.classList.toggle('open', open);
+  btn.classList.toggle('open', open);
+  btn.setAttribute('aria-expanded', open);
+  if(open) document.getElementById('fNote').focus();
+  updateNoteLabel();
+}
+function updateNoteLabel(){
+  const has = document.getElementById('fNote').value.trim() !== '';
+  document.getElementById('noteToggleLabel').textContent = has ? 'Edit note' : 'Add a note';
+}
+
 /* range guards for measured values — catches typos like 2000 instead of 200 */
+/* measured slump range depends on the selected test type:
+   slump 0–10" (0–250 mm) · slump flow 15–32" (400–800 mm) */
+const SLUMP_RANGES_BY_TYPE = {
+  'Slump test':      { min:0,   max:250, msg:'Measured slump must be between 0 and 250 mm.' },
+  'Slump flow test': { min:400, max:800, msg:'Slump flow must be between 400 and 800 mm.' },
+  'Flow test':       { min:null, max:null, msg:'' } // range TBD — numeric check only
+};
+function currentSlumpRange(){
+  const type = document.querySelector('input[name="testType"]:checked').value;
+  return SLUMP_RANGES_BY_TYPE[type];
+}
+function onTestTypeChange(){
+  // an entered value may become valid/invalid when the type changes
+  if(document.getElementById('fSlump').value.trim() !== '') validateRange('fSlump');
+  else document.getElementById('fSlumpField').classList.remove('invalid');
+}
+
 const RANGES = {
   fSlump:  { field:'fSlumpField',  err:'fSlumpErrTxt',  min:0,    max:250,  unit:'mm',
              msg:'Measured slump must be between 0 and 250 mm.' },
@@ -1264,7 +1334,11 @@ const RANGES = {
 };
 
 function validateRange(inputId){
-  const r = RANGES[inputId];
+  const r = Object.assign({}, RANGES[inputId]);
+  if(inputId === 'fSlump'){
+    const tr = currentSlumpRange();
+    r.min = tr.min; r.max = tr.max; r.msg = tr.msg;
+  }
   const fieldEl = document.getElementById(r.field);
   const raw = document.getElementById(inputId).value.trim();
   if(raw === ''){ fieldEl.classList.remove('invalid'); return true; } // required-ness handled at submit
@@ -1272,7 +1346,7 @@ function validateRange(inputId){
   let bad = false, msg = r.msg;
   if(isNaN(v)){
     bad = true; msg = 'Enter a number' + (raw.match(/[a-zA-Z]/) ? ' — no units needed, just the value in ' + r.unit + '.' : '.');
-  } else if(v < r.min || v > r.max){
+  } else if(r.min !== null && (v < r.min || v > r.max)){
     bad = true;
   }
   document.getElementById(r.err).textContent = msg;
@@ -1309,7 +1383,8 @@ function saveSingleTest(){
   }
   // slump is required
   if(document.getElementById('fSlump').value.trim() === ''){
-    document.getElementById('fSlumpErrTxt').textContent = RANGES.fSlump.msg;
+    const tr = currentSlumpRange();
+    document.getElementById('fSlumpErrTxt').textContent = tr.msg || 'Enter a measured value.';
     document.getElementById('fSlumpField').classList.add('invalid'); ok=false;
   }
   // all three measured values must be in range if entered
@@ -1356,7 +1431,7 @@ function addSlumpRows(rows){
     tr.dataset.location = r.loc || 'Wildwood';
     tr.dataset.date = r.date;
     tr.innerHTML =
-      '<td class="exp-cell"><button class="exp-btn" onclick="toggleRowDetail(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></td>' +
+      '<td class="exp-cell"><button class="exp-btn" title="Show details"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></td>' +
       cell(r.date, 'td-time') + cell(r.time) + cell(r.sub) + cell(r.tester) +
       cell(r.truck) + cell(r.type) + cell(r.mix) + cell(r.test) +
       cell(r.mixCurve) + '<td><span class="chip-tojob">To Job</span></td>' +
@@ -1365,7 +1440,8 @@ function addSlumpRows(rows){
       cell(r.loc) + cell(r.ticket) + cell(r.tslump) + cell(r.order) + cell(r.size) +
       cell(r.shape) + cell(r.angle) + cell(r.temp) + cell(r.air) + cell(r.weight) +
       (r.notes ? `<td class="td-notes" title="${r.notes}">${r.notes}</td>` : '<td class="td-muted">-</td>') +
-      cell(r.sensor);
+      cell(r.sensor) +
+      '<td class="act-cell"><button class="del-btn" title="Delete slump test" onclick="deleteSlumpRow(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button></td>';
     tb.insertBefore(tr, tb.firstChild);
   });
   applyFilters('slump');
@@ -1503,6 +1579,30 @@ function selectFilter(e, view, key, val){
   applyFilters(view);
 }
 
+/* ---- delete a slump test (with undo via toast) ---- */
+let lastDeleted = null;
+function deleteSlumpRow(btn){
+  const tr = btn.closest('tr');
+  const next = tr.nextElementSibling;
+  if(next && next.classList.contains('detail-row')) next.remove(); // close its accordion
+  lastDeleted = { row: tr, anchor: tr.nextElementSibling };
+  tr.remove();
+  applyFilters('slump');
+  protoToast('Slump test deleted', 'Undo', undoDelete);
+}
+function undoDelete(){
+  if(!lastDeleted) return;
+  const tb = document.getElementById('slumpTbody');
+  if(lastDeleted.anchor && lastDeleted.anchor.parentNode === tb){
+    tb.insertBefore(lastDeleted.row, lastDeleted.anchor);
+  } else {
+    tb.appendChild(lastDeleted.row);
+  }
+  lastDeleted = null;
+  applyFilters('slump');
+  protoToast('Slump test restored');
+}
+
 /* ---- expandable row detail: shows whichever columns are hidden at this viewport ---- */
 function toggleRowDetail(btn){
   const tr = btn.closest('tr');
@@ -1517,7 +1617,7 @@ function toggleRowDetail(btn){
   const tds = [...tr.children];
   let items = '';
   tds.forEach((td, i)=>{
-    if(td.classList.contains('exp-cell')) return;
+    if(td.classList.contains('exp-cell') || td.classList.contains('act-cell')) return;
     if(getComputedStyle(td).display !== 'none') return; // visible columns don't repeat
     const label = ths[i] ? ths[i].textContent.trim() : '';
     if(!label) return;
@@ -1531,6 +1631,19 @@ function toggleRowDetail(btn){
   tr.after(detail);
   btn.classList.add('open');
 }
+
+/* whole row toggles the accordion (chevron included via bubbling) */
+function rowClickHandler(e){
+  const tr = e.target.closest('tr');
+  if(!tr || tr.classList.contains('detail-row')) return;
+  if(e.target.closest('.del-btn')) return; // delete stays delete
+  const btn = tr.querySelector('.exp-btn');
+  if(!btn) return;
+  if(getComputedStyle(btn.closest('td')).display === 'none') return; // desktop shows all columns; nothing to expand
+  toggleRowDetail(btn);
+}
+document.getElementById('slumpTbody').addEventListener('click', rowClickHandler);
+document.getElementById('loadTbody').addEventListener('click', rowClickHandler);
 
 function collapseAllDetails(){
   document.querySelectorAll('tr.detail-row').forEach(r=>r.remove());
@@ -1707,12 +1820,21 @@ function finishImport(count){
 
 /* ============ toast ============ */
 let toastTimer = null;
-function protoToast(msg){
+function protoToast(msg, actionLabel, actionFn){
   const t = document.getElementById('toast');
+  const act = document.getElementById('toastAction');
   document.getElementById('toastMsg').textContent = msg;
+  if(actionLabel && actionFn){
+    act.textContent = actionLabel;
+    act.style.display = '';
+    act.onclick = ()=>{ t.classList.remove('show'); actionFn(); };
+  } else {
+    act.style.display = 'none';
+    act.onclick = null;
+  }
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), actionLabel ? 5000 : 2600);
 }
 
 /* ============ PROTOTYPE CHROME: options, viewport, theme ============ */
@@ -1725,8 +1847,13 @@ document.addEventListener('click', ()=>{
 });
 
 let currentViewport = 'Desktop';
-function setViewport(vp){
+let manualViewport = false;
+function setViewport(vp, fromAuto){
   currentViewport = vp;
+  if(!fromAuto){
+    manualViewport = true;
+    document.body.classList.remove('vp-real'); // full-bleed only for auto-detected real devices
+  }
   ['Desktop','Tablet','Mobile'].forEach(v=>{
     document.getElementById('vpRow'+v).classList.toggle('active', v===vp);
   });
@@ -1740,9 +1867,29 @@ function setViewport(vp){
   }
   document.getElementById('vpOptsDd').classList.remove('open');
 }
-// open in the layout that matches the real screen
-if(window.innerWidth < 520){ document.body.classList.add('vp-real'); setViewport('Mobile'); }
-else if(window.innerWidth < 1000) setViewport('Tablet');
+// open in the layout that matches the real screen; keep re-evaluating until a pill is clicked
+function autoDetectViewport(){
+  if(manualViewport) return;
+  const w = window.innerWidth;
+  if(w < 520){ document.body.classList.add('vp-real'); setViewport('Mobile', true); }
+  else if(w < 1000){ document.body.classList.add('vp-real'); setViewport('Tablet', true); }
+  else { document.body.classList.remove('vp-real'); setViewport('Desktop', true); }
+}
+autoDetectViewport();
+window.addEventListener('resize', autoDetectViewport);
+
+/* exploration: show/hide the slump test type question (stakeholder discussion) */
+let showTestType = true;
+function toggleTestType(){
+  showTestType = !showTestType;
+  document.getElementById('testTypeSection').style.display = showTestType ? '' : 'none';
+  document.getElementById('testTypeSwitch').classList.toggle('on', showTestType);
+  if(!showTestType){
+    // without the question, entries are conventional slump tests (0-250 mm validation)
+    document.querySelector('input[name="testType"][value="Slump test"]').checked = true;
+    onTestTypeChange();
+  }
+}
 
 const rootEl = document.documentElement;
 function syncThemeSwitch(){

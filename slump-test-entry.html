@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slump Test Entry — Verifi Hub</title>
+<script>
+  (function(){
+    var t = "dark";
+    try { t = localStorage.getItem("adv-settings-theme") || "dark"; } catch(e) {}
+    document.documentElement.classList.add(t === "dark" ? "theme-dark" : "theme-light");
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root, .theme-dark{
+  --bg:#222426;
+  --panel:#222426;
+  --panel-2:#2b2d30;
+  --panel-3:#35373b;
+  --dropdown-bg:#1C1C1E;
+  --row-light:#222426;
+  --row-dark:#1C1C1E;
+  --border:#262c36;
+  --border-soft:#3a3d42;
+  --text:#e9ecf1;
+  --muted:#a5adba;
+  --faint:#8b93a1;
+  --blue:#1668e3;
+  --blue-hi:#4b93f7;
+  --blue-tint:rgba(47,128,242,.12);
+  --pink:#ef3e6d;
+  --amber:#f2b544;
+  --amber-tint:rgba(242,181,68,.12);
+  --green:#3ecf8e;
+  --green-chip:#0e9f6e;
+  --green-tint:rgba(62,207,142,.12);
+  --grey-chip:#2a303a;
+  --hover-row:rgba(255,255,255,.03);
+  --hist-bg:rgba(0,0,0,.18);
+  --radius:10px;
+  --radius-sm:7px;
+}
+.theme-light{
+  --bg:#f4f6f8;
+  --panel:#ffffff;
+  --panel-2:#eef1f4;
+  --panel-3:#e2e8ee;
+  --dropdown-bg:#ffffff;
+  --row-light:#ffffff;
+  --row-dark:#eef1f4;
+  --border:#d1d5db;
+  --border-soft:rgba(0,0,0,.12);
+  --text:#1a1a1a;
+  --muted:#565b61;
+  --faint:#6b7178;
+  --blue:#1667d9;
+  --blue-hi:#0965a3;
+  --blue-tint:rgba(9,101,163,.10);
+  --pink:#d81b60;
+  --amber:#8f6000;
+  --amber-tint:rgba(154,103,0,.10);
+  --green:#0f7a52;
+  --green-chip:#0e9f6e;
+  --green-tint:rgba(15,122,82,.10);
+  --grey-chip:#e6eaef;
+  --hover-row:rgba(0,0,0,.03);
+  --hist-bg:rgba(0,0,0,.04);
+  --radius:10px;
+  --radius-sm:7px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-size:14px;
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+  padding-top:44px;
+}
+
+/* ---------- prototype top bar (always dark, matches other Verifi protos) ---------- */
+.vp-bar{
+  position:fixed;top:0;left:0;right:0;height:44px;
+  background:rgba(20,18,16,.97);color:#fff;
+  display:flex;align-items:center;padding:0 16px;
+  z-index:1000;border-bottom:1px solid rgba(255,255,255,.12);
+}
+.vp-brand{display:flex;align-items:center;gap:10px}
+.vp-logo{width:56px;height:14px}
+.vp-logo path{fill:#fff}
+.vp-tag{
+  font-size:10px;font-weight:500;color:rgba(255,255,255,.55);
+  letter-spacing:.4px;text-transform:uppercase;
+  padding:2px 6px;border:1px solid rgba(255,255,255,.15);border-radius:4px;
+}
+.vp-right-cluster{margin-left:auto;display:flex;align-items:center;gap:12px}
+.vp-pills{display:flex;gap:2px;background:rgba(255,255,255,.08);border-radius:8px;padding:2px}
+.vp-pill{
+  font-size:12px;font-weight:500;letter-spacing:-.24px;
+  color:rgba(255,255,255,.6);padding:4px 10px;border-radius:6px;
+  border:0;background:transparent;cursor:pointer;font-family:inherit;
+  transition:background .15s,color .15s;
+}
+.vp-pill:hover{color:#fff}
+.vp-pill.active{background:rgba(255,255,255,.15);color:#fff}
+.vp-opts-btn{
+  display:flex;align-items:center;gap:6px;padding:5px 10px;
+  background:rgba(255,255,255,.08);color:#fff;border-radius:8px;
+  border:0;cursor:pointer;font-size:12px;font-weight:500;
+  letter-spacing:-.24px;font-family:inherit;transition:background .15s;
+}
+.vp-opts-btn:hover{background:rgba(255,255,255,.14)}
+.vp-opts-wrap{position:relative}
+.vp-opts-dd{
+  position:absolute;top:calc(100% + 6px);right:0;min-width:210px;
+  background:#1a1917;border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.4);
+  padding:6px;display:none;z-index:1100;
+}
+.vp-opts-dd.open{display:block}
+.vp-dd-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.4);padding:6px 10px 4px}
+.vp-dd-div{height:1px;background:rgba(255,255,255,.1);margin:6px 4px}
+.vp-opt-row{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;padding:8px 10px;border-radius:8px;border:0;
+  background:transparent;color:#fff;font-size:13px;font-weight:500;
+  font-family:inherit;cursor:pointer;gap:10px;
+}
+.vp-opt-row:hover{background:rgba(255,255,255,.06)}
+.vp-check{color:#4a9eda;font-weight:700;visibility:hidden}
+.vp-opt-row.active .vp-check{visibility:visible}
+.vp-switch{
+  width:34px;height:20px;border-radius:10px;
+  background:rgba(255,255,255,.2);position:relative;transition:background .15s;flex-shrink:0;
+}
+.vp-switch::after{
+  content:"";position:absolute;top:2px;left:2px;
+  width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s;
+}
+.vp-switch.on{background:#4a9eda}
+.vp-switch.on::after{left:16px}
+
+/* ---------- coming-soon overlay (Mobile / Tablet viewports) ---------- */
+.coming-soon{
+  display:none;position:fixed;top:44px;left:0;right:0;bottom:0;
+  background:var(--bg);z-index:900;
+  align-items:center;justify-content:center;text-align:center;
+}
+.coming-soon.show{display:flex}
+.cs-inner{max-width:420px;padding:24px}
+.cs-inner .cs-logo{width:96px;margin:0 auto 28px;display:block}
+.cs-inner .cs-logo path{fill:var(--text)}
+.cs-device{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);border:1px solid var(--border);border-radius:999px;
+  padding:5px 14px;margin-bottom:18px;
+}
+.cs-inner h1{font-size:26px;font-weight:700;color:var(--text);margin-bottom:10px}
+.cs-inner p{font-size:14px;line-height:1.6;color:var(--muted);margin-bottom:26px}
+.cs-back{
+  background:transparent;border:1px solid var(--border);border-radius:6px;
+  color:var(--text);font-family:inherit;font-size:13px;font-weight:600;
+  padding:10px 18px;cursor:pointer;transition:background .12s;
+}
+.cs-back:hover{background:var(--hover-row)}
+
+/* ---------- portal shell: icon rail + main ---------- */
+.shell{display:flex;height:calc(100vh - 44px)}
+.rail{
+  width:98px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;
+  border-right:1px solid var(--border-soft);padding:14px 0 12px;overflow-y:auto;
+}
+.rail-logo{width:62px;height:16px;margin-bottom:20px;flex-shrink:0}
+.rail-logo path{fill:var(--text)}
+.ir-item{
+  width:86px;display:flex;flex-direction:column;align-items:center;gap:5px;
+  padding:10px 4px;border-radius:8px;cursor:pointer;color:var(--muted);
+  text-align:center;transition:background .12s,color .12s;flex-shrink:0;
+  border-left:3px solid transparent;
+}
+.ir-item svg{width:20px;height:20px}
+.ir-item:hover{color:var(--text);background:var(--hover-row)}
+.ir-item.active{color:var(--text);background:var(--panel-2);border-left-color:var(--blue-hi)}
+.ir-label{font-size:9.5px;font-weight:600;line-height:1.3;letter-spacing:.02em}
+.ir-region{color:var(--text)}
+.ir-region .ir-label{font-size:10px}
+.ir-div{width:70%;height:1px;background:var(--border-soft);margin:8px 0;flex-shrink:0}
+.ir-spacer{flex:1;min-height:16px}
+.ir-collapse{
+  width:30px;height:30px;border-radius:50%;border:1px solid var(--border-soft);
+  display:flex;align-items:center;justify-content:center;color:var(--muted);
+  cursor:pointer;margin:6px 0;flex-shrink:0;background:transparent;
+}
+.ir-collapse:hover{color:var(--text);background:var(--hover-row)}
+.ir-avatar{
+  width:36px;height:36px;border-radius:50%;background:var(--panel-3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:var(--text);margin-top:8px;flex-shrink:0;
+}
+.ir-foot{font-size:7.5px;color:var(--faint);text-align:center;line-height:1.6;margin-top:10px;flex-shrink:0}
+
+.main{flex:1;overflow-y:auto;padding:22px 36px 80px;min-width:0}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:34px;margin-bottom:26px;border-bottom:1px solid transparent}
+.tab{
+  font-size:19px;font-weight:600;color:var(--faint);cursor:pointer;
+  padding:6px 2px 10px;border:0;background:none;font-family:inherit;
+  border-bottom:3px solid transparent;transition:color .12s;letter-spacing:-.2px;
+}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--text);font-weight:700;border-bottom-color:var(--blue-hi)}
+
+/* ---------- page head + toolbar ---------- */
+.page-title{font-size:34px;font-weight:800;letter-spacing:-.4px}
+.page-sub{font-size:13px;color:var(--muted);margin-top:6px;font-weight:500}
+.toolbar{display:flex;align-items:center;gap:12px;margin:22px 0 4px}
+.search-box{
+  display:flex;align-items:center;gap:9px;width:300px;
+  background:var(--panel-2);border:1px solid var(--border-soft);
+  border-radius:var(--radius-sm);padding:9px 12px;color:var(--faint);
+}
+.search-box input{
+  flex:1;background:none;border:0;outline:none;color:var(--text);
+  font-family:inherit;font-size:13.5px;
+}
+.search-box input::placeholder{color:var(--faint)}
+.toolbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.icon-btn{
+  width:42px;height:42px;border-radius:50%;
+  border:0;background:var(--row-dark);
+  color:var(--text);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:background .12s,color .12s;
+}
+.theme-light .icon-btn{background:var(--panel-2)}
+.icon-btn:hover{background:var(--panel-3)}
+.icon-btn.active{color:var(--blue-hi)}
+
+/* ---------- table filters ---------- */
+.filter-bar{display:none;flex-wrap:wrap;align-items:center;gap:14px;margin:20px 0 2px}
+.filter-bar.show{display:flex}
+.filter-dd{position:relative;flex:1;min-width:168px;max-width:280px}
+.fd-btn{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:var(--row-dark);border:1px solid transparent;border-radius:var(--radius-sm);
+  padding:13px 16px;font-family:inherit;font-size:13.5px;color:var(--muted);
+  cursor:pointer;text-align:left;transition:border-color .12s,color .12s;
+}
+.theme-light .fd-btn{background:var(--panel-2)}
+.fd-btn:hover{border-color:var(--border-soft)}
+.fd-btn.set{color:var(--text);border-color:var(--border-soft)}
+.fd-btn svg{color:var(--faint);flex-shrink:0}
+.fd-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.fd-pop{
+  position:absolute;top:calc(100% + 4px);left:0;min-width:100%;width:max-content;max-width:300px;
+  background:var(--dropdown-bg);border:1px solid var(--border-soft);
+  border-radius:var(--radius-sm);box-shadow:0 14px 34px rgba(0,0,0,.4);
+  z-index:400;display:none;max-height:330px;flex-direction:column;overflow:hidden;
+}
+.fd-pop.open{display:flex}
+.fd-search{
+  display:flex;align-items:center;gap:8px;margin:10px 10px 8px;padding:9px 12px;
+  border:1px solid var(--border-soft);border-radius:var(--radius-sm);background:var(--panel-2);flex-shrink:0;
+}
+.fd-search input{flex:1;background:none;border:0;outline:none;color:var(--text);font-family:inherit;font-size:13px;min-width:0}
+.fd-search input::placeholder{color:var(--faint)}
+.fd-clear-x{background:none;border:0;color:var(--muted);cursor:pointer;display:flex;padding:0}
+.fd-clear-x:hover{color:var(--text)}
+.fd-list{overflow-y:auto;padding:2px 6px 8px}
+.fd-item{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:11px 12px;border-radius:6px;font-size:13.5px;color:var(--text);cursor:pointer;white-space:nowrap;
+}
+.fd-item:hover{background:var(--hover-row)}
+.fd-item.selected{color:var(--blue-hi);font-weight:600}
+.fd-item .fd-check{visibility:hidden;color:var(--blue-hi);flex-shrink:0}
+.fd-item.selected .fd-check{visibility:visible}
+.fd-empty{padding:12px 14px;font-size:12.5px;color:var(--faint)}
+.clear-filters{
+  margin-left:auto;background:none;border:0;font-family:inherit;font-size:14px;
+  color:var(--text);cursor:pointer;padding:11px 6px;font-weight:500;white-space:nowrap;
+}
+.clear-filters:hover{text-decoration:underline}
+.view-select{
+  display:flex;align-items:center;gap:26px;background:var(--panel-2);
+  border:1px solid var(--border-soft);border-radius:var(--radius-sm);
+  padding:9px 14px;font-size:13px;font-weight:500;color:var(--text);cursor:pointer;
+}
+.view-select svg{color:var(--faint)}
+
+.btn{
+  border:0;border-radius:var(--radius-sm);font-family:inherit;cursor:pointer;
+  font-size:13.5px;font-weight:600;padding:10px 18px;
+  display:inline-flex;align-items:center;gap:8px;transition:filter .12s,background .12s;
+}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{filter:brightness(1.12)}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn-ghost{background:none;color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);background:var(--hover-row)}
+
+/* ---------- tables ---------- */
+.tbl-wrap{margin-top:14px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:1080px}
+th{
+  text-align:left;font-size:11.5px;font-weight:600;color:var(--muted);
+  letter-spacing:.02em;padding:12px 14px;border-bottom:1px solid var(--border-soft);
+  white-space:nowrap;
+}
+#loadTable th{font-size:11.5px}
+td{padding:16px 14px;font-size:13.5px;color:var(--text);white-space:nowrap;vertical-align:middle}
+tbody tr:nth-child(even){background:var(--row-dark)}
+tbody tr:hover{background:var(--hover-row)}
+.td-time{font-weight:700}
+.td-time span{display:block;font-weight:500;font-size:12px;color:var(--muted);margin-top:2px}
+.chip-tojob{
+  display:inline-block;background:var(--green-chip);color:#fff;
+  font-size:10.5px;font-weight:700;letter-spacing:.05em;
+  padding:4px 10px;border-radius:4px;text-transform:uppercase;
+}
+.td-muted{color:var(--faint)}
+.td-notes{max-width:200px;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- pagination ---------- */
+.pager{
+  display:flex;align-items:center;justify-content:flex-end;gap:30px;
+  padding:16px 10px;color:var(--muted);font-size:13px;font-weight:500;
+  border-top:1px solid var(--border-soft);
+}
+.pager-size-wrap{display:flex;align-items:center;gap:10px}
+select.pager-size{
+  appearance:none;background:transparent;border:0;border-bottom:1px solid var(--muted);
+  color:var(--muted);font-family:inherit;font-size:13px;font-weight:600;
+  padding:2px 20px 3px 4px;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='%238b93a1'%3E%3Cpath d='M6 9h12l-6 7z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 2px center;
+}
+select.pager-size:hover{color:var(--text);border-bottom-color:var(--text)}
+.pager-range{min-width:96px;text-align:center;letter-spacing:.2px}
+.pager-btn{background:none;border:0;color:var(--text);cursor:pointer;padding:6px;display:flex;border-radius:6px}
+.pager-btn:hover:not(:disabled){background:var(--hover-row)}
+.pager-btn:disabled{color:var(--border-soft);cursor:default}
+body.vp-m .pager{gap:16px;padding:12px 2px;font-size:12px;flex-wrap:wrap;justify-content:flex-end}
+body.vp-m .pager-range{min-width:0}
+
+/* ---------- drawer ---------- */
+.drawer-backdrop{
+  position:fixed;inset:44px 0 0 0;background:rgba(0,0,0,.5);
+  z-index:600;display:none;
+}
+.drawer-backdrop.show{display:block}
+.drawer{
+  position:fixed;top:44px;right:0;bottom:0;width:620px;max-width:96vw;
+  background:var(--dropdown-bg);border-left:1px solid var(--border-soft);
+  z-index:610;display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .22s ease;
+  box-shadow:-16px 0 44px rgba(0,0,0,.35);
+}
+.drawer.open{transform:translateX(0)}
+.drawer-head{display:flex;align-items:center;gap:12px;padding:24px 28px 16px;flex-shrink:0}
+.drawer-title{font-size:26px;font-weight:800;letter-spacing:-.3px;flex:1}
+.drawer-x{
+  width:38px;height:38px;border-radius:50%;border:0;cursor:pointer;
+  background:var(--panel-3);color:var(--text);font-size:16px;
+  display:flex;align-items:center;justify-content:center;transition:background .12s;
+}
+.drawer-x:hover{filter:brightness(1.35)}
+.theme-light .drawer-x:hover{filter:brightness(.92)}
+.drawer-rule{height:1px;background:var(--border-soft);margin:0 28px;flex-shrink:0}
+.drawer-body{flex:1;overflow-y:auto;padding:24px 28px 30px}
+.drawer-foot{
+  flex-shrink:0;display:flex;align-items:center;gap:12px;
+  padding:16px 28px;border-top:1px solid var(--border-soft);
+}
+.drawer-foot .btn-primary{flex:1;justify-content:center;padding:13px}
+
+/* mode radios */
+.mode-label{font-size:20px;font-weight:800;margin-bottom:16px}
+.radio-row{display:flex;align-items:center;gap:11px;padding:7px 0;cursor:pointer;color:var(--muted);font-size:14.5px}
+.radio-row:hover{color:var(--text)}
+.radio-row input{display:none}
+.radio-dot{
+  width:18px;height:18px;border-radius:50%;border:2px solid var(--faint);
+  flex-shrink:0;position:relative;transition:border-color .12s;
+}
+.radio-row input:checked + .radio-dot{border-color:var(--blue-hi)}
+.radio-row input:checked + .radio-dot::after{
+  content:"";position:absolute;inset:3px;border-radius:50%;background:var(--blue-hi);
+}
+.radio-row input:checked ~ .radio-text{color:var(--text)}
+
+/* ---------- form mode ---------- */
+.form-sec-label{font-size:16px;font-weight:800;margin:26px 0 14px}
+.f-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 18px}
+.f-field{display:flex;flex-direction:column;gap:7px;min-width:0}
+.f-field.full{grid-column:1 / -1}
+.f-label{font-size:12.5px;font-weight:700;color:var(--muted);letter-spacing:.02em}
+.f-label .req{color:var(--pink);margin-left:3px}
+.f-input, .f-select, .f-textarea{
+  width:100%;background:var(--panel-2);border:1px solid var(--border-soft);
+  border-radius:var(--radius-sm);color:var(--text);font-family:inherit;
+  font-size:13.5px;padding:11px 12px;outline:none;transition:border-color .12s;
+}
+.f-input:focus, .f-select:focus, .f-textarea:focus{border-color:var(--blue-hi)}
+.f-input[readonly]{cursor:default;color:var(--muted)}
+/* searchable truck combobox */
+.combo{position:relative}
+.combo .f-input{padding-right:34px}
+.combo-chev{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--faint);pointer-events:none}
+.combo-list{
+  position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:450;
+  background:var(--dropdown-bg);border:1px solid var(--border-soft);
+  border-radius:var(--radius-sm);box-shadow:0 14px 34px rgba(0,0,0,.4);
+  max-height:240px;overflow-y:auto;padding:5px;display:none;
+}
+.combo-list.open{display:block}
+.combo-item{padding:10px 12px;border-radius:6px;font-size:13.5px;color:var(--text);cursor:pointer}
+.combo-item:hover, .combo-item.hl{background:var(--hover-row)}
+.combo-item.hl{outline:1px solid var(--border-soft)}
+.combo-new{color:var(--blue-hi);font-weight:600}
+.combo-empty{padding:10px 12px;font-size:12.5px;color:var(--faint)}
+.f-input[readonly]:focus{border-color:var(--border-soft)}
+.f-input::placeholder, .f-textarea::placeholder{color:var(--faint)}
+.f-select{
+  appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b93a1' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:34px;
+}
+.f-select:disabled{opacity:.45;cursor:not-allowed}
+.f-textarea{resize:vertical;min-height:74px}
+.f-hint{font-size:11.5px;color:var(--faint)}
+.f-error-msg{font-size:11.5px;color:var(--pink);font-weight:600;display:none}
+.f-error-above{
+  display:none;align-items:flex-start;gap:6px;
+  font-size:11.5px;color:var(--pink);font-weight:600;line-height:1.45;
+}
+.f-error-above svg{flex-shrink:0;margin-top:1px}
+.f-field.invalid .f-input, .f-field.invalid .f-select{border-color:var(--pink)}
+.f-field.invalid .f-error-msg{display:block}
+.f-field.invalid .f-error-above{display:flex}
+.radio-inline{display:flex;flex-wrap:wrap;gap:8px 30px;margin-top:2px}
+.radio-inline .radio-row{padding:4px 0}
+.shape-row{display:flex;align-items:center;gap:16px}
+.shape-viz{width:52px;height:44px;flex-shrink:0;display:flex;align-items:flex-end;justify-content:center}
+.form-submit-wrap{display:flex;justify-content:center;margin-top:30px}
+.form-submit-wrap .btn-primary{min-width:220px;justify-content:center;padding:13px}
+
+/* ---------- upload mode ---------- */
+.dropzone{
+  margin-top:22px;border:2px dashed var(--faint);border-radius:6px;
+  min-height:320px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;text-align:center;padding:34px 24px;cursor:pointer;transition:border-color .15s,background .15s;
+}
+.dropzone:hover{border-color:var(--blue-hi);background:var(--hover-row)}
+.dropzone.busy{cursor:default}
+.dz-cloud{color:var(--text);margin-bottom:14px}
+.dz-title{font-size:17px;font-weight:700}
+.dz-sub{font-size:14px;color:var(--muted)}
+.dz-sub a{color:var(--text);text-decoration:underline;cursor:pointer}
+.dz-progress{
+  width:min(420px,80%);height:9px;border-radius:6px;background:var(--panel-3);
+  overflow:hidden;margin:10px 0 4px;
+}
+.dz-progress-fill{height:100%;width:0%;border-radius:6px;background:var(--text);transition:width .12s linear}
+.dz-file{font-size:14px;color:var(--muted);margin-top:2px}
+.dz-link{font-size:14px;color:var(--muted);text-decoration:underline;cursor:pointer;margin-top:8px;background:none;border:0;font-family:inherit}
+.dz-link:hover{color:var(--text)}
+.upload-actions{display:flex;justify-content:center;margin-top:26px}
+.upload-actions .btn-primary{min-width:320px;justify-content:center;padding:13px}
+
+/* validation results */
+.val-banner{
+  display:flex;gap:12px;align-items:flex-start;
+  background:var(--amber-tint);border:1px solid var(--amber);
+  border-radius:var(--radius-sm);padding:14px 16px;margin-top:22px;
+}
+.val-banner svg{flex-shrink:0;color:var(--amber);margin-top:1px}
+.val-banner-title{font-weight:700;font-size:13.5px;margin-bottom:3px}
+.val-banner-body{font-size:12.5px;color:var(--muted);line-height:1.55}
+.val-col-note{
+  display:flex;gap:12px;align-items:flex-start;
+  background:var(--blue-tint);border:1px solid var(--border-soft);
+  border-radius:var(--radius-sm);padding:12px 16px;margin-top:12px;
+  font-size:12.5px;color:var(--muted);line-height:1.55;
+}
+.val-col-note svg{flex-shrink:0;color:var(--blue-hi);margin-top:1px}
+.val-col-note strong{color:var(--text);font-weight:600}
+.val-tbl{margin-top:18px;border:1px solid var(--border-soft);border-radius:var(--radius-sm);overflow:hidden}
+.val-tbl table{min-width:0}
+.val-tbl th{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;padding:10px 14px;background:var(--panel-2)}
+.val-tbl td{padding:12px 14px;font-size:13px;white-space:normal;border-top:1px solid var(--border-soft)}
+.val-tbl tbody tr:nth-child(even){background:transparent}
+.val-row-num{font-weight:700;color:var(--text)}
+.val-cell-bad{color:var(--pink);font-weight:600}
+.val-issue{color:var(--muted);line-height:1.5}
+.val-issue strong{color:var(--text);font-weight:600}
+.err-pill{
+  display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:999px;
+  background:rgba(239,62,109,.14);color:var(--pink);
+}
+.val-actions{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+.val-actions .btn{justify-content:center;padding:12px}
+.val-dl{
+  background:none;border:0;font-family:inherit;font-size:12.5px;color:var(--muted);
+  text-decoration:underline;cursor:pointer;margin-top:4px;
+}
+.val-dl:hover{color:var(--text)}
+
+/* success state */
+.val-success{
+  display:flex;gap:12px;align-items:flex-start;
+  background:var(--green-tint);border:1px solid var(--green);
+  border-radius:var(--radius-sm);padding:14px 16px;margin-top:22px;
+}
+.val-success svg{flex-shrink:0;color:var(--green);margin-top:1px}
+
+/* ---------- toast ---------- */
+.toast{
+  position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(16px);
+  background:var(--panel-3);color:var(--text);border:1px solid var(--border-soft);
+  border-radius:var(--radius);padding:12px 20px;font-size:13.5px;font-weight:600;
+  box-shadow:0 10px 30px rgba(0,0,0,.4);z-index:1200;opacity:0;pointer-events:none;
+  transition:opacity .18s,transform .18s;display:flex;align-items:center;gap:10px;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast svg{color:var(--green)}
+
+/* ---------- expandable rows (mobile/tablet) ---------- */
+.exp-cell{width:34px;padding:12px 4px 12px 12px}
+.exp-btn{
+  background:none;border:0;color:var(--muted);cursor:pointer;padding:4px;
+  display:flex;align-items:center;transition:transform .15s;
+}
+.exp-btn.open{transform:rotate(90deg);color:var(--text)}
+tr.detail-row, tr.detail-row:hover{background:var(--row-dark)}
+.detail-cell{padding:6px 16px 16px 46px !important;white-space:normal}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;padding-top:8px}
+.detail-item .dl{font-size:11px;font-weight:700;color:var(--faint);margin-bottom:3px}
+.detail-item .dv{font-size:13px;color:var(--text);word-break:break-word}
+.detail-item .dv.empty{color:var(--faint)}
+/* expander hidden on desktop */
+#slumpTable th:nth-child(1), #slumpTable td.exp-cell,
+#loadTable th:nth-child(1), #loadTable td.exp-cell{display:none}
+
+/* ---------- mobile app header ---------- */
+.m-appbar{
+  display:none;height:44px;align-items:center;justify-content:space-between;
+  padding:0 16px;background:#0d0d0f;border-bottom:1px solid rgba(255,255,255,.08);
+}
+.m-appbar svg.m-logo{width:74px;height:19px}
+.m-appbar svg.m-logo path{fill:#fff}
+.m-appbar .m-grid{color:#fff;background:none;border:0;cursor:pointer;display:flex;padding:6px}
+
+/* ---------- mobile Filters chip (hidden on desktop) ---------- */
+.filters-chip{
+  display:none;background:var(--row-dark);border:0;border-radius:8px;
+  color:var(--text);font-family:inherit;font-size:13.5px;font-weight:600;
+  padding:9px 16px;cursor:pointer;align-items:center;gap:7px;
+}
+.theme-light .filters-chip{background:var(--panel-2)}
+.filters-chip.active{color:var(--blue-hi)}
+
+/* ============================================================
+   PHONE FRAME (pattern shared with the Load Reports mobile file)
+   ============================================================ */
+.phone-wrap, .phone-body{display:contents} /* pass-through on desktop/tablet */
+.phone-notch, .status-bar{display:none}
+body.vp-m{background:#d4d0cb;overflow:auto}
+html.theme-dark body.vp-m{background:#101011}
+body.vp-m .phone-wrap{display:flex;justify-content:center;padding:28px 0 40px}
+body.vp-m .phone-body{
+  display:flex;flex-direction:column;position:relative;
+  width:393px;height:852px;background:var(--bg);
+  border-radius:44px;overflow:hidden;
+  transform:translateZ(0); /* contains the fixed drawer within the frame */
+  box-shadow:0 0 0 1px rgba(255,255,255,.12), 0 0 0 10px #1a1a1a,
+             0 0 0 11px rgba(255,255,255,.08), 0 32px 80px rgba(0,0,0,.6);
+}
+body.vp-m .phone-notch{
+  display:block;position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  width:120px;height:34px;background:#0a0a0a;border-radius:20px;z-index:100;
+}
+body.vp-m .status-bar{
+  display:flex;height:54px;flex-shrink:0;align-items:flex-end;justify-content:space-between;
+  padding:0 28px 6px;background:#171719;color:#fff;
+}
+.status-bar-time{font-size:15px;font-weight:600;letter-spacing:-.3px}
+.status-bar-icons{display:flex;align-items:center;gap:6px}
+
+/* real small screens: same layout, no decorative frame */
+body.vp-m.vp-real{background:var(--bg)}
+body.vp-m.vp-real .phone-wrap{padding:0}
+body.vp-m.vp-real .phone-body{width:100%;height:calc(100vh - 44px);border-radius:0;box-shadow:none}
+body.vp-m.vp-real .phone-notch, body.vp-m.vp-real .status-bar{display:none}
+
+/* ============================================================
+   TABLET (body.vp-t) and MOBILE (body.vp-m) simulated viewports
+   ============================================================ */
+body.vp-m .m-appbar, body.vp-t .m-appbar{display:flex}
+body.vp-m .m-appbar{background:#171719}
+body.vp-m .rail, body.vp-t .rail{display:none}
+body.vp-t .shell{height:calc(100vh - 88px)}
+body.vp-m .shell{flex:1;min-height:0;height:auto}
+body.vp-t .main{max-width:834px;margin:0 auto;padding:18px 20px 80px;border-left:1px solid var(--border-soft);border-right:1px solid var(--border-soft)}
+body.vp-m .main{padding:14px 12px 60px}
+body.vp-t .m-appbar{max-width:834px;margin:0 auto;width:100%}
+
+/* tabs */
+body.vp-m .tabs{gap:18px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none}
+body.vp-m .tab{font-size:15px;white-space:nowrap;padding-bottom:8px}
+body.vp-t .tabs{gap:24px}
+body.vp-t .tab{font-size:17px}
+
+/* title + inline count */
+body.vp-m .page-title{display:inline;font-size:22px}
+body.vp-m .page-sub{display:inline;margin-left:10px;font-size:12.5px}
+body.vp-t .page-title{font-size:28px}
+
+/* toolbar: Filters chip + Add on one row, search full width below */
+body.vp-m .toolbar, body.vp-t .toolbar{flex-wrap:wrap;margin-top:16px}
+body.vp-m .filters-chip, body.vp-t .filters-chip{display:inline-flex;order:1}
+body.vp-m .toolbar-right, body.vp-t .toolbar-right{order:2}
+body.vp-m .search-box, body.vp-t .search-box{order:3;width:100%}
+body.vp-m .icon-btn, body.vp-t .icon-btn{display:none}  /* no filter icon / no downloads in the field */
+body.vp-m .view-select, body.vp-t .view-select{display:none}
+body.vp-m .btn-primary{font-size:13px;padding:9px 14px}
+body.vp-m .filter-bar .filter-dd, body.vp-t .filter-bar .filter-dd{max-width:none;flex:1 1 46%}
+body.vp-m .filter-bar .filter-dd{flex:1 1 100%}
+
+/* tables: show expander, hide all but crucial columns */
+body.vp-m #slumpTable th:nth-child(1), body.vp-m #slumpTable td.exp-cell,
+body.vp-t #slumpTable th:nth-child(1), body.vp-t #slumpTable td.exp-cell,
+body.vp-m #loadTable th:nth-child(1), body.vp-m #loadTable td.exp-cell,
+body.vp-t #loadTable th:nth-child(1), body.vp-t #loadTable td.exp-cell{display:table-cell}
+
+body.vp-m .tbl-wrap table, body.vp-t .tbl-wrap table{min-width:0 !important;width:100%}
+body.vp-m .tbl-wrap{overflow-x:hidden}
+body.vp-m th, body.vp-m td{padding:12px 8px;font-size:13px}
+
+/* slump table: mobile keeps chevron, Date, Time, Tester, Truck */
+body.vp-m #slumpTable th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(5)):not(:nth-child(6)),
+body.vp-m #slumpTable tr:not(.detail-row) td:not(.exp-cell):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(5)):not(:nth-child(6)){display:none}
+/* tablet adds Build Up Status, Location, Ticket Number */
+body.vp-t #slumpTable th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(5)):not(:nth-child(6)):not(:nth-child(11)):not(:nth-child(19)):not(:nth-child(20)),
+body.vp-t #slumpTable tr:not(.detail-row) td:not(.exp-cell):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(5)):not(:nth-child(6)):not(:nth-child(11)):not(:nth-child(19)):not(:nth-child(20)){display:none}
+
+/* load table: mobile keeps chevron, Time, Truck, Location, Status */
+body.vp-m #loadTable th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(4)):not(:nth-child(6)):not(:nth-child(11)),
+body.vp-m #loadTable tr:not(.detail-row) td:not(.exp-cell):not(:nth-child(2)):not(:nth-child(4)):not(:nth-child(6)):not(:nth-child(11)){display:none}
+/* tablet adds Customer, Order */
+body.vp-t #loadTable th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(4)):not(:nth-child(6)):not(:nth-child(7)):not(:nth-child(8)):not(:nth-child(11)),
+body.vp-t #loadTable tr:not(.detail-row) td:not(.exp-cell):not(:nth-child(2)):not(:nth-child(4)):not(:nth-child(6)):not(:nth-child(7)):not(:nth-child(8)):not(:nth-child(11)){display:none}
+
+/* truncate tester on mobile */
+body.vp-m #slumpTable td:nth-child(5){max-width:82px;overflow:hidden;text-overflow:ellipsis}
+
+/* drawer: full screen in the field, single column, no CSV path */
+body.vp-m .drawer{width:100%;max-width:none;top:0;border-radius:44px}
+body.vp-m.vp-real .drawer{border-radius:0}
+body.vp-m .drawer-backdrop{inset:0}
+body.vp-m .drawer-head{padding-top:56px} /* clear the notch/status area */
+body.vp-m .toast{position:absolute;bottom:22px;width:max-content;max-width:86%}
+body.vp-t .drawer{width:560px}
+body.vp-m .f-grid{grid-template-columns:1fr}
+body.vp-m #modeChooser, body.vp-t #modeChooser{display:none}
+body.vp-m .drawer-body, body.vp-m .drawer-head{padding-left:18px;padding-right:18px}
+body.vp-m .drawer-rule{margin:0 18px}
+body.vp-m .form-submit-wrap .btn-primary{width:100%}
+
+@media (max-width:860px){
+  .f-grid{grid-template-columns:1fr}
+  .drawer{width:100vw}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ prototype control bar ============ -->
+<div class="vp-bar">
+  <div class="vp-brand">
+    <svg class="vp-logo" viewBox="0 0 96 24" xmlns="http://www.w3.org/2000/svg" aria-label="verifi">
+      <path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z"/>
+    </svg>
+    <span class="vp-tag">Slump Test Entry · MVP</span>
+  </div>
+  <div class="vp-right-cluster">
+    <div class="vp-pills">
+      <button class="vp-pill" id="vpRowMobile" onclick="setViewport('Mobile')">Mobile</button>
+      <button class="vp-pill" id="vpRowTablet" onclick="setViewport('Tablet')">Tablet</button>
+      <button class="vp-pill active" id="vpRowDesktop" onclick="setViewport('Desktop')">Desktop</button>
+    </div>
+    <div class="vp-opts-wrap" id="vpOptsWrap">
+      <button class="vp-opts-btn" onclick="toggleOpts(event)">Options <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="vp-opts-dd" id="vpOptsDd" onclick="event.stopPropagation()">
+        <div class="vp-dd-label">Version</div>
+        <button class="vp-opt-row active" onclick="void(0)">MVP <span class="vp-check">✓</span></button>
+        <div class="vp-dd-div"></div>
+        <button class="vp-opt-row" onclick="toggleTheme()">Dark mode <span class="vp-switch" id="themeSwitch"></span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ portal shell (phone-framed on Mobile) ============ -->
+<div class="phone-wrap" id="phoneWrap">
+<div class="phone-body" id="phoneBody">
+<div class="phone-notch"></div>
+<div class="status-bar">
+  <span class="status-bar-time">9:41</span>
+  <span class="status-bar-icons">
+    <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="6.5" width="3" height="4.5" rx="1"/><rect x="4.5" y="4.5" width="3" height="6.5" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0.5" width="3" height="10.5" rx="1"/></svg>
+    <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><path d="M8 9.4a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8Z" transform="translate(0,-1.6)"/><path d="M8 5.6c1.5 0 2.9.6 3.9 1.6l-1.2 1.2A4 4 0 0 0 8 7.3a4 4 0 0 0-2.7 1.1L4.1 7.2a5.5 5.5 0 0 1 3.9-1.6Z"/><path d="M8 2c2.5 0 4.8 1 6.5 2.7l-1.2 1.2A7.6 7.6 0 0 0 8 3.6 7.6 7.6 0 0 0 2.7 5.9L1.5 4.7A9.1 9.1 0 0 1 8 2Z"/></svg>
+    <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="18" height="8" rx="1.6" fill="currentColor"/><path d="M23 4v4a2.2 2.2 0 0 0 0-4Z" fill="currentColor" opacity=".4"/></svg>
+  </span>
+</div>
+<div class="m-appbar" id="mAppbar">
+  <svg class="m-logo" viewBox="0 0 96 24" xmlns="http://www.w3.org/2000/svg"><path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z"/></svg>
+  <button class="m-grid" title="Apps"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="5" r="2"/><circle cx="12" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="12" cy="19" r="2"/><circle cx="19" cy="19" r="2"/></svg></button>
+</div>
+<div class="shell">
+  <aside class="rail">
+    <svg class="rail-logo" viewBox="0 0 96 24" xmlns="http://www.w3.org/2000/svg" aria-label="verifi"><path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z"/></svg>
+
+    <div class="ir-item ir-region">
+      <svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z" fill="currentColor"/></svg>
+      <span class="ir-label">Cement<br>ACME</span>
+    </div>
+    <div class="ir-div"></div>
+    <div class="ir-item" onclick="protoToast('Home isn\'t part of this prototype')">
+      <svg viewBox="0 0 24 24"><path d="M21 20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.49a1 1 0 0 1 .386-.79l8-6.22a1 1 0 0 1 1.228 0l8 6.22a1 1 0 0 1 .386.79V20Zm-2-1V9.98L12 4.53 5 9.98V19h14Z" fill="currentColor"/></svg>
+      <span class="ir-label">Home</span>
+    </div>
+    <div class="ir-item" onclick="protoToast('My Fleet isn\'t part of this prototype')">
+      <svg viewBox="0 0 24 24"><path d="M2 5l6-2 8 2 6-2v16l-6 2-8-2-6 2V5zm6 0v14l8 2V7L8 5zm-2 .35L4 6v13.5l2-.66V5.35zm14 13.3V5.15l-2 .66v13.34l2-.5z" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>
+      <span class="ir-label">My Fleet</span>
+    </div>
+    <div class="ir-item active">
+      <svg viewBox="0 0 24 24"><path d="M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm1 2v14h14V5H5zm3 8h2v4H8v-4zm4-4h2v8h-2V9zm4 2h2v6h-2v-6z" fill="currentColor"/></svg>
+      <span class="ir-label">Production</span>
+    </div>
+    <div class="ir-item" onclick="protoToast('Mixtures isn\'t part of this prototype')">
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm3.5-12.5a3 3 0 0 0-4.24 4.24l-3.06 3.06 1.41 1.41 3.06-3.06a3 3 0 0 0 4.24-4.24l-1.42 1.42-1.41-1.41 1.42-1.42Z" fill="currentColor"/></svg>
+      <span class="ir-label">Mixtures</span>
+    </div>
+    <div class="ir-item" onclick="protoToast('Tickets isn\'t part of this prototype')">
+      <svg viewBox="0 0 24 24"><path d="M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm1 2v12h14V6H5zm2 2h2v2H7V8zm4 0h6v2h-6V8zm-4 4h2v2H7v-2zm4 0h6v2h-6v-2zm-4 4h2v2H7v-2zm4 0h6v2h-6v-2z" fill="currentColor"/></svg>
+      <span class="ir-label">Tickets</span>
+    </div>
+    <div class="ir-item" onclick="protoToast('Diagnostic Center isn\'t part of this prototype')">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M11 4a7 7 0 1 0 4.18 12.61l4.1 4.1 1.42-1.42-4.1-4.1A7 7 0 0 0 11 4Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm-3 5h1.5l1-2 2 4 1-2H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="ir-label">Diagnostic<br>Center</span>
+    </div>
+    <div class="ir-item" onclick="protoToast('Data Insights isn\'t part of this prototype')">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M3 17l5-5 4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 8h4v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 3l.6 1.4L20 5l-1.4.6L18 7l-.6-1.4L16 5l1.4-.6L18 3z" fill="currentColor"/></svg>
+      <span class="ir-label">Data Insights</span>
+    </div>
+
+    <div class="ir-spacer"></div>
+    <button class="ir-collapse" title="Collapse menu"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m11 18-6-6 6-6M18 18l-6-6 6-6"/></svg></button>
+    <div class="ir-div"></div>
+    <div class="ir-item" onclick="protoToast('Settings isn\'t part of this prototype')">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.12-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.57 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.65 8.85a1.7 1.7 0 0 0-.34-1.87l-.06-.06A2 2 0 1 1 7.08 4.1l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09c0 .68.41 1.3 1.03 1.56.6.26 1.3.13 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9c.26.62.88 1.03 1.56 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51.97Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      <span class="ir-label">Settings</span>
+    </div>
+    <div class="ir-item" onclick="protoToast('Support isn\'t part of this prototype')">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M9.5 9a2.5 2.5 0 1 1 3.7 2.2c-.7.4-1.2 1-1.2 1.8v.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="16.6" r="1.1" fill="currentColor"/></svg>
+      <span class="ir-label">Support</span>
+    </div>
+    <div class="ir-avatar">BC</div>
+    <div class="ir-foot">Saint-Gobain © 2026<br>v0000000 · 0001</div>
+  </aside>
+
+  <main class="main">
+    <div class="tabs">
+      <button class="tab active" id="tabLoad" onclick="showView('load')">Load Reports</button>
+      <button class="tab" onclick="protoToast('Truck Phase isn\'t part of this prototype')">Truck Phase</button>
+      <button class="tab" id="tabSlump" onclick="showView('slump')">Slump Test Report</button>
+      <button class="tab" onclick="protoToast('Admix Report isn\'t part of this prototype')">Admix Report</button>
+    </div>
+
+    <!-- ============ VIEW: Load Reports ============ -->
+    <section id="viewLoad">
+      <h1 class="page-title">Load Reports</h1>
+      <div class="page-sub" id="loadCount">3 Reports</div>
+
+      <div class="toolbar">
+        <div class="search-box">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="text" placeholder="Search">
+        </div>
+        <button class="filters-chip" id="filterChipLoad" onclick="toggleFilterBar('load')">Filters</button>
+        <div class="toolbar-right">
+          <button class="icon-btn" id="filterBtnLoad" title="Filter" onclick="toggleFilterBar('load')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v2.6L14 13v6l-4 2v-8L4 6.6V4z"/></svg></button>
+          <button class="icon-btn" title="Download"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg></button>
+          <div class="view-select">Default view <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></div>
+        </div>
+      </div>
+
+      <div class="filter-bar" id="filterBarLoad"></div>
+
+      <div class="tbl-wrap">
+        <table id="loadTable">
+          <thead><tr>
+            <th></th><th>Time</th><th>Tickets</th><th>Truck</th><th>Notification</th><th>Location</th>
+            <th>Customer</th><th>Order</th><th>Mix Code</th><th>Size</th><th>Status</th><th>Current ?Ticketed Slump</th>
+          </tr></thead>
+          <tbody id="loadTbody">
+            <tr data-truck="71750" data-ticket="66097" data-mix="10369262" data-customer="W&amp;S Concrete INC" data-location="Wildwood" data-date="06/25/2026"><td class="exp-cell"><button class="exp-btn" onclick="toggleRowDetail(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></td><td class="td-time">8:12 AM<span>Thu 25th June</span></td><td>NT</td><td>71750</td><td></td><td>Wildwood (-)</td><td>W&amp;S Concrete INC</td><td>454</td><td>10369262</td><td class="td-muted">-</td><td><span class="chip-tojob">To Job</span></td><td class="td-muted">-</td></tr>
+            <tr data-truck="71750" data-ticket="66098" data-mix="10369262" data-customer="W&amp;S Concrete INC" data-location="Wildwood" data-date="06/25/2026"><td class="exp-cell"><button class="exp-btn" onclick="toggleRowDetail(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></td><td class="td-time">8:12 AM<span>Thu 25th June</span></td><td>NT</td><td>71750</td><td></td><td>Wildwood (-)</td><td>W&amp;S Concrete INC</td><td>454</td><td>10369262</td><td class="td-muted">-</td><td><span class="chip-tojob">To Job</span></td><td class="td-muted">-</td></tr>
+            <tr data-truck="71750" data-ticket="66097" data-mix="10369262" data-customer="W&amp;S Concrete INC" data-location="Wildwood" data-date="06/25/2026"><td class="exp-cell"><button class="exp-btn" onclick="toggleRowDetail(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></td><td class="td-time">8:12 AM<span>Thu 25th June</span></td><td>NT</td><td>71750</td><td></td><td>Wildwood (-)</td><td>W&amp;S Concrete INC</td><td>454</td><td>10369262</td><td class="td-muted">-</td><td><span class="chip-tojob">To Job</span></td><td class="td-muted">-</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pager" id="pager-load">
+        <span class="pager-size-wrap">Items per page:
+          <select class="pager-size" onchange="pagerSize('load', this.value)">
+            <option>5</option><option>10</option><option>25</option><option>50</option><option selected>100</option>
+          </select>
+        </span>
+        <span class="pager-range" id="pagerRange-load">–</span>
+        <button class="pager-btn" id="pagerPrev-load" onclick="pagerNav('load',-1)" disabled title="Previous page">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
+        </button>
+        <button class="pager-btn" id="pagerNext-load" onclick="pagerNav('load',1)" disabled title="Next page">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- ============ VIEW: Slump Test Reports ============ -->
+    <section id="viewSlump" style="display:none">
+      <h1 class="page-title">Slump Test Reports</h1>
+      <div class="page-sub" id="slumpCount">4 Reports</div>
+
+      <div class="toolbar">
+        <div class="search-box">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="text" placeholder="Search">
+        </div>
+        <button class="filters-chip" id="filterChipSlump" onclick="toggleFilterBar('slump')">Filters</button>
+        <div class="toolbar-right">
+          <button class="icon-btn" id="filterBtnSlump" title="Filter" onclick="toggleFilterBar('slump')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v2.6L14 13v6l-4 2v-8L4 6.6V4z"/></svg></button>
+          <button class="icon-btn" title="Download"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg></button>
+          <button class="btn btn-primary" onclick="openDrawer()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Add Slump Test Report
+          </button>
+        </div>
+      </div>
+
+      <div class="filter-bar" id="filterBarSlump"></div>
+
+      <div class="tbl-wrap">
+        <table id="slumpTable" style="min-width:3400px">
+          <thead><tr>
+            <th></th><th>Date</th><th>Time</th><th>Submitter</th><th>Tester</th><th>Truck</th><th>Truck Type</th>
+            <th>Mixture</th><th>Slump Test</th><th>Mix Curve</th><th>Build Up Status</th><th>Verifi Slump</th>
+            <th>Verifi Slump Reason</th><th>Next Valid Slump</th><th>Slump Difference</th><th>Verifi Slump Time</th>
+            <th>Next Valid Slump Time</th><th>Time Diff (minutes)</th><th>Location</th><th>Ticket Number</th>
+            <th>Ticketed Slump</th><th>Order</th><th>Load Size</th><th>Shape</th><th>Angle Degrees</th>
+            <th>Concrete Temperature</th><th>Air Content</th><th>Unit Weight</th><th>Notes</th><th>Sensor Data</th>
+          </tr></thead>
+          <tbody id="slumpTbody"></tbody>
+        </table>
+      </div>
+      <div class="pager" id="pager-slump">
+        <span class="pager-size-wrap">Items per page:
+          <select class="pager-size" onchange="pagerSize('slump', this.value)">
+            <option>5</option><option>10</option><option>25</option><option>50</option><option selected>100</option>
+          </select>
+        </span>
+        <span class="pager-range" id="pagerRange-slump">–</span>
+        <button class="pager-btn" id="pagerPrev-slump" onclick="pagerNav('slump',-1)" disabled title="Previous page">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
+        </button>
+        <button class="pager-btn" id="pagerNext-slump" onclick="pagerNav('slump',1)" disabled title="Next page">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+        </button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ============ Add Slump Test drawer ============ -->
+<div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer" aria-label="Add Slump Test">
+  <div class="drawer-head">
+    <div class="drawer-title">Add Slump Test</div>
+    <button class="drawer-x" onclick="closeDrawer()" title="Close">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="drawer-rule"></div>
+
+  <div class="drawer-body">
+    <div id="modeChooser">
+    <div class="mode-label">I want to...</div>
+    <label class="radio-row">
+      <input type="radio" name="entryMode" value="form" checked onchange="setMode('form')">
+      <span class="radio-dot"></span>
+      <span class="radio-text">Add slump tests one at a time</span>
+    </label>
+    <label class="radio-row">
+      <input type="radio" name="entryMode" value="csv" onchange="setMode('csv')">
+      <span class="radio-dot"></span>
+      <span class="radio-text">Upload a CSV file containing multiple slump tests</span>
+    </label>
+    </div>
+
+    <!-- ============ MODE 1: single test form (Option B long form) ============ -->
+    <div id="modeForm">
+      <div class="form-sec-label">Select slump test type</div>
+      <div class="radio-inline">
+        <label class="radio-row">
+          <input type="radio" name="testType" value="Slump test" checked>
+          <span class="radio-dot"></span>
+          <span class="radio-text">Slump test</span>
+        </label>
+        <label class="radio-row">
+          <input type="radio" name="testType" value="Slump flow test">
+          <span class="radio-dot"></span>
+          <span class="radio-text">Slump flow test</span>
+        </label>
+        <label class="radio-row">
+          <input type="radio" name="testType" value="Flow test">
+          <span class="radio-dot"></span>
+          <span class="radio-text">Flow test</span>
+        </label>
+      </div>
+
+      <div class="form-sec-label" style="font-size:19px;margin-top:30px">Test details</div>
+      <div class="f-grid">
+        <div class="f-field" id="fTruckField">
+          <label class="f-label" for="fTruck">Truck name<span class="req">*</span></label>
+          <div class="combo" id="truckCombo">
+            <input class="f-input" id="fTruck" type="text" placeholder="Select or enter a truck name"
+                   autocomplete="off" role="combobox" aria-expanded="false"
+                   oninput="truckComboInput()" onfocus="openTruckCombo()" onkeydown="truckComboKey(event)">
+            <svg class="combo-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+            <div class="combo-list" id="truckComboList"></div>
+          </div>
+          <div class="f-error-msg">Select or enter a truck to continue.</div>
+        </div>
+        <div class="f-field" id="fTicketField">
+          <label class="f-label" for="fTicket">Ticket number<span class="req">*</span></label>
+          <select class="f-select" id="fTicket" disabled onchange="onTicketChange()">
+            <option value="">Select a ticket</option>
+          </select>
+          <div class="f-error-msg">Select the ticket this test belongs to.</div>
+        </div>
+        <div class="f-field">
+          <label class="f-label" for="fDate">Slump Test Date</label>
+          <input class="f-input" id="fDate" type="text" readonly tabindex="-1" placeholder="Pulled from ticket" value="">
+        </div>
+        <div class="f-field" id="fTimeField">
+          <label class="f-label" for="fTime">Slump Test Time<span class="req">*</span></label>
+          <select class="f-select" id="fTime" disabled onchange="clearInvalid('fTimeField')">
+            <option value="">Select a discharge time</option>
+          </select>
+          <div class="f-error-msg">Select the discharge time this test was taken at.</div>
+        </div>
+        <div class="f-field">
+          <label class="f-label" for="fTester">Tester</label>
+          <select class="f-select" id="fTester">
+            <option value="">Select tester name</option>
+            <option>Campbell</option><option>B. Cooper</option><option>Ortiz</option><option>Nguyen</option>
+          </select>
+        </div>
+
+        <div class="f-field" id="fSlumpField">
+          <label class="f-label" for="fSlump">Measured Slump mm<span class="req">*</span></label>
+          <div class="f-error-above"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg><span id="fSlumpErrTxt">Measured slump must be between 0 and 250 mm.</span></div>
+          <input class="f-input" id="fSlump" type="text" inputmode="decimal" placeholder="" oninput="validateRange('fSlump')">
+        </div>
+        <div class="f-field" id="fTempField">
+          <label class="f-label" for="fTemp">Manual Concrete Temperature C°</label>
+          <div class="f-error-above"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg><span id="fTempErrTxt">Concrete temperature must be between 5 and 40 °C.</span></div>
+          <input class="f-input" id="fTemp" type="text" inputmode="decimal" placeholder="" oninput="validateRange('fTemp')">
+        </div>
+
+        <div class="f-field" id="fWeightField">
+          <label class="f-label" for="fWeight">Unit Weight kg/m³</label>
+          <div class="f-error-above"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg><span id="fWeightErrTxt">Unit weight must be between 1,400 and 2,800 kg/m³.</span></div>
+          <input class="f-input" id="fWeight" type="text" inputmode="decimal" placeholder="" oninput="validateRange('fWeight')">
+        </div>
+        <div class="f-field">
+          <label class="f-label" for="fAir">Air Content %</label>
+          <input class="f-input" id="fAir" type="text" inputmode="decimal" placeholder="">
+        </div>
+
+        <div class="f-field">
+          <label class="f-label" for="fShape">Shape</label>
+          <div class="shape-row">
+            <select class="f-select" id="fShape" onchange="drawShape()">
+              <option value="true" selected>True</option>
+              <option value="shear">Shear</option>
+              <option value="collapse">Collapse</option>
+            </select>
+            <div class="shape-viz"><svg id="shapeSvg" width="48" height="40" viewBox="0 0 94 70"></svg></div>
+          </div>
+        </div>
+
+        <div class="f-field full">
+          <label class="f-label" for="fNote">Notes</label>
+          <textarea class="f-textarea" id="fNote" style="min-height:96px" placeholder=""></textarea>
+        </div>
+      </div>
+
+      <div class="form-submit-wrap">
+        <button class="btn btn-primary" onclick="saveSingleTest()">Submit</button>
+      </div>
+    </div>
+
+    <!-- ============ MODE 2: CSV upload ============ -->
+    <div id="modeCsv" style="display:none">
+
+      <!-- dropzone: idle / uploading / done -->
+      <div class="dropzone" id="dropzone" onclick="startUpload()">
+        <svg class="dz-cloud" width="72" height="54" viewBox="0 0 72 54" fill="none">
+          <path d="M55 22.2A20 20 0 0 0 17.4 17 15 15 0 0 0 18 47h36a13 13 0 0 0 1-24.8Z" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M36 40V24m0 0-7.5 7.5M36 24l7.5 7.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div id="dzIdle">
+          <div class="dz-title">Drag CSV files here to import slump tests</div>
+          <div class="dz-sub">or <a onclick="startUpload(); event.stopPropagation()">browse files</a> (up to 5 MB max)</div>
+        </div>
+        <div id="dzBusy" style="display:none">
+          <div class="dz-progress"><div class="dz-progress-fill" id="dzFill"></div></div>
+          <div class="dz-file" id="dzFileName">slumptest-09092026.csv</div>
+          <button class="dz-link" id="dzAction" onclick="cancelUpload(); event.stopPropagation()">Cancel upload</button>
+        </div>
+      </div>
+
+      <div class="upload-actions" id="csvSubmitWrap" style="display:none">
+        <button class="btn btn-primary" id="csvSubmitBtn" onclick="validateCsv()">Submit</button>
+      </div>
+
+      <!-- validation error review -->
+      <div id="csvErrors" style="display:none">
+        <div class="val-banner">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>
+          <div>
+            <div class="val-banner-title">3 rows have an invalid date or time format</div>
+            <div class="val-banner-body">Use MM/DD/YYYY and h:mm AM/PM, then upload the file again.</div>
+          </div>
+        </div>
+
+        <div class="val-actions">
+          <button class="btn btn-primary" onclick="reuploadCorrected()">Upload corrected file</button>
+          <button class="val-dl" onclick="protoToast('Error report downloaded (prototype)')">Download error report (.csv)</button>
+        </div>
+      </div>
+
+      <!-- validation success (after corrected re-upload) -->
+      <div id="csvSuccess" style="display:none">
+        <div class="val-success">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          <div>
+            <div class="val-banner-title">All 24 rows look good</div>
+            <div class="val-banner-body">slumptest-09092026-v2.csv passed every check. Submit to add these slump tests to the report.</div>
+          </div>
+        </div>
+        <div class="upload-actions">
+          <button class="btn btn-primary" onclick="finishImport(24)">Submit 24 slump tests</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</aside>
+
+<div class="toast" id="toast">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+  <span id="toastMsg"></span>
+</div>
+</div><!-- /phone-body -->
+</div><!-- /phone-wrap -->
+
+<script>
+/* ============ mock data: trucks and their tickets ============ */
+const FLEET = {
+  "HS1003": [
+    {t:"66108", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"09/02/2026", times:["9:45 AM","11:20 AM"], tslump:"100", size:"8.5 m³"},
+    {t:"66109", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"09/03/2026", times:["7:40 AM","8:55 AM","10:10 AM"], tslump:"100", size:"9.0 m³"}
+  ],
+  "HS1830": [
+    {t:"66104", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"09/02/2026", times:["4:05 PM"], tslump:"100", size:"8.5 m³"},
+    {t:"66111", order:"461", mix:"10369280", cust:"Brookfield Paving", loc:"Ocala", date:"09/04/2026", times:["8:12 AM","9:30 AM"], tslump:"125", size:"7.5 m³"}
+  ],
+  "HS1999": [
+    {t:"66101", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"09/02/2026", times:["1:05 PM","2:40 PM"], tslump:"100", size:"8.5 m³"}
+  ],
+  "HS2022": [
+    {t:"66102", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"09/02/2026", times:["4:05 PM","5:20 PM"], tslump:"100", size:"8.5 m³"},
+    {t:"66113", order:"461", mix:"10369280", cust:"Brookfield Paving", loc:"Ocala", date:"09/04/2026", times:["10:45 AM"], tslump:"125", size:"7.5 m³"},
+    {t:"66118", order:"470", mix:"10369291", cust:"Lakeview Builders", loc:"Leesburg", date:"09/08/2026", times:["7:15 AM","8:40 AM","11:05 AM"], tslump:"150", size:"9.0 m³"}
+  ],
+  "HS2024": [
+    {t:"66103", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"09/02/2026", times:["4:20 PM"], tslump:"100", size:"8.5 m³"},
+    {t:"66120", order:"470", mix:"10369291", cust:"Lakeview Builders", loc:"Leesburg", date:"09/08/2026", times:["9:10 AM","12:35 PM"], tslump:"150", size:"9.0 m³"}
+  ],
+  "71750": [
+    {t:"66097", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"06/25/2026", times:["8:12 AM"], tslump:"100", size:"8.0 m³"},
+    {t:"66098", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"06/25/2026", times:["8:12 AM","9:45 AM"], tslump:"100", size:"8.0 m³"}
+  ]
+};
+
+/* ============ view switching ============ */
+function showView(v){
+  document.getElementById('viewLoad').style.display  = v==='load'  ? '' : 'none';
+  document.getElementById('viewSlump').style.display = v==='slump' ? '' : 'none';
+  document.getElementById('tabLoad').classList.toggle('active', v==='load');
+  document.getElementById('tabSlump').classList.toggle('active', v==='slump');
+}
+
+/* ============ drawer ============ */
+function openDrawer(){
+  resetDrawer();
+  document.getElementById('drawerBackdrop').classList.add('show');
+  document.getElementById('drawer').classList.add('open');
+}
+function closeDrawer(){
+  document.getElementById('drawerBackdrop').classList.remove('show');
+  document.getElementById('drawer').classList.remove('open');
+}
+function resetDrawer(){
+  // mode back to form default
+  document.querySelector('input[name="entryMode"][value="form"]').checked = true;
+  setMode('form');
+  // form fields
+  document.querySelector('input[name="testType"][value="Slump test"]').checked = true;
+  document.getElementById('fTruck').value = '';
+  closeTruckCombo();
+  setTruck(null);
+  ['fTruckField','fTicketField','fTimeField','fSlumpField','fTempField','fWeightField'].forEach(id=>document.getElementById(id).classList.remove('invalid'));
+  ['fSlump','fNote','fTemp','fWeight','fAir'].forEach(id=>document.getElementById(id).value='');
+  resetTimeSelect();
+  document.getElementById('fTester').value='';
+  document.getElementById('fShape').value='true';
+  drawShape();
+  // csv state
+  resetCsv();
+}
+
+/* ============ entry mode ============ */
+function setMode(m){
+  document.getElementById('modeForm').style.display = m==='form' ? '' : 'none';
+  document.getElementById('modeCsv').style.display  = m==='csv'  ? '' : 'none';
+}
+
+/* ============ form: dependent truck -> ticket ============ */
+/* ---- searchable truck combobox: type to filter, or enter a truck not listed ---- */
+let comboHl = -1;
+
+function openTruckCombo(){
+  clearInvalid('fTruckField');
+  renderTruckCombo();
+  document.getElementById('truckComboList').classList.add('open');
+  document.getElementById('fTruck').setAttribute('aria-expanded','true');
+}
+function closeTruckCombo(){
+  document.getElementById('truckComboList').classList.remove('open');
+  document.getElementById('fTruck').setAttribute('aria-expanded','false');
+  comboHl = -1;
+}
+function renderTruckCombo(){
+  const q = document.getElementById('fTruck').value.trim();
+  const list = document.getElementById('truckComboList');
+  const matches = Object.keys(FLEET).filter(t => t.toLowerCase().includes(q.toLowerCase()));
+  let html = matches.map(t=>`<div class="combo-item" data-truck="${t}" onmousedown="pickTruck('${t}')">${t}</div>`).join('');
+  // allow entering a truck that isn't listed
+  if(q && !matches.some(t => t.toLowerCase() === q.toLowerCase())){
+    html += `<div class="combo-item combo-new" data-truck="${q}" onmousedown="pickTruck('${q.replace(/'/g,"\\'")}')">Use "${q}"</div>`;
+  }
+  if(!html) html = '<div class="combo-empty">Type a truck name</div>';
+  list.innerHTML = html;
+  comboHl = -1;
+}
+function truckComboInput(){
+  clearInvalid('fTruckField');
+  openTruckCombo();
+  setTruck(null); // typing invalidates the previous selection until confirmed
+}
+function truckComboKey(e){
+  const items = [...document.querySelectorAll('#truckComboList .combo-item')];
+  if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+    e.preventDefault();
+    if(!items.length) return;
+    comboHl = e.key === 'ArrowDown' ? Math.min(comboHl+1, items.length-1) : Math.max(comboHl-1, 0);
+    items.forEach((it,i)=>it.classList.toggle('hl', i===comboHl));
+    items[comboHl].scrollIntoView({block:'nearest'});
+  } else if(e.key === 'Enter'){
+    e.preventDefault();
+    if(comboHl >= 0 && items[comboHl]) pickTruck(items[comboHl].dataset.truck);
+    else if(items.length && !items[0].classList.contains('combo-empty')) pickTruck(items[0].dataset.truck);
+  } else if(e.key === 'Escape'){
+    closeTruckCombo();
+  }
+}
+function pickTruck(name){
+  document.getElementById('fTruck').value = name;
+  closeTruckCombo();
+  setTruck(name);
+}
+/* apply a truck selection: populate its tickets, or a no-tickets state for unlisted trucks */
+function setTruck(truck){
+  const tk = document.getElementById('fTicket');
+  resetTimeSelect();
+  if(!truck){
+    tk.innerHTML = '<option value="">Select a ticket</option>';
+    tk.disabled = true;
+    return;
+  }
+  const tickets = FLEET[truck];
+  if(!tickets){
+    tk.innerHTML = `<option value="">No tickets found for ${truck}</option>`;
+    tk.disabled = true;
+    return;
+  }
+  tk.innerHTML = '<option value="">Select a ticket</option>' +
+    tickets.map(x=>`<option value="${x.t}">${x.t}</option>`).join('');
+  tk.disabled = false;
+}
+document.addEventListener('click', (e)=>{
+  if(!e.target.closest('#truckCombo')) closeTruckCombo();
+});
+
+function onTicketChange(){
+  clearInvalid('fTicketField');
+  const truck = document.getElementById('fTruck').value;
+  const num = document.getElementById('fTicket').value;
+  resetTimeSelect();
+  if(!truck || !num) return;
+  const x = FLEET[truck].find(t=>t.t===num);
+  // discharge times come from the ticket; the date is fixed by the ticket
+  const tm = document.getElementById('fTime');
+  tm.innerHTML = '<option value="">Select a discharge time</option>' +
+    x.times.map(t=>`<option value="${t}">${t}</option>`).join('');
+  tm.disabled = false;
+  if(x.times.length === 1){ tm.value = x.times[0]; }
+  document.getElementById('fDate').value = x.date;
+}
+function resetTimeSelect(){
+  const tm = document.getElementById('fTime');
+  tm.innerHTML = '<option value="">Select a discharge time</option>';
+  tm.disabled = true;
+  document.getElementById('fDate').value = '';
+}
+function clearInvalid(id){ document.getElementById(id).classList.remove('invalid'); }
+
+/* range guards for measured values — catches typos like 2000 instead of 200 */
+const RANGES = {
+  fSlump:  { field:'fSlumpField',  err:'fSlumpErrTxt',  min:0,    max:250,  unit:'mm',
+             msg:'Measured slump must be between 0 and 250 mm.' },
+  fTemp:   { field:'fTempField',   err:'fTempErrTxt',   min:5,    max:40,   unit:'°C',
+             msg:'Concrete temperature must be between 5 and 40 °C.' },
+  fWeight: { field:'fWeightField', err:'fWeightErrTxt', min:1400, max:2800, unit:'kg/m³',
+             msg:'Unit weight must be between 1,400 and 2,800 kg/m³.' }
+};
+
+function validateRange(inputId){
+  const r = RANGES[inputId];
+  const fieldEl = document.getElementById(r.field);
+  const raw = document.getElementById(inputId).value.trim();
+  if(raw === ''){ fieldEl.classList.remove('invalid'); return true; } // required-ness handled at submit
+  const v = parseFloat(raw.replace(/,/g,''));
+  let bad = false, msg = r.msg;
+  if(isNaN(v)){
+    bad = true; msg = 'Enter a number' + (raw.match(/[a-zA-Z]/) ? ' — no units needed, just the value in ' + r.unit + '.' : '.');
+  } else if(v < r.min || v > r.max){
+    bad = true;
+  }
+  document.getElementById(r.err).textContent = msg;
+  fieldEl.classList.toggle('invalid', bad);
+  return !bad;
+}
+
+/* ============ shape illustration ============ */
+function drawShape(){
+  const v = document.getElementById('fShape').value;
+  const svg = document.getElementById('shapeSvg');
+  const line = getComputedStyle(document.documentElement).getPropertyValue('--text').trim() || '#e9ecf1';
+  let inner = '';
+  if(v==='true'){
+    // Verifi true-slump asset (39x46), scaled to sit on the ground line
+    inner = `<g transform="translate(24,10.8) scale(1.2)"><path d="M1 28.9859V45H37.9581C37.9581 45 38.0524 40.6232 37.9581 37.8213C37.7537 31.7519 36.8548 22.3594 36.8548 22.3594C36.8548 22.3594 35.2 12.6957 34.3726 10.4869C33.5452 8.27807 32.6642 5.18046 29.9597 3.30819C27.3362 1.49199 21.9613 1.09935 21.9613 1.09935C21.9613 1.09935 15.9436 0.653272 12.3081 1.65156C9.89205 2.31497 8.32134 2.67364 6.51613 4.41261C4.60712 6.25156 3.48226 8.27807 3.48226 8.27807C3.48226 8.27807 0.99976 12.4196 1 17.3895C1.00024 22.3594 1 28.9859 1 28.9859Z" fill="#0063CD" stroke="black" stroke-width="2"/></g>`;
+  } else if(v==='shear'){
+    // one side slides off
+    inner = `<path d="M22 66 C23 48 26 34 31 26 C34 21 44 20 48 24 L70 46 C74 50 72 60 66 63 C54 68 34 68 22 66 Z" fill="#0063CD" stroke="black" stroke-width="2.4" stroke-linejoin="round"/>`;
+  } else {
+    // collapse: low wide blob
+    inner = `<path d="M10 66 C10 52 26 46 47 46 C68 46 84 52 84 66 Z" fill="#0063CD" stroke="black" stroke-width="2.4" stroke-linejoin="round"/>`;
+  }
+  svg.innerHTML = inner + `<line x1="4" y1="67" x2="90" y2="67" stroke="${line}" stroke-width="1.5" opacity=".45"/>`;
+}
+
+/* ============ form: save ============ */
+function saveSingleTest(){
+  let ok = true;
+  const truck = document.getElementById('fTruck').value;
+  const ticket = document.getElementById('fTicket').value;
+  if(!truck){ document.getElementById('fTruckField').classList.add('invalid'); ok=false; }
+  if(!ticket){ document.getElementById('fTicketField').classList.add('invalid'); ok=false; }
+  // discharge time is required
+  if(!document.getElementById('fTime').value){
+    document.getElementById('fTimeField').classList.add('invalid'); ok=false;
+  }
+  // slump is required
+  if(document.getElementById('fSlump').value.trim() === ''){
+    document.getElementById('fSlumpErrTxt').textContent = RANGES.fSlump.msg;
+    document.getElementById('fSlumpField').classList.add('invalid'); ok=false;
+  }
+  // all three measured values must be in range if entered
+  ['fSlump','fTemp','fWeight'].forEach(id=>{ if(!validateRange(id)) ok=false; });
+  if(!ok) return;
+
+  const x = (FLEET[truck] || []).find(t=>t.t===ticket);
+  if(!x){ document.getElementById('fTicketField').classList.add('invalid'); return; }
+  const shapeSel = document.getElementById('fShape');
+  const num = (id, unit) => {
+    const v = document.getElementById(id).value.trim();
+    return v === '' ? '' : parseFloat(v.replace(/,/g,'')).toLocaleString() + ' ' + unit;
+  };
+  addSlumpRows([{
+    date: x.date,                                   // date always comes from the ticket
+    time: document.getElementById('fTime').value,
+    sub: CURRENT_USER,                              // submitter is always the verifi login
+    tester: document.getElementById('fTester').value,
+    truck: truck, type: x.cust, mix: x.order, test: x.mix,
+    loc: x.loc, ticket: x.t, tslump: x.tslump, order: x.order, size: x.size,
+    shape: shapeSel.options[shapeSel.selectedIndex].text,
+    temp: num('fTemp','°C'), air: num('fAir','%'), weight: num('fWeight','kg/m³'),
+    notes: document.getElementById('fNote').value.trim()
+  }]);
+  closeDrawer();
+  protoToast('Slump test submitted — '+truck+' · ticket '+ticket);
+}
+
+/* add rows to the report table + update count */
+const CURRENT_USER = 'bcooper@wsconcrete.com'; // verifi login of the signed-in user
+
+function cell(v, cls){
+  if(v === undefined || v === null || v === '' ) return '<td class="td-muted">-</td>';
+  return `<td${cls ? ' class="'+cls+'"' : ''}>${v}</td>`;
+}
+function addSlumpRows(rows){
+  const tb = document.getElementById('slumpTbody');
+  rows.forEach(r=>{
+    const tr = document.createElement('tr');
+    tr.dataset.truck = r.truck;
+    tr.dataset.ticket = r.ticket || '';
+    tr.dataset.mix = r.test;
+    tr.dataset.submitter = r.sub;
+    tr.dataset.location = r.loc || 'Wildwood';
+    tr.dataset.date = r.date;
+    tr.innerHTML =
+      '<td class="exp-cell"><button class="exp-btn" onclick="toggleRowDetail(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></td>' +
+      cell(r.date, 'td-time') + cell(r.time) + cell(r.sub) + cell(r.tester) +
+      cell(r.truck) + cell(r.type) + cell(r.mix) + cell(r.test) +
+      cell(r.mixCurve) + '<td><span class="chip-tojob">To Job</span></td>' +
+      cell(r.vSlump) + cell(r.vReason) + cell(r.nextValid) + cell(r.slumpDiff) +
+      cell(r.vSlumpTime) + cell(r.nextValidTime) + cell(r.timeDiff) +
+      cell(r.loc) + cell(r.ticket) + cell(r.tslump) + cell(r.order) + cell(r.size) +
+      cell(r.shape) + cell(r.angle) + cell(r.temp) + cell(r.air) + cell(r.weight) +
+      (r.notes ? `<td class="td-notes" title="${r.notes}">${r.notes}</td>` : '<td class="td-muted">-</td>') +
+      cell(r.sensor);
+    tb.insertBefore(tr, tb.firstChild);
+  });
+  applyFilters('slump');
+}
+
+/* seed data: the four reports visible on first load */
+const SEED_SLUMP_ROWS = [
+  {date:'09/02/2026', time:'4:20 PM', sub:'campbell@wsconcrete.com', tester:'Campbell', truck:'HS2024', type:'W&S Concrete INC',
+   mix:'454', test:'10369262', loc:'Wildwood', ticket:'66103', tslump:'100 mm', order:'454', size:'8.5 m³',
+   shape:'True', temp:'24.5 °C', air:'4.2 %', weight:'2,350 kg/m³'},
+  {date:'09/02/2026', time:'4:05 PM', sub:'jortiz@wsconcrete.com', tester:'Ortiz', truck:'HS2022', type:'W&S Concrete INC',
+   mix:'454', test:'10369262', loc:'Wildwood', ticket:'66102', tslump:'100 mm', order:'454', size:'8.5 m³',
+   shape:'True', temp:'25.0 °C', air:'3.9 %', weight:'2,340 kg/m³'},
+  {date:'09/02/2026', time:'3:55 PM', sub:'tnguyen@wsconcrete.com', tester:'Nguyen', truck:'HS1003', type:'W&S Concrete INC',
+   mix:'454', test:'10369262', loc:'Wildwood', ticket:'66108', tslump:'100 mm', order:'454', size:'8.5 m³',
+   shape:'Shear', temp:'26.0 °C', air:'4.5 %', weight:'2,360 kg/m³', notes:'Retest after water add'},
+  {date:'09/02/2026', time:'4:05 PM', sub:'campbell@wsconcrete.com', tester:'Campbell', truck:'HS1830', type:'W&S Concrete INC',
+   mix:'454', test:'10369262', loc:'Wildwood', ticket:'66104', tslump:'100 mm', order:'454', size:'8.5 m³',
+   shape:'True', temp:'24.0 °C', air:'4.1 %', weight:'2,345 kg/m³'}
+];
+
+/* ============ table filters ============ */
+const FILTER_DEFS = {
+  load: {
+    barId:'filterBarLoad', btnId:'filterBtnLoad', tbodyId:'loadTbody', countId:'loadCount',
+    fields:[
+      {key:'truck', label:'Truck'},
+      {key:'ticket', label:'Ticket'},
+      {key:'mix', label:'Mix Code'},
+      {key:'customer', label:'Customer'},
+      {key:'location', label:'Location'},
+      {key:'date', label:'Date', noSearch:true}
+    ]
+  },
+  slump: {
+    barId:'filterBarSlump', btnId:'filterBtnSlump', tbodyId:'slumpTbody', countId:'slumpCount',
+    fields:[
+      {key:'truck', label:'Truck'},
+      {key:'ticket', label:'Ticket'},
+      {key:'mix', label:'Mix Code'},
+      {key:'submitter', label:'Submitter Name'},
+      {key:'location', label:'Location'},
+      {key:'date', label:'Date', noSearch:true}
+    ]
+  }
+};
+const filterState = { load:{}, slump:{} };
+const barsBuilt = { load:false, slump:false };
+
+function toggleFilterBar(view){
+  if(!barsBuilt[view]) buildFilterBar(view);
+  const bar = document.getElementById(FILTER_DEFS[view].barId);
+  const btn = document.getElementById(FILTER_DEFS[view].btnId);
+  const chip = document.getElementById(view === 'load' ? 'filterChipLoad' : 'filterChipSlump');
+  const show = !bar.classList.contains('show');
+  bar.classList.toggle('show', show);
+  btn.classList.toggle('active', show);
+  if(chip) chip.classList.toggle('active', show);
+  if(!show){ clearFilters(view); }
+}
+
+function buildFilterBar(view){
+  const def = FILTER_DEFS[view];
+  const bar = document.getElementById(def.barId);
+  bar.innerHTML = def.fields.map(f=>`
+    <div class="filter-dd" data-view="${view}" data-key="${f.key}">
+      <button class="fd-btn" onclick="openFilterPop(event,'${view}','${f.key}')">
+        <span class="fd-label">${f.label}</span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="fd-pop">
+        ${f.noSearch ? '' : `
+        <div class="fd-search">
+          <input type="text" placeholder="" oninput="filterPopSearch(this)">
+          <button class="fd-clear-x" onclick="clearPopSearch(event,this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>`}
+        <div class="fd-list"></div>
+      </div>
+    </div>
+  `).join('') + `<button class="clear-filters" onclick="clearFilters('${view}')">Clear filters</button>`;
+  barsBuilt[view] = true;
+}
+
+function openFilterPop(e, view, key){
+  e.stopPropagation();
+  const dd = e.currentTarget.closest('.filter-dd');
+  const pop = dd.querySelector('.fd-pop');
+  const wasOpen = pop.classList.contains('open');
+  closeAllFilterPops();
+  if(wasOpen) return;
+  // rebuild options from current rows so imported data is included
+  const def = FILTER_DEFS[view];
+  const rows = [...document.getElementById(def.tbodyId).children];
+  const values = [...new Set(rows.map(r=>r.dataset[key]).filter(Boolean))].sort();
+  const current = filterState[view][key] || null;
+  const list = pop.querySelector('.fd-list');
+  list.innerHTML =
+    `<div class="fd-item ${current===null?'selected':''}" onclick="selectFilter(event,'${view}','${key}',null)">All Elements <svg class="fd-check" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>` +
+    values.map(v=>`<div class="fd-item ${current===v?'selected':''}" data-val="${v}" onclick="selectFilter(event,'${view}','${key}','${v.replace(/'/g,"\\'")}')">${v} <svg class="fd-check" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>`).join('');
+  const inp = pop.querySelector('.fd-search input');
+  if(inp){ inp.value=''; }
+  pop.classList.add('open');
+  if(inp) inp.focus();
+}
+
+function filterPopSearch(input){
+  const q = input.value.trim().toLowerCase();
+  const list = input.closest('.fd-pop').querySelector('.fd-list');
+  [...list.children].forEach(item=>{
+    const v = item.dataset.val;
+    if(v === undefined){ item.style.display = ''; return; } // All Elements always visible
+    item.style.display = v.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+function clearPopSearch(e, btn){
+  e.stopPropagation();
+  const inp = btn.closest('.fd-search').querySelector('input');
+  inp.value = '';
+  filterPopSearch(inp);
+  inp.focus();
+}
+
+function selectFilter(e, view, key, val){
+  e.stopPropagation();
+  if(val === null) delete filterState[view][key];
+  else filterState[view][key] = val;
+  PAGER[view].page = 0;
+  // update button label + set state
+  const dd = document.querySelector(`.filter-dd[data-view="${view}"][data-key="${key}"]`);
+  const def = FILTER_DEFS[view].fields.find(f=>f.key===key);
+  const btn = dd.querySelector('.fd-btn');
+  btn.querySelector('.fd-label').textContent = val === null ? def.label : val;
+  btn.classList.toggle('set', val !== null);
+  closeAllFilterPops();
+  applyFilters(view);
+}
+
+/* ---- expandable row detail: shows whichever columns are hidden at this viewport ---- */
+function toggleRowDetail(btn){
+  const tr = btn.closest('tr');
+  const next = tr.nextElementSibling;
+  if(next && next.classList.contains('detail-row')){
+    next.remove();
+    btn.classList.remove('open');
+    return;
+  }
+  const table = tr.closest('table');
+  const ths = [...table.querySelectorAll('thead th')];
+  const tds = [...tr.children];
+  let items = '';
+  tds.forEach((td, i)=>{
+    if(td.classList.contains('exp-cell')) return;
+    if(getComputedStyle(td).display !== 'none') return; // visible columns don't repeat
+    const label = ths[i] ? ths[i].textContent.trim() : '';
+    if(!label) return;
+    const raw = td.textContent.trim();
+    const empty = raw === '' || raw === '-';
+    items += `<div class="detail-item"><div class="dl">${label}</div><div class="dv${empty?' empty':''}">${empty ? '-' : raw}</div></div>`;
+  });
+  const detail = document.createElement('tr');
+  detail.className = 'detail-row';
+  detail.innerHTML = `<td class="detail-cell" colspan="${ths.length}"><div class="detail-grid">${items}</div></td>`;
+  tr.after(detail);
+  btn.classList.add('open');
+}
+
+function collapseAllDetails(){
+  document.querySelectorAll('tr.detail-row').forEach(r=>r.remove());
+  document.querySelectorAll('.exp-btn.open').forEach(b=>b.classList.remove('open'));
+}
+
+function closeAllFilterPops(){
+  document.querySelectorAll('.fd-pop.open').forEach(p=>p.classList.remove('open'));
+}
+document.addEventListener('click', closeAllFilterPops);
+
+const PAGER = { load:{page:0, size:100}, slump:{page:0, size:100} };
+
+function applyFilters(view){
+  collapseAllDetails();
+  const def = FILTER_DEFS[view];
+  const state = filterState[view];
+  const pg = PAGER[view];
+  const rows = [...document.getElementById(def.tbodyId).children].filter(r=>!r.classList.contains('detail-row'));
+
+  // 1) filter
+  const matched = rows.filter(r => Object.entries(state).every(([k,v]) => r.dataset[k] === v));
+  rows.forEach(r => r.style.display = 'none');
+
+  // 2) paginate the matches
+  const total = matched.length;
+  const maxPage = Math.max(0, Math.ceil(total / pg.size) - 1);
+  pg.page = Math.min(pg.page, maxPage);
+  const start = pg.page * pg.size;
+  const end = Math.min(start + pg.size, total);
+  matched.slice(start, end).forEach(r => r.style.display = '');
+
+  // 3) counts + pager chrome
+  document.getElementById(def.countId).textContent = total + (total === 1 ? ' Report' : ' Reports');
+  document.getElementById('pagerRange-'+view).textContent =
+    total === 0 ? '0 of 0' : (start+1) + ' – ' + end + ' of ' + total;
+  document.getElementById('pagerPrev-'+view).disabled = pg.page === 0;
+  document.getElementById('pagerNext-'+view).disabled = end >= total;
+}
+
+function pagerSize(view, val){
+  PAGER[view].size = +val;
+  PAGER[view].page = 0;
+  applyFilters(view);
+}
+function pagerNav(view, dir){
+  PAGER[view].page += dir;
+  applyFilters(view);
+}
+
+function clearFilters(view){
+  filterState[view] = {};
+  PAGER[view].page = 0;
+  const bar = document.getElementById(FILTER_DEFS[view].barId);
+  FILTER_DEFS[view].fields.forEach(f=>{
+    const dd = bar.querySelector(`.filter-dd[data-key="${f.key}"]`);
+    if(!dd) return;
+    dd.querySelector('.fd-label').textContent = f.label;
+    dd.querySelector('.fd-btn').classList.remove('set');
+  });
+  closeAllFilterPops();
+  applyFilters(view);
+}
+
+/* ============ CSV upload flow (simulated) ============ */
+let uploadTimer = null, uploadPct = 0, uploadState = 'idle', csvAttempt = 1;
+
+function resetCsv(){
+  clearInterval(uploadTimer); uploadTimer = null;
+  uploadPct = 0; uploadState = 'idle'; csvAttempt = 1;
+  document.getElementById('dropzone').style.display = '';
+  document.getElementById('dropzone').classList.remove('busy');
+  document.getElementById('dzIdle').style.display = '';
+  document.getElementById('dzBusy').style.display = 'none';
+  document.getElementById('dzFill').style.width = '0%';
+  document.getElementById('dzFileName').textContent = 'slumptest-09092026.csv';
+  document.getElementById('csvSubmitWrap').style.display = 'none';
+  document.getElementById('csvErrors').style.display = 'none';
+  document.getElementById('csvSuccess').style.display = 'none';
+  const btn = document.getElementById('csvSubmitBtn');
+  btn.disabled = false; btn.textContent = 'Submit';
+}
+
+function startUpload(){
+  if(uploadState !== 'idle') return;
+  uploadState = 'uploading';
+  const dz = document.getElementById('dropzone');
+  dz.classList.add('busy');
+  document.getElementById('dzIdle').style.display = 'none';
+  document.getElementById('dzBusy').style.display = '';
+  document.getElementById('dzFileName').textContent = csvAttempt === 1 ? 'slumptest-09092026.csv' : 'slumptest-09092026-v2.csv';
+  const act = document.getElementById('dzAction');
+  act.textContent = 'Cancel upload';
+  act.onclick = function(e){ e.stopPropagation(); cancelUpload(); };
+  uploadPct = 0;
+  uploadTimer = setInterval(()=>{
+    uploadPct = Math.min(100, uploadPct + 4 + Math.random()*7);
+    document.getElementById('dzFill').style.width = uploadPct + '%';
+    if(uploadPct >= 100){
+      clearInterval(uploadTimer); uploadTimer = null;
+      uploadDone();
+    }
+  }, 90);
+}
+
+function uploadDone(){
+  uploadState = 'done';
+  const act = document.getElementById('dzAction');
+  act.textContent = 'Remove';
+  act.onclick = function(e){ e.stopPropagation(); removeFile(); };
+  if(csvAttempt === 1){
+    document.getElementById('csvSubmitWrap').style.display = '';
+  } else {
+    /* corrected file: validation passes straight away */
+    document.getElementById('csvSuccess').style.display = '';
+  }
+}
+
+function cancelUpload(){
+  clearInterval(uploadTimer); uploadTimer = null;
+  removeFile();
+}
+function removeFile(){
+  uploadState = 'idle';
+  document.getElementById('dropzone').classList.remove('busy');
+  document.getElementById('dzIdle').style.display = '';
+  document.getElementById('dzBusy').style.display = 'none';
+  document.getElementById('dzFill').style.width = '0%';
+  document.getElementById('csvSubmitWrap').style.display = 'none';
+  document.getElementById('csvErrors').style.display = 'none';
+  document.getElementById('csvSuccess').style.display = 'none';
+}
+
+/* Submit on first file: run validation, surface the row errors */
+function validateCsv(){
+  const btn = document.getElementById('csvSubmitBtn');
+  btn.disabled = true; btn.textContent = 'Validating…';
+  setTimeout(()=>{
+    document.getElementById('csvSubmitWrap').style.display = 'none';
+    document.getElementById('csvErrors').style.display = '';
+    btn.disabled = false; btn.textContent = 'Submit';
+    document.querySelector('.drawer-body').scrollTo({top: 9999, behavior:'smooth'});
+  }, 900);
+}
+
+/* Error actions */
+function reuploadCorrected(){
+  csvAttempt = 2;
+  document.getElementById('csvErrors').style.display = 'none';
+  removeFile();
+  protoToast('Choose the corrected file to upload');
+}
+function finishImport(count){
+  /* stage a handful of representative rows so the report reflects the import */
+  const trucks = Object.keys(FLEET);
+  const rows = [];
+  const shown = Math.min(count, 6);
+  const testers = ['Campbell','Ortiz','Nguyen','B. Cooper'];
+  const shapes = ['True','True','True','Shear','True','Collapse'];
+  for(let i=0;i<shown;i++){
+    const tr = trucks[i % trucks.length];
+    const x = FLEET[tr][0];
+    let h = 7 + i, m = (i*11)%60;
+    rows.push({date:'09/09/2026', time:h+':'+String(m).padStart(2,'0')+' AM',
+      sub:CURRENT_USER, tester:testers[i%testers.length], truck:tr, type:x.cust, mix:x.order, test:x.mix,
+      ticket:x.t, loc:x.loc, tslump:x.tslump, order:x.order, size:x.size,
+      shape:shapes[i%shapes.length], temp:(23+i*0.5)+' °C', air:(3.8+(i%4)*0.2).toFixed(1)+' %',
+      weight:(2330+i*5).toLocaleString()+' kg/m³'});
+  }
+  addSlumpRows(rows);
+  closeDrawer();
+  protoToast(count + ' slump tests imported from CSV — ' + shown + ' shown as a sample');
+}
+
+/* ============ toast ============ */
+let toastTimer = null;
+function protoToast(msg){
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+/* ============ PROTOTYPE CHROME: options, viewport, theme ============ */
+function toggleOpts(e){
+  e.stopPropagation();
+  document.getElementById('vpOptsDd').classList.toggle('open');
+}
+document.addEventListener('click', ()=>{
+  document.getElementById('vpOptsDd').classList.remove('open');
+});
+
+let currentViewport = 'Desktop';
+function setViewport(vp){
+  currentViewport = vp;
+  ['Desktop','Tablet','Mobile'].forEach(v=>{
+    document.getElementById('vpRow'+v).classList.toggle('active', v===vp);
+  });
+  document.body.classList.toggle('vp-m', vp==='Mobile');
+  document.body.classList.toggle('vp-t', vp==='Tablet');
+  collapseAllDetails();
+  // field devices submit one test at a time; CSV upload is desktop-only
+  if(vp!=='Desktop'){
+    document.querySelector('input[name="entryMode"][value="form"]').checked = true;
+    setMode('form');
+  }
+  document.getElementById('vpOptsDd').classList.remove('open');
+}
+// open in the layout that matches the real screen
+if(window.innerWidth < 520){ document.body.classList.add('vp-real'); setViewport('Mobile'); }
+else if(window.innerWidth < 1000) setViewport('Tablet');
+
+const rootEl = document.documentElement;
+function syncThemeSwitch(){
+  document.getElementById('themeSwitch').classList.toggle('on', rootEl.classList.contains('theme-dark'));
+}
+function toggleTheme(){
+  const dark = !rootEl.classList.contains('theme-dark');
+  rootEl.classList.toggle('theme-dark', dark);
+  rootEl.classList.toggle('theme-light', !dark);
+  syncThemeSwitch();
+  drawShape();
+  try { localStorage.setItem('adv-settings-theme', dark ? 'dark' : 'light'); } catch(e) {}
+}
+syncThemeSwitch();
+
+/* escape closes drawer */
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape') closeDrawer();
+});
+
+drawShape();
+addSlumpRows(SEED_SLUMP_ROWS.slice().reverse()); // reverse so first seed row renders on top
+applyFilters('load'); // initialize the Load Reports pager
+</script>
+</body>
+</html>

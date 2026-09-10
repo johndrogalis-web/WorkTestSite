@@ -131,7 +131,11 @@
   .filter-row .fname { flex: 1; }
 
   /* ---------- Table ---------- */
-  .table-area { flex: 1; min-width: 0; overflow-x: auto; }
+  .table-area { flex: 1; min-width: 0; }
+  /* The list scrolls inside this box so the header can stay put above
+     it — with a full fleet the component key is what makes the strip
+     readable, and it was scrolling away. */
+  .table-scroll { max-height: calc(100vh - 300px); overflow: auto; }
   .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 6px; }
   .tab {
     display: flex; align-items: center; gap: 8px;
@@ -144,7 +148,26 @@
   .tab.warning .ti { color: var(--orange); }
 
   table { width: 100%; border-collapse: collapse; }
-  thead th { text-align: left; color: var(--muted); font-size: 12px; font-weight: 600; padding: 18px 20px 14px; vertical-align: top; white-space: nowrap; }
+  /* Header stays put while the fleet scrolls — with 100+ trucks the
+     component key is the only thing that makes the strip readable */
+  thead th {
+    text-align: left; color: var(--muted); font-size: 12px; font-weight: 600;
+    padding: 18px 20px 14px; vertical-align: top; white-space: nowrap;
+    position: sticky; top: 0; z-index: 6; background: var(--bg);
+    box-shadow: inset 0 -1px 0 var(--border);
+  }
+  /* Mode: the everyday state is quiet, anything else is called out */
+  body:not(.comp-col) .mode-h, body:not(.comp-col) .mode-cell { display: none; }
+  .mode {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 9px; border-radius: 11px; font-size: 11.5px; font-weight: 700;
+    letter-spacing: .4px; white-space: nowrap;
+  }
+  .mode.live  { color: var(--muted); background: color-mix(in srgb, var(--text) 8%, transparent); }
+  .mode.ghost { color: var(--text); background: color-mix(in srgb, var(--text) 13%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 22%, transparent); }
+  .mode.mx    { color: var(--c-warn-ink); background: color-mix(in srgb, var(--c-warn) 20%, transparent); }
+  .mode.oos   { color: var(--c-alarm-ink); background: color-mix(in srgb, var(--c-alarm) 22%, transparent); }
+  .mode small { font-weight: 600; letter-spacing: 0; opacity: .75; text-transform: none; }
   tbody td { padding: 15px 20px; font-size: 14px; vertical-align: middle; }
   /* Columns size to their content and stay grouped on the left; the
      spacer column absorbs whatever width is left over */
@@ -231,6 +254,14 @@
 
   /* Rollover expansion — the collapsed cell never grows the row, so
      every faulting part (2, 3, 5 or all 11) is listed here instead. */
+  .comp-cell .comp-pop { display: none; }   /* template only — shown from the fixed layer */
+  #comp-pop-layer {
+    position: fixed; z-index: 8000; display: none;
+  }
+  #comp-pop-layer.on { display: block; }
+  #comp-pop-layer .comp-pop {
+    position: static; opacity: 1; visibility: visible; transform: none;
+  }
   .comp-pop {
     position: absolute; left: 6px; top: calc(100% - 10px);
     z-index: 40; min-width: 268px; max-width: 320px;
@@ -2055,15 +2086,16 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
           <div class="tab"><span class="ti">&#128683;</span>1 Disconnected</div>
         </div>
 
+        <div class="table-scroll">
         <table>
           <thead>
             <tr>
-              <th>Truck Name</th><th>System Version</th><th class="comp-h"><div>Components</div><div class="comp-key" id="comp-key"></div></th><th>At Plant</th><th class="alert-h">Alert</th><th>Connection</th><th>Ignition</th><th class="col-pad"></th>
+              <th>Truck Name</th><th>System Version</th><th class="mode-h">Mode</th><th class="comp-h"><div>Components</div><div class="comp-key" id="comp-key"></div></th><th>At Plant</th><th class="alert-h">Alert</th><th>Connection</th><th>Ignition</th><th class="col-pad"></th>
             </tr>
           </thead>
           <tbody>
             <tr class="trow" onclick="openDrawer('1219')">
-              <td class="tname">1219</td><td class="ver">V5</td>
+              <td class="tname">1219</td><td class="ver">V5</td><td class="mode-cell" data-mode-truck="1219"></td>
               <td class="comp-cell" data-truck="1219"></td>
               <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
               <td class="alert"></td>
@@ -2071,7 +2103,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
               <td><span class="ign"><span class="dot on"></span> On</span></td><td class="col-pad"></td>
             </tr>
             <tr class="trow" onclick="openDrawer('1341')">
-              <td class="tname">1341</td><td class="ver">V5</td>
+              <td class="tname">1341</td><td class="ver">V5</td><td class="mode-cell" data-mode-truck="1341"></td>
               <td class="comp-cell" data-truck="1341"></td>
               <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
               <td class="alert">Flow rate is lower than expected</td>
@@ -2079,7 +2111,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
               <td><span class="ign"><span class="dot on"></span> On</span></td><td class="col-pad"></td>
             </tr>
             <tr class="trow" onclick="openDrawer('1408')">
-              <td class="tname">1408</td><td class="ver">--</td>
+              <td class="tname">1408</td><td class="ver">--</td><td class="mode-cell" data-mode-truck="1408"></td>
               <td class="comp-cell" data-truck="1408"></td>
               <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
               <td class="alert">Flow rate is lower than expected <span class="plus">&#9888; +1</span></td>
@@ -2087,7 +2119,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
               <td><span class="ign"><span class="dot off"></span> Off</span></td><td class="col-pad"></td>
             </tr>
             <tr class="trow" onclick="openDrawer('1416')">
-              <td class="tname">1416</td><td class="ver">V5</td>
+              <td class="tname">1416</td><td class="ver">V5</td><td class="mode-cell" data-mode-truck="1416"></td>
               <td class="comp-cell" data-truck="1416"></td>
               <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
               <td class="alert">Flow rate is lower than expected</td>
@@ -2095,7 +2127,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
               <td><span class="ign"><span class="dot on"></span> On</span></td><td class="col-pad"></td>
             </tr>
             <tr class="trow" onclick="openDrawer('1894')">
-              <td class="tname">1894</td><td class="ver">V5</td>
+              <td class="tname">1894</td><td class="ver">V5</td><td class="mode-cell" data-mode-truck="1894"></td>
               <td class="comp-cell" data-truck="1894"></td>
               <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
               <td class="alert"></td>
@@ -2103,7 +2135,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
               <td><span class="ign"><span class="dot on"></span> On</span></td><td class="col-pad"></td>
             </tr>
             <tr class="trow" onclick="openDrawer('1921')">
-              <td class="tname">1921</td><td class="ver">V5</td>
+              <td class="tname">1921</td><td class="ver">V5</td><td class="mode-cell" data-mode-truck="1921"></td>
               <td class="comp-cell" data-truck="1921"></td>
               <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
               <td class="alert">Flow rate is lower than expected</td>
@@ -2111,7 +2143,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
               <td><span class="ign"><span class="dot on"></span> On</span></td><td class="col-pad"></td>
             </tr>
             <tr class="trow" onclick="openDrawer('1968')">
-              <td class="tname">1968</td><td class="ver">V5</td>
+              <td class="tname">1968</td><td class="ver">V5</td><td class="mode-cell" data-mode-truck="1968"></td>
               <td class="comp-cell" data-truck="1968"></td>
               <td><span class="atplant"><span class="fic">&#127981;</span> Yes</span></td>
               <td class="alert">Flow rate is lower than expected</td>
@@ -2119,7 +2151,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
               <td><span class="ign"><span class="dot on"></span> On</span></td><td class="col-pad"></td>
             </tr>
             <tr class="trow" onclick="openDrawer('2105')">
-              <td class="tname">2105</td><td class="ver">V5</td>
+              <td class="tname">2105</td><td class="ver">V5</td><td class="mode-cell" data-mode-truck="2105"></td>
               <td class="comp-cell" data-truck="2105"></td>
               <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
               <td class="alert">Accelerometer not working</td>
@@ -2127,7 +2159,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
               <td><span class="ign"><span class="dot prog">&#9676;</span> In-progress</span></td><td class="col-pad"></td>
             </tr>
             <tr class="trow" onclick="openDrawer('2356')">
-              <td class="tname">2356</td><td class="ver">V5</td>
+              <td class="tname">2356</td><td class="ver">V5</td><td class="mode-cell" data-mode-truck="2356"></td>
               <td class="comp-cell" data-truck="2356"></td>
               <td><span class="atplant"><span class="fic">&#127981;</span> Yes</span></td>
               <td class="alert"></td>
@@ -2135,7 +2167,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
               <td><span class="ign"><span class="dot on"></span> On</span></td><td class="col-pad"></td>
             </tr>
             <tr class="trow" onclick="openDrawer('2541')">
-              <td class="tname">2541</td><td class="ver">V5</td>
+              <td class="tname">2541</td><td class="ver">V5</td><td class="mode-cell" data-mode-truck="2541"></td>
               <td class="comp-cell" data-truck="2541"></td>
               <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
               <td class="alert">Flow rate is lower than expected</td>
@@ -2144,6 +2176,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
             </tr>
           </tbody>
         </table>
+        </div>
 
         <div class="pager">
           <div>Items per page: <span class="ppsel">10 <span style="font-size:9px">&#9660;</span></span></div>
@@ -2188,6 +2221,9 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
       </div>
     </div>
   </div>
+
+  <!-- Component rollover lives here so the scrolling table can't clip it -->
+  <div id="comp-pop-layer"></div>
 
   <!-- Drawer -->
   <div class="overlay" id="overlay" onclick="closeDrawer();closeTakeover()"></div>
@@ -4279,6 +4315,9 @@ function dcIngestStreamLogs(num) {
 const dcCmdHistory = {}; /* truck num -> [{date, submitter, cmd, value, status}] */
 let dcCmdSeq = 0;
 
+/* Configuration writes Mode, so the table follows it on save */
+function dcSyncModeColumn() { if (typeof renderModeCells === 'function') renderModeCells(); }
+
 function dcRunCommand(cmd, value, onDone) {
   const list = dcCmdHistory[dcCurrentTruck] = dcCmdHistory[dcCurrentTruck] || [];
   const entry = {
@@ -4561,7 +4600,9 @@ const DC_TILT_SENSOR = -0.4;
 function dcCfgDefaults(num) {
   return {
     name: num, mixer: 'McNeilus', bsc: 'BSC-' + num, contract: 'Cemex AZ',
-    vin: '1HTMM' + num + 'H8524', mode: 'Live', oos: 'In Service',
+    vin: '1HTMM' + num + 'H8524',
+    mode: DC_MODE_SEED[num] === 'ghost' ? 'Ghost' : DC_MODE_SEED[num] === 'mx' ? 'Maintenance' : 'Live',
+    oos: DC_MODE_SEED[num] === 'oos' ? 'Out of Service' : 'In Service',
     magnets: '2', drumsize: '10', frontdisc: 'on', cwr: 'off',
     bluewtr: 'on', blueadmix: 'on', metrics: 'on',
     minbatch: '70', minagit: '2', minmix: '6', maxmix: '15',
@@ -4577,7 +4618,7 @@ function dcCfgDefaults(num) {
 const DC_CFG_OPTS = {
   mixer: ['McNeilus','Oshkosh','Con-Tech'],
   contract: ['Cemex AZ','Ozinga IL','Holcim MI'],
-  mode: ['Live','Maintenance','Offline'],
+  mode: ['Live','Ghost','Maintenance'],   /* matches the Mode column */
   oos: ['In Service','Out of Service']
 };
 /* Information-section fields: registration data, never verified
@@ -4713,6 +4754,7 @@ function dcCfgSave() {
      clear verification until the next Request truck settings */
   delete dcCfgVerify[dcCurrentTruck];
   buildConfig(dcCurrentTruck);
+  dcSyncModeColumn();          /* Mode may have changed — the table follows */
   dcRunCommand('Update Configuration');
 }
 function dcCfgSearch(q) {
@@ -5207,6 +5249,32 @@ function componentHealthFor(num) {
   return { total: cards.length, ok: cards.length - bad.length, all, bad, asleep, worst };
 }
 
+/* ══════════════════════════════════════════════════════════════
+   MODE
+   LIVE / GHOST / MX (maintenance) / OOS (out of service), read from
+   the truck's Configuration so the table and the config screen can't
+   disagree. Editing Mode or In/Out of Service in Configuration
+   updates this column.
+══════════════════════════════════════════════════════════════ */
+const DC_MODE_SEED = { '1408': 'oos', '2105': 'mx', '2356': 'ghost' };
+const DC_MODE_LABEL = { live: 'LIVE', ghost: 'GHOST', mx: 'MX', oos: 'OOS' };
+const DC_MODE_FULL  = { live: 'Live', ghost: 'Ghost', mx: 'Maintenance', oos: 'Out of service' };
+
+function dcModeFor(num) {
+  const cfg = (typeof dcCfgVals !== 'undefined' && dcCfgVals[num]) || {};
+  if (cfg.oos === 'Out of Service') return 'oos';
+  if (cfg.mode === 'Ghost') return 'ghost';
+  if (cfg.mode === 'Maintenance') return 'mx';
+  if (cfg.mode || cfg.oos) return 'live';          /* explicitly set in config */
+  return DC_MODE_SEED[num] || 'live';
+}
+function renderModeCells() {
+  document.querySelectorAll('.mode-cell').forEach(td => {
+    const m = dcModeFor(td.dataset.modeTruck);
+    td.innerHTML = `<span class="mode ${m}" title="${DC_MODE_FULL[m]}">${DC_MODE_LABEL[m]}</span>`;
+  });
+}
+
 function renderComponentCells() {
   const cells = Array.from(document.querySelectorAll('.comp-cell'));
   cells.forEach((td, i) => {
@@ -5267,7 +5335,55 @@ function renderComponentCells() {
     key.innerHTML = componentHealthFor(cells[0].dataset.truck).all
       .map(c => `<span title="${c.name}">${c.slot}</span>`).join('');
   }
+  renderModeCells();
+  compPopBind();
   syncAlertCells();
+}
+
+/* ── Rollover layer ──
+   The fleet list scrolls inside its own box now, and a scroll box
+   clips anything positioned inside it, so the panel is rendered in a
+   fixed layer and positioned against the hovered cell. */
+let compPopTimer = null;
+function compPopShow(td) {
+  const tpl = td.querySelector('.comp-pop');
+  const layer = document.getElementById('comp-pop-layer');
+  if (!tpl || !layer) return;
+  clearTimeout(compPopTimer);
+  layer.innerHTML = '<div class="comp-pop">' + tpl.innerHTML + '</div>';
+  layer.classList.add('on');
+  const r = td.getBoundingClientRect();
+  const h = layer.offsetHeight, w = layer.offsetWidth;
+  let top = r.bottom - 8;
+  if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h + 8);
+  layer.style.top = top + 'px';
+  layer.style.left = Math.min(r.left + 6, window.innerWidth - w - 8) + 'px';
+}
+function compPopHide(now) {
+  clearTimeout(compPopTimer);
+  const layer = document.getElementById('comp-pop-layer');
+  if (!layer) return;
+  if (now) { layer.classList.remove('on'); return; }
+  compPopTimer = setTimeout(() => layer.classList.remove('on'), 120);
+}
+function compPopBind() {
+  document.querySelectorAll('.comp-cell').forEach(td => {
+    if (td.dataset.popBound) return;
+    td.dataset.popBound = '1';
+    td.addEventListener('mouseenter', () => compPopShow(td));
+    td.addEventListener('mouseleave', () => compPopHide());
+  });
+  const layer = document.getElementById('comp-pop-layer');
+  if (layer && !layer.dataset.bound) {
+    layer.dataset.bound = '1';
+    layer.addEventListener('mouseenter', () => clearTimeout(compPopTimer));
+    layer.addEventListener('mouseleave', () => compPopHide());
+  }
+  const port = document.querySelector('.table-scroll');
+  if (port && !port.dataset.popBound) {
+    port.dataset.popBound = '1';
+    port.addEventListener('scroll', () => compPopHide(true));
+  }
 }
 
 /* Alert column follows the same fault set, so its "+n" counter

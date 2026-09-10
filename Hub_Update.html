@@ -88,6 +88,39 @@
     color: var(--text); font-size: 14px; margin-bottom: 24px; cursor: pointer;
   }
   .select .caret { color: var(--muted); font-size: 10px; }
+
+  /* ---------- Location picker (Phase 1_Timeline and above) ----------
+     The plant list runs long on multi-plant accounts, so the dropdown
+     is searchable instead of a scroll hunt. */
+  .loc-wrap { position: relative; margin-bottom: 24px; }
+  .loc-wrap .select { margin-bottom: 0; }
+  body:not(.comp-col) .loc-wrap .select { cursor: default; }
+  .loc-dd {
+    position: absolute; left: 0; right: 0; top: calc(100% + 5px); z-index: 30;
+    background: var(--c-pop-bg); border: 1px solid var(--c-pop-border);
+    border-radius: 6px; box-shadow: 0 12px 30px rgba(0,0,0,.38);
+    padding: 8px; display: none;
+  }
+  .loc-dd.open { display: block; }
+  .loc-search {
+    display: flex; align-items: center; gap: 8px; padding: 7px 10px; margin-bottom: 6px;
+    background: var(--row-alt); border: 1px solid var(--border); border-radius: 4px;
+  }
+  .loc-search .si { display: flex; color: var(--muted); flex-shrink: 0; }
+  .loc-search input {
+    flex: 1; min-width: 0; background: none; border: 0; outline: none;
+    color: var(--text); font-size: 13.5px; font-family: inherit;
+  }
+  .loc-search input::placeholder { color: var(--dim); }
+  .loc-list { max-height: 236px; overflow-y: auto; }
+  .loc-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 9px 10px; border-radius: 4px; font-size: 13.5px; color: var(--text); cursor: pointer;
+  }
+  .loc-item:hover, .loc-item.hi { background: color-mix(in srgb, var(--text) 9%, transparent); }
+  .loc-item .ck { color: #3069e3; font-size: 12px; opacity: 0; }
+  .loc-item.sel .ck { opacity: 1; }
+  .loc-empty { padding: 14px 10px; font-size: 12.5px; color: var(--muted); }
   .search {
     background: #232323; border: 1px solid var(--border); border-radius: 4px;
     padding: 12px 14px; color: var(--muted); font-size: 14px; margin-bottom: 26px;
@@ -1069,6 +1102,144 @@
   .dc-log-from b { font-weight: 600; }
   .dc-log-from .x { margin-left: auto; cursor: pointer; color: var(--dc-soft); }
 
+
+  /* ============================================================
+     TRINITY TIMELINE (portable Component Status History module)
+     Kept on its OWN design tokens, not the prototype's, so this
+     candidate looks exactly like the delivered Trinity module.
+     The values below are lifted verbatim from that file: dark by
+     default (this prototype's default theme), light under
+     body.light.
+     ============================================================ */
+  .csh {
+    --base:#171614; --layer-1:#211f1c; --layer-2:#2f2d28;
+    --strong:#ffffff; --defined:#e5e5e5de; --soft:#e5e5e5bf; --subtle:#e5e5e566;
+    --border:#e5e5e51f; --border-mid:rgba(229,229,229,0.25);
+    --blue:#6492f1; --blue-link:#6492f1; --red:#d70100; --amber:#ffba0d;
+    --green:#1e8a4c; --track-on:#2f6a45; --track-off:#4a463f;
+    --radius-sm:4px; --radius-md:16px; --radius-lg:24px;
+    --font:'ABC Repro',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  }
+  body.light .csh {
+    --base:#f6f4f2; --layer-1:#ffffff; --layer-2:#f6f4f2;
+    --strong:#36322d; --defined:#36322dc2; --soft:#36322d9e; --subtle:#36322d80;
+    --border:#36322d24; --border-mid:rgba(54,50,45,0.30);
+    --blue:#3069e3; --blue-link:#295ccc; --red:#d70100; --amber:#ffba0d;
+    --green:#1e8a4c; --track-on:#b7dcc3; --track-off:#cdc9c4;
+  }
+  /* the original ships inside an 860px column — keep that measure so
+     rows, chips and the day strip sit at their designed proportions */
+  .csh { max-width: 860px; }
+
+
+.csh{font-family:var(--font);color:var(--strong)}
+
+/* Day strip */
+.csh-strip{display:grid;grid-template-columns:repeat(7,1fr);background:var(--layer-2);
+  border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:20px 0 0}
+.csh-day{display:flex;flex-direction:column;gap:3px;padding:12px 10px;cursor:pointer;
+  border-right:1px solid var(--border);transition:background .18s ease}
+.csh-day:last-child{border-right:none}
+.csh-day:hover{background:rgba(54,50,45,.04)}
+body:not(.light) .csh-day:hover{background:rgba(255,255,255,.04)}
+.csh-day.is-active{background:var(--layer-1)}
+.csh-day-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.csh-day-lbl{font-size:13px;font-weight:500;letter-spacing:-0.26px;white-space:nowrap}
+.csh-day-num{font-size:12px;color:var(--soft);letter-spacing:-0.2px}
+.csh-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+
+/* Section header */
+.csh-hdr{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  flex-wrap:wrap;margin:26px 0 10px}
+.csh-hdr h2{margin:0;font-size:19px;font-weight:600;letter-spacing:-0.45px}
+.csh-nav{display:flex;align-items:center;gap:10px}
+.csh-date{font-size:14px;font-weight:500;letter-spacing:-0.28px}
+.csh-navbtn{display:grid;place-items:center;width:30px;height:30px;border-radius:8px;
+  background:var(--layer-1);border:1px solid var(--border);color:var(--strong);cursor:pointer}
+.csh-navbtn:hover{background:var(--layer-2)}
+.csh-navbtn:disabled{opacity:.35;cursor:default}
+
+/* Panel */
+.csh-panel{background:var(--layer-2);border:1px solid var(--border);
+  border-radius:var(--radius-md);padding:14px}
+.csh-scroll{overflow-x:auto;overscroll-behavior-x:contain}
+.csh-inner{min-width:620px}
+
+/* Axis */
+.csh-axis{display:grid;grid-template-columns:var(--csh-labw) 1fr;margin-bottom:6px}
+.csh-axis-track{position:relative;height:16px}
+.csh-in{position:absolute;inset:0 10px}
+.csh-tick{position:absolute;top:0;font-size:11px;color:var(--soft);letter-spacing:-0.1px;
+  white-space:nowrap}
+
+/* Rows */
+.csh-chart{display:grid;grid-template-columns:var(--csh-labw) 1fr}
+.csh-labels,.csh-plot{display:flex;flex-direction:column}
+.csh-plot{background:var(--layer-1);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden}
+.csh-lab{height:var(--csh-rowh);display:flex;align-items:center;padding-right:14px;
+  font-size:13px;letter-spacing:-0.26px;color:var(--strong)}
+.csh-track{height:var(--csh-rowh);position:relative}
+.csh-lab.alt,.csh-track.alt{background:var(--layer-2)}
+body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(255,255,255,.035)}
+
+/* Segments */
+.csh-seg{position:absolute;top:50%;transform:translateY(-50%);height:3px;border-radius:2px}
+.csh-seg.on{background:var(--track-on)}
+.csh-seg.off{background:repeating-linear-gradient(to right,var(--track-off) 0 7px,transparent 7px 12px)}
+
+/* Event chips */
+.csh-chip{position:absolute;top:50%;transform:translateY(-50%);height:24px;
+  display:flex;align-items:center;justify-content:center;gap:5px;padding:0 7px;
+  border-radius:var(--radius-sm);font-size:11px;font-weight:600;letter-spacing:-0.1px;
+  white-space:nowrap;cursor:pointer;overflow:hidden}
+.csh-chip.alarm{background:var(--red);color:#fff}
+.csh-chip.warn{background:var(--amber);color:#36322d}
+.csh-chip:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.csh-chip svg{flex:0 0 auto}
+
+/* Legend */
+.csh-legend{display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  padding:14px 4px 2px;font-size:12px;color:var(--soft);letter-spacing:-0.2px}
+.csh-lg{display:flex;align-items:center;gap:7px}
+.csh-lg-line{width:22px;height:3px;border-radius:2px;background:var(--track-on)}
+.csh-lg-line.off{background:repeating-linear-gradient(to right,var(--track-off) 0 5px,transparent 5px 9px)}
+.csh-lg-sq{width:16px;height:16px;border-radius:3px;display:grid;place-items:center}
+.csh-lg-sq.alarm{background:var(--red)}
+.csh-lg-sq.warn{background:var(--amber)}
+
+/* Tooltip */
+.csh-tip{position:fixed;z-index:60;pointer-events:none;opacity:0;transition:opacity .12s;
+  background:var(--strong);color:var(--base);font-size:11px;font-weight:500;
+  letter-spacing:-0.1px;padding:6px 9px;border-radius:6px;white-space:nowrap;
+  box-shadow:0 4px 14px rgba(0,0,0,.22)}
+.csh-tip.show{opacity:1}
+
+@media (max-width:560px){
+  .csh-day{padding:9px 6px}
+  .csh-day-lbl{font-size:11px}
+  .csh-day-num{font-size:11px}
+  .csh-day-top{flex-direction:column;align-items:flex-start;gap:3px}
+  .csh-panel{padding:10px}
+  .csh-hdr h2{font-size:17px}
+}
+
+
+  /* Day strip: same shape as the strip on the other timeline — bold
+     day label, date under it, and the selected day as an inset card
+     rather than a flat fill. Module markup untouched; this is a skin. */
+  .csh-strip { border-radius: 18px; }
+  .csh-day { position: relative; padding: 10px; border-right: 1px solid var(--border); }
+  .csh-day > * { position: relative; z-index: 1; }
+  .csh-day.is-active { background: none; }
+  .csh-day.is-active::before {
+    content: ""; position: absolute; inset: 4px; border-radius: 11px; z-index: 0;
+    background: var(--layer-1); box-shadow: 0 1px 3px rgba(0,0,0,.28);
+  }
+  body.light .csh-day.is-active::before { box-shadow: 0 1px 3px rgba(54,50,45,.16); }
+  .csh-day-lbl { font-weight: 700; }
+  .csh-day-num { color: var(--soft); }
+
   /* Shared hover card for tracks, spans and message ticks */
   .dc-tip {
     position: fixed; z-index: 20000; max-width: 300px; padding: 10px 12px;
@@ -1688,6 +1859,10 @@
             <svg class="vp-opts-check" id="vp-check-current" width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span>Current State</span>
           </div>
+          <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('trinity-timeline')">
+            <svg class="vp-opts-check" id="vp-check-trinity-timeline" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Trinity_ Timeline</span>
+          </div>
           <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('current-timeline')">
             <svg class="vp-opts-check" id="vp-check-current-timeline" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span>Phase 1_ Timeline</span>
@@ -1703,6 +1878,16 @@
           <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('final')">
             <svg class="vp-opts-check" id="vp-check-final" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span>Phase 3_ Final</span>
+          </div>
+          <div class="vp-opts-divider"></div>
+          <div class="vp-opts-section-label">Timeline for Phase 2, 2a, 3</div>
+          <div class="vp-opts-row" onclick="event.stopPropagation();setTimelinePick('trinity')">
+            <svg class="vp-opts-check" id="vp-tl-trinity" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Trinity timeline</span>
+          </div>
+          <div class="vp-opts-row" onclick="event.stopPropagation();setTimelinePick('rebuilt')">
+            <svg class="vp-opts-check" id="vp-tl-rebuilt" width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Message timeline</span>
           </div>
           <div class="vp-opts-divider"></div>
           <div class="vp-opts-section-label">Color Change</div>
@@ -1848,7 +2033,16 @@
     <div class="content">
       <div class="filters">
         <div class="label">Location</div>
-        <div class="select"><span>All Elements</span><span class="caret">&#9660;</span></div>
+        <div class="loc-wrap">
+          <div class="select" id="loc-btn" onclick="locToggle(event)"><span id="loc-label">All Elements</span><span class="caret">&#9660;</span></div>
+          <div class="loc-dd" id="loc-dd">
+            <div class="loc-search">
+              <span class="si"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="6"/><path d="M15.5 15.5 20 20"/></svg></span>
+              <input id="loc-q" placeholder="Search locations" oninput="locRender()" onkeydown="locKey(event)" onclick="event.stopPropagation()">
+            </div>
+            <div class="loc-list" id="loc-list"></div>
+          </div>
+        </div>
         <div class="label">Truck</div>
         <div class="search">Search Trucks</div>
         <div class="filter-row"><span class="cb"></span><span class="fic">&#127981;</span><span class="fname">Trucks at plant</span><span>2</span></div>
@@ -2395,6 +2589,7 @@ let dcViewMode = 'current';
 ══════════════════════════════════════════════════════════════ */
 const DC_VIEW_SLUGS = {
   'current': 'current',
+  'trinity-timeline': 'trinity-timeline',
   'current-timeline': 'phase1',
   'current-overview': 'phase2',
   'current-overview-wds': 'phase2a',
@@ -2406,6 +2601,7 @@ const DC_SLUG_VIEWS = Object.keys(DC_VIEW_SLUGS).reduce((m, k) => (m[DC_VIEW_SLU
 /* older / alternative spellings people may paste */
 Object.assign(DC_SLUG_VIEWS, {
   'phase-1': 'current-timeline', 'timeline': 'current-timeline',
+  'trinity-timeline': 'trinity-timeline', 'phase0': 'trinity-timeline', 'trinity': 'trinity-timeline',
   'phase-2': 'current-overview', 'overview': 'current-overview',
   'phase-2a': 'current-overview-wds', 'overview-timeline': 'current-overview-wds',
   'phase-3': 'final', 'final': 'final',
@@ -2442,9 +2638,20 @@ function dcApplyUrlView() {
 }
 window.addEventListener('hashchange', dcApplyUrlView);
 
+function dcSyncTimelineMenu() {
+  const kind = dcTimelineKind();
+  const fixed = dcViewMode === 'trinity-timeline' || dcViewMode === 'current-timeline';
+  ['trinity', 'rebuilt'].forEach(k => {
+    const el = document.getElementById('vp-tl-' + k);
+    if (el) el.style.opacity = (fixed ? kind === k : dcTimelinePick === k) ? '1' : '0';
+    const row = el && el.parentElement;
+    if (row) row.style.opacity = fixed ? '.45' : '1';
+  });
+}
+
 function setProtoView(mode) {
   dcViewMode = mode;
-  ['current', 'current-trinity', 'current-timeline', 'current-overview', 'current-overview-wds', 'final', 'final-trinity'].forEach(m => {
+  ['current', 'current-trinity', 'trinity-timeline', 'current-timeline', 'current-overview', 'current-overview-wds', 'final', 'final-trinity'].forEach(m => {
     const el = document.getElementById('vp-check-' + m);
     if (el) el.style.opacity = m === mode ? '1' : '0';
   });
@@ -2468,6 +2675,7 @@ function setProtoView(mode) {
   if (compSel) { delete compSel.dataset.filled; dcFillCompFilter(); }
   renderComponentCells();
   buildOverview(dcCurrentTruck || '1219');
+  dcSyncTimelineMenu();
   dcWriteSlug(mode);
 }
 
@@ -2547,8 +2755,8 @@ function openTakeover(name) {
 }
 /* Phase views that present the takeover as a drawer */
 function tkIsDrawerMode() {
-  return dcViewMode === 'current-timeline' || dcViewMode === 'current-overview' ||
-         dcViewMode === 'current-overview-wds';
+  return dcViewMode === 'trinity-timeline' || dcViewMode === 'current-timeline' ||
+         dcViewMode === 'current-overview' || dcViewMode === 'current-overview-wds';
 }
 /* Timeline_Overview: relocate the LIVE Final overview panel (and its
    chart lightbox) into the takeover, so ids, live debug ticks, ping
@@ -2706,7 +2914,7 @@ function tkView(v) {
   }
   const finalOv = dcViewMode === 'current-overview' || dcViewMode === 'current-overview-wds';
   document.getElementById('tk-view-overview').style.display =
-    finalOv ? 'none' : ((v === 'timeline' && dcViewMode === 'current-timeline') ? 'none' : '');
+    finalOv ? 'none' : ((v === 'timeline' && (dcViewMode === 'current-timeline' || dcViewMode === 'trinity-timeline')) ? 'none' : '');
   document.getElementById('tk-view-final-ov').style.display =
     (finalOv && v === 'overview') ? '' : 'none';
   document.getElementById('tk-view-timeline').style.display = v === 'timeline' ? '' : 'none';
@@ -2815,7 +3023,9 @@ let dcActiveTab = 'overview';
 let dcActiveDay = 6;
 
 function openDrawer(name) {
-  if (dcViewMode.indexOf('current') === 0) { openTakeover(name); return; } /* Current State (either skin): page takeover */
+  /* Current State and the phase views present the truck as a takeover;
+     only Final uses the drawer */
+  if (dcViewMode.indexOf('current') === 0 || dcViewMode === 'trinity-timeline') { openTakeover(name); return; }
   dcCurrentTruck = name;
   document.getElementById('dTruckName').textContent = 'TRUCK ' + name;
   buildOverview(name);
@@ -2990,6 +3200,461 @@ function badgeHtml(kind) {
 }
 
 let dcTlRoot = null; /* container the timeline component is mounted in */
+/* ══════════════════════════════════════════════════════════════
+   TRINITY TIMELINE — candidate A
+   The portable Component Status History module, dropped in whole
+   (two edits: it no longer re-binds listeners on re-init, and a
+   chip can carry a timestamp so it drills into Truck Log like the
+   other candidate). Fed from the same day stream, so the two
+   timelines are the same data in two shapes.
+══════════════════════════════════════════════════════════════ */
+
+(function () {
+  'use strict';
+
+  /* ── DATA ──────────────────────────────────────────────────────
+     One row per component. `off` = ignition-off spans (dashed).
+     `events` = {t: start hour 0-24, dur: hours, level:'alarm'|'warn',
+                 label: chip text, note?: tooltip text}
+     Chips shorter than MIN_WIDE_H render at their natural width,
+     centred on the event midpoint; longer ones scale to duration.  */
+  var TODAY_ROWS = [
+    { name:'Iox / Robotex', off:[[21.4,24]], events:[
+      {t:8.40,  dur:0.25, level:'warn',  label:'15 m'},
+      {t:13.30, dur:5.00, level:'alarm', label:'5h'},
+      {t:20.30, dur:0.25, level:'warn',  label:'15 m'}
+    ]},
+    { name:'Charge', off:[[21.5,24]], events:[
+      {t:9.40,  dur:0.50, level:'warn',  label:'30 m'}
+    ]},
+    { name:'Discharge', off:[[19.8,24]], events:[
+      {t:23.20, dur:0.25, level:'warn',  label:'15 m'}
+    ]},
+    { name:'Drum', off:[[21.5,24]], events:[
+      {t:4.00,  dur:0.25, level:'alarm', label:'15 m'},
+      {t:7.25,  dur:0.25, level:'alarm', label:'15 m'},
+      {t:10.50, dur:0.25, level:'alarm', label:'15 m'},
+      {t:13.70, dur:0.25, level:'alarm', label:'15 m'},
+      {t:16.90, dur:0.25, level:'alarm', label:'15 m'},
+      {t:23.10, dur:0.50, level:'alarm', label:'30 m'}
+    ]},
+    { name:'Internal Display', off:[[21.4,24]], events:[
+      {t:8.70,  dur:0.25, level:'warn',  label:'15 m'},
+      {t:12.90, dur:4.50, level:'alarm', label:'4h 30m'},
+      {t:20.25, dur:0.25, level:'alarm', label:'15 m'}
+    ]},
+    { name:'External Display', off:[[21.5,24]], events:[] },
+    { name:'Bus power', off:[[21.4,24]], events:[
+      {t:7.80,  dur:0.25, level:'warn',  label:'15 m'},
+      {t:12.90, dur:4.00, level:'alarm', label:'4h'},
+      {t:23.10, dur:0.50, level:'alarm', label:'30 m'}
+    ]},
+    { name:'CWR', off:[[21.5,24]], events:[
+      {t:4.00,  dur:0.25, level:'alarm', label:'15 m'},
+      {t:7.25,  dur:0.25, level:'alarm', label:'15 m'},
+      {t:10.50, dur:0.25, level:'alarm', label:'15 m'},
+      {t:13.70, dur:0.25, level:'alarm', label:'15 m'},
+      {t:16.90, dur:0.25, level:'alarm', label:'15 m'},
+      {t:23.10, dur:0.50, level:'alarm', label:'30 m'}
+    ]},
+    { name:'WDS', off:[], events:[
+      {t:0, dur:24, level:'alarm', label:'24h'}
+    ]}
+  ];
+
+  /* Seven-day strip. `status`: 'ok' | 'warn' | 'alarm'.
+     Only the newest day carries authored data; the rest are derived
+     deterministically so day-switching feels real in a prototype. */
+  var DAYS = [
+    { lbl:'Fri',   date:'9/4',  status:'ok'    },
+    { lbl:'Sat',   date:'9/5',  status:'warn'  },
+    { lbl:'Sun',   date:'9/6',  status:'alarm' },
+    { lbl:'Mon',   date:'9/7',  status:'alarm' },
+    { lbl:'Tue',   date:'9/8',  status:'alarm' },
+    { lbl:'Wed',   date:'9/9',  status:'alarm' },
+    { lbl:'Today', date:'9/10', status:'alarm', full:'Today 9/10/2026' }
+  ];
+
+  var MIN_WIDE_H = 0.75;   // events shorter than this get natural-width chips (host can override)
+  var LEVEL_RANK = { ok:0, warn:1, alarm:2 };
+
+  var state = { mount:null, dayIdx:6, opts:null, cache:{} };
+
+  /* ── ICONS ─────────────────────────────────────────────────── */
+  function icoAlarm(c){ c = c || '#fff';
+    return '<svg width="11" height="11" viewBox="0 0 11 11" fill="none">'
+      + '<rect x="0.5" y="0.5" width="10" height="10" rx="2" fill="' + c + '"/>'
+      + '<path d="M5.5 2.9v3.1" stroke="#d70100" stroke-width="1.4" stroke-linecap="round"/>'
+      + '<circle cx="5.5" cy="8.1" r="0.85" fill="#d70100"/></svg>';
+  }
+  function icoWarn(){
+    return '<svg width="12" height="11" viewBox="0 0 12 11" fill="none">'
+      + '<path d="M6 0.9l5 8.8H1L6 0.9z" fill="#36322d"/>'
+      + '<path d="M6 4.2v2.5" stroke="#ffba0d" stroke-width="1.3" stroke-linecap="round"/>'
+      + '<circle cx="6" cy="8.2" r="0.75" fill="#ffba0d"/></svg>';
+  }
+  /* day-strip variants: solid tile, glyph knocked out */
+  function icoAlarmSolid(){
+    return '<svg width="13" height="13" viewBox="0 0 13 13" fill="none">'
+      + '<rect width="13" height="13" rx="2.5" fill="#d70100"/>'
+      + '<path d="M6.5 3.4v3.6" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>'
+      + '<circle cx="6.5" cy="9.5" r="0.95" fill="#fff"/></svg>';
+  }
+  function icoWarnSolid(){
+    return '<svg width="13" height="13" viewBox="0 0 13 13" fill="none">'
+      + '<rect width="13" height="13" rx="2.5" fill="#ffba0d"/>'
+      + '<path d="M6.5 2.9l4.1 7.2H2.4L6.5 2.9z" fill="#36322d"/>'
+      + '<path d="M6.5 5.6v1.9" stroke="#ffba0d" stroke-width="1.1" stroke-linecap="round"/>'
+      + '<circle cx="6.5" cy="8.9" r="0.6" fill="#ffba0d"/></svg>';
+  }
+
+  /* ── DERIVED DAYS ──────────────────────────────────────────── */
+  function lcg(seed){ var s = seed * 9301 + 49297; return function(){ s = (s * 9301 + 49297) % 233280; return s / 233280; }; }
+
+  function rowsForDay(idx){
+    if (state.cache[idx]) return state.cache[idx];
+    var rows;
+    if (idx === DAYS.length - 1) {
+      rows = TODAY_ROWS;
+    } else {
+      var rnd = lcg(idx + 3);
+      var ceiling = LEVEL_RANK[DAYS[idx].status];
+      rows = TODAY_ROWS.map(function (r) {
+        var events = r.events.filter(function () { return rnd() > 0.42; })
+          .map(function (e) {
+            var lvl = LEVEL_RANK[e.level] > ceiling ? 'warn' : e.level;
+            return { t: Math.max(0, Math.min(24 - e.dur, e.t + (rnd() - 0.5) * 2.4)),
+                     dur: e.dur, level: lvl, label: e.label };
+          });
+        if (ceiling === 0) events = [];
+        return { name: r.name, off: r.off, events: events };
+      });
+    }
+    state.cache[idx] = rows;
+    return rows;
+  }
+
+  /* ── RENDER ────────────────────────────────────────────────── */
+  function pct(h){ return (h / 24 * 100); }
+
+  function segments(off){
+    // invert the ignition-off spans into on-spans across 0..24
+    var spans = (off || []).slice().sort(function (a, b) { return a[0] - b[0]; });
+    var out = [], cursor = 0;
+    spans.forEach(function (s) {
+      if (s[0] > cursor) out.push({ cls:'on', a:cursor, b:s[0] });
+      out.push({ cls:'off', a:s[0], b:s[1] });
+      cursor = s[1];
+    });
+    if (cursor < 24) out.push({ cls:'on', a:cursor, b:24 });
+    return out;
+  }
+
+  function chipHTML(e){
+    var wide  = e.dur >= MIN_WIDE_H;
+    var mid   = e.t + e.dur / 2;
+    var style = wide
+      ? 'left:' + pct(e.t).toFixed(3) + '%;width:' + pct(e.dur).toFixed(3) + '%;'
+      : 'left:' + pct(mid).toFixed(3) + '%;transform:translate(-50%,-50%);';
+    var ico   = e.level === 'alarm' ? icoAlarm() : icoWarn();
+    var hh    = Math.floor(e.t), mm = Math.round((e.t - hh) * 60);
+    var tip   = (e.note || (e.level === 'alarm' ? 'Alarm' : 'Warning'))
+              + ' · ' + String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0')
+              + ' · ' + e.label;
+    return '<div class="csh-chip ' + e.level + '" style="' + style + '" tabindex="0"'
+         + ' data-wide="' + (wide ? 1 : 0) + '" data-mid="' + pct(mid).toFixed(3) + '"'
+         + (e.sec ? ' data-sec="' + e.sec + '"' : '')
+         + ' data-tip="' + tip + '">' + ico + '<span>' + e.label + '</span></div>';
+  }
+
+  function render(){
+    var o    = state.opts;
+    var rows = rowsForDay(state.dayIdx);
+    var day  = DAYS[state.dayIdx];
+    var h = '';
+
+    h += '<div class="csh" style="--csh-rowh:' + o.rowHeight + 'px;--csh-labw:' + o.labelWidth + 'px">';
+
+    /* day strip */
+    h += '<div class="csh-strip">';
+    DAYS.forEach(function (d, i) {
+      h += '<div class="csh-day' + (i === state.dayIdx ? ' is-active' : '') + '" data-day="' + i + '">'
+        +    '<div class="csh-day-top"><span class="csh-day-lbl">' + d.lbl + '</span>'
+        +      (d.status === 'ok'   ? '<span class="csh-dot"></span>' : '')
+        +      (d.status === 'warn' ? icoWarnSolid() : '')
+        +      (d.status === 'alarm'? icoAlarmSolid() : '')
+        +    '</div>'
+        +    '<div class="csh-day-num">' + d.date + '</div>'
+        +  '</div>';
+    });
+    h += '</div>';
+
+    /* section header */
+    h += '<div class="csh-hdr"><h2>Component Status History</h2>'
+      +    '<div class="csh-nav"><span class="csh-date">' + (day.full || (day.lbl + ' ' + day.date + '/2026')) + '</span>'
+      +      '<button class="csh-navbtn" data-shift="-1"' + (state.dayIdx === 0 ? ' disabled' : '') + ' aria-label="Previous day">'
+      +        '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 3l-5 4 5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
+      +      '<button class="csh-navbtn" data-shift="1"' + (state.dayIdx === DAYS.length - 1 ? ' disabled' : '') + ' aria-label="Next day">'
+      +        '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l5 4-5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
+      +    '</div></div>';
+
+    /* panel */
+    h += '<div class="csh-panel"><div class="csh-scroll"><div class="csh-inner">';
+
+    /* axis */
+    h += '<div class="csh-axis"><div></div><div class="csh-axis-track"><div class="csh-in">';
+    [0,4,8,12,16,20,24].forEach(function (t) {
+      var shift = t === 0 ? '0' : (t === 24 ? '-100%' : '-50%');
+      h += '<span class="csh-tick" style="left:' + pct(t) + '%;transform:translateX(' + shift + ')">'
+        +   String(t).padStart(2,'0') + ':00</span>';
+    });
+    h += '</div></div></div>';
+
+    /* chart */
+    h += '<div class="csh-chart"><div class="csh-labels">';
+    rows.forEach(function (r, i) {
+      h += '<div class="csh-lab' + (i % 2 ? ' alt' : '') + '">' + r.name + '</div>';
+    });
+    h += '</div><div class="csh-plot">';
+    rows.forEach(function (r, i) {
+      h += '<div class="csh-track' + (i % 2 ? ' alt' : '') + '"><div class="csh-in">';
+      segments(r.off).forEach(function (s) {
+        h += '<div class="csh-seg ' + s.cls + '" style="left:' + pct(s.a).toFixed(3)
+          +  '%;width:' + pct(s.b - s.a).toFixed(3) + '%"></div>';
+      });
+      r.events.forEach(function (e) { h += chipHTML(e); });
+      h += '</div></div>';
+    });
+    h += '</div></div>';
+
+    h += '</div></div>';
+
+    /* legend */
+    h += '<div class="csh-legend">'
+      +    '<span class="csh-lg"><span class="csh-lg-line"></span>Ignition on</span>'
+      +    '<span class="csh-lg"><span class="csh-lg-line off"></span>Ignition off</span>'
+      +    '<span class="csh-lg"><span class="csh-lg-sq alarm">' + icoAlarm() + '</span>Alarm</span>'
+      +    '<span class="csh-lg"><span class="csh-lg-sq warn">' + icoWarn() + '</span>Warning</span>'
+      +  '</div>';
+
+    h += '</div></div>';
+    state.mount.innerHTML = h;
+    clampChips();
+  }
+
+  /* Narrow chips are wider than the event they mark, so one landing near
+     23:00 would hang past the plot edge and get clipped. Nudge those back
+     inside their lane after layout — the marker stays readable, the small
+     positional lie is worth it. */
+  function clampChips(){
+    Array.prototype.forEach.call(state.mount.querySelectorAll('.csh-track .csh-in'), function (lane) {
+      var w = lane.clientWidth;
+      Array.prototype.forEach.call(lane.querySelectorAll('.csh-chip'), function (c) {
+        if (c.getAttribute('data-wide') === '1') return;
+        var cw = c.offsetWidth;
+        var x  = w * parseFloat(c.getAttribute('data-mid')) / 100 - cw / 2;
+        c.style.left = Math.max(0, Math.min(w - cw, x)) + 'px';
+        c.style.transform = 'translateY(-50%)';
+      });
+    });
+  }
+
+  /* ── TOOLTIP + EVENTS ──────────────────────────────────────── */
+  var tip;
+  function ensureTip(){
+    if (!tip) { tip = document.createElement('div'); tip.className = 'csh-tip'; document.body.appendChild(tip); }
+    return tip;
+  }
+  function showTip(el){
+    var t = ensureTip(), r = el.getBoundingClientRect();
+    t.textContent = el.getAttribute('data-tip');
+    t.classList.add('show');
+    var x = r.left + r.width / 2, y = r.top - 8;
+    t.style.left = '0px'; t.style.top = '0px';
+    var tr = t.getBoundingClientRect();
+    t.style.left = Math.max(8, Math.min(window.innerWidth - tr.width - 8, x - tr.width / 2)) + 'px';
+    t.style.top  = Math.max(8, y - tr.height) + 'px';
+  }
+  function hideTip(){ if (tip) tip.classList.remove('show'); }
+
+  function bind(){
+    state.mount.addEventListener('click', function (ev) {
+      var d = ev.target.closest('[data-day]');
+      if (d) { state.dayIdx = +d.getAttribute('data-day'); hideTip(); render(); return; }
+      var s = ev.target.closest('[data-shift]');
+      if (s && !s.disabled) {
+        state.dayIdx = Math.max(0, Math.min(DAYS.length - 1, state.dayIdx + (+s.getAttribute('data-shift'))));
+        hideTip(); render();
+      }
+    });
+    ['mouseover','focusin'].forEach(function (t) {
+      state.mount.addEventListener(t, function (ev) {
+        var c = ev.target.closest('.csh-chip'); if (c) showTip(c);
+      });
+    });
+    ['mouseout','focusout'].forEach(function (t) {
+      state.mount.addEventListener(t, function (ev) {
+        if (ev.target.closest('.csh-chip')) hideTip();
+      });
+    });
+    window.addEventListener('scroll', hideTip, true);
+    var rt;
+    window.addEventListener('resize', function () {
+      clearTimeout(rt); rt = setTimeout(clampChips, 80);
+    });
+  }
+
+  /* ── PUBLIC ────────────────────────────────────────────────── */
+  window.cshInit = function (mountId, options) {
+    state.mount = document.getElementById(mountId || 'csh-root');
+    if (!state.mount) return;
+    options = options || {};
+    state.opts = { rowHeight: options.rowHeight || 64, labelWidth: options.labelWidth || 130 };
+    if (options.minWide) MIN_WIDE_H = options.minWide;
+    if (options.days) { DAYS = options.days; state.cache = {}; }
+    if (options.rows) { TODAY_ROWS = options.rows; state.cache = {}; }
+    state.dayIdx = (options.dayIdx === undefined || options.dayIdx === null) ? DAYS.length - 1 : options.dayIdx;
+    render(); if (!state.bound) { bind(); state.bound = true; }
+  };
+  window.cshRelayout = function () { clampChips(); };   /* host calls this once the panel is visible */
+  window.cshGoToDay  = function (i) { state.dayIdx = i; render(); };
+  window.cshShiftDay = function (n) { state.dayIdx = Math.max(0, Math.min(DAYS.length - 1, state.dayIdx + n)); render(); };
+})();
+
+
+/* Stream -> module data */
+function dcTrinityRowsFor(num) {
+  const st = dcDayStream(num, dcActiveDay);
+  const H = m => m / 60;
+  return st.rows.map(r => {
+    if (r.na) return { name: r.row, off: [[0, 24]], events: [] };
+    const off = r.spans.filter(sp => sp.state === 'off' || sp.state === 'future')
+                       .map(sp => [H(sp.from), H(sp.to)]);
+    const events = r.spans.filter(sp => sp.state === 'warn' || sp.state === 'alarm' || sp.state === 'nodata' || sp.state === 'asleep')
+      .map(sp => {
+        const mins = Math.max(1, Math.round(sp.to - sp.from));
+        const label = mins >= 60 ? Math.floor(mins / 60) + 'h' + (mins % 60 ? ' ' + (mins % 60) + 'm' : '') : mins + ' m';
+        /* Trim a few minutes off each event so back-to-back states read
+           as two chips with a gap, not one jammed block */
+        const GAP = 4 / 60;
+        return {
+          t: H(sp.from), dur: Math.max(0.08, H(sp.to - sp.from) - GAP),
+          level: sp.state === 'alarm' || sp.state === 'nodata' ? 'alarm' : 'warn',
+          label: label,
+          note: (DC_STATE_LABEL[sp.state] || sp.state) + (sp.note ? ' \u00B7 ' + sp.note : ''),
+          sec: Math.round(st.base.getTime() / 1000 + sp.from * 60)
+        };
+      });
+    return { name: r.row, off: off, events: events };
+  });
+}
+function dcTrinityDays(num) {
+  const today = new Date();
+  const NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() - (6 - i));
+    const worst = dcDayStream(num, i).worst;
+    return {
+      lbl: i === 6 ? 'Today' : NAMES[d.getDay()],
+      date: (d.getMonth() + 1) + '/' + d.getDate(),
+      status: worst,
+      full: (i === 6 ? 'Today ' : NAMES[d.getDay()] + ' ') + (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear()
+    };
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   WHICH TIMELINE?
+   Trinity_Timeline always shows candidate A, Phase 1 always shows
+   candidate B (the message-driven rebuild), and Phases 2, 2a and 3
+   follow the Options choice until the team picks one.
+══════════════════════════════════════════════════════════════ */
+let dcTimelinePick = 'rebuilt';        /* 'trinity' | 'rebuilt' */
+function dcTimelineKind() {
+  if (dcViewMode === 'trinity-timeline') return 'trinity';
+  if (dcViewMode === 'current-timeline') return 'rebuilt';
+  return dcTimelinePick;
+}
+function setTimelinePick(kind) {
+  if (dcViewMode === 'trinity-timeline' || dcViewMode === 'current-timeline') return;  /* fixed in those phases */
+  dcTimelinePick = kind;
+  dcSyncTimelineMenu();
+  const host = dcTlRoot;
+  if (host) buildTimeline(host === document.getElementById('panel-timeline') ? null : host);
+}
+/* A short event renders as a pill centred on its midpoint, so it can
+   be wider than the event itself and slide under the duration bar that
+   follows — which is what jams the two together. Duration bars never
+   move (their width is the reading); the pills get nudged left until
+   they clear. */
+function dcTrinityDeoverlap(panel) {
+  const GAP = 5;
+  panel.querySelectorAll('.csh-track .csh-in').forEach(lane => {
+    const laneW = lane.clientWidth;
+    const chips = Array.from(lane.querySelectorAll('.csh-chip'))
+      .map(c => ({ el: c, wide: c.dataset.wide === '1',
+                   left: c.getBoundingClientRect().left - lane.getBoundingClientRect().left,
+                   w: c.offsetWidth }))
+      .sort((a2, b2) => a2.left - b2.left);
+    for (let i = chips.length - 2; i >= 0; i--) {
+      const cur = chips[i], next = chips[i + 1];
+      if (cur.wide) continue;
+      const overlap = (cur.left + cur.w) - (next.left - GAP);
+      if (overlap <= 0) continue;
+      cur.left = Math.max(0, Math.min(laneW - cur.w, cur.left - overlap));
+      cur.el.style.left = cur.left + 'px';
+      cur.el.style.transform = 'translateY(-50%)';
+    }
+  });
+}
+
+function buildTrinityTimeline(target) {
+  const panel = target || document.getElementById('panel-timeline');
+  dcTlRoot = panel;
+  if (dcTlTruck !== dcCurrentTruck) { dcActiveDay = 6; dcTlTruck = dcCurrentTruck; }
+  panel.innerHTML = '<div id="csh-root"></div>';
+  /* module defaults — 64px rows, 130px labels — so it matches the
+     delivered design rather than a re-proportioned copy */
+  cshInit('csh-root', {
+    rows: dcTrinityRowsFor(dcCurrentTruck),
+    days: dcTrinityDays(dcCurrentTruck),
+    dayIdx: dcActiveDay,
+    /* Under two hours a duration bar is narrower than its own label, so
+       those render as centred pills — the label states the duration and
+       nothing gets clipped. Two hours and over stay width-to-duration. */
+    minWide: 2
+  });
+  /* The day strip and the arrows drive the real day: left alone the
+     module fills past days with derived data, so the host intercepts
+     the click, moves dcActiveDay, and re-feeds it that day's stream. */
+  if (!panel.dataset.cshBound) {
+   panel.dataset.cshBound = '1';
+   panel.addEventListener('click', ev => {
+    const day = ev.target.closest('[data-day]');
+    const shift = ev.target.closest('[data-shift]');
+    if (!day && !shift) return;
+    if (shift && shift.disabled) return;
+    const next = day ? +day.dataset.day : dcActiveDay + (+shift.dataset.shift);
+    const clamped = Math.max(0, Math.min(6, next));
+    if (clamped === dcActiveDay) return;
+    dcActiveDay = clamped;
+    buildTrinityTimeline(target);
+   }, true);
+  }
+  /* The module measures lane widths to place narrow chips, and the
+     panel is still hidden when it first renders — so measure again on
+     the next frame, once it has a width. */
+  requestAnimationFrame(() => {
+    if (window.cshRelayout) cshRelayout();
+    dcTrinityDeoverlap(panel);
+  });
+  /* same drill-down contract as the other candidate */
+  panel.querySelectorAll('.csh-chip[data-sec]').forEach(c => {
+    c.addEventListener('click', ev => { ev.stopPropagation(); dcTlDrill(+c.dataset.sec); });
+  });
+}
+
 
 /* ══════════════════════════════════════════════════════════════
    COMPONENT TIMELINE — Phase 1_Timeline and above
@@ -3214,6 +3879,16 @@ function dcTip(html) { dcTips.push(html); return dcTips.length - 1; }
 /* ── Build ── */
 let dcTlTruck = null;
 function buildTimeline(target) {
+  /* Only one candidate is mounted at a time — clear the other host so
+     a switched-away timeline can't linger in the DOM */
+  ['panel-timeline', 'tk-view-timeline'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el !== (target || document.getElementById('panel-timeline'))) el.innerHTML = '';
+  });
+  if (dcTimelineKind() === 'trinity') { buildTrinityTimeline(target); return; }
+  buildMessageTimeline(target);
+}
+function buildMessageTimeline(target) {
   const panel = target || document.getElementById('panel-timeline');
   dcTlRoot = panel;
   /* A different truck always opens on today */
@@ -4597,6 +5272,60 @@ function toggleFaultDemo() {
   buildOverview(dcCurrentTruck || '1219');
 }
 renderComponentCells();
+
+/* ══════════════════════════════════════════════════════════════
+   LOCATION PICKER  (Phase 1_Timeline and above)
+   Accounts run several plants, and the flat list is a scroll hunt,
+   so the dropdown opens with a search field. Current State keeps
+   today's plain select.
+══════════════════════════════════════════════════════════════ */
+const DC_LOCATIONS = ['All Elements', '17th Ave', 'Davie', 'Deerfield', 'Doral',
+  'Golden Glades', 'Hialeah', 'Homestead', 'Medley', 'Miami Gardens',
+  'Opa-locka', 'Pembroke Pines', 'Pompano', 'Sunrise', 'West Palm'];
+let locSel = 'All Elements', locHi = 0;
+
+function locToggle(ev) {
+  if (ev) ev.stopPropagation();
+  if (!document.body.classList.contains('comp-col')) return;   /* Current State: unchanged */
+  const dd = document.getElementById('loc-dd');
+  const open = !dd.classList.contains('open');
+  dd.classList.toggle('open', open);
+  if (open) {
+    const q = document.getElementById('loc-q');
+    q.value = '';
+    locHi = 0;
+    locRender();
+    q.focus();
+  }
+}
+function locClose() { document.getElementById('loc-dd').classList.remove('open'); }
+function locMatches() {
+  const q = (document.getElementById('loc-q').value || '').trim().toLowerCase();
+  return DC_LOCATIONS.filter(n => !q || n.toLowerCase().includes(q));
+}
+function locRender() {
+  const list = locMatches();
+  if (locHi >= list.length) locHi = Math.max(0, list.length - 1);
+  const el = document.getElementById('loc-list');
+  el.innerHTML = list.length
+    ? list.map((n, i) => `<div class="loc-item${n === locSel ? ' sel' : ''}${i === locHi ? ' hi' : ''}"
+        onclick="event.stopPropagation();locPick('${n.replace(/'/g, "")}')">
+        <span>${n}</span><span class="ck">&#10003;</span></div>`).join('')
+    : '<div class="loc-empty">No locations match that search</div>';
+}
+function locPick(name) {
+  locSel = name;
+  document.getElementById('loc-label').textContent = name;
+  locClose();
+}
+function locKey(ev) {
+  const list = locMatches();
+  if (ev.key === 'ArrowDown') { locHi = Math.min(list.length - 1, locHi + 1); locRender(); ev.preventDefault(); }
+  else if (ev.key === 'ArrowUp') { locHi = Math.max(0, locHi - 1); locRender(); ev.preventDefault(); }
+  else if (ev.key === 'Enter') { if (list[locHi]) locPick(list[locHi]); ev.preventDefault(); }
+  else if (ev.key === 'Escape') { locClose(); }
+}
+document.addEventListener('click', locClose);
 
 /* Prime overview so the drawer isn't empty on first paint */
 buildOverview('1219');

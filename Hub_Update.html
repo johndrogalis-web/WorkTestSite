@@ -1696,6 +1696,10 @@
             <svg class="vp-opts-check" id="vp-check-current-overview" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span>Phase 2_ Overview</span>
           </div>
+          <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('current-overview-wds')">
+            <svg class="vp-opts-check" id="vp-check-current-overview-wds" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Phase 2a_ Overview_Timeline</span>
+          </div>
           <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('final')">
             <svg class="vp-opts-check" id="vp-check-final" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span>Phase 3_ Final</span>
@@ -2314,11 +2318,13 @@ function mcsCardsFor(num) {
       fault: a.disconnected ? 'No connection to backend' : null },
     { name:'DPS pressure', label:'Drum Pressure Sensor', value:'196', unit:'psi', startup:2, err:'--' },
     { name:'CPS', label:'Charge Pressure Sensor', value:'204', unit:'psi', startup:2, err:'--' },
-    /* WDS does two jobs and they fail independently — rotation is
-       load-bearing for the system, temperature is not — so they are
-       reported separately rather than as one verdict */
-    { name:'WDS rotation', label:'Water Drum Sensor \u2014 rotation', value:'12', unit:'rpm', startup:2, err:'--', fw:'v2.1.4' },
-    { name:'WDS temp', label:'Water Drum Sensor \u2014 temperature', value:'91', unit:'\u00B0F', startup:2, err:'--', fw:'v2.1.4' },
+    /* Phase 2a reports WDS as two components, because rotation and
+       temperature fail independently and only one of them is
+       load-bearing. Earlier phases keep the single card. */
+    ...(dcWdsSplit()
+      ? [{ name:'WDS rotation', label:'Water Drum Sensor \u2014 rotation', value:'12', unit:'rpm', startup:2, err:'--', fw:'v2.1.4' },
+         { name:'WDS temp', label:'Water Drum Sensor \u2014 temperature', value:'91', unit:'\u00B0F', startup:2, err:'--', fw:'v2.1.4' }]
+      : [{ name:'WDS', label:'Water Drum Sensor', value:'12', unit:'rpm', startup:2, err:'--', extra:{label:'Drum Temp', val:'91 \u00B0F'}, fw:'v2.1.4' }]),
     { name:'DRS', label:'Drum Rotation Speed', value:'8', unit:'rpm', startup:2, err:'--', fw:'v1.0.8' },
     { name:'CWR', label:'Cold Weather Relay', value: a.accel ? '--' : '91', unit:'\u00B0F',
       startup:2, err: a.accel ? '6' : '--', extra:{label:'FW v35.0 \u00B7 Tilt', val: a.accel ? '--' : '1\u00B0'}, fw:'v35.0',
@@ -2391,6 +2397,7 @@ const DC_VIEW_SLUGS = {
   'current': 'current',
   'current-timeline': 'phase1',
   'current-overview': 'phase2',
+  'current-overview-wds': 'phase2a',
   'final': 'phase3',
   'current-trinity': 'current-trinity',
   'final-trinity': 'phase3-trinity'
@@ -2400,6 +2407,7 @@ const DC_SLUG_VIEWS = Object.keys(DC_VIEW_SLUGS).reduce((m, k) => (m[DC_VIEW_SLU
 Object.assign(DC_SLUG_VIEWS, {
   'phase-1': 'current-timeline', 'timeline': 'current-timeline',
   'phase-2': 'current-overview', 'overview': 'current-overview',
+  'phase-2a': 'current-overview-wds', 'overview-timeline': 'current-overview-wds',
   'phase-3': 'final', 'final': 'final',
   'trinity': 'current-trinity', 'final-trinity': 'final-trinity'
 });
@@ -2436,7 +2444,7 @@ window.addEventListener('hashchange', dcApplyUrlView);
 
 function setProtoView(mode) {
   dcViewMode = mode;
-  ['current', 'current-trinity', 'current-timeline', 'current-overview', 'final', 'final-trinity'].forEach(m => {
+  ['current', 'current-trinity', 'current-timeline', 'current-overview', 'current-overview-wds', 'final', 'final-trinity'].forEach(m => {
     const el = document.getElementById('vp-check-' + m);
     if (el) el.style.opacity = m === mode ? '1' : '0';
   });
@@ -2452,6 +2460,14 @@ function setProtoView(mode) {
   document.getElementById('drawer').classList.toggle('trinity', trin);
   closeDrawer();
   closeTakeover();
+  /* The WDS model differs by phase, so derived data has to be rebuilt */
+  dcClearStreams();
+  Object.keys(dcStreamIngested).forEach(k => delete dcStreamIngested[k]);
+  Object.keys(dcLogsCache).forEach(k => delete dcLogsCache[k]);
+  const compSel = document.getElementById('dc-log-comp');
+  if (compSel) { delete compSel.dataset.filled; dcFillCompFilter(); }
+  renderComponentCells();
+  buildOverview(dcCurrentTruck || '1219');
   dcWriteSlug(mode);
 }
 
@@ -2524,14 +2540,15 @@ function openTakeover(name) {
   });
   document.getElementById('takeover').classList.toggle('as-drawer', asDrawer);
   if (asDrawer) document.getElementById('overlay').classList.add('open');
-  if (dcViewMode === 'current-overview') tkMountFinalOverview(name);
+  if (dcViewMode === 'current-overview' || dcViewMode === 'current-overview-wds') tkMountFinalOverview(name);
   else tkReturnFinalOverview();
   document.getElementById('takeover').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 /* Phase views that present the takeover as a drawer */
 function tkIsDrawerMode() {
-  return dcViewMode === 'current-timeline' || dcViewMode === 'current-overview';
+  return dcViewMode === 'current-timeline' || dcViewMode === 'current-overview' ||
+         dcViewMode === 'current-overview-wds';
 }
 /* Timeline_Overview: relocate the LIVE Final overview panel (and its
    chart lightbox) into the takeover, so ids, live debug ticks, ping
@@ -2687,7 +2704,7 @@ function tkView(v) {
   if (v === 'timeline' && tkIsDrawerMode()) {
     buildTimeline(document.getElementById('tk-view-timeline'));
   }
-  const finalOv = dcViewMode === 'current-overview';
+  const finalOv = dcViewMode === 'current-overview' || dcViewMode === 'current-overview-wds';
   document.getElementById('tk-view-overview').style.display =
     finalOv ? 'none' : ((v === 'timeline' && dcViewMode === 'current-timeline') ? 'none' : '');
   document.getElementById('tk-view-final-ov').style.display =
@@ -2919,7 +2936,7 @@ function buildOverview(num) {
      reading as if it were live */
   const mcs = mcsCardsFor(num);
   const st = dcDayStream(num, 6);
-  if (st.asleepNow) {
+  if (dcWdsSplit() && st.asleepNow) {
     mcs.forEach(c => {
       if ((c.name === 'WDS rotation' || c.name === 'WDS temp') && !c.state) {
         c.state = 'asleep';
@@ -2992,9 +3009,17 @@ let dcTlRoot = null; /* container the timeline component is mounted in */
 const DC_BEAT_MIN = 15;           /* heartbeat cadence while ignition is on */
 const DC_TRUCK_VER = { '1408': '--' };  /* everything else reports V5 */
 
+/* Phase 2a is where the WDS split and the Asleep state live, so the
+   earlier phases keep reporting WDS as one component the way they
+   did before. One flag decides which model the whole app uses. */
+function dcWdsSplit() { return dcViewMode === 'current-overview-wds'; }
+
 /* Timeline row -> the Measurement Component card it reports for,
    so the table cell, the cards and this view share one fault set */
-const DC_TL_ROWS = [
+function dcTlRows() {
+  return DC_TL_ROWS_BASE.filter(r => r.only === undefined || r.only === (dcWdsSplit() ? 'split' : 'single'));
+}
+const DC_TL_ROWS_BASE = [
   { row: 'Iox / Robotex',    card: null, legacyOnly: true },
   { row: 'Charge',           card: 'CPS' },
   { row: 'Discharge',        card: 'DPS pressure' },
@@ -3003,8 +3028,9 @@ const DC_TL_ROWS = [
   { row: 'External Display', card: 'ED' },
   { row: 'Bus power',        card: 'IOX supply voltage' },
   { row: 'CWR',              card: 'CWR' },
-  { row: 'WDS rotation',     card: 'WDS rotation' },
-  { row: 'WDS temp',         card: 'WDS temp' },
+  { row: 'WDS',              card: 'WDS',          only: 'single' },
+  { row: 'WDS rotation',     card: 'WDS rotation', only: 'split' },
+  { row: 'WDS temp',         card: 'WDS temp',     only: 'split' },
   { row: 'Water flow',       card: 'Water meter flow rate' }
 ];
 const DC_STATE_LABEL = {
@@ -3028,7 +3054,7 @@ function dcClearStreams() { Object.keys(dcStreamCache).forEach(k => delete dcStr
 
 /* One day of messages for one truck, derived once and cached */
 function dcDayStream(num, idx) {
-  const key = num + '|' + idx + '|' + (DC_FAULT_DEMO ? 'd' : 'n');
+  const key = num + '|' + idx + '|' + (DC_FAULT_DEMO ? 'd' : 'n') + '|' + (dcWdsSplit() ? 's' : '1');
   if (dcStreamCache[key]) return dcStreamCache[key];
   const rnd = dcRng(dcHash(key));
   const isToday = idx === 6;
@@ -3043,7 +3069,7 @@ function dcDayStream(num, idx) {
     const live = dcFaultSetFor(num);
     Object.keys(live).forEach(k => { badSet[k] = live[k]; });
   } else {
-    const pool = DC_TL_ROWS.filter(d => d.card);
+    const pool = dcTlRows().filter(d => d.card);
     const n = rnd() < .5 ? 0 : (rnd() < .72 ? 1 : 2);
     for (let i = 0; i < n; i++) {
       const d = pool[Math.floor(rnd() * pool.length)];
@@ -3099,7 +3125,7 @@ function dcDayStream(num, idx) {
     return out;
   };
 
-  const rows = DC_TL_ROWS.map(def => {
+  const rows = dcTlRows().map(def => {
     if (def.legacyOnly) {
       const v5 = dcVerOf(num) === 'V5';
       return { row: def.row, na: true,
@@ -3124,7 +3150,7 @@ function dcDayStream(num, idx) {
     else push(runEnd, 1440, 'off', 'Ignition off — no reporting expected');
     /* Only the WDS sleeps, and only where it was otherwise healthy */
     let out = spans;
-    if (def.card === 'WDS rotation' || def.card === 'WDS temp') {
+    if (dcWdsSplit() && (def.card === 'WDS rotation' || def.card === 'WDS temp')) {
       idle.forEach(w => { out = spliceState(out, w.from, w.to, 'asleep', DC_SLEEP_NOTE); });
     }
     return { row: def.row, card: def.card, short: short, spans: out, faultAt: faultAt, bad: bad };
@@ -3213,7 +3239,7 @@ function buildTimeline(target) {
     <span><span class="lg alarm">${ALARM_ICON}</span>Alarm</span>
     <span><span class="lg nodata">${NODATA_ICON}</span>No data received</span>
     <span><span class="lg nodata">${NODATA_ICON}</span>Ignition state unknown</span>
-    <span><span class="lg asleep">${ASLEEP_ICON}</span>Asleep (drum idle)</span>
+    ${dcWdsSplit() ? `<span><span class="lg asleep">${ASLEEP_ICON}</span>Asleep (drum idle)</span>` : ''}
     <span><span class="lg off"></span>Ignition off</span>
     <span><span class="lg na"></span>Not installed</span>
     <span><span class="lg tick"></span>Status message</span>
@@ -3373,7 +3399,7 @@ function dcRenderRows(idx) {
 ══════════════════════════════════════════════════════════════ */
 /* card/short name -> timeline row label */
 function dcRowForComp(short) {
-  const hit = DC_TL_ROWS.find(d => d.card && (COMP_SHORT[d.card] || d.card) === short);
+  const hit = dcTlRows().find(d => d.card && (COMP_SHORT[d.card] || d.card) === short);
   return hit ? hit.row : null;
 }
 /* Where a fault claim came from: when it started, how many messages back it */
@@ -3506,7 +3532,7 @@ function dcTlDrill(sec, comp, origin, wholeDay) {
 const dcStreamIngested = {};
 function dcIngestStreamLogs(num) {
   if (!dcLogsCache[num]) dcLogsCache[num] = dcGenLogs(num);
-  const key = num + '|' + (DC_FAULT_DEMO ? 'd' : 'n');
+  const key = num + '|' + (DC_FAULT_DEMO ? 'd' : 'n') + '|' + (dcWdsSplit() ? 's' : '1');
   if (dcStreamIngested[key]) return;
   dcStreamIngested[key] = true;
   const MAC = '125765328520';
@@ -3717,7 +3743,7 @@ function dcFillCompFilter() {
   const sel = document.getElementById('dc-log-comp');
   if (!sel || sel.dataset.filled) return;
   sel.innerHTML = '<option value="all">Component: All</option>' +
-    DC_TL_ROWS.map(d => `<option value="${d.row}">${d.row}</option>`).join('');
+    dcTlRows().map(d => `<option value="${d.row}">${d.row}</option>`).join('');
   sel.dataset.filled = '1';
 }
 function dcLogClearScope() {
@@ -4444,7 +4470,7 @@ fdmCardsFor = num => applyDemoFaults(num, _fdmCardsFor(num));
    cell, in the same order the cards are built */
 const COMP_SLOT = {
   'TCG': 'TCG', 'DPS pressure': 'DPS', 'CPS': 'CPS',
-  'WDS rotation': 'ROT', 'WDS temp': 'TMP', 'DRS': 'DRS',
+  'WDS': 'WDS', 'WDS rotation': 'ROT', 'WDS temp': 'TMP', 'DRS': 'DRS',
   'CWR': 'CWR', 'ICD': 'ICD', 'ED': 'ED',
   'IOX supply voltage': 'IOX', 'Water meter flow rate': 'WTR', 'Admix meter flow rate': 'ADX'
 };
@@ -4472,7 +4498,7 @@ function componentHealthFor(num) {
     fault: c.fault
   }));
   /* Drum standing still right now? The WDS pair is asleep, not broken */
-  if (dcDayStream(num, 6).asleepNow) {
+  if (dcWdsSplit() && dcDayStream(num, 6).asleepNow) {
     all.forEach(c => {
       if ((c.name === 'WDS rot' || c.name === 'WDS temp') && c.state === 'clean') c.state = 'asleep';
     });

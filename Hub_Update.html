@@ -191,6 +191,10 @@
   .comp-pop .cp-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .comp-pop .cp-name { font-size: 12.5px; font-weight: 600; color: var(--text); }
   .comp-pop .cp-fault { font-size: 11.5px; line-height: 1.4; color: var(--muted); }
+  .comp-pop .cp-row.link { cursor: pointer; }
+  .comp-pop .cp-row.link:hover { background: color-mix(in srgb, var(--text) 11%, transparent); }
+  .comp-pop .cp-when { font-size: 11px; color: var(--dim); }
+  .comp-pop .cp-go { margin-left: auto; align-self: center; font-size: 13px; color: var(--muted); }
   .comp-pop .cp-foot {
     padding: 8px 12px 2px; font-size: 11.5px; color: var(--dim);
     border-top: 1px solid var(--c-pop-border); margin-top: 6px;
@@ -924,45 +928,33 @@
   .dc-sp.alarm { top: 4px; height: 22px; background: var(--dc-alarm); }
   .dc-sp.alarm .spl { color: #fff; }
   .dc-sp.nodata {
-    top: 5px; height: 20px; border: 1px dashed color-mix(in srgb, var(--dc-alarm) 60%, transparent);
-    background: repeating-linear-gradient(135deg,
-      color-mix(in srgb, var(--dc-alarm) 22%, transparent) 0 5px,
-      transparent 5px 10px);
+    top: 4px; height: 22px;
+    background: color-mix(in srgb, var(--dc-alarm) 26%, var(--dc-layer-2));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dc-alarm) 45%, transparent);
   }
   .dc-sp.nodata .spl { color: var(--dc-strip-alarm-ink); }
-  .dc-sp.off {
-    top: 11px; height: 8px; border-radius: 4px;
-    background: repeating-linear-gradient(135deg,
-      color-mix(in srgb, var(--dc-strong) 13%, transparent) 0 4px,
-      transparent 4px 8px);
-  }
-  .dc-sp.future {
-    top: 13px; height: 4px; border-radius: 2px; cursor: help;
-    background: repeating-linear-gradient(90deg,
-      color-mix(in srgb, var(--dc-strong) 18%, transparent) 0 2px,
-      transparent 2px 7px);
-  }
-  .dc-sp.ign-on { top: 5px; height: 20px; background: color-mix(in srgb, var(--dc-ok) 28%, transparent); }
+  .dc-sp.off { top: 12px; height: 6px; background: var(--dc-seg-off); }
+  .dc-sp.future { display: none; }
+  .dc-sp.ign-on { top: 4px; height: 22px; background: color-mix(in srgb, var(--dc-ok) 30%, var(--dc-layer-2)); }
   .dc-sp.ign-on .spl { color: var(--dc-strong); }
   .dc-sp.ign-off {
-    top: 5px; height: 20px; border: 1px solid var(--dc-border);
-    background: repeating-linear-gradient(135deg,
-      color-mix(in srgb, var(--dc-strong) 10%, transparent) 0 5px,
-      transparent 5px 10px);
+    top: 4px; height: 22px;
+    background: color-mix(in srgb, var(--dc-strong) 9%, var(--dc-layer-2));
+    box-shadow: inset 0 0 0 1px var(--dc-border);
   }
   .dc-sp.ign-off .spl { color: var(--dc-soft); }
   .dc-sp.ign-unknown {
-    top: 5px; height: 20px; border: 1px dashed color-mix(in srgb, var(--dc-alarm) 60%, transparent);
-    background: repeating-linear-gradient(135deg,
-      color-mix(in srgb, var(--dc-alarm) 22%, transparent) 0 5px,
-      transparent 5px 10px);
+    top: 4px; height: 22px;
+    background: color-mix(in srgb, var(--dc-alarm) 26%, var(--dc-layer-2));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dc-alarm) 45%, transparent);
   }
   .dc-sp.ign-unknown .spl { color: var(--dc-strip-alarm-ink); }
   .dc-na-strip {
-    position: absolute; left: 0; right: 0; top: 7px; height: 16px;
+    position: absolute; left: 0; right: 0; top: 6px; height: 18px;
     display: flex; align-items: center; padding: 0 8px;
-    border-radius: 3px; border: 1px dashed var(--dc-border);
-    font-size: 10.5px; color: var(--dc-subtle); font-style: italic;
+    border-radius: 3px; background: var(--dc-layer-2);
+    box-shadow: inset 0 0 0 1px var(--dc-border);
+    font-size: 10.5px; color: var(--dc-subtle);
   }
 
   .dc-tk { position: absolute; top: 8px; height: 14px; width: 2px; border-radius: 1px; background: color-mix(in srgb, var(--dc-strong) 34%, transparent); cursor: pointer; z-index: 1; }
@@ -971,6 +963,12 @@
   .dc-tk.oc { top: 4px; height: 22px; width: 3px; background: var(--dc-warn); z-index: 3; }
   .dc-tk.oc.alarm { background: var(--dc-alarm); }
   .dc-now { position: absolute; top: 0; bottom: 0; width: 1px; background: color-mix(in srgb, var(--dc-strong) 45%, transparent); }
+  .dc-mark { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--dc-blue); z-index: 4; }
+  .dc-mark.lead::after {
+    content: attr(data-t); position: absolute; top: -17px; left: -17px;
+    font-size: 9px; font-weight: 700; letter-spacing: .3px; white-space: nowrap;
+    color: #fff; background: var(--dc-blue); padding: 1px 4px; border-radius: 3px;
+  }
   .dc-now.lead::after {
     content: "NOW"; position: absolute; top: -14px; left: 3px;
     font-size: 9px; font-weight: 700; letter-spacing: .5px; color: var(--dc-soft);
@@ -980,12 +978,39 @@
   .dc-tl-legend .lg.ok { height: 5px; background: var(--dc-seg-on); }
   .dc-tl-legend .lg.warn { background: var(--dc-warn); }
   .dc-tl-legend .lg.alarm { background: var(--dc-alarm); }
-  .dc-tl-legend .lg.nodata { border: 1px dashed color-mix(in srgb, var(--dc-alarm) 60%, transparent);
-    background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--dc-alarm) 22%, transparent) 0 4px, transparent 4px 8px); }
-  .dc-tl-legend .lg.off { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--dc-strong) 13%, transparent) 0 4px, transparent 4px 8px); }
-  .dc-tl-legend .lg.na { border: 1px dashed var(--dc-border); background: transparent; }
+  .dc-tl-legend .lg.nodata {
+    background: color-mix(in srgb, var(--dc-alarm) 26%, var(--dc-layer-2));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dc-alarm) 45%, transparent); }
+  .dc-tl-legend .lg.off { height: 5px; background: var(--dc-seg-off); }
+  .dc-tl-legend .lg.na { height: 5px; background: transparent; box-shadow: inset 0 0 0 1px var(--dc-border); }
   .dc-tl-legend .lg.tick { width: 3px; height: 13px; background: color-mix(in srgb, var(--dc-strong) 40%, transparent); }
   .dc-tl-legend .lg.tick.oc { background: var(--dc-warn); }
+
+  /* Deep-linked component row: the layer above sent us here */
+  .dc-tl2 > .lbl.hl { color: var(--dc-strong); font-weight: 700; }
+  .dc-tl2 > .trk.hl::before { background: color-mix(in srgb, var(--dc-blue) 22%, transparent); }
+  .dc-tl2 > .lbl.hl::before {
+    content: "\25B8"; margin-right: 2px; color: var(--dc-blue); font-size: 11px;
+  }
+  .dc-tl2 > .trk.hl { animation: dcHl 1.6s ease-out 1; }
+  @keyframes dcHl { 0%,40% { background: color-mix(in srgb, var(--dc-blue) 12%, transparent); } 100% { background: transparent; } }
+
+  /* Faulting cards get a way down to the messages behind them */
+  .dt-co-card-strip.act { cursor: pointer; }
+  .dt-co-card-strip.act:hover { filter: brightness(1.12); }
+  .dt-co-card-strip .go { margin-left: auto; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+
+  /* Truck Log: provenance banner when arriving from a drill-down */
+  .dc-log-from {
+    display: none; align-items: center; gap: 10px; margin-bottom: 10px;
+    padding: 9px 12px; border-radius: 6px; font-size: 12px;
+    background: color-mix(in srgb, var(--dc-blue) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--dc-blue) 32%, transparent);
+    color: var(--dc-strong);
+  }
+  .dc-log-from.on { display: flex; }
+  .dc-log-from b { font-weight: 600; }
+  .dc-log-from .x { margin-left: auto; cursor: pointer; color: var(--dc-soft); }
 
   /* Shared hover card for tracks, spans and message ticks */
   .dc-tip {
@@ -2075,11 +2100,15 @@
               <option value="Event">Event</option>
               <option value="Identity">Identity</option>
             </select>
+            <select class="dc-input" id="dc-log-comp" onchange="dcLogsFilterChange()">
+              <option value="all">Component: All</option>
+            </select>
             <select class="dc-input" id="dc-log-source" onchange="dcLogsFilterChange()">
               <option value="all">Source: All</option>
               <option value="TRUCK">TRUCK</option>
             </select>
           </div>
+          <div class="dc-log-from" id="dc-log-from-banner"></div>
           <div class="dc-logs-hint"><b>&#8593; &#8595;</b> Arrow keys move through logs &#8212; the JSON updates in place. Click a line to pin it and watch that field across messages.</div>
           <div class="dc-logs-tbl">
             <div class="dc-logs-thead">
@@ -2094,6 +2123,7 @@
         <div class="dc-logs-right">
           <div class="dc-logdet-top">
             <div class="dc-logdet-title">Truck logs</div>
+            <button class="dc-copy-btn" onclick="dcLogToTimeline()">View on timeline</button>
             <button class="dc-copy-btn" onclick="dcCopyLog(this)">Copy JSON</button>
           </div>
           <div class="dc-kvh" id="dc-log-kvh"></div>
@@ -2588,7 +2618,11 @@ function buildCard(card) {
         <div class="dt-co-card-desc"><span>${card.label || ''}</span></div>
         <div class="dt-co-card-meta">${metaHtml}</div>
       </div>
-      <div class="dt-co-card-strip">${stripDot}<span class="dt-co-card-strip-label">${stripLabel}</span></div>
+      <div class="dt-co-card-strip${(state === 'alarm' || state === 'warn') ? ' act' : ''}"
+           ${(state === 'alarm' || state === 'warn') ? `onclick="dcCardDrill('${(card.name || '').replace(/'/g, "")}')"` : ''}>
+        ${stripDot}<span class="dt-co-card-strip-label">${stripLabel}</span>
+        ${(state === 'alarm' || state === 'warn') ? '<span class="go">Messages &#8250;</span>' : ''}
+      </div>
     </div>`;
 }
 function buildOverview(num) {
@@ -2845,6 +2879,7 @@ function buildTimeline(target) {
       ${legend}
     </div>`;
   dcSelectDay(dcActiveDay);
+  if (dcPendingRow) dcHighlightRow();
 }
 
 function dcSelectDay(idx) {
@@ -2873,6 +2908,9 @@ function dcRenderRows(idx) {
   const pct = m => (Math.max(0, Math.min(1440, m)) / 1440 * 100);
   const nowMark = st.isToday ? `<span class="dc-now lead" style="left:${pct(st.nowMin)}%"></span>` : '';
   const nowMarkPlain = st.isToday ? `<span class="dc-now" style="left:${pct(st.nowMin)}%"></span>` : '';
+  const mk = (dcTlMark && dcTlMark.day === idx) ? dcTlMark : null;
+  const markLead = mk ? `<span class="dc-mark lead" data-t="${dcHM(mk.min)}" style="left:${pct(mk.min)}%"></span>` : '';
+  const markPlain = mk ? `<span class="dc-mark" style="left:${pct(mk.min)}%"></span>` : '';
 
   /* Header line: the cadence question, answered in words */
   const metaEl = dcTlRoot.querySelector('#dc-tl2-meta');
@@ -2953,14 +2991,92 @@ function dcRenderRows(idx) {
         data-tip="${tip}"${sp.state === 'future' ? '' : ` data-sec="${Math.round(st.base.getTime()/1000 + sp.from*60)}"`}>
         ${wide && label ? `<span class="spl">${label}</span>` : ''}</span>`;
     }).join('');
-    return { lbl: `<div class="lbl">${r.row}</div>`, trk: `<div class="trk">${spans}${nowMarkPlain}</div>` };
+    return { lbl: `<div class="lbl">${r.row}</div>`, trk: `<div class="trk">${spans}${nowMarkPlain}${markPlain}</div>` };
   });
 
   host.innerHTML =
     `<div class="lbl axis"></div><div class="trk axis">${axis}</div>` +
-    `<div class="lbl lane">Status messages</div><div class="trk">${ticks}${nowMark}</div>` +
-    `<div class="lbl lane">Ignition / power</div><div class="trk">${ignSpans.join('')}${nowMarkPlain}</div>` +
+    `<div class="lbl lane">Status messages</div><div class="trk">${ticks}${nowMark}${markLead}</div>` +
+    `<div class="lbl lane">Ignition / power</div><div class="trk">${ignSpans.join('')}${nowMarkPlain}${markPlain}</div>` +
     rowHtml.map((r, i) => (i === 0 ? r.lbl.replace('class="lbl', 'class="lbl rule') + r.trk.replace('class="trk', 'class="trk rule') : r.lbl + r.trk)).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   THE DRILL PATH  (table -> component -> timeline -> messages)
+   The landing table is the insight layer; it is only worth
+   anything if every claim on it can be confirmed one layer down.
+   These helpers make that path continuous in both directions.
+══════════════════════════════════════════════════════════════ */
+/* card/short name -> timeline row label */
+function dcRowForComp(short) {
+  const hit = DC_TL_ROWS.find(d => d.card && (COMP_SHORT[d.card] || d.card) === short);
+  return hit ? hit.row : null;
+}
+/* Where a fault claim came from: when it started, how many messages back it */
+function dcCompProvenance(num, short) {
+  const row = dcRowForComp(short);
+  if (!row) return '';
+  const st = dcDayStream(num, 6);
+  const r = st.rows.find(x => x.row === row);
+  if (!r || !r.spans) return '';
+  const bad = r.spans.find(sp => sp.state === 'warn' || sp.state === 'alarm' || sp.state === 'nodata');
+  if (!bad) return '';
+  const n = st.msgs.filter(m => m.min >= bad.from && m.min <= Math.min(bad.to, st.lastMsg)).length;
+  return `since ${dcHM(bad.from)} · ${n} status message${n === 1 ? '' : 's'}`;
+}
+
+let dcPendingRow = null;   /* timeline row to highlight after render */
+function dcOpenComponent(num, short) {
+  dcPendingRow = dcRowForComp(short);
+  openDrawer(num);                       /* dispatcher: takeover or drawer */
+  const phase = dcViewMode !== 'current' && dcViewMode !== 'current-trinity';
+  if (!phase) return;                    /* Current State keeps its own flow */
+  if (document.getElementById('takeover').classList.contains('open')) tkView('timeline');
+  else dcTab('timeline');
+  dcHighlightRow();
+}
+function dcHighlightRow() {
+  if (!dcTlRoot || !dcPendingRow) return;
+  const labels = Array.from(dcTlRoot.querySelectorAll('#dc-tl2 > .lbl'));
+  labels.forEach(l => l.classList.remove('hl'));
+  Array.from(dcTlRoot.querySelectorAll('#dc-tl2 > .trk')).forEach(t => t.classList.remove('hl'));
+  const i = labels.findIndex(l => l.textContent.trim() === dcPendingRow);
+  if (i < 0) return;
+  const lbl = labels[i];
+  lbl.classList.add('hl');
+  if (lbl.nextElementSibling) lbl.nextElementSibling.classList.add('hl');
+  if (lbl.scrollIntoView) lbl.scrollIntoView({ block: 'center' });
+}
+/* Component card -> the messages behind its strip */
+function dcCardDrill(cardName) {
+  const short = COMP_SHORT[cardName] || cardName;
+  const row = dcRowForComp(short);
+  const st = dcDayStream(dcCurrentTruck, 6);
+  let sec = st.msgs.length ? st.msgs[st.msgs.length - 1].sec : Math.round(Date.now() / 1000);
+  if (row) {
+    const r = st.rows.find(x => x.row === row);
+    const bad = r && r.spans ? r.spans.find(sp => sp.state === 'warn' || sp.state === 'alarm' || sp.state === 'nodata') : null;
+    if (bad) sec = Math.round(st.base.getTime() / 1000 + bad.from * 60);
+  }
+  dcTlDrill(sec, row || null, cardName + ' card', true);
+}
+
+/* Detail -> timeline: the path has to run both ways, so a log row
+   can put itself back in context on the day it came from */
+let dcTlMark = null;
+function dcLogToTimeline() {
+  const r = dcLogsFiltered[dcLogsSel];
+  if (!r) return;
+  const d = new Date(r.sec * 1000);
+  const t0 = new Date(); t0.setHours(0,0,0,0);
+  const d0 = new Date(d); d0.setHours(0,0,0,0);
+  const back = Math.round((t0 - d0) / 86400000);
+  const idx = Math.max(0, Math.min(6, 6 - back));
+  dcTlMark = { sec: r.sec, min: d.getHours() * 60 + d.getMinutes(), day: idx };
+  dcPendingRow = null;
+  if (document.getElementById('takeover').classList.contains('open')) tkView('timeline');
+  else dcTab('timeline');
+  dcSelectDay(idx);
 }
 
 function dcTlOver(ev) {
@@ -2977,17 +3093,35 @@ function dcTlClick(ev) {
 /* ── Drill into Truck Log at a timestamp ──
    The timeline is the way into the detail, so a span or tick
    lands in the log rows for that window, not just "the logs". */
-function dcTlDrill(sec) {
+function dcTlDrill(sec, comp, origin, wholeDay) {
   dcTipHide();
   dcIngestStreamLogs(dcCurrentTruck);
   const inTakeover = document.getElementById('takeover').classList.contains('open');
   if (inTakeover) tkView('logs'); else dcTab('logs');
-  const from = sec - 8 * 60, to = sec + 8 * 60;
+  /* A moment (tick or segment) opens a tight window; a component
+     drill opens that whole day, since the question there is the
+     part's history, not one timestamp */
+  let from = sec - 8 * 60, to = sec + 8 * 60;
+  if (wholeDay) {
+    const d0 = new Date(sec * 1000); d0.setHours(0, 0, 0, 0);
+    from = Math.round(d0.getTime() / 1000);
+    to = from + 86399;
+  }
   document.getElementById('dc-log-from').value = dcToLocalInput(from);
   document.getElementById('dc-log-to').value = dcToLocalInput(to);
   document.getElementById('dc-log-type').value = 'all';
   document.getElementById('dc-log-source').value = 'all';
   document.getElementById('dc-log-search').value = '';
+  dcFillCompFilter();
+  document.getElementById('dc-log-comp').value = comp || 'all';
+  /* Say where this view came from, so the layer above is traceable */
+  const d = new Date(sec * 1000);
+  const banner = document.getElementById('dc-log-from-banner');
+  banner.className = 'dc-log-from on';
+  banner.innerHTML = `<span>Showing messages ${wholeDay ? 'from' : 'around'} <b>${d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</b>` +
+    (comp ? ` for <b>${comp}</b>` : '') + (wholeDay ? ' (whole day)' : '') +
+    (origin ? ` · from the ${origin}` : ' · from the timeline') +
+    `</span><span class="x" onclick="dcLogClearScope()">Clear &#10005;</span>`;
   dcLogsFilterChange();
   /* Select the row closest to the clicked time */
   if (dcLogsFiltered.length) {
@@ -3199,12 +3333,26 @@ function dcToLocalInput(sec) {
 }
 function buildLogs(num) {
   if (!dcLogsCache[num]) dcLogsCache[num] = dcGenLogs(num);
+  dcIngestStreamLogs(num);   /* the timeline's own messages belong here */
+  dcFillCompFilter();
   dcLogsSel = 0;
   /* Prefill the range chips from this truck's log span */
   const secs = dcLogsCache[num].map(r => r.sec);
   document.getElementById('dc-log-from').value = dcToLocalInput(Math.min.apply(null, secs));
   document.getElementById('dc-log-to').value = dcToLocalInput(Math.max.apply(null, secs) + 59);
   dcLogsFilterChange();
+}
+function dcFillCompFilter() {
+  const sel = document.getElementById('dc-log-comp');
+  if (!sel || sel.dataset.filled) return;
+  sel.innerHTML = '<option value="all">Component: All</option>' +
+    DC_TL_ROWS.map(d => `<option value="${d.row}">${d.row}</option>`).join('');
+  sel.dataset.filled = '1';
+}
+function dcLogClearScope() {
+  document.getElementById('dc-log-from-banner').className = 'dc-log-from';
+  document.getElementById('dc-log-comp').value = 'all';
+  buildLogs(dcCurrentTruck);
 }
 function dcLogsFilterChange() {
   const all = dcLogsCache[dcCurrentTruck] || [];
@@ -3215,10 +3363,24 @@ function dcLogsFilterChange() {
   const toV = document.getElementById('dc-log-to').value;
   const fromSec = fromV ? new Date(fromV).getTime() / 1000 : -Infinity;
   const toSec = toV ? new Date(toV).getTime() / 1000 : Infinity;
+  const compEl = document.getElementById('dc-log-comp');
+  const comp = compEl ? compEl.value : 'all';
+  /* Component scope keeps the messages that actually say something
+     about that part: it changed state, or it is not healthy in this
+     message. Messages that carry no component status drop out. */
+  const compHit = r => {
+    if (comp === 'all') return true;
+    const ev = r.json && r.json.event;
+    if (!ev || !ev.component_status) return false;
+    if ((ev.changed || []).some(c => c.component === comp || c.component === 'All components')) return true;
+    const st = ev.component_status[comp];
+    return st !== undefined && st !== 'HEALTHY';
+  };
   dcLogsFiltered = all.filter(r =>
     r.sec >= fromSec && r.sec <= toSec &&
     (t === 'all' || r.type === t) &&
     (src === 'all' || r.source === src) &&
+    compHit(r) &&
     (!q || r.sub.toLowerCase().includes(q) || r.type.toLowerCase().includes(q))
   );
   dcLogsSel = Math.min(dcLogsSel, Math.max(0, dcLogsFiltered.length - 1));
@@ -3926,14 +4088,22 @@ function renderComponentCells() {
         ? `<span class="cbad">${h.bad.map(c => c.name).join(', ')}</span>`
         : `<span class="cbad">${h.bad.length} parts</span>`;
 
-    const rows = h.bad.map(c => `
-        <div class="cp-row ${c.state}">
+    /* Each faulting part is a link down a layer: click opens the
+       truck on that component, with the timeline row highlighted.
+       The "since" line is the provenance — which message said so. */
+    const rows = h.bad.map(c => {
+      const prov = dcCompProvenance(td.dataset.truck, c.name);
+      return `
+        <div class="cp-row ${c.state} link" onclick="event.stopPropagation();dcOpenComponent('${td.dataset.truck}','${c.name.replace(/'/g, "")}')">
           <span class="cp-dot"></span>
           <span class="cp-txt">
             <span class="cp-name">${c.name}</span>
             <span class="cp-fault">${c.fault || (c.state === 'alarm' ? 'Alarm state' : 'Outside expected range')}</span>
+            ${prov ? `<span class="cp-when">${prov}</span>` : ''}
           </span>
-        </div>`).join('');
+          <span class="cp-go">&#8250;</span>
+        </div>`;
+    }).join('');
 
     /* Bottom rows flip the panel upward so it never clips */
     const up = i >= cells.length - 3 ? ' up' : '';
@@ -3941,7 +4111,7 @@ function renderComponentCells() {
       <div class="comp-pop${up}">
         <div class="cp-head"><b>${h.bad.length} of ${h.total} parts need attention</b><span>${h.ok} OK</span></div>
         ${rows}
-        <div class="cp-foot">Open truck for component detail</div>
+        <div class="cp-foot">Click a part to open it on the truck timeline</div>
       </div>` : '';
 
     td.innerHTML = `<span class="comp ${h.worst}">

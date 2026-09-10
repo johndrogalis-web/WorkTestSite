@@ -1314,6 +1314,9 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
     color: rgba(255,255,255,.85); transition: background .12s;
   }
   .vp-opts-row:hover { background: rgba(255,255,255,.07); }
+  .vp-lbl { display: flex; flex-direction: column; gap: 1px; line-height: 1.25; }
+  .vp-lbl em { font-style: normal; font-size: 10.5px; color: rgba(255,255,255,.42); letter-spacing: .1px; }
+  .vp-opts-section-label em { font-style: normal; font-weight: 400; text-transform: none; letter-spacing: .2px; opacity: .75; }
   .vp-opts-check { flex-shrink: 0; transition: opacity .15s; }
   .vp-opts-divider { height: 1px; background: rgba(255,255,255,.12); margin: 4px 6px; }
   .vp-dark-toggle {
@@ -1854,62 +1857,54 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
       <div class="vp-opts-wrap">
         <button class="vp-opts-btn" id="vp-opts-btn" onclick="vpOptsToggle(event)">Options</button>
         <div class="vp-opts-dd" id="vp-opts-dd">
-          <div class="vp-opts-section-label">View</div>
+          <div class="vp-opts-section-label">Phase</div>
           <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('current')">
             <svg class="vp-opts-check" id="vp-check-current" width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Current State</span>
+            <span class="vp-lbl">Current State<em>today&rsquo;s Hub</em></span>
           </div>
           <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('trinity-timeline')">
             <svg class="vp-opts-check" id="vp-check-trinity-timeline" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Trinity_ Timeline</span>
+            <span class="vp-lbl">Trinity_ Timeline<em>Trinity timeline module</em></span>
           </div>
           <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('current-timeline')">
             <svg class="vp-opts-check" id="vp-check-current-timeline" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Phase 1_ Timeline</span>
+            <span class="vp-lbl">Phase 1_ Timeline<em>message timeline</em></span>
           </div>
           <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('current-overview')">
             <svg class="vp-opts-check" id="vp-check-current-overview" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Phase 2_ Overview</span>
+            <span class="vp-lbl">Phase 2_ Overview</span>
           </div>
           <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('current-overview-wds')">
             <svg class="vp-opts-check" id="vp-check-current-overview-wds" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Phase 2a_ Overview_Timeline</span>
+            <span class="vp-lbl">Phase 2a_ Overview_Timeline<em>WDS split + asleep</em></span>
           </div>
           <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('final')">
             <svg class="vp-opts-check" id="vp-check-final" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Phase 3_ Final</span>
+            <span class="vp-lbl">Phase 3_ Final</span>
           </div>
           <div class="vp-opts-divider"></div>
-          <div class="vp-opts-section-label">Timeline for Phase 2, 2a, 3</div>
-          <div class="vp-opts-row" onclick="event.stopPropagation();setTimelinePick('trinity')">
+          <div class="vp-opts-section-label">Timeline <em id="vp-tl-scope">for Phase 2, 2a, 3</em></div>
+          <div class="vp-opts-row" id="vp-tl-row-trinity" onclick="event.stopPropagation();setTimelinePick('trinity')">
             <svg class="vp-opts-check" id="vp-tl-trinity" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Trinity timeline</span>
+            <span class="vp-lbl">Trinity timeline</span>
           </div>
-          <div class="vp-opts-row" onclick="event.stopPropagation();setTimelinePick('rebuilt')">
+          <div class="vp-opts-row" id="vp-tl-row-rebuilt" onclick="event.stopPropagation();setTimelinePick('rebuilt')">
             <svg class="vp-opts-check" id="vp-tl-rebuilt" width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Message timeline</span>
+            <span class="vp-lbl">Message timeline</span>
           </div>
           <div class="vp-opts-divider"></div>
-          <div class="vp-opts-section-label">Color Change</div>
-          <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('current-trinity')">
-            <svg class="vp-opts-check" id="vp-check-current-trinity" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Current State + Trinity</span>
+          <div class="vp-opts-section-label">Display</div>
+          <div class="vp-opts-row" onclick="event.stopPropagation();toggleTrinitySkin()" style="justify-content:space-between;">
+            <span class="vp-lbl">Trinity colors</span>
+            <div class="vp-dark-toggle" id="vp-trinity-toggle"><div class="knob"></div></div>
           </div>
-          <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('final-trinity')">
-            <svg class="vp-opts-check" id="vp-check-final-trinity" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Final + Trinity</span>
-          </div>
-          <div class="vp-opts-divider"></div>
-          <div class="vp-opts-section-label">Prototype Data</div>
-          <div class="vp-opts-row" onclick="event.stopPropagation();toggleFaultDemo()" style="justify-content:space-between;">
-            <span style="display:flex;align-items:center;gap:8px;">&#9888;&#65039; More broken parts</span>
-            <div class="vp-dark-toggle" id="vp-fault-toggle"><div class="knob"></div></div>
-          </div>
-          <div class="vp-opts-divider"></div>
-          <div class="vp-opts-section-label">Appearance</div>
           <div class="vp-opts-row" onclick="event.stopPropagation();toggleDarkMode()" style="justify-content:space-between;">
-            <span id="vp-theme-label" style="display:flex;align-items:center;gap:8px;">&#127769; Dark Mode</span>
+            <span class="vp-lbl" id="vp-theme-label">Dark mode</span>
             <div class="vp-dark-toggle on" id="vp-dark-toggle"><div class="knob"></div></div>
+          </div>
+          <div class="vp-opts-row" onclick="event.stopPropagation();toggleFaultDemo()" style="justify-content:space-between;">
+            <span class="vp-lbl">More broken parts<em>demo data</em></span>
+            <div class="vp-dark-toggle" id="vp-fault-toggle"><div class="knob"></div></div>
           </div>
         </div>
       </div>
@@ -2593,9 +2588,7 @@ const DC_VIEW_SLUGS = {
   'current-timeline': 'phase1',
   'current-overview': 'phase2',
   'current-overview-wds': 'phase2a',
-  'final': 'phase3',
-  'current-trinity': 'current-trinity',
-  'final-trinity': 'phase3-trinity'
+  'final': 'phase3'
 };
 const DC_SLUG_VIEWS = Object.keys(DC_VIEW_SLUGS).reduce((m, k) => (m[DC_VIEW_SLUGS[k]] = k, m), {});
 /* older / alternative spellings people may paste */
@@ -2608,6 +2601,7 @@ Object.assign(DC_SLUG_VIEWS, {
   'trinity': 'current-trinity', 'final-trinity': 'final-trinity'
 });
 
+/* A URL is <phase slug>, optionally with -trinity for the skin */
 function dcSlugFromUrl() {
   let raw = '';
   try {
@@ -2615,11 +2609,19 @@ function dcSlugFromUrl() {
     const h = (location.hash || '').replace(/^#\/?/, '');
     raw = (q || h || '').trim().toLowerCase();
   } catch (e) { return null; }
-  return raw ? (DC_SLUG_VIEWS[raw] || null) : null;
+  if (!raw) return null;
+  let skin = false;
+  if (raw !== 'trinity-timeline' && raw !== 'trinity' && /-trinity$/.test(raw)) {
+    skin = true;
+    raw = raw.replace(/-trinity$/, '');
+  }
+  const mode = DC_SLUG_VIEWS[raw];
+  return mode ? { mode: mode, skin: skin } : null;
 }
 function dcWriteSlug(mode) {
-  const slug = DC_VIEW_SLUGS[mode];
+  let slug = DC_VIEW_SLUGS[mode];
   if (!slug) return;
+  if (dcTrinitySkin) slug += '-trinity';
   /* Sandboxed previews (about:srcdoc) reject replaceState with a URL,
      so this is best-effort: the deep links still work, the address bar
      just doesn't update in those frames. */
@@ -2633,8 +2635,10 @@ function dcWriteSlug(mode) {
 }
 /* Deep link on load, and follow back/forward or a pasted hash */
 function dcApplyUrlView() {
-  const mode = dcSlugFromUrl();
-  if (mode && mode !== dcViewMode) setProtoView(mode);
+  const got = dcSlugFromUrl();
+  if (!got) return;
+  if (got.skin !== dcTrinitySkin) setTrinitySkin(got.skin);
+  if (got.mode !== dcViewMode) setProtoView(got.mode);
 }
 window.addEventListener('hashchange', dcApplyUrlView);
 
@@ -2644,14 +2648,39 @@ function dcSyncTimelineMenu() {
   ['trinity', 'rebuilt'].forEach(k => {
     const el = document.getElementById('vp-tl-' + k);
     if (el) el.style.opacity = (fixed ? kind === k : dcTimelinePick === k) ? '1' : '0';
-    const row = el && el.parentElement;
-    if (row) row.style.opacity = fixed ? '.45' : '1';
+    const row = document.getElementById('vp-tl-row-' + k);
+    if (row) { row.style.opacity = fixed ? '.4' : '1'; row.style.pointerEvents = fixed ? 'none' : ''; }
   });
+  const scope = document.getElementById('vp-tl-scope');
+  if (scope) scope.textContent = fixed ? 'set by this phase' : 'for Phase 2, 2a, 3';
 }
 
+/* Trinity colours used to be two extra rows in the phase list, which
+   made the list read as eight phases. It is a skin, not a phase, so it
+   is a toggle that applies to whichever phase is selected. */
+let dcTrinitySkin = false;
+function toggleTrinitySkin() { setTrinitySkin(!dcTrinitySkin); }
+function setTrinitySkin(on) {
+  dcTrinitySkin = !!on;
+  document.body.classList.toggle('trinity', dcTrinitySkin);
+  document.getElementById('drawer').classList.toggle('trinity', dcTrinitySkin);
+  document.getElementById('vp-trinity-toggle').classList.toggle('on', dcTrinitySkin);
+  dcWriteSlug(dcViewMode);
+}
+
+const DC_PHASES = ['current', 'trinity-timeline', 'current-timeline',
+                   'current-overview', 'current-overview-wds', 'final'];
+
 function setProtoView(mode) {
+  /* Legacy names kept working: they were a phase plus the skin */
+  if (mode === 'current-trinity') { setTrinitySkin(true); mode = 'current'; }
+  else if (mode === 'final-trinity') { setTrinitySkin(true); mode = 'final'; }
+  if (DC_PHASES.indexOf(mode) < 0) mode = 'current';
+  return setPhase(mode);
+}
+function setPhase(mode) {
   dcViewMode = mode;
-  ['current', 'current-trinity', 'trinity-timeline', 'current-timeline', 'current-overview', 'current-overview-wds', 'final', 'final-trinity'].forEach(m => {
+  DC_PHASES.forEach(m => {
     const el = document.getElementById('vp-check-' + m);
     if (el) el.style.opacity = m === mode ? '1' : '0';
   });
@@ -2659,12 +2688,8 @@ function setProtoView(mode) {
      body.trinity reskins the page; the drawer's own .trinity class
      flips its --dc-* token layer (the migration scaffolding kept in
      the CSS since the preview toggle was removed). */
-  const trin = mode.indexOf('trinity') > -1;
-  /* Components column ships in Phase 1_Timeline and above only —
-     Current State (either skin) keeps today's six columns */
-  document.body.classList.toggle('comp-col', mode !== 'current' && mode !== 'current-trinity');
-  document.body.classList.toggle('trinity', trin);
-  document.getElementById('drawer').classList.toggle('trinity', trin);
+  /* Components column ships in Phase 1_Timeline and above only */
+  document.body.classList.toggle('comp-col', mode !== 'current');
   closeDrawer();
   closeTakeover();
   /* The WDS model differs by phase, so derived data has to be rebuilt */
@@ -5093,9 +5118,7 @@ function toggleDarkMode() {
   const light = document.body.classList.contains('light');
   document.getElementById('vp-dark-toggle').classList.toggle('on', !light);
   /* Label names the mode you're currently in */
-  document.getElementById('vp-theme-label').innerHTML = light
-    ? '&#9728;&#65039; Light Mode'
-    : '&#127769; Dark Mode';
+  document.getElementById('vp-theme-label').textContent = light ? 'Light mode' : 'Dark mode';
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -5332,8 +5355,8 @@ buildOverview('1219');
 
 /* Open whatever phase the URL asks for; otherwise Current State */
 (function () {
-  const mode = dcSlugFromUrl();
-  if (mode) setProtoView(mode);
+  const got = dcSlugFromUrl();
+  if (got) { if (got.skin) setTrinitySkin(true); setProtoView(got.mode); }
   else dcWriteSlug(dcViewMode);
 })();
 </script>

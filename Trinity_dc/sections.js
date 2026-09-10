@@ -796,7 +796,7 @@ function inNav() {
         all recompute without them, so a bad sensor read cannot bill twice.
 
    Billing settings are unchanged from the first pass and still compound:
-   pours at or under the max, then buffer, then rounding, always down. A load
+   pours at or under the max, then the volume adjustment, then rounding, always down. A load
    that falls to zero drops out rather than billing at zero.
 
    Not built, and known: the date picker, the filter popover, the Columns menu,
@@ -1125,8 +1125,8 @@ function rcSettingsCard() {
         + rcTip('Two pours or fewer is the recommendation. Every stop and start of the drum costs the returned-volume estimate accuracy, so loads above this are held out of billing.') + '</label>'
         + vfDd({ id:'rc-dd-pours', options:[{ v:0, label:'0' }, { v:1, label:'1' }, { v:2, label:'2' }, { v:3, label:'3' }],
                  value:rcSettings.maxPours, search:false, onChange:'rcSetPours' }) + '</div>'
-      + '<div class="in-f"><label class="in-f-l">Volume accuracy buffer'
-        + rcTip('A cushion in cubic yards taken off every returned amount before billing. It is how much you trust the estimate. A load that falls to zero leaves billing rather than billing at zero.') + '</label>'
+      + '<div class="in-f"><label class="in-f-l">Billing Volume Adjustment'
+        + rcTip('Cubic yards taken off every returned amount before billing. It is how much you trust the estimate. A load that falls to zero leaves billing rather than billing at zero.') + '</label>'
         + vfDd({ id:'rc-dd-buffer', options:[{ v:0, label:'0 yd\u00b3' }, { v:1, label:'1 yd\u00b3' }, { v:2, label:'2 yd\u00b3' }, { v:3, label:'3 yd\u00b3' }],
                  value:rcSettings.buffer, search:false, onChange:'rcSetBuffer' }) + '</div>'
       + '<div class="in-f rc-f-round"><label class="in-f-l">Round returned concrete to nearest'
@@ -1188,7 +1188,7 @@ function rcTableHtml() {
     return '<div class="am-table rc-table">' + head + '</div>'
       + '<div class="rc-empty">' + (removed
           ? 'Nothing removed. Loads you take out of returned concrete land here and can be restored.'
-          : 'No billable loads match these settings. Raising the max pour count or lowering the accuracy buffer will bring loads back.') + '</div>';
+          : 'No billable loads match these settings. Raising the max pour count or lowering the billing volume adjustment will bring loads back.') + '</div>';
   }
   return '<div class="am-table rc-table">' + head
     + rows.map(function (r, i) { return rcRowHtml(r, i); }).join('')
@@ -1516,7 +1516,7 @@ function rcReceipt(r) {
     + '<div class="rc-rc-bill"><div class="rc-rc-k">Bill ' + rcEsc(r.customer) + '</div>'
       + '<div class="rc-rc-v">' + (removed || bill === null ? '\u2014' : bill.toFixed(2) + ' yd\u00b3') + '</div>'
       + '<div class="rc-rc-m">' + (removed ? 'Removed from returned concrete' : bill === null ? 'Below the billing threshold'
-          : (rcSettings.buffer || rcSettings.round) ? 'After buffer and rounding' : 'Exact measured amount') + '</div></div>'
+          : (rcSettings.buffer || rcSettings.round) ? 'After adjustment and rounding' : 'Exact measured amount') + '</div></div>'
     + '</div>';
 }
 
@@ -1645,7 +1645,7 @@ function rcInvoiceBody(customer) {
       + '<div class="am-table-wrap"><div class="am-table rc-table rc-table--inv">' + head + lines + '</div></div>'
       + '<div class="rc-inv-total"><span>' + loads.length + (loads.length === 1 ? ' load' : ' loads') + ' \u00b7 ' + rcYd(invs.reduce(function (a, v) { return a + v.volume; }, 0)) + '</span><b>' + rcMoney(total) + '</b></div>'
       + '<div class="rc-inv-note">Billable volume is the measured returned volume after your billing settings (max ' + rcSettings.maxPours + ' pour' + (rcSettings.maxPours === 1 ? '' : 's')
-        + ', ' + rcSettings.buffer + ' yd\u00b3 buffer' + (rcSettings.round ? ', rounded down to the nearest ' + rcSettings.round + ' yd\u00b3' : ', no rounding') + '). Loads removed from returned concrete are not included.</div>'
+        + ', ' + rcSettings.buffer + ' yd\u00b3 adjustment' + (rcSettings.round ? ', rounded down to the nearest ' + rcSettings.round + ' yd\u00b3' : ', no rounding') + '). Loads removed from returned concrete are not included.</div>'
     + '</div>'
     + '<div class="rc-d-actions">'
       + '<button class="am-primary" onclick="rcToast(\'Prototype \\u2014 would download ' + (one ? one.id : 'the statement') + ' as PDF\')">' + RC_I.down + 'Download PDF</button>'

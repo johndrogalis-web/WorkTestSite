@@ -2348,6 +2348,67 @@ const DC_COMPONENTS = ['Iox / Robotex','Charge','Discharge','Drum','Internal Dis
    full-page takeover. 'final' = the drawer experience. */
 let dcViewMode = 'current';
 
+/* ══════════════════════════════════════════════════════════════
+   PHASE URLS
+   Each phase has its own address, so a link opens straight into
+   that view — no clicking through Options first. The slug also
+   updates as you switch, so the URL in the bar is always the one
+   to copy and send.
+     …/Hub_Update.html#current    Current State
+     …/Hub_Update.html#phase1     Phase 1_Timeline
+     …/Hub_Update.html#phase2     Phase 2_Overview
+     …/Hub_Update.html#phase3     Phase 3_Final
+     …/Hub_Update.html#current-trinity   Current State + Trinity
+     …/Hub_Update.html#phase3-trinity    Final + Trinity
+   ?view=<slug> works too, for tools that strip hashes.
+══════════════════════════════════════════════════════════════ */
+const DC_VIEW_SLUGS = {
+  'current': 'current',
+  'current-timeline': 'phase1',
+  'current-overview': 'phase2',
+  'final': 'phase3',
+  'current-trinity': 'current-trinity',
+  'final-trinity': 'phase3-trinity'
+};
+const DC_SLUG_VIEWS = Object.keys(DC_VIEW_SLUGS).reduce((m, k) => (m[DC_VIEW_SLUGS[k]] = k, m), {});
+/* older / alternative spellings people may paste */
+Object.assign(DC_SLUG_VIEWS, {
+  'phase-1': 'current-timeline', 'timeline': 'current-timeline',
+  'phase-2': 'current-overview', 'overview': 'current-overview',
+  'phase-3': 'final', 'final': 'final',
+  'trinity': 'current-trinity', 'final-trinity': 'final-trinity'
+});
+
+function dcSlugFromUrl() {
+  let raw = '';
+  try {
+    const q = new URLSearchParams(location.search).get('view');
+    const h = (location.hash || '').replace(/^#\/?/, '');
+    raw = (q || h || '').trim().toLowerCase();
+  } catch (e) { return null; }
+  return raw ? (DC_SLUG_VIEWS[raw] || null) : null;
+}
+function dcWriteSlug(mode) {
+  const slug = DC_VIEW_SLUGS[mode];
+  if (!slug) return;
+  /* Sandboxed previews (about:srcdoc) reject replaceState with a URL,
+     so this is best-effort: the deep links still work, the address bar
+     just doesn't update in those frames. */
+  try {
+    history.replaceState(null, '', location.pathname + location.search + '#' + slug);
+    return;
+  } catch (e) { /* fall through */ }
+  try {
+    if (location.hash.replace(/^#\/?/, '') !== slug) location.hash = slug;
+  } catch (e) { /* no addressable URL here — ignore */ }
+}
+/* Deep link on load, and follow back/forward or a pasted hash */
+function dcApplyUrlView() {
+  const mode = dcSlugFromUrl();
+  if (mode && mode !== dcViewMode) setProtoView(mode);
+}
+window.addEventListener('hashchange', dcApplyUrlView);
+
 function setProtoView(mode) {
   dcViewMode = mode;
   ['current', 'current-trinity', 'current-timeline', 'current-overview', 'final', 'final-trinity'].forEach(m => {
@@ -2366,6 +2427,7 @@ function setProtoView(mode) {
   document.getElementById('drawer').classList.toggle('trinity', trin);
   closeDrawer();
   closeTakeover();
+  dcWriteSlug(mode);
 }
 
 function openTakeover(name) {
@@ -4394,6 +4456,13 @@ renderComponentCells();
 
 /* Prime overview so the drawer isn't empty on first paint */
 buildOverview('1219');
+
+/* Open whatever phase the URL asks for; otherwise Current State */
+(function () {
+  const mode = dcSlugFromUrl();
+  if (mode) setProtoView(mode);
+  else dcWriteSlug(dcViewMode);
+})();
 </script>
 
 </body>

@@ -170,21 +170,27 @@
      well as across one truck. Hover stays for detail, not for basics. */
   .comp-key { display: flex; gap: 3px; margin-top: 8px; }
   .comp-key span {
-    width: 40px; text-align: center; font-size: 10.5px; font-weight: 600;
+    width: 34px; text-align: center; font-size: 10px; font-weight: 600;
     letter-spacing: .4px; color: var(--muted); text-transform: uppercase;
   }
   .comp-strip { display: flex; gap: 3px; margin-top: 7px; }
   .comp-slot {
-    width: 40px; height: 18px; border-radius: 3px; cursor: pointer;
+    width: 34px; height: 18px; border-radius: 3px; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     background: color-mix(in srgb, var(--text) 7%, transparent);
   }
   /* Healthy stays quiet on purpose — only faults should catch the eye */
   .comp-slot i { width: 5px; height: 5px; border-radius: 50%; background: color-mix(in srgb, var(--c-ok) 75%, transparent); }
   .comp-slot.warn  { background: color-mix(in srgb, var(--c-warn) 30%, transparent); }
-  .comp-slot.warn i  { width: 20px; height: 5px; border-radius: 2px; background: var(--c-warn); }
+  .comp-slot.warn i  { width: 17px; height: 5px; border-radius: 2px; background: var(--c-warn); }
   .comp-slot.alarm { background: color-mix(in srgb, var(--c-alarm) 34%, transparent); }
-  .comp-slot.alarm i { width: 20px; height: 5px; border-radius: 2px; background: var(--c-alarm); }
+  .comp-slot.alarm i { width: 17px; height: 5px; border-radius: 2px; background: var(--c-alarm); }
+  /* Asleep reads as a paused bar: present, reporting, just not moving */
+  .comp-slot.asleep { background: color-mix(in srgb, var(--text) 13%, transparent); }
+  .comp-slot.asleep i {
+    width: 10px; height: 8px; border-radius: 1px; background: none;
+    border-left: 3px solid var(--muted); border-right: 3px solid var(--muted);
+  }
   .comp-slot.na { background: color-mix(in srgb, var(--text) 7%, transparent); cursor: default; }
   .comp-slot.na i { width: 11px; height: 2px; border-radius: 1px; background: var(--dim); }
   .comp-slot:hover { outline: 1px solid var(--muted); outline-offset: 1px; }
@@ -404,6 +410,9 @@
   .dt-co-card.warn  { border-color: color-mix(in srgb, var(--dc-warn) 35%, transparent); }
   .dt-co-card.alarm { border-color: color-mix(in srgb, var(--dc-alarm) 40%, transparent); }
   .dt-co-card.grey  { background: var(--dc-layer-2); }
+  .dt-co-card.asleep .dt-co-card-strip { background: color-mix(in srgb, var(--dc-strong) 9%, transparent); }
+  .dt-co-card.asleep .dt-co-card-strip-label { color: var(--dc-soft); }
+  .dt-co-card.asleep .dt-co-card-value { color: var(--dc-soft); }
   .dt-co-card-body { flex: 1; display: flex; flex-direction: column; gap: 7px; padding: 16px 16px 12px; }
   .dt-co-card-head { display: flex; align-items: center; gap: 8px; }
   .dt-co-card-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
@@ -966,6 +975,14 @@
   }
   .dc-sp.nodata .spl { color: var(--dc-strip-alarm-ink); }
   .dc-sp.off { top: 12px; height: 6px; background: var(--dc-seg-off); }
+  /* Asleep: reported, just not moving. Neutral so it never reads as a
+     fault, but labelled so it never reads as missing data either. */
+  .dc-sp.asleep {
+    top: 6px; height: 18px;
+    background: color-mix(in srgb, var(--dc-strong) 13%, var(--dc-layer-2));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dc-strong) 22%, transparent);
+  }
+  .dc-sp.asleep .spl { color: var(--dc-soft); }
   .dc-sp.future { display: none; }
   .dc-sp.ign-on { top: 4px; height: 22px; background: color-mix(in srgb, var(--dc-ok) 30%, var(--dc-layer-2)); }
   .dc-sp.ign-on .spl { color: var(--dc-strong); }
@@ -1018,6 +1035,9 @@
   .dc-tl-legend .lg.nodata {
     background: color-mix(in srgb, var(--dc-alarm) 26%, var(--dc-layer-2));
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dc-alarm) 45%, transparent); }
+  .dc-tl-legend .lg.asleep { width: 20px; height: 14px; color: var(--dc-soft);
+    background: color-mix(in srgb, var(--dc-strong) 13%, var(--dc-layer-2));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dc-strong) 22%, transparent); }
   .dc-tl-legend .lg.off { height: 5px; background: var(--dc-seg-off); }
   .dc-tl-legend .lg.na { height: 5px; background: transparent; box-shadow: inset 0 0 0 1px var(--dc-border); }
   .dc-tl-legend .lg.tick { width: 3px; height: 13px; background: color-mix(in srgb, var(--dc-strong) 40%, transparent); }
@@ -2294,7 +2314,11 @@ function mcsCardsFor(num) {
       fault: a.disconnected ? 'No connection to backend' : null },
     { name:'DPS pressure', label:'Drum Pressure Sensor', value:'196', unit:'psi', startup:2, err:'--' },
     { name:'CPS', label:'Charge Pressure Sensor', value:'204', unit:'psi', startup:2, err:'--' },
-    { name:'WDS', label:'Water Drum Sensor', value:'12', unit:'rpm', startup:2, err:'--', extra:{label:'Drum Temp', val:'91 \u00B0F'}, fw:'v2.1.4' },
+    /* WDS does two jobs and they fail independently — rotation is
+       load-bearing for the system, temperature is not — so they are
+       reported separately rather than as one verdict */
+    { name:'WDS rotation', label:'Water Drum Sensor \u2014 rotation', value:'12', unit:'rpm', startup:2, err:'--', fw:'v2.1.4' },
+    { name:'WDS temp', label:'Water Drum Sensor \u2014 temperature', value:'91', unit:'\u00B0F', startup:2, err:'--', fw:'v2.1.4' },
     { name:'DRS', label:'Drum Rotation Speed', value:'8', unit:'rpm', startup:2, err:'--', fw:'v1.0.8' },
     { name:'CWR', label:'Cold Weather Relay', value: a.accel ? '--' : '91', unit:'\u00B0F',
       startup:2, err: a.accel ? '6' : '--', extra:{label:'FW v35.0 \u00B7 Tilt', val: a.accel ? '--' : '1\u00B0'}, fw:'v35.0',
@@ -2848,10 +2872,11 @@ function buildCard(card) {
   const state = card.state || 'clean';
   const dotColor = state === 'alarm' ? 'var(--dc-alarm)'
                  : state === 'warn'  ? 'var(--dc-warn)'
-                 : state === 'grey'  ? 'var(--dc-subtle)'
+                 : (state === 'grey' || state === 'asleep') ? 'var(--dc-subtle)'
                  : 'var(--dc-ok)';
   const stripLabel = state === 'alarm' ? ('Alarm \u00B7 ' + (card.fault || ''))
                    : state === 'warn'  ? ('Warning \u00B7 ' + (card.fault || ''))
+                   : state === 'asleep' ? 'Asleep \u00B7 drum idle, last known value'
                    : state === 'grey'  ? 'Not active'
                    : 'Operating normally';
   const stripDot = (state === 'alarm' || state === 'warn') ? '<span class="dt-co-card-strip-dot"></span>' : '';
@@ -2889,7 +2914,20 @@ function buildCard(card) {
     </div>`;
 }
 function buildOverview(num) {
-  document.getElementById('dc-mcs-cards').innerHTML = mcsCardsFor(num).map(buildCard).join('');
+  /* If the drum is standing still right now, the WDS pair is asleep,
+     not broken — say so on the cards instead of showing a stale
+     reading as if it were live */
+  const mcs = mcsCardsFor(num);
+  const st = dcDayStream(num, 6);
+  if (st.asleepNow) {
+    mcs.forEach(c => {
+      if ((c.name === 'WDS rotation' || c.name === 'WDS temp') && !c.state) {
+        c.state = 'asleep';
+        c.fault = DC_SLEEP_NOTE;
+      }
+    });
+  }
+  document.getElementById('dc-mcs-cards').innerHTML = mcs.map(buildCard).join('');
   document.getElementById('dc-fdm-cards').innerHTML = fdmCardsFor(num).map(buildCard).join('');
 
   /* Merged side panel — status header, error counts, map label */
@@ -2925,6 +2963,7 @@ const ALARM_ICON = '<svg width="10" height="10" viewBox="0 0 10 10" fill="white"
 /* Crossed circle for "no data received" — same job as the warning
    triangle and alarm square: shape carries the meaning, colour only
    reinforces it */
+const ASLEEP_ICON = '<svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M2.2 2.2h3.9v1.1L3.7 6.9h2.4V8H2.1V6.9L4.5 3.3H2.2V2.2Zm4.6 3.4h3.2v.9l-1.9 2.8h1.9v.9H6.7v-.9l1.9-2.8H6.8v-.9Z"/></svg>';
 const NODATA_ICON = '<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="6" cy="6" r="4.6"/><path d="M3.1 3.1l5.8 5.8"/></svg>';
 
 function badgeHtml(kind) {
@@ -2964,13 +3003,19 @@ const DC_TL_ROWS = [
   { row: 'External Display', card: 'ED' },
   { row: 'Bus power',        card: 'IOX supply voltage' },
   { row: 'CWR',              card: 'CWR' },
-  { row: 'WDS',              card: 'WDS' },
+  { row: 'WDS rotation',     card: 'WDS rotation' },
+  { row: 'WDS temp',         card: 'WDS temp' },
   { row: 'Water flow',       card: 'Water meter flow rate' }
 ];
 const DC_STATE_LABEL = {
-  ok: 'Healthy', warn: 'Warning', alarm: 'Alarm',
+  ok: 'Healthy', warn: 'Warning', alarm: 'Alarm', asleep: 'Asleep (drum idle)',
   nodata: 'No data received', off: 'Ignition off', future: 'Not reached yet'
 };
+/* The WDS sleeps to save battery once the drum has been still for a
+   while, and then reports its last reading. That is not a fault, so
+   it gets its own state instead of turning the component red. */
+const DC_SLEEP_AFTER = 15;   /* minutes of stillness before it sleeps */
+const DC_SLEEP_NOTE = 'WDS asleep — drum still, value shown is the last reading, not a fault';
 
 function dcVerOf(num) { return DC_TRUCK_VER[num] || 'V5'; }
 function dcHash(str) { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -2995,7 +3040,8 @@ function dcDayStream(num, idx) {
      Earlier days get their own plausible set so history varies. */
   const badSet = {};
   if (isToday) {
-    componentHealthFor(num).bad.forEach(b => { badSet[b.name] = b; });
+    const live = dcFaultSetFor(num);
+    Object.keys(live).forEach(k => { badSet[k] = live[k]; });
   } else {
     const pool = DC_TL_ROWS.filter(d => d.card);
     const n = rnd() < .5 ? 0 : (rnd() < .72 ? 1 : 2);
@@ -3021,6 +3067,38 @@ function dcDayStream(num, idx) {
   const dropAt = tcg ? Math.round(ignOn + Math.min(120, Math.max(15, span * 0.35))) : null;
   const lastMsg = dropAt !== null ? dropAt : runEnd;
 
+  /* Idle windows: the drum stands still while the truck waits for a
+     load, so the WDS goes to sleep. One or two per shift. */
+  const idle = [];
+  if (runEnd - ignOn > 120) {
+    const n = 1 + (rnd() < .5 ? 1 : 0);
+    for (let i = 0; i < n; i++) {
+      const from = Math.round(ignOn + 40 + rnd() * Math.max(30, (runEnd - ignOn) - 120));
+      const len = Math.round(DC_SLEEP_AFTER + 10 + rnd() * 35);
+      const to = Math.min(runEnd, from + len);
+      if (to - from >= DC_SLEEP_AFTER) idle.push({ from, to });
+    }
+    idle.sort((a2, b2) => a2.from - b2.from);
+  }
+  /* Some trucks are waiting for a load right now, so the landing page
+     actually shows the asleep state instead of only past windows */
+  if (isToday && runEnd - ignOn > 60 && rnd() < .45 &&
+      !idle.some(w => nowMin >= w.from && nowMin <= w.to)) {
+    idle.push({ from: Math.max(ignOn, nowMin - (18 + Math.round(rnd() * 20))), to: runEnd });
+    idle.sort((a2, b2) => a2.from - b2.from);
+  }
+  /* Overwrite a window of healthy time with another state */
+  const spliceState = (spans, from, to, state, note) => {
+    const out = [];
+    spans.forEach(sp => {
+      if (sp.state !== 'ok' || to <= sp.from || from >= sp.to) { out.push(sp); return; }
+      if (from > sp.from) out.push({ from: sp.from, to: from, state: 'ok', note: sp.note });
+      out.push({ from: Math.max(from, sp.from), to: Math.min(to, sp.to), state: state, note: note });
+      if (to < sp.to) out.push({ from: to, to: sp.to, state: 'ok', note: sp.note });
+    });
+    return out;
+  };
+
   const rows = DC_TL_ROWS.map(def => {
     if (def.legacyOnly) {
       const v5 = dcVerOf(num) === 'V5';
@@ -3044,7 +3122,12 @@ function dcDayStream(num, idx) {
     if (dropAt !== null) push(lastMsg, runEnd, 'nodata', 'No status messages received — TCG offline');
     if (isToday) { if (nowMin < 1440) push(nowMin, 1440, 'future', 'Later today — no messages yet'); }
     else push(runEnd, 1440, 'off', 'Ignition off — no reporting expected');
-    return { row: def.row, card: def.card, short: short, spans: spans, faultAt: faultAt, bad: bad };
+    /* Only the WDS sleeps, and only where it was otherwise healthy */
+    let out = spans;
+    if (def.card === 'WDS rotation' || def.card === 'WDS temp') {
+      idle.forEach(w => { out = spliceState(out, w.from, w.to, 'asleep', DC_SLEEP_NOTE); });
+    }
+    return { row: def.row, card: def.card, short: short, spans: out, faultAt: faultAt, bad: bad };
   });
 
   /* Message stream: heartbeat + one off-cycle message per change */
@@ -3068,7 +3151,8 @@ function dcDayStream(num, idx) {
 
   const worst = (dropAt !== null || Object.keys(badSet).some(k => badSet[k].state === 'alarm')) ? 'alarm'
               : (Object.keys(badSet).length ? 'warn' : 'ok');
-  const out = { ignOn, ignOff, runEnd, nowMin, isToday, dropAt, lastMsg, rows, msgs, base, worst,
+  const out = { ignOn, ignOff, runEnd, nowMin, isToday, dropAt, lastMsg, rows, msgs, base, worst, idle,
+                asleepNow: isToday && idle.some(w => nowMin >= w.from && nowMin <= w.to),
                 ocCount: msgs.filter(m => m.oc).length };
   dcStreamCache[key] = out;
   return out;
@@ -3129,6 +3213,7 @@ function buildTimeline(target) {
     <span><span class="lg alarm">${ALARM_ICON}</span>Alarm</span>
     <span><span class="lg nodata">${NODATA_ICON}</span>No data received</span>
     <span><span class="lg nodata">${NODATA_ICON}</span>Ignition state unknown</span>
+    <span><span class="lg asleep">${ASLEEP_ICON}</span>Asleep (drum idle)</span>
     <span><span class="lg off"></span>Ignition off</span>
     <span><span class="lg na"></span>Not installed</span>
     <span><span class="lg tick"></span>Status message</span>
@@ -3252,10 +3337,12 @@ function dcRenderRows(idx) {
         : st.msgs.filter(m => m.min >= sp.from && m.min < sp.to).length;
       const wide = (sp.to - sp.from) / 1440 * 100 > 9;
       const label = (sp.state === 'warn' || sp.state === 'alarm') ? DC_STATE_LABEL[sp.state]
-                  : (sp.state === 'nodata' ? 'No data' : '');
+                  : sp.state === 'nodata' ? 'No data'
+                  : sp.state === 'asleep' ? 'Asleep' : '';
       const gl = sp.state === 'warn' ? WARN_ICON
                : sp.state === 'alarm' ? ALARM_ICON
-               : sp.state === 'nodata' ? NODATA_ICON : '';
+               : sp.state === 'nodata' ? NODATA_ICON
+               : sp.state === 'asleep' ? ASLEEP_ICON : '';
       const tip = dcTip(
         `<div class="tt">${r.row} — ${DC_STATE_LABEL[sp.state]}</div>` +
         `<div class="tm">${dcHM(sp.from)} – ${sp.to >= 1440 ? '24:00' : dcHM(sp.to)}</div>` +
@@ -3434,7 +3521,8 @@ function dcIngestStreamLogs(num) {
       st.rows.forEach(r => {
         if (r.na) { comps[r.row] = 'NOT_INSTALLED'; return; }
         const sp = r.spans.find(x => m.min >= x.from && m.min <= x.to);
-        comps[r.row] = sp ? { ok: 'HEALTHY', warn: 'WARNING', alarm: 'ALARM', nodata: 'NO_DATA', off: 'IGNITION_OFF', future: 'UNKNOWN' }[sp.state] : 'UNKNOWN';
+        comps[r.row] = sp ? { ok: 'HEALTHY', warn: 'WARNING', alarm: 'ALARM', asleep: 'ASLEEP_IDLE',
+                              nodata: 'NO_DATA', off: 'IGNITION_OFF', future: 'UNKNOWN' }[sp.state] : 'UNKNOWN';
       });
       rows.push({
         time, sec: m.sec, delay: m.delay, mac: MAC, type: 'Event', sub: 'SystemStatus', source: 'TRUCK',
@@ -4319,6 +4407,8 @@ function toggleDarkMode() {
 /* Short labels for the table — full names stay on the cards */
 const COMP_SHORT = {
   'DPS pressure': 'DPS',
+  'WDS rotation': 'WDS rot',
+  'WDS temp': 'WDS temp',
   'IOX supply voltage': 'IOX',
   'Water meter flow rate': 'Water flow',
   'Admix meter flow rate': 'Admix flow'
@@ -4353,10 +4443,25 @@ fdmCardsFor = num => applyDemoFaults(num, _fdmCardsFor(num));
 /* Slot labels for the strip — short enough to sit above a 26px
    cell, in the same order the cards are built */
 const COMP_SLOT = {
-  'TCG': 'TCG', 'DPS pressure': 'DPS', 'CPS': 'CPS', 'WDS': 'WDS', 'DRS': 'DRS',
+  'TCG': 'TCG', 'DPS pressure': 'DPS', 'CPS': 'CPS',
+  'WDS rotation': 'ROT', 'WDS temp': 'TMP', 'DRS': 'DRS',
   'CWR': 'CWR', 'ICD': 'ICD', 'ED': 'ED',
   'IOX supply voltage': 'IOX', 'Water meter flow rate': 'WTR', 'Admix meter flow rate': 'ADX'
 };
+
+/* Fault set straight off the cards — used by the day stream, which
+   must not call componentHealthFor (that now asks the stream about
+   sleep, and the two would call each other) */
+function dcFaultSetFor(num) {
+  const set = {};
+  mcsCardsFor(num).concat(fdmCardsFor(num)).forEach(c => {
+    if (c.state === 'warn' || c.state === 'alarm') {
+      const short = COMP_SHORT[c.name] || c.name;
+      set[short] = { name: short, state: c.state, fault: c.fault };
+    }
+  });
+  return set;
+}
 
 function componentHealthFor(num) {
   const cards = mcsCardsFor(num).concat(fdmCardsFor(num));
@@ -4366,9 +4471,16 @@ function componentHealthFor(num) {
     state: c.state || 'clean',
     fault: c.fault
   }));
+  /* Drum standing still right now? The WDS pair is asleep, not broken */
+  if (dcDayStream(num, 6).asleepNow) {
+    all.forEach(c => {
+      if ((c.name === 'WDS rot' || c.name === 'WDS temp') && c.state === 'clean') c.state = 'asleep';
+    });
+  }
   const bad = all.filter(c => c.state === 'warn' || c.state === 'alarm');
+  const asleep = all.filter(c => c.state === 'asleep');
   const worst = bad.some(c => c.state === 'alarm') ? 'alarm' : (bad.length ? 'warn' : 'ok');
-  return { total: cards.length, ok: cards.length - bad.length, all, bad, worst };
+  return { total: cards.length, ok: cards.length - bad.length, all, bad, asleep, worst };
 }
 
 function renderComponentCells() {
@@ -4385,8 +4497,9 @@ function renderComponentCells() {
         ? `<span class="cbad" onclick="event.stopPropagation();${chipGo}">${h.bad.map(c => c.name).join(', ')}</span>`
         : `<span class="cbad" onclick="event.stopPropagation();${chipGo}">${h.bad.length} parts</span>`;
     const strip = '<div class="comp-strip">' + h.all.map(c => {
-      const st = c.state === 'warn' || c.state === 'alarm' ? c.state : '';
-      const tip = c.fault ? `${c.name} — ${c.fault}` : `${c.name} — operating normally`;
+      const st = (c.state === 'warn' || c.state === 'alarm' || c.state === 'asleep') ? c.state : '';
+      const tip = c.state === 'asleep' ? `${c.name} — ${DC_SLEEP_NOTE}`
+                : c.fault ? `${c.name} — ${c.fault}` : `${c.name} — operating normally`;
       return `<span class="comp-slot ${st}" title="${tip}"
         onclick="event.stopPropagation();dcOpenComponent('${td.dataset.truck}','${c.name.replace(/'/g, "")}')"><i></i></span>`;
     }).join('') + '</div>';

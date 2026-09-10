@@ -188,6 +188,7 @@
   .comp-slot.na { background: color-mix(in srgb, var(--text) 7%, transparent); cursor: default; }
   .comp-slot.na i { width: 11px; height: 2px; border-radius: 1px; background: var(--dim); }
   .comp-slot:hover { outline: 1px solid var(--muted); outline-offset: 1px; }
+  .comp .cbad { cursor: pointer; }
 
   /* Rollover expansion — the collapsed cell never grows the row, so
      every faulting part (2, 3, 5 or all 11) is listed here instead. */
@@ -3302,14 +3303,15 @@ function dcCompProvenance(num, short) {
 }
 
 let dcPendingRow = null;   /* timeline row to highlight after render */
+/* A component click is a question about history, so it opens the
+   TIMELINE, not the overview. Clicking anywhere else in the row
+   still opens the overview. */
 function dcOpenComponent(num, short) {
-  dcPendingRow = dcRowForComp(short);
+  dcPendingRow = short ? dcRowForComp(short) : null;
   openDrawer(num);                       /* dispatcher: takeover or drawer */
-  const phase = dcViewMode !== 'current' && dcViewMode !== 'current-trinity';
-  if (!phase) return;                    /* Current State keeps its own flow */
   if (document.getElementById('takeover').classList.contains('open')) tkView('timeline');
   else dcTab('timeline');
-  dcHighlightRow();
+  dcHighlightRow();                      /* no-op when a view has no rows to mark */
 }
 function dcHighlightRow() {
   if (!dcTlRoot || !dcPendingRow) return;
@@ -4375,10 +4377,13 @@ function renderComponentCells() {
     const h = componentHealthFor(td.dataset.truck);
     /* Count reads the health; the strip below names which part,
        by position, so the fault is legible without hovering */
+    const chipGo = h.bad.length === 1
+      ? `dcOpenComponent('${td.dataset.truck}','${h.bad[0].name.replace(/'/g, "")}')`
+      : `dcOpenComponent('${td.dataset.truck}','')`;
     const chip = !h.bad.length ? ''
       : h.bad.length <= 2
-        ? `<span class="cbad">${h.bad.map(c => c.name).join(', ')}</span>`
-        : `<span class="cbad">${h.bad.length} parts</span>`;
+        ? `<span class="cbad" onclick="event.stopPropagation();${chipGo}">${h.bad.map(c => c.name).join(', ')}</span>`
+        : `<span class="cbad" onclick="event.stopPropagation();${chipGo}">${h.bad.length} parts</span>`;
     const strip = '<div class="comp-strip">' + h.all.map(c => {
       const st = c.state === 'warn' || c.state === 'alarm' ? c.state : '';
       const tip = c.fault ? `${c.name} — ${c.fault}` : `${c.name} — operating normally`;

@@ -514,6 +514,7 @@
     table.report tbody tr.selected td { background: var(--row-selected) !important; }
     table.report tbody tr.selected td:first-child { box-shadow: inset 3px 0 0 var(--row-selected-edge); }
     table.report .ticket { font-weight: 600; }
+    table.report .order { font-variant-numeric: tabular-nums; color: var(--text-muted); }
     table.report .sub { display: block; font-size: 10.5px; color: var(--text-muted); font-weight: 500; margin-top: 1px; }
     table.report .gmt { font-size: 9px; color: var(--text-muted); font-weight: 500; margin-left: 3px; letter-spacing: 0.02em; }
     .dump-chip {
@@ -807,13 +808,14 @@
               <table class="report">
                 <thead>
                   <tr>
-                    <th style="width:12%">Ticket Number</th>
-                    <th style="width:14%">Load Date</th>
-                    <th style="width:26%">Customer</th>
-                    <th style="width:14%">Return Location</th>
+                    <th style="width:11%">Ticket Number</th>
+                    <th style="width:10%">Order Number</th>
+                    <th style="width:12%">Load Date</th>
+                    <th style="width:21%">Customer</th>
+                    <th style="width:13%">Return Location</th>
                     <th class="num" style="width:9%">Load Size</th>
                     <th class="num" style="width:10%">Returned</th>
-                    <th class="num" style="width:6%">Pours</th>
+                    <th class="num" style="width:5%">Pours</th>
                     <th class="num" style="width:9%">Amount To Bill</th>
                   </tr>
                 </thead>
@@ -1073,7 +1075,7 @@
       if (!rows.length) {
         const tr = document.createElement("tr");
         tr.className = "empty-row";
-        tr.innerHTML = '<td colspan="8">No billable loads match the current settings and filters.</td>';
+        tr.innerHTML = '<td colspan="9">No billable loads match the current settings and filters.</td>';
         tbody.appendChild(tr);
         renderJourney(null);
         return;
@@ -1085,7 +1087,8 @@
         if (r.ticket === selectedTicket) tr.classList.add("selected");
         tr.innerHTML =
           '<td class="ticket">' + r.ticket + '</td>' +
-          '<td>' + r.loadT + '<span class="gmt">GMT-7</span><span class="sub">' + r.date + ' &middot; Order ' + r.order + '</span></td>' +
+          '<td class="order">' + r.order + '</td>' +
+          '<td>' + r.loadT + '<span class="gmt">GMT-7</span><span class="sub">' + r.date + '</span></td>' +
           '<td>' + r.customer + '<span class="sub" title="' + r.addr.replace(/"/g, "&quot;") + '">' + r.addr + '</span></td>' +
           '<td>' + r.ret + (r.dischargeType === "dump" ? '<br><span class="dump-chip">DUMP SITE</span>' : '') + '</td>' +
           '<td class="num">' + r.size + ' yd&sup3;</td>' +

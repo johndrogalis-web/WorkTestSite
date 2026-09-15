@@ -565,6 +565,13 @@ tr.detail-row, tr.detail-row:hover{background:var(--row-dark)}
 .detail-item .dl{font-size:11px;font-weight:700;color:var(--faint);margin-bottom:3px}
 .detail-item .dv{font-size:13px;color:var(--text);word-break:break-word}
 .detail-item .dv.empty{color:var(--faint)}
+.detail-actions{margin-top:16px;padding-top:12px;border-top:1px solid var(--border-soft)}
+.detail-del{
+  display:inline-flex;align-items:center;gap:8px;background:none;border:0;
+  color:var(--blue-hi);font-family:inherit;font-size:13px;font-weight:700;
+  cursor:pointer;padding:6px 2px;
+}
+.detail-del:hover{text-decoration:underline}
 /* expander hidden on desktop */
 #slumpTable th:nth-child(1), #slumpTable td.exp-cell,
 #loadTable th:nth-child(1), #loadTable td.exp-cell{display:none}
@@ -662,7 +669,16 @@ body.vp-t #loadTable th:nth-child(1), body.vp-t #loadTable td.exp-cell{display:t
 
 body.vp-m .tbl-wrap table, body.vp-t .tbl-wrap table{min-width:0 !important;width:100%}
 body.vp-m .tbl-wrap{overflow-x:hidden}
-body.vp-m th, body.vp-m td{padding:12px 8px;font-size:13px}
+body.vp-m th, body.vp-m td{padding:12px 5px;font-size:12.5px}
+body.vp-m .exp-cell{width:26px;padding:12px 2px 12px 8px}
+body.vp-m .exp-btn{padding:2px}
+body.vp-m #slumpTable th:last-child{font-size:0} /* icon-only column needs no header text */
+body.vp-m .act-cell{padding-left:0;padding-right:8px}
+body.vp-m .del-btn{padding:5px}
+/* two-digit year on mobile */
+.d-short{display:none}
+body.vp-m .d-full{display:none}
+body.vp-m .d-short{display:inline}
 
 /* slump table: mobile keeps chevron, Date, Time, Tester, Truck */
 body.vp-m #slumpTable th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(5)):not(:nth-child(6)):not(:last-child),
@@ -678,10 +694,9 @@ body.vp-m #loadTable tr:not(.detail-row) td:not(.exp-cell):not(:nth-child(2)):no
 body.vp-t #loadTable th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(4)):not(:nth-child(6)):not(:nth-child(7)):not(:nth-child(8)):not(:nth-child(11)),
 body.vp-t #loadTable tr:not(.detail-row) td:not(.exp-cell):not(:nth-child(2)):not(:nth-child(4)):not(:nth-child(6)):not(:nth-child(7)):not(:nth-child(8)):not(:nth-child(11)){display:none}
 
-body.vp-m .act-cell, body.vp-m #slumpTable th:last-child{padding-left:2px;padding-right:8px}
 body.vp-m tbody tr:not(.detail-row), body.vp-t tbody tr:not(.detail-row){cursor:pointer}
 /* truncate tester on mobile */
-body.vp-m #slumpTable td:nth-child(5){max-width:82px;overflow:hidden;text-overflow:ellipsis}
+body.vp-m #slumpTable td:nth-child(5){max-width:74px;overflow:hidden;text-overflow:ellipsis}
 
 /* drawer: full screen in the field, single column, no CSV path */
 body.vp-m .drawer{width:100%;max-width:none;top:0;border-radius:44px}
@@ -722,9 +737,6 @@ body.vp-m .form-submit-wrap .btn-primary{width:100%}
       <div class="vp-opts-dd" id="vpOptsDd" onclick="event.stopPropagation()">
         <div class="vp-dd-label">Version</div>
         <button class="vp-opt-row active" onclick="void(0)">MVP <span class="vp-check">✓</span></button>
-        <div class="vp-dd-div"></div>
-        <div class="vp-dd-label">Explorations</div>
-        <button class="vp-opt-row" onclick="toggleTestType()">Show slump test type <span class="vp-switch on" id="testTypeSwitch"></span></button>
         <div class="vp-dd-div"></div>
         <button class="vp-opt-row" onclick="toggleTheme()">Dark mode <span class="vp-switch" id="themeSwitch"></span></button>
       </div>
@@ -940,27 +952,6 @@ body.vp-m .form-submit-wrap .btn-primary{width:100%}
 
     <!-- ============ MODE 1: single test form (Option B long form) ============ -->
     <div id="modeForm">
-      <div id="testTypeSection">
-      <div class="form-sec-label">Select slump test type</div>
-      <div class="radio-inline">
-        <label class="radio-row">
-          <input type="radio" name="testType" value="Slump test" checked onchange="onTestTypeChange()">
-          <span class="radio-dot"></span>
-          <span class="radio-text">Slump test</span>
-        </label>
-        <label class="radio-row">
-          <input type="radio" name="testType" value="Slump flow test" onchange="onTestTypeChange()">
-          <span class="radio-dot"></span>
-          <span class="radio-text">Slump flow test</span>
-        </label>
-        <label class="radio-row">
-          <input type="radio" name="testType" value="Flow test" onchange="onTestTypeChange()">
-          <span class="radio-dot"></span>
-          <span class="radio-text">Flow test</span>
-        </label>
-      </div>
-      </div>
-
       <div class="form-sec-label" style="font-size:19px;margin-top:30px">Test details</div>
       <div class="f-grid">
         <div class="f-field" id="fTruckField">
@@ -987,7 +978,7 @@ body.vp-m .form-submit-wrap .btn-primary{width:100%}
         </div>
         <div class="f-field" id="fTimeField">
           <label class="f-label" for="fTime">Slump Test Time<span class="req">*</span></label>
-          <select class="f-select" id="fTime" disabled onchange="clearInvalid('fTimeField')">
+          <select class="f-select" id="fTime" disabled onchange="onTimeChange()">
             <option value="">Select a discharge time</option>
           </select>
           <div class="f-error-msg">Select the discharge time this test was taken at.</div>
@@ -1016,9 +1007,10 @@ body.vp-m .form-submit-wrap .btn-primary{width:100%}
           <div class="f-error-above"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg><span id="fWeightErrTxt">Unit weight must be between 1,400 and 2,800 kg/m³.</span></div>
           <input class="f-input" id="fWeight" type="text" inputmode="decimal" placeholder="" oninput="validateRange('fWeight')">
         </div>
-        <div class="f-field">
+        <div class="f-field" id="fAirField">
           <label class="f-label" for="fAir">Air Content %</label>
-          <input class="f-input" id="fAir" type="text" inputmode="decimal" placeholder="">
+          <div class="f-error-above"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg><span id="fAirErrTxt">Air content must be between 0 and 30%.</span></div>
+          <input class="f-input" id="fAir" type="text" inputmode="decimal" placeholder="" oninput="validateRange('fAir')">
         </div>
 
         <div class="f-field">
@@ -1118,28 +1110,42 @@ body.vp-m .form-submit-wrap .btn-primary{width:100%}
 /* ============ mock data: trucks and their tickets ============ */
 const FLEET = {
   "HS1003": [
-    {t:"66108", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"09/02/2026", times:["9:45 AM","11:20 AM"], tslump:"100", size:"8.5 m³"},
-    {t:"66109", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"09/03/2026", times:["7:40 AM","8:55 AM","10:10 AM"], tslump:"100", size:"9.0 m³"}
+    {t:"66108", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"09/02/2026", tslump:"100 mm", size:"8.5 m³",
+     times:[{t:"9:45 AM", d:"09/02/2026"},{t:"11:20 AM", d:"09/02/2026"}]},
+    {t:"66109", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"09/03/2026", tslump:"100 mm", size:"9.0 m³",
+     times:[{t:"7:40 AM", d:"09/03/2026"},{t:"8:55 AM", d:"09/03/2026"},{t:"10:10 AM", d:"09/03/2026"}]}
   ],
   "HS1830": [
-    {t:"66104", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"09/02/2026", times:["4:05 PM"], tslump:"100", size:"8.5 m³"},
-    {t:"66111", order:"461", mix:"10369280", cust:"Brookfield Paving", loc:"Ocala", date:"09/04/2026", times:["8:12 AM","9:30 AM"], tslump:"125", size:"7.5 m³"}
+    {t:"66104", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"09/02/2026", tslump:"100 mm", size:"8.5 m³",
+     times:[{t:"4:05 PM", d:"09/02/2026"}]},
+    {t:"66111", order:"461", mix:"10369280", cust:"Brookfield Paving", loc:"Ocala", date:"09/04/2026", tslump:"125 mm", size:"7.5 m³",
+     times:[{t:"8:12 AM", d:"09/04/2026"},{t:"9:30 AM", d:"09/04/2026"}]},
+    {t:"66131", order:"455", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"03/20/2026", tslump:"100 mm", size:"8.5 m³",
+     times:[{t:"11:50 PM", d:"03/20/2026"},{t:"12:05 AM", d:"03/21/2026"}]} // overnight load: date follows the discharge
   ],
   "HS1999": [
-    {t:"66101", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"09/02/2026", times:["1:05 PM","2:40 PM"], tslump:"100", size:"8.5 m³"}
+    {t:"66101", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"09/02/2026", tslump:"100 mm", size:"8.5 m³",
+     times:[{t:"1:05 PM", d:"09/02/2026"},{t:"2:40 PM", d:"09/02/2026"}]}
   ],
   "HS2022": [
-    {t:"66102", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"09/02/2026", times:["4:05 PM","5:20 PM"], tslump:"100", size:"8.5 m³"},
-    {t:"66113", order:"461", mix:"10369280", cust:"Brookfield Paving", loc:"Ocala", date:"09/04/2026", times:["10:45 AM"], tslump:"125", size:"7.5 m³"},
-    {t:"66118", order:"470", mix:"10369291", cust:"Lakeview Builders", loc:"Leesburg", date:"09/08/2026", times:["7:15 AM","8:40 AM","11:05 AM"], tslump:"150", size:"9.0 m³"}
+    {t:"66102", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"09/02/2026", tslump:"100 mm", size:"8.5 m³",
+     times:[{t:"4:05 PM", d:"09/02/2026"},{t:"5:20 PM", d:"09/02/2026"}]},
+    {t:"66113", order:"461", mix:"10369280", cust:"Brookfield Paving", loc:"Ocala", date:"09/04/2026", tslump:"125 mm", size:"7.5 m³",
+     times:[{t:"10:45 AM", d:"09/04/2026"}]},
+    {t:"66118", order:"470", mix:"10369291", cust:"Lakeview Builders", loc:"Leesburg", date:"09/08/2026", tslump:"150 mm", size:"9.0 m³",
+     times:[{t:"7:15 AM", d:"09/08/2026"},{t:"8:40 AM", d:"09/08/2026"},{t:"11:05 AM", d:"09/08/2026"}]}
   ],
   "HS2024": [
-    {t:"66103", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"09/02/2026", times:["4:20 PM"], tslump:"100", size:"8.5 m³"},
-    {t:"66120", order:"470", mix:"10369291", cust:"Lakeview Builders", loc:"Leesburg", date:"09/08/2026", times:["9:10 AM","12:35 PM"], tslump:"150", size:"9.0 m³"}
+    {t:"66103", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"09/02/2026", tslump:"100 mm", size:"8.5 m³",
+     times:[{t:"4:20 PM", d:"09/02/2026"}]},
+    {t:"66120", order:"470", mix:"10369291", cust:"Lakeview Builders", loc:"Leesburg", date:"09/08/2026", tslump:"150 mm", size:"9.0 m³",
+     times:[{t:"9:10 AM", d:"09/08/2026"},{t:"12:35 PM", d:"09/08/2026"}]}
   ],
   "71750": [
-    {t:"66097", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"06/25/2026", times:["8:12 AM"], tslump:"100", size:"8.0 m³"},
-    {t:"66098", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"06/25/2026", times:["8:12 AM","9:45 AM"], tslump:"100", size:"8.0 m³"}
+    {t:"66097", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"06/25/2026", tslump:"100 mm", size:"8.0 m³",
+     times:[{t:"8:12 AM", d:"06/25/2026"}]},
+    {t:"66098", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"06/25/2026", tslump:"100 mm", size:"8.0 m³",
+     times:[{t:"8:12 AM", d:"06/25/2026"},{t:"9:45 AM", d:"06/25/2026"}]}
   ]
 };
 
@@ -1166,11 +1172,10 @@ function resetDrawer(){
   document.querySelector('input[name="entryMode"][value="form"]').checked = true;
   setMode('form');
   // form fields
-  document.querySelector('input[name="testType"][value="Slump test"]').checked = true;
   document.getElementById('fTruck').value = '';
   closeTruckCombo();
   setTruck(null);
-  ['fTruckField','fTicketField','fTimeField','fSlumpField','fTempField','fWeightField'].forEach(id=>document.getElementById(id).classList.remove('invalid'));
+  ['fTruckField','fTicketField','fTimeField','fSlumpField','fTempField','fWeightField','fAirField'].forEach(id=>document.getElementById(id).classList.remove('invalid'));
   ['fSlump','fNote','fTemp','fWeight','fAir'].forEach(id=>document.getElementById(id).value='');
   resetTimeSelect();
   document.getElementById('fTester').value='';
@@ -1247,6 +1252,7 @@ function pickTruck(name){
 /* apply a truck selection: populate its tickets, or a no-tickets state for unlisted trucks */
 function setTruck(truck){
   const tk = document.getElementById('fTicket');
+  selectedTicket = null;
   resetTimeSelect();
   if(!truck){
     tk.innerHTML = '<option value="">Select a ticket</option>';
@@ -1267,20 +1273,33 @@ document.addEventListener('click', (e)=>{
   if(!e.target.closest('#truckCombo')) closeTruckCombo();
 });
 
+let selectedTicket = null; // the ticket driving the time/date pair
+
 function onTicketChange(){
   clearInvalid('fTicketField');
   const truck = document.getElementById('fTruck').value;
   const num = document.getElementById('fTicket').value;
   resetTimeSelect();
-  if(!truck || !num) return;
+  if(!truck || !num){ selectedTicket = null; return; }
   const x = FLEET[truck].find(t=>t.t===num);
-  // discharge times come from the ticket; the date is fixed by the ticket
+  selectedTicket = x;
+  // discharge times come from the ticket; each discharge carries its own date
+  // (a load can cross midnight, so the date follows the selected time)
   const tm = document.getElementById('fTime');
   tm.innerHTML = '<option value="">Select a discharge time</option>' +
-    x.times.map(t=>`<option value="${t}">${t}</option>`).join('');
+    x.times.map(dt=>`<option value="${dt.t}">${dt.t}</option>`).join('');
   tm.disabled = false;
-  if(x.times.length === 1){ tm.value = x.times[0]; }
-  document.getElementById('fDate').value = x.date;
+  document.getElementById('fDate').value = x.date; // load start date until a discharge is chosen
+  if(x.times.length === 1){ tm.value = x.times[0].t; onTimeChange(); }
+}
+
+function onTimeChange(){
+  clearInvalid('fTimeField');
+  if(!selectedTicket) return;
+  const t = document.getElementById('fTime').value;
+  const dt = selectedTicket.times.find(x=>x.t===t);
+  // date switches automatically with the discharge time (e.g. 11:50 PM -> 03/20, 12:05 AM -> 03/21)
+  document.getElementById('fDate').value = dt ? dt.d : selectedTicket.date;
 }
 function resetTimeSelect(){
   const tm = document.getElementById('fTime');
@@ -1288,6 +1307,8 @@ function resetTimeSelect(){
   tm.disabled = true;
   document.getElementById('fDate').value = '';
 }
+/* clear tracked ticket when truck changes */
+
 function clearInvalid(id){ document.getElementById(id).classList.remove('invalid'); }
 
 /* collapsed-by-default note accordion */
@@ -1307,38 +1328,19 @@ function updateNoteLabel(){
 }
 
 /* range guards for measured values — catches typos like 2000 instead of 200 */
-/* measured slump range depends on the selected test type:
-   slump 0–10" (0–250 mm) · slump flow 15–32" (400–800 mm) */
-const SLUMP_RANGES_BY_TYPE = {
-  'Slump test':      { min:0,   max:250, msg:'Measured slump must be between 0 and 250 mm.' },
-  'Slump flow test': { min:400, max:800, msg:'Slump flow must be between 400 and 800 mm.' },
-  'Flow test':       { min:null, max:null, msg:'' } // range TBD — numeric check only
-};
-function currentSlumpRange(){
-  const type = document.querySelector('input[name="testType"]:checked').value;
-  return SLUMP_RANGES_BY_TYPE[type];
-}
-function onTestTypeChange(){
-  // an entered value may become valid/invalid when the type changes
-  if(document.getElementById('fSlump').value.trim() !== '') validateRange('fSlump');
-  else document.getElementById('fSlumpField').classList.remove('invalid');
-}
-
 const RANGES = {
-  fSlump:  { field:'fSlumpField',  err:'fSlumpErrTxt',  min:0,    max:250,  unit:'mm',
-             msg:'Measured slump must be between 0 and 250 mm.' },
-  fTemp:   { field:'fTempField',   err:'fTempErrTxt',   min:5,    max:40,   unit:'°C',
-             msg:'Concrete temperature must be between 5 and 40 °C.' },
-  fWeight: { field:'fWeightField', err:'fWeightErrTxt', min:1400, max:2800, unit:'kg/m³',
-             msg:'Unit weight must be between 1,400 and 2,800 kg/m³.' }
+  fSlump:  { field:'fSlumpField',  err:'fSlumpErrTxt',  min:0,   max:280,  unit:'mm',
+             msg:'Measured slump must be between 0 and 280 mm.' },
+  fTemp:   { field:'fTempField',   err:'fTempErrTxt',   min:0,   max:70,   unit:'°C',
+             msg:'Concrete temperature must be between 0 and 70 °C.' },
+  fWeight: { field:'fWeightField', err:'fWeightErrTxt', min:200, max:6000, unit:'kg/m³',
+             msg:'Unit weight must be between 200 and 6,000 kg/m³.' },
+  fAir:    { field:'fAirField',    err:'fAirErrTxt',    min:0,   max:30,   unit:'%',
+             msg:'Air content must be between 0 and 30%.' }
 };
 
 function validateRange(inputId){
-  const r = Object.assign({}, RANGES[inputId]);
-  if(inputId === 'fSlump'){
-    const tr = currentSlumpRange();
-    r.min = tr.min; r.max = tr.max; r.msg = tr.msg;
-  }
+  const r = RANGES[inputId];
   const fieldEl = document.getElementById(r.field);
   const raw = document.getElementById(inputId).value.trim();
   if(raw === ''){ fieldEl.classList.remove('invalid'); return true; } // required-ness handled at submit
@@ -1346,7 +1348,7 @@ function validateRange(inputId){
   let bad = false, msg = r.msg;
   if(isNaN(v)){
     bad = true; msg = 'Enter a number' + (raw.match(/[a-zA-Z]/) ? ' — no units needed, just the value in ' + r.unit + '.' : '.');
-  } else if(r.min !== null && (v < r.min || v > r.max)){
+  } else if(v < r.min || v > r.max){
     bad = true;
   }
   document.getElementById(r.err).textContent = msg;
@@ -1383,12 +1385,11 @@ function saveSingleTest(){
   }
   // slump is required
   if(document.getElementById('fSlump').value.trim() === ''){
-    const tr = currentSlumpRange();
-    document.getElementById('fSlumpErrTxt').textContent = tr.msg || 'Enter a measured value.';
+    document.getElementById('fSlumpErrTxt').textContent = RANGES.fSlump.msg;
     document.getElementById('fSlumpField').classList.add('invalid'); ok=false;
   }
   // all three measured values must be in range if entered
-  ['fSlump','fTemp','fWeight'].forEach(id=>{ if(!validateRange(id)) ok=false; });
+  ['fSlump','fTemp','fWeight','fAir'].forEach(id=>{ if(!validateRange(id)) ok=false; });
   if(!ok) return;
 
   const x = (FLEET[truck] || []).find(t=>t.t===ticket);
@@ -1398,14 +1399,17 @@ function saveSingleTest(){
     const v = document.getElementById(id).value.trim();
     return v === '' ? '' : parseFloat(v.replace(/,/g,'')).toLocaleString() + ' ' + unit;
   };
+  const timeVal = document.getElementById('fTime').value;
+  const dtEntry = x.times.find(e=>e.t===timeVal);
   addSlumpRows([{
-    date: x.date,                                   // date always comes from the ticket
-    time: document.getElementById('fTime').value,
+    date: dtEntry ? dtEntry.d : x.date,             // date follows the selected discharge (loads can cross midnight)
+    time: timeVal,
     sub: CURRENT_USER,                              // submitter is always the verifi login
     tester: document.getElementById('fTester').value,
     truck: truck, type: x.cust, mix: x.order, test: x.mix,
     loc: x.loc, ticket: x.t, tslump: x.tslump, order: x.order, size: x.size,
     shape: shapeSel.options[shapeSel.selectedIndex].text,
+    buildUp: 'OK',
     temp: num('fTemp','°C'), air: num('fAir','%'), weight: num('fWeight','kg/m³'),
     notes: document.getElementById('fNote').value.trim()
   }]);
@@ -1430,11 +1434,12 @@ function addSlumpRows(rows){
     tr.dataset.submitter = r.sub;
     tr.dataset.location = r.loc || 'Wildwood';
     tr.dataset.date = r.date;
+    const dShort = r.date.replace(/(\d{2})\/(\d{2})\/\d{2}(\d{2})/, '$1/$2/$3');
     tr.innerHTML =
       '<td class="exp-cell"><button class="exp-btn" title="Show details"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></td>' +
-      cell(r.date, 'td-time') + cell(r.time) + cell(r.sub) + cell(r.tester) +
+      `<td class="td-time"><span class="d-full">${r.date}</span><span class="d-short">${dShort}</span></td>` + cell(r.time) + cell(r.sub) + cell(r.tester) +
       cell(r.truck) + cell(r.type) + cell(r.mix) + cell(r.test) +
-      cell(r.mixCurve) + '<td><span class="chip-tojob">To Job</span></td>' +
+      cell(r.mixCurve) + cell(r.buildUp) +
       cell(r.vSlump) + cell(r.vReason) + cell(r.nextValid) + cell(r.slumpDiff) +
       cell(r.vSlumpTime) + cell(r.nextValidTime) + cell(r.timeDiff) +
       cell(r.loc) + cell(r.ticket) + cell(r.tslump) + cell(r.order) + cell(r.size) +
@@ -1451,16 +1456,16 @@ function addSlumpRows(rows){
 const SEED_SLUMP_ROWS = [
   {date:'09/02/2026', time:'4:20 PM', sub:'campbell@wsconcrete.com', tester:'Campbell', truck:'HS2024', type:'W&S Concrete INC',
    mix:'454', test:'10369262', loc:'Wildwood', ticket:'66103', tslump:'100 mm', order:'454', size:'8.5 m³',
-   shape:'True', temp:'24.5 °C', air:'4.2 %', weight:'2,350 kg/m³'},
+   shape:'True', temp:'24.5 °C', air:'4.2 %', weight:'2,350 kg/m³', buildUp:'OK'},
   {date:'09/02/2026', time:'4:05 PM', sub:'jortiz@wsconcrete.com', tester:'Ortiz', truck:'HS2022', type:'W&S Concrete INC',
    mix:'454', test:'10369262', loc:'Wildwood', ticket:'66102', tslump:'100 mm', order:'454', size:'8.5 m³',
-   shape:'True', temp:'25.0 °C', air:'3.9 %', weight:'2,340 kg/m³'},
+   shape:'True', temp:'25.0 °C', air:'3.9 %', weight:'2,340 kg/m³', buildUp:'OK'},
   {date:'09/02/2026', time:'3:55 PM', sub:'tnguyen@wsconcrete.com', tester:'Nguyen', truck:'HS1003', type:'W&S Concrete INC',
    mix:'454', test:'10369262', loc:'Wildwood', ticket:'66108', tslump:'100 mm', order:'454', size:'8.5 m³',
-   shape:'Shear', temp:'26.0 °C', air:'4.5 %', weight:'2,360 kg/m³', notes:'Retest after water add'},
+   shape:'Shear', temp:'26.0 °C', air:'4.5 %', weight:'2,360 kg/m³', notes:'Retest after water add', buildUp:'Warning'},
   {date:'09/02/2026', time:'4:05 PM', sub:'campbell@wsconcrete.com', tester:'Campbell', truck:'HS1830', type:'W&S Concrete INC',
    mix:'454', test:'10369262', loc:'Wildwood', ticket:'66104', tslump:'100 mm', order:'454', size:'8.5 m³',
-   shape:'True', temp:'24.0 °C', air:'4.1 %', weight:'2,345 kg/m³'}
+   shape:'True', temp:'24.0 °C', air:'4.1 %', weight:'2,345 kg/m³', buildUp:'Problem'}
 ];
 
 /* ============ table filters ============ */
@@ -1582,7 +1587,13 @@ function selectFilter(e, view, key, val){
 /* ---- delete a slump test (with undo via toast) ---- */
 let lastDeleted = null;
 function deleteSlumpRow(btn){
-  const tr = btn.closest('tr');
+  deleteSlumpTr(btn.closest('tr'));
+}
+function deleteFromDetail(btn){
+  const dataRow = btn.closest('tr.detail-row').previousElementSibling;
+  deleteSlumpTr(dataRow);
+}
+function deleteSlumpTr(tr){
   const next = tr.nextElementSibling;
   if(next && next.classList.contains('detail-row')) next.remove(); // close its accordion
   lastDeleted = { row: tr, anchor: tr.nextElementSibling };
@@ -1625,9 +1636,17 @@ function toggleRowDetail(btn){
     const empty = raw === '' || raw === '-';
     items += `<div class="detail-item"><div class="dl">${label}</div><div class="dv${empty?' empty':''}">${empty ? '-' : raw}</div></div>`;
   });
+  // if the Actions column is hidden at this viewport, the delete moves into the panel
+  let actions = '';
+  const actCell = tr.querySelector('.act-cell');
+  if(actCell && getComputedStyle(actCell).display === 'none'){
+    actions = `<div class="detail-actions"><button class="detail-del" onclick="deleteFromDetail(this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+      Delete slump test</button></div>`;
+  }
   const detail = document.createElement('tr');
   detail.className = 'detail-row';
-  detail.innerHTML = `<td class="detail-cell" colspan="${ths.length}"><div class="detail-grid">${items}</div></td>`;
+  detail.innerHTML = `<td class="detail-cell" colspan="${ths.length}"><div class="detail-grid">${items}</div>${actions}</td>`;
   tr.after(detail);
   btn.classList.add('open');
 }
@@ -1811,7 +1830,7 @@ function finishImport(count){
       sub:CURRENT_USER, tester:testers[i%testers.length], truck:tr, type:x.cust, mix:x.order, test:x.mix,
       ticket:x.t, loc:x.loc, tslump:x.tslump, order:x.order, size:x.size,
       shape:shapes[i%shapes.length], temp:(23+i*0.5)+' °C', air:(3.8+(i%4)*0.2).toFixed(1)+' %',
-      weight:(2330+i*5).toLocaleString()+' kg/m³'});
+      weight:(2330+i*5).toLocaleString()+' kg/m³', buildUp:['OK','OK','Warning','OK','Problem','OK'][i%6]});
   }
   addSlumpRows(rows);
   closeDrawer();
@@ -1877,19 +1896,6 @@ function autoDetectViewport(){
 }
 autoDetectViewport();
 window.addEventListener('resize', autoDetectViewport);
-
-/* exploration: show/hide the slump test type question (stakeholder discussion) */
-let showTestType = true;
-function toggleTestType(){
-  showTestType = !showTestType;
-  document.getElementById('testTypeSection').style.display = showTestType ? '' : 'none';
-  document.getElementById('testTypeSwitch').classList.toggle('on', showTestType);
-  if(!showTestType){
-    // without the question, entries are conventional slump tests (0-250 mm validation)
-    document.querySelector('input[name="testType"][value="Slump test"]').checked = true;
-    onTestTypeChange();
-  }
-}
 
 const rootEl = document.documentElement;
 function syncThemeSwitch(){

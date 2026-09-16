@@ -539,7 +539,7 @@ function dtAcctRenderOptions() {
   opts.innerHTML = accounts.map(acct => {
     const isActive = acct === activeAccount;
     const check = isActive
-      ? '<svg class="dt-acct-opt-check" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3 3 7-7" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      ? '<svg class="dt-acct-opt-check" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3 3 7-7" stroke="var(--blue)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
       : '<span class="dt-acct-opt-check"></span>';
     return `
       <div class="dt-acct-opt ${isActive ? 'active' : ''}" onclick="dtAcctSelect('${acct}')">
@@ -633,7 +633,7 @@ const SEN_CONFIGS = {
     timeLabels: ['01:25','01:30','01:40','02:10','02:15']
   },
   water: {
-    title:'Water Addition', unit:'gal/yd³', color:'#3069e3',
+    title:'Water Addition', unit:'gal/yd³', color:'var(--blue)',
     type:'line', min:0, max:2,
     /* Seed is monotonically increasing — water only goes up */
     seed:[0.00,0.02,0.05,0.08,0.10,0.13,0.16,0.20,0.23,0.27,0.30,0.33,0.36,0.38,0.40,
@@ -3019,56 +3019,43 @@ function coOpenTcgReplace(isDesktop) {
 
 /* Stage A render — reached from the chooser's Replace row. */
 function coRenderTcgConfirmStage(isDesktop) {
+  /* Step 2 of the chooser flow. Built from the same tcg-* classes as
+     tcgRenderChoice and tcgRenderRemoveConfirm (styles.css) so the three
+     screens read as one sheet: same head, same icon, same divider, same
+     footer. Back returns to the chooser, matching the Remove path. */
   var bar = document.getElementById('co-install-bar');
   if (!bar) return;
   var comps = coGetTruckCompList(isDesktop);
+  var truck = (typeof tcgTruckNum === 'function') ? tcgTruckNum() : null;
+  var d = isDesktop ? 'true' : 'false';
+
   var bullets = comps.length
-    ? comps.map(function(n){
-        return '<div style="display:flex;align-items:center;gap:8px;padding:3px 0;">'
-          + '<div style="width:5px;height:5px;border-radius:50%;background:var(--soft);flex-shrink:0;"></div>'
-          + '<span style="font-size:13px;color:var(--strong);letter-spacing:-0.26px;">' + n + '</span>'
-          + '</div>';
+    ? comps.map(function (n) {
+        return '<div class="tcg-go-dark-row"><span class="tcg-go-dark-dot"></span><span>' + n + '</span></div>';
       }).join('')
-    : '<div style="font-size:12px;color:var(--soft);font-style:italic;">No other components currently installed.</div>';
+    : '<div class="tcg-go-dark-none">No other components are installed on this unit.</div>';
 
   bar.style.display = 'flex';
   bar.style.flexDirection = 'column';
   bar.style.minHeight = '0';
   bar.innerHTML =
-    /* Header — pinned, never scrolls. flex-shrink:0 so a tall list
-       in the scrollable middle can't compress it. */
-    '<div style="display:flex;align-items:center;gap:12px;padding-bottom:14px;flex-shrink:0;">'
-    +   '<div style="width:36px;height:36px;border-radius:50%;background:rgba(216,59,58,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
-    +     '<svg width="18" height="18" viewBox="0 0 20 20" fill="none">'
-    +       '<path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.2 4.2l2.1 2.1M13.7 13.7l2.1 2.1M4.2 15.8l2.1-2.1M13.7 6.3l2.1-2.1" stroke="var(--red)" stroke-width="1.4" stroke-linecap="round"/>'
-    +       '<circle cx="10" cy="10" r="3" stroke="var(--red)" stroke-width="1.4"/>'
-    +     '</svg>'
+    '<div class="tcg-sheet-head">'
+    +   '<div class="tcg-sheet-icon">'
+    +     '<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="2.5" y="5.5" width="15" height="9" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M6 9.5h3M13.8 9.5h.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>'
     +   '</div>'
-    +   '<div>'
-    +     '<div style="font-size:16px;font-weight:600;color:var(--strong);letter-spacing:-0.32px;">Replace TCG</div>'
-    +     '<div style="font-size:12px;color:var(--soft);letter-spacing:-0.24px;">Telematics Control Gateway</div>'
-    +   '</div>'
+    +   '<div><div class="tcg-sheet-t">Replace TCG</div>'
+    +     '<div class="tcg-sheet-s">' + (truck ? 'Truck ' + truck + ' \u00b7 ' : '') + 'Telematics Control Gateway</div></div>'
     + '</div>'
-    /* Scrollable middle — body text + reconnect list. This is the ONLY
-       part that scrolls; on a short landscape drawer the list can run
-       past the sheet's height without ever pushing Cancel/Continue
-       off-screen, which is what a real bottom sheet guarantees and
-       the old flat-flow version didn't. */
-    + '<div style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;">'
-    +   '<div style="font-size:13px;color:var(--strong);letter-spacing:-0.26px;line-height:1.5;margin-bottom:14px;">'
-    +     'The unit will go offline briefly while the new TCG installs and re-syncs with your other components. '
-    +     '<strong>The unit ID stays the same</strong>, and you don\'t need to remove anything else from the truck.'
-    +   '</div>'
+    + '<div class="tcg-sheet-body">'
+    +   '<div class="tcg-sheet-p">The unit goes offline briefly while the new TCG installs and re-syncs with your other components. '
+    +     '<b>The unit ID stays the same</b>, and you don\'t need to remove anything else from the truck.</div>'
     +   (comps.length
-        ? '<div style="font-size:11px;font-weight:600;color:var(--soft);letter-spacing:0.3px;text-transform:uppercase;margin-bottom:4px;">These will reconnect to the new TCG</div>'
-          + '<div style="border-top:1px solid var(--border);padding:6px 0;">' + bullets + '</div>'
-        : bullets
-      )
+        ? '<div class="tcg-sheet-cap">These reconnect to the new TCG</div><div class="tcg-go-dark">' + bullets + '</div>'
+        : bullets)
     + '</div>'
-    /* Footer — pinned, never scrolls */
-    + '<div style="display:flex;gap:8px;padding-top:14px;flex-shrink:0;">'
-    +   '<button onclick="coInstallCancel()" style="flex:0 0 auto;min-width:110px;background:none;border:1px solid var(--border);border-radius:32px;padding:12px 20px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;color:var(--strong);cursor:pointer;">Cancel</button>'
-    +   '<button onclick="coTcgContinueToScan(' + (isDesktop?'true':'false') + ')" style="flex:1;background:'+coPrimaryBtnBg()+';color:'+coPrimaryBtnColor()+';border:none;border-radius:32px;padding:12px;font-size:14px;font-weight:500;font-family:var(--font);letter-spacing:-0.28px;cursor:pointer;">Continue</button>'
+    + '<div class="tcg-sheet-foot">'
+    +   '<button class="tcg-btn-quiet" onclick="tcgRenderChoice(' + d + ')">Back</button>'
+    +   '<button class="tcg-btn-commit" onclick="coTcgContinueToScan(' + d + ')">Continue</button>'
     + '</div>';
 }
 
@@ -3116,9 +3103,23 @@ function tcgTruckNum() {
    confirm it. */
 
 function tcgRenderChoice(isDesktop) {
+  /* Step 1 now uses step 2's anatomy: head, body paragraph, uppercase
+     caption, list, and the same Back/Cancel + Continue footer. The rows are
+     a single-select; Continue stays disabled until one is picked, so the
+     primary button sits in the same place on every screen of the flow. */
   var bar = tcgBar();
   if (!bar) return;
   var d = isDesktop ? 'true' : 'false';
+  var truck = tcgTruckNum();
+  window._tcgPick = null;
+
+  function row(key, title, sub) {
+    return '<button type="button" class="tcg-choice" role="radio" aria-checked="false" data-pick="' + key + '" onclick="tcgPick(\'' + key + '\')">'
+      +   '<span class="tcg-radio" aria-hidden="true"></span>'
+      +   '<div class="tcg-choice-l"><div class="tcg-choice-t">' + title + '</div>'
+      +     '<div class="tcg-choice-s">' + sub + '</div></div>'
+      + '</button>';
+  }
 
   bar.style.display = 'flex';
   bar.style.flexDirection = 'column';
@@ -3129,26 +3130,38 @@ function tcgRenderChoice(isDesktop) {
     +     '<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="2.5" y="5.5" width="15" height="9" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M6 9.5h3M13.8 9.5h.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>'
     +   '</div>'
     +   '<div><div class="tcg-sheet-t">TCG</div>'
-    +     '<div class="tcg-sheet-s">Telematics Control Gateway</div></div>'
+    +     '<div class="tcg-sheet-s">' + (truck ? 'Truck ' + truck + ' \u00b7 ' : '') + 'Telematics Control Gateway</div></div>'
     + '</div>'
-    + '<div class="tcg-choice-list">'
-    +   '<button class="tcg-choice" onclick="tcgChoose(\'replace\',' + d + ')">'
-    +     '<div class="tcg-choice-l"><div class="tcg-choice-t">Replace TCG</div>'
-    +       '<div class="tcg-choice-s">Swap in a new gateway. The unit ID stays the same and the other components reconnect on their own.</div></div>'
-    +     '<svg class="tcg-choice-chev" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2.5 9.5 7 5 11.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-    +   '</button>'
-    +   '<button class="tcg-choice" onclick="tcgChoose(\'remove\',' + d + ')">'
-    +     '<div class="tcg-choice-l"><div class="tcg-choice-t">Remove TCG</div>'
-    +       '<div class="tcg-choice-s">Take the gateway off the truck without a replacement. The unit stops reporting and the truck moves to Maintenance.</div></div>'
-    +     '<svg class="tcg-choice-chev" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2.5 9.5 7 5 11.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-    +   '</button>'
+    + '<div class="tcg-sheet-body">'
+    +   '<div class="tcg-sheet-p">Every component on this unit reports through the gateway. '
+    +     'Replace it to keep the truck running, or remove it to take the unit out of service.</div>'
+    +   '<div class="tcg-sheet-cap">What do you need to do?</div>'
+    +   '<div class="tcg-choice-list" role="radiogroup" aria-label="TCG action">'
+    +     row('replace', 'Replace TCG', 'Swap in a new gateway. The unit ID stays the same and the other components reconnect on their own.')
+    +     row('remove', 'Remove TCG', 'Take the gateway off the truck without a replacement. The unit stops reporting and the truck moves to Maintenance.')
+    +   '</div>'
     + '</div>'
     + '<div class="tcg-sheet-foot">'
     +   '<button class="tcg-btn-quiet" onclick="coInstallCancel()">Cancel</button>'
+    +   '<button class="tcg-btn-commit" id="tcg-choice-go" disabled onclick="tcgChoose(window._tcgPick,' + d + ')">Continue</button>'
     + '</div>';
 }
 
+function tcgPick(key) {
+  window._tcgPick = key;
+  var bar = tcgBar();
+  if (!bar) return;
+  bar.querySelectorAll('.tcg-choice').forEach(function (b) {
+    var on = b.dataset.pick === key;
+    b.classList.toggle('is-picked', on);
+    b.setAttribute('aria-checked', on ? 'true' : 'false');
+  });
+  var go = document.getElementById('tcg-choice-go');
+  if (go) go.disabled = false;
+}
+
 function tcgChoose(which, isDesktop) {
+  if (!which) return;
   if (which === 'replace') {
     /* Straight back into app-02's flow, unchanged. */
     if (typeof coRenderTcgConfirmStage === 'function') coRenderTcgConfirmStage(isDesktop);
@@ -3340,7 +3353,7 @@ function coShowTcgFirmwareCheck(serial, isDesktop) {
   bar.innerHTML =
     '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">'
     +   '<div style="width:36px;height:36px;border-radius:50%;background:rgba(48,105,227,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
-    +     '<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="#3069e3" stroke-width="1.6"/></svg>'
+    +     '<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 2v3M10 15v3M2 10h3M15 10h3" stroke="var(--blue)" stroke-width="1.6" stroke-linecap="round"/><circle cx="10" cy="10" r="3.5" stroke="var(--blue)" stroke-width="1.6"/></svg>'
     +   '</div>'
     +   '<div>'
     +     '<div style="font-size:15px;font-weight:600;color:var(--strong);letter-spacing:-0.3px;">New TCG installed</div>'
@@ -3349,10 +3362,10 @@ function coShowTcgFirmwareCheck(serial, isDesktop) {
     + '</div>'
     + '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px;">'
     +   '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">Updating TCG software\u2026</div>'
-    +   '<div id="co-tcg-fw-pct" style="font-size:12px;font-weight:600;color:#3069e3;font-family:\'DM Mono\', monospace;letter-spacing:0.2px;flex-shrink:0;">0%</div>'
+    +   '<div id="co-tcg-fw-pct" style="font-size:12px;font-weight:600;color:var(--blue);font-family:\'DM Mono\', monospace;letter-spacing:0.2px;flex-shrink:0;">0%</div>'
     + '</div>'
     + '<div style="width:100%;height:5px;border-radius:3px;background:var(--border);overflow:hidden;margin-bottom:7px;">'
-    +   '<div id="co-tcg-fw-bar" style="width:0%;height:100%;background:#3069e3;border-radius:3px;transition:width 0.12s linear;"></div>'
+    +   '<div id="co-tcg-fw-bar" style="width:0%;height:100%;background:var(--blue);border-radius:3px;transition:width 0.12s linear;"></div>'
     + '</div>'
     + '<div style="font-size:12px;color:var(--soft);letter-spacing:-0.26px;">Syncing to ' + TCG_LATEST_FW + ' before components reconnect</div>';
 
@@ -3438,10 +3451,10 @@ function coTcgRenderReconnect(serial, isDesktop) {
       var hasFw = !!COMPONENT_LATEST_FW[name];
       if (dot) {
         dot.style.background = 'rgba(48,105,227,0.15)';
-        dot.style.borderColor = '#3069e3';
-        dot.innerHTML = '<div style="position:absolute;inset:1px;border-radius:50%;border:1.5px solid #3069e3;border-top-color:transparent;animation:tcgSpin 0.7s linear infinite;"></div>';
+        dot.style.borderColor = 'var(--blue)';
+        dot.innerHTML = '<div style="position:absolute;inset:1px;border-radius:50%;border:1.5px solid var(--blue);border-top-color:transparent;animation:tcgSpin 0.7s linear infinite;"></div>';
       }
-      if (status) { status.textContent = hasFw ? 'Syncing software' : 'Connecting'; status.style.color = '#3069e3'; }
+      if (status) { status.textContent = hasFw ? 'Syncing software' : 'Connecting'; status.style.color = 'var(--blue)'; }
 
       /* Connected state ~700ms later */
       setTimeout(function() {
@@ -3601,10 +3614,10 @@ function coShowFirmwareSyncBanner(compName, latest, view) {
   slot.style.cssText = 'flex-shrink:0;background:var(--layer-2);'+border+':1px solid var(--border);padding:'+pad+';display:flex;flex-direction:column;gap:7px;animation:dtInlineConfirmIn 0.2s cubic-bezier(0.4,0,0.2,1);';
   slot.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">'
     +   '<div style="font-size:13px;font-weight:500;color:var(--strong);letter-spacing:-0.26px;">Updating ' + compName + ' software\u2026</div>'
-    +   '<div id="co-fw-sync-pct" style="font-size:12px;font-weight:600;color:#3069e3;font-family:\'DM Mono\', monospace;letter-spacing:0.2px;flex-shrink:0;">0%</div>'
+    +   '<div id="co-fw-sync-pct" style="font-size:12px;font-weight:600;color:var(--blue);font-family:\'DM Mono\', monospace;letter-spacing:0.2px;flex-shrink:0;">0%</div>'
     + '</div>'
     + '<div style="width:100%;height:5px;border-radius:3px;background:var(--border);overflow:hidden;">'
-    +   '<div id="co-fw-sync-bar" style="width:0%;height:100%;background:#3069e3;border-radius:3px;transition:width 0.12s linear;"></div>'
+    +   '<div id="co-fw-sync-bar" style="width:0%;height:100%;background:var(--blue);border-radius:3px;transition:width 0.12s linear;"></div>'
     + '</div>'
     + '<div style="font-size:12px;color:var(--soft);letter-spacing:-0.24px;">Syncing to ' + latest + ' before error test</div>';
   if (isMobile) slot.dataset.bannerActive = '1';
@@ -3666,8 +3679,8 @@ function coCheckShowErrorResetPrompt(view) {
   }
 }
 
-function coPrimaryBtnBg()    { return document.body.classList.contains('dark') ? '#e3f200' : '#3069e3'; }
-function coPrimaryBtnColor() { return document.body.classList.contains('dark') ? '#000000' : 'white'; }
+function coPrimaryBtnBg()    { return 'var(--btn-primary-fill)'; }
+function coPrimaryBtnColor() { return 'var(--btn-primary-label)'; }
 
 function coBannerBg() {
   return document.body.classList.contains('dark') ? '#2b1f08' : '#fffbeb';

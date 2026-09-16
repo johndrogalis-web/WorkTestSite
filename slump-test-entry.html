@@ -281,6 +281,12 @@ body{
 .fd-item .fd-check{visibility:hidden;color:var(--blue-hi);flex-shrink:0}
 .fd-item.selected .fd-check{visibility:visible}
 .fd-empty{padding:12px 14px;font-size:12.5px;color:var(--faint)}
+/* date range filter */
+.fd-datebtn.set .fd-label{color:var(--blue-hi);font-weight:600}
+.fd-date-icons{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.fd-clear-date{display:none;color:var(--blue-hi);cursor:pointer;padding:2px}
+.fd-datebtn.set .fd-clear-date{display:flex}
+.fd-clear-date:hover{color:var(--text)}
 .clear-filters{
   margin-left:auto;background:none;border:0;font-family:inherit;font-size:14px;
   color:var(--text);cursor:pointer;padding:11px 6px;font-weight:500;white-space:nowrap;
@@ -540,6 +546,26 @@ body.vp-m .pager-range{min-width:0}
   border-radius:var(--radius-sm);padding:14px 16px;margin-top:22px;
 }
 .val-success svg{flex-shrink:0;color:var(--green);margin-top:1px}
+
+/* ---------- delete confirmation modal ---------- */
+.modal-backdrop{
+  position:fixed;inset:44px 0 0 0;background:rgba(0,0,0,.55);
+  z-index:700;display:none;align-items:center;justify-content:center;padding:20px;
+}
+.modal-backdrop.show{display:flex}
+body.vp-m .modal-backdrop, body.vp-t .modal-backdrop{inset:0}
+.modal{
+  width:100%;max-width:560px;background:var(--dropdown-bg);
+  border:1px solid var(--border-soft);border-radius:var(--radius);
+  padding:26px 28px;box-shadow:0 24px 60px rgba(0,0,0,.5);
+}
+.modal-title{font-size:22px;font-weight:800;letter-spacing:-.2px}
+.modal-rule{height:1px;background:var(--border-soft);margin:16px 0 18px}
+.modal-msg{font-size:15px;font-weight:600;line-height:1.5}
+.modal-btns{display:flex;justify-content:center;gap:16px;margin-top:30px}
+.modal-btns .btn{min-width:120px;justify-content:center;padding:12px 20px}
+.btn-cancel{background:#f4f6f8;color:#4a4f55;border:1px solid var(--border-soft);font-weight:700;letter-spacing:.02em}
+.btn-cancel:hover{filter:brightness(.95)}
 
 /* ---------- toast ---------- */
 .toast{
@@ -1098,6 +1124,19 @@ body.vp-m .form-submit-wrap .btn-primary{width:100%}
   </div>
 </aside>
 
+<!-- delete confirmation -->
+<div class="modal-backdrop" id="deleteModal" onclick="closeDeleteConfirm()">
+  <div class="modal" onclick="event.stopPropagation()" role="alertdialog" aria-labelledby="deleteModalTitle">
+    <div class="modal-title" id="deleteModalTitle">Delete Confirmation</div>
+    <div class="modal-rule"></div>
+    <div class="modal-msg" id="deleteModalMsg">Are you sure you want to delete this slump test?</div>
+    <div class="modal-btns">
+      <button class="btn btn-cancel" onclick="closeDeleteConfirm()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmDelete()">Confirm</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast">
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
   <span id="toastMsg"></span>
@@ -1508,26 +1547,100 @@ function toggleFilterBar(view){
   if(!show){ clearFilters(view); }
 }
 
+const DATE_PRESETS = ['Today','Yesterday','Last Week','Last 7 Days','Last 30 Days','Last 45 Days','Last 90 Days','This Month','Last Month'];
+
 function buildFilterBar(view){
   const def = FILTER_DEFS[view];
   const bar = document.getElementById(def.barId);
-  bar.innerHTML = def.fields.map(f=>`
+  bar.innerHTML = def.fields.map(f=>{
+    if(f.key === 'date'){
+      return `
+    <div class="filter-dd" data-view="${view}" data-key="date">
+      <div class="fd-btn fd-datebtn" onclick="openDatePop(event,'${view}')" role="button" tabindex="0">
+        <span class="fd-label">Date</span>
+        <span class="fd-date-icons">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+          <span class="fd-clear-date" onclick="clearDateFilter(event,'${view}')" title="Clear date filter"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span>
+        </span>
+      </div>
+      <div class="fd-pop">
+        <div class="fd-list">${DATE_PRESETS.map(p=>`<div class="fd-item" data-preset="${p}" onclick="selectDatePreset(event,'${view}','${p}')">${p} <svg class="fd-check" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>`).join('')}</div>
+      </div>
+    </div>`;
+    }
+    return `
     <div class="filter-dd" data-view="${view}" data-key="${f.key}">
       <button class="fd-btn" onclick="openFilterPop(event,'${view}','${f.key}')">
         <span class="fd-label">${f.label}</span>
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
       </button>
       <div class="fd-pop">
-        ${f.noSearch ? '' : `
         <div class="fd-search">
           <input type="text" placeholder="" oninput="filterPopSearch(this)">
           <button class="fd-clear-x" onclick="clearPopSearch(event,this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-        </div>`}
+        </div>
         <div class="fd-list"></div>
       </div>
-    </div>
-  `).join('') + `<button class="clear-filters" onclick="clearFilters('${view}')">Clear filters</button>`;
+    </div>`;
+  }).join('') + `<button class="clear-filters" onclick="clearFilters('${view}')">Clear filters</button>`;
   barsBuilt[view] = true;
+}
+
+/* ---- date range presets ---- */
+function fmtMDY(d){ return (d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear(); }
+function dayStart(d){ const x=new Date(d); x.setHours(0,0,0,0); return x; }
+function presetRange(p){
+  const today = dayStart(new Date());
+  const t = today.getTime(), DAY = 86400000;
+  switch(p){
+    case 'Today':        return [today, today];
+    case 'Yesterday':    { const y=new Date(t-DAY); return [y,y]; }
+    case 'Last Week':    { const dow=today.getDay(); const end=new Date(t-(dow+1)*DAY); const start=new Date(end.getTime()-6*DAY); return [start,end]; }
+    case 'Last 7 Days':  return [new Date(t-6*DAY), today];
+    case 'Last 30 Days': return [new Date(t-29*DAY), today];
+    case 'Last 45 Days': return [new Date(t-44*DAY), today];
+    case 'Last 90 Days': return [new Date(t-89*DAY), today];
+    case 'This Month':   return [new Date(today.getFullYear(), today.getMonth(), 1), today];
+    case 'Last Month':   return [new Date(today.getFullYear(), today.getMonth()-1, 1), new Date(today.getFullYear(), today.getMonth(), 0)];
+  }
+}
+function openDatePop(e, view){
+  e.stopPropagation();
+  const dd = e.currentTarget.closest('.filter-dd');
+  const pop = dd.querySelector('.fd-pop');
+  const wasOpen = pop.classList.contains('open');
+  closeAllFilterPops();
+  if(wasOpen) return;
+  const current = filterState[view].date;
+  pop.querySelectorAll('.fd-item').forEach(it=>{
+    it.classList.toggle('selected', !!current && current.preset === it.dataset.preset);
+  });
+  pop.classList.add('open');
+}
+function selectDatePreset(e, view, preset){
+  e.stopPropagation();
+  const [from, to] = presetRange(preset);
+  filterState[view].date = { from: from.getTime(), to: to.getTime() + 86399999, preset: preset };
+  PAGER[view].page = 0;
+  const dd = document.querySelector(`.filter-dd[data-view="${view}"][data-key="date"]`);
+  dd.querySelector('.fd-label').textContent = fmtMDY(from) + '  –  ' + fmtMDY(to);
+  dd.querySelector('.fd-datebtn').classList.add('set');
+  closeAllFilterPops();
+  applyFilters(view);
+}
+function clearDateFilter(e, view){
+  e.stopPropagation();
+  delete filterState[view].date;
+  PAGER[view].page = 0;
+  const dd = document.querySelector(`.filter-dd[data-view="${view}"][data-key="date"]`);
+  dd.querySelector('.fd-label').textContent = 'Date';
+  dd.querySelector('.fd-datebtn').classList.remove('set');
+  closeAllFilterPops();
+  applyFilters(view);
+}
+function parseMDY(s){
+  const m = s.split('/');
+  return new Date(+m[2], +m[0]-1, +m[1]).getTime();
 }
 
 function openFilterPop(e, view, key){
@@ -1585,33 +1698,34 @@ function selectFilter(e, view, key, val){
 }
 
 /* ---- delete a slump test (with undo via toast) ---- */
-let lastDeleted = null;
+let pendingDeleteTr = null;
 function deleteSlumpRow(btn){
-  deleteSlumpTr(btn.closest('tr'));
+  openDeleteConfirm(btn.closest('tr'));
 }
 function deleteFromDetail(btn){
-  const dataRow = btn.closest('tr.detail-row').previousElementSibling;
-  deleteSlumpTr(dataRow);
+  openDeleteConfirm(btn.closest('tr.detail-row').previousElementSibling);
 }
-function deleteSlumpTr(tr){
+function openDeleteConfirm(tr){
+  pendingDeleteTr = tr;
+  const ticket = tr.dataset.ticket;
+  document.getElementById('deleteModalMsg').textContent =
+    ticket ? `Are you sure you want to delete this slump test: ${ticket}?`
+           : 'Are you sure you want to delete this slump test?';
+  document.getElementById('deleteModal').classList.add('show');
+}
+function closeDeleteConfirm(){
+  pendingDeleteTr = null;
+  document.getElementById('deleteModal').classList.remove('show');
+}
+function confirmDelete(){
+  const tr = pendingDeleteTr;
+  closeDeleteConfirm();
+  if(!tr) return;
   const next = tr.nextElementSibling;
   if(next && next.classList.contains('detail-row')) next.remove(); // close its accordion
-  lastDeleted = { row: tr, anchor: tr.nextElementSibling };
   tr.remove();
   applyFilters('slump');
-  protoToast('Slump test deleted', 'Undo', undoDelete);
-}
-function undoDelete(){
-  if(!lastDeleted) return;
-  const tb = document.getElementById('slumpTbody');
-  if(lastDeleted.anchor && lastDeleted.anchor.parentNode === tb){
-    tb.insertBefore(lastDeleted.row, lastDeleted.anchor);
-  } else {
-    tb.appendChild(lastDeleted.row);
-  }
-  lastDeleted = null;
-  applyFilters('slump');
-  protoToast('Slump test restored');
+  protoToast('Slump test deleted');
 }
 
 /* ---- expandable row detail: shows whichever columns are hidden at this viewport ---- */
@@ -1683,8 +1797,14 @@ function applyFilters(view){
   const pg = PAGER[view];
   const rows = [...document.getElementById(def.tbodyId).children].filter(r=>!r.classList.contains('detail-row'));
 
-  // 1) filter
-  const matched = rows.filter(r => Object.entries(state).every(([k,v]) => r.dataset[k] === v));
+  // 1) filter (date is a range; everything else is an exact match)
+  const matched = rows.filter(r => Object.entries(state).every(([k,v]) => {
+    if(k === 'date' && v && typeof v === 'object'){
+      const d = parseMDY(r.dataset.date);
+      return d >= v.from && d <= v.to;
+    }
+    return r.dataset[k] === v;
+  }));
   rows.forEach(r => r.style.display = 'none');
 
   // 2) paginate the matches
@@ -1913,7 +2033,10 @@ syncThemeSwitch();
 
 /* escape closes drawer */
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape') closeDrawer();
+  if(e.key!=='Escape') return;
+  const modal = document.getElementById('deleteModal');
+  if(modal.classList.contains('show')){ closeDeleteConfirm(); return; }
+  closeDrawer();
 });
 
 drawShape();

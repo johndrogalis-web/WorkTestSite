@@ -2,6 +2,15 @@
 """Get started, Brand and Open items."""
 from core import (shell, MARK, ARROW, copybar, bench, spec, dodont, checklist,
                   table, grid)
+from comp_rest import CAT
+
+# Counts are derived from the catalogue so these pages cannot drift from it.
+N_ALL  = len(CAT)
+N_DOC  = len({r[5] for r in CAT if r[5]})   # unique pages, not rows
+N_OK   = sum(1 for r in CAT if r[3] == 'ok')
+N_GAP  = sum(1 for r in CAT if r[3] == 'gap')
+N_BAD  = sum(1 for r in CAT if r[3] == 'bad')
+N_NONE = sum(1 for r in CAT if r[3] == 'none')
 
 LOGO = MARK.split('>', 1)[1].rsplit('</svg>', 1)[0]
 
@@ -32,11 +41,13 @@ def g_overview():
   ('start/developers.html', 'For developers',
    'The whole token block, the measured contrast failures, and the sets not to build against.'),
   ('components/index.html', 'All components',
-   'Every component in the library with an honest status. Twelve have full pages so far.'),
+   'Every component in the library with an honest status. '
+   f'{N_DOC} have full pages so far.'),
   ('brand/assets.html', 'Download assets',
    'Logo, animation, fifth element and 43 photographs — downloadable, no SharePoint needed.'),
   ('open-items.html', 'Open items',
-   'Nine questions this system cannot answer on its own, written down instead of guessed at.'),
+   f'{len(OPEN)} questions this system cannot answer on its own, written down instead of '
+   'guessed at.'),
 ])}
 
 <h2 id="two">Two sources, one place to look</h2>
@@ -71,9 +82,9 @@ def g_overview():
   variant carries its own.</div>
 
 <h2 id="honest">What is not finished</h2>
-<p>This library is real but young. Twenty-two of the forty-five components carry a documented
-   gap, dark mode is drawn for almost nothing, and two colour pairs fail contrast. All of it is
-   written down. That is deliberate: a system that only publishes its settled parts teaches
+<p>This library is real but young. {N_GAP} of the {N_ALL} components carry a documented
+   gap, dark mode is drawn for almost nothing, and several colour pairs fail contrast. All of it
+   is written down. That is deliberate: a system that only publishes its settled parts teaches
    people to trust the unsettled parts too.</p>
 """
     return shell('Verifi Design System',
@@ -97,8 +108,8 @@ def g_designers():
                         'to do</a>, and why the product blue is not the brand blue.'),
   ('2 &middot; Shape', '<a href="../foundations/shape.html">Seven radii, what each one means, '
                        'and when a shadow is allowed.</a>'),
-  ('3 &middot; The catalogue', '<a href="../components/index.html">All 45 components with a '
-                               'status on each</a> &mdash; 22 carry a documented gap.'),
+  ('3 &middot; The catalogue', f'<a href="../components/index.html">All {N_ALL} components with '
+                               f'a status on each</a> &mdash; {N_GAP} carry a documented gap.'),
   ('4 &middot; Open items', '<a href="../open-items.html">What is genuinely undecided</a>, so '
                             'you do not spend a day resolving something that is waiting on a person.'),
 ])}
@@ -118,13 +129,13 @@ def g_designers():
 
 <h2 id="safe">What is safe to use today</h2>
 {table(['Status', 'Count', 'What it means for you'], [
-  ['<span class="pill ok">Solid</span>', '15',
+  ['<span class="pill ok">Solid</span>', str(N_OK),
    'Variants, states and rules all present. Build with it and move on.'],
-  ['<span class="pill gap">Has gaps</span>', '26',
+  ['<span class="pill gap">Has gaps</span>', str(N_GAP),
    'It works. Read the gap on the component page before relying on the missing part.'],
-  ['<span class="pill bad">Broken</span>', '1',
+  ['<span class="pill bad">Broken</span>', str(N_BAD),
    'Top navigation. Figma reports it as structurally invalid. Do not use it.'],
-  ['<span class="pill none">Missing</span>', '3',
+  ['<span class="pill none">Missing</span>', str(N_NONE),
    'Card, Link, and no stepper at all. Interim rules are written on the nearest page.'],
 ])}
 
@@ -555,6 +566,36 @@ OPEN = [
   '1,134 Unicons and 281 Feather coexist, plus Font Awesome inside the table component. The '
   'interim rule is Unicons only for new work, Feather frozen, never mixed within one view.',
   'Verifi Design', 'Every icon in the product'),
+ ('10', 'The badge dot is invisible on a light page',
+  'Two of the three dot colours fail against the light surface — default '
+  '<span class="m">#E3F200</span> at 1.07:1 and Information <span class="m">#41A8F2</span> at '
+  '2.24:1, against a 3:1 requirement. A dot has no text inside it, so nothing else carries it. '
+  'All three pass in dark mode. A 1px ring in the page ink would fix it without losing the '
+  'brand colour.',
+  'Verifi Design', 'Every notification and unread indicator in light mode'),
+ ('11', 'The progress track fails in both components and both themes',
+  'Progress bar and Slider both use <span class="m">#DFDEDD</span> in light, which measures '
+  '1.16:1 against the page. In dark they diverge — <span class="m">#666054</span> at 2.64:1 and '
+  '<span class="m">#393632</span> at 1.37:1 — so they are not actually on one token. Both dark '
+  'values were chosen against the pure-black Figma demo rather than the product’s '
+  '<span class="m">#211F1C</span>.',
+  'Verifi Design', 'Progress bar and Slider, every theme'),
+ ('12', 'Tag has no approved colour pairs',
+  'Fill and label colour are per-instance overrides by design, so no checked palette exists and '
+  'every tag anyone makes is an unchecked contrast risk. The light default '
+  '<span class="m">#FFFFFF</span> on <span class="m">#0975C3</span> clears 4.5:1 by a third of '
+  'a point, which will not survive recolouring.',
+  'Verifi Design', 'Every tag anyone creates from here on'),
+ ('13', 'Slider has no focus state',
+  'A control that is dragged needs a visible focus ring more than it needs hover, and hover is '
+  'the one that exists. There is no disabled state either, and no keyboard step, page step or '
+  'Home/End behaviour is defined.',
+  'Verifi Design', 'Keyboard and assistive-technology users of every slider'),
+ ('14', 'Tooltip is a box with no behaviour',
+  'No delay, no transition, no dismissal rule, no trigger rule and no touch behaviour. WCAG '
+  '1.4.13 requires hover content to be dismissible, hoverable and persistent; none of the three '
+  'is specified. The fixed 24px height also means a tooltip cannot wrap.',
+  'Verifi Design', 'Every tooltip, and keyboard users especially'),
 ]
 
 
@@ -568,9 +609,9 @@ def open_items():
 
     body = f"""
 <h1>Open items.</h1>
-<p class="lede">Nine questions this system cannot answer on its own, written down rather than
-   guessed at. Everything else on this site is a rule; this page is the list of things that are
-   not yet rules.</p>
+<p class="lede">{len(OPEN)} questions this system cannot answer on its own, written down rather
+   than guessed at. Everything else on this site is a rule; this page is the list of things that
+   are not yet rules.</p>
 
 <div class="note"><b>Why a page like this exists.</b> A design system that only publishes its
   settled parts teaches people to trust it uniformly, which means they trust the unsettled parts
@@ -606,11 +647,12 @@ def open_items():
 ])}
 
 <h2 id="raise">Raising something</h2>
-<p>If you find a tenth open question, it belongs here rather than in a thread. Brand questions go
-   to Brittany Cool; product questions go to Verifi Design. Include the node ID &mdash; every
+<p>If you find another open question, it belongs here rather than in a thread. Brand questions
+   go to Brittany Cool; product questions go to Verifi Design. Include the node ID &mdash; every
    component page lists them.</p>
 """
-    return shell('Open items', 'Nine open questions, written down instead of guessed at.',
+    return shell('Open items',
+                 '%d open questions, written down instead of guessed at.' % len(OPEN),
                  'open-items.html', body,
                  toc=[('register', 'The register'), ('closed', 'Settled'),
                       ('brandfile', 'Errors in the brand file'), ('raise', 'Raising something')])

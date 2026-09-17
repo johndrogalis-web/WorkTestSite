@@ -278,8 +278,19 @@ td.wrap{min-width:190px}
   --ibg:#fff;--ibd:#666054;--itx:#171614;--iph:#666054;--ifo:#171614;--ifl:#171614;
   --ier:#b00100;--idbg:#dfdedd;--idbd:#b6b1a5;--idtx:#7f796c;--lb:#171614;--lber:#b00100;
   --hp:#171614;--hper:#d70100;
-  --trow:#fff;--trowh:#f6f4f2;--trows:#eef9ff;--trowz:#f0eeea;--trowd:#dfdedd--ertx:#d70100;
+  --trow:#fff;--trowh:#f6f4f2;--trows:#eef9ff;--trowz:#f0eeea;--trowd:#dfdedd;--ertx:#d70100;
   --thead:#fff;--theadh:#f6f4f2;--tink:#171614;--tline:#dad8d7;--thline:#4a4f55;
+  /* Trinity component tokens, light — read from the Figma variables */
+  --pbtrack:#dfdedd;--pbfill:#171614;
+  --spin:#171614;
+  --bdgtx:#171614;--bdgd:#e3f200;--bdga:#c5e4fb;--bdgo:#ffffff;--bdgob:#41a8f2;
+  --bdgebg:#b00100;--bdgetx:#ffffff;
+  --dotd:#e3f200;--doti:#41a8f2;--dote:#b00100;
+  --ttbg:#171614;--tttx:#ffffff;
+  --tagbg:#0975c3;--tagtx:#ffffff;--tagdiag:#171614;
+  --sltrack:#dfdedd;--slfill:#171614;--slthumbf:#ffffff;--slthumbs:#211f1c;
+  --slval:#ffba0d;--slvaltx:#171614;
+  --avbg:#171614;--avtx:#ffffff;
   background:#fff;border-color:#36322d24;color:#36322d}
 .pane-l > .ph{color:#36322d80;border-bottom-color:#36322d24}
 
@@ -291,6 +302,19 @@ td.wrap{min-width:190px}
   --hp:#fff;--hper:#efadac;
   --trow:#211f1c;--trowh:#38352f;--trows:#0c3348;--trowz:#282521;--trowd:#2a2825;--ertx:#efadac;
   --thead:#211f1c;--theadh:#2f2d28;--tink:#fff;--tline:#e5e5e51f;--thline:#8d8779;
+  /* Trinity component tokens, dark — read from the Figma variables.
+     Where a value is identical to light it is repeated deliberately: that is
+     what the file says, and the component page says so too. */
+  --pbtrack:#666054;--pbfill:#ffffff;
+  --spin:#ffffff;
+  --bdgtx:#171614;--bdgd:#e3f200;--bdga:#c5e4fb;--bdgo:#ffffff;--bdgob:#41a8f2;
+  --bdgebg:#efadac;--bdgetx:#171614;
+  --dotd:#e3f200;--doti:#41a8f2;--dote:#efadac;
+  --ttbg:#171614;--tttx:#ffffff;
+  --tagbg:#c5e4fb;--tagtx:#211f1c;--tagdiag:#211f1c;
+  --sltrack:#393632;--slfill:#d0cec8;--slthumbf:#211f1c;--slthumbs:#ffffff;
+  --slval:#e3f200;--slvaltx:#000000;
+  --avbg:#f0eeea;--avtx:#171614;
   background:#211f1c;border-color:rgba(229,229,229,.14);color:#fff}
 .pane-d > .ph{color:#e5e5e566;border-bottom-color:rgba(229,229,229,.14)}
 
@@ -562,3 +586,100 @@ td.wrap{min-width:190px}
   h2,h3{break-after:avoid}
   .bench,.plate,.note,table{break-inside:avoid}
 }
+
+/* ═══ TRINITY COMPONENTS — PASS TWO ══════════════════════════ */
+/* Every value below is read from the Figma variables. Where Figma
+   defines nothing, the page says so under Known gaps rather than the
+   CSS quietly inventing a number. */
+
+/* Progress bar — 51692:17330 */
+.t-pbar{width:100%;max-width:280px;height:8px;border-radius:4px;
+  background:var(--pbtrack);overflow:hidden}
+.t-pbar > i{display:block;height:100%;border-radius:4px;background:var(--pbfill)}
+
+/* Spinner — 10259:29263. The component is an arc shape, not a stroked
+   circle, so the thickness is intrinsic to the vector rather than a
+   token. Rotation timing is not in Figma; the duration here is this
+   site's placeholder. */
+.t-spin{display:inline-block;color:var(--spin);vertical-align:middle;
+  animation:t-rot .9s linear infinite}
+.t-spin > svg{width:100%;height:100%;display:block}
+.t-spin.lg{width:40px;height:40px}
+.t-spin.md{width:24px;height:24px}
+.t-spin.sm{width:16px;height:16px}
+@keyframes t-rot{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.t-spin{animation-duration:2.4s}}
+
+/* Badge — 60895:44879 */
+.t-badge{display:inline-flex;align-items:center;justify-content:center;
+  height:20px;padding:0 8px;border-radius:16px;font-size:12px;line-height:1;
+  font-weight:500;background:var(--bdgd);color:var(--bdgtx)}
+.t-badge.num{max-width:40px;overflow:hidden}
+.t-badge.alt{background:var(--bdga)}
+.t-badge.out{background:var(--bdgo);box-shadow:inset 0 0 0 1px var(--bdgob)}
+.t-badge.err{background:var(--bdgebg);color:var(--bdgetx)}
+.t-dot{display:inline-block;width:8px;height:8px;border-radius:16px;
+  background:var(--dotd);flex:none}
+.t-dot.info{background:var(--doti)}
+.t-dot.err{background:var(--dote)}
+.t-dot.ringed{box-shadow:0 0 0 1px var(--tx)}
+
+/* Tooltip — 2620:4152 */
+.t-tip{position:relative;display:inline-flex;align-items:center;height:24px;
+  padding:0 8px;border-radius:4px;background:var(--ttbg);color:var(--tttx);
+  font-size:12px;line-height:1;white-space:nowrap}
+.t-tip::after{content:"";position:absolute;border:5px solid transparent}
+.t-tip.above::after{top:100%;left:16px;border-top-color:var(--ttbg);border-bottom:0}
+.t-tip.below::after{bottom:100%;left:16px;border-bottom-color:var(--ttbg);border-top:0}
+.t-tip.left::after{left:100%;top:50%;margin-top:-5px;border-left-color:var(--ttbg);border-right:0}
+.t-tip.right::after{right:100%;top:50%;margin-top:-5px;border-right-color:var(--ttbg);border-left:0}
+
+/* Tag — 62678:46633 */
+.t-tag{position:relative;display:inline-flex;align-items:center;gap:4px;
+  height:20px;padding:0 4px;border-radius:4px;max-width:100px;overflow:hidden;
+  font-size:12px;line-height:1;background:var(--tagbg);color:var(--tagtx)}
+.t-tag > span{position:relative;z-index:1;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.t-tag > svg{position:relative;z-index:1;width:12px;height:12px;flex:none}
+.t-tag.diag::before,.t-tag.solid::before{content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(45deg,var(--tagdiag) 0 5px,transparent 5px 10px)}
+.t-tag.diag::before{opacity:.35}
+.t-tag.solid::before{opacity:1}
+
+/* Slider — 53714:4469 and 51681:79084 */
+.t-slider{position:relative;width:100%;max-width:237px;height:24px;
+  display:flex;align-items:center}
+.t-slider .trk{position:absolute;left:0;right:0;height:4px;border-radius:4px;
+  background:var(--sltrack)}
+.t-slider .fil{position:absolute;left:0;height:4px;border-radius:4px;
+  background:var(--slfill)}
+.t-slider .thb{position:absolute;width:24px;height:24px;border-radius:9999px;
+  margin-left:-12px;background:var(--slthumbf);
+  box-shadow:inset 0 0 0 6px var(--slthumbs)}
+.t-slider.hov .thb{box-shadow:inset 0 0 0 6px var(--slthumbs),0 0 0 1px var(--slthumbs)}
+.t-slider.act .thb{box-shadow:inset 0 0 0 8px var(--slthumbs)}
+.t-slider .val{position:absolute;bottom:28px;transform:translateX(-50%);
+  height:24px;padding:0 8px;border-radius:4px;background:var(--slval);
+  color:var(--slvaltx);font-size:12px;line-height:24px;white-space:nowrap}
+.t-slider .val::after{content:"";position:absolute;top:100%;left:50%;
+  margin-left:-4px;border:4px solid transparent;border-top-color:var(--slval);
+  border-bottom:0}
+
+/* Avatar — 60899:8165 */
+.t-av{display:inline-flex;align-items:center;justify-content:center;
+  overflow:hidden;flex:none;background:var(--avbg);color:var(--avtx)}
+.t-av.circle{border-radius:9999px}
+.t-av.square{border-radius:8px}
+.t-av.lg{width:56px;height:56px}
+.t-av.md{width:32px;height:32px}
+.t-av.sm{width:24px;height:24px}
+.t-av.xs{width:16px;height:16px}
+.t-av > svg{width:46%;height:46%}
+.t-av > img{width:100%;height:100%;object-fit:cover}
+
+/* Shared demo scaffolding for the pass-two pages */
+.t-stack{display:flex;flex-direction:column;gap:12px;width:100%;align-items:flex-start}
+.t-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.t-row.top{align-items:flex-start}
+.t-lab{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--tx3);min-width:64px}

@@ -76,11 +76,18 @@ NAV = [
             ('components/checkbox.html',    'Checkbox', ''),
             ('components/dropdown.html',    'Dropdown', ''),
             ('components/radio-group.html', 'Radio group', ''),
+            ('components/slider.html',      'Slider', 'new'),
             ('components/text-field.html',  'Text field', ''),
             ('components/toggle.html',      'Toggle', ''),
         ]),
         ('g', 'Informers', [
+            ('components/avatar.html',          'Avatar', 'new'),
+            ('components/badge.html',           'Badge', 'new'),
+            ('components/progress-bar.html',    'Progress bar', 'new'),
+            ('components/spinner.html',         'Spinner', 'new'),
+            ('components/tag.html',             'Tag', 'new'),
             ('components/toast.html',           'Toast', ''),
+            ('components/tooltip.html',         'Tooltip', 'new'),
             ('components/truck-phase-tag.html', 'Truck phase tag', ''),
         ]),
         ('g', 'Containers', [

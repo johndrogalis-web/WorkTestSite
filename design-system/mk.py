@@ -3,6 +3,7 @@
 import sys, os, re
 from core import write, ALL_HREFS, ROOT
 import comp_proof as P, comp_rest as C, found as F, rest as R
+import comp_new as N
 import dl as DL
 
 PAGES = [
@@ -19,17 +20,24 @@ PAGES = [
     ('foundations/truck-phases.html',       F.f_phases),
 
     ('components/index.html',               C.c_index),
+    ('components/avatar.html',              N.c_avatar),
+    ('components/badge.html',               N.c_badge),
     ('components/breadcrumbs.html',         P.c_breadcrumbs),
     ('components/button.html',              C.c_button),
     ('components/checkbox.html',            C.c_checkbox),
     ('components/dropdown.html',            C.c_dropdown),
     ('components/modal.html',               C.c_modal),
+    ('components/progress-bar.html',        N.c_progress),
     ('components/radio-group.html',         C.c_radio),
+    ('components/slider.html',              N.c_slider),
+    ('components/spinner.html',             N.c_spinner),
     ('components/table.html',               P.c_table),
     ('components/tabs.html',                C.c_tabs),
+    ('components/tag.html',                 N.c_tag),
     ('components/text-field.html',          C.c_field),
     ('components/toast.html',               C.c_toast),
     ('components/toggle.html',              C.c_toggle),
+    ('components/tooltip.html',             N.c_tooltip),
     ('components/truck-phase-tag.html',     C.c_phase),
 
     ('brand/logo.html',                     R.b_logo),

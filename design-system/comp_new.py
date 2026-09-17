@@ -592,8 +592,8 @@ TIP_CSS = """.t-tip{
 .t-tip.right::after{ right:100%; top:50%; margin-top:-5px;
                      border-right-color:var(--ttbg); border-left:0; }
 
-/* light and dark are the same — that is what the file says */
---ttbg:#171614; --tttx:#FFFFFF;"""
+/* light */ --ttbg:#171614; --tttx:#FFFFFF;
+/* dark  */ --ttbg:#FFFFFF; --tttx:#211F1C;"""
 
 TIP_POS = [('above', 'Above'), ('left', 'Left'), ('below', 'Below'), ('right', 'Right')]
 
@@ -613,10 +613,13 @@ def c_tooltip():
         'positions, a fixed height, and no behaviour specified at all.',
         'gap', figma='2620:4152', extra_meta=['4 positions', 'One height'],
 
-        note='<div class="note warn"><b>Figma defines the box and nothing else.</b> There '
-             'is no delay, no transition, no dismissal rule, no trigger rule and no touch '
-             'behaviour. A tooltip is almost entirely behaviour, so this page documents a '
-             'shape and is honest that the component is not finished.</div>',
+        note='<div class="note"><b>Figma defines the box; this page defines the '
+             'behaviour.</b> The file gives fill, text, padding, radius and four arrow '
+             'positions, and stops there. A tooltip is almost entirely behaviour, so Verifi '
+             'Design has asked that the Behaviour and Accessibility sections below follow '
+             'established UX practice rather than sit empty. Those rules are the house '
+             'convention and are binding for new work; they are marked where they go beyond '
+             'what Figma says.</div>',
 
         example=bench(_tips(), _tips(),
                       'The variant name describes where the tooltip sits, so '
@@ -626,9 +629,11 @@ def c_tooltip():
             ('Height', '<span class="m">24px</span>, fixed'),
             ('Padding', '<span class="m">8px</span>'),
             ('Radius', '<span class="m">4px</span>'),
-            ('Fill', '<span class="m">#171614</span> in both themes'),
-            ('Text', 'ABC Repro Regular <span class="m">12px</span>, '
-                     '<span class="m">#FFFFFF</span>'),
+            ('Fill', '<span class="m">#171614</span> light, '
+                     '<span class="m">#FFFFFF</span> dark'),
+            ('Text', 'ABC Repro Regular <span class="m">12px</span> &mdash; '
+                     '<span class="m">#FFFFFF</span> light, '
+                     '<span class="m">#211F1C</span> dark'),
             ('Arrow', 'Drawn on all four variants. No size or offset token.'),
         ]),
 
@@ -646,20 +651,34 @@ def c_tooltip():
                 'gets there or how it leaves, so appearance, disappearance and everything '
                 'in between is currently up to whoever builds it.</p>'),
 
-        behaviour=('<div class="note stop"><b>Everything in this section is a gap, not a '
-                   'rule.</b> It is written as guidance so teams have somewhere to start, '
-                   'and every line of it needs confirming in Figma before it becomes '
-                   'spec.</div>' +
+        behaviour=('<div class="note ok"><b>These are rules, not suggestions.</b> Figma '
+                   'does not specify tooltip behaviour, so Verifi Design has adopted '
+                   'established UX practice as the house convention. Build to this.</div>' +
                    checklist([
-                       'A tooltip supplements. If the person cannot complete the task '
-                       'without reading it, the text belongs on the page instead.',
-                       'It must open on keyboard focus as well as hover, or keyboard users '
-                       'never see it.',
-                       'Hover does not exist on a phone. Decide what a touch device does '
-                       'before shipping the pattern there.',
-                       'Escape should dismiss it, and it should not trap focus.',
-                       'The fixed 24px height means one line only. Long strings have no '
-                       'defined behaviour.',
+                       '<b>A tooltip supplements, never carries.</b> If the person cannot '
+                       'finish the task without reading it, the text belongs on the page.',
+                       '<b>Open after 500ms on hover, immediately on keyboard focus.</b> '
+                       'The delay stops tooltips firing as the pointer crosses a toolbar; '
+                       'focus has no such problem, so it gets no delay.',
+                       '<b>Close after 100ms, and stay open while the pointer is inside '
+                       'the tooltip itself.</b> That short grace period is what lets '
+                       'someone move onto the tooltip to read it.',
+                       '<b>Escape dismisses it, and it never takes focus.</b> Focus stays '
+                       'on the trigger throughout.',
+                       '<b>One trigger open at a time.</b> Moving between two triggers '
+                       'swaps immediately rather than re-running the 500ms delay.',
+                   ]) +
+                   '<h3>Touch, and the 24px height</h3>' +
+                   '<p>Two things the convention cannot fix on its own.</p>' +
+                   checklist([
+                       '<b>Hover does not exist on a phone.</b> Do not ship a pattern where '
+                       'a tooltip is the only route to the information. Either the label is '
+                       'visible at small widths, or the trigger becomes a tap target that '
+                       'opens a popover.',
+                       '<b>The fixed 24px height allows one line.</b> The convention is a '
+                       '<span class="m">280px</span> max width with wrapping, which the '
+                       'fixed height contradicts. Until Figma resolves it, keep tooltip '
+                       'text under about 40 characters so the question does not arise.',
                    ])),
 
         guidelines=dodont(
@@ -675,14 +694,16 @@ def c_tooltip():
             ('Height', '<span class="m">24px</span>'),
             ('Padding', '<span class="m">8px</span>'),
             ('Radius', '<span class="m">4px</span>'),
-            ('Fill', '<span class="m">#171614</span>, both themes'),
-            ('Text', '<span class="m">#FFFFFF</span>, 12px regular'),
-            ('Contrast', '<span class="m">18.08:1</span>'),
+            ('Fill, light / dark', '<span class="m">#171614 / #FFFFFF</span>'),
+            ('Text, light / dark', '<span class="m">#FFFFFF / #211F1C</span>'),
+            ('Contrast, light / dark', '<span class="m">18.08:1 / 16.44:1</span>'),
+            ('Show delay', '<span class="m">500ms</span> on hover, none on focus'),
+            ('Hide delay', '<span class="m">100ms</span>'),
         ]),
 
-        a11y=('<p>Contrast is the one thing this component gets right: white on '
-              '<span class="m">#171614</span> measures 18.08:1, far past the 4.5:1 '
-              'requirement, in both themes.</p>' +
+        a11y=('<p>Both themes clear the requirement with room to spare: white on '
+              '<span class="m">#171614</span> measures 18.08:1 in light, and '
+              '<span class="m">#211F1C</span> on white measures 16.44:1 in dark.</p>' +
               checklist([
                   'Use <span class="m">aria-describedby</span> on the trigger pointing at '
                   'the tooltip, not <span class="m">aria-label</span>, which would replace '
@@ -694,18 +715,21 @@ def c_tooltip():
                   'Never put the only copy of important information inside a tooltip.',
               ])),
 
-        gaps=checklist([
-            '<b>Height is fixed at 24px</b>, so a tooltip cannot wrap. No character limit '
-            'is given either.',
-            '<b>No max width</b>, so long text has no defined behaviour.',
-            '<b>No show or hide delay, and no transition.</b>',
-            '<b>No trigger rule.</b> Hover only, or focus and keyboard as well?',
-            '<b>No touch behaviour</b>, where hover does not exist.',
-            '<b>No arrow size or offset token.</b>',
-            '<b>No dark-mode values.</b> The same near-black fill is used in both themes, '
-            'which happens to work but was probably not a decision.',
-            '<b>No stated relationship to the help text</b> already used under form fields.',
-        ]),
+        gaps=('<div class="note ok"><b>Two questions closed.</b> Dark mode is specified '
+              'after all &mdash; the tooltip inverts to a white fill with '
+              '<span class="m">#211F1C</span> text. And behaviour is settled by adopting UX '
+              'best practice as the house convention, written up under Behaviour above.</div>' +
+              checklist([
+                  '<b>Height is fixed at 24px</b>, which contradicts the 280px wrapping max '
+                  'width the convention calls for. One of the two has to give.',
+                  '<b>No max width in Figma.</b> The convention sets 280px; the file does '
+                  'not.',
+                  '<b>No arrow size or offset token.</b>',
+                  '<b>No transition</b> is specified. The delays above are timing, not '
+                  'animation.',
+                  '<b>No stated relationship to the help text</b> already used under form '
+                  'fields, which solves a neighbouring problem.',
+              ])),
     )
 
 
@@ -730,16 +754,17 @@ TAG_CSS = """.t-tag{
 
 .t-tag.diag::before, .t-tag.solid::before{
   content:""; position:absolute; inset:0;
-  background:repeating-linear-gradient(45deg,
-    var(--tagdiag) 0 5px, transparent 5px 10px);
 }
-.t-tag.diag ::before{ opacity:.35; }   /* overlay  */
-.t-tag.solid::before{ opacity:1;   }   /* solid    */
+.t-tag.diag::before{  background:repeating-linear-gradient(135deg,
+  var(--tagdo) 0 2.6px, transparent 2.6px 5px); }
+.t-tag.solid::before{ background:repeating-linear-gradient(135deg,
+  var(--tagds) 0 2.6px, transparent 2.6px 5px); }
 
-/* light */ --tagbg:#0975C3; --tagtx:#FFFFFF; --tagdiag:#171614;
-/* dark  */ --tagbg:#C5E4FB; --tagtx:#211F1C; --tagdiag:#211F1C;
+/* light */ --tagbg:#0975C3; --tagtx:#FFFFFF; --tagdo:#1D57AF; --tagds:#1F5B8D;
+/* dark  */ --tagbg:#C5E4FB; --tagtx:#211F1C; --tagdo:#BADFF9; --tagds:#3698EC;
 
-/* Fill and text are meant to be overridden per instance. Check the pair. */"""
+/* Stripes run bottom-left to top-right, 3.7px wide on a 7.1px horizontal
+   pitch. Fill, text AND diagonal are all overridable per instance. */"""
 
 TAG_ROWS = [
     ('', True, 'Icon + overlay', 'diag'),
@@ -768,11 +793,14 @@ def c_tag():
         'part and also the problem.',
         'gap', figma='62678:46633', extra_meta=['6 combinations', 'Light and dark'],
 
-        note='<div class="note warn"><b>This component has no fixed palette.</b> The Figma '
-             'documentation says the fill and the label colour are meant to be changed per '
-             'instance using selection colours. That makes it flexible and means no '
-             'approved colour pairs exist, so every tag anyone makes is an unchecked '
-             'contrast risk. See Accessibility.</div>',
+        note='<div class="note warn"><b>This component has no fixed palette, and that '
+             'goes further than the fill.</b> The Figma documentation says the fill and the '
+             'label colour are changed per instance using selection colours, and the '
+             'diagonal lines can be recoloured too. The solid diagonal is bound to no '
+             'variable at all. So no approved colour set exists and every tag anyone makes '
+             'is an unchecked contrast risk. The values on this page were measured from the '
+             'Figma documentation frame pixel by pixel, because there was nothing else to '
+             'read them from. See Accessibility.</div>',
 
         example=bench(_tags(), _tags(),
                       'Icon and diagonal pattern toggle independently. The diagonal comes '
@@ -785,8 +813,11 @@ def c_tag():
             ('Gap', '<span class="m">4px</span> between icon and label'),
             ('Max width', '<span class="m">100px</span>'),
             ('Type', 'ABC Repro Regular <span class="m">12px</span>'),
-            ('Diagonal', '45&deg; stripes, <span class="m">35%</span> opacity as overlay '
-                         'or <span class="m">100%</span> as solid'),
+            ('Diagonal', 'Stripes running bottom-left to top-right, '
+                         '<span class="m">3.7px</span> wide on a '
+                         '<span class="m">7.1px</span> horizontal pitch'),
+            ('Diagonal colour', 'Overlay is a softened tint of the fill; solid is a '
+                                'stronger one. Both are per-instance, not tokenised.'),
         ]),
 
         options=(copybar('Tag', 'tag', '6 combinations', TAG_HTML, TAG_CSS) +
@@ -845,15 +876,26 @@ def c_tag():
               'matters more than usual here because these colours are meant to be swapped '
               'by hand.</p>' +
               measured([
-                  ('Label on fill, light', '#ffffff', '#0975c3', '4.83:1', '4.5:1', True),
-                  ('Label on fill, dark', '#211f1c', '#c5e4fb', '12.42:1', '4.5:1', True),
-                  ('Label over 35% stripe, light', '#ffffff', '#0e5486', '7.98:1', '4.5:1', True),
-                  ('Label over 35% stripe, dark', '#211f1c', '#8c9fad', '6.01:1', '4.5:1', True),
+                  ('Label on default fill, light', '#ffffff', '#0975c3', '4.83:1', '4.5:1', True),
+                  ('Label on default fill, dark', '#211f1c', '#c5e4fb', '12.42:1', '4.5:1', True),
+                  ('Label on overlay stripe, light', '#ffffff', '#1d57af', '6.92:1', '4.5:1', True),
+                  ('Label on solid stripe, light', '#ffffff', '#1f5b8d', '7.14:1', '4.5:1', True),
+                  ('Label on overlay stripe, dark', '#211f1c', '#badff9', '11.75:1', '4.5:1', True),
+                  ('Label on solid stripe, dark', '#211f1c', '#3698ec', '5.37:1', '4.5:1', True),
+                  ('Label on the fill the Figma examples use, light',
+                   '#ffffff', '#2778c1', '4.62:1', '4.5:1', True),
               ]) +
+              '<div class="note warn"><b>The examples are worse than the default.</b> The '
+              'documentation frame in Figma overrides the fill to '
+              '<span class="m">#2778C1</span>, which measures 4.62:1 &mdash; below the '
+              '4.83:1 of the <span class="m">#0975C3</span> default. Anyone who copies an '
+              'example rather than starting from the component inherits the weaker pair. '
+              'This page renders the default.</div>' +
               '<div class="note warn"><b>4.83:1 has no headroom.</b> The light default '
-              'clears 4.5:1 by a third of a point. Any lightening of the blue or softening '
-              'of the white drops it below. Since the whole component is built to be '
-              'recoloured, that margin will not survive contact with real use.</div>' +
+              'clears 4.5:1 by a third of a point, and the stripe colours are overridable '
+              'too, so a designer can change three things independently and break the pair '
+              'without touching the one they were looking at. Measure the composite, not '
+              'the fill.</div>' +
               checklist([
                   'Measure every fill and label pair you invent. There is no approved list '
                   'to fall back on.',
@@ -1158,6 +1200,8 @@ def c_avatar():
             ('Small', '<span class="m">24 &times; 24</span>'),
             ('XSmall', '<span class="m">16 &times; 16</span>'),
             ('Content', 'An image, or an icon from the TrinityIcons font'),
+            ('XSmall content', 'Icon only. An image is not permitted at '
+                               '<span class="m">16px</span>.'),
         ]),
 
         options=(copybar('Avatar', 'avatar', '2 shapes, 4 sizes', AV_HTML, AV_CSS) +
@@ -1165,7 +1209,20 @@ def c_avatar():
                  bench(_avs('circle'), _avs('circle')) +
                  '<h3>Square</h3>' +
                  bench(_avs('square'), _avs('square'),
-                       'Same sizes, <span class="m">8px</span> radius instead of round.')),
+                       'Same sizes, <span class="m">8px</span> radius instead of round.') +
+                 '<h3>What each size may contain</h3>' +
+                 table(['Size', 'Image', 'Icon'], [
+                     ['Large <span class="m">56</span>', 'Yes', 'Yes'],
+                     ['Medium <span class="m">32</span>', 'Yes', 'Yes'],
+                     ['Small <span class="m">24</span>', 'Yes', 'Yes'],
+                     ['XSmall <span class="m">16</span>',
+                      '<b>No</b> &mdash; a face is unreadable at this size',
+                      'Yes'],
+                 ]) +
+                 '<div class="note"><b>XSmall is the icon form only.</b> Confirmed by Verifi '
+                 'Design and being annotated in the Figma file. Every XSmall example on this '
+                 'page is an icon for that reason &mdash; there is no image demonstration at '
+                 '16px because there is no permitted use of one.</div>'),
 
         states=('<p>No interactive states are defined. An avatar inside a clickable row or '
                 'menu inherits that control&rsquo;s states; on its own it is a picture.</p>'),
@@ -1234,15 +1291,16 @@ def c_avatar():
             'is a legitimate choice, so the open question is narrower: initials distinguish '
             'two people apart in a list where a generic icon cannot, so decide whether a list '
             'of people is a case this component has to serve.',
-            '<b>No group or stacked variant.</b> Worth doing at the same time as the ring '
-            'above, since a stack needs the ring to separate one avatar from the next.',
+            '<b>No group or stacked variant, and none is planned.</b> Verifi Design has '
+            'deprioritised it. If you need to show several people at once, list them rather '
+            'than stacking them &mdash; do not build a stack locally, because the overlap '
+            'rule, the order and the overflow count would all be yours to invent.',
             '<b>No status dot overlay</b>, even though <a href="badge.html">Badge</a> '
             'defines a dot that would fit.',
             '<b>No image crop, focal point or aspect rule.</b>',
             '<b>No broken or missing image fallback.</b>',
             '<b>No border or ring.</b> An avatar on a dark photograph has no separation '
-            'from it. Verifi Design has accepted this and a ring is planned &mdash; it also '
-            'solves the overlap edge in a stacked group, so the two should be designed '
-            'together.',
+            'from it. Verifi Design has accepted this and a ring is planned. It stands on '
+            'its own now that the stacked group is deprioritised.',
               ])),
     )

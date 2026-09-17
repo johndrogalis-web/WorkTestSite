@@ -660,8 +660,10 @@ def c_tooltip():
                       'characters a line'),
             ('Height', 'Hug &mdash; <span class="m">24px</span> at one line, growing as it '
                        'wraps'),
-            ('Arrow', '<span class="m">15 &times; 6</span>, offset '
-                      '<span class="m">-4px</span> from the edge, centred'),
+            ('Arrow', '<span class="m">15 &times; 6</span> via '
+                      '<span class="m">tooltip/arrow-width</span> and '
+                      '<span class="m">tooltip/arrow-height</span>, offset '
+                      '<span class="m">-4px</span>, centred'),
             ('Overflow', '<span class="m">word-break: break-word</span>'),
             ('Padding', '<span class="m">8px</span>'),
             ('Radius', '<span class="m">4px</span>'),
@@ -770,12 +772,13 @@ def c_tooltip():
              'Do not rely on it existing on touch devices.']),
 
         specs=spec([
-            ('Max width', '<span class="m">280px</span>, giving '
+            ('Max width', '<span class="m">tooltip/max-width</span> = 280, giving '
                           '<span class="m">264px</span> of text and about 45 characters '
                           'a line'),
             ('Height', 'Hug &mdash; <span class="m">24px</span> at one line'),
             ('Padding', '<span class="m">8px</span>'),
-            ('Arrow', '<span class="m">15 &times; 6</span> at <span class="m">-4px</span>'),
+            ('Arrow', '<span class="m">15 &times; 6</span> at <span class="m">-4px</span>, '
+                      'width and height tokenised'),
             ('Radius', '<span class="m">4px</span>'),
             ('Fill, light / dark', '<span class="m">#171614 / #FFFFFF</span>'),
             ('Text, light / dark', '<span class="m">#FFFFFF / #211F1C</span>'),
@@ -805,13 +808,35 @@ def c_tooltip():
               'width is now capped at <span class="m">280px</span> with '
               '<span class="m">word-break: break-word</span>, so long text wraps and the box '
               'grows downward instead of running off the screen.</div>' +
+              '<div class="note ok"><b>Three values are now tokens.</b> '
+              '<span class="m">tooltip/max-width</span> (280), '
+              '<span class="m">tooltip/arrow-width</span> (15) and '
+              '<span class="m">tooltip/arrow-height</span> (6, aliased to '
+              '<span class="m">spacing/micro/150</span>) were added to the Layout collection '
+              'and bound to the component, so those numbers no longer live only in the '
+              'drawing. Text alignment was already set to left on the node.</div>' +
               checklist([
+                  '<b>Nothing chooses the position, and nothing says what happens at a '
+                  'screen edge.</b> Four positions exist as variants, but a tooltip near the '
+                  'top of the window has to flip below, and near the right edge it has to '
+                  'shift or flip left. No flip order, no collision rule, no fallback. This is '
+                  'the largest remaining gap: without it, every team invents its own '
+                  'placement logic and tooltips get clipped differently in each screen.',
+                  '<b>No offset between the trigger and the tooltip.</b> The '
+                  '<span class="m">-4px</span> is how far the arrow overlaps the box, not how '
+                  'far the box sits from the thing it describes. That distance is undefined.',
+                  '<b>No stacking rule.</b> Nothing says what a tooltip sits above, which '
+                  'matters as soon as one opens inside a <a href="modal.html">modal</a> or '
+                  'over a sticky header.',
+                  '<b>A leftover <span class="m">height</span> binding.</b> The component '
+                  'still binds height to <span class="m">tooltip/height</span> even though it '
+                  'is set to Hug. Inert, because Hug wins, but it reads as a fixed height to '
+                  'anyone inspecting the file.',
                   '<b>The text node duplicates the container cap</b> at '
                   '<span class="m">280px</span>. Harmless while the padding is 8px, but it '
                   'is a second number to maintain.',
-                  '<b>The arrow is drawn but not tokenised.</b> It measures '
-                  '<span class="m">15 &times; 6</span> at <span class="m">-4px</span>, and '
-                  'those numbers live in the shape rather than in variables.',
+                  '<b>The arrow&rsquo;s <span class="m">-4px</span> offset is still '
+                  'positional</b> rather than a token. Its width and height are now bound.',
                   '<b>No transition</b> is specified. The delays above are timing, not '
                   'animation.',
                   '<b>No stated relationship to the help text</b> already used under form '

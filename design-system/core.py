@@ -34,51 +34,94 @@ MAGNIFY = ('<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">'
            '<path d="M10.4 10.4L14 14" stroke="currentColor" stroke-width="1.5" '
            'stroke-linecap="round"/></svg>')
 
+DLICON = ('<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">'
+          '<path d="M8 2.6v7.2M4.8 7l3.2 3.2L11.2 7" stroke="currentColor" stroke-width="1.5" '
+          'stroke-linecap="round" stroke-linejoin="round"/>'
+          '<path d="M2.8 12.2h10.4" stroke="currentColor" stroke-width="1.5" '
+          'stroke-linecap="round"/></svg>')
+
 ARROW = '<span aria-hidden="true">&rarr;</span>'
 
 # ── Navigation ────────────────────────────────────────────────
-# (group label, [(href, label, status)])  status: '' | 'gap' | 'bad' | 'none'
+# A group is (label, entries). An entry is either
+#   ('p', href, label, status)                      a page
+#   ('g', sublabel, [(href, label, status), ...])   a collapsible subgroup
+# Subgroups use Trinity's own family names, so a component sits in the same
+# place here as it does in the Figma file.
 NAV = [
     ('Get started', [
-        ('index.html',              'Overview', ''),
-        ('start/designers.html',    'For designers', ''),
-        ('start/developers.html',   'For developers', ''),
+        ('p', 'index.html',            'Overview', ''),
+        ('p', 'start/designers.html',  'For designers', ''),
+        ('p', 'start/developers.html', 'For developers', ''),
     ]),
     ('Foundations', [
-        ('foundations/colour.html',        'Colour', ''),
-        ('foundations/typography.html',    'Typography', ''),
-        ('foundations/spacing.html',       'Spacing and layout', ''),
-        ('foundations/shape.html',         'Shape', ''),
-        ('foundations/motion.html',        'Motion', ''),
-        ('foundations/accessibility.html', 'Accessibility', ''),
-        ('foundations/truck-phases.html',  'Truck phases', ''),
+        ('p', 'foundations/colour.html',        'Colour', ''),
+        ('p', 'foundations/typography.html',    'Typography', ''),
+        ('p', 'foundations/spacing.html',       'Spacing and layout', ''),
+        ('p', 'foundations/shape.html',         'Shape', ''),
+        ('p', 'foundations/motion.html',        'Motion', ''),
+        ('p', 'foundations/accessibility.html', 'Accessibility', ''),
+        ('p', 'foundations/truck-phases.html',  'Truck phases', ''),
     ]),
     ('Components', [
-        ('components/index.html',        'All components', ''),
-        ('components/breadcrumbs.html',  'Breadcrumbs', ''),
-        ('components/button.html',       'Button', ''),
-        ('components/checkbox.html',     'Checkbox', ''),
-        ('components/dropdown.html',     'Dropdown', ''),
-        ('components/modal.html',        'Modal', ''),
-        ('components/radio-group.html',  'Radio group', ''),
-        ('components/table.html',        'Table', ''),
-        ('components/tabs.html',         'Tabs', ''),
-        ('components/text-field.html',   'Text field', ''),
-        ('components/toast.html',        'Toast', ''),
-        ('components/toggle.html',       'Toggle', ''),
-        ('components/truck-phase-tag.html', 'Truck phase tag', ''),
+        ('p', 'components/index.html', 'All components', ''),
+        ('g', 'Actions', [
+            ('components/button.html', 'Button', ''),
+        ]),
+        ('g', 'Navigators', [
+            ('components/breadcrumbs.html', 'Breadcrumbs', ''),
+            ('components/tabs.html',        'Tabs', ''),
+        ]),
+        ('g', 'Form elements', [
+            ('components/checkbox.html',    'Checkbox', ''),
+            ('components/dropdown.html',    'Dropdown', ''),
+            ('components/radio-group.html', 'Radio group', ''),
+            ('components/text-field.html',  'Text field', ''),
+            ('components/toggle.html',      'Toggle', ''),
+        ]),
+        ('g', 'Informers', [
+            ('components/toast.html',           'Toast', ''),
+            ('components/truck-phase-tag.html', 'Truck phase tag', ''),
+        ]),
+        ('g', 'Containers', [
+            ('components/modal.html', 'Modal', ''),
+            ('components/table.html', 'Table', ''),
+        ]),
     ]),
     ('Brand', [
-        ('brand/logo.html',         'Logo', ''),
-        ('brand/colour-type.html',  'Colour and type', ''),
-        ('brand/imagery.html',      'Imagery', ''),
+        ('p', 'brand/logo.html',        'Logo', ''),
+        ('p', 'brand/colour-type.html', 'Colour and type', ''),
+        ('p', 'brand/imagery.html',     'Imagery', ''),
+        ('p', 'brand/assets.html',      'Download assets', ''),
     ]),
     (None, [
-        ('open-items.html', 'Open items', ''),
+        ('p', 'open-items.html', 'Open items', ''),
     ]),
 ]
 
-ORDER = [(h, l) for _, items in NAV for h, l, _ in items]
+
+def _flatten():
+    out = []
+    for _, entries in NAV:
+        for e in entries:
+            if e[0] == 'p':
+                out.append((e[1], e[2]))
+            else:
+                out.extend((h, l) for h, l, _ in e[2])
+    return out
+
+
+ORDER = _flatten()
+ALL_HREFS = [h for h, _ in ORDER]
+
+
+def family_of(href):
+    """Which subgroup a page sits in, or None."""
+    for _, entries in NAV:
+        for e in entries:
+            if e[0] == 'g' and any(h == href for h, _, _ in e[2]):
+                return e[1]
+    return None
 
 
 def neighbours(href):
@@ -101,18 +144,31 @@ def shell(title, desc, href, body, toc=None, crumb=None):
     depth = href.count('/')
     up = '../' * depth
 
+    def link(h, label, st):
+        cur = ' aria-current="page"' if h == href else ''
+        tag = '<span class="st">%s</span>' % st if st else ''
+        return '<li><a href="%s%s"%s>%s%s</a></li>' % (up, h, cur, label, tag)
+
     nav = ''
-    for group, items in NAV:
+    for group, entries in NAV:
         if group:
             nav += '<h2>%s</h2>' % group
         else:
             nav += '<div class="sep"></div>'
-        nav += '<ul>'
-        for h, label, st in items:
-            cur = ' aria-current="page"' if h == href else ''
-            tag = '<span class="st">%s</span>' % st if st else ''
-            nav += '<li><a href="%s%s"%s>%s%s</a></li>' % (up, h, cur, label, tag)
-        nav += '</ul>'
+        loose = [e for e in entries if e[0] == 'p']
+        if loose:
+            nav += '<ul>%s</ul>' % ''.join(link(e[1], e[2], e[3]) for e in loose)
+        for e in entries:
+            if e[0] != 'g':
+                continue
+            sublabel, pages = e[1], e[2]
+            here = any(h == href for h, _, _ in pages)
+            nav += ('<details class="grp" data-grp="%s"%s>'
+                    '<summary><span class="gl">%s</span>'
+                    '<span class="gn">%d</span></summary>'
+                    '<ul>%s</ul></details>'
+                    % (sublabel, ' open' if here else '', sublabel, len(pages),
+                       ''.join(link(h, l, st) for h, l, st in pages)))
 
     toc_html = ''
     doc_cls = 'doc'

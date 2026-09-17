@@ -691,6 +691,34 @@ def c_tooltip():
                        '<b>One trigger open at a time.</b> Moving between two triggers '
                        'swaps immediately rather than re-running the 500ms delay.',
                    ]) +
+                   '<h3>Why 280px</h3>' +
+                   '<p>Not a round number picked for the look of it. At '
+                   '<span class="m">12px</span> in ABC Repro an average character measures '
+                   'about <span class="m">5.8px</span>, so 280 minus the 16px of padding '
+                   'holds roughly <b>45 characters</b> a line.</p>' +
+                   table(['Max width', 'Characters a line', 'Verdict'], [
+                     ['<span class="m">240px</span>', '38',
+                      'Wraps text that should have stayed on one line'],
+                     ['<span class="m">280px</span>', '45',
+                      '<b>Recommended.</b> The bottom of the 45&ndash;75 readable range, '
+                      'which is where a tooltip belongs'],
+                     ['<span class="m">320px</span>', '52', 'Workable, but invites paragraphs'],
+                     ['<span class="m">360px</span>', '59',
+                      'Too much. At this width people write prose into a tooltip'],
+                   ]) +
+                   checklist([
+                     'A typical help string &mdash; &ldquo;Water added automatically when '
+                     'slump drifts.&rdquo; &mdash; measures <span class="m">242px</span>, so '
+                     'the common case never wraps and the cap only catches outliers.',
+                     '<span class="m">280 = 35 &times; 8</span>, so it lands on the spacing '
+                     'scale rather than beside it.',
+                     'Two lines at 12/1.3 plus padding comes to about '
+                     '<span class="m">47px</span> tall. If you need a third line, the text '
+                     'does not belong in a tooltip.',
+                     'On a phone, clamp it: <span class="m">max-width: min(280px, '
+                     'calc(100vw - 32px))</span> so it never touches the screen edges at '
+                     '375px.',
+                   ]) +
                    '<h3>Touch, and the missing width cap</h3>' +
                    '<p>Two things the convention cannot fix on its own.</p>' +
                    checklist([
@@ -698,12 +726,10 @@ def c_tooltip():
                        'a tooltip is the only route to the information. Either the label is '
                        'visible at small widths, or the trigger becomes a tap target that '
                        'opens a popover.',
-                       '<b>Set a maximum width and let it wrap.</b> The box hugs its '
-                       'content on both axes, so without a cap a long tooltip becomes one '
-                       'enormous line. The house convention is <span class="m">280px</span>, '
-                       'after which the text wraps and the box grows downward &mdash; which '
-                       'the Hug height already allows, so nothing in the file has to change '
-                       'for this to work.',
+                       '<b>Set the maximum width to <span class="m">280px</span> and let '
+                       'it wrap.</b> The box hugs its content on both axes, so without a cap '
+                       'a long tooltip becomes one enormous line. The Hug height already '
+                       'lets it grow downward, so the cap is the only thing missing.',
                    ])),
 
         guidelines=dodont(

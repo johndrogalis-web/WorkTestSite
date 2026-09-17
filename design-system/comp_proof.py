@@ -579,7 +579,7 @@ def _tbl(striped=False, pick=None, sel=False, dis=False):
     cls = 'c-tbl' + (' striped' if striped else '')
     pickhead = ''
     if pick == 'cbx':
-        pickhead = '<th class="pick"><span class="c-cbx"><i>&#10003;</i></span></th>'
+        pickhead = '<th class="pick"><span class="c-cbx"><i></i></span></th>'
     elif pick == 'rad':
         pickhead = '<th class="pick"></th>'
     rows = [('4417', 'Rockdale', '4.2&Prime;', '', 'on'),
@@ -589,7 +589,7 @@ def _tbl(striped=False, pick=None, sel=False, dis=False):
     for num, plant, slump, rcls, checked in rows:
         cell = ''
         if pick == 'cbx':
-            cell = ('<td class="pick"><span class="c-cbx %s"><i>&#10003;</i></span></td>'
+            cell = ('<td class="pick"><span class="c-cbx %s"><i></i></span></td>'
                     % checked)
         elif pick == 'rad':
             cell = '<td class="pick"><span class="c-rad %s"><i></i></span></td>' % checked

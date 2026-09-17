@@ -229,60 +229,77 @@ CBX_HTML = """<label class="vf-check">
   <span class="vf-check__label">Show returned concrete</span>
 </label>"""
 
-CBX_CSS = """/* Verifi checkbox — independent boolean, applies on save. */
+CBX_CSS = """/* Verifi checkbox — independent boolean, applies on save.
+   One size. The box is 16 x 16; the 24 x 24 touchpoint around it is what the
+   pointer and the finger hit. The negative margin keeps the box on the same
+   baseline grid as everything else while the target stays 24. */
 .vf-check { display: inline-flex; align-items: center; gap: 9px; cursor: pointer;
             font-size: 14px; color: #36322dc2; }
 .vf-check input { position: absolute; opacity: 0; width: 0; height: 0; }
 
 .vf-check__box {
-  width: 16px; height: 16px; flex: none;
-  border: 1px solid #36322d;        /* --strong */
+  width: 24px; height: 24px; margin: -4px; flex: none;   /* touchpoint */
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.vf-check__box::before {                                 /* the 16px box */
+  content: ""; width: 16px; height: 16px; box-sizing: border-box;
+  border: 1px solid #171614;        /* --strong */
   border-radius: 2px;               /* --radius-xs */
   background: #ffffff;              /* --layer-1 */
-  display: inline-flex; align-items: center; justify-content: center;
   transition: background .14s, border-color .14s;
 }
-.vf-check input:checked + .vf-check__box {
-  background: #36322d; border-color: #36322d;
+/* The tick and the dash are Trinity's own vectors, carried as masks so they
+   take the surface colour. Tick: 6 x 4 polyline at (5,6), 1px, round caps.
+   Dash: 8 x 1 bar at (4,7.5). Do not substitute a font character or a
+   rotated border — neither has the right angle or the right weight. */
+.vf-check__box::after {
+  content: ""; position: absolute; width: 16px; height: 16px; opacity: 0;
+  background: #ffffff;
+  -webkit-mask: var(--vf-tick) center / 16px 16px no-repeat;
+          mask: var(--vf-tick) center / 16px 16px no-repeat;
 }
-.vf-check input:checked + .vf-check__box::after {
-  content: ""; width: 9px; height: 5px; margin-top: -2px;
-  border-left: 1.6px solid #fff; border-bottom: 1.6px solid #fff;
-  transform: rotate(-45deg);
+.vf-check {
+  --vf-tick: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M5 7.3333 7.4 10 11 6' fill='none' stroke='%23000' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --vf-dash: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='4' y='7.5' width='8' height='1' rx='.5' fill='%23000'/%3E%3C/svg%3E");
 }
+.vf-check input:checked + .vf-check__box::before,
+.vf-check input:indeterminate + .vf-check__box::before {
+  background: #211f1c; border-color: #211f1c;
+}
+.vf-check input:checked + .vf-check__box::after,
+.vf-check input:indeterminate + .vf-check__box::after { opacity: 1; }
+
 /* Indeterminate — a parent whose children are partly checked */
-.vf-check input:indeterminate + .vf-check__box {
-  background: #36322d; border-color: #36322d;
-}
 .vf-check input:indeterminate + .vf-check__box::after {
-  content: ""; width: 8px; height: 0; border-bottom: 1.6px solid #fff; transform: none;
+  -webkit-mask-image: var(--vf-dash); mask-image: var(--vf-dash);
 }
-.vf-check input:focus-visible + .vf-check__box {
-  outline: 2px solid #36322d; outline-offset: 2px;
+.vf-check input:focus-visible + .vf-check__box::before {
+  outline: 2px solid #171614; outline-offset: 2px;
 }
 .vf-check input:disabled ~ * { opacity: .42; }
 
 @media (prefers-color-scheme: dark) {
   .vf-check { color: #e5e5e5de; }
-  .vf-check__box { border-color: #fff; background: #211f1c; }
-  .vf-check input:checked + .vf-check__box,
-  .vf-check input:indeterminate + .vf-check__box { background: #fff; border-color: #fff; }
-  .vf-check input:checked + .vf-check__box::after { border-color: #211f1c; }
-  .vf-check input:indeterminate + .vf-check__box::after { border-color: #211f1c; }
+  .vf-check__box::before { border-color: #fff; background: #211f1c; }
+  .vf-check input:checked + .vf-check__box::before,
+  .vf-check input:indeterminate + .vf-check__box::before { background: #fff; border-color: #fff; }
+  .vf-check__box::after { background: #211f1c; }
+  .vf-check input:focus-visible + .vf-check__box::before { outline-color: #fff; }
 }"""
 
 
 def c_checkbox():
     demo = (
-        brow('Unchecked', '<span class="c-cbx"><i>&#10003;</i>Show washed-out loads</span>') +
-        brow('Checked', '<span class="c-cbx on"><i>&#10003;</i>Show returned concrete</span>') +
-        brow('Indeterminate', '<span class="c-cbx on" style="opacity:.55">'
-                              '<i>&ndash;</i>All plants (3 of 7)</span>') +
+        brow('Unchecked', '<span class="c-cbx"><i></i>Show washed-out loads</span>') +
+        brow('Checked', '<span class="c-cbx on"><i></i>Show returned concrete</span>') +
+        brow('Indeterminate', '<span class="c-cbx ind">'
+                              '<i></i>All plants (3 of 7)</span>') +
         brow('Disabled', '<span class="c-cbx" style="opacity:.42">'
-                         '<i>&#10003;</i>Locked by dispatch</span>'))
-    grp = ('<div class="bstack"><span class="c-cbx on"><i>&#10003;</i>Rockdale</span>'
-           '<span class="c-cbx on"><i>&#10003;</i>Midwest</span>'
-           '<span class="c-cbx"><i>&#10003;</i>Northgate</span></div>')
+                         '<i></i>Locked by dispatch</span>'))
+    grp = ('<div class="bstack"><span class="c-cbx on"><i></i>Rockdale</span>'
+           '<span class="c-cbx on"><i></i>Midwest</span>'
+           '<span class="c-cbx"><i></i>Northgate</span></div>')
 
     return cpage(
         'components/checkbox.html', 'Checkbox',
@@ -305,16 +322,42 @@ def c_checkbox():
              'do, instead of retyping it in every layout. It also carries light and dark with it, '
              'so a prototype switched to dark mode brings the checkbox along without any manual '
              'recolouring. The same instance is what the '
-             '<a href="table.html#showcase">table</a> row selector uses, now that both are '
-             '<span class="m">16 &times; 16</span>.</div>',
+             '<a href="table.html#showcase">table</a> row selector uses.</div>'
+
+             '<div class="note ok"><b>There is one checkbox size, not two.</b> The box is '
+             '<span class="m">16 &times; 16</span>. Around it sits a '
+             '<span class="m">24 &times; 24</span> frame that Trinity literally names '
+             '<span class="m">touchpoint</span> &mdash; invisible, and the only thing a pointer '
+             'or a finger has to hit. So the <span class="m">24</span> you can measure in a table '
+             'row is not a larger checkbox; it is the target around the same 16px box. That is '
+             'also exactly what WCAG 2.2 <span class="m">2.5.8 Target Size (Minimum), AA</span> '
+             'asks for. Draw the box at 16 and give it 24 of room; never scale the box to fill '
+             'the target. Trinity&rsquo;s own variables say it outright: '
+             '<span class="m">checkbox/width</span> and <span class="m">checkbox/height</span> '
+             'are <span class="m">24</span> (<span class="m">spacing/medium/600</span>), '
+             '<span class="m">checkbox/padding</span> is <span class="m">4</span> '
+             '(<span class="m">spacing/micro/100</span>), and 24 less 4 a side is the 16px '
+             'box.</div>'
+
+             '<div class="note ok"><b>The tick is a vector, not a font character.</b> It is a '
+             '<span class="m">6 &times; 4</span> polyline sitting at <span class="m">(5, 6)</span> '
+             'inside the box &mdash; <span class="m">(0, 1.33) &rarr; (2.4, 4) &rarr; (6, 0)</span> '
+             '&mdash; stroked at <span class="m">1px</span> with round caps and joins. Both arms '
+             'run at <span class="m">48&deg;</span>, not 45, and the right arm is half as long '
+             'again as the left. A <span class="m">&amp;#10003;</span> glyph or a rotated CSS '
+             'border gets the angle, the weight and the arm ratio all slightly wrong, which is why '
+             'the site used to look heavier than the Figma. Copy the path.</div>',
 
         example=bench(demo, demo),
 
         anatomy=spec([
+            ('Touchpoint', '<span class="m">24 &times; 24</span> &mdash; the outer frame, and '
+                           'the only thing the pointer or the finger has to hit'),
             ('Box', '<span class="m">16 &times; 16</span>, 1px border, <span class="m">2px</span> radius'),
-            ('Gap to label', '<span class="m">9px</span>'),
+            ('Tick', '<span class="m">6 &times; 4</span> at <span class="m">(5, 6)</span>, 1px, round caps'),
+            ('Dash', '<span class="m">8 &times; 1</span> at <span class="m">(4, 7.5)</span>'),
+            ('Gap to label', '<span class="m">9px</span> from the box edge'),
             ('Label', '<span class="m">14px</span>, the defined ink'),
-            ('Hit target', '<span class="m">44px</span> minimum &mdash; the whole label is clickable'),
             ('Group spacing', '<span class="m">10px</span> between options'),
         ]),
 
@@ -326,10 +369,11 @@ def c_checkbox():
         states=table(['State', 'What changes'], [
             ['Unchecked', 'Empty box, 1px border in <code>--strong</code>.'],
             ['Checked', 'Box fills with <code>--strong</code>, tick in the surface colour.'],
-            ['Indeterminate', 'Box fills, a dash instead of a tick. For a parent whose children '
-                              'are partly selected.'],
-            ['Hover', 'Border darkens.'],
-            ['Focus', '2px outline at 2px offset.'],
+            ['Indeterminate', 'Box fills, an <span class="m">8 &times; 1</span> dash instead of '
+                              'the tick. For a parent whose children are partly selected. It is '
+                              'a display state, never something a click produces.'],
+            ['Hover', 'Border darkens. The touchpoint, not the box, decides when hover starts.'],
+            ['Focus', '2px outline at 2px offset, drawn on the box.'],
             ['Disabled', '42% opacity. The value stays visible.'],
         ]),
 
@@ -352,16 +396,36 @@ def c_checkbox():
              'Do not use a checkbox for something that takes effect immediately.',
              'Do not put more than about seven in one ungrouped list.']),
 
-        specs=spec([
+        specs=(table(['Trinity variable', 'Alias', 'Light', 'Dark'], [
+            ['<code>checkbox/width</code>', '<code>spacing/medium/600</code>',
+             '<span class="m">24</span>', '<span class="m">24</span>'],
+            ['<code>checkbox/height</code>', '<code>spacing/medium/600</code>',
+             '<span class="m">24</span>', '<span class="m">24</span>'],
+            ['<code>checkbox/padding</code>', '<code>spacing/micro/100</code>',
+             '<span class="m">4</span>', '<span class="m">4</span>'],
+            ['<code>checkbox/radius</code>', '<code>radius/xsm</code>',
+             '<span class="m">2</span>', '<span class="m">2</span>'],
+            ['<code>checkbox/input-stroke</code>', '<code>neutral/950</code> &rarr; <code>neutral/0</code>',
+             '<span class="m">#171614</span>', '<span class="m">#FFFFFF</span>'],
+            ['<code>checkbox/input-default-fill</code>', '<code>neutral/0</code> &rarr; <code>neutral/900</code>',
+             '<span class="m">#FFFFFF</span>', '<span class="m">#211F1C</span>'],
+            ['<code>checkbox/input-selected-fill</code>', '<code>neutral/900</code> &rarr; <code>neutral/0</code>',
+             '<span class="m">#211F1C</span>', '<span class="m">#FFFFFF</span>'],
+        ]) + spec([
+            ('Touchpoint', '<span class="m">24 &times; 24</span>'),
             ('Box', '<span class="m">16 &times; 16</span>'),
             ('Radius', '<span class="m">2px</span>'),
-            ('Border', '<span class="m">1px</span> <code>--strong</code>'),
-            ('Checked fill', '<code>--strong</code> &mdash; light <span class="m">#36322D</span>, '
-                             'dark <span class="m">#FFFFFF</span>'),
+            ('Border', '<span class="m">1px</span> <code>checkbox/input-stroke</code>'),
+            ('Checked fill', '<code>checkbox/input-selected-fill</code> &mdash; light '
+                             '<span class="m">#211F1C</span>, dark <span class="m">#FFFFFF</span>'),
+            ('Tick', '<span class="m">6 &times; 4</span> polyline at <span class="m">(5, 6)</span>, '
+                     '<span class="m">1px</span>, round cap and join, in the surface colour'),
+            ('Dash', '<span class="m">8 &times; 1</span> bar at <span class="m">(4, 7.5)</span>, '
+                     '<span class="m">0.5</span> radius'),
+            ('Focus ring', '<span class="m">2px</span> outside the box, <span class="m">2px</span> offset'),
             ('Gap', '<span class="m">9px</span>'),
             ('Label', '<span class="m">14px</span>'),
-            ('Hit target', '<span class="m">44px</span> minimum'),
-        ]),
+        ])),
 
         a11y=checklist([
             'Use a real <code>&lt;input type="checkbox"&gt;</code> inside a <code>&lt;label&gt;</code>. '
@@ -382,6 +446,16 @@ def c_checkbox():
             '<span class="m">fals</span></b> alongside <span class="m">false</span> and '
             '<span class="m">true</span>, and it is the option the indeterminate variants use. '
             'A third truth value that only exists as a typo.',
+            '<b>The tick vector is still named '
+            '<span class="m">Icon / Check / Temp</span></b> in the component. Either it is the '
+            'real one and the name should say so, or it is a placeholder and the shipped '
+            'checkbox is carrying a temporary icon.',
+            '<b>The focus ring sits at a different distance on the checkbox and the radio.</b> '
+            'The checkbox ring is <span class="m">2px</span> outside a 16px box; the radio ring is '
+            '<span class="m">4px</span> outside its 16px circle, because the radio '
+            '<span class="m">inputContainer</span> is <span class="m">20 &times; 20</span> where '
+            'the checkbox one is <span class="m">16 &times; 16</span>. Two controls that sit side '
+            'by side in the same form should focus identically.',
             '<b>No pressed state</b> is drawn.',
         ]),
     )
@@ -413,26 +487,29 @@ RAD_CSS = """/* Verifi radio group — mutually exclusive, all options visible. 
 .vf-radio input { position: absolute; opacity: 0; width: 0; height: 0; }
 
 .vf-radio__dot {
-  width: 16px; height: 16px; flex: none;
-  border: 1px solid #36322d;
+  width: 24px; height: 24px; margin: -4px; flex: none;   /* touchpoint */
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.vf-radio__dot::before {                                /* the 16px circle */
+  content: ""; width: 16px; height: 16px; box-sizing: border-box;
+  border: 1px solid #171614;
   border-radius: 99px;
   background: #ffffff;
-  display: inline-flex; align-items: center; justify-content: center;
-  transition: border-color .14s;
+  transition: border-color .14s, border-width .1s;
 }
-.vf-radio input:checked + .vf-radio__dot::after {
-  content: ""; width: 8px; height: 8px; border-radius: 99px; background: #36322d;
-}
-.vf-radio input:focus-visible + .vf-radio__dot {
-  outline: 2px solid #36322d; outline-offset: 2px;
+/* Selected is a 4px ring, not a dot. The centre keeps the surface colour,
+   so the 16px circle reads as an 8px hole rather than an 8px blob. */
+.vf-radio input:checked + .vf-radio__dot::before { border-width: 4px; }
+.vf-radio input:focus-visible + .vf-radio__dot::before {
+  outline: 2px solid #171614; outline-offset: 2px;
 }
 .vf-radio input:disabled ~ * { opacity: .42; }
 
 @media (prefers-color-scheme: dark) {
   .vf-radios legend { color: #fff; }
   .vf-radio { color: #e5e5e5de; }
-  .vf-radio__dot { border-color: #fff; background: #211f1c; }
-  .vf-radio input:checked + .vf-radio__dot::after { background: #fff; }
+  .vf-radio__dot::before { border-color: #fff; background: #211f1c; }
+  .vf-radio input:focus-visible + .vf-radio__dot::before { outline-color: #fff; }
 }"""
 
 
@@ -452,8 +529,11 @@ def c_radio():
         example=bench(demo, demo),
 
         anatomy=spec([
-            ('Dot', '<span class="m">16 &times; 16</span> circle, 1px border, '
-                    '<span class="m">8px</span> inner fill when selected'),
+            ('Touchpoint', '<span class="m">24 &times; 24</span> &mdash; the outer frame, same '
+                           'as the <a href="checkbox.html">checkbox</a>'),
+            ('Circle', '<span class="m">16 &times; 16</span>, 1px border'),
+            ('Selected', 'The same circle with a <span class="m">4px</span> inside ring, leaving '
+                         'an <span class="m">8px</span> centre in the surface colour'),
             ('Gap to label', '<span class="m">9px</span>'),
             ('Gap between options', '<span class="m">10px</span>'),
             ('Legend', 'The question the group answers. Always present.'),
@@ -466,8 +546,10 @@ def c_radio():
 
         states=table(['State', 'What changes'], [
             ['Unselected', 'Empty circle, 1px border.'],
-            ['Selected', 'An 8px filled dot appears inside.'],
-            ['Hover', 'Border darkens.'],
+            ['Selected', 'The border thickens to <span class="m">4px</span> on the inside. The '
+                         'centre stays the surface colour, so it reads as an 8px hole rather '
+                         'than an 8px blob.'],
+            ['Hover', 'Border darkens. The touchpoint, not the circle, decides when hover starts.'],
             ['Focus', '2px outline at 2px offset.'],
             ['Disabled', '42% opacity. Say why it is disabled.'],
         ]),
@@ -492,12 +574,13 @@ def c_radio():
              'Do not mix radios and checkboxes in the same visual group.']),
 
         specs=spec([
-            ('Dot', '<span class="m">16 &times; 16</span>'),
-            ('Inner fill', '<span class="m">8 &times; 8</span>'),
-            ('Border', '<span class="m">1px</span> <code>--strong</code>'),
+            ('Touchpoint', '<span class="m">24 &times; 24</span>'),
+            ('Circle', '<span class="m">16 &times; 16</span>'),
+            ('Border, unselected', '<span class="m">1px</span> <code>--strong</code>'),
+            ('Border, selected', '<span class="m">4px</span> <code>--strong</code>, inside'),
+            ('Centre, selected', '<span class="m">8 &times; 8</span> of the surface colour'),
             ('Gap to label', '<span class="m">9px</span>'),
             ('Gap between options', '<span class="m">10px</span>'),
-            ('Hit target', '<span class="m">44px</span> minimum'),
         ]),
 
         a11y=checklist([

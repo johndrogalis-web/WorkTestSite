@@ -5,6 +5,15 @@
    ═══════════════════════════════════════════════════════════════ */
 
 :root{
+  /* Selection control glyphs — traced from Trinity, not font characters.
+     Check  : 6x4 polyline at (5,6) in the 16px box, 1px stroke, round cap and join.
+     Dash   : 8x1 bar at (4,7.5), 0.5 radius.
+     Masks, so the colour comes from the pane the control sits in. */
+  --tick:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M5 7.3333 7.4 10 11 6' fill='none' stroke='%23000' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --dash:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='4' y='7.5' width='8' height='1' rx='.5' fill='%23000'/%3E%3C/svg%3E");
+
+  --cbxst:#171614;--cbxbg:#fff;--cbxon:#211f1c;--cbxtk:#fff;
+
   /* Brand palette — Identity Guidelines V1.0 */
   --black:#2e2b27;
   --grey-100:#faf9f6;
@@ -278,7 +287,8 @@ td.wrap{min-width:190px}
 .binline{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .bstack{display:flex;flex-direction:column;gap:10px;align-items:flex-start;width:100%}
 
-.pane-l{--bg:#fff;--l1:#fff;--l2:#f6f4f2;--tx:#36322d;--tx2:#36322dc2;--tx3:#36322d9e;
+.pane-l{--cbxst:#171614;--cbxbg:#fff;--cbxon:#211f1c;--cbxtk:#fff;
+  --bg:#fff;--l1:#fff;--l2:#f6f4f2;--tx:#36322d;--tx2:#36322dc2;--tx3:#36322d9e;
   --bd:#36322d24;--bdm:rgba(54,50,45,.30);--sel:#3069e3;--onsel:#fff;--er:#d70100;--am:#ffba0d;
   --hov:rgba(48,105,227,.05);--link:#0975c3;--cur:#666054;
   --ibg:#fff;--ibd:#666054;--itx:#171614;--iph:#666054;--ifo:#171614;--ifl:#171614;
@@ -300,7 +310,8 @@ td.wrap{min-width:190px}
   background:#fff;border-color:#36322d24;color:#36322d}
 .pane-l > .ph{color:#36322db3;border-bottom-color:#36322d24}
 
-.pane-d{--bg:#171614;--l1:#211f1c;--l2:#2f2d28;--tx:#fff;--tx2:#e5e5e5de;--tx3:#e5e5e5bf;
+.pane-d{--cbxst:#fff;--cbxbg:#211f1c;--cbxon:#fff;--cbxtk:#211f1c;
+  --bg:#171614;--l1:#211f1c;--l2:#2f2d28;--tx:#fff;--tx2:#e5e5e5de;--tx3:#e5e5e5bf;
   --bd:#e5e5e51f;--bdm:rgba(229,229,229,.25);--sel:#e3f200;--onsel:#000;--er:#d70100;--am:#ffba0d;
   --hov:rgba(227,242,0,.05);--link:#8dc6f0;--cur:#b6b1a5;
   --ibg:#211f1c;--ibd:#b6b1a5;--itx:#fff;--iph:#b6b1a5;--ifo:#fff;--ifl:#fff;
@@ -375,18 +386,28 @@ td.wrap{min-width:190px}
 .c-phase{font-size:12px;line-height:1;padding:5px 10px;border-radius:32px;white-space:nowrap;
   display:inline-block}
 
+/* Checkbox and radio — one size only. The box is 16, the touchpoint is 24.
+   Trinity names that outer frame "touchpoint"; the negative margin lets it
+   paint and hit-test at 24 while occupying 16 in layout, so nothing shifts. */
 .c-cbx{display:inline-flex;align-items:center;gap:9px;font-size:14px;color:var(--tx2)}
-.c-cbx i{width:16px;height:16px;border-radius:2px;border:1px solid var(--tx);flex:none;
-  background:var(--l1);display:inline-flex;align-items:center;justify-content:center;
-  font-size:11px;color:transparent;font-style:normal;line-height:1}
-.c-cbx.on i{background:var(--tx);border-color:var(--tx);color:var(--bg)}
-.c-cbx.big i{width:24px;height:24px;font-size:15px}
+.c-cbx i{width:24px;height:24px;margin:-4px;flex:none;position:relative;font-size:0;
+  font-style:normal;line-height:0;display:inline-flex;align-items:center;justify-content:center}
+.c-cbx i::before{content:"";width:16px;height:16px;box-sizing:border-box;border-radius:2px;
+  border:1px solid var(--cbxst);background:var(--cbxbg)}
+.c-cbx i::after{content:"";position:absolute;width:16px;height:16px;opacity:0;
+  background:var(--cbxtk);
+  -webkit-mask:var(--tick) center/16px 16px no-repeat;mask:var(--tick) center/16px 16px no-repeat}
+.c-cbx.on i::before,.c-cbx.ind i::before{background:var(--cbxon);border-color:var(--cbxon)}
+.c-cbx.on i::after,.c-cbx.ind i::after{opacity:1}
+.c-cbx.ind i::after{-webkit-mask-image:var(--dash);mask-image:var(--dash)}
+
+/* Selected radio is a 4px ring, not a dot — the centre stays the surface colour. */
 .c-rad{display:inline-flex;align-items:center;gap:9px;font-size:14px;color:var(--tx2)}
-.c-rad i{width:16px;height:16px;border-radius:99px;border:1px solid var(--tx);flex:none;
-  background:var(--l1);display:inline-flex;align-items:center;justify-content:center}
-.c-rad.on i::after{content:"";width:8px;height:8px;border-radius:99px;background:var(--tx)}
-.c-rad.big i{width:24px;height:24px}
-.c-rad.big.on i::after{width:12px;height:12px}
+.c-rad i{width:24px;height:24px;margin:-4px;flex:none;
+  display:inline-flex;align-items:center;justify-content:center}
+.c-rad i::before{content:"";width:16px;height:16px;box-sizing:border-box;border-radius:99px;
+  border:1px solid var(--cbxst);background:var(--cbxbg)}
+.c-rad.on i::before{border-width:4px;background:var(--cbxbg)}
 .c-tog{width:40px;height:22px;border-radius:99px;background:var(--bdm);display:inline-flex;
   align-items:center;padding:2px;transition:background .14s;flex:none}
 .c-tog i{width:18px;height:18px;border-radius:99px;background:var(--l1);

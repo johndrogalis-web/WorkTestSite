@@ -290,7 +290,16 @@ def c_checkbox():
         'the form is saved, not the moment it is clicked.',
         'gap', figma='30515:78521', extra_meta=['12 variants'],
 
-        note='<div class="note ok"><b>Use this component in prototypes rather than drawing a '
+        note='<div class="note ok"><b>The third state is now called '
+             '<span class="m">indeterminate</span> in both places.</b> The public set used to '
+             'say <span class="m">intermediate</span> and the private one '
+             '<span class="m">isIndeterminate</span>; both have been renamed in Figma. '
+             '<span class="m">indeterminate</span> is the word HTML, ARIA and CSS already use '
+             '&mdash; <span class="m">input.indeterminate</span>, '
+             '<span class="m">aria-checked="mixed"</span>, '
+             '<span class="m">:indeterminate</span> &mdash; so the Figma property and the code '
+             'property are finally the same string.</div>'
+             '<div class="note ok"><b>Use this component in prototypes rather than drawing a '
              'checkbox.</b> Verifi Design&rsquo;s note: the label is a toggle on the component, '
              'so you switch it off where you do not want one and edit it in one place where you '
              'do, instead of retyping it in every layout. It also carries light and dark with it, '
@@ -366,12 +375,13 @@ def c_checkbox():
         ]),
 
         gaps=checklist([
-            '<b>Two names for the third state.</b> The public set calls it '
-            '&ldquo;intermediate&rdquo;; the private one calls it &ldquo;isIndeterminate&rdquo;. '
-            'The concept is <em>indeterminate</em>; the other is a spelling error.',
-            '<b>Two sizes are in use.</b> This component is <span class="m">16 &times; 16</span>, '
-            'but the checkbox inside a <a href="table.html">table row</a> is '
-            '<span class="m">24 &times; 24</span>. Neither file acknowledges the other.',
+            '<b>The private set still spells one property '
+            '<span class="m">isDisabled</span></b> where the public set says '
+            '<span class="m">disabled</span>. Same word, two conventions, one component.',
+            '<b>The private set has a variant option spelled '
+            '<span class="m">fals</span></b> alongside <span class="m">false</span> and '
+            '<span class="m">true</span>, and it is the option the indeterminate variants use. '
+            'A third truth value that only exists as a typo.',
             '<b>No pressed state</b> is drawn.',
         ]),
     )
@@ -1618,7 +1628,7 @@ CAT = [
  ('Card', 'hold', 'Containers', 'none', '38190:1747', None,
   'The Figma page is called “Cards - missing”. One loose stub, no variants.'),
  ('Checkbox', 'form', 'Form elements', 'gap', '30515:78521', 'checkbox.html',
-  'Two spellings for the indeterminate state; two sizes in use across the library.'),
+  'Naming settled on indeterminate. Private set still says isDisabled, and has a fals typo.'),
  ('Chip', 'form', 'Form elements', 'ok', '11268:39456', None,
   'Two sizes, full state set, selectable and removable.'),
  ('Dropdown', 'form', 'Form elements', 'gap', '51689:13501', 'dropdown.html',

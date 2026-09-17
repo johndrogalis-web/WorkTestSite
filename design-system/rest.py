@@ -218,8 +218,11 @@ def g_developers():
 <h2 id="naming">State naming, normalised</h2>
 <p>Three competing conventions coexist in the Figma file &mdash; <code>state</code> vs
    <code>State</code>, <code>disabled</code> vs <code>isDisabled</code>, <code>value</code> vs
-   <code>isSelected</code>, <code>intermediate</code> vs <code>isIndeterminate</code>. Do not
-   propagate that into code.</p>
+   <code>isSelected</code>, <code>disabled</code> vs <code>isDisabled</code>. Do not propagate
+   that into code.</p>
+<div class="note ok"><b>One of these is now settled.</b> The checkbox's third state was
+  <code>intermediate</code> publicly and <code>isIndeterminate</code> privately; both are now
+  <code>indeterminate</code> in Figma, which is the word HTML, ARIA and CSS use.</div>
 {spec([
   ('State', '<span class="m">default &middot; hover &middot; focus &middot; active</span>'),
   ('Booleans', '<span class="m">disabled &middot; selected &middot; indeterminate &middot; '

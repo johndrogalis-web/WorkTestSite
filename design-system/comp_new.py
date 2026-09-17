@@ -662,8 +662,9 @@ def c_tooltip():
                        'wraps'),
             ('Arrow', '<span class="m">15 &times; 6</span> via '
                       '<span class="m">tooltip/arrow-width</span> and '
-                      '<span class="m">tooltip/arrow-height</span>, offset '
-                      '<span class="m">-4px</span>, centred'),
+                      '<span class="m">tooltip/arrow-height</span>, centred on its edge, '
+                      'protruding <span class="m">4px</span> with <span class="m">2px</span> '
+                      'of overlap'),
             ('Overflow', '<span class="m">word-break: break-word</span>'),
             ('Padding', '<span class="m">8px</span>'),
             ('Radius', '<span class="m">4px</span>'),
@@ -815,6 +816,13 @@ def c_tooltip():
               '<span class="m">spacing/micro/150</span>) were added to the Layout collection '
               'and bound across all four position variants, so those numbers no longer live '
               'only in the drawing. Text alignment was already set to left on the node.</div>' +
+              '<div class="note ok"><b>The four arrows were three different sizes; they are '
+              'one now.</b> Above and Below measured <span class="m">15 &times; 6</span>, Left '
+              '<span class="m">13 &times; 6</span> and Right <span class="m">15 &times; 5</span>. '
+              'All four are now <span class="m">15 &times; 6</span>, bound to the tokens, '
+              'centred on their edge and protruding <span class="m">4px</span> with '
+              '<span class="m">2px</span> of overlap &mdash; the rule Above and Below already '
+              'followed.</div>' +
               checklist([
                   '<b>Nothing chooses the position, and nothing says what happens at a '
                   'screen edge.</b> Four positions exist as variants, but a tooltip near the '
@@ -835,14 +843,9 @@ def c_tooltip():
                   '<b>The text node duplicates the container cap</b> at '
                   '<span class="m">280px</span>. Harmless while the padding is 8px, but it '
                   'is a second number to maintain.',
-                  '<b>The four arrows are three different sizes.</b> Above and Below measure '
-                  '<span class="m">15 &times; 6</span>, Left measures '
-                  '<span class="m">13 &times; 6</span> and Right measures '
-                  '<span class="m">15 &times; 5</span>. One shape drawn four times, and three '
-                  'of the results disagree. Above and Below are bound to the tokens; the other '
-                  'two were left as drawn rather than silently resized.',
-                  '<b>The arrow&rsquo;s <span class="m">-4px</span> offset is still '
-                  'positional</b> rather than a token.',
+                  '<b>The arrow&rsquo;s <span class="m">-4px</span> protrusion is still '
+                  'positional</b> rather than a token, so it is the one arrow number that can '
+                  'still drift.',
                   '<b>No transition</b> is specified. The delays above are timing, not '
                   'animation.',
                   '<b>No stated relationship to the help text</b> already used under form '

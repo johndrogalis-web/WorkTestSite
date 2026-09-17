@@ -553,7 +553,12 @@ def c_badge():
                   'number has to do it.',
               ])),
 
-        gaps=('<div class="note ok"><b>Three questions closed.</b> The Error style changes '
+        gaps=('<div class="note ok"><b>Nothing here blocks a build.</b> Every question a '
+              'developer has to answer to ship this component &mdash; size, colour, wrapping, '
+              'delays, placement, flip order, stacking, motion, keyboard, touch &mdash; is '
+              'answered above. What follows is Figma housekeeping and one content question, '
+              'not missing specification.</div>' +
+              '<div class="note ok"><b>Three questions closed.</b> The Error style changes '
               'between themes on purpose, for contrast. The dot style names will be renamed to '
               'match the display names. And a badge is defined by having no interactions &mdash; '
               'anything interactive is a chip.</div>' +
@@ -641,7 +646,8 @@ def c_tooltip():
         'components/tooltip.html', 'Tooltip',
         'A short label that appears next to whatever you are pointing at. Four arrow '
         'positions, a box that hugs its text in both directions, and no width limit.',
-        'gap', figma='2620:4152', extra_meta=['4 positions', 'One height'],
+        'ok', figma='2620:4152',
+        extra_meta=['4 positions', 'Light and dark', 'Placement settled'],
 
         note='<div class="note"><b>Figma defines the box; this page defines the '
              'behaviour.</b> The file gives fill, text, padding, radius and four arrow '
@@ -750,18 +756,118 @@ def c_tooltip():
                      'calc(100vw - 32px))</span> so it never touches the screen edges at '
                      '375px.',
                    ]) +
-                   '<h3>Touch, and the missing width cap</h3>' +
-                   '<p>Two things the convention cannot fix on its own.</p>' +
+                   '<h3>Placement</h3>' +
+                   '<p>Figma draws four positions but nothing chooses between them, and a '
+                   'position is only a preference &mdash; the window decides what is actually '
+                   'possible. These are the rules to build to.</p>' +
                    checklist([
-                       '<b>Hover does not exist on a phone.</b> Do not ship a pattern where '
-                       'a tooltip is the only route to the information. Either the label is '
-                       'visible at small widths, or the trigger becomes a tap target that '
-                       'opens a popover.',
-                       '<b>Set the maximum width to <span class="m">280px</span> and let '
-                       'it wrap.</b> The box hugs its content on both axes, so without a cap '
-                       'a long tooltip becomes one enormous line. The Hug height already '
-                       'lets it grow downward, so the cap is the only thing missing.',
-                   ])),
+                       '<b>Anchor to the trigger, never to the cursor.</b> A tooltip that '
+                       'follows the pointer is a different pattern and a worse one: the text '
+                       'moves while you are trying to read it.',
+                       '<b>Leave <span class="m">8px</span> between the trigger and the '
+                       'box.</b> The arrow sits inside that gap, protruding 4px, so the '
+                       'visible channel is 4px. Tighter and the tooltip looks welded to the '
+                       'control; looser and the connection between the two is lost.',
+                       '<b>Pick the default from the surroundings, not from habit.</b> Above '
+                       'for an inline trigger in a form or a paragraph. Right for an item in '
+                       'a left rail or a list, where vertical room is scarce and horizontal '
+                       'room is not. Below for anything in a top bar, where Above would leave '
+                       'the window.',
+                       '<b>Flip on the long axis, shift on the short one.</b> If Above does '
+                       'not fit, flip to Below. If it fits vertically but runs off the side, '
+                       'do not flip &mdash; slide it along the edge until it fits and leave '
+                       'the arrow pointing at the trigger.',
+                       '<b>Hold <span class="m">8px</span> from the window edge</b>, and never '
+                       'let the arrow come within <span class="m">8px</span> of the '
+                       'tooltip&rsquo;s own corner. An arrow sitting on a rounded corner reads '
+                       'as a rendering fault rather than a pointer.',
+                   ]) +
+                   '<h4>Flip order</h4>' +
+                   table(['Preferred', 'Then', 'Then', 'Last resort'], [
+                       ['Above', 'Below', 'Right', 'Left'],
+                       ['Below', 'Above', 'Right', 'Left'],
+                       ['Right', 'Left', 'Below', 'Above'],
+                       ['Left', 'Right', 'Below', 'Above'],
+                   ]) +
+                   '<div class="note"><b>Decide once, then hold it.</b> Work the position out '
+                   'when the tooltip opens and keep it until it closes. One that re-flips as '
+                   'the pointer moves, or as the layout settles, flickers between two places '
+                   'and is harder to read than one that is slightly cramped.</div>' +
+
+                   '<h3>Scrolling and stacking</h3>' +
+                   checklist([
+                       '<b>Close on scroll.</b> Repositioning mid-scroll makes the tooltip '
+                       'chase its trigger across the screen. Closing is simpler to build and '
+                       'far less distracting, and the person can hover again.',
+                       '<b>Render it in a top-level layer, above everything.</b> Above modals, '
+                       'sticky headers and drawers. A tooltip inside a '
+                       '<a href="modal.html">modal</a> is legitimate, so it cannot sit below '
+                       'modals in the stack &mdash; and it must never be clipped by a '
+                       'parent&rsquo;s <span class="m">overflow</span>.',
+                       '<b>One at a time.</b> Opening a second closes the first, and the '
+                       'second opens with no delay. Moving along a row of icon buttons should '
+                       'feel like one tooltip following you, not five opening in sequence.',
+                   ]) +
+
+                   '<h3>Motion</h3>' +
+                   checklist([
+                       '<b>Fade only. <span class="m">150ms</span> in, '
+                       '<span class="m">100ms</span> out.</b> No slide, no scale. Movement '
+                       'right beside the thing someone is already looking at pulls their eye '
+                       'off it.',
+                       '<b>The fade runs after the delay, not instead of it.</b> The 500ms '
+                       'decides whether to show at all; the fade is only how it arrives.',
+                       '<b>Under <span class="m">prefers-reduced-motion</span>, no fade.</b> '
+                       'Appear and disappear instantly. Nothing needs softening &mdash; the '
+                       'delay is already doing that job.',
+                   ]) +
+
+                   '<h3>Tooltip, or something else</h3>' +
+                   '<p>The commonest tooltip mistake is not how it is built, it is reaching '
+                   'for one at all. A tooltip is the weakest place to put information in the '
+                   'whole system: it is invisible until you go looking, it cannot be reached '
+                   'on a phone, it holds one short line, and it disappears the moment you look '
+                   'away. Use it only where those four things are acceptable.</p>' +
+                   table(['Use', 'When', 'Why not a tooltip'], [
+                     ['<b>Visible label</b>',
+                      'The control needs a name.',
+                      'An icon-only button with a tooltip is unlabelled until someone hovers. '
+                      'If the name matters, it belongs on screen.'],
+                     ['<b>Help text</b> under the field',
+                      'Formatting rules, constraints, units &mdash; anything needed to fill '
+                      'the field in correctly.',
+                      'People read help text while typing. A tooltip requires them to stop, '
+                      'find the icon, hover, read, and return.'],
+                     ['<b>Tooltip</b>',
+                      'A short clarification that is useful but not required. The truncated '
+                      'full text of a cell, the meaning of an abbreviation, the keyboard '
+                      'shortcut for a button.',
+                      '&mdash;'],
+                     ['<b>Popover</b>',
+                      'More than a line, or anything with a link or a control in it.',
+                      'A tooltip cannot be clicked into. Content you might want to select, '
+                      'copy or follow needs a container that stays open.'],
+                     ['<b>Inline message</b>',
+                      'An error, a warning, or a consequence of what the person just did.',
+                      'Never hide a problem behind a hover. If it changes what someone should '
+                      'do next, it has to be on the page.'],
+                   ]) +
+                   '<div class="note warn"><b>The test.</b> If the task fails when nobody '
+                   'hovers, it is not a tooltip. Everything in a tooltip must be optional '
+                   'detail &mdash; useful to the person who wants it, invisible to the person '
+                   'who does not, and harmless to miss.</div>' +
+                   '<div class="note"><b>One exception worth naming.</b> A tooltip repeating '
+                   'the full text of a truncated table cell or tag is a legitimate and common '
+                   'use, and it is the one case where the tooltip carries the same content as '
+                   'the screen rather than extra content. It is still not a substitute for '
+                   'giving the column enough width.</div>' +
+
+                   '<h3>Touch</h3>' +
+                   '<div class="note warn"><b>The one thing the convention cannot fix.</b> '
+                   'Hover does not exist on a phone, so a tooltip is unreachable there. Never '
+                   'ship a pattern where it is the only route to the information: either the '
+                   'label is visible at small widths, or the trigger becomes a tap target that '
+                   'opens a <a href="modal.html">popover</a> instead.</div>'),
 
         guidelines=dodont(
             ['Keep it short. Nothing in the file stops a long tooltip becoming one very wide line.',
@@ -786,6 +892,11 @@ def c_tooltip():
             ('Contrast, light / dark', '<span class="m">18.08:1 / 16.44:1</span>'),
             ('Show delay', '<span class="m">500ms</span> on hover, none on focus'),
             ('Hide delay', '<span class="m">100ms</span>'),
+            ('Offset from trigger', '<span class="m">8px</span>, of which the arrow occupies 4'),
+            ('Viewport margin', '<span class="m">8px</span>'),
+            ('Arrow corner clearance', '<span class="m">8px</span> minimum'),
+            ('Transition', '<span class="m">150ms</span> fade in, '
+                           '<span class="m">100ms</span> out, none under reduced motion'),
         ]),
 
         a11y=('<p>Both themes clear the requirement with room to spare: white on '
@@ -816,6 +927,11 @@ def c_tooltip():
               '<span class="m">spacing/micro/150</span>) were added to the Layout collection '
               'and bound across all four position variants, so those numbers no longer live '
               'only in the drawing. Text alignment was already set to left on the node.</div>' +
+              '<div class="note ok"><b>The file is tidy now.</b> The inert '
+              '<span class="m">height</span> binding has been removed from all four variants '
+              'and the duplicate <span class="m">280px</span> cap taken off the text nodes, so '
+              'the container is the only thing setting the width and Hug is the only thing '
+              'setting the height. Nothing moved.</div>' +
               '<div class="note ok"><b>The four arrows were three different sizes; they are '
               'one now.</b> Above and Below measured <span class="m">15 &times; 6</span>, Left '
               '<span class="m">13 &times; 6</span> and Right <span class="m">15 &times; 5</span>. '
@@ -824,32 +940,18 @@ def c_tooltip():
               '<span class="m">2px</span> of overlap &mdash; the rule Above and Below already '
               'followed.</div>' +
               checklist([
-                  '<b>Nothing chooses the position, and nothing says what happens at a '
-                  'screen edge.</b> Four positions exist as variants, but a tooltip near the '
-                  'top of the window has to flip below, and near the right edge it has to '
-                  'shift or flip left. No flip order, no collision rule, no fallback. This is '
-                  'the largest remaining gap: without it, every team invents its own '
-                  'placement logic and tooltips get clipped differently in each screen.',
-                  '<b>No offset between the trigger and the tooltip.</b> The '
-                  '<span class="m">-4px</span> is how far the arrow overlaps the box, not how '
-                  'far the box sits from the thing it describes. That distance is undefined.',
-                  '<b>No stacking rule.</b> Nothing says what a tooltip sits above, which '
-                  'matters as soon as one opens inside a <a href="modal.html">modal</a> or '
-                  'over a sticky header.',
-                  '<b>A leftover <span class="m">height</span> binding.</b> The component '
-                  'still binds height to <span class="m">tooltip/height</span> even though it '
-                  'is set to Hug. Inert, because Hug wins, but it reads as a fixed height to '
-                  'anyone inspecting the file.',
-                  '<b>The text node duplicates the container cap</b> at '
-                  '<span class="m">280px</span>. Harmless while the padding is 8px, but it '
-                  'is a second number to maintain.',
-                  '<b>The arrow&rsquo;s <span class="m">-4px</span> protrusion is still '
-                  'positional</b> rather than a token, so it is the one arrow number that can '
-                  'still drift.',
-                  '<b>No transition</b> is specified. The delays above are timing, not '
-                  'animation.',
-                  '<b>No stated relationship to the help text</b> already used under form '
-                  'fields, which solves a neighbouring problem.',
+                  '<b>Three spacing values live on this page rather than in Figma</b> '
+                  '&mdash; the <span class="m">8px</span> trigger offset, the '
+                  '<span class="m">8px</span> viewport margin and the '
+                  '<span class="m">4px</span> arrow protrusion. All three are decided and '
+                  'buildable. They are not variables because none of them binds to a Figma '
+                  'property: they describe where the tooltip sits relative to something '
+                  'outside itself. Worth adding as tokens once the code references them.',
+
+
+
+
+
               ])),
     )
 

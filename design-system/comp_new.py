@@ -595,9 +595,11 @@ TIP_HTML = """<span class="t-tip above" role="tooltip" id="tip-1">Tooltip</span>
 
 TIP_CSS = """.t-tip{
   position:relative; display:inline-flex; align-items:center;
-  height:24px; padding:0 8px; border-radius:4px;
+  max-width:280px;               /* the cap Figma now sets */
+  min-height:24px;               /* one line, then it grows */
+  padding:4px 8px; border-radius:4px;
   background:var(--ttbg); color:var(--tttx);
-  font-size:12px; line-height:1; white-space:nowrap;
+  font-size:12px; line-height:1.3; word-break:break-word;
 }
 .t-tip::after{ content:""; position:absolute; border:5px solid transparent; }
 .t-tip.above::after{ top:100%; left:16px; border-top-color:var(--ttbg); border-bottom:0; }
@@ -621,6 +623,19 @@ def _tips():
     return out + '</div>'
 
 
+def _tipwrap():
+    return ('<div class="t-stack" style="gap:20px;padding:10px 0">'
+            '<div class="brow"><span class="bl">Short &mdash; 7 characters</span>'
+            '<span class="t-tip above">Tooltip</span></div>'
+            '<div class="brow"><span class="bl">Typical &mdash; 44 characters</span>'
+            '<span class="t-tip above">Water added automatically when slump drifts.</span>'
+            '</div>'
+            '<div class="brow"><span class="bl">Long &mdash; capped and wrapped</span>'
+            '<span class="t-tip above">Adjust the slump target before the load leaves the '
+            'plant, otherwise the correction happens in transit.</span></div>'
+            '</div>')
+
+
 def c_tooltip():
     return cpage(
         'components/tooltip.html', 'Tooltip',
@@ -641,9 +656,13 @@ def c_tooltip():
                       '&ldquo;Above&rdquo; puts the arrow underneath it.'),
 
         anatomy=spec([
-            ('Width', 'Hug &mdash; the box is as wide as its text, with no maximum'),
-            ('Height', 'Hug &mdash; <span class="m">24px</span> is what one line of 12/1.3 '
-                       'plus <span class="m">8px</span> padding comes to, not a cap'),
+            ('Width', 'Hug, capped at <span class="m">280px</span> &mdash; about 45 '
+                      'characters a line'),
+            ('Height', 'Hug &mdash; <span class="m">24px</span> at one line, growing as it '
+                       'wraps'),
+            ('Arrow', '<span class="m">15 &times; 6</span>, offset '
+                      '<span class="m">-4px</span> from the edge, centred'),
+            ('Overflow', '<span class="m">word-break: break-word</span>'),
             ('Padding', '<span class="m">8px</span>'),
             ('Radius', '<span class="m">4px</span>'),
             ('Fill', '<span class="m">#171614</span> light, '
@@ -663,12 +682,16 @@ def c_tooltip():
                      ['<span class="m">position=Left</span>', 'Left of the trigger', 'Right'],
                      ['<span class="m">position=Right</span>', 'Right of the trigger', 'Left'],
                  ]) +
-                 '<div class="note warn"><b>Both axes are set to Hug, so nothing stops the '
-                 'box growing.</b> The <span class="m">56 &times; 24</span> you see in Figma '
-                 'is simply what the word &ldquo;Tooltip&rdquo; measures. Give it a sentence '
-                 'and you get a single line as wide as that sentence, running off the side of '
-                 'the screen. A maximum width is the missing constraint, not a maximum '
-                 'height.</div>'),
+                 '<div class="note ok"><b>The cap is in Figma now.</b> The container is '
+                 'capped at <span class="m">280px</span> with '
+                 '<span class="m">word-break: break-word</span>, and the height still hugs, '
+                 'so a long tooltip wraps and grows downward instead of running off the '
+                 'screen.</div>' +
+                 '<div class="note"><b>One thing to keep an eye on.</b> The text node '
+                 'carries its own <span class="m">280px</span> cap as well as the container. '
+                 'It is harmless today, because the container&rsquo;s 8px padding clamps the '
+                 'text to 264px first, but it means two numbers have to stay in step if the '
+                 'padding ever changes.</div>'),
 
         states=('<p>There is one state: visible. Figma does not describe how the tooltip '
                 'gets there or how it leaves, so appearance, disappearance and everything '
@@ -691,7 +714,12 @@ def c_tooltip():
                        '<b>One trigger open at a time.</b> Moving between two triggers '
                        'swaps immediately rather than re-running the 500ms delay.',
                    ]) +
-                   '<h3>Why 280px</h3>' +
+                   '<h3>At the cap</h3>' +
+                 bench(_tipwrap(), _tipwrap(),
+                       'The three cases at the real cap: a short label, a typical 44-character '
+                       'string that still fits on one line at 258px, and a long one that wraps '
+                       'to 280 &times; 55. This is what the component does now.') +
+                 '<h3>Why 280px</h3>' +
                    '<p>Not a round number picked for the look of it. At '
                    '<span class="m">12px</span> in ABC Repro an average character measures '
                    'about <span class="m">5.8px</span>, so 280 minus the 16px of padding '
@@ -742,9 +770,12 @@ def c_tooltip():
              'Do not rely on it existing on touch devices.']),
 
         specs=spec([
-            ('Width', 'Hug, no maximum in Figma'),
+            ('Max width', '<span class="m">280px</span>, giving '
+                          '<span class="m">264px</span> of text and about 45 characters '
+                          'a line'),
             ('Height', 'Hug &mdash; <span class="m">24px</span> at one line'),
             ('Padding', '<span class="m">8px</span>'),
+            ('Arrow', '<span class="m">15 &times; 6</span> at <span class="m">-4px</span>'),
             ('Radius', '<span class="m">4px</span>'),
             ('Fill, light / dark', '<span class="m">#171614 / #FFFFFF</span>'),
             ('Text, light / dark', '<span class="m">#FFFFFF / #211F1C</span>'),
@@ -767,16 +798,20 @@ def c_tooltip():
                   'Never put the only copy of important information inside a tooltip.',
               ])),
 
-        gaps=('<div class="note ok"><b>Two questions closed.</b> Dark mode is specified '
+        gaps=('<div class="note ok"><b>Three questions closed.</b> Dark mode is specified '
               'after all &mdash; the tooltip inverts to a white fill with '
-              '<span class="m">#211F1C</span> text. And behaviour is settled by adopting UX '
-              'best practice as the house convention, written up under Behaviour above.</div>' +
+              '<span class="m">#211F1C</span> text. Behaviour is settled by adopting UX best '
+              'practice as the house convention, written up under Behaviour above. And the '
+              'width is now capped at <span class="m">280px</span> with '
+              '<span class="m">word-break: break-word</span>, so long text wraps and the box '
+              'grows downward instead of running off the screen.</div>' +
               checklist([
-                  '<b>No maximum width.</b> Width is set to Hug, so the box grows with the '
-                  'text and a long string produces one very wide line. This is the single '
-                  'most important thing to add. The height is Hug too, so it can already '
-                  'wrap the moment a width cap exists.',
-                  '<b>No arrow size or offset token.</b>',
+                  '<b>The text node duplicates the container cap</b> at '
+                  '<span class="m">280px</span>. Harmless while the padding is 8px, but it '
+                  'is a second number to maintain.',
+                  '<b>The arrow is drawn but not tokenised.</b> It measures '
+                  '<span class="m">15 &times; 6</span> at <span class="m">-4px</span>, and '
+                  'those numbers live in the shape rather than in variables.',
                   '<b>No transition</b> is specified. The delays above are timing, not '
                   'animation.',
                   '<b>No stated relationship to the help text</b> already used under form '

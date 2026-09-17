@@ -6,6 +6,44 @@
 <title>Diagnostic Center — Verifi</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* ════════════════════════════════════════════════════════════
+     TOUCH BASELINE
+     What a phone expects from anything you can tap. Hover styles
+     live behind (hover: hover) so a tap doesn't leave one stuck;
+     press feedback comes from :active, which every input has.
+     ════════════════════════════════════════════════════════════ */
+  html {
+    -webkit-tap-highlight-color: transparent;  /* the grey flash is the loudest "this is a web page" tell */
+    -webkit-text-size-adjust: 100%;            /* no font inflation in landscape */
+  }
+  button, a, select, summary, [role="button"], [onclick],
+  .tab, .tk-act, .d-act, .stg-tab, .stg-nav-item, .mtl-day, .mtl-row, .mtl-ev, .mtl-msg,
+  .dc-log-tr, .dc-mc-btn, .dc-btn, .dc-copy-btn, .vp-opts-row, .tk-comp,
+  .dt-drawer-section-hdr, .stg-back, .dc-kvh-bar, .dc-log-back {
+    touch-action: manipulation;                /* no 300ms double-tap-zoom wait */
+    -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none;
+  }
+  /* a control answers when the finger lands, not when it leaves */
+  button:active, .dc-mc-btn:active, .dc-btn:active, .dc-copy-btn:active,
+  .tk-act:active, .d-act:active, .stg-tab:active, .tab:active,
+  .mtl-day:active, .mtl-row:active, .mtl-ev:active, .mtl-msg:active,
+  .dc-log-tr:active, .trow:active, .vp-opts-row:active, .tk-comp:active,
+  .dt-drawer-section-hdr:active, .stg-back:active, .dc-kvh-bar:active {
+    filter: brightness(1.28);
+  }
+  /* inputs are content, not chrome — people copy log values out of them */
+  input, textarea, .dc-json, .dc-kvh, .mtl-ev .st { -webkit-user-select: text; user-select: text; }
+  /* iOS zooms into any field under 16px and never zooms back out.
+     Scoped to coarse pointers so the desktop layout is untouched. */
+  @media (pointer: coarse) {
+    input, textarea, select { font-size: 16px; }
+  }
+  /* a list that hits its end shouldn't drag the page behind it */
+  html, body { overscroll-behavior: none; }
+  .table-scroll, .dc-logs-scroll, .dc-json, .mtl-list, .stg-main, .takeover, .drawer,
+  .dc-logs-right.open { overscroll-behavior: contain; }
   :root {
     --bg: #1b1b1b;
     --row-alt: #232323;
@@ -58,7 +96,7 @@
   }
   .nav-item .ic { font-size: 18px; display: flex; }
   .nav-item .ic svg, .loc .ic svg { display: block; }
-  .nav-item.active, .nav-item:hover { color: var(--text); }
+  @media (hover: hover) and (pointer: fine) { .nav-item.active, .nav-item:hover { color: var(--text); } }
   .collapse { color: var(--muted); font-size: 18px; margin: 16px 0; cursor: pointer; }
   .divider { width: 46px; height: 1px; background: var(--border); margin: 6px 0 16px; }
   .spacer { flex: 1; }
@@ -117,7 +155,7 @@
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
     padding: 9px 10px; border-radius: 4px; font-size: 13.5px; color: var(--text); cursor: pointer;
   }
-  .loc-item:hover, .loc-item.hi { background: color-mix(in srgb, var(--text) 9%, transparent); }
+  @media (hover: hover) and (pointer: fine) { .loc-item:hover, .loc-item.hi { background: color-mix(in srgb, var(--text) 9%, transparent); } }
   .loc-item .ck { color: #3069e3; font-size: 12px; opacity: 0; }
   .loc-item.sel .ck { opacity: 1; }
   .loc-empty { padding: 14px 10px; font-size: 12.5px; color: var(--muted); }
@@ -175,7 +213,7 @@
   th.col-pad, td.col-pad { width: 100%; padding: 0; }
   tbody tr:nth-child(odd) { background: #232323; }
   .trow { cursor: pointer; }
-  .trow:hover { background: #2c2c2c !important; }
+  @media (hover: hover) and (pointer: fine) { .trow:hover { background: #2c2c2c !important; } }
   .tname { font-weight: 400; }
   .ver { font-weight: 700; }
   .atplant { display: flex; align-items: center; gap: 7px; color: var(--text); }
@@ -207,6 +245,7 @@
     font-size: 14px; color: var(--text);
   }
   .comp .cdot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: var(--c-ok); }
+  .comp .cdot svg { display: none; }   /* desktop keeps the plain dot */
   .comp .ccount { font-variant-numeric: tabular-nums; color: var(--muted); }
   .comp .cbad {
     display: inline-flex; align-items: center; gap: 6px;
@@ -219,7 +258,7 @@
   .comp.alarm .cdot { background: var(--c-alarm); }
   .comp.alarm .ccount { color: var(--c-alarm-ink); }
   .comp.alarm .cbad { color: var(--c-alarm-ink); background: color-mix(in srgb, var(--c-alarm) 16%, transparent); }
-  .comp-cell:hover .cbad { box-shadow: inset 0 0 0 1px currentColor; }
+  @media (hover: hover) and (pointer: fine) { .comp-cell:hover .cbad { box-shadow: inset 0 0 0 1px currentColor; } }
 
   /* Fixed-slot component strip: one cell per component, always in
      the same position, so a column can be scanned down the fleet as
@@ -230,6 +269,21 @@
     letter-spacing: .4px; color: var(--muted); text-transform: uppercase;
   }
   .comp-strip { display: flex; gap: 3px; margin-top: 7px; }
+  .comp-slot em { display: none; }   /* desktop has the column key in the header */
+  .comp-slot i svg { display: none; }  /* desktop keeps the bar */
+  /* phone-only replacements for the slot strip and the short count */
+  .ccount-long, .comp-mob { display: none; }
+  .cm-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 11px; min-height: 40px; border-radius: 5px;
+    font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap;
+  }
+  .cm-chip svg { flex-shrink: 0; }
+  .cm-chip.warn { color: var(--c-warn-ink); background: color-mix(in srgb, var(--c-warn) 18%, transparent); }
+  .cm-chip.alarm { color: var(--c-alarm-ink); background: color-mix(in srgb, var(--c-alarm) 18%, transparent); }
+  .cm-chip.asleep { color: var(--muted); background: color-mix(in srgb, var(--text) 10%, transparent); }
+  .cm-chip.more { color: var(--muted); background: color-mix(in srgb, var(--text) 9%, transparent); }
+  .cm-ok { font-size: 12.5px; color: var(--muted); }
   .comp-slot {
     width: 34px; height: 18px; border-radius: 3px; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
@@ -249,7 +303,7 @@
   }
   .comp-slot.na { background: color-mix(in srgb, var(--text) 7%, transparent); cursor: default; }
   .comp-slot.na i { width: 11px; height: 2px; border-radius: 1px; background: var(--dim); }
-  .comp-slot:hover { outline: 1px solid var(--muted); outline-offset: 1px; }
+  @media (hover: hover) and (pointer: fine) { .comp-slot:hover { outline: 1px solid var(--muted); outline-offset: 1px; } }
   .comp .cbad { cursor: pointer; }
 
   /* Rollover expansion — the collapsed cell never grows the row, so
@@ -272,7 +326,7 @@
     transition: opacity .12s ease, transform .12s ease;
     white-space: normal; cursor: pointer;
   }
-  .comp-cell:hover .comp-pop { opacity: 1; visibility: visible; transform: translateY(0); }
+  @media (hover: hover) and (pointer: fine) { .comp-cell:hover .comp-pop { opacity: 1; visibility: visible; transform: translateY(0); } }
   .comp-pop.up { top: auto; bottom: calc(100% - 10px); }
   .comp-pop .cp-head {
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -291,7 +345,7 @@
   .comp-pop .cp-name { font-size: 12.5px; font-weight: 600; color: var(--text); }
   .comp-pop .cp-fault { font-size: 11.5px; line-height: 1.4; color: var(--muted); }
   .comp-pop .cp-row.link { cursor: pointer; }
-  .comp-pop .cp-row.link:hover { background: color-mix(in srgb, var(--text) 11%, transparent); }
+  @media (hover: hover) and (pointer: fine) { .comp-pop .cp-row.link:hover { background: color-mix(in srgb, var(--text) 11%, transparent); } }
   .comp-pop .cp-when { font-size: 11px; color: var(--dim); }
   .comp-pop .cp-go { margin-left: auto; align-self: center; font-size: 13px; color: var(--muted); }
   .comp-pop .cp-foot {
@@ -302,6 +356,7 @@
   .pager { display: flex; align-items: center; justify-content: flex-end; gap: 22px; margin-top: 26px; color: var(--muted); font-size: 12.5px; }
   .pager .ppsel { border: 1px solid var(--border); border-radius: 3px; padding: 3px 8px; color: var(--text); display: inline-flex; gap: 8px; align-items: center; }
   .pager .arrows { display: flex; gap: 18px; font-size: 15px; }
+  .pager .pg.off { opacity: .35; cursor: default; }
 
   /* ============================================================
      DRAWER
@@ -350,7 +405,7 @@
      --dc-r-lg         6px                  24px
      --dc-r-md         6px                  16px
   ──────────────────────────────────────────────────────────── */
-  .drawer, .takeover, .stg {
+  .drawer, .takeover, .stg, .dc-chart-modal, .appnav {
     --dc-layer-1: #232323;
     --dc-layer-2: #1f1f1f;
     --dc-strong: #f5f5f5;
@@ -378,7 +433,7 @@
     --dc-r-btn: 4px;
   }
   /* Trinity preview — same components, new-DS token values */
-  .drawer.trinity, body.trinity .stg {
+  .drawer.trinity, body.trinity .stg, body.trinity .dc-chart-modal, body.trinity .appnav {
     --dc-layer-1: #211f1c;
     --dc-layer-2: #2f2d28;
     --dc-strong: #ffffff;
@@ -420,7 +475,7 @@
     color: var(--muted); cursor: pointer; font-size: 13px; font-family: inherit;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
-  .d-tnav:hover { color: var(--text); border-color: var(--muted); }
+  @media (hover: hover) and (pointer: fine) { .d-tnav:hover { color: var(--text); border-color: var(--muted); } }
   .d-actions { display: flex; align-items: stretch; }
   .d-act {
     display: flex; align-items: center; gap: 7px;
@@ -431,7 +486,7 @@
   }
   .d-act:first-child { border-left: none; }
   .d-act .ai { font-size: 13px; }
-  .d-act:hover { color: var(--text); }
+  @media (hover: hover) and (pointer: fine) { .d-act:hover { color: var(--text); } }
   .d-act.active { color: var(--text); }
   .d-act.active::after {
     content: ""; position: absolute; left: 15px; right: 15px; bottom: -17px;
@@ -576,23 +631,113 @@
     border-radius: var(--dc-r-sm); padding: 10px 12px 8px;
     cursor: pointer; margin-top: 10px;
   }
-  .dc-chart-mini:hover { border-color: color-mix(in srgb, var(--dc-strong) 30%, transparent); }
+  @media (hover: hover) and (pointer: fine) { .dc-chart-mini:hover { border-color: color-mix(in srgb, var(--dc-strong) 30%, transparent); } }
   .dc-chart-mini .hd { display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; font-weight: 600; color: var(--dc-defined); margin-bottom: 6px; }
   .dc-chart-mini .ex { color: var(--dc-soft); font-size: 12px; }
   .dc-chart-mini svg { display: block; width: 100%; height: 54px; }
 
+  /* ── App switcher ────────────────────────────────────────────
+     The phone and tablet hide the sidebar, so the main nav lives
+     behind a grid button in the topbar and slides in from the
+     left. Tiles are read off the real sidebar so the two lists
+     can never drift apart. */
+  .appnav-btn {
+    display: none; align-items: center; justify-content: center;
+    width: 40px; height: 40px; flex: 0 0 40px;
+    margin-right: 12px;
+    border: 1px solid var(--border); border-radius: 9px;
+    background: transparent; color: var(--text); cursor: pointer;
+  }
+  body.sm-ready.view-mobile .appnav-btn,
+  body.sm-ready.view-tablet .appnav-btn { display: inline-flex; }
+  .appnav {
+    position: fixed; inset: 0; z-index: 140;
+    background: rgba(0,0,0,.5);
+    opacity: 0; visibility: hidden;
+    transition: opacity .2s ease, visibility .2s ease;
+  }
+  .appnav.open { opacity: 1; visibility: visible; }
+  .appnav-sheet {
+    position: absolute; top: 0; bottom: 0; left: 0;
+    width: 100%; max-width: 520px;
+    display: flex; flex-direction: column;
+    overflow-y: auto; overscroll-behavior: contain;
+    background: var(--dc-layer-1); color: var(--dc-strong);
+    padding: 14px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-100%);
+    transition: transform .26s cubic-bezier(.22,.61,.36,1);
+  }
+  .appnav.open .appnav-sheet { transform: none; }
+  /* clear the chassis status bar so the avatar row is never under it */
+  body.sm-ready.view-mobile .appnav-sheet { padding-top: calc(14px + 44px); }
+  body.sm-ready.view-tablet .appnav-sheet { padding-top: calc(14px + 28px); }
+  .appnav-top {
+    display: grid; grid-template-columns: 44px 1fr 44px;
+    align-items: center; gap: 10px;
+    padding-bottom: 14px; border-bottom: 1px solid var(--dc-border);
+  }
+  .appnav-av {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--dc-layer-2); border: 1px solid var(--dc-border);
+    font-size: 13px; font-weight: 700; color: var(--dc-strong);
+  }
+  .appnav-plant { text-align: center; line-height: 1.35; }
+  .appnav-plant .pin { display: block; color: var(--dc-soft); }
+  .appnav-plant .nm { font-size: 13px; color: var(--dc-defined); letter-spacing: .02em; }
+  .appnav-x {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--dc-layer-2); border: 1px solid var(--dc-border);
+    color: var(--dc-strong); font-size: 17px; cursor: pointer;
+  }
+  .appnav-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    padding: 16px 0;
+  }
+  .appnav-tile {
+    position: relative; overflow: hidden;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px; min-height: 92px; padding: 14px 8px;
+    border: 1px solid var(--dc-border); border-radius: var(--dc-r-sm);
+    background: var(--dc-layer-2); color: var(--dc-defined);
+    font-size: 13px; line-height: 1.25; text-align: center; cursor: pointer;
+  }
+  .appnav-tile .ic { color: var(--dc-soft); display: flex; }
+  .appnav-tile.active { color: var(--dc-strong); font-weight: 700; }
+  .appnav-tile.active .ic { color: var(--dc-strong); }
+  .appnav-tile.active::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--dc-blue);
+  }
+  .appnav-wide {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; min-height: 56px; margin-top: 10px;
+    border: 1px solid var(--dc-border); border-radius: var(--dc-r-sm);
+    background: var(--dc-layer-2); color: var(--dc-defined);
+    font-size: 14px; cursor: pointer;
+  }
+  .appnav-wide .ic { color: var(--dc-soft); display: flex; }
+  .appnav-rule { height: 1px; background: var(--dc-border); margin: 4px 0 6px; }
+  .appnav-foot {
+    margin-top: 18px; text-align: center;
+    font-size: 10.5px; color: var(--dc-subtle); line-height: 1.6;
+  }
+
   .dc-chart-modal {
-    position: fixed; inset: 0; z-index: 40;
+    position: fixed; inset: 0; z-index: 130;   /* over the drawer, the takeover and Settings */
     display: none; align-items: center; justify-content: center;
     background: rgba(0,0,0,.55);
   }
   .dc-chart-modal.open { display: flex; }
   .dc-chart-box {
+    --cbx: 22px;   /* side padding — the sticky header bleeds out to it */
+    --cbt: 18px;   /* top gap, carried by the header, not the box */
     position: relative;
     width: 94%; max-width: 1120px; max-height: 92%;
     overflow-y: auto;
     background: var(--dc-layer-2); border: 1px solid var(--dc-border);
-    border-radius: var(--dc-r-md); padding: 18px 22px 20px;
+    border-radius: var(--dc-r-md); padding: 0 var(--cbx) 20px;
     box-shadow: 0 18px 60px rgba(0,0,0,.5);
   }
   .dc-chart-tip {
@@ -629,7 +774,17 @@
   .dc-brush-win .hdl.r { right: -5px; }
   .dc-brush-days { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--dc-soft); padding: 4px 2px 0; }
   .dc-brush-hint { font-size: 10.5px; color: var(--dc-subtle); margin: 4px 0 10px; }
-  .dc-chart-box .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  /* the title + Close stay put while the charts scroll under them */
+  .dc-chart-box .top {
+    display: flex; justify-content: space-between; align-items: center;
+    position: sticky; top: 0; z-index: 8;
+    margin: 0 calc(-1 * var(--cbx)) 12px;
+    padding: var(--cbt) var(--cbx) 12px;
+    background: var(--dc-layer-2);
+    border-bottom: 1px solid var(--dc-border);
+    gap: 12px;
+  }
+  .dc-chart-box .top .dc-copy-btn { white-space: nowrap; flex-shrink: 0; }
   .dc-chart-box .t { font-size: 15px; font-weight: 600; color: var(--dc-strong); }
   .dc-chart-box .ct { font-size: 13px; font-weight: 600; color: var(--dc-strong); margin: 14px 0 6px; }
   .dc-chart-box .ct:first-of-type { margin-top: 0; }
@@ -749,7 +904,35 @@
     border-radius: var(--dc-r-md);
     padding: 16px; display: flex; flex-direction: column; gap: 12px;
   }
+  .dc-logs-search-row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .dc-logs-search-row .dc-input { flex: 1; min-width: 0; }
+  .dc-log-filter-btn {
+    display: none; align-items: center; gap: 7px; flex-shrink: 0;
+    padding: 0 14px; border-radius: var(--dc-r-btn); cursor: pointer;
+    background: var(--dc-layer-2); border: 1px solid var(--dc-border);
+    color: var(--dc-defined); font-family: inherit; font-size: 12.5px; font-weight: 600;
+  }
+  .dc-log-filter-btn.on { border-color: var(--dc-blue); color: var(--dc-blue); }
   .dc-logs-filters { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  /* find-in-message, above the JSON */
+  .dc-json-find {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-sm); background: var(--dc-layer-1); color: var(--dc-soft);
+  }
+  .dc-json-find input {
+    flex: 1; min-width: 0; background: none; border: none; outline: none;
+    color: var(--dc-strong); font-family: inherit; font-size: 12.5px;
+  }
+  .dc-json-find input::placeholder { color: var(--dc-subtle); }
+  .dc-json-find .hits { font-size: 11px; color: var(--dc-subtle); font-variant-numeric: tabular-nums; }
+  .dc-json-find button {
+    background: none; border: none; cursor: pointer; padding: 2px 4px;
+    color: var(--dc-soft); font-size: 9px;
+  }
+  @media (hover: hover) and (pointer: fine) { .dc-json-find button:hover { color: var(--dc-strong); } }
+  .dc-json-line.hit { background: color-mix(in srgb, var(--dc-warn) 16%, transparent); }
+  .dc-json-line.hit-on { background: color-mix(in srgb, var(--dc-warn) 34%, transparent); }
   .dc-logs-filters .dc-input { flex: 1; min-width: 160px; }
   .dc-logs-filters select.dc-input { flex: 0 0 auto; width: auto; cursor: pointer; }
   .dc-input.dc-date {
@@ -771,7 +954,7 @@
   .dc-logs-scroll { max-height: calc(100vh - 320px); overflow-y: auto; }
   .dc-log-tr { font-size: 12px; color: var(--dc-defined); cursor: pointer; }
   .dc-log-tr:nth-child(odd) { background: var(--dc-layer-1); }
-  .dc-log-tr:hover { background: color-mix(in srgb, var(--dc-strong) 8%, transparent); }
+  @media (hover: hover) and (pointer: fine) { .dc-log-tr:hover { background: color-mix(in srgb, var(--dc-strong) 8%, transparent); } }
   .dc-log-tr.sel { background: color-mix(in srgb, var(--dc-strong) 16%, transparent); color: var(--dc-strong); }
   .dc-log-tr .mono, .dc-kvh .mono { font-family: "DM Mono", Consolas, monospace; font-size: 11px; letter-spacing: .3px; }
   .dc-logs-foot { display: flex; justify-content: flex-end; padding: 9px 14px; font-size: 11.5px; color: var(--dc-soft); border-top: 1px solid var(--dc-border); }
@@ -782,8 +965,35 @@
     background: transparent; border: 1px solid var(--dc-border); border-radius: var(--dc-r-sm);
     color: var(--dc-soft); font-size: 11px; padding: 4px 10px; cursor: pointer; font-family: inherit;
   }
-  .dc-copy-btn:hover { color: var(--dc-strong); }
+  @media (hover: hover) and (pointer: fine) { .dc-copy-btn:hover { color: var(--dc-strong); } }
+  /* the stepper and Copy JSON share one row under the title */
+  .dc-logdet-actions {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; margin-top: 10px;
+  }
+  .dc-logdet-tools { display: flex; align-items: center; gap: 8px; }
+  /* the magnifier only earns its place on the phone, where the find
+     row is folded away by default */
+  .dc-json-find-btn { display: none; }
+  .dc-json-find-btn.on { color: var(--dc-blue); border-color: var(--dc-blue); }
+  .dc-logdet-nav { display: flex; align-items: center; gap: 4px; flex-shrink: 0; color: var(--dc-soft); font-size: 11px; }
+  .dc-logdet-nav button {
+    background: var(--dc-layer-1); border: 1px solid var(--dc-border); border-radius: var(--dc-r-sm);
+    width: 26px; height: 24px; cursor: pointer; color: var(--dc-defined); font-size: 13px; font-family: inherit;
+  }
+  @media (hover: hover) and (pointer: fine) { .dc-logdet-nav button:hover { color: var(--dc-strong); border-color: var(--dc-soft); } }
+  .dc-logdet-nav button:disabled { opacity: .35; cursor: default; }
+  .dc-logdet-nav span { font-variant-numeric: tabular-nums; min-width: 62px; text-align: center; }
+  .dc-kvh-bar {
+    display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;
+    font-size: 11.5px; font-weight: 600; letter-spacing: .3px; color: var(--dc-soft);
+    padding: 4px 0 2px;
+  }
+  .dc-kvh-bar .chev { font-size: 9px; transition: transform .18s; }
+  .dc-kvh-bar.collapsed .chev { transform: rotate(-90deg); }
+  .dc-kvh-bar .sub { margin-left: auto; font-weight: 400; color: var(--dc-subtle); }
   .dc-kvh { display: grid; grid-template-columns: max-content 1fr; gap: 3px 14px; font-size: 12px; }
+  .dc-kvh.collapsed { display: none; }
   .dc-kvh .k { color: var(--dc-soft); font-weight: 600; }
   .dc-kvh .v { color: var(--dc-defined); }
 
@@ -798,7 +1008,7 @@
     font-size: 11.5px; line-height: 1.6;
   }
   .dc-json-line { display: flex; gap: 12px; padding: 0 10px; white-space: pre; cursor: pointer; }
-  .dc-json-line:hover { background: color-mix(in srgb, var(--dc-strong) 6%, transparent); }
+  @media (hover: hover) and (pointer: fine) { .dc-json-line:hover { background: color-mix(in srgb, var(--dc-strong) 6%, transparent); } }
   .dc-json-line .ln { width: 24px; text-align: right; color: var(--dc-subtle); flex-shrink: 0; user-select: none; }
   .dc-json-line.pinned { background: color-mix(in srgb, var(--dc-blue) 24%, transparent); }
   .dc-json-line.pinned .ln { color: var(--dc-blue); font-weight: 700; }
@@ -851,7 +1061,7 @@
   }
   .dc-menu.open { display: block; }
   .dc-menu-item { padding: 9px 14px; font-size: 12.5px; color: var(--dc-defined); cursor: pointer; white-space: nowrap; }
-  .dc-menu-item:hover { background: var(--dc-layer-2); color: var(--dc-strong); }
+  @media (hover: hover) and (pointer: fine) { .dc-menu-item:hover { background: var(--dc-layer-2); color: var(--dc-strong); } }
   .dc-menu-item.danger { color: var(--dc-strip-alarm-ink); }
   .dc-menu-div { height: 1px; background: var(--dc-border); margin: 5px 0; }
 
@@ -1072,7 +1282,7 @@
 
   .dc-tk { position: absolute; top: 8px; height: 14px; width: 2px; border-radius: 1px; background: color-mix(in srgb, var(--dc-strong) 34%, transparent); cursor: pointer; z-index: 1; }
   .dc-tk::after { content: ""; position: absolute; inset: -6px -2px; }
-  .dc-tk:hover { background: var(--dc-strong); }
+  @media (hover: hover) and (pointer: fine) { .dc-tk:hover { background: var(--dc-strong); } }
   .dc-tk.oc { top: 4px; height: 22px; width: 3px; background: var(--dc-warn); z-index: 3; }
   .dc-tk.oc.alarm { background: var(--dc-alarm); }
   .dc-now { position: absolute; top: 0; bottom: 0; width: 1px; background: color-mix(in srgb, var(--dc-strong) 45%, transparent); }
@@ -1118,7 +1328,7 @@
 
   /* Faulting cards get a way down to the messages behind them */
   .dt-co-card-strip.act { cursor: pointer; }
-  .dt-co-card-strip.act:hover { filter: brightness(1.12); }
+  @media (hover: hover) and (pointer: fine) { .dt-co-card-strip.act:hover { filter: brightness(1.12); } }
   .dt-co-card-strip .go { margin-left: auto; font-size: 12px; font-weight: 700; flex-shrink: 0; }
 
   /* Truck Log: provenance banner when arriving from a drill-down */
@@ -1171,8 +1381,8 @@
 .csh-day{display:flex;flex-direction:column;gap:3px;padding:12px 10px;cursor:pointer;
   border-right:1px solid var(--border);transition:background .18s ease}
 .csh-day:last-child{border-right:none}
-.csh-day:hover{background:rgba(54,50,45,.04)}
-body:not(.light) .csh-day:hover{background:rgba(255,255,255,.04)}
+@media (hover: hover) and (pointer: fine) { .csh-day:hover{background:rgba(54,50,45,.04)} }
+@media (hover: hover) and (pointer: fine) { body:not(.light) .csh-day:hover{background:rgba(255,255,255,.04)} }
 .csh-day.is-active{background:var(--layer-1)}
 .csh-day-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .csh-day-lbl{font-size:13px;font-weight:500;letter-spacing:-0.26px;white-space:nowrap}
@@ -1187,7 +1397,7 @@ body:not(.light) .csh-day:hover{background:rgba(255,255,255,.04)}
 .csh-date{font-size:14px;font-weight:500;letter-spacing:-0.28px}
 .csh-navbtn{display:grid;place-items:center;width:30px;height:30px;border-radius:8px;
   background:var(--layer-1);border:1px solid var(--border);color:var(--strong);cursor:pointer}
-.csh-navbtn:hover{background:var(--layer-2)}
+@media (hover: hover) and (pointer: fine) { .csh-navbtn:hover{background:var(--layer-2)} }
 .csh-navbtn:disabled{opacity:.35;cursor:default}
 
 /* Panel */
@@ -1271,6 +1481,879 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   .csh-day-lbl { font-weight: 700; }
   .csh-day-num { color: var(--soft); }
 
+  /* ============================================================
+     MOBILE TIMELINE
+     A 24-hour gantt cannot be read on a phone, so the same day is
+     presented as a component list: each row summarises its events
+     and opens to show them. Used by both timeline candidates, so
+     the comparison carries onto mobile.
+     ============================================================ */
+  .mtl-days { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; -webkit-overflow-scrolling: touch; }
+  .mtl-day {
+    flex: 0 0 auto; min-width: 52px; padding: 8px 8px 7px; border-radius: 10px;
+    background: var(--dc-layer-2); box-shadow: inset 0 0 0 1px var(--dc-border);
+    text-align: center; cursor: pointer;
+  }
+  .mtl-day .d { font-size: 11.5px; font-weight: 600; color: var(--dc-soft); }
+  .mtl-day .n { font-size: 14px; font-weight: 700; color: var(--dc-strong); line-height: 1.3; }
+  .mtl-day .bar { height: 3px; border-radius: 2px; margin-top: 6px; background: var(--dc-ok); }
+  .mtl-day .bar.warn { background: var(--dc-warn); }
+  .mtl-day .bar.alarm { background: var(--dc-alarm); }
+  .mtl-day.sel { background: var(--dc-layer-1); box-shadow: inset 0 0 0 1.5px var(--dc-strong); }
+
+  .mtl-hdr { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 16px 0 10px; }
+  .mtl-hdr .t { font-size: 15.5px; font-weight: 700; color: var(--dc-strong); }
+  .mtl-nav { display: flex; gap: 8px; }
+  .mtl-nav button {
+    width: 34px; height: 34px; border-radius: 50%; cursor: pointer;
+    background: var(--dc-layer-1); border: 1px solid var(--dc-border); color: var(--dc-strong);
+    display: grid; place-items: center; font-size: 15px;
+  }
+  .mtl-nav button:disabled { opacity: .35; }
+
+  .mtl-list { display: flex; flex-direction: column; gap: 8px; }
+  .mtl-card { border-radius: 12px; background: var(--dc-layer-1); box-shadow: inset 0 0 0 1px var(--dc-border); overflow: hidden; }
+  .mtl-row {
+    display: flex; align-items: center; gap: 10px; padding: 13px 14px; cursor: pointer;
+  }
+  .mtl-row .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--dc-ok); flex-shrink: 0; }
+  .mtl-row .dot.warn { background: var(--dc-warn); }
+  .mtl-row .dot.alarm { background: var(--dc-alarm); }
+  .mtl-row .dot.na { background: var(--dc-subtle); }
+  .mtl-row .nm { font-size: 14.5px; font-weight: 600; color: var(--dc-strong); white-space: nowrap; }
+  .mtl-row .sum {
+    margin-left: auto; font-size: 11.5px; color: var(--dc-soft); text-align: right;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+  }
+  /* a not-installed / unknown row has no events to open, so its reason
+     is the whole point of the line — let it wrap instead of clipping */
+  .mtl-row[data-static] .sum { white-space: normal; line-height: 1.35; }
+  .mtl-row .chev { color: var(--dc-soft); font-size: 12px; transition: transform .16s ease; }
+  .mtl-card.open .mtl-row .chev { transform: rotate(180deg); }
+  .mtl-events { display: none; border-top: 1px solid var(--dc-border); }
+  .mtl-card.open .mtl-events { display: block; }
+  .mtl-ev {
+    display: flex; align-items: center; gap: 11px; padding: 11px 14px; cursor: pointer;
+    border-bottom: 1px solid var(--dc-border);
+  }
+  .mtl-ev:last-child { border-bottom: none; }
+  .mtl-ev .ic {
+    width: 22px; height: 22px; border-radius: 5px; flex-shrink: 0;
+    display: grid; place-items: center;
+  }
+  .mtl-ev .ic.warn { background: color-mix(in srgb, var(--dc-warn) 22%, transparent); color: var(--dc-warn); }
+  .mtl-ev .ic.alarm { background: color-mix(in srgb, var(--dc-alarm) 22%, transparent); color: var(--dc-alarm); }
+  .mtl-ev .ic.asleep { background: color-mix(in srgb, var(--dc-strong) 14%, transparent); color: var(--dc-soft); }
+  .mtl-ev .tx { min-width: 0; display: flex; flex-direction: column; }
+  .mtl-ev .tt { font-size: 14px; font-weight: 600; color: var(--dc-strong); }
+  .mtl-ev .st { font-size: 12px; color: var(--dc-soft); margin-top: 1px; }
+  .mtl-ev .go { margin-left: auto; color: var(--dc-soft); font-size: 15px; }
+  /* Ignition on/off is a fact about the truck, not a health state.
+     Green here read as "this part is fine" on a card flagged red,
+     so the power lane is neutral and colour stays reserved for
+     warnings, alarms and data gaps. */
+  .mtl-ev .ic.on { background: color-mix(in srgb, var(--dc-strong) 14%, transparent); color: var(--dc-defined); }
+  .mtl-ev .ic.off { background: color-mix(in srgb, var(--dc-strong) 8%, transparent); color: var(--dc-subtle); }
+
+  /* Ignition and power sits above the components and reads as context,
+     not as an eleventh part — hence the quieter card and the label. */
+  .mtl-card.pwr { background: transparent; box-shadow: inset 0 0 0 1px var(--dc-border); }
+  .mtl-card.pwr .mtl-row .nm { color: var(--dc-soft); letter-spacing: .2px; }
+  .mtl-card.pwr .dot.ok { background: var(--dc-ok); }
+
+  /* The individual messages inside an event window: off-cycle changes
+     tap through to their own log line, the heartbeat line is a count. */
+  .mtl-msg {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 14px 8px 47px; font-size: 12px; color: var(--dc-soft);
+    border-bottom: 1px solid var(--dc-border); cursor: pointer;
+    background: color-mix(in srgb, var(--dc-strong) 3%, transparent);
+  }
+  .mtl-msg:last-child { border-bottom: none; }
+  .mtl-msg .tm { font-family: "DM Mono", Consolas, monospace; font-size: 11px; color: var(--dc-defined); flex-shrink: 0; }
+  .mtl-msg .tx { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mtl-msg .go { margin-left: auto; font-size: 14px; }
+  .mtl-msg.qt { cursor: default; color: var(--dc-subtle); font-size: 11.5px; }
+  .mtl-foot { padding: 12px 2px 0; font-size: 11.5px; color: var(--dc-subtle); }
+
+  /* Phones and tablets use overlay scrollbars that fade out, so a
+     permanent desktop scrollbar inside the chassis is a lie about the
+     platform — and it eats a strip of the screen width. Everything in
+     the device still scrolls; the bar is just not drawn. */
+  body.sm-ready.view-mobile *,
+  body.sm-ready.view-tablet *,
+  body.sm-ready.view-mobile,
+  body.sm-ready.view-tablet { scrollbar-width: none; -ms-overflow-style: none; }
+  body.sm-ready.view-mobile *::-webkit-scrollbar,
+  body.sm-ready.view-tablet *::-webkit-scrollbar,
+  body.sm-ready.view-mobile::-webkit-scrollbar,
+  body.sm-ready.view-tablet::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
+  /* ============================================================
+     DEVICE CHASSIS
+     The small breakpoints are shown inside a phone or tablet body,
+     centred on a neutral stage. The screen element carries a
+     transform, which makes it the containing block for the app's
+     fixed-position layers — so drawers and overlays stay on the
+     device instead of escaping to the browser window.
+     ============================================================ */
+  #device-stage {
+    position: fixed; inset: 52px 0 0 0; z-index: 400; display: none;
+    background: #0e0e10;
+    background-image: radial-gradient(120% 90% at 50% 0%, #1b1b1f 0%, #0e0e10 62%);
+    align-content: center; justify-items: center; gap: 14px; padding: 20px 0;
+    overflow: auto;
+  }
+  body.light #device-stage { background: #e9e7e4; background-image: radial-gradient(120% 90% at 50% 0%, #f7f6f4 0%, #e3e0dc 62%); }
+  body.sm-ready.view-mobile #device-stage,
+  body.sm-ready.view-tablet #device-stage { display: grid; }
+
+  #device-frame {
+    position: relative; flex-shrink: 0;
+    background: #1c1c1f;
+    /* a chin at the bottom, so the home indicator sits on the phone
+       body rather than on top of the app */
+    padding: 14px 14px 28px;
+    border-radius: 54px;
+    box-shadow:
+      inset 0 0 0 1.5px rgba(255,255,255,.10),
+      inset 0 0 0 9px #0a0a0b,
+      0 30px 60px rgba(0,0,0,.55),
+      0 2px 6px rgba(0,0,0,.4);
+    transform-origin: top center;
+  }
+  body.light #device-frame { background: #b9b6b1; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.5), inset 0 0 0 9px #6f6c68, 0 26px 50px rgba(54,50,45,.28); }
+  /* side buttons */
+  #device-frame::before, #device-frame::after {
+    content: ""; position: absolute; right: -3px; width: 3px; border-radius: 2px;
+    background: #0a0a0b;
+  }
+  #device-frame::before { top: 150px; height: 64px; }
+  #device-frame::after  { top: 226px; height: 64px; }
+  body.light #device-frame::before, body.light #device-frame::after { background: #6f6c68; }
+
+  #device-screen {
+    position: relative; overflow: hidden; background: var(--bg);
+    border-radius: 42px;
+    /* the app shell is a flex row on body, so the screen has to be one too */
+    display: flex; align-items: stretch;
+    transform: translateZ(0);          /* containing block for fixed children */
+  }
+  #device-screen > .main { overflow-y: auto; }
+  #device-notch {
+    position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+    width: 126px; height: 28px; border-radius: 16px; background: #0a0a0b; z-index: 5;
+    pointer-events: none;
+  }
+  #device-home {
+    position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+    width: 128px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.42); z-index: 5;
+    pointer-events: none;
+  }
+  body.light #device-home { background: rgba(54,50,45,.45); }
+  /* status bar, so the notch has something to sit in */
+  #device-status {
+    /* opaque: the app scrolls underneath it, and a transparent bar
+       let page text show through beside the clock */
+    background: var(--bg);
+    position: absolute; top: 0; left: 0; right: 0; height: 44px; z-index: 4;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 26px; color: var(--text); pointer-events: none;
+    font-size: 13.5px; font-weight: 600; letter-spacing: .2px;
+  }
+  #device-status .r { display: inline-flex; align-items: center; gap: 5px; }
+  body.view-tablet #device-status { height: 28px; padding: 0 18px; font-size: 12px; font-weight: 500; }
+
+  #device-caption { font-size: 12px; color: rgba(255,255,255,.5); letter-spacing: .3px; }
+  body.light #device-caption { color: rgba(54,50,45,.55); }
+
+  /* phone */
+  body.view-mobile #device-screen { width: 390px; height: 812px; }
+  /* tablet: flatter corners, a camera dot instead of a notch, no home bar */
+  body.view-tablet #device-frame { border-radius: 34px; padding: 18px; }
+  body.view-tablet #device-screen { width: 834px; height: 1000px; border-radius: 20px; }
+  body.view-tablet #device-notch {
+    top: 8px; width: 7px; height: 7px; border-radius: 50%;
+    background: #2c2c30; box-shadow: inset 0 0 0 1px rgba(255,255,255,.18);
+  }
+  body.view-tablet #device-home { display: none; }
+  body.view-tablet #device-frame::before { top: 120px; }
+  body.view-tablet #device-frame::after { top: 196px; }
+
+  /* Inside the chassis the app owns the whole screen — the prototype
+     bar stays outside, so its 52px offset has to come off. */
+  /* clear the status bar */
+  body.view-tablet #device-screen .sidebar { padding-top: 34px; }
+  body.view-mobile #device-screen .sidebar { padding-top: 48px; }
+  #device-screen .takeover,
+  #device-screen .stg,
+  #device-screen .overlay,
+  #device-screen .drawer { top: 0; }
+  #device-screen .vp-coming { top: 0; }
+  body.view-mobile #device-screen > .main { padding-top: 50px; padding-bottom: 46px; }
+  body.view-tablet #device-screen > .main { padding-top: 36px; }
+  body.view-mobile #device-screen .takeover,
+  body.view-mobile #device-screen .stg,
+  body.view-mobile #device-screen .drawer,
+  body.view-mobile #device-screen .overlay { top: 44px; }
+  body.view-mobile #device-screen .takeover { padding-bottom: 42px; }
+  body.view-tablet #device-screen .takeover,
+  body.view-tablet #device-screen .stg,
+  body.view-tablet #device-screen .drawer,
+  body.view-tablet #device-screen .overlay { top: 28px; }
+
+  /* ============================================================
+     TRINITY_TIMELINE — TABLET AND MOBILE
+     Only this phase is built for the smaller breakpoints. Tablet
+     keeps the table and tightens the frame; mobile drops the table
+     grid and stacks each truck as a card, because a 12-slot strip
+     plus six columns cannot be read on a phone.
+     ============================================================ */
+  body.sm-ready.view-tablet .app,
+  body.sm-ready.view-mobile .app { max-width: none; }
+
+  /* ---- tablet ---- */
+  body.sm-ready.view-tablet .main { padding: 20px 20px; }
+  body.sm-ready.view-tablet .filters { display: none; }
+  body.sm-ready.view-tablet .content { gap: 0; margin-top: 22px; }
+  body.sm-ready.view-tablet h1 { font-size: 24px; }
+  body.sm-ready.view-tablet .takeover { left: 0; padding: 20px 22px 32px; }
+  body.sm-ready.view-tablet .takeover.as-drawer { left: 0; width: 100%; max-width: none; }
+  body.sm-ready.view-tablet .tk-actions { overflow-x: auto; }
+  body.sm-ready.view-tablet .csh { max-width: none; }
+  body.sm-ready.view-tablet .csh-lab { font-size: 12.5px; padding-right: 10px; }
+
+  /* ---- mobile ---- */
+  /* both small breakpoints reach the nav through the topbar's grid
+     button, so the rail is gone and the app shell starts at x=0 */
+  body.sm-ready.view-mobile .sidebar,
+  body.sm-ready.view-tablet .sidebar { display: none; }
+  body.sm-ready.view-tablet .takeover,
+  body.sm-ready.view-tablet .stg { left: 0; }
+  body.sm-ready.view-mobile .main { padding: 14px 14px 20px; }
+  /* the indicator lives on the phone's chin now, so content only needs
+     a normal end-of-page margin */
+  body.sm-ready.view-mobile .main,
+  body.sm-ready.view-mobile .takeover,
+  body.sm-ready.view-mobile .takeover.as-drawer,
+  body.sm-ready.view-mobile .stg-main,
+  body.sm-ready.view-mobile .dc-logs-right.open,
+  body.sm-ready.view-mobile .dc-chart-box { padding-bottom: 20px; }
+  body.sm-ready.view-mobile .filters { display: none; }
+  body.sm-ready.view-mobile .content { display: block; margin-top: 16px; }
+  body.sm-ready.view-mobile h1 { font-size: 21px; }
+  body.sm-ready.view-mobile .topbar,
+  body.sm-ready.view-tablet .topbar { align-items: center; }
+  body.sm-ready.view-mobile .topbar h1,
+  body.sm-ready.view-tablet .topbar h1 { flex: 1; margin: 0; }
+  body.sm-ready.view-mobile .view-toggle { display: none; }
+  body.sm-ready.view-mobile .tabs { overflow-x: auto; gap: 4px; }
+  body.sm-ready.view-mobile .tab { padding: 6px 12px 12px 2px; font-size: 13px; white-space: nowrap; }
+  body.sm-ready.view-mobile .table-scroll { max-height: none; overflow: visible; }
+
+  /* The fleet list becomes cards on both small breakpoints — the row
+     is 1100px wide with the strip in it, so it cannot be a table
+     here. Tablet lays the cards out two-up. */
+  body.sm-ready.view-mobile table, body.sm-ready.view-tablet table,
+  body.sm-ready.view-mobile tbody, body.sm-ready.view-tablet tbody { display: block; width: 100%; }
+  body.sm-ready.view-tablet tbody { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
+  body.sm-ready.view-mobile thead, body.sm-ready.view-tablet thead { display: none; }
+  body.sm-ready.view-mobile tbody tr.trow, body.sm-ready.view-tablet tbody tr.trow {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
+    padding: 13px 14px; border-radius: 10px;
+    background: var(--row-alt); box-shadow: inset 0 0 0 1px var(--border);
+  }
+  body.sm-ready.view-mobile tbody tr.trow { margin-bottom: 10px; }
+  body.sm-ready.view-mobile tbody tr:nth-child(odd), body.sm-ready.view-tablet tbody tr:nth-child(odd) { background: var(--row-alt); }
+  body.sm-ready.view-mobile tbody td, body.sm-ready.view-tablet tbody td { display: block; padding: 0; width: auto; flex: 0 0 auto; }
+  body.sm-ready.view-mobile td.tname, body.sm-ready.view-tablet td.tname { font-size: 17px; font-weight: 700; }
+  body.sm-ready.view-mobile td.mode-cell, body.sm-ready.view-tablet td.mode-cell { margin-left: auto; }
+  body.sm-ready.view-mobile td.comp-cell, body.sm-ready.view-tablet td.comp-cell { flex: 0 0 100%; }
+  /* the Alert column stays out of the card — the chips already name the fault */
+  body.sm-ready.view-mobile.comp-col td.alert, body.sm-ready.view-tablet.comp-col td.alert { display: none; }
+  body.sm-ready.view-mobile td.col-pad, body.sm-ready.view-tablet td.col-pad { display: none; }
+  /* meta line: version, at plant, connection, ignition */
+  body.sm-ready.view-mobile td.ver, body.sm-ready.view-tablet td.ver,
+  body.sm-ready.view-mobile tr.trow > td:nth-child(5), body.sm-ready.view-tablet tr.trow > td:nth-child(5),
+  body.sm-ready.view-mobile tr.trow > td:nth-child(7), body.sm-ready.view-tablet tr.trow > td:nth-child(7),
+  body.sm-ready.view-mobile tr.trow > td:nth-child(8), body.sm-ready.view-tablet tr.trow > td:nth-child(8) {
+    font-size: 12.5px; font-weight: 400; color: var(--muted);
+  }
+  body.sm-ready.view-mobile .atplant, body.sm-ready.view-tablet .atplant,
+  body.sm-ready.view-mobile .ign, body.sm-ready.view-tablet .ign { color: var(--muted); gap: 5px; font-size: 12.5px; }
+  body.sm-ready.view-mobile .ign .dot, body.sm-ready.view-tablet .ign .dot { width: 12px; height: 12px; border-width: 1.5px; }
+  body.sm-ready.view-mobile .ign .dot.on::after, body.sm-ready.view-tablet .ign .dot.on::after { width: 5px; height: 5px; }
+  body.sm-ready.view-mobile .conn, body.sm-ready.view-tablet .conn { font-size: 14px; }
+  /* 12 slots have to fit inside a card */
+  body.sm-ready.view-tablet .comp-strip { gap: 2px; margin-top: 8px; }
+  /* ── the fleet card at phone width ──
+     The slot strip and the "10/11" shorthand both need the desktop
+     column key to mean anything, so the card names things instead:
+     the count in words, then a chip per faulting part. */
+  /* the strip returns with its key under each square, so a phone
+     names the parts the way the desktop column header does */
+  body.sm-ready.view-mobile .comp-strip {
+    display: flex; gap: 2px; margin-top: 6px; justify-content: space-between;
+  }
+  /* On a phone the strip is a readout, not eleven controls: the card
+     itself opens the truck, so the tiles let the tap through instead
+     of being eleven 26px targets competing with it. */
+  body.sm-ready.view-mobile .comp-slot {
+    width: auto; flex: 1 1 0; min-width: 0; height: auto;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    background: none; padding: 0;
+    pointer-events: none; cursor: default;
+  }
+  /* the square moves to the inner element so the key can sit below
+     it; the state dot/bar becomes its ::before */
+  body.sm-ready.view-mobile .comp-slot i {
+    width: 26px; flex: 0 0 auto; height: 18px; border-radius: 3px;
+    background: color-mix(in srgb, var(--text) 7%, transparent);
+    display: flex; align-items: center; justify-content: center;
+  }
+  body.sm-ready.view-mobile .comp-slot i::before {
+    content: ""; width: 5px; height: 5px; border-radius: 50%;
+    background: color-mix(in srgb, var(--c-ok) 75%, transparent);
+  }
+  /* every slot is the same square: only the dot changes colour, so
+     the strip reads as one row of parts rather than a row of blocks */
+  /* a faulting tile shows its severity mark instead of the dot */
+  body.sm-ready.view-mobile .comp-slot.warn i::before,
+  body.sm-ready.view-mobile .comp-slot.alarm i::before,
+  body.sm-ready.view-mobile .comp-slot.asleep i::before { display: none; }
+  body.sm-ready.view-mobile .comp-slot i svg { display: block; width: 10px; height: 10px; }
+  /* the alarm mark is drawn white for use on a red chip; in the strip
+     it sits on the tile, so it takes the tile's colour */
+  body.sm-ready.view-mobile .comp-slot.alarm i svg { fill: currentColor; }
+  body.sm-ready.view-mobile .comp-slot.warn i { color: var(--c-warn); }
+  body.sm-ready.view-mobile .comp-slot.alarm i { color: var(--c-alarm); }
+  body.sm-ready.view-mobile .comp-slot.asleep i { color: var(--muted); }
+  body.sm-ready.view-mobile .comp-slot em {
+    display: block; font-style: normal; font-size: 8.5px; font-weight: 600;
+    letter-spacing: .2px; color: var(--dim);
+  }
+  body.sm-ready.view-mobile .comp-slot.warn em { color: var(--c-warn-ink); font-weight: 700; }
+  body.sm-ready.view-mobile .comp-slot.alarm em { color: var(--c-alarm-ink); font-weight: 700; }
+  body.sm-ready.view-mobile .ccount { display: none; }
+  body.sm-ready.view-mobile .ccount-long { display: inline; font-size: 13px; }
+  /* the phone shows the state as a shape, not an 8px colour chip */
+  body.sm-ready.view-mobile .comp .cdot {
+    width: 18px; height: 18px; border-radius: 4px; background: none;
+    display: flex; align-items: center; justify-content: center;
+  }
+  body.sm-ready.view-mobile .comp .cdot svg { display: block; }
+  body.sm-ready.view-mobile .comp .cdot { color: var(--c-ok); background: color-mix(in srgb, var(--c-ok) 18%, transparent); }
+  body.sm-ready.view-mobile .comp.warn .cdot { color: var(--c-warn); background: color-mix(in srgb, var(--c-warn) 20%, transparent); }
+  body.sm-ready.view-mobile .comp.alarm .cdot { color: #fff; background: var(--c-alarm); }
+  body.sm-ready.view-mobile .comp-mob { display: none; }
+  /* the status row reads as label + value, not three bare glyphs */
+  body.sm-ready.view-mobile tr.trow > td:nth-child(5),
+  body.sm-ready.view-mobile tr.trow > td:nth-child(7),
+  body.sm-ready.view-mobile tr.trow > td:nth-child(8) {
+    display: block; flex: 1 1 28%; margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  body.sm-ready.view-mobile .atplant,
+  body.sm-ready.view-mobile .conn,
+  body.sm-ready.view-mobile .ign {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+    font-size: 13px; color: var(--text);
+  }
+  /* the label carries the meaning, so the glyphs go and the value
+     keeps one line each — three columns that line up */
+  body.sm-ready.view-mobile .atplant .x,
+  body.sm-ready.view-mobile .atplant .fic,
+  body.sm-ready.view-mobile .ign .dot { display: none; }
+  body.sm-ready.view-mobile .ign:has(.dot.on) { color: var(--c-ok); }
+  body.sm-ready.view-mobile .ign:has(.dot.prog) { color: var(--c-warn-ink); }
+  body.sm-ready.view-mobile tr.trow > td:nth-child(5),
+  body.sm-ready.view-mobile tr.trow > td:nth-child(7),
+  body.sm-ready.view-mobile tr.trow > td:nth-child(8) { align-self: flex-start; }
+  body.sm-ready.view-mobile .atplant::before,
+  body.sm-ready.view-mobile .conn::before,
+  body.sm-ready.view-mobile .ign::before {
+    font-size: 10px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase;
+    color: var(--dim); margin: 0;
+  }
+  body.sm-ready.view-mobile .atplant::before { content: "At plant"; }
+  body.sm-ready.view-mobile .conn::before { content: "Network"; }
+  body.sm-ready.view-mobile .ign::before { content: "Ignition"; }
+  /* the ((•)) / 🚫 glyph says the same thing as the word beside it */
+  body.sm-ready.view-mobile .conn { font-size: 0; }
+  body.sm-ready.view-mobile .conn::before { font-size: 10px; }
+  body.sm-ready.view-mobile .conn::after { content: "Online"; font-size: 13px; color: var(--c-ok); }
+  body.sm-ready.view-mobile .conn.off::after { content: "Offline"; color: var(--c-alarm-ink); }
+  body.sm-ready.view-mobile .comp .cbad, body.sm-ready.view-tablet .comp .cbad { white-space: nowrap; }
+  /* ── the same card on the tablet ──
+     Two cards per row at 834px is about a phone card wide, so the
+     tablet reads its components exactly the same way. */
+  body.sm-ready.view-tablet .comp-strip {
+    display: flex; gap: 2px; margin-top: 6px; justify-content: space-between;
+  }
+  body.sm-ready.view-tablet .comp-slot {
+    width: auto; flex: 1 1 0; min-width: 0; height: auto;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    background: none; padding: 0;
+    pointer-events: none; cursor: default;
+  }
+  body.sm-ready.view-tablet .comp-slot i {
+    width: 26px; flex: 0 0 auto; height: 18px; border-radius: 3px;
+    background: color-mix(in srgb, var(--text) 7%, transparent);
+    display: flex; align-items: center; justify-content: center;
+  }
+  body.sm-ready.view-tablet .comp-slot i::before {
+    content: ""; width: 5px; height: 5px; border-radius: 50%;
+    background: color-mix(in srgb, var(--c-ok) 75%, transparent);
+  }
+  body.sm-ready.view-tablet .comp-slot.warn i::before,
+  body.sm-ready.view-tablet .comp-slot.alarm i::before,
+  body.sm-ready.view-tablet .comp-slot.asleep i::before { display: none; }
+  body.sm-ready.view-tablet .comp-slot i svg { display: block; width: 10px; height: 10px; }
+  body.sm-ready.view-tablet .comp-slot.alarm i svg { fill: currentColor; }
+  body.sm-ready.view-tablet .comp-slot.warn i { color: var(--c-warn); }
+  body.sm-ready.view-tablet .comp-slot.alarm i { color: var(--c-alarm); }
+  body.sm-ready.view-tablet .comp-slot.asleep i { color: var(--muted); }
+  body.sm-ready.view-tablet .comp-slot em {
+    display: block; font-style: normal; font-size: 8.5px; font-weight: 600;
+    letter-spacing: .2px; color: var(--dim);
+  }
+  body.sm-ready.view-tablet .comp-slot.warn em { color: var(--c-warn-ink); font-weight: 700; }
+  body.sm-ready.view-tablet .comp-slot.alarm em { color: var(--c-alarm-ink); font-weight: 700; }
+  body.sm-ready.view-tablet .ccount { display: none; }
+  body.sm-ready.view-tablet .ccount-long { display: inline; font-size: 13px; }
+  body.sm-ready.view-tablet .comp .cdot {
+    width: 18px; height: 18px; border-radius: 4px; background: none;
+    display: flex; align-items: center; justify-content: center;
+  }
+  body.sm-ready.view-tablet .comp .cdot svg { display: block; }
+  body.sm-ready.view-tablet .comp .cdot { color: var(--c-ok); background: color-mix(in srgb, var(--c-ok) 18%, transparent); }
+  body.sm-ready.view-tablet .comp.warn .cdot { color: var(--c-warn); background: color-mix(in srgb, var(--c-warn) 20%, transparent); }
+  body.sm-ready.view-tablet .comp.alarm .cdot { color: #fff; background: var(--c-alarm); }
+  body.sm-ready.view-tablet .comp-mob { display: none; }
+  body.sm-ready.view-tablet tr.trow > td:nth-child(5),
+  body.sm-ready.view-tablet tr.trow > td:nth-child(7),
+  body.sm-ready.view-tablet tr.trow > td:nth-child(8) {
+    display: block; flex: 1 1 28%; margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  body.sm-ready.view-tablet .atplant,
+  body.sm-ready.view-tablet .conn,
+  body.sm-ready.view-tablet .ign {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+    font-size: 13px; color: var(--text);
+  }
+  body.sm-ready.view-tablet .atplant .x,
+  body.sm-ready.view-tablet .atplant .fic,
+  body.sm-ready.view-tablet .ign .dot { display: none; }
+  body.sm-ready.view-tablet .ign:has(.dot.on) { color: var(--c-ok); }
+  body.sm-ready.view-tablet .ign:has(.dot.prog) { color: var(--c-warn-ink); }
+  body.sm-ready.view-tablet tr.trow > td:nth-child(5),
+  body.sm-ready.view-tablet tr.trow > td:nth-child(7),
+  body.sm-ready.view-tablet tr.trow > td:nth-child(8) { align-self: flex-start; }
+  body.sm-ready.view-tablet .atplant::before,
+  body.sm-ready.view-tablet .conn::before,
+  body.sm-ready.view-tablet .ign::before {
+    font-size: 10px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase;
+    color: var(--dim); margin: 0;
+  }
+  body.sm-ready.view-tablet .atplant::before { content: "At plant"; }
+  body.sm-ready.view-tablet .conn::before { content: "Network"; }
+  body.sm-ready.view-tablet .ign::before { content: "Ignition"; }
+  body.sm-ready.view-tablet .conn { font-size: 0; }
+  body.sm-ready.view-tablet .conn::before { font-size: 10px; }
+  body.sm-ready.view-tablet .conn::after { content: "Online"; font-size: 13px; color: var(--c-ok); }
+  body.sm-ready.view-tablet .conn.off::after { content: "Offline"; color: var(--c-alarm-ink); }
+  body.sm-ready.view-tablet .comp .cbad, body.sm-ready.view-tablet .comp .cbad { white-space: nowrap; }
+
+  /* ── pager on a phone ──
+     Three cramped clusters become one row: a page range with a real
+     button either side. "Items per page" is a desktop control — on a
+     phone the list is one scroll, so it moves out of the way. */
+  body.sm-ready.view-tablet .pager { justify-content: center; margin-top: 16px; }
+  body.sm-ready.view-mobile .pager {
+    justify-content: space-between; gap: 10px; margin-top: 18px;
+    padding: 10px 2px calc(6px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--border);
+  }
+  body.sm-ready.view-mobile .pager .pp { display: none; }
+  body.sm-ready.view-mobile .pager .prange { order: 2; font-size: 13px; color: var(--text); }
+  body.sm-ready.view-mobile .pager .arrows { display: contents; }
+  body.sm-ready.view-mobile .pager .pg {
+    order: 1; width: 44px; height: 44px; border-radius: 8px;
+    border: 1px solid var(--border); color: var(--text); font-size: 19px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  body.sm-ready.view-mobile .pager .pg.next { order: 3; }
+  body.sm-ready.view-mobile .pager .pg:active { background: color-mix(in srgb, var(--text) 10%, transparent); }
+
+  /* takeover fills the screen */
+  body.sm-ready.view-mobile .takeover,
+  body.sm-ready.view-mobile .takeover.as-drawer {
+    left: 0; right: 0; width: 100%; max-width: none; padding: 14px 12px 28px; box-shadow: none;
+  }
+  body.sm-ready.view-mobile .tk-top { flex-direction: column; align-items: flex-start; gap: 12px; }
+  body.sm-ready.view-mobile .tk-title { font-size: 17px; }
+  /* ════════════════════════════════════════════════════════════
+     TOUCH TARGETS — phone
+     A finger needs about 44px. Everything below was sized for a
+     cursor; the labels stay the same size, the hit area grows.
+     ════════════════════════════════════════════════════════════ */
+  body.sm-ready.view-mobile .tk-act { min-height: 44px; padding: 4px 18px; }
+  body.sm-ready.view-mobile .tabs .tab { min-height: 44px; display: flex; align-items: center; }
+  body.sm-ready.view-mobile .stg-tab { min-height: 44px; display: flex; align-items: center; justify-content: center; }
+  body.sm-ready.view-mobile .stg-back { min-height: 44px; margin-bottom: 8px; }
+  body.sm-ready.view-mobile .stg-back .rd { width: 42px; height: 42px; }
+  body.sm-ready.view-mobile .stg-back .rd svg { width: 23px; height: 23px; }
+  body.sm-ready.view-mobile .stg-nav-item { min-height: 44px; }
+  body.sm-ready.view-mobile .mtl-row { min-height: 52px; }
+  body.sm-ready.view-mobile .mtl-ev { min-height: 52px; }
+  body.sm-ready.view-mobile .mtl-msg { min-height: 44px; }
+  body.sm-ready.view-mobile .mtl-day { min-height: 56px; }
+  body.sm-ready.view-mobile .mtl-nav button { width: 40px; height: 40px; }
+  body.sm-ready.view-mobile .dc-log-tr { min-height: 52px; }
+  body.sm-ready.view-mobile .dc-logs-search-row .dc-input,
+  body.sm-ready.view-mobile .dc-log-filter-btn { min-height: 44px; }
+  body.sm-ready.view-mobile .dc-logs-filters .dc-input { min-height: 44px; }
+  body.sm-ready.view-mobile .dc-copy-btn { min-height: 40px; padding: 0 14px; }
+  body.sm-ready.view-mobile .tk-title .back { width: 42px; height: 42px; }
+  body.sm-ready.view-mobile .tk-title .back svg { width: 24px; height: 24px; }
+  body.sm-ready.view-mobile .dc-log-back { min-height: 44px; padding: 0; align-items: center; }
+  body.sm-ready.view-mobile .dc-kvh-bar { min-height: 44px; }
+  body.sm-ready.view-mobile .dc-logdet-nav button { width: 42px; height: 40px; font-size: 16px; }
+  body.sm-ready.view-mobile .dc-json-find { padding: 4px 10px; }
+  body.sm-ready.view-mobile .dc-json-find input { min-height: 40px; }
+  body.sm-ready.view-mobile .dc-json-find button { width: 40px; height: 40px; font-size: 11px; }
+  body.sm-ready.view-mobile .tk-comp { min-height: 48px; }
+  body.sm-ready.view-mobile .dt-drawer-section-hdr { min-height: 48px; }
+  body.sm-ready.view-mobile .dc-mc-btn { min-height: 46px; }
+  body.sm-ready.view-mobile .tk-sec { min-height: 44px; }
+  body.sm-ready.view-mobile .tk-charts-btn { width: 100%; justify-content: center; min-height: 44px; }
+  /* the sensor charts take the whole phone, and each chart gets a
+     width worth reading — the strip scrolls sideways if it needs to */
+  body.sm-ready.view-mobile .dc-chart-box {
+    --cbx: 12px;
+    --cbt: calc(14px + 44px);   /* the sticky header clears the status bar */
+    width: 100%; height: 100%; max-height: none; border-radius: 0;
+    padding: 0 var(--cbx) calc(20px + env(safe-area-inset-bottom, 0px));
+  }
+  body.sm-ready.view-mobile .dc-chart-box .top { gap: 8px; align-items: flex-start; }
+  body.sm-ready.view-mobile .dc-chart-box .t { font-size: 14px; line-height: 1.35; }
+  body.sm-ready.view-mobile .dc-brush-hint { display: none; }
+  body.sm-ready.view-mobile .dc-zoom-chart svg { height: 270px; }
+  body.sm-ready.view-mobile .dc-chk-row { gap: 14px 18px; }
+  body.sm-ready.view-mobile .dc-chk { min-height: 40px; }
+  body.sm-ready.view-mobile .dc-json-line { min-height: 22px; }
+  /* the fleet table rows are the primary target on the landing page */
+  body.sm-ready.view-mobile tbody tr.trow { min-height: 56px; }
+
+  /* these strips are controls, not prose — dragging them pans rather
+     than selecting the labels */
+  .tk-actions, .tabs, .stg-tabs, .mtl-days, .csh-strip { user-select: none; -webkit-user-select: none; overflow-y: hidden; }
+  body.sm-ready.view-mobile .tk-actions { width: 100%; overflow-x: auto; scroll-snap-type: x proximity; }
+  body.sm-ready.view-mobile .tk-act { scroll-snap-align: start; }
+  /* the row scrolls, but with the scrollbar hidden nothing said so —
+     the edge fades while there is more to the right, and clears at the end */
+  body.sm-ready.view-mobile .tk-actions.more,
+  body.sm-ready.view-tablet .tk-actions.more {
+    -webkit-mask-image: linear-gradient(90deg, #000 84%, transparent 100%);
+    mask-image: linear-gradient(90deg, #000 84%, transparent 100%);
+  }
+  body.sm-ready.view-mobile .tk-act { padding: 0 14px; font-size: 11px; white-space: nowrap; }
+
+  /* Today's overview is three fixed columns, so on a phone the whole
+     middle column — the V5 Sensor Module list — sat off the right
+     edge. Stacked, and ordered the way it is read on a phone: the
+     truck's state, then Debug, then Errors, then the modules. */
+  body.sm-ready.view-mobile .tk-body { display: block; }
+  body.sm-ready.view-mobile .tk-left {
+    width: auto; padding-right: 0; border-right: none;
+    display: flex; flex-direction: column;
+  }
+  body.sm-ready.view-mobile .tk-ign { order: 0; margin: 0 0 8px; }
+  body.sm-ready.view-mobile #tk-sec-debug { order: 1; margin-top: 4px !important; }
+  body.sm-ready.view-mobile .tk-debug { order: 2; grid-template-columns: 1fr 1fr; gap: 16px 14px; margin: 16px 0 4px; }
+  body.sm-ready.view-mobile #tk-sec-errors { order: 3; margin-top: 16px; }
+  body.sm-ready.view-mobile .tk-errbox { order: 4; flex-direction: column; gap: 10px; margin: 14px 0 4px; }
+  body.sm-ready.view-mobile .tk-errcard { min-height: 0; }
+  body.sm-ready.view-mobile .tk-prov { order: 5; margin-top: 16px; }
+  body.sm-ready.view-mobile .tk-mid {
+    width: auto; padding: 0; border-right: none; margin-top: 22px;
+  }
+  body.sm-ready.view-mobile .tk-field { width: 100%; min-width: 0; }
+  /* Tablet keeps the two columns, sized to the screen it actually has */
+  body.sm-ready.view-tablet .tk-body { gap: 20px; }
+  body.sm-ready.view-tablet .tk-left { width: 46%; padding-right: 18px; }
+  body.sm-ready.view-tablet .tk-mid { width: 54%; padding: 0 0 0 4px; border-right: none; }
+  body.sm-ready.view-tablet .tk-debug { grid-template-columns: 1fr 1fr; gap: 16px 14px; }
+  /* half a tablet column is too narrow for two error cards abreast:
+     the messages wrap a word per line */
+  body.sm-ready.view-tablet .tk-errbox { flex-direction: column; gap: 10px; }
+  body.sm-ready.view-tablet .tk-errcard { min-height: 0; }
+  body.sm-ready.view-tablet .tk-field { width: 100%; min-width: 0; }
+
+  /* the timeline itself */
+  body.sm-ready.view-mobile .csh { max-width: none; }
+  body.sm-ready.view-mobile .csh-strip {
+    display: flex; overflow-x: auto; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+  }
+  body.sm-ready.view-mobile .csh-day { flex: 0 0 92px; scroll-snap-align: start; padding: 9px 8px; }
+  body.sm-ready.view-mobile .csh-hdr { margin: 18px 0 8px; }
+  body.sm-ready.view-mobile .csh-hdr h2 { font-size: 16px; }
+  body.sm-ready.view-mobile .csh-panel { padding: 10px 8px; }
+  /* labels stay put while the 24h track scrolls sideways */
+  body.sm-ready.view-mobile .csh-labels {
+    position: sticky; left: 0; z-index: 3; background: var(--layer-2);
+    box-shadow: 6px 0 10px -6px rgba(0,0,0,.45);
+  }
+  body.sm-ready.view-mobile.light .csh-labels { box-shadow: 6px 0 10px -6px rgba(54,50,45,.18); }
+  body.sm-ready.view-mobile .csh-chart { --csh-labw: 96px; }
+  body.sm-ready.view-mobile .csh-axis { --csh-labw: 96px; }
+  body.sm-ready.view-mobile .csh-lab {
+    font-size: 11.5px; line-height: 1.2; padding-right: 10px; padding-left: 2px;
+  }
+  body.sm-ready.view-mobile .csh { --csh-rowh: 52px; }
+  body.sm-ready.view-mobile .csh-legend { gap: 12px; font-size: 11.5px; }
+
+  /* Settings -> Trucks: the drill target for Phase 1 and Phase 2, so it
+     has to be usable at phone width. The settings nav is a desktop
+     wayfinding device; on a phone the page is the truck itself. */
+  /* The Settings section nav is desktop wayfinding. On a tablet the
+     page is already the truck, and it costs 208px that Manual Control
+     and Truck Log need — same call as the phone. */
+  body.sm-ready.view-tablet .stg-nav { display: none; }
+  /* equal-width tabs overlap once the row is narrower than their
+     labels — let them size to their text and scroll */
+  body.sm-ready.view-tablet .stg-tabs { overflow-x: auto; }
+  body.sm-ready.view-tablet .stg-tab { flex: 0 0 auto; padding: 12px 16px 14px; }
+  body.sm-ready.view-tablet .stg-main { padding: 18px 20px 28px; }
+  body.sm-ready.view-mobile .stg { left: 0; }
+  body.sm-ready.view-mobile .stg-nav { display: none; }
+  body.sm-ready.view-mobile .stg-main { padding: 14px 12px 28px; }
+  body.sm-ready.view-mobile .stg-back { margin-bottom: 14px; font-size: 12px; }
+  body.sm-ready.view-mobile .stg-head { gap: 12px; margin-bottom: 16px; }
+  body.sm-ready.view-mobile .stg-head .tico { width: 46px; height: 40px; }
+  body.sm-ready.view-mobile .stg-head .tico svg { width: 26px; height: 26px; }
+  body.sm-ready.view-mobile .stg-head .tt { font-size: 20px; }
+  body.sm-ready.view-mobile .stg-head .ts { font-size: 12.5px; }
+  body.sm-ready.view-mobile .stg-tabs { overflow-x: auto; margin-bottom: 16px; }
+  body.sm-ready.view-mobile .stg-tab { flex: 0 0 auto; padding: 10px 14px 12px; font-size: 12.5px; }
+
+  /* ── Manual Control, phone and tablet ──
+     Matching the version already built: each section is a row with a
+     chevron, its body opens as a panel, and every command is a
+     full-width button. The per-command descriptions are desktop
+     detail — on a phone they squeeze the button into a sliver, so
+     the section reads as a list of actions instead. */
+  body.sm-ready.view-mobile .dc-mc-wrap { flex-direction: column; gap: 0; }
+  body.sm-ready.view-mobile .dc-mc-left,
+  body.sm-ready.view-mobile .dc-mc-right { flex: 0 0 auto; width: 100%; }
+  body.sm-ready.view-mobile .dc-mc-right { margin-top: 22px; }
+  body.sm-ready.view-mobile .dt-drawer-section-hdr {
+    justify-content: space-between; padding: 14px 2px;
+    border-bottom: 1px solid var(--dc-border); margin: 0;
+  }
+  body.sm-ready.view-mobile .dt-drawer-section-hdr .dt-section-chev { order: 2; }
+  body.sm-ready.view-mobile .dc-mc-cards,
+  body.sm-ready.view-mobile .dc-mc-body {
+    background: var(--dc-layer-1); border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-md); padding: 14px; gap: 10px; margin: 12px 0 14px;
+  }
+  body.sm-ready.view-mobile .dc-mc-cards .dc-mc-card {
+    display: block; padding: 0; background: transparent; border: none; border-radius: 0;
+  }
+  body.sm-ready.view-mobile .dc-mc-cards .dc-mc-card .info { display: none; }
+  /* the section body is already a panel — the card inside it would be
+     a second box drawn around the same content */
+  body.sm-ready.view-mobile .dc-mc-body > .dc-mc-card {
+    background: transparent; border: none; border-radius: 0; padding: 0;
+  }
+  body.sm-ready.view-mobile .dc-mc-btn { width: 100%; min-width: 0; padding: 12px 14px; font-size: 13px; }
+  body.sm-ready.view-mobile .dc-mc-grid { grid-template-columns: 1fr; gap: 10px; }
+  body.sm-ready.view-mobile .dc-dose-row { flex-direction: column; gap: 10px; }
+  body.sm-ready.view-mobile .dc-tilt-head { flex-direction: column; gap: 12px; }
+  body.sm-ready.view-mobile .dc-tilt-fig { width: 100%; height: 92px; }
+  /* history: Date, Command, Status carry the story on a phone */
+  body.sm-ready.view-mobile .dc-mc-thead,
+  body.sm-ready.view-mobile .dc-mc-tr { grid-template-columns: 1.3fr 1.4fr .9fr; gap: 8px; padding: 10px; }
+  body.sm-ready.view-mobile .dc-mc-thead span:nth-child(2),
+  body.sm-ready.view-mobile .dc-mc-tr > *:nth-child(2),
+  body.sm-ready.view-mobile .dc-mc-thead span:nth-child(4),
+  body.sm-ready.view-mobile .dc-mc-tr > *:nth-child(4) { display: none; }
+  body.sm-ready.view-mobile .dc-mc-foot { flex-wrap: wrap; gap: 10px; justify-content: space-between; }
+  /* tablet keeps the two panes but stops the buttons pinching */
+
+  /* Truck Log is a two-pane desktop layout; on a phone the list stacks
+     above the JSON inspector, and the row drops Mac Id and SubType so
+     the remaining columns stay readable. */
+  body.sm-ready.view-mobile .dc-logs-wrap { flex-direction: column; gap: 14px; }
+  body.sm-ready.view-mobile .dc-logs-left,
+  body.sm-ready.view-mobile .dc-logs-right { flex: 0 0 auto; width: 100%; }
+  /* Search stays out; the rest folds behind the Filter button */
+  body.sm-ready.view-mobile .dc-log-filter-btn { display: flex; }
+  body.sm-ready.view-mobile .dc-logs-filters { display: none; }
+  body.sm-ready.view-mobile .dc-logs-filters.open {
+    display: flex; flex-direction: column; gap: 10px;
+    background: var(--dc-layer-1); border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-md); padding: 12px; margin-bottom: 12px;
+  }
+  body.sm-ready.view-mobile .dc-logs-filters .dc-input { flex: 0 0 auto; width: 100%; min-width: 0; }
+  body.sm-ready.view-mobile .dc-logs-hint { display: none; }
+  /* Message Time / Type / Sub Type, with the date stacked over the clock */
+  body.sm-ready.view-mobile .dc-logs-thead,
+  body.sm-ready.view-mobile .dc-log-tr { grid-template-columns: 1.15fr .9fr 1.3fr; gap: 8px; padding: 11px 10px; }
+  body.sm-ready.view-mobile .dc-logs-thead span:nth-child(2),
+  body.sm-ready.view-mobile .dc-log-tr > *:nth-child(2),
+  body.sm-ready.view-mobile .dc-logs-thead span:nth-child(3),
+  body.sm-ready.view-mobile .dc-log-tr > *:nth-child(3) { display: none; }
+  body.sm-ready.view-mobile .dc-log-tr .ltm .d,
+  body.sm-ready.view-mobile .dc-log-tr .ltm .t { display: block; }
+  body.sm-ready.view-mobile .dc-log-tr .ltm .t { color: var(--dc-soft); }
+  body.sm-ready.view-mobile .dc-logs-scroll { max-height: 46vh; }
+  /* ── Raw JSON screen: chrome compressed, JSON gets the rest ──
+     The sheet itself no longer scrolls. Back + title share a row,
+     the stepper shares a row with Copy JSON and a search toggle,
+     and the find field stays folded until that toggle is pressed.
+     Everything left over belongs to the JSON, which is the only
+     scroller on the screen. */
+  body.sm-ready.view-mobile .dc-logs-right { display: none; }
+  body.sm-ready.view-mobile .dc-logs-right.open {
+    display: flex; flex-direction: column; gap: 6px;
+    position: fixed; inset: 44px 0 0 0; z-index: 120;  /* clears the status bar */
+    margin: 0; border: none; border-radius: 0;
+    padding: 6px 12px calc(8px + env(safe-area-inset-bottom, 0px));
+    background: var(--bg); overflow: hidden;
+  }
+  body.sm-ready.view-mobile .dc-logs-right.open .dc-json {
+    flex: 1 1 auto; min-height: 0; max-height: none; overflow: auto;
+    padding: 6px 0; line-height: 1.45;
+  }
+  body.sm-ready.view-mobile .dc-json-line { min-height: 19px; gap: 10px; }
+  body.sm-ready.view-mobile .dc-json-line .ln { width: 20px; }
+  /* back and title on one line */
+  body.sm-ready.view-mobile .dc-logdet-top {
+    flex-wrap: nowrap; align-items: center; gap: 10px; min-height: 44px;
+  }
+  body.sm-ready.view-mobile .dc-log-back {
+    order: -1; flex: 0 0 auto; margin-bottom: 0; min-height: 40px; gap: 9px;
+  }
+  body.sm-ready.view-mobile .dc-logdet-title {
+    margin-left: auto; font-size: 14px; text-align: right;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  body.sm-ready.view-mobile .dc-logdet-actions { margin-top: 0; }
+  body.sm-ready.view-mobile .dc-json-find-btn { display: inline-flex; align-items: center; padding: 0 12px; height: 34px; }
+  /* find stays out of the way until asked for */
+  body.sm-ready.view-mobile .dc-json-find { display: none; }
+  body.sm-ready.view-mobile .dc-logs-right.find-on .dc-json-find { display: flex; }
+  /* the folded field summary must not push the JSON off screen */
+  body.sm-ready.view-mobile .dc-kvh { flex: 0 0 auto; max-height: 34vh; overflow-y: auto; }
+  body.sm-ready.view-mobile .dc-logdet-top,
+  body.sm-ready.view-mobile .dc-logdet-actions,
+  body.sm-ready.view-mobile .dc-kvh-bar,
+  body.sm-ready.view-mobile .dc-json-find { flex: 0 0 auto; }
+  body.sm-ready.view-mobile .dc-log-back { display: inline-flex; }
+  /* same ringed chevron as the truck header and Settings, so every
+     way back out of a screen looks like the same control */
+  .dc-log-back {
+    display: none; align-items: center; gap: 12px; order: -1; flex: 0 0 100%;
+    background: none; border: none; padding: 0; margin-bottom: 6px; cursor: pointer;
+    color: var(--dc-soft); font-family: inherit; font-size: 12.5px;
+    font-weight: 600; letter-spacing: .6px;
+  }
+  .dc-log-back .rd {
+    width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid currentColor;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .dc-log-back .rd svg { width: 19px; height: 19px; display: block; }
+  @media (hover: hover) and (pointer: fine) {
+    .dc-log-back:hover { color: var(--dc-strong); }
+  }
+
+  /* ── Manual Control and Truck Log on the tablet ──
+     834px minus the settings nav leaves about a phone's width
+     per pane, so the tablet takes the same stacked treatment. */
+  body.sm-ready.view-tablet .dc-mc-wrap { flex-direction: column; gap: 0; }
+  body.sm-ready.view-tablet .dc-mc-left,
+  body.sm-ready.view-tablet .dc-mc-right { flex: 0 0 auto; width: 100%; }
+  body.sm-ready.view-tablet .dc-mc-right { margin-top: 22px; }
+  body.sm-ready.view-tablet .dt-drawer-section-hdr {
+    justify-content: space-between; padding: 14px 2px;
+    border-bottom: 1px solid var(--dc-border); margin: 0;
+  }
+  body.sm-ready.view-tablet .dt-drawer-section-hdr .dt-section-chev { order: 2; }
+  body.sm-ready.view-tablet .dc-mc-cards,
+  body.sm-ready.view-tablet .dc-mc-body {
+    background: var(--dc-layer-1); border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-md); padding: 14px; gap: 10px; margin: 12px 0 14px;
+  }
+  body.sm-ready.view-tablet .dc-mc-cards .dc-mc-card {
+    display: block; padding: 0; background: transparent; border: none; border-radius: 0;
+  }
+  body.sm-ready.view-tablet .dc-mc-cards .dc-mc-card .info { display: none; }
+  body.sm-ready.view-tablet .dc-mc-body > .dc-mc-card {
+    background: transparent; border: none; border-radius: 0; padding: 0;
+  }
+  body.sm-ready.view-tablet .dc-mc-btn { width: 100%; min-width: 0; padding: 12px 14px; font-size: 13px; }
+  body.sm-ready.view-tablet .dc-mc-grid { grid-template-columns: 1fr; gap: 10px; }
+  body.sm-ready.view-tablet .dc-dose-row { flex-direction: column; gap: 10px; }
+  body.sm-ready.view-tablet .dc-tilt-head { flex-direction: column; gap: 12px; }
+  body.sm-ready.view-tablet .dc-tilt-fig { width: 100%; height: 92px; }
+  body.sm-ready.view-tablet .dc-mc-thead,
+  body.sm-ready.view-tablet .dc-mc-tr { grid-template-columns: 1.3fr 1.4fr .9fr; gap: 8px; padding: 10px; }
+  body.sm-ready.view-tablet .dc-mc-thead span:nth-child(2),
+  body.sm-ready.view-tablet .dc-mc-tr > *:nth-child(2),
+  body.sm-ready.view-tablet .dc-mc-thead span:nth-child(4),
+  body.sm-ready.view-tablet .dc-mc-tr > *:nth-child(4) { display: none; }
+  body.sm-ready.view-tablet .dc-mc-foot { flex-wrap: wrap; gap: 10px; justify-content: space-between; }
+  body.sm-ready.view-tablet .dc-logs-wrap { flex-direction: column; gap: 14px; }
+  body.sm-ready.view-tablet .dc-logs-left,
+  body.sm-ready.view-tablet .dc-logs-right { flex: 0 0 auto; width: 100%; }
+  body.sm-ready.view-tablet .dc-log-filter-btn { display: flex; }
+  body.sm-ready.view-tablet .dc-logs-filters { display: none; }
+  body.sm-ready.view-tablet .dc-logs-filters.open {
+    display: flex; flex-direction: column; gap: 10px;
+    background: var(--dc-layer-1); border: 1px solid var(--dc-border);
+    border-radius: var(--dc-r-md); padding: 12px; margin-bottom: 12px;
+  }
+  body.sm-ready.view-tablet .dc-logs-filters .dc-input { flex: 0 0 auto; width: 100%; min-width: 0; }
+  body.sm-ready.view-tablet .dc-logs-hint { display: none; }
+  body.sm-ready.view-tablet .dc-logs-thead,
+  body.sm-ready.view-tablet .dc-log-tr { grid-template-columns: 1.15fr .9fr 1.3fr; gap: 8px; padding: 11px 10px; }
+  body.sm-ready.view-tablet .dc-logs-thead span:nth-child(2),
+  body.sm-ready.view-tablet .dc-log-tr > *:nth-child(2),
+  body.sm-ready.view-tablet .dc-logs-thead span:nth-child(3),
+  body.sm-ready.view-tablet .dc-log-tr > *:nth-child(3) { display: none; }
+  body.sm-ready.view-tablet .dc-log-tr .ltm .d,
+  body.sm-ready.view-tablet .dc-log-tr .ltm .t { display: block; }
+  body.sm-ready.view-tablet .dc-log-tr .ltm .t { color: var(--dc-soft); }
+  body.sm-ready.view-tablet .dc-logs-scroll { max-height: 46vh; }
+  body.sm-ready.view-tablet .dc-logdet-top { flex-wrap: wrap; gap: 8px; }
+  body.sm-ready.view-tablet .dc-logs-right { display: none; }
+  body.sm-ready.view-tablet .dc-logs-right.open {
+    display: flex; position: fixed; inset: 44px 0 0 0; z-index: 120;  
+    margin: 0; border: none; border-radius: 0; padding: 12px 12px 28px;
+    background: var(--bg); overflow-y: auto;
+  }
+  body.sm-ready.view-tablet .dc-logs-right.open .dc-json { max-height: none; }
+  /* the tablet's status bar is 28px, not the phone's 44 */
+  body.sm-ready.view-tablet .dc-logs-right.open { inset: 28px 0 0 0; padding: 16px 20px 24px; }
+  body.sm-ready.view-tablet .dc-chart-box { --cbt: 42px; }
+  body.sm-ready.view-tablet .dc-log-back { display: inline-flex; }
+  .dc-log-back {
+    display: none; align-items: center; gap: 12px; order: -1; flex: 0 0 100%;
+    background: none; border: none; padding: 0; margin-bottom: 6px; cursor: pointer;
+    color: var(--dc-soft); font-family: inherit; font-size: 12.5px;
+    font-weight: 600; letter-spacing: .6px;
+  }
+  .dc-log-back .rd {
+    width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid currentColor;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .dc-log-back .rd svg { width: 19px; height: 19px; display: block; }
+  @media (hover: hover) and (pointer: fine) {
+    .dc-log-back:hover { color: var(--dc-strong); }
+  }
+
   /* Shared hover card for tracks, spans and message ticks */
   .dc-tip {
     position: fixed; z-index: 20000; max-width: 300px; padding: 10px 12px;
@@ -1315,7 +2398,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
     transition: background .18s, color .18s; white-space: nowrap; font-family: inherit;
   }
   .vp-pill.active { background: #fff; color: #1a1814; }
-  .vp-pill:not(.active):hover { color: rgba(255,255,255,.85); }
+  @media (hover: hover) and (pointer: fine) { .vp-pill:not(.active):hover { color: rgba(255,255,255,.85); } }
   .vp-opts-wrap { position: relative; }
   .vp-opts-btn {
     display: flex; align-items: center; justify-content: center;
@@ -1326,7 +2409,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
     cursor: pointer; font-family: inherit;
     transition: background .15s, border-color .15s, color .15s;
   }
-  .vp-opts-btn:hover, .vp-opts-btn.open { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.3); color: #fff; }
+  @media (hover: hover) and (pointer: fine) { .vp-opts-btn:hover, .vp-opts-btn.open { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.3); color: #fff; } }
   .vp-opts-dd {
     display: none; position: absolute; top: calc(100% + 8px); right: 0;
     min-width: 214px; padding: 6px; z-index: 10000;
@@ -1344,7 +2427,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
     font-size: 13px; font-weight: 500; letter-spacing: -.26px;
     color: rgba(255,255,255,.85); transition: background .12s;
   }
-  .vp-opts-row:hover { background: rgba(255,255,255,.07); }
+  @media (hover: hover) and (pointer: fine) { .vp-opts-row:hover { background: rgba(255,255,255,.07); } }
   .vp-lbl { display: flex; flex-direction: column; gap: 1px; line-height: 1.25; }
   .vp-lbl em { font-style: normal; font-size: 10.5px; color: rgba(255,255,255,.42); letter-spacing: .1px; }
   .vp-opts-section-label em { font-style: normal; font-weight: 400; text-transform: none; letter-spacing: .2px; opacity: .75; }
@@ -1370,6 +2453,9 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
     text-align: center;
   }
   body.view-tablet .vp-coming, body.view-mobile .vp-coming { display: flex; }
+  /* Trinity_Timeline is built for every breakpoint, so it shows the real
+     thing instead of the placeholder */
+  body.sm-ready .vp-coming { display: none !important; }
   .vp-coming .ic {
     width: 56px; height: 56px; border-radius: 14px;
     background: rgba(48,105,227,.12); border: 1px solid rgba(48,105,227,.3);
@@ -1406,14 +2492,14 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   body.light .view-toggle .vt.active { background: #e9e5e1; }
   body.light .filter-row .cb { border-color: #b8b2ac; }
   body.light tbody tr:nth-child(odd) { background: #ffffff; }
-  body.light .trow:hover { background: #edeae6 !important; }
+  @media (hover: hover) and (pointer: fine) { body.light .trow:hover { background: #edeae6 !important; } }
   body.light .drawer { background: #f6f4f2; box-shadow: -12px 0 40px rgba(54,50,45,.18); }
   body.light .d-tnav { border-color: var(--border); }
   body.light .jk { color: #1a56b0; }
   body.light .js { color: #2e7d32; }
   body.light .jn { color: #b45309; }
   body.light .jb { color: #7b1fa2; }
-  body.light .drawer, body.light .takeover, body.light .stg {
+  body.light .drawer, body.light .takeover, body.light .stg, body.light .dc-chart-modal, body.light .appnav {
     --dc-layer-1: #ffffff;
     --dc-layer-2: #f6f4f2;
     --dc-strong: #36322d;
@@ -1476,15 +2562,17 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   .stg-nav-item .cx { margin-left: auto; display: flex; align-items: center; color: var(--muted); }
   .stg-nav-item.sel { font-weight: 600; }
   .stg-main { flex: 1; min-width: 0; padding: 22px 34px 34px; overflow-y: auto; }
+  /* the same ringed chevron as the truck header and the log sheet */
   .stg-back {
     display: inline-flex; align-items: center; gap: 12px; margin-bottom: 20px;
-    font-size: 13px; letter-spacing: .6px; color: var(--muted); cursor: pointer;
+    font-size: 13px; font-weight: 600; letter-spacing: .6px; color: var(--muted); cursor: pointer;
   }
   .stg-back .rd {
-    width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--muted);
-    display: flex; align-items: center; justify-content: center; font-size: 14px;
+    width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid currentColor;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
-  .stg-back:hover { color: var(--text); }
+  .stg-back .rd svg { width: 19px; height: 19px; display: block; }
+  @media (hover: hover) and (pointer: fine) { .stg-back:hover { color: var(--text); } }
   .stg-head { display: flex; align-items: center; gap: 16px; margin-bottom: 22px; }
   .stg-head .tico {
     width: 62px; height: 52px; border-radius: 4px; background: #1565d8;
@@ -1524,7 +2612,21 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
     padding-bottom: 18px;
   }
   .tk-title { display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 600; letter-spacing: .5px; color: #f5f5f5; }
-  .tk-title .back { cursor: pointer; font-size: 19px; }
+  /* The back control used to be a ⊙ glyph, which reads as a status
+     dot, not a way out. It is a ringed arrow at a real tap size. */
+  .tk-title .back {
+    cursor: pointer; flex-shrink: 0;
+    width: 34px; height: 34px; padding: 0; margin-left: -2px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%; border: 1.5px solid #6a6a6a;
+    background: transparent; color: #cfcfcf;
+  }
+  .tk-title .back svg { width: 20px; height: 20px; display: block; }
+  @media (hover: hover) and (pointer: fine) {
+    .tk-title .back:hover { color: #fff; border-color: #cfcfcf; }
+  }
+  body.light .tk-title .back { border-color: #36322d5e; color: #36322d; }
+  body.trinity .tk-title .back { border-color: var(--t-border); color: var(--t-strong); }
   .tk-actions { display: flex; align-items: stretch; }
   .tk-act {
     display: flex; align-items: center; gap: 8px;
@@ -1570,6 +2672,18 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
     color: #f5f5f5; font-size: 13px;
   }
   .tk-select .caret { color: #8a8a8a; font-size: 9px; }
+  /* Debug: the connectivity row used to be an eye with no affordance.
+     It is the way into the GPS and network charts, so it says so. */
+  .tk-charts-btn {
+    display: inline-flex; align-items: center; gap: 7px; margin-top: 8px;
+    background: transparent; border: 1px solid #3a3a3a; border-radius: 4px;
+    padding: 7px 11px; cursor: pointer; font-family: inherit;
+    font-size: 12px; font-weight: 600; color: #cfcfcf; letter-spacing: .2px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .tk-charts-btn:hover { color: #fff; border-color: #6a6a6a; }
+  }
+  body.light .tk-charts-btn { border-color: #d6d2cc; color: #4a463f; }
 
   .tk-tlnav { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
   .tk-tlnav .arw { color: #8a8a8a; font-size: 16px; }
@@ -1579,7 +2693,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   .tk-mod .mi { color: #8a8a8a; font-size: 17px; }
   .tk-comp-item { border-bottom: 1px solid #2a2a2a; }
   .tk-comp { display: flex; align-items: center; gap: 12px; padding: 12px 4px; color: #f5f5f5; font-size: 13.5px; cursor: pointer; }
-  .tk-comp:hover { background: #222; }
+  @media (hover: hover) and (pointer: fine) { .tk-comp:hover { background: #222; } }
   .tk-comp .cdot { width: 13px; height: 13px; border-radius: 50%; background: #555; flex-shrink: 0; }
   .tk-comp .cdot.green { background: #3fbf5f; }
   .tk-comp .cname { flex: 1; }
@@ -1614,12 +2728,12 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
     padding: 7px 16px; font-size: 10.5px; font-weight: 700; letter-spacing: .8px;
     color: #f5f5f5; text-transform: uppercase; cursor: pointer; font-family: inherit;
   }
-  .tk-pill:hover { border-color: #999; }
+  @media (hover: hover) and (pointer: fine) { .tk-pill:hover { border-color: #999; } }
   .tk-pill.active { background: #f5f5f5; border-color: #f5f5f5; color: #1b1b1b; }
   .tk-tb-div { width: 1px; height: 24px; background: #444; }
   .tk-tb-right { margin-left: auto; display: flex; align-items: center; gap: 14px; color: #ccc; font-size: 12px; }
   .tk-tb-nav { width: 30px; height: 30px; border-radius: 50%; border: 1px solid #666; background: none; color: #ccc; cursor: pointer; font-size: 14px; font-family: inherit; }
-  .tk-tb-nav:hover { color: #fff; border-color: #999; }
+  @media (hover: hover) and (pointer: fine) { .tk-tb-nav:hover { color: #fff; border-color: #999; } }
   .tk-legend { display: none; align-items: center; gap: 24px; font-size: 11.5px; color: #bbb; margin: -2px 0 12px 4px; }
   .tk-legend.open { display: flex; }
   .tk-legend span { display: inline-flex; align-items: center; gap: 7px; }
@@ -1676,7 +2790,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   body.light .tk-fdm { border-bottom-color: #36322d24; }
   body.light .tk-comp-item { border-bottom-color: #e5e1dd; }
   body.light .tk-comp { color: #36322d; }
-  body.light .tk-comp:hover { background: #efece9; }
+  @media (hover: hover) and (pointer: fine) { body.light .tk-comp:hover { background: #efece9; } }
   body.light .tk-comp .cdot { background: #b5b0aa; }
   body.light .tk-comp .cdot.green { background: #188038; }
   body.light .tk-comp .cchev { color: #36322d80; }
@@ -1690,12 +2804,12 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   body.light .tk-tl-panel { background: #b3bdc4; }
   body.light .tk-tl-sheet { background: #ffffff; }
   body.light .tk-pill { background: #a0abb2; border-color: transparent; color: #2e3438; }
-  body.light .tk-pill:hover { background: #93a0a8; border-color: transparent; }
+  @media (hover: hover) and (pointer: fine) { body.light .tk-pill:hover { background: #93a0a8; border-color: transparent; } }
   body.light .tk-pill.active { background: #e9edef; border-color: transparent; color: #1f2427; box-shadow: 0 1px 3px rgba(46,52,56,.25); }
   body.light .tk-tb-div { background: #8f9ba3; }
   body.light .tk-tb-right { color: #2e3438; }
   body.light .tk-tb-nav { background: #e9edef; border-color: transparent; color: #2e3438; }
-  body.light .tk-tb-nav:hover { background: #ffffff; color: #1f2427; }
+  @media (hover: hover) and (pointer: fine) { body.light .tk-tb-nav:hover { background: #ffffff; color: #1f2427; } }
   body.light .tk-legend { color: #2e3438; }
   body.light .tk-sec-bar { background: #d9d9d9; color: #36322d; }
   body.light .tk-tl-axis span { color: #36322d80; }
@@ -1783,9 +2897,11 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
     border-color: color-mix(in srgb, var(--dc-strong) 30%, transparent);
     color: var(--dc-strong);
   }
+  @media (hover: hover) and (pointer: fine) {
   .drawer.trinity .dc-mc-btn:hover:not(:disabled),
   .drawer.trinity .dc-btn.ping:hover {
     border-color: color-mix(in srgb, var(--dc-strong) 55%, transparent);
+  }
   }
   .drawer.trinity .dc-mc-btn.danger {
     border-color: var(--dc-alarm);
@@ -1805,7 +2921,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   body.trinity .view-toggle { border-color: var(--t-border); }
   body.trinity .view-toggle .vt.active { background: var(--t-layer2); color: var(--t-strong); }
   body.trinity tbody tr:nth-child(odd) { background: var(--t-layer1); }
-  body.trinity .trow:hover { background: color-mix(in srgb, var(--t-blue) 8%, transparent) !important; }
+  @media (hover: hover) and (pointer: fine) { body.trinity .trow:hover { background: color-mix(in srgb, var(--t-blue) 8%, transparent) !important; } }
   body.trinity .tab.alarm .ti { color: var(--t-red); }
   body.trinity .pager .ppsel { border-color: var(--t-border); }
 
@@ -1841,7 +2957,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   body.trinity .tk-fdm { border-bottom-color: var(--t-border); }
   body.trinity .tk-comp-item { border-bottom-color: var(--t-border); }
   body.trinity .tk-comp { color: var(--t-strong); }
-  body.trinity .tk-comp:hover { background: color-mix(in srgb, var(--t-blue) 6%, transparent); }
+  @media (hover: hover) and (pointer: fine) { body.trinity .tk-comp:hover { background: color-mix(in srgb, var(--t-blue) 6%, transparent); } }
   body.trinity .tk-comp .cdot { background: color-mix(in srgb, var(--t-strong) 28%, transparent); }
   body.trinity .tk-comp .cdot.green { background: var(--t-ok); }
   body.trinity .tk-comp .cchev { color: var(--t-soft); }
@@ -1854,12 +2970,12 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   body.trinity .tk-tl-panel { background: var(--t-layer1); border: 1px solid var(--t-border); border-radius: var(--t-r-md); }
   body.trinity .tk-tl-sheet { background: transparent; }
   body.trinity .tk-pill { background: transparent; border: 1px solid var(--t-border); color: var(--t-strong); border-radius: var(--t-r-pill); }
-  body.trinity .tk-pill:hover { background: transparent; border-color: var(--t-border-mid); }
+  @media (hover: hover) and (pointer: fine) { body.trinity .tk-pill:hover { background: transparent; border-color: var(--t-border-mid); } }
   body.trinity .tk-pill.active { background: var(--t-sel-bg); color: var(--t-sel-ink); border-color: transparent; box-shadow: none; }
   body.trinity .tk-tb-div { background: var(--t-border); }
   body.trinity .tk-tb-right { color: var(--t-soft); }
   body.trinity .tk-tb-nav { background: transparent; border: 1px solid var(--t-border); color: var(--t-soft); }
-  body.trinity .tk-tb-nav:hover { background: transparent; color: var(--t-strong); border-color: var(--t-border-mid); }
+  @media (hover: hover) and (pointer: fine) { body.trinity .tk-tb-nav:hover { background: transparent; color: var(--t-strong); border-color: var(--t-border-mid); } }
   body.trinity .tk-legend { color: var(--t-soft); }
   body.trinity .tk-sec-bar { background: var(--t-layer2); color: var(--t-strong); }
   body.trinity .tk-tl-axis span { color: var(--t-subtle); }
@@ -1914,7 +3030,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
             <span class="vp-lbl">Phase 3_ Final</span>
           </div>
           <div class="vp-opts-divider"></div>
-          <div class="vp-opts-section-label">Timeline <em id="vp-tl-scope">for Phase 2, 2a, 3</em></div>
+          <div class="vp-opts-section-label">Timeline <em id="vp-tl-scope">for Phase 1, 2, 2a, 3</em></div>
           <div class="vp-opts-row" id="vp-tl-row-trinity" onclick="event.stopPropagation();setTimelinePick('trinity')">
             <svg class="vp-opts-check" id="vp-tl-trinity" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span class="vp-lbl">Trinity timeline</span>
@@ -1943,6 +3059,27 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   </div>
 
   <!-- Coming-soon overlay for breakpoints not yet designed -->
+  <!-- Phone / tablet chassis: the app is moved inside this screen when
+       the Mobile or Tablet pill is on, so the small layouts are seen at
+       their real size instead of a stretched browser window -->
+  <div id="device-stage">
+    <div id="device-frame">
+      <div id="device-notch"></div>
+      <div id="device-screen">
+        <div id="device-status">
+          <span class="t">9:41</span>
+          <span class="r">
+            <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7.5" width="3" height="3.5" rx="1"/><rect x="4.6" y="5" width="3" height="6" rx="1"/><rect x="9.2" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.8" y="0" width="3" height="11" rx="1"/></svg>
+            <svg width="16" height="11" viewBox="0 0 16 11" fill="none" stroke="currentColor" stroke-width="1.1"><path d="M1 3.6a10 10 0 0 1 14 0"/><path d="M3.4 6.2a6.6 6.6 0 0 1 9.2 0"/><path d="M5.8 8.7a3.2 3.2 0 0 1 4.4 0"/><circle cx="8" cy="10.4" r=".7" fill="currentColor" stroke="none"/></svg>
+            <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.2" stroke="currentColor" opacity=".45"/><rect x="2" y="2" width="15" height="8" rx="2" fill="currentColor"/><path d="M23 4.2v3.6c.9-.3 1.4-.9 1.4-1.8S23.9 4.5 23 4.2z" fill="currentColor" opacity=".45"/></svg>
+          </span>
+        </div>
+      </div>
+      <div id="device-home"></div>
+    </div>
+    <div id="device-caption"></div>
+  </div>
+
   <div class="vp-coming">
     <div class="ic">&#128241;</div>
     <div class="t" id="vp-cs-title">Tablet View</div>
@@ -1952,10 +3089,12 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   <!-- ═══ CURRENT STATE — full-page truck takeover (today's Hub) ═══ -->
   <div class="takeover" id="takeover">
     <div class="tk-top">
-      <div class="tk-title"><span class="back" onclick="tkBack()">&#8857;</span> <span id="tk-truck">TRUCK 1219</span></div>
+      <div class="tk-title"><button class="back" onclick="tkBack()" title="Back" aria-label="Back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6.5 9 12l5.5 5.5"/></svg>
+      </button> <span id="tk-truck">TRUCK 1219</span></div>
       <div class="tk-actions">
-        <div class="tk-act clickable" id="tk-act-ov" onclick="tkView('overview')" style="display:none;"><span class="ai">&#9638;</span> OVERVIEW</div>
         <div class="tk-act clickable" id="tk-act-ct" onclick="tkView('timeline')"><span class="ai">&#128200;</span> <span id="tk-act-ct-label">COMPONENT TIMELINE</span></div>
+        <div class="tk-act clickable" id="tk-act-ov" onclick="tkView('overview')" style="display:none;"><span class="ai">&#9638;</span> <span id="tk-act-ov-label">DEBUG</span></div>
         <div class="tk-act clickable" id="tk-act-mc" onclick="tkManualClick()"><span class="ai">&#127899;</span> MANUAL CONTROL</div>
         <div class="tk-act clickable" id="tk-act-tl" onclick="tkLogClick()"><span class="ai">&#128196;</span> TRUCK LOG</div>
       </div>
@@ -1971,13 +3110,19 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
          in here (live DOM node, not a copy) and returned on close -->
     <div id="tk-view-final-ov" style="display:none;"></div>
 
+    <!-- Small screens keep Manual Control and Truck Log in the truck
+         itself: the LIVE panels are borrowed in here, so the same
+         command history and log state show up in both places until
+         the Settings route is retired. -->
+    <div id="tk-view-panel" style="display:none;"></div>
+
     <div id="tk-view-overview">
     <div class="tk-body">
       <!-- Left column: ignition, errors, debug, provisioning -->
       <div class="tk-left">
         <div class="tk-ign"><span class="lbl">Ignition</span><span class="val" id="tk-ign"><span class="g"></span> ON</span></div>
 
-        <div class="tk-sec">Errors <span class="chev">&#8964;</span></div>
+        <div class="tk-sec" id="tk-sec-errors">Errors <span class="chev">&#8964;</span></div>
         <div class="tk-errbox">
           <div class="tk-errcard alarms">
             <div class="eh"><span class="ebox"></span> Alarms</div>
@@ -1989,14 +3134,25 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
           </div>
         </div>
 
-        <div class="tk-sec" style="margin-top:20px;">Debug <span class="chev">&#8964;</span></div>
+        <div class="tk-sec" id="tk-sec-debug" style="margin-top:20px;">Debug <span class="chev">&#8964;</span></div>
         <div class="tk-debug">
-          <div class="tk-dg"><div class="k">Connectivity</div><div class="v">&#128065; <span id="tk-conn">Connected</span></div></div>
+          <div class="tk-dg"><div class="k">Connectivity</div><div class="v"><span id="tk-conn">Connected</span></div>
+            <button class="tk-charts-btn" onclick="dcExpandChart()">
+              <svg width="13" height="11" viewBox="0 0 14 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M1 11V7.5M4.7 11V4.5M8.4 11V8M12.1 11V1.5"/></svg>
+              Signal &amp; network charts
+            </button></div>
           <div class="tk-dg"><div class="k">Last Reboot</div><div class="v">Jul 24, 2026, 12:31 PM</div></div>
           <div class="tk-dg"><div class="k">Code Version</div><div class="v">26.2.3</div></div>
           <div class="tk-dg"><div class="k">Last System Status</div><div class="v">Jul 24, 2026, 3:50:11 PM</div></div>
           <div class="tk-dg"><div class="k">Truck Mode</div><div class="v">LIVE</div></div>
-          <div class="tk-dg"><div class="k">&nbsp;</div><div class="tk-select">Debug Mode <span class="caret">&#9660;</span></div></div>
+          <div class="tk-dg"><div class="k">Debug Mode <span class="dc-live" id="tk-live-badge">LIVE</span></div>
+            <div class="v"><select class="dc-input dc-mode-dd" id="tk-debug-mode" onchange="dcSetDebugMode(this.value)">
+              <option>Default</option>
+              <option>5 Minutes</option>
+              <option>10 Minutes</option>
+              <option>15 Minutes</option>
+              <option>20 Minutes</option>
+            </select></div></div>
         </div>
 
         <div class="tk-sec tk-prov">Truck Provisioning Information <span class="chev">&#8250;</span></div>
@@ -2021,6 +3177,30 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
       <!-- Right third intentionally empty, as in today's product -->
     </div>
     </div><!-- /tk-view-overview -->
+  </div>
+
+  <!-- ═══ Debug sensor charts — a lightbox over whatever is open,
+       so it works from the drawer, the takeover and Settings ═══ -->
+  <div class="dc-chart-modal" id="dc-chart-modal" onclick="if(event.target===this)dcCloseChart()">
+    <div class="dc-chart-box" id="dc-chart-box"></div>
+  </div>
+
+  <!-- ═══ App switcher — the small-screen route to the main nav ═══ -->
+  <div class="appnav" id="app-nav" onclick="if(event.target===this)appNavClose()">
+    <div class="appnav-sheet">
+      <div class="appnav-top">
+        <span class="appnav-av">JD</span>
+        <span class="appnav-plant">
+          <span class="pin"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.2-6-10a6 6 0 1 1 12 0c0 4.8-6 10-6 10z"/><circle cx="12" cy="11" r="2.2"/></svg></span>
+          <span class="nm" id="appnav-plant">Ozinga Chicago</span>
+        </span>
+        <button class="appnav-x" onclick="appNavClose()" aria-label="Close menu">&#10005;</button>
+      </div>
+      <div class="appnav-grid" id="appnav-grid"></div>
+      <div class="appnav-rule"></div>
+      <div id="appnav-tail"></div>
+      <div class="appnav-foot" id="appnav-foot"></div>
+    </div>
   </div>
 
   <!-- Sidebar -->
@@ -2052,6 +3232,9 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   <!-- Main -->
   <main class="main">
     <div class="topbar">
+      <button class="appnav-btn" onclick="appNavOpen()" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="4" y="4" width="4.2" height="4.2" rx="1"/><rect x="9.9" y="4" width="4.2" height="4.2" rx="1"/><rect x="15.8" y="4" width="4.2" height="4.2" rx="1"/><rect x="4" y="9.9" width="4.2" height="4.2" rx="1"/><rect x="9.9" y="9.9" width="4.2" height="4.2" rx="1"/><rect x="15.8" y="9.9" width="4.2" height="4.2" rx="1"/><rect x="4" y="15.8" width="4.2" height="4.2" rx="1"/><rect x="9.9" y="15.8" width="4.2" height="4.2" rx="1"/><rect x="15.8" y="15.8" width="4.2" height="4.2" rx="1"/></svg>
+      </button>
       <h1>Diagnostic Center</h1>
       <div class="view-toggle"><div class="vt active">&#9636;</div><div class="vt">&#9684;</div></div>
     </div>
@@ -2099,6 +3282,14 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
               <td class="comp-cell" data-truck="1219"></td>
               <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
               <td class="alert"></td>
+              <td><span class="conn">((&#8226;))</span></td>
+              <td><span class="ign"><span class="dot on"></span> On</span></td><td class="col-pad"></td>
+            </tr>
+            <tr class="trow" onclick="openDrawer('2541')">
+              <td class="tname">2541</td><td class="ver">V5</td><td class="mode-cell" data-mode-truck="2541"></td>
+              <td class="comp-cell" data-truck="2541"></td>
+              <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
+              <td class="alert">Flow rate is lower than expected</td>
               <td><span class="conn">((&#8226;))</span></td>
               <td><span class="ign"><span class="dot on"></span> On</span></td><td class="col-pad"></td>
             </tr>
@@ -2166,22 +3357,18 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
               <td><span class="conn">((&#8226;))</span></td>
               <td><span class="ign"><span class="dot on"></span> On</span></td><td class="col-pad"></td>
             </tr>
-            <tr class="trow" onclick="openDrawer('2541')">
-              <td class="tname">2541</td><td class="ver">V5</td><td class="mode-cell" data-mode-truck="2541"></td>
-              <td class="comp-cell" data-truck="2541"></td>
-              <td><span class="atplant"><span class="x">&#10005;</span> No</span></td>
-              <td class="alert">Flow rate is lower than expected</td>
-              <td><span class="conn">((&#8226;))</span></td>
-              <td><span class="ign"><span class="dot on"></span> On</span></td><td class="col-pad"></td>
-            </tr>
           </tbody>
         </table>
         </div>
 
         <div class="pager">
-          <div>Items per page: <span class="ppsel">10 <span style="font-size:9px">&#9660;</span></span></div>
-          <div>1 &#8211; 10 of 10</div>
-          <div class="arrows"><span>&#8249;</span><span>&#8250;</span></div>
+          <div class="pp">Items per page: <span class="ppsel">10 <span style="font-size:9px">&#9660;</span></span></div>
+          <div class="prange">1 &#8211; 10 of 10</div>
+          <div class="arrows">
+            <!-- ten trucks, ten per page: there is no other page to go to -->
+            <span class="pg prev off" title="No previous page">&#8249;</span>
+            <span class="pg next off" title="No next page">&#8250;</span>
+          </div>
         </div>
       </div>
     </div>
@@ -2199,7 +3386,9 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
       <div class="stg-nav-item"><span class="ci"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path fill="currentColor" stroke="none" d="M19.14 12.94c.04-.31.06-.62.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54a.49.49 0 0 0-.5-.42h-3.84a.49.49 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.74 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.6.62-.6.94s.2.63.6.94L2.86 14.5a.5.5 0 0 0-.12.64l1.92 3.32c.14.24.42.34.68.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.4.24.25.42.49.42h3.84c.24 0 .45-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.26.12.54.02.68-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 15.6 12 3.6 3.6 0 0 1 12 15.6z"/></svg></span> Others<span class="cx"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5.5l7 6.5-7 6.5"/></svg></span></div>
     </div>
     <div class="stg-main">
-      <div class="stg-back" onclick="stgBackToList()"><span class="rd">&#8592;</span> BACK TO LIST</div>
+      <div class="stg-back" onclick="stgBackToList()" role="button" tabindex="0" aria-label="Back">
+        <span class="rd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6.5 9 12l5.5 5.5"/></svg></span>
+        <span id="stg-back-label">BACK TO LIST</span></div>
       <div id="stg-truck-wrap">
         <div class="stg-head">
           <div class="tico"><svg width="30" height="26" viewBox="0 0 37 32" fill="none" aria-hidden="true"><path d="M-0.000175655 16.6798C-0.000175655 16.4665 0.0398243 16.2665 0.119824 16.0798L0.199824 15.9198C0.226491 15.8398 0.266491 15.7598 0.319824 15.6798L4.31982 10.3198C4.79982 9.70651 5.38649 9.22651 6.07982 8.87984C6.77316 8.50651 7.51982 8.31984 8.31982 8.31984H11.6398V4.99984C11.6398 4.33318 11.7598 3.69317 11.9998 3.07984C12.2665 2.46651 12.6398 1.93317 13.1198 1.47984C13.5998 0.999842 14.1332 0.639842 14.7198 0.399842C15.3332 0.133176 15.9732 -0.000157356 16.6398 -0.000157356H31.6398C32.3065 -0.000157356 32.9465 0.133176 33.5598 0.399842C34.1732 0.639842 34.7065 0.999842 35.1598 1.47984C35.6398 1.93317 35.9998 2.46651 36.2398 3.07984C36.5065 3.69317 36.6398 4.33318 36.6398 4.99984V24.9998C36.6398 25.4532 36.4798 25.8532 36.1598 26.1998C35.8398 26.5198 35.4532 26.6798 34.9998 26.6798H33.3198C33.3198 27.3465 33.1865 27.9865 32.9198 28.5998C32.6798 29.2132 32.3198 29.7598 31.8398 30.2398C31.3865 30.6932 30.8532 31.0532 30.2398 31.3198C29.6265 31.5598 28.9865 31.6798 28.3198 31.6798C27.6532 31.6798 27.0132 31.5598 26.3998 31.3198C25.7865 31.0532 25.2398 30.6932 24.7598 30.2398C24.3065 29.7598 23.9465 29.2132 23.6798 28.5998C23.4398 27.9865 23.3198 27.3465 23.3198 26.6798H13.3198C13.3198 27.3465 13.1865 27.9865 12.9198 28.5998C12.6798 29.2132 12.3198 29.7598 11.8398 30.2398C11.3865 30.6932 10.8532 31.0532 10.2398 31.3198C9.62649 31.5598 8.98649 31.6798 8.31982 31.6798C7.65316 31.6798 7.01316 31.5598 6.39982 31.3198C5.78649 31.0532 5.23982 30.6932 4.75982 30.2398C4.30649 29.7598 3.94649 29.2132 3.67982 28.5998C3.43982 27.9865 3.31982 27.3465 3.31982 26.6798H1.63982C1.18649 26.6798 0.799824 26.5198 0.479824 26.1998C0.159824 25.8532 -0.000175655 25.4532 -0.000175655 24.9998V16.6798ZM26.6398 26.6798C26.6398 27.1332 26.7998 27.5198 27.1198 27.8398C27.4665 28.1598 27.8665 28.3332 28.3198 28.3598C28.6665 28.3332 28.9732 28.2265 29.2398 28.0398C29.5332 27.8532 29.7332 27.6132 29.8398 27.3198C29.9732 26.9998 29.9998 26.6798 29.9198 26.3598C29.8665 26.0132 29.7198 25.7198 29.4798 25.4798C29.2665 25.2398 28.9865 25.0932 28.6398 25.0398C28.3198 24.9598 27.9998 24.9865 27.6798 25.1198C27.3598 25.2532 27.1065 25.4665 26.9198 25.7598C26.7332 26.0265 26.6398 26.3332 26.6398 26.6798ZM14.9998 4.99984V23.3598H24.5998C25.0798 22.8265 25.6398 22.4265 26.2798 22.1598C26.9465 21.8665 27.6265 21.7198 28.3198 21.7198C29.0132 21.7198 29.6798 21.8665 30.3198 22.1598C30.9865 22.4265 31.5465 22.8132 31.9998 23.3198H33.3198V4.99984C33.3198 4.54651 33.1598 4.15984 32.8398 3.83984C32.5198 3.49318 32.1198 3.31984 31.6398 3.31984H16.6398C16.1865 3.31984 15.7998 3.49318 15.4798 3.83984C15.1598 4.15984 14.9998 4.54651 14.9998 4.99984ZM11.6398 14.9998V11.6798H8.31982C8.05316 11.6798 7.79982 11.7465 7.55982 11.8798C7.34649 11.9865 7.15982 12.1332 6.99982 12.3198L4.99982 14.9998H11.6398ZM6.63982 26.6798C6.63982 27.1332 6.79982 27.5198 7.11982 27.8398C7.46649 28.1598 7.86649 28.3332 8.31982 28.3598C8.66649 28.3332 8.97316 28.2265 9.23982 28.0398C9.53316 27.8532 9.73316 27.6132 9.83982 27.3198C9.97316 26.9998 9.99982 26.6798 9.91983 26.3598C9.86649 26.0132 9.71982 25.7198 9.47982 25.4798C9.26649 25.2398 8.98649 25.0932 8.63982 25.0398C8.31982 24.9598 7.99982 24.9865 7.67982 25.1198C7.35982 25.2532 7.10649 25.4665 6.91982 25.7598C6.73316 26.0265 6.63982 26.3332 6.63982 26.6798ZM3.31982 18.3198V23.3198H4.63982C5.06649 22.8398 5.57316 22.4665 6.15982 22.1998C6.77316 21.9065 7.39982 21.7465 8.03982 21.7198C8.70649 21.6665 9.34649 21.7598 9.95982 21.9998C10.5998 22.2132 11.1598 22.5332 11.6398 22.9598V18.3198H3.31982Z" fill="currentColor"/></svg></div>
@@ -2236,8 +3425,8 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
         <button class="d-tnav" onclick="dcNavTruck(1)" title="Next truck">&#8250;</button>
       </div>
       <div class="d-actions">
-        <div class="d-act active" id="act-overview" onclick="dcTab('overview')"><span class="ai">&#9638;</span> OVERVIEW</div>
-        <div class="d-act" id="act-timeline" onclick="dcTab('timeline')"><span class="ai">&#8987;</span> TIMELINE</div>
+        <div class="d-act active" id="act-timeline" onclick="dcTab('timeline')"><span class="ai">&#8987;</span> TIMELINE</div>
+        <div class="d-act" id="act-overview" onclick="dcTab('overview')"><span class="ai">&#9638;</span> OVERVIEW</div>
         <div class="d-act" id="act-manual" onclick="dcTab('manual')"><span class="ai">&#127899;</span> MANUAL CONTROL</div>
         <div class="d-act" id="act-logs" onclick="dcTab('logs')"><span class="ai">&#128196;</span> TRUCK LOG</div>
         <div class="d-act" id="act-config" onclick="dcTab('config')"><span class="ai">&#9881;</span> CONFIGURATION</div>
@@ -2270,7 +3459,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
         <div class="dc-side">
           <div class="dc-side-card">
             <div class="dc-side-status">
-              <div class="dc-ss"><span class="k">&#128065; Connectivity</span><span class="v blue" id="dc-ss-conn">Connected</span></div>
+              <div class="dc-ss"><span class="k"><svg width="12" height="10" viewBox="0 0 14 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" style="vertical-align:-1px;"><path d="M1 11V7.5M4.7 11V4.5M8.4 11V8M12.1 11V1.5"/></svg> Connectivity</span><span class="v blue" id="dc-ss-conn">Connected</span></div>
               <div class="dc-ss"><span class="k">&#128246; Truck Mode</span><span class="v" id="dc-ss-mode" style="color:var(--dc-defined);">Live</span></div>
               <div class="dc-ss"><span class="k">&#9889; Ignition</span><span class="v ok" id="dc-ss-ign"><span class="gdot"></span> ON</span></div>
             </div>
@@ -2303,9 +3492,10 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
             <div class="dc-input-label">Debug Mode</div>
             <select class="dc-input dc-mode-dd" id="dc-debug-mode" onchange="dcSetDebugMode(this.value)">
               <option>Default</option>
+              <option>5 Minutes</option>
+              <option>10 Minutes</option>
               <option>15 Minutes</option>
-              <option>30 Minutes</option>
-              <option>60 Minutes</option>
+              <option>20 Minutes</option>
             </select>
             <div class="dc-chart-mini" onclick="dcExpandChart('gps')" title="Click to expand">
               <div class="hd"><span>GPS Satellite</span><span class="ex">&#10530;</span></div>
@@ -2471,10 +3661,18 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
 
         <!-- Log table -->
         <div class="dc-logs-left">
-          <div class="dc-logs-filters">
+          <!-- Search sits on its own row so the phone can keep it visible
+               and fold the five filters behind one control -->
+          <div class="dc-logs-search-row">
+            <input class="dc-input" id="dc-log-search" placeholder="Search logs&#8230;" oninput="dcLogsFilterChange()">
+            <button class="dc-log-filter-btn" id="dc-log-filter-btn" onclick="dcLogFiltersToggle()">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4h12M4.5 8h7M7 12h2"/></svg>
+              Filter
+            </button>
+          </div>
+          <div class="dc-logs-filters" id="dc-logs-filters">
             <input class="dc-input dc-date" id="dc-log-from" type="datetime-local" title="From" onchange="dcLogsFilterChange()">
             <input class="dc-input dc-date" id="dc-log-to" type="datetime-local" title="To" onchange="dcLogsFilterChange()">
-            <input class="dc-input" id="dc-log-search" placeholder="Search message type" oninput="dcLogsFilterChange()">
             <select class="dc-input" id="dc-log-type" onchange="dcLogsFilterChange()">
               <option value="all">Message Type: All</option>
               <option value="Event">Event</option>
@@ -2492,7 +3690,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
           <div class="dc-logs-hint"><b>&#8593; &#8595;</b> Arrow keys move through logs &#8212; the JSON updates in place. Click a line to pin it and watch that field across messages.</div>
           <div class="dc-logs-tbl">
             <div class="dc-logs-thead">
-              <span>Message Time</span><span>Delay</span><span>Mac Id</span><span>Type</span><span>SubType</span>
+              <span>Message Time</span><span>Delay</span><span>Mac Id</span><span>Type</span><span>Sub Type</span>
             </div>
             <div class="dc-logs-scroll" id="dc-log-rows"></div>
             <div class="dc-logs-foot"><span id="dc-log-count">0 of 0</span></div>
@@ -2502,20 +3700,45 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
         <!-- JSON inspector -->
         <div class="dc-logs-right">
           <div class="dc-logdet-top">
-            <div class="dc-logdet-title">Truck logs</div>
-            <button class="dc-copy-btn" onclick="dcLogToTimeline()">View on timeline</button>
-            <button class="dc-copy-btn" onclick="dcCopyLog(this)">Copy JSON</button>
+            <!-- phone only: the message opens as its own screen -->
+            <button class="dc-log-back" onclick="dcLogSheetClose()" aria-label="Back to logs">
+              <span class="rd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6.5 9 12l5.5 5.5"/></svg></span>
+              BACK TO LOGS
+            </button>
+            <div class="dc-logdet-title" id="dc-logdet-title">Truck logs</div>
+          </div>
+          <!-- step through the filtered list without leaving the message -->
+          <div class="dc-logdet-actions">
+            <div class="dc-logdet-nav">
+              <button onclick="dcLogStep(-1)" title="Previous message">&#8249;</button>
+              <span id="dc-log-pos">0 of 0</span>
+              <button onclick="dcLogStep(1)" title="Next message">&#8250;</button>
+            </div>
+            <div class="dc-logdet-tools">
+              <button class="dc-copy-btn dc-json-find-btn" onclick="dcJsonFindToggle()" title="Search JSON" aria-label="Search JSON">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.4"/><path d="M10.3 10.3 14 14" stroke-linecap="round"/></svg>
+              </button>
+              <button class="dc-copy-btn" onclick="dcCopyLog(this)">Copy JSON</button>
+            </div>
+          </div>
+          <!-- the field summary folds away so the message itself gets the room -->
+          <div class="dc-kvh-bar" onclick="dcKvhToggle()">
+            <span class="chev">&#9660;</span> Message details
+            <span class="sub" id="dc-kvh-sub"></span>
           </div>
           <div class="dc-kvh" id="dc-log-kvh"></div>
+          <!-- find a field inside the message and step through the hits -->
+          <div class="dc-json-find" id="dc-json-find">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="4.4"/><path d="M10.3 10.3 14 14" stroke-linecap="round"/></svg>
+            <input id="dc-json-q" placeholder="Search JSON" oninput="dcJsonFind(0)">
+            <span class="hits" id="dc-json-hits"></span>
+            <button onclick="dcJsonFind(-1)" title="Previous match">&#9650;</button>
+            <button onclick="dcJsonFind(1)" title="Next match">&#9660;</button>
+          </div>
           <div class="dc-json" id="dc-json"></div>
         </div>
 
       </div>
-    </div>
-
-    <!-- ═══ Chart expand lightbox (fills the drawer) ═══ -->
-    <div class="dc-chart-modal" id="dc-chart-modal" onclick="if(event.target===this)dcCloseChart()">
-      <div class="dc-chart-box" id="dc-chart-box"></div>
     </div>
 
   </div>
@@ -2527,10 +3750,14 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
    prototype (app-06-desktop-core.js) so real data plugs into the
    same contract when this migrates.
 ══════════════════════════════════════════════════════════════ */
+/* Per-truck faults. 2541 is the multi-fault case: a truck that is
+   online and reporting, with five components in trouble at once —
+   the state the fleet card and the timeline both have to survive. */
 const TRUCK_ALERTS = {
   '1219': {}, '1341': { flow: true }, '1408': { flow: true, disconnected: true },
   '1416': { flow: true }, '1894': {}, '1921': { flow: true }, '1968': { flow: true },
-  '2105': { accel: true }, '2356': {}, '2541': { flow: true }
+  '2105': { accel: true }, '2356': {},
+  '2541': { flow: true, dps: true, cps: true, drs: true, icd: true }
 };
 
 function mcsCardsFor(num) {
@@ -2541,8 +3768,10 @@ function mcsCardsFor(num) {
       extra:{label:'Status', val: a.disconnected ? 'Disconnected' : 'Connected'},
       err:'--', fw:'V5', state: a.disconnected ? 'alarm' : 'clean',
       fault: a.disconnected ? 'No connection to backend' : null },
-    { name:'DPS pressure', label:'Drum Pressure Sensor', value:'196', unit:'psi', startup:2, err:'--' },
-    { name:'CPS', label:'Charge Pressure Sensor', value:'204', unit:'psi', startup:2, err:'--' },
+    { name:'DPS pressure', label:'Drum Pressure Sensor', value: a.dps ? '--' : '196', unit:'psi', startup:2, err: a.dps ? '14' : '--',
+      state: a.dps ? 'alarm' : 'clean', fault: a.dps ? 'No pressure reading — sensor not responding' : null },
+    { name:'CPS', label:'Charge Pressure Sensor', value: a.cps ? 'too high' : '204', unit:'psi', startup:2, err: a.cps ? '3' : '--',
+      state: a.cps ? 'warn' : 'clean', fault: a.cps ? 'Reading outside expected range' : null },
     /* Phase 2a reports WDS as two components, because rotation and
        temperature fail independently and only one of them is
        load-bearing. Earlier phases keep the single card. */
@@ -2550,11 +3779,14 @@ function mcsCardsFor(num) {
       ? [{ name:'WDS rotation', label:'Water Drum Sensor \u2014 rotation', value:'12', unit:'rpm', startup:2, err:'--', fw:'v2.1.4' },
          { name:'WDS temp', label:'Water Drum Sensor \u2014 temperature', value:'91', unit:'\u00B0F', startup:2, err:'--', fw:'v2.1.4' }]
       : [{ name:'WDS', label:'Water Drum Sensor', value:'12', unit:'rpm', startup:2, err:'--', extra:{label:'Drum Temp', val:'91 \u00B0F'}, fw:'v2.1.4' }]),
-    { name:'DRS', label:'Drum Rotation Speed', value:'8', unit:'rpm', startup:2, err:'--', fw:'v1.0.8' },
+    { name:'DRS', label:'Drum Rotation Speed', value: a.drs ? '0' : '8', unit:'rpm', startup:2, err: a.drs ? '2' : '--', fw:'v1.0.8',
+      state: a.drs ? 'warn' : 'clean', fault: a.drs ? 'Rotation reported as zero while charging' : null },
     { name:'CWR', label:'Cold Weather Relay', value: a.accel ? '--' : '91', unit:'\u00B0F',
       startup:2, err: a.accel ? '6' : '--', extra:{label:'FW v35.0 \u00B7 Tilt', val: a.accel ? '--' : '1\u00B0'}, fw:'v35.0',
       state: a.accel ? 'warn' : 'clean', fault: a.accel ? 'Accelerometer not working' : null },
-    { name:'ICD', label:'In-Cab Display', value:'Active', big:true, startup:2, err:'--', extra:{label:'Firmware', val:'v1468'}, fw:'v1468' },
+    { name:'ICD', label:'In-Cab Display', value: a.icd ? 'No response' : 'Active', big:true, startup:2, err: a.icd ? '9' : '--',
+      extra:{label:'Firmware', val:'v1468'}, fw:'v1468',
+      state: a.icd ? 'warn' : 'clean', fault: a.icd ? 'Display not acknowledging status pings' : null },
     { name:'ED', label:'External Display', value:'Active', big:true, startup:2, err:'--', extra:{label:'Firmware', val:'v8195'}, fw:'v8195' },
   ];
 }
@@ -2680,7 +3912,7 @@ window.addEventListener('hashchange', dcApplyUrlView);
 
 function dcSyncTimelineMenu() {
   const kind = dcTimelineKind();
-  const fixed = dcViewMode === 'trinity-timeline' || dcViewMode === 'current-timeline';
+  const fixed = dcViewMode === 'trinity-timeline';
   ['trinity', 'rebuilt'].forEach(k => {
     const el = document.getElementById('vp-tl-' + k);
     if (el) el.style.opacity = (fixed ? kind === k : dcTimelinePick === k) ? '1' : '0';
@@ -2688,7 +3920,7 @@ function dcSyncTimelineMenu() {
     if (row) { row.style.opacity = fixed ? '.4' : '1'; row.style.pointerEvents = fixed ? 'none' : ''; }
   });
   const scope = document.getElementById('vp-tl-scope');
-  if (scope) scope.textContent = fixed ? 'set by this phase' : 'for Phase 2, 2a, 3';
+  if (scope) scope.textContent = fixed ? 'set by this phase' : 'for Phase 1, 2, 2a, 3';
 }
 
 /* Trinity colours used to be two extra rows in the phase list, which
@@ -2706,6 +3938,7 @@ function setTrinitySkin(on) {
 
 const DC_PHASES = ['current', 'trinity-timeline', 'current-timeline',
                    'current-overview', 'current-overview-wds', 'final'];
+const DC_SMALL_PHASES = ['trinity-timeline', 'current-timeline'];
 
 function setProtoView(mode) {
   /* Legacy names kept working: they were a phase plus the skin */
@@ -2716,6 +3949,10 @@ function setProtoView(mode) {
 }
 function setPhase(mode) {
   dcViewMode = mode;
+  document.body.dataset.phase = mode;
+  /* Phases with real phone/tablet layouts (the rest still show the
+     coming-soon panel on those pills) */
+  document.body.classList.toggle('sm-ready', DC_SMALL_PHASES.indexOf(mode) > -1);
   DC_PHASES.forEach(m => {
     const el = document.getElementById('vp-check-' + m);
     if (el) el.style.opacity = m === mode ? '1' : '0';
@@ -2737,6 +3974,8 @@ function setPhase(mode) {
   renderComponentCells();
   buildOverview(dcCurrentTruck || '1219');
   dcSyncTimelineMenu();
+  const small = document.body.classList.contains('view-mobile') || document.body.classList.contains('view-tablet');
+  deviceMount(small && DC_SMALL_PHASES.indexOf(mode) > -1);
   dcWriteSlug(mode);
 }
 
@@ -2793,13 +4032,21 @@ function openTakeover(name) {
     p(now.getHours()) + ':' + p(now.getMinutes()) + ':' + p(now.getSeconds());
 
   tkRenderTimeline(a);
-  tkView('overview'); /* every open starts on the overview */
   /* Phase views (+Timeline, Timeline_Overview) present the takeover
      as a right-side drawer; the tab carries the NEW timeline there,
-     so it's just "TIMELINE", and an OVERVIEW tab appears */
+     so it's just "TIMELINE", and a second tab appears beside it */
   const asDrawer = tkIsDrawerMode();
   document.getElementById('tk-act-ct-label').textContent = asDrawer ? 'TIMELINE' : 'COMPONENT TIMELINE';
   document.getElementById('tk-act-ov').style.display = asDrawer ? '' : 'none';
+  /* In Phase 1 and Trinity_Timeline that second tab is today's
+     ignition / errors / debug page, so it is named for what it is.
+     Phase 2 and 2a put the real component overview there. */
+  const ovLabel = document.getElementById('tk-act-ov-label');
+  if (ovLabel) ovLabel.textContent =
+    (dcViewMode === 'current-timeline' || dcViewMode === 'trinity-timeline') ? 'DEBUG' : 'OVERVIEW';
+  /* From the table, the question is what happened — so a truck opens
+     on its timeline. Current State keeps today's overview-first open. */
+  tkView(asDrawer ? 'timeline' : 'overview');
   /* Manual Control and Truck Log always work now: Phase 3 opens them
      as drawer tabs, everything else hands off to Settings */
   [['tk-act-tl', 'Truck Log'], ['tk-act-mc', 'Manual Control']].forEach(([id, name]) => {
@@ -2813,6 +4060,20 @@ function openTakeover(name) {
   else tkReturnFinalOverview();
   document.getElementById('takeover').classList.add('open');
   document.body.style.overflow = 'hidden';
+  dcSyncDebugSelects(name);
+  dcSyncLiveTimer();
+  requestAnimationFrame(tkTabsFade);
+}
+/* Shows the fade only while the tab row has more to the right */
+function tkTabsFade() {
+  const a = document.querySelector('.tk-actions');
+  if (!a) return;
+  if (!a.dataset.fadeBound) {
+    a.dataset.fadeBound = '1';
+    a.addEventListener('scroll', tkTabsFade);
+    window.addEventListener('resize', tkTabsFade);
+  }
+  a.classList.toggle('more', a.scrollWidth - a.clientWidth - a.scrollLeft > 4);
 }
 /* Phase views that present the takeover as a drawer */
 function tkIsDrawerMode() {
@@ -2872,7 +4133,21 @@ function stgPhaseUsesSettings() {
   return dcViewMode !== 'final' && dcViewMode !== 'final-trinity';
 }
 
+/* Where the user was when Manual Control or Truck Log handed off to
+   Settings, so BACK returns them there instead of dumping them on the
+   fleet list with a drawer to re-open. */
+let stgReturn = null;
 function openSettingsTruck(num, tab) {
+  const tkOpen = document.getElementById('takeover').classList.contains('open');
+  const drOpen = document.getElementById('drawer').classList.contains('open');
+  stgReturn = (tkOpen || drOpen)
+    ? { num: dcCurrentTruck, host: tkOpen ? 'takeover' : 'drawer',
+        view: tkOpen ? tkCurrentView : dcActiveTab }
+    : null;
+  const lbl = document.getElementById('stg-back-label');
+  if (lbl) lbl.textContent = stgReturn
+    ? (stgReturn.view === 'timeline' ? 'BACK TO TIMELINE' : 'BACK TO TRUCK ' + stgReturn.num)
+    : 'BACK TO LIST';
   stgTruck = num;
   closeTakeover();
   closeDrawer();
@@ -2882,6 +4157,7 @@ function openSettingsTruck(num, tab) {
   document.getElementById('stg-truck-wrap').style.display = '';
   document.getElementById('stg-page').classList.add('open');
   document.body.style.overflow = 'hidden';
+  dcSyncLiveTimer();
   stgSideNav(true);
   stgTab(tab || 'manual');
 }
@@ -2903,15 +4179,27 @@ function stgTab(tab) {
   if (main) main.scrollTop = 0;
 }
 
-/* BACK TO LIST leaves the truck page — the Settings trucks list
-   isn't part of this prototype, so it returns to the list you came
-   from rather than inventing one */
-function stgBackToList() { stgToDiagnostic(); }
+/* BACK leaves the truck page. If the user got here from a truck's
+   timeline or drawer tab, that is where they go — landing on the
+   fleet list and making them re-open the truck loses their place. */
+function stgBackToList() {
+  const r = stgReturn;
+  stgReturn = null;
+  stgToDiagnostic();
+  if (!r) return;
+  openDrawer(r.num);                      /* dispatcher: takeover or drawer */
+  if (document.getElementById('takeover').classList.contains('open')) {
+    if (r.view === 'overview' || r.view === 'timeline') tkView(r.view);
+  } else if (['overview','timeline','manual','config','logs'].indexOf(r.view) > -1) {
+    dcTab(r.view);
+  }
+}
 
 function stgToDiagnostic() {
   dcRestoreAllPanels();
   document.getElementById('stg-page').classList.remove('open');
   document.body.style.overflow = '';
+  dcSyncLiveTimer();
   stgSideNav(false);
 }
 /* Sidebar follows the section you are actually in */
@@ -2926,13 +4214,22 @@ function stgSideNav(inSettings) {
   dc.onclick = inSettings ? stgToDiagnostic : null;
 }
 
-/* Diagnostic Center actions: hand off, or open the drawer tab in Phase 3 */
+/* Diagnostic Center actions: hand off to Settings, open the drawer
+   tab in Phase 3, or — on a phone or tablet — keep it in the truck.
+   Sending someone out to a Settings page and back is a desktop
+   pattern; the small screens get the tab, and yes that means the two
+   routes coexist until the Settings one is retired. */
+function tkInlinePanels() {
+  return dcSmallScreen() && document.getElementById('takeover').classList.contains('open');
+}
 function tkManualClick() {
-  if (stgPhaseUsesSettings()) openSettingsTruck(dcCurrentTruck, 'manual');
+  if (tkInlinePanels()) tkView('manual');
+  else if (stgPhaseUsesSettings()) openSettingsTruck(dcCurrentTruck, 'manual');
   else dcTab('manual');
 }
 function tkLogClick() {
-  if (stgPhaseUsesSettings()) openSettingsTruck(dcCurrentTruck, 'logs');
+  if (tkInlinePanels()) tkView('logs');
+  else if (stgPhaseUsesSettings()) openSettingsTruck(dcCurrentTruck, 'logs');
   else dcTab('logs');
 }
 
@@ -2949,7 +4246,11 @@ function tkReturnFinalOverview() {
 }
 function closeTakeover() {
   document.getElementById('takeover').classList.remove('open');
+  dcSyncLiveTimer();
   tkReturnFinalOverview(); /* send the Final overview panel home */
+  dcRestorePanel('panel-manual');   /* and any borrowed truck panels */
+  dcRestorePanel('panel-logs');
+  dcLogSheetClose();
   if (!document.getElementById('drawer').classList.contains('open')) {
     document.getElementById('overlay').classList.remove('open');
     document.body.style.overflow = '';
@@ -2980,14 +4281,36 @@ function tkView(v) {
     (finalOv && v === 'overview') ? '' : 'none';
   document.getElementById('tk-view-timeline').style.display = v === 'timeline' ? '' : 'none';
 
+  /* manual / logs: borrow the live panel into the takeover */
+  const panelHost = document.getElementById('tk-view-panel');
+  const wantsPanel = v === 'manual' || v === 'logs';
+  if (panelHost) {
+    ['panel-manual', 'panel-logs'].forEach(id => {
+      if (!wantsPanel || id !== 'panel-' + v) dcRestorePanel(id);
+    });
+    if (wantsPanel) {
+      dcBorrowPanel('panel-' + v, 'tk-view-panel');
+      if (v === 'manual') dcRenderHistory(); else buildLogs(dcCurrentTruck);
+    }
+    panelHost.style.display = wantsPanel ? '' : 'none';
+    if (wantsPanel) {
+      document.getElementById('tk-view-overview').style.display = 'none';
+      document.getElementById('tk-view-final-ov').style.display = 'none';
+      document.getElementById('tk-view-timeline').style.display = 'none';
+    }
+  }
+
   document.getElementById('tk-act-ct').classList.toggle('active', v === 'timeline');
+  document.getElementById('tk-act-mc').classList.toggle('active', v === 'manual');
+  document.getElementById('tk-act-tl').classList.toggle('active', v === 'logs');
   const ovEl = document.getElementById('tk-act-ov');
   if (ovEl) ovEl.classList.toggle('active', v === 'overview' && tkIsDrawerMode());
   document.getElementById('takeover').scrollTop = 0;
 }
 function tkBack() {
-  if (tkCurrentView !== 'overview') tkView('overview');
-  else closeTakeover();
+  /* every view now lives inside this drawer, so the header arrow always
+     exits the truck and returns to the fleet list */
+  closeTakeover();
 }
 function tkLegendToggle() {
   document.getElementById('tk-legend').classList.toggle('open');
@@ -3078,7 +4401,10 @@ function tkTlToggle(kind) {
 }
 
 /* ══════════════════ DRAWER SHELL ══════════════════ */
-const DC_TRUCK_ORDER = ['1219','1341','1408','1416','1894','1921','1968','2105','2356','2541'];
+/* Table order: the demo cases lead — healthy, five faults, one
+   warning, disconnected — and the drawer arrows page in the same
+   order the list shows. */
+const DC_TRUCK_ORDER = ['1219','2541','1341','1408','1416','1894','1921','1968','2105','2356'];
 let dcCurrentTruck = '1219';
 let dcActiveTab = 'overview';
 let dcActiveDay = 6;
@@ -3090,7 +4416,8 @@ function openDrawer(name) {
   dcCurrentTruck = name;
   document.getElementById('dTruckName').textContent = 'TRUCK ' + name;
   buildOverview(name);
-  dcTab('overview');
+  /* the table asks "what happened", so the drawer opens on TIMELINE */
+  dcTab('timeline');
   document.getElementById('overlay').classList.add('open');
   document.getElementById('drawer').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -3120,6 +4447,8 @@ function closeDrawer() {
 }
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
+    const sheet = document.querySelector('.dc-logs-right.open');
+    if (sheet) { dcLogSheetClose(); return; }
     if (dcChartOpen) { dcCloseChart(); }
     else if (document.getElementById('takeover').classList.contains('open')) { closeTakeover(); }
     else { closeDrawer(); }
@@ -3151,7 +4480,20 @@ function dcTab(tab, actId) {
   if (tab === 'config') buildConfig(dcCurrentTruck);
   if (tab === 'logs') buildLogs(dcCurrentTruck);
 }
-function dcToggleSection(hdr) { hdr.classList.toggle('collapsed'); }
+/* Manual Control is a one-at-a-time accordion: opening a section
+   closes its siblings, so the command you tapped is the only thing
+   on screen. Other panels (Configuration) stay multi-open. */
+function dcToggleSection(hdr) {
+  const opening = hdr.classList.contains('collapsed');
+  const mc = hdr.closest('#panel-manual');
+  if (mc && opening) {
+    mc.querySelectorAll('.dt-drawer-section-hdr').forEach(h => {
+      if (h !== hdr && h.getAttribute('onclick')) h.classList.add('collapsed');
+    });
+  }
+  hdr.classList.toggle('collapsed');
+  if (mc && opening) requestAnimationFrame(() => hdr.scrollIntoView({ block: 'nearest' }));
+}
 
 /* ══════════════════ OVERVIEW ══════════════════
    buildCard mirrors the DS prototype's card contract:
@@ -3240,7 +4582,7 @@ function buildOverview(num) {
   document.getElementById('dc-err-alarms').textContent = a.disconnected ? 1 : 0;
   document.getElementById('dc-err-warns').textContent = warnCount;
   document.getElementById('dc-kv-connect').textContent = a.disconnected ? 'Jul 23, 2026, 4:51:02 PM' : 'Jul 24, 2026, 10:15:14 AM';
-  document.getElementById('dc-debug-mode').value = dcDebugMode[num] || 'Default';
+  dcSyncDebugSelects(num);
   dcRenderMiniCharts(num);
 }
 
@@ -3253,6 +4595,13 @@ const ALARM_ICON = '<svg width="10" height="10" viewBox="0 0 10 10" fill="white"
    reinforces it */
 const ASLEEP_ICON = '<svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M2.2 2.2h3.9v1.1L3.7 6.9h2.4V8H2.1V6.9L4.5 3.3H2.2V2.2Zm4.6 3.4h3.2v.9l-1.9 2.8h1.9v.9H6.7v-.9l1.9-2.8H6.8v-.9Z"/></svg>';
 const NODATA_ICON = '<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="6" cy="6" r="4.6"/><path d="M3.1 3.1l5.8 5.8"/></svg>';
+/* Healthy: a check, so the count line reads by shape as well as
+   colour — a green and a red dot at 8px are the same dot. */
+const OK_ICON = '<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.2 6.3 4.8 8.9 9.8 3.4"/></svg>';
+/* Ignition: filled ring for on, open ring for off — the same pair the
+   landing table uses for the ignition column */
+const IGN_ON_ICON  = '<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="4.6"/><circle cx="6" cy="6" r="1.9" fill="currentColor" stroke="none"/></svg>';
+const IGN_OFF_ICON = '<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="4.6"/></svg>';
 
 function badgeHtml(kind) {
   if (kind === 'ok') return '<span class="dc-badge-ok"></span>';
@@ -3627,18 +4976,18 @@ function dcTrinityDays(num) {
 
 /* ══════════════════════════════════════════════════════════════
    WHICH TIMELINE?
-   Trinity_Timeline always shows candidate A, Phase 1 always shows
-   candidate B (the message-driven rebuild), and Phases 2, 2a and 3
-   follow the Options choice until the team picks one.
+   Trinity_Timeline is the reference phase — it always shows
+   candidate A, which is the whole reason it exists. Every other
+   phase that has a timeline, Phase 1 included, follows the Options
+   choice until the team picks one.
 ══════════════════════════════════════════════════════════════ */
 let dcTimelinePick = 'rebuilt';        /* 'trinity' | 'rebuilt' */
 function dcTimelineKind() {
   if (dcViewMode === 'trinity-timeline') return 'trinity';
-  if (dcViewMode === 'current-timeline') return 'rebuilt';
   return dcTimelinePick;
 }
 function setTimelinePick(kind) {
-  if (dcViewMode === 'trinity-timeline' || dcViewMode === 'current-timeline') return;  /* fixed in those phases */
+  if (dcViewMode === 'trinity-timeline') return;  /* fixed in the reference phase */
   dcTimelinePick = kind;
   dcSyncTimelineMenu();
   const host = dcTlRoot;
@@ -3654,9 +5003,7 @@ function dcTrinityDeoverlap(panel) {
   panel.querySelectorAll('.csh-track .csh-in').forEach(lane => {
     const laneW = lane.clientWidth;
     const chips = Array.from(lane.querySelectorAll('.csh-chip'))
-      .map(c => ({ el: c, wide: c.dataset.wide === '1',
-                   left: c.getBoundingClientRect().left - lane.getBoundingClientRect().left,
-                   w: c.offsetWidth }))
+      .map(c => ({ el: c, wide: c.dataset.wide === '1', left: c.offsetLeft, w: c.offsetWidth }))
       .sort((a2, b2) => a2.left - b2.left);
     for (let i = chips.length - 2; i >= 0; i--) {
       const cur = chips[i], next = chips[i + 1];
@@ -3668,6 +5015,251 @@ function dcTrinityDeoverlap(panel) {
       cur.el.style.transform = 'translateY(-50%)';
     }
   });
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   MOBILE TIMELINE
+   Same day, same stream, read as a list instead of a gantt: one
+   card per component, summarised, opening to its events. Both
+   candidates use it, so the phone view is comparable too — the
+   Trinity candidate keeps its two-state vocabulary (everything is
+   a Warning or an Alarm), the message candidate keeps its full set.
+══════════════════════════════════════════════════════════════ */
+/* Phone-width wording: shorter names and state words so a row
+   stays on one line */
+const MTL_NAME = {
+  'Iox / Robotex': 'Iox/Robotex', 'Internal Display': 'Int. Display',
+  'External Display': 'Ext. Display', 'WDS rotation': 'WDS rot.', 'WDS temp': 'WDS temp'
+};
+const MTL_STATE = { warn: 'Warning', alarm: 'Alarm', nodata: 'No data', asleep: 'Asleep' };
+
+function dcMtlDur(mins) {
+  const m = Math.max(1, Math.round(mins));
+  return m >= 60 ? Math.floor(m / 60) + 'h' + (m % 60 ? ' ' + (m % 60) + 'm' : '') : m + ' min';
+}
+function dcMtlEventsFor(row, trinity, st) {
+  const keep = ['warn', 'alarm', 'nodata', 'asleep'];
+  return (row.spans || []).filter(sp => keep.indexOf(sp.state) > -1).map(sp => {
+    /* The Trinity candidate has no vocabulary beyond warning/alarm */
+    const state = trinity
+      ? (sp.state === 'alarm' || sp.state === 'nodata' ? 'alarm' : 'warn')
+      : sp.state;
+    const ev = {
+      from: sp.from, to: sp.to, state: state,
+      label: MTL_STATE[state] || DC_STATE_LABEL[state] || state,
+      note: sp.note || '',
+      mins: sp.to - sp.from
+    };
+    /* The message candidate argues in messages, not just duration:
+       how many heartbeats the window should have carried and how many
+       arrived, plus the off-cycle messages inside it. The chart says
+       this with tick density; the card has to say it in words. */
+    if (!trinity && st) {
+      /* the heartbeat that lands exactly on the change is the last
+         message of the window before it, not the first of this one */
+      const beats = st.msgs.filter(m => !m.oc && m.min >= sp.from && m.min < sp.to);
+      ev.got = sp.state === 'nodata' ? 0 : beats.length;
+      ev.exp = Math.max(ev.got, Math.round((sp.to - sp.from) / DC_BEAT_MIN));
+      ev.lastBeat = ev.got ? beats[beats.length - 1].min : null;
+      ev.msgs = st.msgs.filter(m => m.oc && m.min >= sp.from && m.min <= sp.to);
+    }
+    return ev;
+  });
+}
+function dcMtlCount(ev) {
+  if (ev.got === undefined) return '';
+  return ev.got < ev.exp ? ev.got + ' of ' + ev.exp + ' messages' : ev.got + ' messages';
+}
+/* Ignition and power, pinned above the components. Without it a
+   powered-down afternoon reads as ten broken parts instead of one
+   truck that was switched off — the lane the chart carries and a
+   plain component list throws away. */
+function dcMtlIgnEvents(st) {
+  const end = st.isToday ? st.nowMin : st.runEnd;
+  const evs = [];
+  if (st.ignOn > 2) evs.push({ from: 0, to: st.ignOn, state: 'off', label: 'Ignition off',
+    note: 'No reporting expected', mins: st.ignOn });
+  evs.push({ from: st.ignOn, to: end, state: 'on', label: 'Ignition on',
+    note: st.dropAt !== null ? 'Powered, but the last message came in at ' + dcHM(st.lastMsg)
+                             : 'Reporting on the ' + DC_BEAT_MIN + '-minute cadence',
+    mins: end - st.ignOn,
+    got: st.msgs.filter(m => !m.oc).length,
+    exp: Math.max(st.msgs.filter(m => !m.oc).length, Math.round((end - st.ignOn) / DC_BEAT_MIN)),
+    lastBeat: st.lastMsg,
+    msgs: st.msgs.filter(m => m.oc) });
+  if (st.dropAt !== null) evs.push({ from: st.lastMsg, to: end, state: 'nodata', label: 'No data',
+    note: 'TCG offline — one cause for every row below',
+    mins: end - st.lastMsg, got: 0, exp: Math.max(1, Math.round((end - st.lastMsg) / DC_BEAT_MIN)), msgs: [] });
+  if (!st.isToday && st.runEnd < 1438) evs.push({ from: st.runEnd, to: 1440, state: 'off',
+    label: 'Ignition off', note: 'No reporting expected', mins: 1440 - st.runEnd });
+  return evs;
+}
+let dcMtlOpen = {};     /* component -> expanded */
+
+function buildMobileTimeline(target) {
+  const panel = target || document.getElementById('panel-timeline');
+  dcTlRoot = panel;
+  if (dcTlTruck !== dcCurrentTruck) { dcActiveDay = 6; dcTlTruck = dcCurrentTruck; dcMtlOpen = {}; }
+  const num = dcCurrentTruck;
+  const trinity = dcTimelineKind() === 'trinity';
+  const st = dcDayStream(num, dcActiveDay);
+  const today = new Date();
+  const NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() - (6 - i));
+    const worst = dcDayStream(num, i).worst;
+    return `<div class="mtl-day${i === dcActiveDay ? ' sel' : ''}" data-mday="${i}">
+      <div class="d">${i === 6 ? 'Today' : NAMES[d.getDay()]}</div>
+      <div class="n">${d.getDate()}</div>
+      <div class="bar ${worst === 'ok' ? '' : worst}"></div>
+    </div>`;
+  }).join('');
+
+  const dsel = new Date(today);
+  dsel.setDate(today.getDate() - (6 - dcActiveDay));
+  const dateLabel = (dcActiveDay === 6 ? 'Today ' : NAMES[dsel.getDay()] + ' ') +
+    (dsel.getMonth() + 1) + '/' + dsel.getDate() + '/' + dsel.getFullYear();
+
+  /* one event row, shared by the ignition card and the components */
+  const evRow = (e, rowKey) => {
+    const cnt = dcMtlCount(e);
+    const subs = (e.msgs || []).slice(0, 4).map(m => `
+      <div class="mtl-msg" data-sec="${m.sec}" data-row="${rowKey}">
+        <span class="tm">${dcHM(m.min)}</span>
+        <span class="tx">Off-cycle &middot; ${(m.changes[0] && m.changes[0].note) || 'State change'}</span>
+        <span class="go">&#8250;</span>
+      </div>`).join('');
+    const beat = e.got === undefined ? '' :
+      (e.got > 0
+        ? `<div class="mtl-msg qt">${e.got} heartbeat message${e.got > 1 ? 's' : ''} &middot; every ${DC_BEAT_MIN} min${
+            e.got < e.exp && e.lastBeat !== null ? ', last at ' + dcHM(e.lastBeat) : ''}</div>`
+        : `<div class="mtl-msg qt">Nothing received in this window</div>`);
+    return `
+      <div class="mtl-ev" data-sec="${Math.round(st.base.getTime() / 1000 + e.from * 60)}" data-row="${rowKey}">
+        <span class="ic ${e.state === 'nodata' ? 'alarm' : e.state}">${
+          e.state === 'alarm' ? ALARM_ICON : e.state === 'nodata' ? NODATA_ICON
+          : e.state === 'asleep' ? ASLEEP_ICON : e.state === 'on' ? IGN_ON_ICON
+          : e.state === 'off' ? IGN_OFF_ICON : WARN_ICON}</span>
+        <span class="tx">
+          <span class="tt">${dcHM(e.from)} – ${e.to >= 1440 ? '24:00' : dcHM(e.to)}</span>
+          <span class="st">${e.label} &middot; ${dcMtlDur(e.mins)}${cnt ? ' &middot; ' + cnt : ''}${e.note ? ' &middot; ' + e.note : ''}</span>
+        </span>
+        <span class="go">&#8250;</span>
+      </div>${subs}${beat}`;
+  };
+
+  /* A component with something to report opens on arrival — the
+     question on a phone is "what is wrong", not "which parts exist". */
+  const mtlOpen = (key, dflt) => dcMtlOpen[key] === undefined ? dflt : !!dcMtlOpen[key];
+
+  /* Ignition and power, message candidate only — the Trinity design
+     has no such lane, and borrowing one would flatter it unfairly. */
+  let ignCard = '';
+  if (!trinity) {
+    const ievs = dcMtlIgnEvents(st);
+    const onEv = ievs.filter(e => e.state === 'on')[0];
+    const iState = st.dropAt !== null ? 'alarm' : 'ok';
+    ignCard = `<div class="mtl-card pwr${mtlOpen('__ign', st.dropAt !== null) ? ' open' : ''}" data-comp="__ign">
+      <div class="mtl-row"><span class="dot ${iState}"></span>
+        <span class="nm">Ignition &amp; power</span>
+        <span class="sum">On ${dcHM(st.ignOn)}–${st.isToday ? 'now' : dcHM(st.runEnd)} &middot; ${
+          (onEv.got < onEv.exp ? onEv.got + '/' + onEv.exp + ' msgs' : onEv.got + ' msgs')}</span>
+        <span class="chev">&#9660;</span>
+      </div>
+      <div class="mtl-events">${ievs.map(e => evRow(e, '')).join('')}</div>
+    </div>`;
+  }
+
+  /* Components that have something to say sort above the quiet ones,
+     alarms above warnings, and the rows that can never report last. */
+  const built = st.rows.map(r => {
+    if (r.na) {
+      return { rank: 3, html: `<div class="mtl-card"><div class="mtl-row" data-static="1">
+        <span class="dot na"></span><span class="nm">${MTL_NAME[r.row] || r.row}</span>
+        <span class="sum">${r.naText}</span></div></div>` };
+    }
+    const evs = dcMtlEventsFor(r, trinity, st);
+    const counts = {};
+    evs.forEach(e => { counts[e.state] = (counts[e.state] || 0) + 1; });
+    const total = evs.reduce((n, e) => n + e.mins, 0);
+    const worst = evs.some(e => e.state === 'alarm' || e.state === 'nodata') ? 'alarm'
+                : evs.length ? 'warn' : 'ok';
+    /* a gap is stated as messages, not only as hours */
+    const gap = evs.filter(e => e.got !== undefined && e.got < e.exp);
+    const gapTxt = gap.length
+      ? ' · ' + gap.reduce((n, e) => n + e.got, 0) + ' of ' + gap.reduce((n, e) => n + e.exp, 0) + ' msgs'
+      : '';
+    const sum = evs.length
+      ? Object.keys(counts).map(k => counts[k] + ' ' + (MTL_STATE[k] || k) + (counts[k] > 1 ? 's' : '')).join(' · ')
+        + ' · ' + dcMtlDur(total) + gapTxt
+      : 'No events';
+    const open = mtlOpen(r.row, evs.length > 0) && evs.length;
+    const evHtml = evs.map(e => evRow(e, r.row)).join('');
+    return { rank: evs.length ? (worst === 'alarm' ? 0 : 1) : 2,
+      html: `<div class="mtl-card${open ? ' open' : ''}" data-comp="${r.row}">
+      <div class="mtl-row"><span class="dot ${worst === 'ok' ? '' : worst}"></span>
+        <span class="nm">${MTL_NAME[r.row] || r.row}</span>
+        <span class="sum">${sum}</span>
+        ${evs.length ? '<span class="chev">&#9660;</span>' : ''}
+      </div>
+      ${evs.length ? `<div class="mtl-events">${evHtml}</div>` : ''}
+    </div>` };
+  });
+  const cards = built.map((c, i) => [c, i])
+    .sort((a, b2) => a[0].rank - b2[0].rank || a[1] - b2[1])
+    .map(x => x[0].html).join('');
+
+  panel.innerHTML = `
+    <div class="csh">
+      <div class="mtl-days">${days}</div>
+      <div class="mtl-hdr">
+        <span class="t">${dateLabel}</span>
+        <span class="mtl-nav">
+          <button data-mshift="-1" ${dcActiveDay === 0 ? 'disabled' : ''}>&#8249;</button>
+          <button data-mshift="1" ${dcActiveDay === 6 ? 'disabled' : ''}>&#8250;</button>
+        </span>
+      </div>
+      <div class="mtl-list">${ignCard}${cards}</div>
+      <div class="mtl-foot">${st.msgs.length} status messages${st.ocCount ? ' · ' + st.ocCount + ' off-cycle' : ''} · tap an event to open it in Truck Log</div>
+    </div>`;
+
+  /* the panel is still hidden when this renders, so the day strip is
+     measured on the next frame */
+  requestAnimationFrame(() => {
+    const sel = panel.querySelector('.mtl-day.sel');
+    const strip = panel.querySelector('.mtl-days');
+    if (sel && strip) strip.scrollLeft = Math.max(0, sel.offsetLeft - strip.clientWidth + sel.offsetWidth + 4);
+  });
+
+  if (!panel.dataset.mtlBound) {
+    panel.dataset.mtlBound = '1';
+    panel.addEventListener('click', ev => {
+      const day = ev.target.closest('[data-mday]');
+      const shift = ev.target.closest('[data-mshift]');
+      const msgRow = ev.target.closest('.mtl-msg[data-sec]');
+      const evRow = ev.target.closest('.mtl-ev');
+      const head = ev.target.closest('.mtl-row');
+      if (day) { dcActiveDay = +day.dataset.mday; dcMtlOpen = {}; buildMobileTimeline(target); return; }
+      if (shift && !shift.disabled) {
+        dcActiveDay = Math.max(0, Math.min(6, dcActiveDay + (+shift.dataset.mshift)));
+        dcMtlOpen = {}; buildMobileTimeline(target); return;
+      }
+      /* a message row is a moment, so it opens the log on that message
+         rather than on the start of the window that contains it */
+      if (msgRow) { dcTlDrill(+msgRow.dataset.sec, msgRow.dataset.row || '', 'timeline'); return; }
+      if (evRow) { dcTlDrill(+evRow.dataset.sec, evRow.dataset.row, 'timeline'); return; }
+      if (head && !head.dataset.static) {
+        const card = head.closest('.mtl-card');
+        const key = card.dataset.comp;
+        /* read the rendered state, since a card can start open */
+        dcMtlOpen[key] = !card.classList.contains('open');
+        card.classList.toggle('open', !!dcMtlOpen[key]);
+      }
+    });
+  }
 }
 
 function buildTrinityTimeline(target) {
@@ -3946,6 +5538,7 @@ function buildTimeline(target) {
     const el = document.getElementById(id);
     if (el && el !== (target || document.getElementById('panel-timeline'))) el.innerHTML = '';
   });
+  if (document.body.classList.contains('view-mobile')) { buildMobileTimeline(target); return; }
   if (dcTimelineKind() === 'trinity') { buildTrinityTimeline(target); return; }
   buildMessageTimeline(target);
 }
@@ -4189,7 +5782,11 @@ function dcCardDrill(cardName) {
 }
 
 /* Detail -> timeline: the path has to run both ways, so a log row
-   can put itself back in context on the day it came from */
+   can put itself back in context on the day it came from.
+   The button was removed from the detail header — back now returns
+   to the timeline on its own — but the function stays: it is the
+   only place that sets dcTlMark, and it is one line from being a
+   row action again if the team wants it back. */
 let dcTlMark = null;
 function dcLogToTimeline() {
   const r = dcLogsFiltered[dcLogsSel];
@@ -4227,8 +5824,11 @@ function dcTlClick(ev) {
 function dcTlDrill(sec, comp, origin, wholeDay) {
   dcTipHide();
   dcIngestStreamLogs(dcCurrentTruck);
-  /* Follow the logs to whichever section owns them in this phase */
-  if (stgPhaseUsesSettings()) openSettingsTruck(dcCurrentTruck, 'logs');
+  /* Follow the logs to whichever section owns them here: the truck's
+     own tab on a small screen, Settings on desktop, the drawer tab in
+     Phase 3 */
+  if (tkInlinePanels()) tkView('logs');
+  else if (stgPhaseUsesSettings()) openSettingsTruck(dcCurrentTruck, 'logs');
   else dcTab('logs');
   /* A moment (tick or segment) opens a tight window; a component
      drill opens that whole day, since the question there is the
@@ -4286,20 +5886,50 @@ function dcIngestStreamLogs(num) {
         comps[r.row] = sp ? { ok: 'HEALTHY', warn: 'WARNING', alarm: 'ALARM', asleep: 'ASLEEP_IDLE',
                               nodata: 'NO_DATA', off: 'IGNITION_OFF', future: 'UNKNOWN' }[sp.state] : 'UNKNOWN';
       });
+      /* Every message carries its own telemetry. Seeded from the
+         timestamp, so a message reads the same each time it is
+         opened, but stepping through the list actually shows the
+         truck changing rather than the same page twice. */
+      const rnd = dcRng(dcHash('m' + m.sec));
+      const on = m.min >= st.ignOn && m.min <= st.runEnd;
+      const mins = Math.max(0, m.min - st.ignOn);
+      const drum = on ? (m.min % 97 < 34 ? 'DISCHARGING' : m.min % 97 < 61 ? 'MIXING' : 'IDLE') : 'STOPPED';
+      const rpm = drum === 'DISCHARGING' ? +(11 + rnd() * 4).toFixed(1)
+                : drum === 'MIXING' ? +(3 + rnd() * 3).toFixed(1) : 0;
+      const lat = +(41.804854 + (m.min - 600) * 0.00021 + rnd() * 0.0004).toFixed(6);
+      const lng = +(-87.87957117 - (m.min - 600) * 0.00034 - rnd() * 0.0006).toFixed(8);
       rows.push({
         time, sec: m.sec, delay: m.delay, mac: MAC, type: 'Event', sub: 'SystemStatus', source: 'TRUCK',
-        lat: null, lng: null,
+        lat: lat, lng: lng,
         json: {
           message_type: 'Event',
-          time: { seconds: m.sec, microseconds: 126403 },
+          time: { seconds: m.sec, microseconds: 100000 + Math.floor(rnd() * 899999) },
           sender_mac_id: MAC, accountId: '12', truckId: '254', truckName: String(num), pbversion: 4,
           event: {
             event_type: 'SystemStatus',
             trigger: m.oc ? 'STATE_CHANGE' : 'CADENCE_' + DC_BEAT_MIN + 'MIN',
-            ignition: m.min >= st.ignOn && m.min <= st.runEnd ? 'ON' : 'OFF',
+            ignition: on ? 'ON' : 'OFF',
             changed: m.changes.map(c => ({ component: c.row, state: c.to.toUpperCase(), detail: c.note })),
-            component_status: comps,
-            system_status: { batteryVoltage: 12.9, signalStrength: -64, firmware: '26.2.3', canErrors: 0 }
+            /* telemetry first: stepping through messages should show
+               the truck moving, not eleven HEALTHY lines twice */
+            location: { latitude: lat, longitude: lng, status: on ? 'VALID' : 'STALE',
+                        speedMph: on ? +(rnd() * 46).toFixed(1) : 0,
+                        headingDeg: Math.round(rnd() * 359), satellites: on ? 6 + Math.floor(rnd() * 6) : 0 },
+            drum: { state: drum, rpm: rpm,
+                    direction: drum === 'DISCHARGING' ? 'DISCHARGE' : drum === 'MIXING' ? 'CHARGE' : 'NONE',
+                    revolutions: Math.round(mins * 4.2 + rnd() * 30) },
+            load: { ticketId: on ? 'T-' + (48200 + Math.floor(m.min / 37)) : null,
+                    waterAddedGal: +(rnd() * 12).toFixed(1),
+                    admixAddedOz: +(rnd() * 40).toFixed(1),
+                    slumpIn: on ? +(3.5 + rnd() * 3).toFixed(2) : null,
+                    concreteTempF: +(62 + rnd() * 18).toFixed(1) },
+            system_status: { batteryVoltage: +(12.4 + rnd() * 1.6).toFixed(2),
+                             signalStrength: -(52 + Math.round(rnd() * 42)),
+                             networkDelayMs: 40 + Math.round(rnd() * 260),
+                             firmware: '26.2.3',
+                             uptimeMin: Math.round(mins),
+                             canErrors: Math.floor(rnd() * 3) },
+            component_status: comps
           }
         }
       });
@@ -4468,6 +6098,7 @@ function dcToLocalInput(sec) {
   return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes());
 }
 function buildLogs(num) {
+  dcLogSheetClose();   /* a new list means the open message is stale */
   if (!dcLogsCache[num]) dcLogsCache[num] = dcGenLogs(num);
   dcIngestStreamLogs(num);   /* the timeline's own messages belong here */
   dcFillCompFilter();
@@ -4484,6 +6115,13 @@ function dcFillCompFilter() {
   sel.innerHTML = '<option value="all">Component: All</option>' +
     dcTlRows().map(d => `<option value="${d.row}">${d.row}</option>`).join('');
   sel.dataset.filled = '1';
+}
+/* Phone: the five filters live behind one control, so the search
+   field and the results keep the screen. Desktop shows them always. */
+function dcLogFiltersToggle() {
+  const el = document.getElementById('dc-logs-filters');
+  const on = el.classList.toggle('open');
+  document.getElementById('dc-log-filter-btn').classList.toggle('on', on);
 }
 function dcLogClearScope() {
   document.getElementById('dc-log-from-banner').className = 'dc-log-from';
@@ -4526,8 +6164,8 @@ function dcLogsFilterChange() {
 function dcRenderLogTable() {
   const rowsEl = document.getElementById('dc-log-rows');
   rowsEl.innerHTML = dcLogsFiltered.map((r, i) =>
-    `<div class="dc-log-tr${i === dcLogsSel ? ' sel' : ''}" onclick="dcSelectLog(${i})">
-      <span>${r.time}</span><span>${r.delay}</span><span class="mono">${r.mac}</span><span>${r.type}</span><span>${r.sub}</span>
+    `<div class="dc-log-tr${i === dcLogsSel ? ' sel' : ''}" onclick="dcLogRowTap(${i})">
+      <span class="ltm"><span class="d">${r.time.slice(0, r.time.indexOf(' '))}</span> <span class="t">${r.time.slice(r.time.indexOf(' ') + 1)}</span></span><span>${r.delay}</span><span class="mono">${r.mac}</span><span>${r.type}</span><span>${r.sub}</span>
     </div>`).join('') || '<div class="dc-mc-empty">No Data</div>';
   document.getElementById('dc-log-count').textContent = dcLogsFiltered.length + ' of ' + dcLogsFiltered.length;
   const sel = rowsEl.children[dcLogsSel];
@@ -4538,6 +6176,51 @@ function dcSelectLog(i) {
   dcLogsSel = Math.max(0, Math.min(dcLogsFiltered.length - 1, i));
   dcRenderLogTable();
   dcRenderLogDetail();
+}
+/* One helper for "this is a small screen", so the log detail, the
+   field summary and the chart geometry all agree on it. */
+function dcSmallScreen() {
+  return document.body.classList.contains('view-mobile') ||
+         document.body.classList.contains('view-tablet');
+}
+/* On a phone or a tablet there is no room for a list and an inspector
+   side by side, so tapping a message opens it as its own screen. On
+   desktop the tap just moves the selection, as before. */
+function dcLogRowTap(i) {
+  dcSelectLog(i);
+  if (!dcSmallScreen()) return;
+  const el = document.querySelector('.dc-logs-right');
+  if (!el) return;
+  const r = dcLogsFiltered[dcLogsSel];
+  const title = document.getElementById('dc-logdet-title');
+  if (title && r) title.textContent = r.sub;
+  el.classList.add('open');
+  el.scrollTop = 0;
+}
+/* Phone: the find field is folded away so the JSON starts higher.
+   The magnifier opens it, and closing it clears any live search so
+   stale highlights do not linger behind a hidden field. */
+function dcJsonFindToggle() {
+  const wrap = document.querySelector('.dc-logs-right');
+  if (!wrap) return;
+  const on = wrap.classList.toggle('find-on');
+  const btn = document.querySelector('.dc-json-find-btn');
+  if (btn) btn.classList.toggle('on', on);
+  const q = document.getElementById('dc-json-q');
+  if (!q) return;
+  if (on) q.focus();
+  else if (q.value) { q.value = ''; dcJsonFind(0); }
+}
+
+function dcLogSheetClose() {
+  const el = document.querySelector('.dc-logs-right');
+  if (el) el.classList.remove('open', 'find-on');
+  const btn = document.querySelector('.dc-json-find-btn');
+  if (btn) btn.classList.remove('on');
+  const q = document.getElementById('dc-json-q');
+  if (q && q.value) { q.value = ''; dcJsonFind(0); }
+  const title = document.getElementById('dc-logdet-title');
+  if (title) title.textContent = 'Truck logs';
 }
 function dcEsc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function dcHiLine(line) {
@@ -4552,6 +6235,15 @@ function dcRenderLogDetail() {
   const kvhEl = document.getElementById('dc-log-kvh');
   const jsonEl = document.getElementById('dc-json');
   const r = dcLogsFiltered[dcLogsSel];
+  const pos = document.getElementById('dc-log-pos');
+  const prev = document.querySelector('.dc-logdet-nav button:first-child');
+  const next = document.querySelector('.dc-logdet-nav button:last-child');
+  if (pos) pos.textContent = (dcLogsFiltered.length ? dcLogsSel + 1 : 0) + ' of ' + dcLogsFiltered.length;
+  if (prev) prev.disabled = dcLogsSel <= 0;
+  if (next) next.disabled = dcLogsSel >= dcLogsFiltered.length - 1;
+  const sub = document.getElementById('dc-kvh-sub');
+  if (sub) sub.textContent = r ? r.time : '';
+  dcKvhApply();
   if (!r) { kvhEl.innerHTML = ''; jsonEl.innerHTML = '<div class="dc-mc-empty">No Data</div>'; return; }
   kvhEl.innerHTML =
     `<span class="k">Truck Name</span><span class="v">${r.json.truckName} (${r.json.truckId})</span>` +
@@ -4571,6 +6263,52 @@ function dcRenderLogDetail() {
       <span class="ln">${i + 1}</span><span>${dcHiLine(l)}</span>
     </div>`).join('');
   jsonEl.scrollTop = keepScroll;
+  if (document.getElementById('dc-json-q') && document.getElementById('dc-json-q').value) dcJsonFind(0);
+}
+/* The field summary is open on desktop, where there is room for it,
+   and folded on the small screens so the message fills them. Once the
+   user decides either way, that choice sticks for the session. */
+let dcKvhUser = null;
+function dcKvhIsOpen() {
+  return dcKvhUser === null ? !dcSmallScreen() : dcKvhUser;
+}
+function dcKvhToggle() { dcKvhUser = !dcKvhIsOpen(); dcKvhApply(); }
+function dcKvhApply() {
+  const open = dcKvhIsOpen();
+  const kvh = document.getElementById('dc-log-kvh');
+  const bar = document.querySelector('.dc-kvh-bar');
+  if (kvh) kvh.classList.toggle('collapsed', !open);
+  if (bar) bar.classList.toggle('collapsed', !open);
+}
+/* Step through the filtered list from inside the message, so a scan
+   doesn't mean going back to the table for every row. */
+function dcLogStep(d) {
+  if (!dcLogsFiltered.length) return;
+  dcSelectLog(dcLogsSel + d);
+  const title = document.getElementById('dc-logdet-title');
+  const r = dcLogsFiltered[dcLogsSel];
+  if (title && r && document.querySelector('.dc-logs-right.open')) title.textContent = r.sub;
+  const json = document.getElementById('dc-json');
+  if (json) json.scrollTop = 0;
+}
+/* JSON search: matching lines are marked, the arrows step between
+   them, and the current one is scrolled into view. dir 0 re-runs the
+   search from the top after a keystroke. */
+let dcJsonHit = 0;
+function dcJsonFind(dir) {
+  const box = document.getElementById('dc-json');
+  const q = (document.getElementById('dc-json-q').value || '').trim().toLowerCase();
+  const lines = Array.from(box.querySelectorAll('.dc-json-line'));
+  lines.forEach(l => l.classList.remove('hit', 'hit-on'));
+  const out = document.getElementById('dc-json-hits');
+  if (!q) { out.textContent = ''; dcJsonHit = 0; return; }
+  const hits = lines.filter(l => l.textContent.toLowerCase().includes(q));
+  hits.forEach(l => l.classList.add('hit'));
+  if (!hits.length) { out.textContent = '0/0'; return; }
+  dcJsonHit = dir === 0 ? 0 : (dcJsonHit + dir + hits.length) % hits.length;
+  hits[dcJsonHit].classList.add('hit-on');
+  out.textContent = (dcJsonHit + 1) + '/' + hits.length;
+  hits[dcJsonHit].scrollIntoView({ block: 'nearest' });
 }
 function dcPinLine(n) {
   dcLogsPin = (dcLogsPin === n) ? null : n;
@@ -4890,9 +6628,11 @@ function dcSpikePath(pts, max, W, H, y0, x0) {
          `<line x1="${x0 || 0}" y1="${(y0 || 0) + H}" x2="${(x0 || 0) + W}" y2="${(y0 || 0) + H}" stroke="var(--dc-border)"/>`;
 }
 function dcRenderMiniCharts(num) {
-  document.getElementById('dc-mini-gps').innerHTML =
+  const g = document.getElementById('dc-mini-gps');
+  const d = document.getElementById('dc-mini-delay');
+  if (g) g.innerHTML =
     `<svg viewBox="0 0 280 54" preserveAspectRatio="none">${dcLinePath(dcGpsSeries(num), 25, 280, 50, 2)}</svg>`;
-  document.getElementById('dc-mini-delay').innerHTML =
+  if (d) d.innerHTML =
     `<svg viewBox="0 0 280 54" preserveAspectRatio="none">${dcSpikePath(dcDelaySeries(num), 3, 280, 48, 3)}</svg>`;
 }
 /* Lightbox — both charts stacked, like the product's Sensors view.
@@ -4901,7 +6641,15 @@ function dcRenderMiniCharts(num) {
    window, drag the window body to pan, double-click a strip to
    reset that chart. Reset zoom in the header resets both. Hover
    shows a crosshair + tooltip with the exact date/time and value. */
-const DC_CH = { X0: 44, W: 1040, Y0: 10, H: 170, N: 280 };
+/* Chart geometry. The phone gets a shorter, taller viewBox: at the
+   desktop's 5:1 ratio a 390px screen renders a 70px-high plot inside
+   a 228px box, which is all letterbox and no chart. */
+let DC_CH = { X0: 44, W: 1040, Y0: 10, H: 170, N: 280 };
+const DC_CH_WIDE = { X0: 44, W: 1040, Y0: 10, H: 170, N: 280 };
+const DC_CH_PHONE = { X0: 40, W: 470, Y0: 10, H: 250, N: 280 };
+function dcChartGeom() {
+  DC_CH = document.body.classList.contains('view-mobile') ? DC_CH_PHONE : DC_CH_WIDE;
+}
 const dcZoom = { gps: { a: 0, b: 1 }, delay: { a: 0, b: 1 } };
 const dcChartCache = {};  /* kind -> {pts, iA} rendered in the open lightbox */
 let dcBrushDrag = null;
@@ -4929,7 +6677,7 @@ function dcBigChartSVG(kind) {
   dcChartCache[kind] = { pts, iA };
   const max = isGps ? 25 : 3;
   const ticks = isGps ? [0, 5, 10, 15, 20, 25] : [0, 1, 2, 3];
-  const { X0, W, Y0, H } = DC_CH, VBH = 216;
+  const { X0, W, Y0, H } = DC_CH, VBH = Y0 + H + 36;
   const grid = ticks.map(t => {
     const y = Y0 + H - t / max * H;
     return `<line x1="${X0}" y1="${y}" x2="${X0 + W}" y2="${y}" stroke="var(--dc-border)"/>` +
@@ -5076,6 +6824,7 @@ function dcZoomReset(kind) {
   if (!kind) { dcBrushSync('gps'); dcBrushSync('delay'); }
 }
 function dcRenderChartModal() {
+  dcChartGeom();
   const live = (dcDebugMode[dcCurrentTruck] || 'Default') !== 'Default';
   document.getElementById('dc-chart-box').innerHTML = `
     <div class="top">
@@ -5098,37 +6847,74 @@ function dcExpandChart() {
   dcChartOpen = true;
   dcRenderChartModal();
   document.getElementById('dc-chart-modal').classList.add('open');
+  dcSyncLiveTimer();
 }
 function dcCloseChart() {
   dcChartOpen = null;
   document.getElementById('dc-chart-modal').classList.remove('open');
+  dcSyncLiveTimer();
 }
 
 /* ── Debug live mode ──
-   Selecting 15/30/60 Minutes puts the truck in live debug:
-   charts refresh every 15 s, scrolling forward. The selection
-   is a truck command, so it also lands in the shared history. */
+   Selecting 5/10/15/20 Minutes puts the truck in live debug: it
+   reports on that cadence, so the GPS and network charts scroll
+   forward on their own — a 5-minute truck moves four times as
+   fast as a 20-minute one. The selection is a truck command, so
+   it also lands in the shared history. */
+function dcDebugMinutes(mode) {
+  const m = parseInt(mode, 10);
+  return isNaN(m) ? 0 : m;   /* 'Default' -> 0, i.e. not live */
+}
 function dcSetDebugMode(mode) {
   dcDebugMode[dcCurrentTruck] = mode;
+  dcSyncDebugSelects(dcCurrentTruck);
   dcRunCommand('Set Debug Mode', mode);
   dcSyncLiveTimer();
   /* Move immediately so the charts visibly react to the selection */
-  if ((mode || 'Default') !== 'Default') dcLiveTick();
+  if (dcDebugMinutes(mode)) dcLiveTick();
+}
+function dcSyncDebugSelects(num) {
+  const v = dcDebugMode[num] || 'Default';
+  ['dc-debug-mode', 'tk-debug-mode'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = v;
+  });
 }
 function dcSyncLiveTimer() {
   clearInterval(dcLiveTimer);
   dcLiveTimer = null;
-  const live = document.getElementById('drawer').classList.contains('open') &&
-               (dcDebugMode[dcCurrentTruck] || 'Default') !== 'Default';
-  document.getElementById('dc-live-badge').classList.toggle('on', live);
-  /* Product cadence is 15000 ms; the prototype ticks every 3 s so
-     the scrolling motion is obvious in demos */
-  if (live) dcLiveTimer = setInterval(dcLiveTick, 3000);
+  /* any surface that shows the charts keeps the feed running:
+     the drawer, the truck takeover, Settings, or the lightbox */
+  const open = id => { const el = document.getElementById(id); return !!el && el.classList.contains('open'); };
+  const mins = dcDebugMinutes(dcDebugMode[dcCurrentTruck]);
+  const live = !!mins && (open('drawer') || open('takeover') || open('stg-page') || !!dcChartOpen);
+  ['dc-live-badge', 'tk-live-badge'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('on', live);
+  });
+  /* Real cadence is one report every N minutes; the prototype
+     compresses that to N x 200 ms so the difference is visible. */
+  if (live) dcLiveTimer = setInterval(dcLiveTick, mins * 200);
 }
 function dcLiveTick() {
   dcChartTick[dcCurrentTruck] = (dcChartTick[dcCurrentTruck] || 0) + 6;
   dcRenderMiniCharts(dcCurrentTruck);
-  if (dcChartOpen) dcRenderChartModal();
+  if (dcChartOpen) dcRefreshOpenCharts();
+}
+/* Repaint the lightbox in place — a full re-render would throw
+   away the reader's scroll position every tick. */
+function dcRefreshOpenCharts() {
+  ['gps', 'delay'].forEach(kind => {
+    dcRenderZoomChart(kind);
+    const brush = document.getElementById('dc-brush-' + kind);
+    const svg = brush && brush.querySelector(':scope > svg');
+    if (svg) {
+      const full = kind === 'gps' ? dcGpsSeries(dcCurrentTruck) : dcDelaySeries(dcCurrentTruck);
+      svg.innerHTML = kind === 'gps'
+        ? dcLinePath(full, 25, 280, 30, 3)
+        : dcSpikePath(full, 3, 280, 28, 4);
+    }
+  });
 }
 
 /* ══════════════════ PROTOTYPE CONTROL BAR ══════════════════
@@ -5136,6 +6922,100 @@ function dcLiveTick() {
    view; Tablet/Mobile show the DS prototype's "being designed"
    treatment until those breakpoints exist. Dark is the product
    default; Light re-points the token layer. */
+/* ══════════════════════════════════════════════════════════════
+   DEVICE CHASSIS
+   Moves the whole app into the phone/tablet screen (and back), and
+   scales the chassis down if the window is too short to hold it.
+══════════════════════════════════════════════════════════════ */
+
+/* ══════════════════ APP SWITCHER ══════════════════
+   Phone and tablet hide the sidebar, so the grid button in the
+   topbar slides the main nav in from the left. The tiles are read
+   straight off the sidebar, so labels, icons and the active item
+   stay in step with the desktop nav; three apps that only exist in
+   the wider product are appended. */
+const APPNAV_EXTRA = [
+  { name: 'Slump Test', ic: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9.2 4h5.6l2.7 15.2c.1.5-.3.8-.7.8H7.2c-.5 0-.8-.3-.7-.8L9.2 4z"/><path d="M9.2 4h5.6"/></svg>' },
+  { name: 'Contractor', ic: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17.5h18"/><path d="M5.8 17.5v-3.2a6.2 6.2 0 0 1 12.4 0v3.2"/><path d="M10 8.9V6.2c0-.6.5-1 1-1h2c.6 0 1 .4 1 1v2.7"/></svg>' },
+  { name: 'Producer', ic: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="17.4" r="1.9"/><circle cx="17" cy="17.4" r="1.9"/><path d="M9 17.4h6"/><path d="M2.6 17.4H5"/><path d="M4.4 15.4V9.2h4.4l4-3.2h3.4l2.4 6.6v2.8"/></svg>' }
+];
+function appNavLabel(item) {
+  /* the sidebar wraps some labels with <br>, which textContent would
+     glue together ("DiagnosticCenter") */
+  const tmp = document.createElement('div');
+  tmp.innerHTML = item.innerHTML.replace(/<br\s*\/?>/gi, ' ');
+  return tmp.textContent.replace(/\s+/g, ' ').trim();
+}
+function appNavBuild() {
+  const items = Array.from(document.querySelectorAll('.sidebar .nav > .nav-item'));
+  const apps = items.slice(0, 7);   /* Dashboards … Data Insights */
+  const tail = items.slice(7);      /* Settings, Support */
+  const tile = (ic, name, active) =>
+    `<button class="appnav-tile${active ? ' active' : ''}" onclick="appNavPick(this)">` +
+    `<span class="ic">${ic}</span><span class="nm">${name}</span></button>`;
+  document.getElementById('appnav-grid').innerHTML =
+    apps.map(i => tile(i.querySelector('.ic').innerHTML, appNavLabel(i), i.classList.contains('active'))).join('') +
+    APPNAV_EXTRA.map(e => tile(e.ic, e.name, false)).join('');
+  document.getElementById('appnav-tail').innerHTML = tail.map(i =>
+    `<button class="appnav-wide" onclick="appNavPick(this)">` +
+    `<span class="ic">${i.querySelector('.ic').innerHTML}</span>${appNavLabel(i)}</button>`).join('');
+  const plant = document.querySelector('.sidebar .loc .txt');
+  if (plant) document.getElementById('appnav-plant').textContent = appNavLabel(plant);
+  const foot = document.querySelector('.sidebar .foot');
+  if (foot) document.getElementById('appnav-foot').textContent = appNavLabel(foot);
+}
+function appNavOpen() {
+  appNavBuild();
+  document.getElementById('app-nav').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function appNavClose() {
+  document.getElementById('app-nav').classList.remove('open');
+  if (!document.getElementById('drawer').classList.contains('open') &&
+      !document.getElementById('takeover').classList.contains('open') &&
+      !document.getElementById('stg-page').classList.contains('open')) {
+    document.body.style.overflow = '';
+  }
+}
+/* Only the Diagnostic Center exists in this prototype, so any other
+   tile just closes the menu rather than faking a destination. */
+function appNavPick() { appNavClose(); }
+
+const DEVICE_NODES = ['.sidebar', 'main.main', '#takeover', '#stg-page', '#overlay', '#drawer', '#comp-pop-layer', '#dc-chart-modal', '#app-nav', '.vp-coming'];
+const deviceHome = {};
+function deviceMount(on) {
+  const screen = document.getElementById('device-screen');
+  if (!screen) return;
+  DEVICE_NODES.forEach(sel => {
+    const el = document.querySelector(sel);
+    if (!el) return;
+    if (on) {
+      if (!deviceHome[sel]) deviceHome[sel] = { parent: el.parentElement, next: el.nextElementSibling };
+      if (el.parentElement !== screen) screen.appendChild(el);
+    } else if (deviceHome[sel]) {
+      const h = deviceHome[sel];
+      h.next && h.next.parentElement === h.parent ? h.parent.insertBefore(el, h.next) : h.parent.appendChild(el);
+      delete deviceHome[sel];
+    }
+  });
+  document.getElementById('device-caption').textContent =
+    on ? (document.body.classList.contains('view-tablet') ? 'Tablet · 834 × 1000' : 'Phone · 390 × 812') : '';
+  if (on) deviceFit();
+}
+/* Shrink the chassis to fit the window rather than cropping it */
+function deviceFit() {
+  const frame = document.getElementById('device-frame');
+  const stage = document.getElementById('device-stage');
+  if (!frame || !stage) return;
+  frame.style.transform = 'scale(1)';
+  const avail = stage.clientHeight - 56;
+  const h = frame.offsetHeight;
+  const scale = Math.min(1, avail / h);
+  frame.style.transform = 'scale(' + (scale > 0.4 ? scale : 0.4).toFixed(3) + ')';
+  frame.style.marginBottom = (h * (scale - 1)) + 'px';
+}
+window.addEventListener('resize', () => { if (document.getElementById('device-screen').firstChild) deviceFit(); });
+
 function setView(v) {
   document.body.classList.remove('view-desktop', 'view-tablet', 'view-mobile');
   document.body.classList.add('view-' + v);
@@ -5144,6 +7024,15 @@ function setView(v) {
   const title = document.getElementById('vp-cs-title');
   if (title) title.textContent = v === 'tablet' ? 'Tablet View' : 'Mobile View';
   if (v !== 'desktop') closeDrawer(); /* overlay covers the app; don't leave a drawer stranded */
+  /* Only the phase that has small-screen layouts gets the chassis */
+  deviceMount(v !== 'desktop' && DC_SMALL_PHASES.indexOf(dcViewMode) > -1);
+  /* Phone gets the accordion timeline, tablet and desktop get the
+     chart — so whichever host is showing one has to be re-rendered
+     rather than left holding the other size's markup. */
+  const tlHost = ['panel-timeline', 'tk-view-timeline']
+    .map(id => document.getElementById(id))
+    .filter(el => el && el.children.length)[0];
+  if (tlHost) requestAnimationFrame(() => buildTimeline(tlHost));
 }
 function vpOptsToggle(e) {
   e.stopPropagation();
@@ -5155,6 +7044,65 @@ function vpOptsClose() {
   document.getElementById('vp-opts-btn').classList.remove('open');
 }
 document.addEventListener('click', vpOptsClose);
+
+/* ══════════════════════════════════════════════════════════════
+   HORIZONTAL STRIPS WITH A MOUSE
+   Tab rows and day strips are built for a thumb. On a desktop
+   there is no sideways gesture, and with the scrollbars hidden
+   there is nothing to grab — so the wheel scrolls them sideways
+   and they can be dragged. Touch keeps its native panning.
+══════════════════════════════════════════════════════════════ */
+const DC_HSTRIPS = '.tk-actions, .tabs, .stg-tabs, .mtl-days, .csh-strip, .dc-mc-grid';
+document.addEventListener('wheel', e => {
+  let el = e.target instanceof Element ? e.target : null;
+  while (el && el !== document.body) {
+    /* a strip is "horizontal" when it has more to reveal sideways than
+       downwards — a tab row is a little taller than its box, which is
+       not the same as being a vertical scroller */
+    const hOver = el.scrollWidth - el.clientWidth, vOver = el.scrollHeight - el.clientHeight;
+    /* a real vertical scroller closer to the pointer wins — never
+       hijack the wheel from the list the cursor is actually over */
+    const oy = getComputedStyle(el).overflowY;
+    if (vOver > 2 && (oy === 'auto' || oy === 'scroll')) return;
+    if (hOver > 2 && hOver > vOver) {
+      const ox = getComputedStyle(el).overflowX;
+      if (ox === 'auto' || ox === 'scroll') {
+        const d = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+        const before = el.scrollLeft;
+        el.scrollLeft += d;
+        if (el.scrollLeft !== before) e.preventDefault();
+        return;
+      }
+    }
+    el = el.parentElement;
+  }
+}, { passive: false });
+
+let dcDrag = null, dcDragged = false;
+document.addEventListener('pointerdown', e => {
+  if (e.pointerType !== 'mouse' || e.button !== 0) return;
+  const t = e.target instanceof Element ? e.target : null;
+  const el = t && t.closest(DC_HSTRIPS);
+  if (!el || el.scrollWidth <= el.clientWidth + 2) return;
+  if (/^(INPUT|SELECT|TEXTAREA|BUTTON)$/.test(e.target.tagName)) return;
+  dcDrag = { el: el, x: e.clientX, left: el.scrollLeft };
+});
+document.addEventListener('pointermove', e => {
+  if (!dcDrag) return;
+  const dx = e.clientX - dcDrag.x;
+  if (!dcDragged && Math.abs(dx) < 4) return;
+  dcDragged = true;
+  dcDrag.el.scrollLeft = dcDrag.left - dx;
+  e.preventDefault();
+});
+document.addEventListener('pointerup', () => { dcDrag = null; });
+/* a drag that ended on a tab must not also select that tab */
+document.addEventListener('click', e => {
+  if (!dcDragged) return;
+  dcDragged = false;
+  e.stopPropagation();
+  e.preventDefault();
+}, true);
 function toggleDarkMode() {
   document.body.classList.toggle('light');
   const light = document.body.classList.contains('light');
@@ -5292,8 +7240,12 @@ function renderComponentCells() {
       const st = (c.state === 'warn' || c.state === 'alarm' || c.state === 'asleep') ? c.state : '';
       const tip = c.state === 'asleep' ? `${c.name} — ${DC_SLEEP_NOTE}`
                 : c.fault ? `${c.name} — ${c.fault}` : `${c.name} — operating normally`;
+      /* healthy stays a quiet dot; a fault carries its own shape, so
+         the strip does not depend on telling red from green */
+      const glyph = c.state === 'alarm' ? ALARM_ICON : c.state === 'warn' ? WARN_ICON
+                  : c.state === 'asleep' ? ASLEEP_ICON : '';
       return `<span class="comp-slot ${st}" title="${tip}"
-        onclick="event.stopPropagation();dcOpenComponent('${td.dataset.truck}','${c.name.replace(/'/g, "")}')"><i></i></span>`;
+        onclick="event.stopPropagation();dcOpenComponent('${td.dataset.truck}','${c.name.replace(/'/g, "")}')"><i>${glyph}</i><em>${c.slot}</em></span>`;
     }).join('') + '</div>';
 
     /* Each faulting part is a link down a layer: click opens the
@@ -5322,11 +7274,33 @@ function renderComponentCells() {
         <div class="cp-foot">Click a part to open it on the truck timeline</div>
       </div>` : '';
 
+    /* Phone: the 11 anonymous slots say nothing without the column
+       key above them, so the small screen names the parts instead —
+       one chip per fault, each opening that component. */
+    /* Alarms first, and only the first three are named: past that a
+       phone card turns into a wall of chips, and the answer to "what
+       is wrong with this truck" is the truck page, not a longer row.
+       The overflow chip carries the rest of the count. */
+    const CM_MAX = 3;
+    const ranked = h.bad.slice().sort((x, y) =>
+      (y.state === 'alarm' ? 1 : 0) - (x.state === 'alarm' ? 1 : 0));
+    const shown = ranked.slice(0, CM_MAX);
+    const rest = ranked.length - shown.length;
+    const mob = '<div class="comp-mob">' + (h.bad.length
+      ? shown.map(c => `<span class="cm-chip ${c.state}"
+          onclick="event.stopPropagation();dcOpenComponent('${td.dataset.truck}','${c.name.replace(/'/g, "")}')">${
+            c.state === 'alarm' ? ALARM_ICON : c.state === 'asleep' ? ASLEEP_ICON : WARN_ICON
+          }${c.name}</span>`).join('') +
+        (rest ? `<span class="cm-chip more"
+          onclick="event.stopPropagation();dcOpenComponent('${td.dataset.truck}','')">+${rest} more</span>` : '')
+      : '') + '</div>';
+
     td.innerHTML = `<span class="comp ${h.worst}">
-        <span class="cdot"></span>
+        <span class="cdot">${h.worst === 'alarm' ? ALARM_ICON : h.worst === 'warn' ? WARN_ICON : OK_ICON}</span>
         <span class="ccount">${h.ok}/${h.total}</span>
+        <span class="ccount-long">${h.ok} of ${h.total} components OK</span>
         ${chip}
-      </span>${strip}${pop}`;
+      </span>${strip}${mob}${pop}`;
     td.title = h.bad.length ? '' : `All ${h.total} components operating normally`;
   });
   /* Header key sits above the slots, same order, same widths */
@@ -5469,11 +7443,13 @@ document.addEventListener('click', locClose);
 /* Prime overview so the drawer isn't empty on first paint */
 buildOverview('1219');
 
-/* Open whatever phase the URL asks for; otherwise Current State */
+/* Open whatever phase the URL asks for; otherwise Phase 1_Timeline,
+   which is where the work is. Current State is still one click away
+   in Options, and #current still deep-links straight to it. */
 (function () {
   const got = dcSlugFromUrl();
   if (got) { if (got.skin) setTrinitySkin(true); setProtoView(got.mode); }
-  else dcWriteSlug(dcViewMode);
+  else setProtoView('current-timeline');
 })();
 </script>
 

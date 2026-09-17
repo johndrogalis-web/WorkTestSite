@@ -813,8 +813,8 @@ def c_tooltip():
               '<span class="m">tooltip/arrow-width</span> (15) and '
               '<span class="m">tooltip/arrow-height</span> (6, aliased to '
               '<span class="m">spacing/micro/150</span>) were added to the Layout collection '
-              'and bound to the component, so those numbers no longer live only in the '
-              'drawing. Text alignment was already set to left on the node.</div>' +
+              'and bound across all four position variants, so those numbers no longer live '
+              'only in the drawing. Text alignment was already set to left on the node.</div>' +
               checklist([
                   '<b>Nothing chooses the position, and nothing says what happens at a '
                   'screen edge.</b> Four positions exist as variants, but a tooltip near the '
@@ -835,8 +835,14 @@ def c_tooltip():
                   '<b>The text node duplicates the container cap</b> at '
                   '<span class="m">280px</span>. Harmless while the padding is 8px, but it '
                   'is a second number to maintain.',
+                  '<b>The four arrows are three different sizes.</b> Above and Below measure '
+                  '<span class="m">15 &times; 6</span>, Left measures '
+                  '<span class="m">13 &times; 6</span> and Right measures '
+                  '<span class="m">15 &times; 5</span>. One shape drawn four times, and three '
+                  'of the results disagree. Above and Below are bound to the tokens; the other '
+                  'two were left as drawn rather than silently resized.',
                   '<b>The arrow&rsquo;s <span class="m">-4px</span> offset is still '
-                  'positional</b> rather than a token. Its width and height are now bound.',
+                  'positional</b> rather than a token.',
                   '<b>No transition</b> is specified. The delays above are timing, not '
                   'animation.',
                   '<b>No stated relationship to the help text</b> already used under form '

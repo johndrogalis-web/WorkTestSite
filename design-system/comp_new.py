@@ -624,8 +624,8 @@ def _tips():
 def c_tooltip():
     return cpage(
         'components/tooltip.html', 'Tooltip',
-        'A one-line label that appears next to whatever you are pointing at. Four arrow '
-        'positions, a fixed height, and no behaviour specified at all.',
+        'A short label that appears next to whatever you are pointing at. Four arrow '
+        'positions, a box that hugs its text in both directions, and no width limit.',
         'gap', figma='2620:4152', extra_meta=['4 positions', 'One height'],
 
         note='<div class="note"><b>Figma defines the box; this page defines the '
@@ -641,7 +641,9 @@ def c_tooltip():
                       '&ldquo;Above&rdquo; puts the arrow underneath it.'),
 
         anatomy=spec([
-            ('Height', '<span class="m">24px</span>, fixed'),
+            ('Width', 'Hug &mdash; the box is as wide as its text, with no maximum'),
+            ('Height', 'Hug &mdash; <span class="m">24px</span> is what one line of 12/1.3 '
+                       'plus <span class="m">8px</span> padding comes to, not a cap'),
             ('Padding', '<span class="m">8px</span>'),
             ('Radius', '<span class="m">4px</span>'),
             ('Fill', '<span class="m">#171614</span> light, '
@@ -660,7 +662,13 @@ def c_tooltip():
                      ['<span class="m">position=Below</span>', 'Below the trigger', 'Up'],
                      ['<span class="m">position=Left</span>', 'Left of the trigger', 'Right'],
                      ['<span class="m">position=Right</span>', 'Right of the trigger', 'Left'],
-                 ])),
+                 ]) +
+                 '<div class="note warn"><b>Both axes are set to Hug, so nothing stops the '
+                 'box growing.</b> The <span class="m">56 &times; 24</span> you see in Figma '
+                 'is simply what the word &ldquo;Tooltip&rdquo; measures. Give it a sentence '
+                 'and you get a single line as wide as that sentence, running off the side of '
+                 'the screen. A maximum width is the missing constraint, not a maximum '
+                 'height.</div>'),
 
         states=('<p>There is one state: visible. Figma does not describe how the tooltip '
                 'gets there or how it leaves, so appearance, disappearance and everything '
@@ -683,21 +691,23 @@ def c_tooltip():
                        '<b>One trigger open at a time.</b> Moving between two triggers '
                        'swaps immediately rather than re-running the 500ms delay.',
                    ]) +
-                   '<h3>Touch, and the 24px height</h3>' +
+                   '<h3>Touch, and the missing width cap</h3>' +
                    '<p>Two things the convention cannot fix on its own.</p>' +
                    checklist([
                        '<b>Hover does not exist on a phone.</b> Do not ship a pattern where '
                        'a tooltip is the only route to the information. Either the label is '
                        'visible at small widths, or the trigger becomes a tap target that '
                        'opens a popover.',
-                       '<b>The fixed 24px height allows one line.</b> The convention is a '
-                       '<span class="m">280px</span> max width with wrapping, which the '
-                       'fixed height contradicts. Until Figma resolves it, keep tooltip '
-                       'text under about 40 characters so the question does not arise.',
+                       '<b>Set a maximum width and let it wrap.</b> The box hugs its '
+                       'content on both axes, so without a cap a long tooltip becomes one '
+                       'enormous line. The house convention is <span class="m">280px</span>, '
+                       'after which the text wraps and the box grows downward &mdash; which '
+                       'the Hug height already allows, so nothing in the file has to change '
+                       'for this to work.',
                    ])),
 
         guidelines=dodont(
-            ['Keep it to a few words. The box is one line tall.',
+            ['Keep it short. Nothing in the file stops a long tooltip becoming one very wide line.',
              'Attach it to something that is already focusable.',
              'Use it for a name or a short clarification.'],
             ['Do not put essential instructions in a tooltip.',
@@ -706,7 +716,8 @@ def c_tooltip():
              'Do not rely on it existing on touch devices.']),
 
         specs=spec([
-            ('Height', '<span class="m">24px</span>'),
+            ('Width', 'Hug, no maximum in Figma'),
+            ('Height', 'Hug &mdash; <span class="m">24px</span> at one line'),
             ('Padding', '<span class="m">8px</span>'),
             ('Radius', '<span class="m">4px</span>'),
             ('Fill, light / dark', '<span class="m">#171614 / #FFFFFF</span>'),
@@ -735,10 +746,10 @@ def c_tooltip():
               '<span class="m">#211F1C</span> text. And behaviour is settled by adopting UX '
               'best practice as the house convention, written up under Behaviour above.</div>' +
               checklist([
-                  '<b>Height is fixed at 24px</b>, which contradicts the 280px wrapping max '
-                  'width the convention calls for. One of the two has to give.',
-                  '<b>No max width in Figma.</b> The convention sets 280px; the file does '
-                  'not.',
+                  '<b>No maximum width.</b> Width is set to Hug, so the box grows with the '
+                  'text and a long string produces one very wide line. This is the single '
+                  'most important thing to add. The height is Hug too, so it can already '
+                  'wrap the moment a width cap exists.',
                   '<b>No arrow size or offset token.</b>',
                   '<b>No transition</b> is specified. The delays above are timing, not '
                   'animation.',

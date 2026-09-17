@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Build every page. Fails loudly on a missing page or a broken link."""
 import sys, os, re
-from core import write, NAV, ROOT
+from core import write, ALL_HREFS, ROOT
 import comp_proof as P, comp_rest as C, found as F, rest as R
+import dl as DL
 
 PAGES = [
     ('index.html',                          R.g_overview),
@@ -34,6 +35,7 @@ PAGES = [
     ('brand/logo.html',                     R.b_logo),
     ('brand/colour-type.html',              R.b_colour_type),
     ('brand/imagery.html',                  R.b_imagery),
+    ('brand/assets.html',                   DL.assets),
 
     ('open-items.html',                     R.open_items),
 ]
@@ -45,7 +47,7 @@ def main():
         h = fn(); n = write(path, h); built[path] = h; total += n
         print('  %-38s %7d' % (path, n))
 
-    missing = [h for _, items in NAV for h, _, _ in items if h not in built]
+    missing = [h for h in ALL_HREFS if h not in built]
     if missing:
         print('\nMISSING PAGES: %s' % ', '.join(missing)); return 1
 

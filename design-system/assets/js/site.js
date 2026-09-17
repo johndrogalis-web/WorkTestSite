@@ -26,6 +26,31 @@
     if (e.key === 'Escape') closeRail();
   });
 
+  /* ── Rail groups: remember what is open, mark the current one ── */
+  var groups = rail ? [].slice.call(rail.querySelectorAll('.grp')) : [];
+  if (groups.length) {
+    var KEY = 'vf-rail-open';
+    var saved = null;
+    try { saved = JSON.parse(sessionStorage.getItem(KEY) || 'null'); }
+    catch (err) { saved = null; }
+
+    groups.forEach(function (g) {
+      var name = g.getAttribute('data-grp');
+      if (g.querySelector('a[aria-current="page"]')) {
+        g.classList.add('has-current');
+        g.open = true;                       // the group you are in always opens
+      } else if (saved && saved.indexOf(name) > -1) {
+        g.open = true;
+      }
+      g.addEventListener('toggle', function () {
+        if (g.hasAttribute('data-forced')) return;   // search opened it, not the user
+        var open = groups.filter(function (o) { return o.open; })
+                         .map(function (o) { return o.getAttribute('data-grp'); });
+        try { sessionStorage.setItem(KEY, JSON.stringify(open)); } catch (e) { /* private */ }
+      });
+    });
+  }
+
   /* ── Rail search ──────────────────────────────────────────── */
   var finder = document.getElementById('finder');
   if (finder && rail) {
@@ -40,14 +65,39 @@
         li.classList.toggle('hide', !hit);
         if (hit) shown++;
       });
-      heads.forEach(function (h) {
-        var ul = h.nextElementSibling;
-        if (!ul) return;
-        var any = [].slice.call(ul.querySelectorAll('li')).some(function (li) {
+
+      // While searching, every group opens so nothing hides behind a collapsed
+      // header. Clearing the box puts them back where the user left them.
+      groups.forEach(function (g) {
+        var any = [].slice.call(g.querySelectorAll('li')).some(function (li) {
           return !li.classList.contains('hide');
         });
+        g.classList.toggle('hide', !any);
+        if (q) {
+          g.setAttribute('data-forced', '');
+          g.open = true;
+        } else {
+          g.removeAttribute('data-forced');
+          g.open = g.classList.contains('has-current') ||
+                   (saved && saved.indexOf(g.getAttribute('data-grp')) > -1) || false;
+        }
+      });
+
+      heads.forEach(function (h) {
+        var sec = [], n = h.nextElementSibling;
+        while (n && n.tagName !== 'H2') {
+          if (n.tagName === 'UL' || n.classList.contains('grp')) sec.push(n);
+          n = n.nextElementSibling;
+        }
+        var any = sec.some(function (el) {
+          return [].slice.call(el.querySelectorAll('li')).some(function (li) {
+            return !li.classList.contains('hide');
+          });
+        });
         h.style.display = any ? '' : 'none';
-        ul.style.display = any ? '' : 'none';
+        sec.forEach(function (el) {
+          if (el.tagName === 'UL') el.style.display = any ? '' : 'none';
+        });
       });
       if (nohit) nohit.hidden = shown > 0;
     });

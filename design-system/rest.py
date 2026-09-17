@@ -33,6 +33,8 @@ def g_overview():
    'The whole token block, the measured contrast failures, and the sets not to build against.'),
   ('components/index.html', 'All components',
    'Every component in the library with an honest status. Twelve have full pages so far.'),
+  ('brand/assets.html', 'Download assets',
+   'Logo, animation, fifth element and 43 photographs — downloadable, no SharePoint needed.'),
   ('open-items.html', 'Open items',
    'Nine questions this system cannot answer on its own, written down instead of guessed at.'),
 ])}
@@ -283,6 +285,10 @@ def b_logo():
 <p class="lede">Three words that are not interchangeable, one colour, and a margin nothing may
    enter.</p>
 
+<div class="note ok"><b>Need the files?</b> Every logo format &mdash; SVG, PNG and EPS, in
+  black and white, plus the animation &mdash; is on
+  <a href="assets.html">Download assets</a>. No SharePoint access needed.</div>
+
 <h2 id="parts">Symbol, wordmark, logotype</h2>
 <div class="plate">
   <svg viewBox="0 0 96 24" style="height:40px;width:160px;color:var(--ink)" aria-hidden="true">{LOGO}</svg>
@@ -432,6 +438,9 @@ def b_imagery():
 <h1>Imagery.</h1>
 <p class="lede">Real work, real light, real people. Three categories, one underlying idea, and
    the banded graphic that ties them together.</p>
+
+<div class="note ok"><b>Need the files?</b> All 43 photographs, the fifth element stills and
+  the moving loops are on <a href="assets.html">Download assets</a>, in two sizes each.</div>
 
 <h2 id="horizon">The horizon line</h2>
 <img src="../assets/img/driver-1400.webp" alt="A driver in a high-visibility jacket at the wheel of a truck, looking at the road ahead."

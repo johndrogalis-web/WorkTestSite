@@ -273,6 +273,32 @@ the brand section where it belongs.
 | 3 | Component list in the rail | **Alphabetical**, like Spectrum. |
 | 4 | Downloads | **Copy only** for now. Per-variant Copy HTML and Copy CSS; no file downloads, no whole-system bundle. |
 
+### Rail grouping (added 17 September)
+
+A flat alphabetical list of 45 components is ~45 rows, which is more than a rail
+can hold. The components are now grouped by **Trinity's own family names** —
+Actions, Navigators, Form elements, Informers, Containers, Hub — and each family
+collapses.
+
+Why the file's taxonomy rather than nicer English: the point of grouping is that
+you can predict where something lives. A designer who finds Checkbox under Form
+Elements in Figma finds it under Form elements here. Invented thematic names
+("Choosing things") were the thing that failed last time, and they failed because
+nobody could guess them.
+
+How it behaves:
+
+- The family containing the page you are on opens automatically and is marked.
+- Families you open yourself stay open as you navigate, for the session.
+- Typing in the filter box opens every family so nothing hides behind a collapsed
+  header, and hides families with no match. Clearing it puts them back.
+- Alphabetical **within** each family. The alphabetical decision stands; it now
+  applies inside a set of 5–10 rather than across 45.
+- `All components` sits above the families as the flat, filterable escape hatch.
+
+At 45 components this is ~20 visible rows instead of 45. At 90 it is still ~20,
+because the number of families does not grow with the number of components.
+
 **Built and delivered:** 27 pages in `design-system/`. The rail, the page template, all
 12 component pages, 7 Foundations pages, 3 Brand pages and the open-items register.
 

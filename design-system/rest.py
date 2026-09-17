@@ -394,14 +394,14 @@ def b_colour_type():
    decoration</strong>.</p>
 <div class="ramp">
   <span style="background:#EEF9FF;color:#032d3d">EEF9FF</span>
-  <span style="background:#1594EF;color:#fff">1594EF</span>
+  <span style="background:#1594EF;color:#032d3d">1594EF</span>
   <span style="background:#0975C3;color:#fff">0975C3</span>
   <span style="background:#032D3D;color:#fff">032D3D</span>
 </div>
 <div class="ramp">
   <span style="background:#FEFFD6;color:#2b2712">FEFFD6</span>
   <span style="background:#E3F200;color:#2b2712">E3F200</span>
-  <span style="background:#B5BF00;color:#fff">B5BF00</span>
+  <span style="background:#B5BF00;color:#2b2712">B5BF00</span>
   <span style="background:#4A4F00;color:#fff">4A4F00</span>
 </div>
 
@@ -597,6 +597,13 @@ OPEN = [
   '1.4.13 requires hover content to be dismissible, hoverable and persistent; none of the three '
   'is specified. The fixed 24px height also means a tooltip cannot wrap.',
   'Verifi Design', 'Every tooltip, and keyboard users especially'),
+ ('15', 'The link blue fails on tinted table rows',
+  'The product link colour <span class="m">#0975C3</span> measures 4.17:1 on a striped row '
+  '<span class="m">#F0EEEA</span> and 3.60:1 on a disabled row <span class="m">#DFDEDD</span>, '
+  'against the 4.5:1 AA requirement. It passes on a plain white row at 4.83:1, so the failure '
+  'only appears in the two states a long table spends half its time in. '
+  '<span class="m">#0A5F9D</span> clears every row background at 5.9:1 or better.',
+  'Verifi Design', 'Every entity link in every table'),
 ]
 
 

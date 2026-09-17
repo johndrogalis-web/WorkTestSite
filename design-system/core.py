@@ -312,8 +312,8 @@ def spec(rows):
 
 
 def dodont(do, dont, do_title='Do', dont_title='Do not'):
-    return ('<div class="useno"><div class="y"><h4>%s</h4><ul>%s</ul></div>'
-            '<div class="n"><h4>%s</h4><ul>%s</ul></div></div>'
+    return ('<div class="useno"><div class="y"><h3>%s</h3><ul>%s</ul></div>'
+            '<div class="n"><h3>%s</h3><ul>%s</ul></div></div>'
             % (do_title, ''.join('<li>%s</li>' % x for x in do),
                dont_title, ''.join('<li>%s</li>' % x for x in dont)))
 

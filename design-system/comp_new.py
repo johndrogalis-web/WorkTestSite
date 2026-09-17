@@ -328,9 +328,11 @@ def c_spinner():
                   'Announce the end of loading as well as the start. A screen reader user '
                   'who hears &ldquo;Loading&rdquo; and then silence does not know it '
                   'finished.',
-                  'Respect <span class="m">prefers-reduced-motion</span>. This page slows '
-                  'the rotation rather than stopping it, because a frozen spinner reads as '
-                  'a broken page.',
+                  'Respect <span class="m">prefers-reduced-motion</span>. This page slows the '
+                  'rotation rather than stopping it, because a frozen spinner reads as a broken '
+                  'page. Worth doing, though the criterion behind it &mdash; '
+                  '<span class="m">2.3.3 Animation from Interactions</span> &mdash; is AAA, not '
+                  'AA.',
                   'Do not rely on the spinner alone to explain a long wait. After a few '
                   'seconds, words help more than motion.',
               ])),
@@ -342,8 +344,7 @@ def c_spinner():
               checklist([
                   '<b>No rotation duration, easing or direction.</b> This is the one that '
                   'still blocks a faithful build &mdash; two teams will pick two speeds.',
-                  '<b>No reduced-motion alternative</b> is specified. This page slows the '
-                  'rotation rather than stopping it, which is a site decision, not spec.',
+
                   '<b>No rule for spinner versus progress bar</b>, and no rule for how long '
                   'to wait before showing either.',
                   '<b>Both demonstration frames are named &ldquo;Brand core palette&rdquo;'
@@ -1325,7 +1326,8 @@ def c_slider():
              'number.',
              'Do not ship it without a focus style. Keyboard users cannot see where they '
              'are.',
-             'Do not rely on the 24px thumb as the touch target on a phone.']),
+             'Do not shrink the thumb below 24px. That is the AA floor, and it is exactly '
+             'where the thumb sits.']),
 
         specs=spec([
             ('Track height', '<span class="m">4px</span>'),
@@ -1363,8 +1365,10 @@ def c_slider():
                   'The accessible name must say what is being set, and the value needs a '
                   'text form if the number is not plain &mdash; '
                   '<span class="m">aria-valuetext</span> for units.',
-                  'The 24px thumb is below the 44px touch target guidance. Give it a larger '
-                  'invisible hit area.',
+                  'The thumb is <span class="m">24 &times; 24</span>, which meets WCAG 2.2 '
+                  '<span class="m">2.5.8 Target Size (Minimum)</span> at AA exactly. The 44px '
+                  'figure people quote is <span class="m">2.5.5</span>, which is AAA. A larger '
+                  'invisible hit area is worth having on touch, but it is not required for AA.',
               ])),
 
         gaps=checklist([
@@ -1382,8 +1386,7 @@ def c_slider():
             '<a href="tooltip.html">Tooltip</a> component.',
             '<b>The value bubble changes hue between themes</b>, amber in light and '
             'yellow-green in dark. Confirmed deliberate.',
-            '<b>24px thumb is under the 44px touch target guidance</b> with no larger hit '
-            'area specified.',
+
         ]),
     )
 

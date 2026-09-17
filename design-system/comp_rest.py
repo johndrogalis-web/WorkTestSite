@@ -1194,7 +1194,7 @@ MODAL_CSS = """/* Verifi modal — an interruption that requires a decision.
 
 
 def c_modal():
-    demo = ('<div class="c-modal"><h4>Delete this ticket?</h4>'
+    demo = ('<div class="c-modal"><h3>Delete this ticket?</h3>'
             '<p>Ticket 88213 and its sensor history will be removed. This cannot be undone.</p>'
             '<div class="row"><button class="c-btn quiet sm">Cancel</button>'
             '<button class="c-btn danger sm">Delete</button></div></div>')

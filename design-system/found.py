@@ -476,8 +476,34 @@ def f_motion():
 def f_a11y():
     body = f"""
 <h1>Accessibility.</h1>
-<p class="lede">Measured in your browser rather than claimed. Two of our colour pairs currently
-   fail, and they are written down rather than quietly shipped.</p>
+<p class="lede">Measured in your browser rather than claimed. The target is WCAG 2.2 level AA,
+   and where something clears AAA as well it is worth knowing &mdash; but AA is the bar
+   everything has to reach.</p>
+
+<h2 id="target">What we are aiming at</h2>
+<div class="note ok"><b>AA is the requirement. AAA is a bonus, never a blocker.</b> That
+  distinction settles arguments quickly, because several of the numbers people quote from memory
+  are AAA. If something fails AA it is a defect; if it only fails AAA it is a nice-to-have and
+  should not be logged as a gap.</div>
+{table(['Thing', 'AA requires', 'AAA requires', 'What we do'], [
+  ['Normal text', '<span class="m">4.5:1</span>', '<span class="m">7:1</span>',
+   'Hold 4.5:1. Most of the ink ramp clears 5:1 or better.'],
+  ['Large text <span class="m">&ge;24px</span>, or <span class="m">&ge;18.66px</span> bold',
+   '<span class="m">3:1</span>', '<span class="m">4.5:1</span>',
+   'Headings clear AA comfortably.'],
+  ['Icons, borders and controls you must see',
+   '<span class="m">3:1</span>', '&mdash;',
+   'Measured per component. The progress track and two badge dots currently fail.'],
+  ['Touch targets', '<span class="m">24 &times; 24</span> (2.5.8)',
+   '<span class="m">44 &times; 44</span> (2.5.5)',
+   '24 is the floor we hold. 44 where it costs nothing.'],
+  ['Motion', 'Nothing beyond <span class="m">2.2.2</span>',
+   'Honour <span class="m">prefers-reduced-motion</span> (2.3.3)',
+   'We honour it anyway, but it never blocks a component.'],
+])}
+<div class="note"><b>Two things this rules out as defects.</b> A 24px control is not a failure
+  because it is under 44px, and a component without a reduced-motion variant is not failing AA.
+  Both used to be logged as gaps on this site and have been removed.</div>
 
 <h2 id="measured">Contrast, measured</h2>
 <p>Text has to be bright enough against its background for people to read it, including anyone
@@ -579,7 +605,8 @@ document.addEventListener('DOMContentLoaded',function(){{
     return shell('Accessibility', 'Contrast measured in the browser, and the two pairs that fail.',
                  'foundations/accessibility.html', body.replace('{phase_js}', phase_js),
                  crumb=['Foundations', 'Accessibility'],
-                 toc=[('measured', 'Contrast, measured'), ('phases', 'Phase colours'),
+                 toc=[('target', 'What we are aiming at'),
+                      ('measured', 'Contrast, measured'), ('phases', 'Phase colours'),
                       ('beyond', 'Beyond contrast')])
 
 

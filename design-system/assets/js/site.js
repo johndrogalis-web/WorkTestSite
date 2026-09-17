@@ -251,6 +251,38 @@
     apply('all');
   }
 
+  /* ── Live slider ──────────────────────────────────────────
+     A real <input type="range"> sits invisibly on top, so keyboard,
+     touch and assistive technology all work without being rebuilt.
+     The painted parts only mirror its value. */
+  [].slice.call(document.querySelectorAll('.t-slider.live')).forEach(function (sl) {
+    var input = sl.querySelector('input[type="range"]');
+    if (!input) return;
+    var fil = sl.querySelector('.fil');
+    var thb = sl.querySelector('.thb');
+    var val = sl.querySelector('.val');
+
+    function paint() {
+      var p = Number(input.value);
+      if (fil) fil.style.width = p + '%';
+      if (thb) thb.style.left = p + '%';
+      if (val) { val.style.left = p + '%'; val.textContent = p; }
+      input.setAttribute('aria-valuetext', p + ' percent');
+    }
+    function grab()    { sl.classList.add('act', 'show'); }
+    function release() { sl.classList.remove('act', 'show'); }
+
+    input.addEventListener('input', paint);
+    input.addEventListener('pointerdown', grab);
+    input.addEventListener('focus', grab);
+    input.addEventListener('pointerup', release);
+    input.addEventListener('pointercancel', release);
+    input.addEventListener('blur', release);
+    sl.addEventListener('pointerenter', function () { sl.classList.add('hov'); });
+    sl.addEventListener('pointerleave', function () { sl.classList.remove('hov'); });
+    paint();
+  });
+
   /* ── Demo interactions in the benches ─────────────────────── */
   document.addEventListener('click', function (e) {
     var t = e.target.closest && e.target.closest('.c-tabs button');

@@ -1000,6 +1000,18 @@ def _sliders():
     return out + '</div>'
 
 
+def _live(pct=50, label='Slump target'):
+    """A working slider: the painted parts mirror a real range input."""
+    return ('<div class="t-slider live">'
+            '<span class="trk"></span>'
+            '<span class="fil" style="width:%d%%"></span>'
+            '<span class="val" style="left:%d%%">%d</span>'
+            '<span class="thb" style="left:%d%%"></span>'
+            '<input type="range" min="0" max="100" step="1" value="%d" '
+            'aria-label="%s">'
+            '</div>' % (pct, pct, pct, pct, pct, label))
+
+
 def _thumbs():
     out = '<div class="t-stack" style="gap:30px;padding-top:34px">'
     for cls, label in (('', 'Default'), ('hov', 'Hover'), ('act', 'Active')):
@@ -1056,7 +1068,22 @@ def c_slider():
                        'Two thumbs on one track. No minimum gap between them is defined, '
                        'and nothing says what happens when they meet.')),
 
-        states=(bench(_thumbs(), _thumbs(),
+        states=('<h3>Try it</h3>'
+                '<p>Drag it, or tab to it and use the arrow keys. Both panes are live, so you '
+                'can see the hover ring, the active ring and the value bubble behave in each '
+                'theme rather than taking the screenshots on trust.</p>' +
+                bench(_live(50), _live(50),
+                      'A real <span class="m">&lt;input type="range"&gt;</span> sits invisibly '
+                      'on top and the painted parts mirror its value, so keyboard, touch and '
+                      'screen readers work without being rebuilt. Arrow keys move by 1, Page '
+                      'Up and Page Down by 10, Home and End jump to the ends &mdash; all '
+                      'browser defaults, none of them specified in Figma.') +
+                '<div class="note warn"><b>The focus ring you see here is a proposal.</b> '
+                'Trinity does not define one. This demo draws a 3px ring in the theme&rsquo;s '
+                'selection colour so the control is usable by keyboard at all; treat it as a '
+                'starting point for the real decision, not as spec.</div>' +
+                '<h3>The three drawn states</h3>' +
+                bench(_thumbs(), _thumbs(),
                       'Default, hover and active. The value bubble appears only while '
                       'active.') +
                 '<div class="note ok"><b>The thumb grows on interaction; the target does '

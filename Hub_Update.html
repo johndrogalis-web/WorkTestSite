@@ -1271,6 +1271,350 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   .csh-day-lbl { font-weight: 700; }
   .csh-day-num { color: var(--soft); }
 
+  /* ============================================================
+     MOBILE TIMELINE
+     A 24-hour gantt cannot be read on a phone, so the same day is
+     presented as a component list: each row summarises its events
+     and opens to show them. Used by both timeline candidates, so
+     the comparison carries onto mobile.
+     ============================================================ */
+  .mtl-days { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; -webkit-overflow-scrolling: touch; }
+  .mtl-day {
+    flex: 0 0 auto; min-width: 52px; padding: 8px 8px 7px; border-radius: 10px;
+    background: var(--dc-layer-2); box-shadow: inset 0 0 0 1px var(--dc-border);
+    text-align: center; cursor: pointer;
+  }
+  .mtl-day .d { font-size: 11.5px; font-weight: 600; color: var(--dc-soft); }
+  .mtl-day .n { font-size: 14px; font-weight: 700; color: var(--dc-strong); line-height: 1.3; }
+  .mtl-day .bar { height: 3px; border-radius: 2px; margin-top: 6px; background: var(--dc-ok); }
+  .mtl-day .bar.warn { background: var(--dc-warn); }
+  .mtl-day .bar.alarm { background: var(--dc-alarm); }
+  .mtl-day.sel { background: var(--dc-layer-1); box-shadow: inset 0 0 0 1.5px var(--dc-strong); }
+
+  .mtl-hdr { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 16px 0 10px; }
+  .mtl-hdr .t { font-size: 15.5px; font-weight: 700; color: var(--dc-strong); }
+  .mtl-nav { display: flex; gap: 8px; }
+  .mtl-nav button {
+    width: 34px; height: 34px; border-radius: 50%; cursor: pointer;
+    background: var(--dc-layer-1); border: 1px solid var(--dc-border); color: var(--dc-strong);
+    display: grid; place-items: center; font-size: 15px;
+  }
+  .mtl-nav button:disabled { opacity: .35; }
+
+  .mtl-list { display: flex; flex-direction: column; gap: 8px; }
+  .mtl-card { border-radius: 12px; background: var(--dc-layer-1); box-shadow: inset 0 0 0 1px var(--dc-border); overflow: hidden; }
+  .mtl-row {
+    display: flex; align-items: center; gap: 10px; padding: 13px 14px; cursor: pointer;
+  }
+  .mtl-row .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--dc-ok); flex-shrink: 0; }
+  .mtl-row .dot.warn { background: var(--dc-warn); }
+  .mtl-row .dot.alarm { background: var(--dc-alarm); }
+  .mtl-row .dot.na { background: var(--dc-subtle); }
+  .mtl-row .nm { font-size: 14.5px; font-weight: 600; color: var(--dc-strong); white-space: nowrap; }
+  .mtl-row .sum {
+    margin-left: auto; font-size: 11.5px; color: var(--dc-soft); text-align: right;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+  }
+  /* a not-installed / unknown row has no events to open, so its reason
+     is the whole point of the line — let it wrap instead of clipping */
+  .mtl-row[data-static] .sum { white-space: normal; line-height: 1.35; }
+  .mtl-row .chev { color: var(--dc-soft); font-size: 12px; transition: transform .16s ease; }
+  .mtl-card.open .mtl-row .chev { transform: rotate(180deg); }
+  .mtl-events { display: none; border-top: 1px solid var(--dc-border); }
+  .mtl-card.open .mtl-events { display: block; }
+  .mtl-ev {
+    display: flex; align-items: center; gap: 11px; padding: 11px 14px; cursor: pointer;
+    border-bottom: 1px solid var(--dc-border);
+  }
+  .mtl-ev:last-child { border-bottom: none; }
+  .mtl-ev .ic {
+    width: 22px; height: 22px; border-radius: 5px; flex-shrink: 0;
+    display: grid; place-items: center;
+  }
+  .mtl-ev .ic.warn { background: color-mix(in srgb, var(--dc-warn) 22%, transparent); color: var(--dc-warn); }
+  .mtl-ev .ic.alarm { background: color-mix(in srgb, var(--dc-alarm) 22%, transparent); color: var(--dc-alarm); }
+  .mtl-ev .ic.asleep { background: color-mix(in srgb, var(--dc-strong) 14%, transparent); color: var(--dc-soft); }
+  .mtl-ev .tx { min-width: 0; display: flex; flex-direction: column; }
+  .mtl-ev .tt { font-size: 14px; font-weight: 600; color: var(--dc-strong); }
+  .mtl-ev .st { font-size: 12px; color: var(--dc-soft); margin-top: 1px; }
+  .mtl-ev .go { margin-left: auto; color: var(--dc-soft); font-size: 15px; }
+  .mtl-ev .ic.on { background: color-mix(in srgb, var(--dc-ok) 20%, transparent); color: var(--dc-ok); }
+  .mtl-ev .ic.off { background: color-mix(in srgb, var(--dc-strong) 10%, transparent); color: var(--dc-subtle); }
+
+  /* Ignition and power sits above the components and reads as context,
+     not as an eleventh part — hence the quieter card and the label. */
+  .mtl-card.pwr { background: transparent; box-shadow: inset 0 0 0 1px var(--dc-border); }
+  .mtl-card.pwr .mtl-row .nm { color: var(--dc-soft); letter-spacing: .2px; }
+  .mtl-card.pwr .dot.ok { background: var(--dc-ok); }
+
+  /* The individual messages inside an event window: off-cycle changes
+     tap through to their own log line, the heartbeat line is a count. */
+  .mtl-msg {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 14px 8px 47px; font-size: 12px; color: var(--dc-soft);
+    border-bottom: 1px solid var(--dc-border); cursor: pointer;
+    background: color-mix(in srgb, var(--dc-strong) 3%, transparent);
+  }
+  .mtl-msg:last-child { border-bottom: none; }
+  .mtl-msg .tm { font-family: "DM Mono", Consolas, monospace; font-size: 11px; color: var(--dc-defined); flex-shrink: 0; }
+  .mtl-msg .tx { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mtl-msg .go { margin-left: auto; font-size: 14px; }
+  .mtl-msg.qt { cursor: default; color: var(--dc-subtle); font-size: 11.5px; }
+  .mtl-foot { padding: 12px 2px 0; font-size: 11.5px; color: var(--dc-subtle); }
+
+  /* ============================================================
+     DEVICE CHASSIS
+     The small breakpoints are shown inside a phone or tablet body,
+     centred on a neutral stage. The screen element carries a
+     transform, which makes it the containing block for the app's
+     fixed-position layers — so drawers and overlays stay on the
+     device instead of escaping to the browser window.
+     ============================================================ */
+  #device-stage {
+    position: fixed; inset: 52px 0 0 0; z-index: 400; display: none;
+    background: #0e0e10;
+    background-image: radial-gradient(120% 90% at 50% 0%, #1b1b1f 0%, #0e0e10 62%);
+    align-content: center; justify-items: center; gap: 14px; padding: 20px 0;
+    overflow: auto;
+  }
+  body.light #device-stage { background: #e9e7e4; background-image: radial-gradient(120% 90% at 50% 0%, #f7f6f4 0%, #e3e0dc 62%); }
+  body.sm-ready.view-mobile #device-stage,
+  body.sm-ready.view-tablet #device-stage { display: grid; }
+
+  #device-frame {
+    position: relative; flex-shrink: 0;
+    background: #1c1c1f;
+    padding: 14px;
+    border-radius: 54px;
+    box-shadow:
+      inset 0 0 0 1.5px rgba(255,255,255,.10),
+      inset 0 0 0 9px #0a0a0b,
+      0 30px 60px rgba(0,0,0,.55),
+      0 2px 6px rgba(0,0,0,.4);
+    transform-origin: top center;
+  }
+  body.light #device-frame { background: #b9b6b1; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.5), inset 0 0 0 9px #6f6c68, 0 26px 50px rgba(54,50,45,.28); }
+  /* side buttons */
+  #device-frame::before, #device-frame::after {
+    content: ""; position: absolute; right: -3px; width: 3px; border-radius: 2px;
+    background: #0a0a0b;
+  }
+  #device-frame::before { top: 150px; height: 64px; }
+  #device-frame::after  { top: 226px; height: 64px; }
+  body.light #device-frame::before, body.light #device-frame::after { background: #6f6c68; }
+
+  #device-screen {
+    position: relative; overflow: hidden; background: var(--bg);
+    border-radius: 42px;
+    /* the app shell is a flex row on body, so the screen has to be one too */
+    display: flex; align-items: stretch;
+    transform: translateZ(0);          /* containing block for fixed children */
+  }
+  #device-screen > .main { overflow-y: auto; }
+  #device-notch {
+    position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+    width: 126px; height: 28px; border-radius: 16px; background: #0a0a0b; z-index: 5;
+    pointer-events: none;
+  }
+  #device-home {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    width: 128px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.55); z-index: 5;
+    pointer-events: none;
+  }
+  /* status bar, so the notch has something to sit in */
+  #device-status {
+    position: absolute; top: 0; left: 0; right: 0; height: 44px; z-index: 4;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 26px; color: var(--text); pointer-events: none;
+    font-size: 13.5px; font-weight: 600; letter-spacing: .2px;
+  }
+  #device-status .r { display: inline-flex; align-items: center; gap: 5px; }
+  body.view-tablet #device-status { height: 28px; padding: 0 18px; font-size: 12px; font-weight: 500; }
+
+  #device-caption { font-size: 12px; color: rgba(255,255,255,.5); letter-spacing: .3px; }
+  body.light #device-caption { color: rgba(54,50,45,.55); }
+
+  /* phone */
+  body.view-mobile #device-screen { width: 390px; height: 812px; }
+  /* tablet: flatter corners, a camera dot instead of a notch, no home bar */
+  body.view-tablet #device-frame { border-radius: 34px; padding: 18px; }
+  body.view-tablet #device-screen { width: 834px; height: 1000px; border-radius: 20px; }
+  body.view-tablet #device-notch {
+    top: 8px; width: 7px; height: 7px; border-radius: 50%;
+    background: #2c2c30; box-shadow: inset 0 0 0 1px rgba(255,255,255,.18);
+  }
+  body.view-tablet #device-home { display: none; }
+  body.view-tablet #device-frame::before { top: 120px; }
+  body.view-tablet #device-frame::after { top: 196px; }
+
+  /* Inside the chassis the app owns the whole screen — the prototype
+     bar stays outside, so its 52px offset has to come off. */
+  /* clear the status bar */
+  body.view-tablet #device-screen .sidebar { padding-top: 34px; }
+  body.view-mobile #device-screen .sidebar { padding-top: 48px; }
+  #device-screen .takeover,
+  #device-screen .stg,
+  #device-screen .overlay,
+  #device-screen .drawer { top: 0; }
+  #device-screen .vp-coming { top: 0; }
+  body.view-mobile #device-screen > .main { padding-top: 50px; padding-bottom: 46px; }
+  body.view-tablet #device-screen > .main { padding-top: 36px; }
+  body.view-mobile #device-screen .takeover,
+  body.view-mobile #device-screen .stg,
+  body.view-mobile #device-screen .drawer,
+  body.view-mobile #device-screen .overlay { top: 44px; }
+  body.view-mobile #device-screen .takeover { padding-bottom: 42px; }
+  body.view-tablet #device-screen .takeover,
+  body.view-tablet #device-screen .stg,
+  body.view-tablet #device-screen .drawer,
+  body.view-tablet #device-screen .overlay { top: 28px; }
+
+  /* ============================================================
+     TRINITY_TIMELINE — TABLET AND MOBILE
+     Only this phase is built for the smaller breakpoints. Tablet
+     keeps the table and tightens the frame; mobile drops the table
+     grid and stacks each truck as a card, because a 12-slot strip
+     plus six columns cannot be read on a phone.
+     ============================================================ */
+  body.sm-ready.view-tablet .app,
+  body.sm-ready.view-mobile .app { max-width: none; }
+
+  /* ---- tablet ---- */
+  body.sm-ready.view-tablet .main { padding: 20px 20px; }
+  body.sm-ready.view-tablet .filters { display: none; }
+  body.sm-ready.view-tablet .content { gap: 0; margin-top: 22px; }
+  body.sm-ready.view-tablet h1 { font-size: 24px; }
+  body.sm-ready.view-tablet .takeover { left: 78px; padding: 20px 22px 32px; }
+  body.sm-ready.view-tablet .takeover.as-drawer { left: 0; width: 100%; max-width: none; }
+  body.sm-ready.view-tablet .tk-actions { overflow-x: auto; }
+  body.sm-ready.view-tablet .csh { max-width: none; }
+  body.sm-ready.view-tablet .csh-lab { font-size: 12.5px; padding-right: 10px; }
+
+  /* ---- mobile ---- */
+  body.sm-ready.view-mobile .sidebar { display: none; }
+  body.sm-ready.view-mobile .main { padding: 14px 14px 28px; }
+  body.sm-ready.view-mobile .filters { display: none; }
+  body.sm-ready.view-mobile .content { display: block; margin-top: 16px; }
+  body.sm-ready.view-mobile h1 { font-size: 21px; }
+  body.sm-ready.view-mobile .view-toggle { display: none; }
+  body.sm-ready.view-mobile .tabs { overflow-x: auto; gap: 4px; }
+  body.sm-ready.view-mobile .tab { padding: 6px 12px 12px 2px; font-size: 13px; white-space: nowrap; }
+  body.sm-ready.view-mobile .table-scroll { max-height: none; overflow: visible; }
+
+  /* The fleet list becomes cards on both small breakpoints — the row
+     is 1100px wide with the strip in it, so it cannot be a table
+     here. Tablet lays the cards out two-up. */
+  body.sm-ready.view-mobile table, body.sm-ready.view-tablet table,
+  body.sm-ready.view-mobile tbody, body.sm-ready.view-tablet tbody { display: block; width: 100%; }
+  body.sm-ready.view-tablet tbody { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
+  body.sm-ready.view-mobile thead, body.sm-ready.view-tablet thead { display: none; }
+  body.sm-ready.view-mobile tbody tr.trow, body.sm-ready.view-tablet tbody tr.trow {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
+    padding: 13px 14px; border-radius: 10px;
+    background: var(--row-alt); box-shadow: inset 0 0 0 1px var(--border);
+  }
+  body.sm-ready.view-mobile tbody tr.trow { margin-bottom: 10px; }
+  body.sm-ready.view-mobile tbody tr:nth-child(odd), body.sm-ready.view-tablet tbody tr:nth-child(odd) { background: var(--row-alt); }
+  body.sm-ready.view-mobile tbody td, body.sm-ready.view-tablet tbody td { display: block; padding: 0; width: auto; flex: 0 0 auto; }
+  body.sm-ready.view-mobile td.tname, body.sm-ready.view-tablet td.tname { font-size: 17px; font-weight: 700; }
+  body.sm-ready.view-mobile td.mode-cell, body.sm-ready.view-tablet td.mode-cell { margin-left: auto; }
+  body.sm-ready.view-mobile td.comp-cell, body.sm-ready.view-tablet td.comp-cell { flex: 0 0 100%; }
+  /* the Alert column stays out of the card — the chips already name the fault */
+  body.sm-ready.view-mobile.comp-col td.alert, body.sm-ready.view-tablet.comp-col td.alert { display: none; }
+  body.sm-ready.view-mobile td.col-pad, body.sm-ready.view-tablet td.col-pad { display: none; }
+  /* meta line: version, at plant, connection, ignition */
+  body.sm-ready.view-mobile td.ver, body.sm-ready.view-tablet td.ver,
+  body.sm-ready.view-mobile tr.trow > td:nth-child(5), body.sm-ready.view-tablet tr.trow > td:nth-child(5),
+  body.sm-ready.view-mobile tr.trow > td:nth-child(7), body.sm-ready.view-tablet tr.trow > td:nth-child(7),
+  body.sm-ready.view-mobile tr.trow > td:nth-child(8), body.sm-ready.view-tablet tr.trow > td:nth-child(8) {
+    font-size: 12.5px; font-weight: 400; color: var(--muted);
+  }
+  body.sm-ready.view-mobile .atplant, body.sm-ready.view-tablet .atplant,
+  body.sm-ready.view-mobile .ign, body.sm-ready.view-tablet .ign { color: var(--muted); gap: 5px; font-size: 12.5px; }
+  body.sm-ready.view-mobile .ign .dot, body.sm-ready.view-tablet .ign .dot { width: 12px; height: 12px; border-width: 1.5px; }
+  body.sm-ready.view-mobile .ign .dot.on::after, body.sm-ready.view-tablet .ign .dot.on::after { width: 5px; height: 5px; }
+  body.sm-ready.view-mobile .conn, body.sm-ready.view-tablet .conn { font-size: 14px; }
+  /* 12 slots have to fit inside a card */
+  body.sm-ready.view-mobile .comp-strip, body.sm-ready.view-tablet .comp-strip { gap: 2px; margin-top: 8px; }
+  body.sm-ready.view-mobile .comp-slot, body.sm-ready.view-tablet .comp-slot { width: 26px; height: 16px; }
+  body.sm-ready.view-mobile .comp-slot.warn i, body.sm-ready.view-tablet .comp-slot.warn i,
+  body.sm-ready.view-mobile .comp-slot.alarm i, body.sm-ready.view-tablet .comp-slot.alarm i { width: 13px; }
+  body.sm-ready.view-mobile .comp .cbad, body.sm-ready.view-tablet .comp .cbad { white-space: nowrap; }
+  body.sm-ready.view-mobile .pager, body.sm-ready.view-tablet .pager { justify-content: center; margin-top: 16px; }
+
+  /* takeover fills the screen */
+  body.sm-ready.view-mobile .takeover,
+  body.sm-ready.view-mobile .takeover.as-drawer {
+    left: 0; right: 0; width: 100%; max-width: none; padding: 14px 12px 28px; box-shadow: none;
+  }
+  body.sm-ready.view-mobile .tk-top { flex-direction: column; align-items: flex-start; gap: 12px; }
+  body.sm-ready.view-mobile .tk-title { font-size: 17px; }
+  body.sm-ready.view-mobile .tk-actions { width: 100%; overflow-x: auto; }
+  body.sm-ready.view-mobile .tk-act { padding: 0 14px; font-size: 11px; white-space: nowrap; }
+
+  /* the timeline itself */
+  body.sm-ready.view-mobile .csh { max-width: none; }
+  body.sm-ready.view-mobile .csh-strip {
+    display: flex; overflow-x: auto; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+  }
+  body.sm-ready.view-mobile .csh-day { flex: 0 0 92px; scroll-snap-align: start; padding: 9px 8px; }
+  body.sm-ready.view-mobile .csh-hdr { margin: 18px 0 8px; }
+  body.sm-ready.view-mobile .csh-hdr h2 { font-size: 16px; }
+  body.sm-ready.view-mobile .csh-panel { padding: 10px 8px; }
+  /* labels stay put while the 24h track scrolls sideways */
+  body.sm-ready.view-mobile .csh-labels {
+    position: sticky; left: 0; z-index: 3; background: var(--layer-2);
+    box-shadow: 6px 0 10px -6px rgba(0,0,0,.45);
+  }
+  body.sm-ready.view-mobile.light .csh-labels { box-shadow: 6px 0 10px -6px rgba(54,50,45,.18); }
+  body.sm-ready.view-mobile .csh-chart { --csh-labw: 96px; }
+  body.sm-ready.view-mobile .csh-axis { --csh-labw: 96px; }
+  body.sm-ready.view-mobile .csh-lab {
+    font-size: 11.5px; line-height: 1.2; padding-right: 10px; padding-left: 2px;
+  }
+  body.sm-ready.view-mobile .csh { --csh-rowh: 52px; }
+  body.sm-ready.view-mobile .csh-legend { gap: 12px; font-size: 11.5px; }
+
+  /* Settings -> Trucks: the drill target for Phase 1 and Phase 2, so it
+     has to be usable at phone width. The settings nav is a desktop
+     wayfinding device; on a phone the page is the truck itself. */
+  body.sm-ready.view-tablet .stg-nav { width: 208px; padding: 20px 10px; }
+  body.sm-ready.view-tablet .stg-main { padding: 18px 20px 28px; }
+  body.sm-ready.view-mobile .stg { left: 0; }
+  body.sm-ready.view-mobile .stg-nav { display: none; }
+  body.sm-ready.view-mobile .stg-main { padding: 14px 12px 28px; }
+  body.sm-ready.view-mobile .stg-back { margin-bottom: 14px; font-size: 12px; }
+  body.sm-ready.view-mobile .stg-head { gap: 12px; margin-bottom: 16px; }
+  body.sm-ready.view-mobile .stg-head .tico { width: 46px; height: 40px; }
+  body.sm-ready.view-mobile .stg-head .tico svg { width: 26px; height: 26px; }
+  body.sm-ready.view-mobile .stg-head .tt { font-size: 20px; }
+  body.sm-ready.view-mobile .stg-head .ts { font-size: 12.5px; }
+  body.sm-ready.view-mobile .stg-tabs { overflow-x: auto; margin-bottom: 16px; }
+  body.sm-ready.view-mobile .stg-tab { flex: 0 0 auto; padding: 10px 14px 12px; font-size: 12.5px; }
+
+  /* Truck Log is a two-pane desktop layout; on a phone the list stacks
+     above the JSON inspector, and the row drops Mac Id and SubType so
+     the remaining columns stay readable. */
+  body.sm-ready.view-mobile .dc-logs-wrap { flex-direction: column; gap: 14px; }
+  body.sm-ready.view-mobile .dc-logs-left,
+  body.sm-ready.view-mobile .dc-logs-right { flex: 0 0 auto; width: 100%; }
+  body.sm-ready.view-mobile .dc-logs-filters .dc-input { flex: 1 1 100%; min-width: 0; }
+  body.sm-ready.view-mobile .dc-logs-filters select.dc-input { flex: 1 1 46%; width: auto; }
+  body.sm-ready.view-mobile .dc-logs-thead,
+  body.sm-ready.view-mobile .dc-log-tr { grid-template-columns: 1.5fr .6fr 1fr; gap: 8px; padding: 9px 10px; }
+  body.sm-ready.view-mobile .dc-logs-thead span:nth-child(3),
+  body.sm-ready.view-mobile .dc-log-tr > *:nth-child(3),
+  body.sm-ready.view-mobile .dc-logs-thead span:nth-child(5),
+  body.sm-ready.view-mobile .dc-log-tr > *:nth-child(5) { display: none; }
+  body.sm-ready.view-mobile .dc-logs-scroll { max-height: 40vh; }
+  body.sm-ready.view-mobile .dc-logdet-top { flex-wrap: wrap; gap: 8px; }
+  body.sm-ready.view-mobile .dc-json { max-height: 46vh; overflow: auto; }
+  body.sm-ready.view-tablet .dc-logs-wrap { gap: 14px; }
+  body.sm-ready.view-tablet .dc-logs-thead,
+  body.sm-ready.view-tablet .dc-log-tr { grid-template-columns: 1.4fr .55fr 1fr .7fr; gap: 8px; }
+  body.sm-ready.view-tablet .dc-logs-thead span:nth-child(5),
+  body.sm-ready.view-tablet .dc-log-tr > *:nth-child(5) { display: none; }
+
   /* Shared hover card for tracks, spans and message ticks */
   .dc-tip {
     position: fixed; z-index: 20000; max-width: 300px; padding: 10px 12px;
@@ -1370,6 +1714,9 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
     text-align: center;
   }
   body.view-tablet .vp-coming, body.view-mobile .vp-coming { display: flex; }
+  /* Trinity_Timeline is built for every breakpoint, so it shows the real
+     thing instead of the placeholder */
+  body.sm-ready .vp-coming { display: none !important; }
   .vp-coming .ic {
     width: 56px; height: 56px; border-radius: 14px;
     background: rgba(48,105,227,.12); border: 1px solid rgba(48,105,227,.3);
@@ -1914,7 +2261,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
             <span class="vp-lbl">Phase 3_ Final</span>
           </div>
           <div class="vp-opts-divider"></div>
-          <div class="vp-opts-section-label">Timeline <em id="vp-tl-scope">for Phase 2, 2a, 3</em></div>
+          <div class="vp-opts-section-label">Timeline <em id="vp-tl-scope">for Phase 1, 2, 2a, 3</em></div>
           <div class="vp-opts-row" id="vp-tl-row-trinity" onclick="event.stopPropagation();setTimelinePick('trinity')">
             <svg class="vp-opts-check" id="vp-tl-trinity" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span class="vp-lbl">Trinity timeline</span>
@@ -1943,6 +2290,27 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   </div>
 
   <!-- Coming-soon overlay for breakpoints not yet designed -->
+  <!-- Phone / tablet chassis: the app is moved inside this screen when
+       the Mobile or Tablet pill is on, so the small layouts are seen at
+       their real size instead of a stretched browser window -->
+  <div id="device-stage">
+    <div id="device-frame">
+      <div id="device-notch"></div>
+      <div id="device-screen">
+        <div id="device-status">
+          <span class="t">9:41</span>
+          <span class="r">
+            <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7.5" width="3" height="3.5" rx="1"/><rect x="4.6" y="5" width="3" height="6" rx="1"/><rect x="9.2" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.8" y="0" width="3" height="11" rx="1"/></svg>
+            <svg width="16" height="11" viewBox="0 0 16 11" fill="none" stroke="currentColor" stroke-width="1.1"><path d="M1 3.6a10 10 0 0 1 14 0"/><path d="M3.4 6.2a6.6 6.6 0 0 1 9.2 0"/><path d="M5.8 8.7a3.2 3.2 0 0 1 4.4 0"/><circle cx="8" cy="10.4" r=".7" fill="currentColor" stroke="none"/></svg>
+            <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.2" stroke="currentColor" opacity=".45"/><rect x="2" y="2" width="15" height="8" rx="2" fill="currentColor"/><path d="M23 4.2v3.6c.9-.3 1.4-.9 1.4-1.8S23.9 4.5 23 4.2z" fill="currentColor" opacity=".45"/></svg>
+          </span>
+        </div>
+      </div>
+      <div id="device-home"></div>
+    </div>
+    <div id="device-caption"></div>
+  </div>
+
   <div class="vp-coming">
     <div class="ic">&#128241;</div>
     <div class="t" id="vp-cs-title">Tablet View</div>
@@ -2680,7 +3048,7 @@ window.addEventListener('hashchange', dcApplyUrlView);
 
 function dcSyncTimelineMenu() {
   const kind = dcTimelineKind();
-  const fixed = dcViewMode === 'trinity-timeline' || dcViewMode === 'current-timeline';
+  const fixed = dcViewMode === 'trinity-timeline';
   ['trinity', 'rebuilt'].forEach(k => {
     const el = document.getElementById('vp-tl-' + k);
     if (el) el.style.opacity = (fixed ? kind === k : dcTimelinePick === k) ? '1' : '0';
@@ -2688,7 +3056,7 @@ function dcSyncTimelineMenu() {
     if (row) { row.style.opacity = fixed ? '.4' : '1'; row.style.pointerEvents = fixed ? 'none' : ''; }
   });
   const scope = document.getElementById('vp-tl-scope');
-  if (scope) scope.textContent = fixed ? 'set by this phase' : 'for Phase 2, 2a, 3';
+  if (scope) scope.textContent = fixed ? 'set by this phase' : 'for Phase 1, 2, 2a, 3';
 }
 
 /* Trinity colours used to be two extra rows in the phase list, which
@@ -2706,6 +3074,7 @@ function setTrinitySkin(on) {
 
 const DC_PHASES = ['current', 'trinity-timeline', 'current-timeline',
                    'current-overview', 'current-overview-wds', 'final'];
+const DC_SMALL_PHASES = ['trinity-timeline', 'current-timeline'];
 
 function setProtoView(mode) {
   /* Legacy names kept working: they were a phase plus the skin */
@@ -2716,6 +3085,10 @@ function setProtoView(mode) {
 }
 function setPhase(mode) {
   dcViewMode = mode;
+  document.body.dataset.phase = mode;
+  /* Phases with real phone/tablet layouts (the rest still show the
+     coming-soon panel on those pills) */
+  document.body.classList.toggle('sm-ready', DC_SMALL_PHASES.indexOf(mode) > -1);
   DC_PHASES.forEach(m => {
     const el = document.getElementById('vp-check-' + m);
     if (el) el.style.opacity = m === mode ? '1' : '0';
@@ -2737,6 +3110,8 @@ function setPhase(mode) {
   renderComponentCells();
   buildOverview(dcCurrentTruck || '1219');
   dcSyncTimelineMenu();
+  const small = document.body.classList.contains('view-mobile') || document.body.classList.contains('view-tablet');
+  deviceMount(small && DC_SMALL_PHASES.indexOf(mode) > -1);
   dcWriteSlug(mode);
 }
 
@@ -3253,6 +3628,10 @@ const ALARM_ICON = '<svg width="10" height="10" viewBox="0 0 10 10" fill="white"
    reinforces it */
 const ASLEEP_ICON = '<svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M2.2 2.2h3.9v1.1L3.7 6.9h2.4V8H2.1V6.9L4.5 3.3H2.2V2.2Zm4.6 3.4h3.2v.9l-1.9 2.8h1.9v.9H6.7v-.9l1.9-2.8H6.8v-.9Z"/></svg>';
 const NODATA_ICON = '<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="6" cy="6" r="4.6"/><path d="M3.1 3.1l5.8 5.8"/></svg>';
+/* Ignition: filled ring for on, open ring for off — the same pair the
+   landing table uses for the ignition column */
+const IGN_ON_ICON  = '<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="4.6"/><circle cx="6" cy="6" r="1.9" fill="currentColor" stroke="none"/></svg>';
+const IGN_OFF_ICON = '<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="4.6"/></svg>';
 
 function badgeHtml(kind) {
   if (kind === 'ok') return '<span class="dc-badge-ok"></span>';
@@ -3627,18 +4006,18 @@ function dcTrinityDays(num) {
 
 /* ══════════════════════════════════════════════════════════════
    WHICH TIMELINE?
-   Trinity_Timeline always shows candidate A, Phase 1 always shows
-   candidate B (the message-driven rebuild), and Phases 2, 2a and 3
-   follow the Options choice until the team picks one.
+   Trinity_Timeline is the reference phase — it always shows
+   candidate A, which is the whole reason it exists. Every other
+   phase that has a timeline, Phase 1 included, follows the Options
+   choice until the team picks one.
 ══════════════════════════════════════════════════════════════ */
 let dcTimelinePick = 'rebuilt';        /* 'trinity' | 'rebuilt' */
 function dcTimelineKind() {
   if (dcViewMode === 'trinity-timeline') return 'trinity';
-  if (dcViewMode === 'current-timeline') return 'rebuilt';
   return dcTimelinePick;
 }
 function setTimelinePick(kind) {
-  if (dcViewMode === 'trinity-timeline' || dcViewMode === 'current-timeline') return;  /* fixed in those phases */
+  if (dcViewMode === 'trinity-timeline') return;  /* fixed in the reference phase */
   dcTimelinePick = kind;
   dcSyncTimelineMenu();
   const host = dcTlRoot;
@@ -3654,9 +4033,7 @@ function dcTrinityDeoverlap(panel) {
   panel.querySelectorAll('.csh-track .csh-in').forEach(lane => {
     const laneW = lane.clientWidth;
     const chips = Array.from(lane.querySelectorAll('.csh-chip'))
-      .map(c => ({ el: c, wide: c.dataset.wide === '1',
-                   left: c.getBoundingClientRect().left - lane.getBoundingClientRect().left,
-                   w: c.offsetWidth }))
+      .map(c => ({ el: c, wide: c.dataset.wide === '1', left: c.offsetLeft, w: c.offsetWidth }))
       .sort((a2, b2) => a2.left - b2.left);
     for (let i = chips.length - 2; i >= 0; i--) {
       const cur = chips[i], next = chips[i + 1];
@@ -3668,6 +4045,244 @@ function dcTrinityDeoverlap(panel) {
       cur.el.style.transform = 'translateY(-50%)';
     }
   });
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   MOBILE TIMELINE
+   Same day, same stream, read as a list instead of a gantt: one
+   card per component, summarised, opening to its events. Both
+   candidates use it, so the phone view is comparable too — the
+   Trinity candidate keeps its two-state vocabulary (everything is
+   a Warning or an Alarm), the message candidate keeps its full set.
+══════════════════════════════════════════════════════════════ */
+/* Phone-width wording: shorter names and state words so a row
+   stays on one line */
+const MTL_NAME = {
+  'Iox / Robotex': 'Iox/Robotex', 'Internal Display': 'Int. Display',
+  'External Display': 'Ext. Display', 'WDS rotation': 'WDS rot.', 'WDS temp': 'WDS temp'
+};
+const MTL_STATE = { warn: 'Warning', alarm: 'Alarm', nodata: 'No data', asleep: 'Asleep' };
+
+function dcMtlDur(mins) {
+  const m = Math.max(1, Math.round(mins));
+  return m >= 60 ? Math.floor(m / 60) + 'h' + (m % 60 ? ' ' + (m % 60) + 'm' : '') : m + ' min';
+}
+function dcMtlEventsFor(row, trinity, st) {
+  const keep = ['warn', 'alarm', 'nodata', 'asleep'];
+  return (row.spans || []).filter(sp => keep.indexOf(sp.state) > -1).map(sp => {
+    /* The Trinity candidate has no vocabulary beyond warning/alarm */
+    const state = trinity
+      ? (sp.state === 'alarm' || sp.state === 'nodata' ? 'alarm' : 'warn')
+      : sp.state;
+    const ev = {
+      from: sp.from, to: sp.to, state: state,
+      label: MTL_STATE[state] || DC_STATE_LABEL[state] || state,
+      note: sp.note || '',
+      mins: sp.to - sp.from
+    };
+    /* The message candidate argues in messages, not just duration:
+       how many heartbeats the window should have carried and how many
+       arrived, plus the off-cycle messages inside it. The chart says
+       this with tick density; the card has to say it in words. */
+    if (!trinity && st) {
+      /* the heartbeat that lands exactly on the change is the last
+         message of the window before it, not the first of this one */
+      const beats = st.msgs.filter(m => !m.oc && m.min >= sp.from && m.min < sp.to);
+      ev.got = sp.state === 'nodata' ? 0 : beats.length;
+      ev.exp = Math.max(ev.got, Math.round((sp.to - sp.from) / DC_BEAT_MIN));
+      ev.lastBeat = ev.got ? beats[beats.length - 1].min : null;
+      ev.msgs = st.msgs.filter(m => m.oc && m.min >= sp.from && m.min <= sp.to);
+    }
+    return ev;
+  });
+}
+function dcMtlCount(ev) {
+  if (ev.got === undefined) return '';
+  return ev.got < ev.exp ? ev.got + ' of ' + ev.exp + ' messages' : ev.got + ' messages';
+}
+/* Ignition and power, pinned above the components. Without it a
+   powered-down afternoon reads as ten broken parts instead of one
+   truck that was switched off — the lane the chart carries and a
+   plain component list throws away. */
+function dcMtlIgnEvents(st) {
+  const end = st.isToday ? st.nowMin : st.runEnd;
+  const evs = [];
+  if (st.ignOn > 2) evs.push({ from: 0, to: st.ignOn, state: 'off', label: 'Ignition off',
+    note: 'No reporting expected', mins: st.ignOn });
+  evs.push({ from: st.ignOn, to: end, state: 'on', label: 'Ignition on',
+    note: st.dropAt !== null ? 'Powered, but the last message came in at ' + dcHM(st.lastMsg)
+                             : 'Reporting on the ' + DC_BEAT_MIN + '-minute cadence',
+    mins: end - st.ignOn,
+    got: st.msgs.filter(m => !m.oc).length,
+    exp: Math.max(st.msgs.filter(m => !m.oc).length, Math.round((end - st.ignOn) / DC_BEAT_MIN)),
+    lastBeat: st.lastMsg,
+    msgs: st.msgs.filter(m => m.oc) });
+  if (st.dropAt !== null) evs.push({ from: st.lastMsg, to: end, state: 'nodata', label: 'No data',
+    note: 'TCG offline — one cause for every row below',
+    mins: end - st.lastMsg, got: 0, exp: Math.max(1, Math.round((end - st.lastMsg) / DC_BEAT_MIN)), msgs: [] });
+  if (!st.isToday && st.runEnd < 1438) evs.push({ from: st.runEnd, to: 1440, state: 'off',
+    label: 'Ignition off', note: 'No reporting expected', mins: 1440 - st.runEnd });
+  return evs;
+}
+let dcMtlOpen = {};     /* component -> expanded */
+
+function buildMobileTimeline(target) {
+  const panel = target || document.getElementById('panel-timeline');
+  dcTlRoot = panel;
+  if (dcTlTruck !== dcCurrentTruck) { dcActiveDay = 6; dcTlTruck = dcCurrentTruck; dcMtlOpen = {}; }
+  const num = dcCurrentTruck;
+  const trinity = dcTimelineKind() === 'trinity';
+  const st = dcDayStream(num, dcActiveDay);
+  const today = new Date();
+  const NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() - (6 - i));
+    const worst = dcDayStream(num, i).worst;
+    return `<div class="mtl-day${i === dcActiveDay ? ' sel' : ''}" data-mday="${i}">
+      <div class="d">${i === 6 ? 'Today' : NAMES[d.getDay()]}</div>
+      <div class="n">${d.getDate()}</div>
+      <div class="bar ${worst === 'ok' ? '' : worst}"></div>
+    </div>`;
+  }).join('');
+
+  const dsel = new Date(today);
+  dsel.setDate(today.getDate() - (6 - dcActiveDay));
+  const dateLabel = (dcActiveDay === 6 ? 'Today ' : NAMES[dsel.getDay()] + ' ') +
+    (dsel.getMonth() + 1) + '/' + dsel.getDate() + '/' + dsel.getFullYear();
+
+  /* one event row, shared by the ignition card and the components */
+  const evRow = (e, rowKey) => {
+    const cnt = dcMtlCount(e);
+    const subs = (e.msgs || []).slice(0, 4).map(m => `
+      <div class="mtl-msg" data-sec="${m.sec}" data-row="${rowKey}">
+        <span class="tm">${dcHM(m.min)}</span>
+        <span class="tx">Off-cycle &middot; ${(m.changes[0] && m.changes[0].note) || 'State change'}</span>
+        <span class="go">&#8250;</span>
+      </div>`).join('');
+    const beat = e.got === undefined ? '' :
+      (e.got > 0
+        ? `<div class="mtl-msg qt">${e.got} heartbeat message${e.got > 1 ? 's' : ''} &middot; every ${DC_BEAT_MIN} min${
+            e.got < e.exp && e.lastBeat !== null ? ', last at ' + dcHM(e.lastBeat) : ''}</div>`
+        : `<div class="mtl-msg qt">Nothing received in this window</div>`);
+    return `
+      <div class="mtl-ev" data-sec="${Math.round(st.base.getTime() / 1000 + e.from * 60)}" data-row="${rowKey}">
+        <span class="ic ${e.state === 'nodata' ? 'alarm' : e.state}">${
+          e.state === 'alarm' ? ALARM_ICON : e.state === 'nodata' ? NODATA_ICON
+          : e.state === 'asleep' ? ASLEEP_ICON : e.state === 'on' ? IGN_ON_ICON
+          : e.state === 'off' ? IGN_OFF_ICON : WARN_ICON}</span>
+        <span class="tx">
+          <span class="tt">${dcHM(e.from)} – ${e.to >= 1440 ? '24:00' : dcHM(e.to)}</span>
+          <span class="st">${e.label} &middot; ${dcMtlDur(e.mins)}${cnt ? ' &middot; ' + cnt : ''}${e.note ? ' &middot; ' + e.note : ''}</span>
+        </span>
+        <span class="go">&#8250;</span>
+      </div>${subs}${beat}`;
+  };
+
+  let firstOpenSet = Object.keys(dcMtlOpen).length > 0;
+
+  /* Ignition and power, message candidate only — the Trinity design
+     has no such lane, and borrowing one would flatter it unfairly. */
+  let ignCard = '';
+  if (!trinity) {
+    const ievs = dcMtlIgnEvents(st);
+    const onEv = ievs.filter(e => e.state === 'on')[0];
+    const iState = st.dropAt !== null ? 'alarm' : 'ok';
+    if (dcMtlOpen['__ign'] === undefined && st.dropAt !== null) { dcMtlOpen['__ign'] = true; firstOpenSet = true; }
+    ignCard = `<div class="mtl-card pwr${dcMtlOpen['__ign'] ? ' open' : ''}" data-comp="__ign">
+      <div class="mtl-row"><span class="dot ${iState}"></span>
+        <span class="nm">Ignition &amp; power</span>
+        <span class="sum">On ${dcHM(st.ignOn)}–${st.isToday ? 'now' : dcHM(st.runEnd)} &middot; ${
+          (onEv.got < onEv.exp ? onEv.got + '/' + onEv.exp + ' msgs' : onEv.got + ' msgs')}</span>
+        <span class="chev">&#9660;</span>
+      </div>
+      <div class="mtl-events">${ievs.map(e => evRow(e, '')).join('')}</div>
+    </div>`;
+  }
+
+  const cards = st.rows.map(r => {
+    if (r.na) {
+      return `<div class="mtl-card"><div class="mtl-row" data-static="1">
+        <span class="dot na"></span><span class="nm">${MTL_NAME[r.row] || r.row}</span>
+        <span class="sum">${r.naText}</span></div></div>`;
+    }
+    const evs = dcMtlEventsFor(r, trinity, st);
+    const counts = {};
+    evs.forEach(e => { counts[e.state] = (counts[e.state] || 0) + 1; });
+    const total = evs.reduce((n, e) => n + e.mins, 0);
+    const worst = evs.some(e => e.state === 'alarm' || e.state === 'nodata') ? 'alarm'
+                : evs.length ? 'warn' : 'ok';
+    /* a gap is stated as messages, not only as hours */
+    const gap = evs.filter(e => e.got !== undefined && e.got < e.exp);
+    const gapTxt = gap.length
+      ? ' · ' + gap.reduce((n, e) => n + e.got, 0) + ' of ' + gap.reduce((n, e) => n + e.exp, 0) + ' msgs'
+      : '';
+    const sum = evs.length
+      ? Object.keys(counts).map(k => counts[k] + ' ' + (MTL_STATE[k] || k) + (counts[k] > 1 ? 's' : '')).join(' · ')
+        + ' · ' + dcMtlDur(total) + gapTxt
+      : 'No events';
+    if (!firstOpenSet && evs.length) { dcMtlOpen[r.row] = true; firstOpenSet = true; }
+    const open = dcMtlOpen[r.row] && evs.length;
+    const evHtml = evs.map(e => evRow(e, r.row)).join('');
+    return `<div class="mtl-card${open ? ' open' : ''}" data-comp="${r.row}">
+      <div class="mtl-row"><span class="dot ${worst === 'ok' ? '' : worst}"></span>
+        <span class="nm">${MTL_NAME[r.row] || r.row}</span>
+        <span class="sum">${sum}</span>
+        ${evs.length ? '<span class="chev">&#9660;</span>' : ''}
+      </div>
+      ${evs.length ? `<div class="mtl-events">${evHtml}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  panel.innerHTML = `
+    <div class="csh">
+      <div class="mtl-days">${days}</div>
+      <div class="mtl-hdr">
+        <span class="t">${dateLabel}</span>
+        <span class="mtl-nav">
+          <button data-mshift="-1" ${dcActiveDay === 0 ? 'disabled' : ''}>&#8249;</button>
+          <button data-mshift="1" ${dcActiveDay === 6 ? 'disabled' : ''}>&#8250;</button>
+        </span>
+      </div>
+      <div class="mtl-list">${ignCard}${cards}</div>
+      <div class="mtl-foot">${st.msgs.length} status messages${st.ocCount ? ' · ' + st.ocCount + ' off-cycle' : ''} · tap an event to open it in Truck Log</div>
+    </div>`;
+
+  /* the panel is still hidden when this renders, so the day strip is
+     measured on the next frame */
+  requestAnimationFrame(() => {
+    const sel = panel.querySelector('.mtl-day.sel');
+    const strip = panel.querySelector('.mtl-days');
+    if (sel && strip) strip.scrollLeft = Math.max(0, sel.offsetLeft - strip.clientWidth + sel.offsetWidth + 4);
+  });
+
+  if (!panel.dataset.mtlBound) {
+    panel.dataset.mtlBound = '1';
+    panel.addEventListener('click', ev => {
+      const day = ev.target.closest('[data-mday]');
+      const shift = ev.target.closest('[data-mshift]');
+      const msgRow = ev.target.closest('.mtl-msg[data-sec]');
+      const evRow = ev.target.closest('.mtl-ev');
+      const head = ev.target.closest('.mtl-row');
+      if (day) { dcActiveDay = +day.dataset.mday; dcMtlOpen = {}; buildMobileTimeline(target); return; }
+      if (shift && !shift.disabled) {
+        dcActiveDay = Math.max(0, Math.min(6, dcActiveDay + (+shift.dataset.mshift)));
+        dcMtlOpen = {}; buildMobileTimeline(target); return;
+      }
+      /* a message row is a moment, so it opens the log on that message
+         rather than on the start of the window that contains it */
+      if (msgRow) { dcTlDrill(+msgRow.dataset.sec, msgRow.dataset.row || '', 'timeline'); return; }
+      if (evRow) { dcTlDrill(+evRow.dataset.sec, evRow.dataset.row, 'timeline'); return; }
+      if (head && !head.dataset.static) {
+        const card = head.closest('.mtl-card');
+        const key = card.dataset.comp;
+        dcMtlOpen[key] = !dcMtlOpen[key];
+        card.classList.toggle('open', !!dcMtlOpen[key]);
+      }
+    });
+  }
 }
 
 function buildTrinityTimeline(target) {
@@ -3946,6 +4561,7 @@ function buildTimeline(target) {
     const el = document.getElementById(id);
     if (el && el !== (target || document.getElementById('panel-timeline'))) el.innerHTML = '';
   });
+  if (document.body.classList.contains('view-mobile')) { buildMobileTimeline(target); return; }
   if (dcTimelineKind() === 'trinity') { buildTrinityTimeline(target); return; }
   buildMessageTimeline(target);
 }
@@ -5136,6 +5752,46 @@ function dcLiveTick() {
    view; Tablet/Mobile show the DS prototype's "being designed"
    treatment until those breakpoints exist. Dark is the product
    default; Light re-points the token layer. */
+/* ══════════════════════════════════════════════════════════════
+   DEVICE CHASSIS
+   Moves the whole app into the phone/tablet screen (and back), and
+   scales the chassis down if the window is too short to hold it.
+══════════════════════════════════════════════════════════════ */
+const DEVICE_NODES = ['.sidebar', 'main.main', '#takeover', '#stg-page', '#overlay', '#drawer', '#comp-pop-layer', '.vp-coming'];
+const deviceHome = {};
+function deviceMount(on) {
+  const screen = document.getElementById('device-screen');
+  if (!screen) return;
+  DEVICE_NODES.forEach(sel => {
+    const el = document.querySelector(sel);
+    if (!el) return;
+    if (on) {
+      if (!deviceHome[sel]) deviceHome[sel] = { parent: el.parentElement, next: el.nextElementSibling };
+      if (el.parentElement !== screen) screen.appendChild(el);
+    } else if (deviceHome[sel]) {
+      const h = deviceHome[sel];
+      h.next && h.next.parentElement === h.parent ? h.parent.insertBefore(el, h.next) : h.parent.appendChild(el);
+      delete deviceHome[sel];
+    }
+  });
+  document.getElementById('device-caption').textContent =
+    on ? (document.body.classList.contains('view-tablet') ? 'Tablet · 834 × 1000' : 'Phone · 390 × 812') : '';
+  if (on) deviceFit();
+}
+/* Shrink the chassis to fit the window rather than cropping it */
+function deviceFit() {
+  const frame = document.getElementById('device-frame');
+  const stage = document.getElementById('device-stage');
+  if (!frame || !stage) return;
+  frame.style.transform = 'scale(1)';
+  const avail = stage.clientHeight - 56;
+  const h = frame.offsetHeight;
+  const scale = Math.min(1, avail / h);
+  frame.style.transform = 'scale(' + (scale > 0.4 ? scale : 0.4).toFixed(3) + ')';
+  frame.style.marginBottom = (h * (scale - 1)) + 'px';
+}
+window.addEventListener('resize', () => { if (document.getElementById('device-screen').firstChild) deviceFit(); });
+
 function setView(v) {
   document.body.classList.remove('view-desktop', 'view-tablet', 'view-mobile');
   document.body.classList.add('view-' + v);
@@ -5144,6 +5800,15 @@ function setView(v) {
   const title = document.getElementById('vp-cs-title');
   if (title) title.textContent = v === 'tablet' ? 'Tablet View' : 'Mobile View';
   if (v !== 'desktop') closeDrawer(); /* overlay covers the app; don't leave a drawer stranded */
+  /* Only the phase that has small-screen layouts gets the chassis */
+  deviceMount(v !== 'desktop' && DC_SMALL_PHASES.indexOf(dcViewMode) > -1);
+  /* Phone gets the accordion timeline, tablet and desktop get the
+     chart — so whichever host is showing one has to be re-rendered
+     rather than left holding the other size's markup. */
+  const tlHost = ['panel-timeline', 'tk-view-timeline']
+    .map(id => document.getElementById(id))
+    .filter(el => el && el.children.length)[0];
+  if (tlHost) requestAnimationFrame(() => buildTimeline(tlHost));
 }
 function vpOptsToggle(e) {
   e.stopPropagation();

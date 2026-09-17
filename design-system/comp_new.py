@@ -1141,12 +1141,16 @@ def c_slider():
 # ══════════════════════════════════════════════════════════════
 #  AVATAR
 # ══════════════════════════════════════════════════════════════
-AV_HTML = """<span class="t-av circle lg">%s</span>
-<span class="t-av square md">%s</span>
+AV_HTML = """<!-- photograph -->
+<span class="t-av circle lg">
+  <img src="driver.jpg" alt="Marco Ruiz">
+</span>
 
-<span class="t-av circle sm">
-  <img src="person.jpg" alt="Dana Whitfield">
-</span>""" % (ICON_USER, ICON_USER)
+<!-- no photograph: the icon is the fallback, not a placeholder -->
+<span class="t-av circle lg">%s</span>
+
+<!-- 16px takes the icon only, never a photograph -->
+<span class="t-av circle xs">%s</span>""" % (ICON_USER, ICON_USER)
 
 AV_CSS = """.t-av{
   display:inline-flex; align-items:center; justify-content:center;
@@ -1166,13 +1170,32 @@ AV_CSS = """.t-av{
 
 AV_SIZES = [('lg', 'Large 56'), ('md', 'Medium 32'), ('sm', 'Small 24'), ('xs', 'XSmall 16')]
 
+# A real Verifi photograph, square-cropped to the face. The source is
+# concrete-truck-driver-closeup-cabin-light, on the Download assets page.
+AV_PHOTO = ('<img src="../assets/img/avatar-sample.webp" alt="Verifi driver" '
+            'width="112" height="112" loading="lazy">')
+
+
+def _avrow(shape, kind):
+    """One row of avatars, all sitting on a shared baseline. kind is photo or icon."""
+    out = '<div class="t-avrow">'
+    for cls, label in AV_SIZES:
+        photo_xs = (kind == 'photo' and cls == 'xs')
+        body = ICON_USER if (kind == 'icon' or photo_xs) else AV_PHOTO
+        note = '<span class="t-note">icon only</span>' if photo_xs else ''
+        out += ('<div class="t-avcell"><span class="box">'
+                '<span class="t-av %s %s">%s</span></span>'
+                '<span class="cl2">%s</span>%s</div>'
+                % (shape, cls, body, label, note))
+    return out + '</div>'
+
 
 def _avs(shape):
-    out = '<div class="t-row" style="gap:20px;align-items:flex-end">'
-    for cls, label in AV_SIZES:
-        out += ('<div class="brow" style="width:auto"><span class="bl">%s</span>'
-                '<span class="t-av %s %s">%s</span></div>' % (label, shape, cls, ICON_USER))
-    return out + '</div>'
+    return ('<div class="t-stack" style="gap:22px">'
+            '<div class="brow"><span class="bl">Photograph</span>%s</div>'
+            '<div class="brow"><span class="bl">Icon &mdash; when there is no photograph</span>'
+            '%s</div></div>'
+            % (_avrow(shape, 'photo'), _avrow(shape, 'icon')))
 
 
 def c_avatar():
@@ -1190,7 +1213,11 @@ def c_avatar():
              'broken ones.</div>',
 
         example=bench(_avs('circle'), _avs('circle'),
-                      'Circle, four sizes. The background and icon swap between themes.'),
+                      'A real photograph on the top row and the icon fallback underneath, '
+                      'at all four sizes. The photograph is one of the images on the '
+                      '<a href="../brand/assets.html#photography">Download assets</a> page, '
+                      'square-cropped to the face. Only the icon background and icon colour '
+                      'change between themes; a photograph looks the same in both.'),
 
         anatomy=spec([
             ('Circle radius', '<span class="m">9999</span>'),

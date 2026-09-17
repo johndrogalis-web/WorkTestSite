@@ -216,13 +216,19 @@ def g_developers():
 ])}
 
 <h2 id="naming">State naming, normalised</h2>
-<p>Three competing conventions coexist in the Figma file &mdash; <code>state</code> vs
+<p>Competing conventions coexist in the Figma file &mdash; <code>state</code> vs
    <code>State</code>, <code>disabled</code> vs <code>isDisabled</code>, <code>value</code> vs
-   <code>isSelected</code>, <code>disabled</code> vs <code>isDisabled</code>. Do not propagate
-   that into code.</p>
-<div class="note ok"><b>One of these is now settled.</b> The checkbox's third state was
-  <code>intermediate</code> publicly and <code>isIndeterminate</code> privately; both are now
-  <code>indeterminate</code> in Figma, which is the word HTML, ARIA and CSS use.</div>
+   <code>isSelected</code>, <code>True</code> vs <code>true</code>. Do not propagate that into
+   code. Use the list below whatever the file says.</p>
+<div class="note ok"><b>The checkbox is now clean, and it is the pattern for the rest.</b>
+  Its public and private sets disagreed on four separate things &mdash; the third state
+  (<code>intermediate</code> vs <code>isIndeterminate</code>), the disabled flag
+  (<code>disabled</code> vs <code>isDisabled</code>), the casing of <code>state</code>, and the
+  casing of <code>value</code>, which additionally carried a <code>fals</code> typo that the
+  indeterminate variants were bound to. All four now read the same in both sets: lowercase
+  property names, lowercase <code>true</code>/<code>false</code>, and
+  <code>indeterminate</code> for the third state. The radio group is the next one to do &mdash;
+  it still says <code>isSelected</code> and <code>isDisabled</code>.</div>
 {spec([
   ('State', '<span class="m">default &middot; hover &middot; focus &middot; active</span>'),
   ('Booleans', '<span class="m">disabled &middot; selected &middot; indeterminate &middot; '

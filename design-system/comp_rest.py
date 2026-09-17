@@ -307,15 +307,28 @@ def c_checkbox():
         'the form is saved, not the moment it is clicked.',
         'gap', figma='30515:78521', extra_meta=['12 variants'],
 
-        note='<div class="note ok"><b>The third state is now called '
-             '<span class="m">indeterminate</span> in both places.</b> The public set used to '
-             'say <span class="m">intermediate</span> and the private one '
-             '<span class="m">isIndeterminate</span>; both have been renamed in Figma. '
-             '<span class="m">indeterminate</span> is the word HTML, ARIA and CSS already use '
+        note='<div class="note ok"><b>The public and private sets now use the same names, '
+             'spelled the same way.</b> Five things were renamed in Figma to get there, and '
+             'the two sets are byte-identical on all four properties:'
+             + table(['Property', 'Public set was', 'Private set was', 'Both are now'], [
+                 ['Third state', '<span class="m">intermediate</span>',
+                  '<span class="m">isIndeterminate</span>', '<span class="m">indeterminate</span>'],
+                 ['Disabled', '<span class="m">disabled</span>',
+                  '<span class="m">isDisabled</span>', '<span class="m">disabled</span>'],
+                 ['<span class="m">state</span> options', '<span class="m">default / hover / focus</span>',
+                  '<span class="m">Default / Hover / Focus</span>',
+                  '<span class="m">default / hover / focus</span>'],
+                 ['<span class="m">value</span> options', '<span class="m">True / False</span>',
+                  '<span class="m">false / true / fals</span>', '<span class="m">true / false</span>'],
+               ]) +
+             '<p><span class="m">indeterminate</span> is the word HTML, ARIA and CSS already use '
              '&mdash; <span class="m">input.indeterminate</span>, '
              '<span class="m">aria-checked="mixed"</span>, '
-             '<span class="m">:indeterminate</span> &mdash; so the Figma property and the code '
-             'property are finally the same string.</div>'
+             '<span class="m">:indeterminate</span>. Booleans are lowercase everywhere, so '
+             '<span class="m">value</span> reads the same as '
+             '<span class="m">indeterminate</span> and <span class="m">disabled</span> beside it. '
+             'And <span class="m">fals</span> &mdash; a truncated <span class="m">false</span> '
+             'that the three indeterminate variants were bound to &mdash; is gone.</p></div>'
              '<div class="note ok"><b>Use this component in prototypes rather than drawing a '
              'checkbox.</b> Verifi Design&rsquo;s note: the label is a toggle on the component, '
              'so you switch it off where you do not want one and edit it in one place where you '
@@ -439,13 +452,6 @@ def c_checkbox():
         ]),
 
         gaps=checklist([
-            '<b>The private set still spells one property '
-            '<span class="m">isDisabled</span></b> where the public set says '
-            '<span class="m">disabled</span>. Same word, two conventions, one component.',
-            '<b>The private set has a variant option spelled '
-            '<span class="m">fals</span></b> alongside <span class="m">false</span> and '
-            '<span class="m">true</span>, and it is the option the indeterminate variants use. '
-            'A third truth value that only exists as a typo.',
             '<b>The tick vector is still named '
             '<span class="m">Icon / Check / Temp</span></b> in the component. Either it is the '
             'real one and the name should say so, or it is a placeholder and the shipped '
@@ -456,7 +462,6 @@ def c_checkbox():
             '<span class="m">inputContainer</span> is <span class="m">20 &times; 20</span> where '
             'the checkbox one is <span class="m">16 &times; 16</span>. Two controls that sit side '
             'by side in the same form should focus identically.',
-            '<b>No pressed state</b> is drawn.',
         ]),
     )
 
@@ -1711,7 +1716,7 @@ CAT = [
  ('Card', 'hold', 'Containers', 'none', '38190:1747', None,
   'The Figma page is called “Cards - missing”. One loose stub, no variants.'),
  ('Checkbox', 'form', 'Form elements', 'gap', '30515:78521', 'checkbox.html',
-  'Naming settled on indeterminate. Private set still says isDisabled, and has a fals typo.'),
+  'Naming normalised across both sets. Tick icon is still named Temp.'),
  ('Chip', 'form', 'Form elements', 'ok', '11268:39456', None,
   'Two sizes, full state set, selectable and removable.'),
  ('Dropdown', 'form', 'Form elements', 'gap', '51689:13501', 'dropdown.html',

@@ -547,6 +547,48 @@ body.vp-m .pager-range{min-width:0}
 }
 .val-success svg{flex-shrink:0;color:var(--green);margin-top:1px}
 
+/* ---------- mobile navigation menu ---------- */
+.m-menu{
+  position:fixed;inset:0;background:var(--bg);z-index:650;
+  display:none;flex-direction:column;overflow-y:auto;
+}
+.m-menu.show{display:flex}
+.mm-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;position:relative}
+.mm-avatar{
+  width:44px;height:44px;border-radius:50%;background:#C0562F;color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;letter-spacing:.03em;
+}
+.mm-region{position:absolute;left:50%;transform:translateX(-50%);text-align:center;color:var(--muted)}
+.mm-region svg{display:block;margin:0 auto 6px;color:var(--text)}
+.mm-region span{font-size:14px;font-weight:700;letter-spacing:.08em}
+.mm-x{
+  width:44px;height:44px;border-radius:50%;border:0;background:var(--panel-3);
+  color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.mm-x:hover{filter:brightness(1.25)}
+.mm-div{height:1px;background:var(--border-soft);margin:4px 0 0}
+.mm-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;padding:24px 18px}
+.mm-tile{
+  position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  background:linear-gradient(180deg,var(--panel-3),var(--panel-2));
+  border:1px solid var(--border-soft);border-radius:10px;
+  padding:30px 8px 26px;color:var(--muted);cursor:pointer;overflow:hidden;
+  font-size:15px;font-weight:700;text-align:center;
+}
+.mm-tile svg{width:26px;height:26px}
+.mm-tile:hover{color:var(--text)}
+.mm-tile.active{color:var(--text)}
+.mm-tile.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--text);border-radius:0 3px 3px 0}
+.mm-rows{padding:20px 18px 8px;border-top:1px solid var(--border-soft);display:flex;flex-direction:column;gap:15px}
+.mm-row{
+  display:flex;align-items:center;justify-content:center;gap:11px;
+  background:linear-gradient(180deg,var(--panel-3),var(--panel-2));
+  border:1px solid var(--border-soft);border-radius:10px;
+  padding:19px;color:var(--muted);cursor:pointer;font-size:15px;font-weight:700;
+}
+.mm-row:hover{color:var(--text)}
+.mm-foot{text-align:center;font-size:11px;font-weight:600;color:var(--faint);padding:20px 0 30px}
+
 /* ---------- delete confirmation modal ---------- */
 .modal-backdrop{
   position:fixed;inset:44px 0 0 0;background:rgba(0,0,0,.55);
@@ -784,7 +826,67 @@ body.vp-m .form-submit-wrap .btn-primary{width:100%}
 </div>
 <div class="m-appbar" id="mAppbar">
   <svg class="m-logo" viewBox="0 0 96 24" xmlns="http://www.w3.org/2000/svg"><path d="M10.3958 8.06142H0V11.2399H9.15381L0.367992 24H8.00383L12.6497 11.286C13.1097 10.0422 12.4197 8.06142 10.3958 8.06142ZM16.6517 8.06142C14.6277 8.06142 13.9377 10.0422 14.3977 11.286L19.0436 24H26.6794L17.8936 11.2399H27.0474V8.06142H16.6517ZM75.4384 3.91555C75.4384 2.53359 76.4504 1.52015 77.8304 1.52015C79.2104 1.52015 80.2223 2.53359 80.2223 3.91555C80.2223 5.2975 79.2104 6.31094 77.8304 6.31094C76.4504 6.31094 75.4384 5.2975 75.4384 3.91555ZM49.587 15.8004C49.587 20.4069 52.9909 24 57.4068 24C60.7187 24 63.7087 22.3877 64.8587 18.8868H61.1787C60.2587 20.4069 58.7868 20.8215 57.4068 20.8215C55.2908 20.8215 53.5429 19.2092 53.1749 17.1363H65.1806V16.1228C65.1806 11.286 61.9147 7.60077 57.4068 7.60077C52.8989 7.60077 49.587 11.286 49.587 15.8004ZM61.7307 14.2802H53.1749C53.5429 12.2994 55.2449 10.7793 57.4068 10.7793C59.5688 10.7793 61.3627 12.2994 61.7307 14.2802ZM39.8812 21.7428L34.6833 8.06142H38.5012L41.7671 17.1363L42.4111 19.6238H42.5031L43.1471 17.1363L46.413 8.06142H50.231L45.0331 21.7428C44.5731 22.9405 43.8831 24 42.4571 24C41.0311 24 40.3412 22.9405 39.8812 21.7428ZM76.0824 23.9079V8.06142H79.5323V23.9079H76.0824ZM83.0283 23.9079V11.2399H81.0963V8.06142H83.0283V6.31094C83.0283 2.57965 85.9262 0 89.5141 0C93.1021 0 96 2.57965 96 6.31094H92.5041C92.5041 4.56046 91.2621 3.27063 89.5601 3.27063C87.8582 3.27063 86.5242 4.56046 86.5242 6.31094V8.06142H96V23.9079H92.5041V11.2399H86.5242V23.9079H83.0283ZM66.6526 23.9079V10.4568C66.6526 9.07486 67.6646 8.06142 69.0446 8.06142H74.5184V11.2399H70.1485V23.9079H66.6526Z"/></svg>
-  <button class="m-grid" title="Apps"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="5" r="2"/><circle cx="12" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="12" cy="19" r="2"/><circle cx="19" cy="19" r="2"/></svg></button>
+  <button class="m-grid" title="Menu" onclick="openMobileMenu()"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="5" r="2"/><circle cx="12" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="12" cy="19" r="2"/><circle cx="19" cy="19" r="2"/></svg></button>
+</div>
+
+<!-- mobile navigation menu -->
+<div class="m-menu" id="mMenu">
+  <div class="mm-head">
+    <div class="mm-avatar">BC</div>
+    <div class="mm-region">
+      <svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z" fill="currentColor"/></svg>
+      <span>Cement ACME</span>
+    </div>
+    <button class="mm-x" onclick="closeMobileMenu()" title="Close menu">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="mm-div"></div>
+  <div class="mm-grid">
+    <div class="mm-tile" onclick="mmGo(null,'Dashboards')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+      Dashboards
+    </div>
+    <div class="mm-tile" onclick="mmGo(null,'My Fleet')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2V6z"/><path d="M9 4v14M15 6v14"/><circle cx="17" cy="7" r="2.4" fill="var(--bg)" stroke="currentColor"/><path d="M17 9.4V12" stroke="currentColor"/></svg>
+      My Fleet
+    </div>
+    <div class="mm-tile active" onclick="mmGo('load','Production')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 15v-3M12 15V9M15 15v-5" stroke-linecap="round"/></svg>
+      Production
+    </div>
+    <div class="mm-tile" onclick="mmGo(null,'Mixtures')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M14.8 8.2a2.6 2.6 0 0 0-3.5 3.6l-3 3 1.5 1.5 3-3a2.6 2.6 0 0 0 3.6-3.5l-1.5 1.5-1.6-1.6 1.5-1.5Z" stroke-linejoin="round"/></svg>
+      Mixtures
+    </div>
+    <div class="mm-tile" onclick="mmGo(null,'Tickets')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8.5h2M12 8.5h4M8 12h2M12 12h4M8 15.5h2M12 15.5h4" stroke-linecap="round"/></svg>
+      Tickets
+    </div>
+    <div class="mm-tile" onclick="mmGo(null,'Diagnostic Center')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20.5 20.5-4-4"/><path d="M8 11h1.4l.9-1.8 1.7 3.6.9-1.8H14"/></svg>
+      Diagnostic Center
+    </div>
+    <div class="mm-tile" onclick="mmGo(null,'Data Insights')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16l5-5 4 4 7-7"/><path d="M15 8h5v5"/><path d="M6 4l.5 1.2L7.7 6l-1.2.5L6 7.7 5.5 6.5 4.3 6l1.2-.8L6 4z" fill="currentColor" stroke="none"/></svg>
+      Data Insights
+    </div>
+    <div class="mm-tile" onclick="mmGo('slump','Slump Test')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M9.5 4h5l2.5 15h-10L9.5 4z"/><path d="M5 19h14" stroke-linecap="round"/></svg>
+      Slump Test
+    </div>
+  </div>
+  <div class="mm-rows">
+    <div class="mm-row" onclick="protoToast('Settings isn\'t part of this prototype')">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.12-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.57 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.65 8.85a1.7 1.7 0 0 0-.34-1.87l-.06-.06A2 2 0 1 1 7.08 4.1l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09c0 .68.41 1.3 1.03 1.56.6.26 1.3.13 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9c.26.62.88 1.03 1.56 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51.97Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      Settings
+    </div>
+    <div class="mm-row" onclick="protoToast('Support isn\'t part of this prototype')">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M9.5 9a2.5 2.5 0 1 1 3.7 2.2c-.7.4-1.2 1-1.2 1.8v.3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="16.6" r="1" fill="currentColor"/></svg>
+      Support
+    </div>
+  </div>
+  <div class="mm-foot">Saint-Gobain© 2026 v1.6.2.1 a095342a 2609081215</div>
 </div>
 <div class="shell">
   <aside class="rail">
@@ -1187,6 +1289,14 @@ const FLEET = {
      times:[{t:"8:12 AM", d:"06/25/2026"},{t:"9:45 AM", d:"06/25/2026"}]}
   ]
 };
+
+/* ============ mobile navigation menu ============ */
+function openMobileMenu(){ document.getElementById('mMenu').classList.add('show'); }
+function closeMobileMenu(){ document.getElementById('mMenu').classList.remove('show'); }
+function mmGo(view, label){
+  if(view){ showView(view); closeMobileMenu(); }
+  else { protoToast(label + " isn't part of this prototype"); }
+}
 
 /* ============ view switching ============ */
 function showView(v){
@@ -1737,6 +1847,7 @@ function toggleRowDetail(btn){
     btn.classList.remove('open');
     return;
   }
+  collapseAllDetails(); // single-open accordion: opening a row closes any other
   const table = tr.closest('table');
   const ths = [...table.querySelectorAll('thead th')];
   const tds = [...tr.children];
@@ -2036,6 +2147,8 @@ document.addEventListener('keydown', e=>{
   if(e.key!=='Escape') return;
   const modal = document.getElementById('deleteModal');
   if(modal.classList.contains('show')){ closeDeleteConfirm(); return; }
+  const menu = document.getElementById('mMenu');
+  if(menu.classList.contains('show')){ closeMobileMenu(); return; }
   closeDrawer();
 });
 

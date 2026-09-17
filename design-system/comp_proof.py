@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Breadcrumbs and Table — the two pages that prove the template."""
+from comp_rest import PHASES
 from core import (shell, meta, pill, copybar, bench, brow, spec, dodont,
                   checklist, table, ARROW)
 
@@ -9,6 +10,86 @@ CHEV = ('<svg class="sep" viewBox="0 0 12 12" fill="none" aria-hidden="true">'
 SORT = ('<svg viewBox="0 0 12 12" fill="none" aria-hidden="true">'
         '<path d="M6 1.6v8.8M3 4.2L6 1.4l3 2.8M3 7.8L6 10.6l3-2.8" stroke="currentColor" '
         'stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>')
+
+
+# ── Showcase: the table with other components inside its cells ──
+# Figma 63798:44339 (light), 63798:45247 (dark), header 63798:43886.
+PHASE_HEX = {n: (strong, subtle) for n, strong, subtle in PHASES}
+
+SHOWCASE_COLS = [('Truck #', 80), ('Phase', 140), ('Customer', 180),
+                 ('Status', 100), ('Progress', 200), ('Priority', 150)]
+
+SHOWCASE_ROWS = [
+    ('5040', 'Return to plant', 'Concrete Supply',   ('Active',  ''),    78, 'High'),
+    ('5095', 'Pouring',         'Building Futures',  ('Alert',   'err'), 50, 'Medium'),
+    ('3021', 'On site',         'Construction Corp', ('Idle',    'alt'), 88, 'Low'),
+    ('1924', 'Loaded',          'Metro Builders',    ('Active',  ''),    30, 'High'),
+    ('8443', 'To job',          'Concrete Supply',   ('Active',  ''),   100, 'Medium'),
+    ('9662', 'Waiting to load', 'Building Futures',  ('Pending', 'alt'), 12, 'Low'),
+]
+
+
+def _showcase(dark=False):
+    head = ''
+    for label, w in SHOWCASE_COLS:
+        head += ('<th style="width:%dpx"><span class="srt">%s%s</span></th>'
+                 % (w, label, SORT))
+    body = ''
+    for num, phase, cust, (status, scls), pct, pri in SHOWCASE_ROWS:
+        strong, subtle = PHASE_HEX[phase]
+        bg = subtle if dark else strong
+        fg = '#171614' if dark else '#fff'
+        body += ('<tr>'
+                 '<td>%s</td>'
+                 '<td><span class="c-phase" style="background:%s;color:%s">%s</span></td>'
+                 '<td>%s</td>'
+                 '<td><span class="t-badge %s">%s</span></td>'
+                 '<td><span class="t-pbar" style="max-width:180px">'
+                 '<i style="width:%d%%"></i></span></td>'
+                 '<td><span class="t-chip">%s</span></td>'
+                 '</tr>' % (num, bg, fg, phase, cust, scls, status, pct, pri))
+    return ('<div style="width:100%%;overflow-x:auto"><table class="c-tbl striped showcase">'
+            '<thead><tr>%s</tr></thead><tbody>%s</tbody></table></div>' % (head, body))
+
+
+SHOWCASE_HTML = """<table class="vf-table vf-table--striped">
+  <thead>
+    <tr>
+      <th scope="col" style="width:80px">Truck #</th>
+      <th scope="col" style="width:140px">Phase</th>
+      <th scope="col" style="width:180px">Customer</th>
+      <th scope="col" style="width:100px">Status</th>
+      <th scope="col" style="width:200px">Progress</th>
+      <th scope="col" style="width:150px">Priority</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>5040</td>
+      <td><span class="vf-phase vf-phase--return">Return to plant</span></td>
+      <td>Concrete Supply</td>
+      <td><span class="vf-badge">Active</span></td>
+      <td>
+        <span class="vf-progress" role="progressbar" aria-valuenow="78"
+              aria-valuemin="0" aria-valuemax="100" aria-label="Load progress">
+          <i style="width:78%"></i>
+        </span>
+      </td>
+      <td><span class="vf-chip">High</span></td>
+    </tr>
+  </tbody>
+</table>"""
+
+SHOWCASE_CSS = """/* The cell is a container. Nothing about the component changes
+   because it is inside a table. */
+.c-tbl.showcase td{ padding-top:11px; padding-bottom:11px; }
+.c-tbl.showcase .t-pbar{ display:block; width:100%; }
+
+.t-chip{
+  display:inline-flex; align-items:center; height:22px; padding:0 10px;
+  border-radius:100px; font-size:13px; line-height:1;
+  color:var(--tink); box-shadow:inset 0 0 0 1px var(--bdm);
+}"""
 
 
 # ══════════════════════════════════════════════════════════════
@@ -498,7 +579,7 @@ def _tbl(striped=False, pick=None, sel=False, dis=False):
     cls = 'c-tbl' + (' striped' if striped else '')
     pickhead = ''
     if pick == 'cbx':
-        pickhead = '<th class="pick"><span class="c-cbx big"><i>&#10003;</i></span></th>'
+        pickhead = '<th class="pick"><span class="c-cbx"><i>&#10003;</i></span></th>'
     elif pick == 'rad':
         pickhead = '<th class="pick"></th>'
     rows = [('4417', 'Rockdale', '4.2&Prime;', '', 'on'),
@@ -508,10 +589,10 @@ def _tbl(striped=False, pick=None, sel=False, dis=False):
     for num, plant, slump, rcls, checked in rows:
         cell = ''
         if pick == 'cbx':
-            cell = ('<td class="pick"><span class="c-cbx big %s"><i>&#10003;</i></span></td>'
+            cell = ('<td class="pick"><span class="c-cbx %s"><i>&#10003;</i></span></td>'
                     % checked)
         elif pick == 'rad':
-            cell = '<td class="pick"><span class="c-rad big %s"><i></i></span></td>' % checked
+            cell = '<td class="pick"><span class="c-rad %s"><i></i></span></td>' % checked
         neg = ' neg' if slump.startswith('&minus;') else ''
         body += ('<tr class="%s">%s<td><a href="#0">%s</a></td><td>%s</td>'
                  '<td class="num%s">%s</td></tr>' % (rcls, cell, num, plant, neg, slump))
@@ -586,11 +667,45 @@ def c_table():
 
 {copybar('Multi-select', 'tblcb', 'checkbox column', PICK_HTML, None)}
 {bench(withcbx, withcbx)}
-<p>The checkbox in a table row is <span class="m">24 &times; 24</span> &mdash; larger than the
-   standalone checkbox component. See known gaps.</p>
+<div class="note ok"><b>Row selectors now match the standalone components.</b> The Figma table
+  draws its checkbox and radio at <span class="m">24 &times; 24</span>, which disagreed with the
+  <span class="m">16 &times; 16</span> of the
+  <a href="checkbox.html">Checkbox</a> and <a href="radio-group.html">Radio group</a> components.
+  Verifi Design has settled it in favour of the standalone size, so a checkbox is one size
+  everywhere in the product. This page renders <span class="m">16 &times; 16</span>.</div>
 
 {copybar('Single select', 'tblrd', 'radio column', None, None)}
 {bench(withrad, withrad)}
+
+<h3 id="showcase">Components inside cells</h3>
+<p>The cell is a container and nothing else. A component dropped into one keeps its own
+   size, its own tokens and its own theme behaviour &mdash; the table does not restyle it.
+   This is the arrangement Figma publishes as the showcase table, and it is the fastest way
+   to see whether the newer components agree with each other.</p>
+{copybar('Showcase', 'tblshow', '6 columns', SHOWCASE_HTML, SHOWCASE_CSS)}
+<div class="bench stack">
+  <div class="pane pane-l"><div class="ph">Light</div><div class="pb">{_showcase(False)}</div></div>
+  <div class="pane pane-d"><div class="ph">Dark</div><div class="pb">{_showcase(True)}</div></div>
+</div>
+<p class="cap">Truck phase tag, Badge, Progress bar and Chip, all in one row. The phase tag is
+   the only one that inverts between themes; everything else keeps its colour and lets the row
+   background change underneath it. Stacked rather than side by side because six columns do not
+   fit in half a page.</p>
+{table(['Column', 'Width', 'What is in it'], [
+  ['Truck #', '<span class="m">80px</span>', 'Plain text, the row identifier'],
+  ['Phase', '<span class="m">140px</span>',
+   '<a href="truck-phase-tag.html">Truck phase tag</a> &mdash; sized by its label'],
+  ['Customer', '<span class="m">180px</span>', 'Plain text'],
+  ['Status', '<span class="m">100px</span>',
+   '<a href="badge.html">Badge</a> &mdash; Default, Alternate or Error'],
+  ['Progress', '<span class="m">200px</span>',
+   '<a href="progress-bar.html">Progress bar</a> at <span class="m">180px</span> wide'],
+  ['Priority', '<span class="m">150px</span>', 'Chip, outline only'],
+])}
+<div class="note warn"><b>The progress track is invisible here too.</b> Look at the 100%
+  row against the ones below it &mdash; on a light background you cannot tell where the
+  track ends. That is <a href="../open-items.html">open item 11</a>, and a table is where
+  it does the most damage, because rows are compared against each other.</div>
 
 <h2 id="states">States</h2>
 {bench(withsel, withsel, 'Row 2 selected, row 3 disabled.')}
@@ -666,9 +781,11 @@ def c_table():
   ('Body text', '<span class="m">14px / 16px</span>, weight 500'),
   ('Caption text', '<span class="m">12px / 14px</span>, weight 600'),
   ('Cell ink', '<span class="sw" style="background:#171614"></span><span class="m">#171614</span>'),
-  ('Row checkbox', '<span class="m">24 &times; 24</span>, radius 2, stroke '
-                   '<span class="m">#171614</span>, selected fill <span class="m">#211F1C</span>'),
-  ('Row radio', '<span class="m">24 &times; 24</span>, stroke <span class="m">#171614</span>'),
+  ('Row checkbox', '<span class="m">16 &times; 16</span>, radius 2, stroke '
+                   '<span class="m">#171614</span>, selected fill <span class="m">#211F1C</span> '
+                   '&mdash; matches the standalone component'),
+  ('Row radio', '<span class="m">16 &times; 16</span>, stroke '
+                '<span class="m">#171614</span> &mdash; matches the standalone component'),
   ('Icon slot', '<span class="m">30px</span>, icon colour <span class="m">#88888E</span>'),
   ('Accordion button', '<span class="m">34 &times; 38</span>'),
   ('Disabled opacity', '<span class="m">30%</span>'),
@@ -702,8 +819,10 @@ def c_table():
    'in Montserrat for legibility &mdash; this may be that leaking into bound variables.'],
   ['<b>Icons</b>', 'Font Awesome 6 Pro at 18px, <span class="m">#88888E</span>.',
    '1,134 Unicons and 281 Feather, with a standing recommendation against adding Font Awesome.'],
-  ['<b>Checkbox size</b>', '<span class="m">24 &times; 24</span>',
-   'The standalone checkbox component is <span class="m">16 &times; 16</span>.'],
+  ['<b>Checkbox and radio size</b> <span class="pill ok">Settled</span>',
+   '<span class="m">24 &times; 24</span> in the Figma table.',
+   'Settled in favour of the standalone <span class="m">16 &times; 16</span>. One size '
+   'everywhere; the Figma table still needs updating to match.'],
   ['<b>Selected tint</b>', '<span class="m">#EEF9FF</span> &mdash; brand Blue 0',
    'Product Blue 0 is <span class="m">#C5E4FB</span>.'],
 ])}

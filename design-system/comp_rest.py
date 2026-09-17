@@ -288,7 +288,16 @@ def c_checkbox():
         'components/checkbox.html', 'Checkbox',
         'An independent yes or no. Several can be true at once, and the change applies when '
         'the form is saved, not the moment it is clicked.',
-        'gap', figma='30515:78521', extra_meta=['24 variants'],
+        'gap', figma='30515:78521', extra_meta=['12 variants'],
+
+        note='<div class="note ok"><b>Use this component in prototypes rather than drawing a '
+             'checkbox.</b> Verifi Design&rsquo;s note: the label is a toggle on the component, '
+             'so you switch it off where you do not want one and edit it in one place where you '
+             'do, instead of retyping it in every layout. It also carries light and dark with it, '
+             'so a prototype switched to dark mode brings the checkbox along without any manual '
+             'recolouring. The same instance is what the '
+             '<a href="table.html#showcase">table</a> row selector uses, now that both are '
+             '<span class="m">16 &times; 16</span>.</div>',
 
         example=bench(demo, demo),
 
@@ -1651,7 +1660,7 @@ CAT = [
  ('Spinner', 'inform', 'Informers', 'gap', '10259:29263', 'spinner.html',
   'Three sizes. Rotation timing is still unspecified.'),
  ('Table', 'hold', 'Containers', 'gap', '63544:2653', 'table.html',
-  'Four conflicts with the rest of the system — typeface, icons, checkbox size, selected tint.'),
+  'Three open conflicts — typeface, icons, selected tint. Selector size now settled at 16.'),
  ('Tabs', 'nav', 'Navigators', 'gap', '39520:6900', 'tabs.html',
   'No rule for what happens past eight tabs.'),
  ('Tag', 'inform', 'Informers', 'gap', '62678:46633', 'tag.html',

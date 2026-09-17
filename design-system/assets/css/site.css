@@ -197,7 +197,9 @@ thead th{text-align:left;font-weight:400;font-family:var(--mono);font-size:10.5p
 tbody td{padding:11px 16px 11px 0;border-bottom:1px solid var(--rule);
   vertical-align:top;color:var(--ink-soft)}
 tbody tr:last-child td{border-bottom:0}
-tbody td:first-child{color:var(--ink)}
+.tw tbody td:first-child{color:var(--ink)}   /* documentation tables only —
+   unscoped, this leaked into product-table demos and turned the first cell
+   site-ink on a dark pane */
 td.m,th.m,.m{font-family:var(--mono);font-size:12.5px}
 td.wrap{min-width:190px}
 .sw{width:13px;height:13px;border-radius:2px;display:inline-block;margin-right:8px;
@@ -261,6 +263,7 @@ td.wrap{min-width:190px}
 /* ═══ DUAL-THEME BENCH ══════════════════════════════════════ */
 .bench{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 10px}
 .bench.solo{grid-template-columns:1fr}
+.bench.stack{grid-template-columns:minmax(0,1fr)}
 .pane{border:1px solid;border-radius:4px;overflow:hidden;min-width:0}
 .pane > .ph{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
   padding:9px 16px;border-bottom:1px solid}
@@ -691,3 +694,10 @@ td.wrap{min-width:190px}
 .t-avcell > .box{height:56px;display:flex;align-items:center;justify-content:center}
 .t-avcell > .cl2{font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;
   text-transform:uppercase;color:var(--tx3);text-align:center;line-height:1.3}
+
+/* Showcase table — components composed inside cells (63798:44339) */
+.c-tbl.showcase td{padding-top:11px;padding-bottom:11px}
+.c-tbl.showcase .t-pbar{display:block;width:100%;max-width:180px}
+.t-chip{display:inline-flex;align-items:center;height:22px;padding:0 10px;
+  border-radius:100px;font-size:13px;line-height:1;color:var(--tink);
+  box-shadow:inset 0 0 0 1px var(--bdm);white-space:nowrap}

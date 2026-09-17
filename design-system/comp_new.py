@@ -422,8 +422,9 @@ def c_badge():
              'Accessibility. This is the most serious defect in the pass-two set.</div>',
 
         example=bench(_badges('text'), _badges('text'),
-                      'Only the Error style changes between themes. The other three are '
-                      'identical in both, which is why Outline stays white on dark.'),
+                      'Only the Error style changes between themes, and that is deliberate: '
+                      'the light red would sit at 2.23:1 against the dark surface. The other '
+                      'three keep one background in both modes.'),
 
         anatomy=spec([
             ('Shape', '<span class="m">16px</span> radius, <span class="m">20px</span> tall'),
@@ -469,19 +470,24 @@ def c_badge():
                       '#EFADAC</span>', '<b>Yes</b>'],
                  ])),
 
-        states=('<p>Badges have no interactive states. They report a count or a status and '
-                'cannot be pressed, focused or dismissed.</p>'
-                '<div class="note"><b>If it needs to be pressable</b>, you want a chip or a '
-                'button, and none of these four backgrounds come with it.</div>'),
+        states=('<p>Badges have no interactive states, and that is the definition rather '
+                'than an omission.</p>'
+                '<div class="note ok"><b>A badge has no interactions. A chip does.</b> '
+                'Verifi Design&rsquo;s rule: a badge is a displayed item that reports the '
+                'current state of something and nothing more. The moment it can be clicked, '
+                'hovered, selected or dismissed, it is a chip and belongs to that component '
+                'instead. That single test decides which one you want, and it is the reason '
+                'no hover, focus or pressed state will ever be added here.</div>'),
 
         behaviour=checklist([
             'The number badge caps at <span class="m">40px</span>, which fits three '
             'characters. Anything above 99 is written &ldquo;99+&rdquo;.',
             'The text badge has no width cap at all, by deliberate choice &mdash; the '
             'designer split it into its own variant so the number could keep its cap.',
-            'Only the Error style has separate light and dark values. The other three use '
-            'one background in both themes, so a Default badge on a dark surface is still '
-            'bright yellow-green.',
+            '<b>Only Error changes between themes, for a measured reason.</b> The light '
+            'error chip <span class="m">#B00100</span> reaches only 2.23:1 against the dark '
+            'surface, so it flips to <span class="m">#EFADAC</span> at 8.80:1. The other '
+            'three backgrounds are light enough to work in both modes and do not change.',
             'The dot carries meaning by colour alone. Nothing else about it varies.',
         ]),
 
@@ -490,7 +496,8 @@ def c_badge():
              'Use Error for counts that need action, not for counts that are merely high.',
              'Keep one badge per object. Two badges on one row is a layout problem, not a '
              'status problem.'],
-            ['Do not use the dot as the only signal for anything important in light mode '
+            ['Do not make a badge clickable, hoverable or dismissible. That is a chip.',
+             'Do not use the dot as the only signal for anything important in light mode '
              'until its contrast is fixed.',
              'Do not invent a success or warning style. Neither exists.',
              'Do not use Outline on a dark surface expecting it to adapt. It does not.',
@@ -546,27 +553,35 @@ def c_badge():
                   'number has to do it.',
               ])),
 
-        gaps=checklist([
+        gaps=('<div class="note ok"><b>Three questions closed.</b> The Error style changes '
+              'between themes on purpose, for contrast. The dot style names will be renamed to '
+              'match the display names. And a badge is defined by having no interactions &mdash; '
+              'anything interactive is a chip.</div>' +
+              checklist([
             '<b>Two of three dot colours fail contrast in light mode</b>, and the dot has '
             'no text to fall back on.',
             '<b>The Outline border fails at 2.59:1</b>, below the 3:1 for a boundary that '
             'defines the control.',
-            '<b>Only Error changes between themes.</b> Default, Alternate and Outline are '
-            'mode-invariant, and Outline stays white on a near-black surface.',
-            '<b>The Default background is bound to <span class="m">badge/dot/fill/default'
-            '</span></b> &mdash; a dot token reused for the chip.',
-            '<b>Two vocabularies.</b> Display styles are Default / Alternate / Outline / '
-            'Error; dot styles are default / Information / error. Capitalisation disagrees '
-            'too.',
+            '<b>The Default background is still bound to '
+            '<span class="m">badge/dot/fill/default</span></b> &mdash; a dot token reused for '
+            'the chip. Verifi Design is checking that variable.',
+            '<b>The dot names will be brought in line with the display names.</b> Agreed, not '
+            'yet done, and the component structure is the reason the two drifted apart.',
             '<b>Dot has no Outline variant; display has no Information variant.</b>',
-            '<b>No success or warning style</b> in either set.',
+            '<b>No success or warning style.</b> Verifi Design&rsquo;s leaning is one '
+            'reusable badge whose colour can be set, rather than a growing list of named '
+            'styles &mdash; which makes the colour-pair problem on '
+            '<a href="tag.html">Tag</a> worth solving first, since it would arrive here too.',
             '<b>The 20px height and 4px padding only work at line-height 1</b>, but the '
             'type token says 1.3. One of the two is wrong.',
             '<b>No placement rule</b> &mdash; anchored to an icon, inline with text, in a '
             'tab header. All undefined.',
-            '<b>No stated relationship to <a href="truck-phase-tag.html">Truck phase '
-            'tag</a></b>, which solves a similar problem differently.',
-        ]),
+            '<b>Outline border still measures 2.59:1</b>, below the 3:1 a boundary needs. '
+            'Unanswered.',
+            '<b>Still no stated relationship to <a href="truck-phase-tag.html">Truck phase '
+            'tag</a></b>. Both are non-interactive status displays, so the badge-versus-chip '
+            'test does not separate them; something else has to.',
+              ])),
     )
 
 

@@ -557,10 +557,11 @@ OPEN = [
   '<em>To job</em> and <em>Returning to plant</em>. Same domain, two dialects.',
   'Verifi Design + Product', 'Phase pills, map, legend, and anything reading the API'),
  ('08', 'The table component does not match the system',
-  'Four conflicts in one component: it binds <b>Montserrat</b> rather than ABC Repro, uses '
-  '<b>Font Awesome 6 Pro</b> icons rather than Unicons, sets its checkbox at '
-  '<b>24&times;24</b> rather than 16, and tints selected rows with brand Blue 0 '
-  '<span class="m">#EEF9FF</span> rather than product Blue 0.',
+  'Three conflicts left: it binds <b>Montserrat</b> rather than ABC Repro, uses '
+  '<b>Font Awesome 6 Pro</b> icons rather than Unicons, and tints selected rows with brand '
+  'Blue 0 <span class="m">#EEF9FF</span> rather than product Blue 0. The fourth is settled '
+  '&mdash; row checkbox and radio are <b>16&times;16</b>, matching the standalone components, '
+  'and the Figma table needs updating to suit.',
   'Verifi Design', 'The product’s single most-used surface'),
  ('09', 'Icons: two libraries, no decision',
   '1,134 Unicons and 281 Feather coexist, plus Font Awesome inside the table component. The '

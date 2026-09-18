@@ -13,6 +13,8 @@
   --dash:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='4' y='7.5' width='8' height='1' rx='.5' fill='%23000'/%3E%3C/svg%3E");
 
   --cbxst:#171614;--cbxbg:#fff;--cbxon:#211f1c;--cbxtk:#fff;
+  --cbxhv:#d0cec8;--cbxfo:#171614;--cbxfi:#d0cec8;
+  --cbxdb:#b6b1a5;--cbxdi:#dfdedd;--cbxdl:#b6b1a5;--cbxlb:#171614;
 
   /* Brand palette — Identity Guidelines V1.0 */
   --black:#2e2b27;
@@ -289,6 +291,8 @@ td.wrap{min-width:190px}
 .bstack{display:flex;flex-direction:column;gap:10px;align-items:flex-start;width:100%}
 
 .pane-l{--cbxst:#171614;--cbxbg:#fff;--cbxon:#211f1c;--cbxtk:#fff;
+  --cbxhv:#d0cec8;--cbxfo:#171614;--cbxfi:#d0cec8;
+  --cbxdb:#b6b1a5;--cbxdi:#dfdedd;--cbxdl:#b6b1a5;--cbxlb:#171614;
   --bg:#fff;--l1:#fff;--l2:#f6f4f2;--tx:#36322d;--tx2:#36322dc2;--tx3:#36322d9e;
   --bd:#36322d24;--bdm:rgba(54,50,45,.30);--sel:#3069e3;--onsel:#fff;--er:#d70100;--am:#ffba0d;
   --hov:rgba(48,105,227,.05);--link:#0975c3;--cur:#666054;
@@ -312,6 +316,8 @@ td.wrap{min-width:190px}
 .pane-l > .ph{color:#36322db3;border-bottom-color:#36322d24}
 
 .pane-d{--cbxst:#fff;--cbxbg:#211f1c;--cbxon:#fff;--cbxtk:#211f1c;
+  --cbxhv:#b6b1a5;--cbxfo:#fff;--cbxfi:#b6b1a5;
+  --cbxdb:#b6b1a5;--cbxdi:#d0cec8;--cbxdl:#b6b1a5;--cbxlb:#fff;
   --bg:#171614;--l1:#211f1c;--l2:#2f2d28;--tx:#fff;--tx2:#e5e5e5de;--tx3:#e5e5e5bf;
   --bd:#e5e5e51f;--bdm:rgba(229,229,229,.25);--sel:#e3f200;--onsel:#000;--er:#d70100;--am:#ffba0d;
   --hov:rgba(227,242,0,.05);--link:#8dc6f0;--cur:#b6b1a5;
@@ -387,14 +393,15 @@ td.wrap{min-width:190px}
 .c-phase{font-size:12px;line-height:1;padding:5px 10px;border-radius:32px;white-space:nowrap;
   display:inline-block}
 
-/* Checkbox and radio — one size only. The box is 16, the touchpoint is 24.
-   Trinity names that outer frame "touchpoint"; the negative margin lets it
-   paint and hit-test at 24 while occupying 16 in layout, so nothing shifts. */
-.c-cbx{display:inline-flex;align-items:center;gap:9px;font-size:14px;color:var(--tx2)}
-.c-cbx i{width:24px;height:24px;margin:-4px;flex:none;position:relative;font-size:0;
+/* Checkbox and radio — one size only. The box is 16, the touchpoint is 24,
+   and Trinity's own tokens say so: checkbox/width 24, checkbox/padding 4.
+   checkbox/gap is 4, measured from the touchpoint edge, so the label sits
+   8px clear of the box. Every state below is a named Trinity token. */
+.c-cbx{display:inline-flex;align-items:center;gap:4px;font-size:14px;color:var(--cbxlb)}
+.c-cbx i{width:24px;height:24px;flex:none;position:relative;font-size:0;
   font-style:normal;line-height:0;display:inline-flex;align-items:center;justify-content:center}
 .c-cbx i::before{content:"";width:16px;height:16px;box-sizing:border-box;border-radius:2px;
-  border:1px solid var(--cbxst);background:var(--cbxbg)}
+  border:1px solid var(--cbxst);background:var(--cbxbg);transition:background .14s,border-color .14s}
 .c-cbx i::after{content:"";position:absolute;width:16px;height:16px;opacity:0;
   background:var(--cbxtk);
   -webkit-mask:var(--tick) center/16px 16px no-repeat;mask:var(--tick) center/16px 16px no-repeat}
@@ -402,13 +409,34 @@ td.wrap{min-width:190px}
 .c-cbx.on i::after,.c-cbx.ind i::after{opacity:1}
 .c-cbx.ind i::after{-webkit-mask-image:var(--dash);mask-image:var(--dash)}
 
+/* Hover — a 2px ring outside the box (checkbox/hover-stroke). Not a darker border. */
+.c-cbx.hov i::before,.c-cbx:hover i::before{box-shadow:0 0 0 2px var(--cbxhv)}
+/* Focus — 2px ring outside (checkbox/focus-outer-stroke) AND the box's own
+   border drops to checkbox/focus-inner-stroke. Both, not one. */
+.c-cbx.foc i::before{box-shadow:0 0 0 2px var(--cbxfo);border-color:var(--cbxfi)}
+.c-cbx.foc.on i::before,.c-cbx.foc.ind i::before{border-color:var(--cbxfi)}
+/* Disabled — dedicated tokens, not opacity. Solid fill, no stroke at all. */
+.c-cbx.dis{color:var(--cbxdl)}
+.c-cbx.dis i::before{background:var(--cbxdb);border-color:transparent;box-shadow:none}
+.c-cbx.dis i::after{background:var(--cbxdi)}
+
+/* The four-by-three state grid on the Checkbox page. */
+.cbxg{display:grid;grid-template-columns:auto repeat(3,minmax(0,1fr));
+  align-items:center;gap:14px 20px;width:100%}
+.cbxh{display:contents}
+.cbxh span,.cbxl{font-family:var(--mono);font-size:10px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--tx2)}
+.cbxr{display:contents}
+
 /* Selected radio is a 4px ring, not a dot — the centre stays the surface colour. */
-.c-rad{display:inline-flex;align-items:center;gap:9px;font-size:14px;color:var(--tx2)}
-.c-rad i{width:24px;height:24px;margin:-4px;flex:none;
+.c-rad{display:inline-flex;align-items:center;gap:4px;font-size:14px;color:var(--cbxlb)}
+.c-rad i{width:24px;height:24px;flex:none;
   display:inline-flex;align-items:center;justify-content:center}
 .c-rad i::before{content:"";width:16px;height:16px;box-sizing:border-box;border-radius:99px;
   border:1px solid var(--cbxst);background:var(--cbxbg)}
 .c-rad.on i::before{border-width:4px;background:var(--cbxbg)}
+.c-rad.dis{color:var(--cbxdl)}
+.c-rad.dis i::before{background:var(--cbxdb);border-color:var(--cbxdb)}
 .c-tog{width:40px;height:22px;border-radius:99px;background:var(--bdm);display:inline-flex;
   align-items:center;padding:2px;transition:background .14s;flex:none}
 .c-tog i{width:18px;height:18px;border-radius:99px;background:var(--l1);

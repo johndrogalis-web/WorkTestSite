@@ -295,8 +295,20 @@ def c_checkbox():
         brow('Checked', '<span class="c-cbx on"><i></i>Show returned concrete</span>') +
         brow('Indeterminate', '<span class="c-cbx ind">'
                               '<i></i>All plants (3 of 7)</span>') +
-        brow('Disabled', '<span class="c-cbx" style="opacity:.42">'
-                         '<i></i>Locked by dispatch</span>'))
+        brow('Disabled', '<span class="c-cbx dis"><i></i>Locked by dispatch</span>'))
+
+    # The full grid Trinity documents: four states x three values.
+    def _row(cls):
+        return ('<div class="cbxr">'
+                '<span class="c-cbx %s"><i></i>Label</span>'
+                '<span class="c-cbx on %s"><i></i>Label</span>'
+                '<span class="c-cbx ind %s"><i></i>Label</span></div>' % (cls, cls, cls))
+    grid = ('<div class="cbxg"><div class="cbxh"><span></span>'
+            '<span>Unchecked</span><span>Checked</span><span>Indeterminate</span></div>'
+            + ''.join('<div class="cbxl">%s</div>%s' % (lbl, _row(cls))
+                      for lbl, cls in [('Default', ''), ('Hover', 'hov'),
+                                       ('Focus', 'foc'), ('Disabled', 'dis')])
+            + '</div>')
     grp = ('<div class="bstack"><span class="c-cbx on"><i></i>Rockdale</span>'
            '<span class="c-cbx on"><i></i>Midwest</span>'
            '<span class="c-cbx"><i></i>Northgate</span></div>')
@@ -369,7 +381,7 @@ def c_checkbox():
             ('Box', '<span class="m">16 &times; 16</span>, 1px border, <span class="m">2px</span> radius'),
             ('Tick', '<span class="m">6 &times; 4</span> at <span class="m">(5, 6)</span>, 1px, round caps'),
             ('Dash', '<span class="m">8 &times; 1</span> at <span class="m">(4, 7.5)</span>'),
-            ('Gap to label', '<span class="m">9px</span> from the box edge'),
+            ('Gap to label', '<span class="m">4px</span> from the touchpoint edge &mdash; <span class="m">8px</span> of visible air beside the box'),
             ('Label', '<span class="m">14px</span>, the defined ink'),
             ('Group spacing', '<span class="m">10px</span> between options'),
         ]),
@@ -379,16 +391,29 @@ def c_checkbox():
                  copybar('In a group', 'cbxg', 'multi-select', None, None) +
                  bench(grp, grp)),
 
-        states=table(['State', 'What changes'], [
-            ['Unchecked', 'Empty box, 1px border in <code>--strong</code>.'],
-            ['Checked', 'Box fills with <code>--strong</code>, tick in the surface colour.'],
-            ['Indeterminate', 'Box fills, an <span class="m">8 &times; 1</span> dash instead of '
-                              'the tick. For a parent whose children are partly selected. It is '
-                              'a display state, never something a click produces.'],
-            ['Hover', 'Border darkens. The touchpoint, not the box, decides when hover starts.'],
-            ['Focus', '2px outline at 2px offset, drawn on the box.'],
-            ['Disabled', '42% opacity. The value stays visible.'],
-        ]),
+        states=(table(['State', 'What changes', 'Token'], [
+            ['Unchecked', 'White box, 1px border.',
+             '<code>checkbox/input-default-fill</code>'],
+            ['Checked', 'Box fills solid, tick on top in the opposite colour.',
+             '<code>checkbox/input-selected-fill</code>'],
+            ['Indeterminate', 'The same solid fill as checked, with the '
+                              '<span class="m">8 &times; 1</span> dash instead of the tick. '
+                              'For a parent whose children are partly selected. It is a display '
+                              'state, never something a click produces.',
+             '<code>checkbox/input-selected-fill</code>'],
+            ['Hover', 'A <span class="m">2px</span> ring appears <i>outside</i> the box. The '
+                      'border itself does not change.',
+             '<code>checkbox/hover-stroke</code>'],
+            ['Focus', 'Two things at once: a <span class="m">2px</span> ring outside, and the '
+                      'box&rsquo;s own 1px border drops to a light grey.',
+             '<code>checkbox/focus-outer-stroke</code><br>'
+             '<code>checkbox/focus-inner-stroke</code>'],
+            ['Disabled', 'Solid grey fill and <b>no border at all</b>. The tick or dash stays, '
+                         'in a lighter grey. Not an opacity.',
+             '<code>checkbox/input-fill-disabled</code><br>'
+             '<code>checkbox/icon-color-disabled</code><br>'
+             '<code>checkbox/label-disabled</code>'],
+        ]) + bench(grid, grid)),
 
         behaviour=('<p>A checkbox waits. Clicking it stages a change that something else '
                    '&mdash; Save, Apply, Done &mdash; commits.</p>' +
@@ -409,21 +434,34 @@ def c_checkbox():
              'Do not use a checkbox for something that takes effect immediately.',
              'Do not put more than about seven in one ungrouped list.']),
 
-        specs=(table(['Trinity variable', 'Alias', 'Light', 'Dark'], [
-            ['<code>checkbox/width</code>', '<code>spacing/medium/600</code>',
+        specs=(table(['Trinity variable', 'Light', 'Dark'], [
+            ['<code>checkbox/width</code> &middot; <code>checkbox/height</code>',
              '<span class="m">24</span>', '<span class="m">24</span>'],
-            ['<code>checkbox/height</code>', '<code>spacing/medium/600</code>',
-             '<span class="m">24</span>', '<span class="m">24</span>'],
-            ['<code>checkbox/padding</code>', '<code>spacing/micro/100</code>',
-             '<span class="m">4</span>', '<span class="m">4</span>'],
-            ['<code>checkbox/radius</code>', '<code>radius/xsm</code>',
-             '<span class="m">2</span>', '<span class="m">2</span>'],
-            ['<code>checkbox/input-stroke</code>', '<code>neutral/950</code> &rarr; <code>neutral/0</code>',
+            ['<code>checkbox/padding</code>', '<span class="m">4</span>', '<span class="m">4</span>'],
+            ['<code>checkbox/gap</code>', '<span class="m">4</span>', '<span class="m">4</span>'],
+            ['<code>checkbox/radius</code>', '<span class="m">2</span>', '<span class="m">2</span>'],
+            ['<code>checkbox/input-stroke</code>',
              '<span class="m">#171614</span>', '<span class="m">#FFFFFF</span>'],
-            ['<code>checkbox/input-default-fill</code>', '<code>neutral/0</code> &rarr; <code>neutral/900</code>',
+            ['<code>checkbox/input-default-fill</code>',
              '<span class="m">#FFFFFF</span>', '<span class="m">#211F1C</span>'],
-            ['<code>checkbox/input-selected-fill</code>', '<code>neutral/900</code> &rarr; <code>neutral/0</code>',
+            ['<code>checkbox/input-selected-fill</code>',
              '<span class="m">#211F1C</span>', '<span class="m">#FFFFFF</span>'],
+            ['<code>checkbox/icon-color</code>',
+             '<span class="m">#FFFFFF</span>', '<span class="m">#211F1C</span>'],
+            ['<code>checkbox/hover-stroke</code>',
+             '<span class="m">#D0CEC8</span>', '<span class="m">#B6B1A5</span>'],
+            ['<code>checkbox/focus-outer-stroke</code>',
+             '<span class="m">#171614</span>', '<span class="m">#FFFFFF</span>'],
+            ['<code>checkbox/focus-inner-stroke</code>',
+             '<span class="m">#D0CEC8</span>', '<span class="m">#B6B1A5</span>'],
+            ['<code>checkbox/input-fill-disabled</code>',
+             '<span class="m">#B6B1A5</span>', '<span class="m">#B6B1A5</span>'],
+            ['<code>checkbox/icon-color-disabled</code>',
+             '<span class="m">#DFDEDD</span>', '<span class="m">#D0CEC8</span>'],
+            ['<code>checkbox/label-default</code>',
+             '<span class="m">#171614</span>', '<span class="m">#FFFFFF</span>'],
+            ['<code>checkbox/label-disabled</code>',
+             '<span class="m">#B6B1A5</span>', '<span class="m">#B6B1A5</span>'],
         ]) + spec([
             ('Touchpoint', '<span class="m">24 &times; 24</span>'),
             ('Box', '<span class="m">16 &times; 16</span>'),
@@ -435,9 +473,11 @@ def c_checkbox():
                      '<span class="m">1px</span>, round cap and join, in the surface colour'),
             ('Dash', '<span class="m">8 &times; 1</span> bar at <span class="m">(4, 7.5)</span>, '
                      '<span class="m">0.5</span> radius'),
-            ('Focus ring', '<span class="m">2px</span> outside the box, <span class="m">2px</span> offset'),
-            ('Gap', '<span class="m">9px</span>'),
-            ('Label', '<span class="m">14px</span>'),
+            ('Hover ring', '<span class="m">2px</span> outside, no offset'),
+            ('Focus ring', '<span class="m">2px</span> outside, no offset, plus the inner border'),
+            ('Gap', '<span class="m">4px</span> from the touchpoint &mdash; '
+                    '<span class="m">8px</span> clear of the box'),
+            ('Label', 'ABC Repro Regular <span class="m">14 / 130%</span>'),
         ])),
 
         a11y=checklist([
@@ -462,6 +502,27 @@ def c_checkbox():
             '<span class="m">inputContainer</span> is <span class="m">20 &times; 20</span> where '
             'the checkbox one is <span class="m">16 &times; 16</span>. Two controls that sit side '
             'by side in the same form should focus identically.',
+            '<b>Two toggle tokens are filed under <span class="m">checkbox/</span>.</b> '
+            '<span class="m">checkbox/large/track/width</span> is <span class="m">40</span> and '
+            '<span class="m">checkbox/large/track/height</span> is <span class="m">24</span>. '
+            'A checkbox has no track and no large size; <span class="m">40 &times; 24</span> is '
+            'the <a href="toggle.html">toggle</a>. They should move to '
+            '<span class="m">toggle/</span> before someone reads them as evidence of a second '
+            'checkbox size.',
+            '<b><span class="m">checkbox/hover-stroke</span> and '
+            '<span class="m">checkbox/focus-inner-stroke</span> are the same value</b> in both '
+            'modes &mdash; <span class="m">#D0CEC8</span> light, <span class="m">#B6B1A5</span> '
+            'dark. Either that is deliberate and one alias should point at the other, or the two '
+            'will drift apart the first time anyone edits one of them.',
+            '<b>The disabled checkbox drops its border entirely.</b> Unchecked-and-disabled is '
+            'then a solid <span class="m">#B6B1A5</span> square, which is the same shape as '
+            'checked-and-disabled minus the tick. At <span class="m">1.94:1</span> against white '
+            'it also fails <span class="m">1.4.11 Non-text Contrast, AA</span> &mdash; though '
+            'disabled controls are exempt from that rule, so this is a legibility call, not a '
+            'compliance one.',
+            '<b>The documentation frame spells it <span class="m">Indeterminite</span></b>, twice '
+            '&mdash; in the Show Label and Hide Label grids. The component property itself is now '
+            'correct; only the annotation is wrong.',
         ]),
     )
 

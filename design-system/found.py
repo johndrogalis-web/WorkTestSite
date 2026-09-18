@@ -751,6 +751,44 @@ def f_icons():
   <p class="ib-toast" role="status" aria-live="polite"></p>
 </div>
 
+<h2 id="download">Get the font</h2>
+<p>The brand set ships as a font. Install the <span class="m">.ttf</span> and it appears in
+   Figma&rsquo;s font list; use the <span class="m">.woff2</span> on the web.</p>
+
+<div class="fontdl">
+  <a href="../assets/downloads/fonts/TrinityBrandIcons-font.zip" download>
+    Download TrinityBrandIcons <span class="sz">ZIP &middot; 20 KB</span></a>
+  <a href="../assets/downloads/fonts/trinity-brand-icons/TrinityBrandIcons.ttf" download>
+    TrinityBrandIcons.ttf <span class="sz">7.8 KB</span></a>
+  <a href="../assets/downloads/fonts/trinity-brand-icons/TrinityBrandIcons.woff2" download>
+    .woff2 <span class="sz">4.0 KB</span></a>
+  <a href="../assets/downloads/fonts/trinity-brand-icons/TrinityBrandIcons.json" download>
+    name &rarr; codepoint map <span class="sz">JSON</span></a>
+</div>
+
+<div class="fonttry">
+  <label for="fonttry-in">Type a name to watch it fold into a glyph. The font is loaded on this
+    page, so this is the real thing, not a picture of it.</label>
+  <input id="fonttry-in" class="brandtry-in" type="text" value="ready-mix-truck"
+         spellcheck="false" autocomplete="off">
+  <p class="out brandfont brandtry-out" aria-hidden="true">ready-mix-truck</p>
+  <p class="hint brandtry-hint"></p>
+</div>
+
+<div class="note stop"><b>One name in the Figma legend does not match the font.</b> The legend
+  labels the sixth icon <span class="m">reporting</span>; the font calls it
+  <span class="m">data</span> at <span class="m">U+E006</span>. Only
+  <span class="m">data</span> folds to a glyph &mdash; typing
+  <span class="m">reporting</span> into a TrinityBrandIcons layer produces nothing at all.
+  This page uses the font&rsquo;s name and keeps <span class="m">reporting</span> as a search
+  alias, so searching either one finds the icon. The legend in Figma still needs correcting.</div>
+
+<div class="note"><b>Only the brand font is here.</b>
+  <span class="m">TrinityIcons</span>, the 1,415-icon set, is not published as a download yet.
+  Its names are on this page and its SVGs are downloadable one at a time, but there is no
+  <span class="m">.ttf</span> to install. Anyone setting a Figma text layer to TrinityIcons
+  needs the font from whoever built it.</div>
+
 <h2 id="using">Using them</h2>
 <h3>In Figma</h3>
 """ + checklist([
@@ -798,4 +836,5 @@ def f_icons():
                  'foundations/iconography.html', body,
                  crumb=['Foundations', 'Iconography'],
                  toc=[('two-fonts', 'The two fonts'), ('sizes', 'Sizes'), ('browse', 'Browse'),
-                      ('using', 'Using them'), ('a11y', 'Accessibility')])
+                      ('download', 'Get the font'), ('using', 'Using them'),
+                      ('a11y', 'Accessibility')])

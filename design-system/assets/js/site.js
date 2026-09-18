@@ -786,7 +786,10 @@
         if (active === 'brand' && !r.brand) return false;
         if (active === 'feather' && r.n.slice(0, 3) !== 'fi-') return false;
         if (active === 'unicons' && r.n.slice(0, 2) !== 'u-') return false;
-        return !q || r.n.indexOf(q) > -1;
+        if (!q) return true;
+        // the alias lets an icon be found by the name Figma's legend uses,
+        // even where that name is not what the font answers to
+        return r.n.indexOf(q) > -1 || (r.alt && r.alt.indexOf(q) > -1);
       });
       grid.innerHTML = '';
       shown = 0;
@@ -812,7 +815,8 @@
         cell.innerHTML =
           '<button type="button" class="ib-art" data-copy="' + r.n + '" ' +
           'title="Copy ' + r.n + '">' + svgFor(r) + '</button>' +
-          '<figcaption>' + r.n + '</figcaption>' +
+          '<figcaption>' + r.n +
+          (r.alt ? '<span class="ib-alt">was ' + r.alt + '</span>' : '') + '</figcaption>' +
           '<button type="button" class="ib-dl" data-dl="' + r.n + '" ' +
           'title="Download ' + r.n + '.svg" aria-label="Download ' + r.n + '.svg">SVG</button>';
         frag.appendChild(cell);
@@ -867,7 +871,7 @@
           all.push({ n: n, k: parts[0], d: parts.slice(1).join('|') });
         });
         brand.forEach(function (b) {
-          all.push({ n: b.n, brand: true, v: b.v, d: b.d });
+          all.push({ n: b.n, brand: true, v: b.v, d: b.d, alt: b.alt || null });
         });
         SETS.all = all;
         apply();
@@ -876,5 +880,40 @@
         grid.innerHTML = '<p class="ib-empty">The icon data did not load (' + err.message +
           '). It lives at <span class="m">assets/data/trinity-icons.json</span>.</p>';
       });
+  })();
+
+  /* ── Brand font live test ───────────────────────────────────
+     Types straight into the real font, so a name that does not
+     exist simply shows as letters — which is the whole point. */
+  (function () {
+    var input = document.querySelector('.brandtry-in');
+    var out   = document.querySelector('.brandtry-out');
+    var hint  = document.querySelector('.brandtry-hint');
+    if (!input || !out) return;
+    var NAMES = null;
+    fetch('../assets/data/trinity-brand-icons.json')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        NAMES = {};
+        d.forEach(function (x) { NAMES[x.n] = x.cp; if (x.alt) NAMES['!' + x.alt] = x.n; });
+        check();
+      }).catch(function () {});
+
+    function check() {
+      var v = input.value.trim();
+      out.textContent = v;
+      if (!hint || !NAMES) return;
+      if (!v) { hint.textContent = ''; return; }
+      if (NAMES[v]) {
+        hint.textContent = v + '  \u2192  U+' + NAMES[v].toUpperCase() + '  \u2713 in the font';
+      } else if (NAMES['!' + v]) {
+        hint.textContent = '"' + v + '" is the Figma legend label. The font calls it "' +
+                           NAMES['!' + v] + '" \u2014 only that one folds.';
+      } else {
+        hint.textContent = 'No glyph called "' + v + '". It will stay as letters.';
+      }
+    }
+    input.addEventListener('input', check);
+    check();
   })();
 })();

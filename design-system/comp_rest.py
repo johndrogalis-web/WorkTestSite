@@ -317,7 +317,7 @@ def c_checkbox():
         'components/checkbox.html', 'Checkbox',
         'An independent yes or no. Several can be true at once, and the change applies when '
         'the form is saved, not the moment it is clicked.',
-        'gap', figma='30515:78521', extra_meta=['12 variants'],
+        'ok', figma='30515:78521', extra_meta=['12 variants'],
 
         note='<div class="note ok"><b>The public and private sets now use the same names, '
              'spelled the same way.</b> Five things were renamed in Figma to get there, and '
@@ -423,7 +423,29 @@ def c_checkbox():
                    'is a checkbox wearing a costume.</div>' +
                    '<div class="note"><b>Checkbox or radio?</b> If exactly one option may be '
                    'true, it is a <a href="radio-group.html">radio group</a>. A single checkbox '
-                   'is also correct for one opt-in confirmation.</div>'),
+                   'is also correct for one opt-in confirmation.</div>'
+
+                   '<h3>Settled by design</h3>'
+                   '<p>Four things about this component look like oversights and are not. They '
+                   'have been confirmed correct as drawn, so do not re-log them.</p>'
+                   + table(['Looks like', 'Actually'], [
+                       ['The tick vector is named '
+                        '<span class="m">Icon / Check / Temp</span>.',
+                        'That is the final tick, not a placeholder. The name is historical.'],
+                       ['<span class="m">checkbox/hover-stroke</span> and '
+                        '<span class="m">checkbox/focus-inner-stroke</span> hold the same value '
+                        'in both modes without being aliased.',
+                        'Deliberate. They are separate decisions that happen to agree today, and '
+                        'they are free to diverge without dragging the other with them.'],
+                       ['Disabled drops the border entirely, so an unchecked disabled box is a '
+                        'solid grey square.',
+                        'Deliberate. Disabled is not meant to invite a second look &mdash; the '
+                        'grey block reads as inert faster than a greyed outline does.'],
+                       ['<span class="m">checkbox/large/track/width</span> and '
+                        '<span class="m">.../height</span> sit in the checkbox namespace.',
+                        'Correct where they are. There is still one checkbox size; these are not '
+                        'evidence of a second.'],
+                     ])),
 
         guidelines=dodont(
             ['Write the label as the positive statement &mdash; what is true when it is ticked.',
@@ -491,39 +513,6 @@ def c_checkbox():
             'The visible label is the accessible name. Do not add a different <code>aria-label</code>.',
         ]),
 
-        gaps=checklist([
-            '<b>The tick vector is still named '
-            '<span class="m">Icon / Check / Temp</span></b> in the component. Either it is the '
-            'real one and the name should say so, or it is a placeholder and the shipped '
-            'checkbox is carrying a temporary icon.',
-            '<b>The focus ring sits at a different distance on the checkbox and the radio.</b> '
-            'The checkbox ring is <span class="m">2px</span> outside a 16px box; the radio ring is '
-            '<span class="m">4px</span> outside its 16px circle, because the radio '
-            '<span class="m">inputContainer</span> is <span class="m">20 &times; 20</span> where '
-            'the checkbox one is <span class="m">16 &times; 16</span>. Two controls that sit side '
-            'by side in the same form should focus identically.',
-            '<b>Two toggle tokens are filed under <span class="m">checkbox/</span>.</b> '
-            '<span class="m">checkbox/large/track/width</span> is <span class="m">40</span> and '
-            '<span class="m">checkbox/large/track/height</span> is <span class="m">24</span>. '
-            'A checkbox has no track and no large size; <span class="m">40 &times; 24</span> is '
-            'the <a href="toggle.html">toggle</a>. They should move to '
-            '<span class="m">toggle/</span> before someone reads them as evidence of a second '
-            'checkbox size.',
-            '<b><span class="m">checkbox/hover-stroke</span> and '
-            '<span class="m">checkbox/focus-inner-stroke</span> are the same value</b> in both '
-            'modes &mdash; <span class="m">#D0CEC8</span> light, <span class="m">#B6B1A5</span> '
-            'dark. Either that is deliberate and one alias should point at the other, or the two '
-            'will drift apart the first time anyone edits one of them.',
-            '<b>The disabled checkbox drops its border entirely.</b> Unchecked-and-disabled is '
-            'then a solid <span class="m">#B6B1A5</span> square, which is the same shape as '
-            'checked-and-disabled minus the tick. At <span class="m">1.94:1</span> against white '
-            'it also fails <span class="m">1.4.11 Non-text Contrast, AA</span> &mdash; though '
-            'disabled controls are exempt from that rule, so this is a legibility call, not a '
-            'compliance one.',
-            '<b>The documentation frame spells it <span class="m">Indeterminite</span></b>, twice '
-            '&mdash; in the Show Label and Hide Label grids. The component property itself is now '
-            'correct; only the annotation is wrong.',
-        ]),
     )
 
 
@@ -1776,8 +1765,8 @@ CAT = [
   '144 variants — the most complete set in the file.'),
  ('Card', 'hold', 'Containers', 'none', '38190:1747', None,
   'The Figma page is called “Cards - missing”. One loose stub, no variants.'),
- ('Checkbox', 'form', 'Form elements', 'gap', '30515:78521', 'checkbox.html',
-  'Naming normalised across both sets. Tick icon is still named Temp.'),
+ ('Checkbox', 'form', 'Form elements', 'ok', '30515:78521', 'checkbox.html',
+  'Tokens, states and naming all match Trinity. Nothing outstanding.'),
  ('Chip', 'form', 'Form elements', 'ok', '11268:39456', None,
   'Two sizes, full state set, selectable and removable.'),
  ('Dropdown', 'form', 'Form elements', 'gap', '51689:13501', 'dropdown.html',

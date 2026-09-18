@@ -319,29 +319,7 @@ def c_checkbox():
         'the form is saved, not the moment it is clicked.',
         'ok', figma='30515:78521', extra_meta=['12 variants'],
 
-        note='<div class="note ok"><b>The public and private sets now use the same names, '
-             'spelled the same way.</b> Five things were renamed in Figma to get there, and '
-             'the two sets are byte-identical on all four properties:'
-             + table(['Property', 'Public set was', 'Private set was', 'Both are now'], [
-                 ['Third state', '<span class="m">intermediate</span>',
-                  '<span class="m">isIndeterminate</span>', '<span class="m">indeterminate</span>'],
-                 ['Disabled', '<span class="m">disabled</span>',
-                  '<span class="m">isDisabled</span>', '<span class="m">disabled</span>'],
-                 ['<span class="m">state</span> options', '<span class="m">default / hover / focus</span>',
-                  '<span class="m">Default / Hover / Focus</span>',
-                  '<span class="m">default / hover / focus</span>'],
-                 ['<span class="m">value</span> options', '<span class="m">True / False</span>',
-                  '<span class="m">false / true / fals</span>', '<span class="m">true / false</span>'],
-               ]) +
-             '<p><span class="m">indeterminate</span> is the word HTML, ARIA and CSS already use '
-             '&mdash; <span class="m">input.indeterminate</span>, '
-             '<span class="m">aria-checked="mixed"</span>, '
-             '<span class="m">:indeterminate</span>. Booleans are lowercase everywhere, so '
-             '<span class="m">value</span> reads the same as '
-             '<span class="m">indeterminate</span> and <span class="m">disabled</span> beside it. '
-             'And <span class="m">fals</span> &mdash; a truncated <span class="m">false</span> '
-             'that the three indeterminate variants were bound to &mdash; is gone.</p></div>'
-             '<div class="note ok"><b>Use this component in prototypes rather than drawing a '
+        note='<div class="note ok"><b>Use this component in prototypes rather than drawing a '
              'checkbox.</b> Verifi Design&rsquo;s note: the label is a toggle on the component, '
              'so you switch it off where you do not want one and edit it in one place where you '
              'do, instead of retyping it in every layout. It also carries light and dark with it, '
@@ -349,29 +327,14 @@ def c_checkbox():
              'recolouring. The same instance is what the '
              '<a href="table.html#showcase">table</a> row selector uses.</div>'
 
-             '<div class="note ok"><b>There is one checkbox size, not two.</b> The box is '
-             '<span class="m">16 &times; 16</span>. Around it sits a '
-             '<span class="m">24 &times; 24</span> frame that Trinity literally names '
-             '<span class="m">touchpoint</span> &mdash; invisible, and the only thing a pointer '
-             'or a finger has to hit. So the <span class="m">24</span> you can measure in a table '
-             'row is not a larger checkbox; it is the target around the same 16px box. That is '
-             'also exactly what WCAG 2.2 <span class="m">2.5.8 Target Size (Minimum), AA</span> '
-             'asks for. Draw the box at 16 and give it 24 of room; never scale the box to fill '
-             'the target. Trinity&rsquo;s own variables say it outright: '
-             '<span class="m">checkbox/width</span> and <span class="m">checkbox/height</span> '
-             'are <span class="m">24</span> (<span class="m">spacing/medium/600</span>), '
-             '<span class="m">checkbox/padding</span> is <span class="m">4</span> '
-             '(<span class="m">spacing/micro/100</span>), and 24 less 4 a side is the 16px '
-             'box.</div>'
-
-             '<div class="note ok"><b>The tick is a vector, not a font character.</b> It is a '
-             '<span class="m">6 &times; 4</span> polyline sitting at <span class="m">(5, 6)</span> '
-             'inside the box &mdash; <span class="m">(0, 1.33) &rarr; (2.4, 4) &rarr; (6, 0)</span> '
-             '&mdash; stroked at <span class="m">1px</span> with round caps and joins. Both arms '
-             'run at <span class="m">48&deg;</span>, not 45, and the right arm is half as long '
-             'again as the left. A <span class="m">&amp;#10003;</span> glyph or a rotated CSS '
-             'border gets the angle, the weight and the arm ratio all slightly wrong, which is why '
-             'the site used to look heavier than the Figma. Copy the path.</div>',
+             '<div class="note"><b>One size: a 16px box inside a 24px target.</b> '
+             '<span class="m">checkbox/width</span> and '
+             '<span class="m">checkbox/height</span> are <span class="m">24</span>; '
+             '<span class="m">checkbox/padding</span> is <span class="m">4</span>; 24 less 4 a '
+             'side leaves the <span class="m">16 &times; 16</span> box. Trinity names that outer '
+             'frame <span class="m">touchpoint</span>, and it is what WCAG 2.2 '
+             '<span class="m">2.5.8 Target Size (Minimum), AA</span> measures. Draw the box at 16 '
+             'and give it 24 of room. Never scale the box to fill the target.</div>',
 
         example=bench(demo, demo),
 
@@ -491,8 +454,12 @@ def c_checkbox():
             ('Border', '<span class="m">1px</span> <code>checkbox/input-stroke</code>'),
             ('Checked fill', '<code>checkbox/input-selected-fill</code> &mdash; light '
                              '<span class="m">#211F1C</span>, dark <span class="m">#FFFFFF</span>'),
-            ('Tick', '<span class="m">6 &times; 4</span> polyline at <span class="m">(5, 6)</span>, '
-                     '<span class="m">1px</span>, round cap and join, in the surface colour'),
+            ('Tick', '<span class="m">6 &times; 4</span> polyline at <span class="m">(5, 6)</span> '
+                     '&mdash; <span class="m">(0, 1.33) &rarr; (2.4, 4) &rarr; (6, 0)</span> '
+                     '&mdash; <span class="m">1px</span>, round cap and join, in the surface '
+                     'colour. Both arms run at <span class="m">48&deg;</span>, not 45. Copy the '
+                     'path; a <span class="m">&amp;#10003;</span> glyph or a rotated CSS border '
+                     'gets the angle, the weight and the arm ratio wrong.'),
             ('Dash', '<span class="m">8 &times; 1</span> bar at <span class="m">(4, 7.5)</span>, '
                      '<span class="m">0.5</span> radius'),
             ('Hover ring', '<span class="m">2px</span> outside, no offset'),
@@ -500,6 +467,14 @@ def c_checkbox():
             ('Gap', '<span class="m">4px</span> from the touchpoint &mdash; '
                     '<span class="m">8px</span> clear of the box'),
             ('Label', 'ABC Repro Regular <span class="m">14 / 130%</span>'),
+            ('Variant properties', '<span class="m">state</span> '
+                                   '(<span class="m">default &middot; hover &middot; focus</span>), '
+                                   '<span class="m">value</span>, '
+                                   '<span class="m">indeterminate</span>, '
+                                   '<span class="m">disabled</span> &mdash; all lowercase, '
+                                   'booleans <span class="m">true</span> / '
+                                   '<span class="m">false</span>. The public and private sets '
+                                   'use the same four.'),
         ])),
 
         a11y=checklist([

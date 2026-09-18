@@ -685,3 +685,117 @@ def f_phases():
                  toc=[('nine', 'The nine'), ('lifecycle', 'They are a sequence'),
                       ('three', 'One token, three components'), ('contrast', 'Contrast'),
                       ('naming', 'Two names')])
+
+
+def f_icons():
+    body = """
+<h1>Iconography.</h1>
+<p class="lede">Two fonts, 1,431 glyphs. The name under an icon is not a label &mdash; it is the
+   thing you type. Set a text layer to the font and type the name, or copy it into code.</p>
+
+<div class="note"><b>Icons are a font here, not a folder of files.</b> That is why the name
+  matters more than the picture: <span class="m">TrinityIcons</span> and
+  <span class="m">TrinityBrandIcons</span> resolve the name to a glyph, so changing an icon
+  anywhere is a text edit, not an asset swap. Click any icon below to copy its name. Hover it
+  and press <span class="m">SVG</span> if you need the file instead.</div>
+
+<h2 id="two-fonts">The two fonts</h2>
+""" + table(['Font', 'Holds', 'Use it for'], [
+    ['<span class="m">TrinityIcons</span>', '<b>1,415</b> interface icons &mdash; '
+     '<span class="m">fi-</span> from Feather, <span class="m">u-</span> from Unicons',
+     'Everything in the product. Navigation, actions, status, controls.'],
+    ['<span class="m">TrinityBrandIcons</span>', '<b>16</b> icons drawn for Verifi',
+     'Concrete and fleet subjects nothing else covers &mdash; batching, slump, a ready-mix '
+     'truck. Marketing and section headers, rarely inside a dense UI.'],
+]) + """
+<div class="note"><b>The two prefixes are two different drawings of the same idea.</b>
+  <span class="m">fi-</span> icons are stroked on a 24px grid at 2px; <span class="m">u-</span>
+  icons are filled shapes. They do not mix well side by side, so pick one prefix for a screen
+  and stay in it. Where both exist &mdash; <span class="m">fi-search</span> and
+  <span class="m">u-search</span> &mdash; the Feather one is the default, because the product
+  is drawn in strokes.</div>
+
+<h2 id="sizes">Sizes</h2>
+<p>Four, and they are the <span class="m">Icon</span> component's own variants. The icon is
+   always square and always sits on the same grid as the text beside it.</p>
+""" + table(['Size', 'Box', 'Where'], [
+    ['XSmall', '<span class="m">12px</span>', 'Inside a dense table row, or beside 12px text.'],
+    ['Small', '<span class="m">16px</span>',
+     'The default. Beside 14px body text, inside buttons and form controls.'],
+    ['Medium', '<span class="m">24px</span>', 'Standalone actions, toolbar buttons, empty states.'],
+    ['Large', '<span class="m">32px</span>', 'Section headers and feature callouts.'],
+]) + """
+<div class="note"><b>Never scale an icon to a size that is not on that list.</b> A stroked icon
+  drawn at 24 and displayed at 19 has a 1.6px stroke, which reads as blurry rather than lighter.
+  If you need an in-between size, the answer is the next size down with more space around it.</div>
+
+<h2 id="browse">Browse</h2>
+<p>Search by name. Click an icon to copy its name; hover and press
+   <span class="m">SVG</span> to download the file.</p>
+
+<div class="iconbrowser" data-base="../">
+  <div class="ib-bar">
+    <div class="ib-search">
+      <input type="search" placeholder="Search 1,431 icons — try truck, alert, chart"
+             aria-label="Search icons">
+    </div>
+    <div class="ib-tabs" role="group" aria-label="Filter by set">
+      <button type="button" class="ib-tab" data-set="all" aria-pressed="true">All</button>
+      <button type="button" class="ib-tab" data-set="feather" aria-pressed="false">fi-</button>
+      <button type="button" class="ib-tab" data-set="unicons" aria-pressed="false">u-</button>
+      <button type="button" class="ib-tab" data-set="brand" aria-pressed="false">Brand</button>
+    </div>
+    <span class="ib-count"></span>
+  </div>
+  <div class="ib-grid"></div>
+  <p class="ib-toast" role="status" aria-live="polite"></p>
+</div>
+
+<h2 id="using">Using them</h2>
+<h3>In Figma</h3>
+""" + checklist([
+    'Use the <span class="m">Icon</span> component rather than a text layer, so the size '
+    'variants and the colour token come with it.',
+    'The component has an <span class="m">Icon</span> property with two values: '
+    '<span class="m">Default</span> for TrinityIcons and <span class="m">Brand</span> for '
+    'TrinityBrandIcons. Switch the property rather than swapping the layer.',
+    'To change which glyph shows, edit the text inside the component and type the name. '
+    'That is the whole mechanism.',
+]) + """
+<h3>In code</h3>
+""" + checklist([
+    'Bind the icon colour to the surrounding text colour. An icon that does not inherit '
+    '<span class="m">currentColor</span> will be wrong the first time it lands on a dark '
+    'surface.',
+    'An icon that carries meaning on its own needs a name: '
+    '<span class="m">aria-label</span> on the control, not on the glyph.',
+    'An icon beside a text label is decoration &mdash; mark it '
+    '<span class="m">aria-hidden="true"</span> so the label is not read twice.',
+    'Icon fonts are read as text by some screen readers, which is how you end up with a '
+    'private-use character announced as nothing at all. Always set '
+    '<span class="m">aria-hidden</span> or a label; never leave it to chance.',
+]) + """
+<h2 id="a11y">Accessibility</h2>
+""" + checklist([
+    'An icon-only button needs a <span class="m">24 &times; 24</span> target, the same rule '
+    'as the <a href="../components/checkbox.html">checkbox</a>. The glyph can be 16 inside it.',
+    'Icons that carry state must not rely on shape alone at small sizes. At '
+    '<span class="m">12px</span> a filled and an outlined circle are hard to tell apart '
+    '&mdash; pair them with colour <i>and</i> text.',
+    'Non-text contrast applies: a meaningful icon needs <span class="m">3:1</span> against its '
+    'background, WCAG <span class="m">1.4.11, AA</span>. Decorative ones do not.',
+    'Never use an icon as the only way to convey something. It is the fastest thing to scan '
+    'and the easiest thing to misread.',
+]) + """
+<div class="note"><b>Where these come from.</b> The <span class="m">fi-</span> set is
+  <a href="https://feathericons.com">Feather</a> (MIT) and the <span class="m">u-</span> set is
+  <a href="https://iconscout.com/unicons">Unicons</a> (line style). Both are packaged into
+  <span class="m">TrinityIcons</span>, so the names on this page are the names in the font.
+  The 16 brand icons are original Verifi drawings and exist only in
+  <span class="m">TrinityBrandIcons</span>.</div>
+"""
+    return shell('Iconography', 'Two fonts, 1,431 glyphs, searchable — and the name is what you type.',
+                 'foundations/iconography.html', body,
+                 crumb=['Foundations', 'Iconography'],
+                 toc=[('two-fonts', 'The two fonts'), ('sizes', 'Sizes'), ('browse', 'Browse'),
+                      ('using', 'Using them'), ('a11y', 'Accessibility')])

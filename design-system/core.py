@@ -61,6 +61,7 @@ NAV = [
         ('p', 'foundations/shape.html',         'Shape', ''),
         ('p', 'foundations/motion.html',        'Motion', ''),
         ('p', 'foundations/accessibility.html', 'Accessibility', ''),
+        ('p', 'foundations/iconography.html',   'Iconography', 'new'),
         ('p', 'foundations/truck-phases.html',  'Truck phases', ''),
     ]),
     ('Components', [

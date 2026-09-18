@@ -17,6 +17,7 @@ PAGES = [
     ('foundations/shape.html',              F.f_shape),
     ('foundations/motion.html',             F.f_motion),
     ('foundations/accessibility.html',      F.f_a11y),
+    ('foundations/iconography.html',        F.f_icons),
     ('foundations/truck-phases.html',       F.f_phases),
 
     ('components/index.html',               C.c_index),

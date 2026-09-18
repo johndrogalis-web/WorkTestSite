@@ -700,4 +700,181 @@
     paint(0);
     say('Idle.');
   });
+
+  /* ── Icon browser ──────────────────────────────────────────
+     1,415 glyphs is far too many to put in the DOM at once, so the
+     grid renders a window of results and grows as you scroll. The
+     name is the payload: it is what you type into a text layer set
+     to TrinityIcons, and what you copy for code. */
+  (function () {
+    var root = document.querySelector('.iconbrowser');
+    if (!root) return;
+
+    var grid   = root.querySelector('.ib-grid');
+    var search = root.querySelector('.ib-search input');
+    var count  = root.querySelector('.ib-count');
+    var tabs   = [].slice.call(root.querySelectorAll('.ib-tab'));
+    var toast  = root.querySelector('.ib-toast');
+    var base   = root.getAttribute('data-base') || '';
+
+    var SETS = {}, active = 'all', filtered = [], shown = 0, PAGE = 120;
+
+    function svgFor(rec) {
+      if (rec.brand) {
+        return '<svg viewBox="' + rec.v + '" fill="currentColor" aria-hidden="true">' +
+               '<path d="' + rec.d + '"/></svg>';
+      }
+      var stroke = rec.k === 's';
+      return '<svg viewBox="0 0 24 24" ' +
+             (stroke ? 'fill="none" stroke="currentColor" stroke-width="2" ' +
+                       'stroke-linecap="round" stroke-linejoin="round"'
+                     : 'fill="currentColor"') +
+             ' aria-hidden="true">' + rec.d + '</svg>';
+    }
+
+    function fileFor(rec) {
+      // Brand icons are not square, so take the size from their own viewBox
+      // rather than stamping 24x24 on everything and distorting them.
+      var vb = rec.brand ? rec.v.split(/\s+/) : ['0', '0', '24', '24'];
+      var w = vb[2], h = vb[3];
+      var body = svgFor(rec).replace(' aria-hidden="true"', '')
+                            .replace(/currentColor/g, '#171614');
+      return '<?xml version="1.0" encoding="UTF-8"?>\n' +
+             body.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" width="' + w +
+                          '" height="' + h + '" ');
+    }
+
+    var toastT = null;
+    function say(msg) {
+      if (!toast) return;
+      toast.textContent = msg;
+      toast.classList.add('on');
+      clearTimeout(toastT);
+      toastT = setTimeout(function () { toast.classList.remove('on'); }, 1600);
+    }
+
+    function copy(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { say('Copied ' + text); },
+                                                 function () { fallback(text); });
+      } else fallback(text);
+    }
+    function fallback(text) {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); say('Copied ' + text); }
+      catch (e) { say('Press Ctrl+C to copy ' + text); }
+      document.body.removeChild(ta);
+    }
+
+    function download(rec) {
+      var blob = new Blob([fileFor(rec)], { type: 'image/svg+xml' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = rec.n + '.svg';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      say('Downloaded ' + rec.n + '.svg');
+    }
+
+    function apply() {
+      var q = (search && search.value || '').trim().toLowerCase();
+      var pool = SETS.all || [];
+      filtered = pool.filter(function (r) {
+        if (active === 'brand' && !r.brand) return false;
+        if (active === 'feather' && r.n.slice(0, 3) !== 'fi-') return false;
+        if (active === 'unicons' && r.n.slice(0, 2) !== 'u-') return false;
+        return !q || r.n.indexOf(q) > -1;
+      });
+      grid.innerHTML = '';
+      shown = 0;
+      more();
+      if (count) {
+        count.textContent = filtered.length === pool.length
+          ? filtered.length.toLocaleString() + ' icons'
+          : filtered.length.toLocaleString() + ' of ' + pool.length.toLocaleString();
+      }
+      if (!filtered.length) {
+        grid.innerHTML = '<p class="ib-empty">Nothing matches &ldquo;' +
+          q.replace(/[<>&]/g, '') + '&rdquo;.</p>';
+      }
+    }
+
+    function more() {
+      var frag = document.createDocumentFragment();
+      var end = Math.min(shown + PAGE, filtered.length);
+      for (var i = shown; i < end; i++) {
+        var r = filtered[i];
+        var cell = document.createElement('figure');
+        cell.className = 'ib-cell' + (r.brand ? ' brand' : '');
+        cell.innerHTML =
+          '<button type="button" class="ib-art" data-copy="' + r.n + '" ' +
+          'title="Copy ' + r.n + '">' + svgFor(r) + '</button>' +
+          '<figcaption>' + r.n + '</figcaption>' +
+          '<button type="button" class="ib-dl" data-dl="' + r.n + '" ' +
+          'title="Download ' + r.n + '.svg" aria-label="Download ' + r.n + '.svg">SVG</button>';
+        frag.appendChild(cell);
+      }
+      grid.appendChild(frag);
+      shown = end;
+    }
+
+    grid.addEventListener('click', function (e) {
+      var c = e.target.closest && e.target.closest('[data-copy]');
+      if (c) { copy(c.getAttribute('data-copy')); return; }
+      var d = e.target.closest && e.target.closest('[data-dl]');
+      if (d) {
+        var name = d.getAttribute('data-dl');
+        var rec = (SETS.all || []).filter(function (r) { return r.n === name; })[0];
+        if (rec) download(rec);
+      }
+    });
+
+    window.addEventListener('scroll', function () {
+      if (shown >= filtered.length) return;
+      var box = grid.getBoundingClientRect();
+      if (box.bottom < window.innerHeight + 600) more();
+    }, { passive: true });
+
+    if (search) {
+      var t = null;
+      search.addEventListener('input', function () {
+        clearTimeout(t); t = setTimeout(apply, 90);
+      });
+    }
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        tabs.forEach(function (x) { x.setAttribute('aria-pressed', String(x === tab)); });
+        active = tab.getAttribute('data-set');
+        apply();
+      });
+    });
+
+    function load(url) {
+      return fetch(url).then(function (r) {
+        if (!r.ok) throw new Error(r.status); return r.json();
+      });
+    }
+    grid.innerHTML = '<p class="ib-empty">Loading 1,431 icons&hellip;</p>';
+    Promise.all([load(base + 'assets/data/trinity-icons.json'),
+                 load(base + 'assets/data/trinity-brand-icons.json')])
+      .then(function (res) {
+        var main = res[0], brand = res[1], all = [];
+        Object.keys(main).forEach(function (n) {
+          var parts = main[n].split('|');
+          all.push({ n: n, k: parts[0], d: parts.slice(1).join('|') });
+        });
+        brand.forEach(function (b) {
+          all.push({ n: b.n, brand: true, v: b.v, d: b.d });
+        });
+        SETS.all = all;
+        apply();
+      })
+      .catch(function (err) {
+        grid.innerHTML = '<p class="ib-empty">The icon data did not load (' + err.message +
+          '). It lives at <span class="m">assets/data/trinity-icons.json</span>.</p>';
+      });
+  })();
 })();

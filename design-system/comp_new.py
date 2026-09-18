@@ -69,34 +69,100 @@ def _pbars():
     return out + '</div>'
 
 
+def _pblive():
+    """Determinate movement, the failure case, and indeterminate."""
+    return ('<div class="pblive">'
+            '<div class="t-pbarw">'
+            '<div class="t-pbarh"><span class="lb pblive-lab">Ready</span>'
+            '<span class="vl pblive-val">0%</span></div>'
+            '<div class="t-pbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" '
+            'aria-valuenow="0" aria-label="Upload batch ticket"><i style="width:0%"></i></div>'
+            '</div>'
+            '<div class="pblive-ctl">'
+            '<button type="button" class="pblive-btn" data-mode="run">Run to 100%</button>'
+            '<button type="button" class="pblive-btn" data-mode="fail">Fail at 62%</button>'
+            '<button type="button" class="pblive-btn" data-mode="ind">Indeterminate</button>'
+            '<button type="button" class="pblive-btn" data-mode="stop">Reset</button>'
+            '</div>'
+            '<p class="pblive-state" aria-live="polite">Idle.</p>'
+            '</div>')
+
+
+def _pbstatus():
+    rows = [('', 'Default', 72, 'Uploading batch ticket'),
+            ('ok', 'Success', 100, 'Upload complete'),
+            ('warn', 'Warning', 48, 'Slower than usual \u2014 still going'),
+            ('err', 'Error', 62, 'Failed \u2014 connection lost at 62%')]
+    out = '<div class="t-stack">'
+    for cls, lab, v, txt in rows:
+        out += ('<div class="t-pbarw" style="margin-bottom:14px">'
+                '<div class="t-pbarh"><span class="lb">%s</span>'
+                '<span class="vl">%d%%</span></div>'
+                '<div class="t-pbar %s" role="progressbar" aria-valuemin="0" aria-valuemax="100" '
+                'aria-valuenow="%d" aria-label="%s"><i style="width:%d%%"></i></div></div>'
+                % (txt, v, cls, v, lab, v))
+    return out + '</div>'
+
+
+def _pbsizes():
+    return ('<div class="t-stack">'
+            '<div class="t-row"><span class="t-lab">8px</span>'
+            '<div class="t-pbar"><i style="width:64%"></i></div></div>'
+            '<div class="t-row"><span class="t-lab">4px</span>'
+            '<div class="t-pbar sm"><i style="width:64%"></i></div></div>'
+            '</div>')
+
 def c_progress():
     return cpage(
         'components/progress-bar.html', 'Progress bar',
         'An 8px bar that fills left to right. Eight variants, every one of them named '
         'by the value it shows.',
-        'gap', figma='51692:17330', extra_meta=['8 variants', 'Light and dark'],
+        'ok', figma='51692:17330', extra_meta=['8 variants', 'Light and dark'],
 
-        note='<div class="note warn"><b>The unfilled track fails contrast in both '
-             'themes.</b> <span class="m">#DFDEDD</span> measures 1.16:1 against the '
-             'light page and <span class="m">#666054</span> measures 2.64:1 against '
-             'the real dark surface. The filled part is fine; it is the empty part '
-             'you cannot see. Detail under Accessibility.</div>',
+        note='<div class="note ok"><b>The contrast failure is fixed, and the fix is a '
+             '1px ring rather than a darker track.</b> A track dark enough to clear the '
+             'page on its own lands at <span class="m">#7F796C</span>, and at that value '
+             'no recognisable status colour can clear <span class="m">3:1</span> against '
+             'it &mdash; a fill would have to be near-black or pastel. So the track stays '
+             'light and a <span class="m">1px</span> ring at '
+             '<span class="m">#7F796C</span> carries the bar&rsquo;s extent instead. That '
+             'buys both boundaries and leaves the track free for status.</div>'
 
-        example=bench(_pbars(), _pbars(),
-                      'All eight variants, from full to empty. The 5% and 0% ends are '
-                      'the ones worth looking at: at 0% the fill disappears entirely and '
-                      'only the track is left, which is exactly the part that fails '
-                      'contrast.'),
+             '<div class="note"><b>This is an atom, and it stays one.</b> The bar carries '
+             'no text of its own. A label and a number belong to whatever places the bar, '
+             'and the spec for them is under <a href="#anatomy">Anatomy</a> so that six '
+             'screens do not invent six formats.</div>',
+
+        example=(bench(_pbars(), _pbars(),
+                       'All eight variants, from full to empty. At 0% the fill disappears '
+                       'and only the ringed track is left &mdash; which is now still '
+                       'legible, and used to be the failure case.') +
+                 '<h3 id="try">Try it</h3>'
+                 '<p>Determinate movement, the failure case, and the indeterminate case. '
+                 'Watch what the number does when the job fails, and what it does when '
+                 'nobody knows how long it will take.</p>' +
+                 bench(_pblive(), _pblive(),
+                       'The label and number here are placed beside the bar, not '
+                       'owned by it. Indeterminate removes '
+                       '<span class="m">aria-valuenow</span> rather than setting it to '
+                       'zero.')),
 
         anatomy=spec([
             ('Track', 'Full width of its container, <span class="m">8px</span> tall, '
                       '<span class="m">4px</span> radius'),
+            ('Ring', '<span class="m">1px</span> inside the track, '
+                     '<span class="m">#7F796C</span> in both modes. This is what defines '
+                     'the bar&rsquo;s full extent against the page.'),
             ('Fill', 'Same height and radius, width set by the value'),
             ('Height token', '<span class="m">progress bar/height</span> = 8, which is '
-                             '<span class="m">size/1</span>'),
+                             '<span class="m">spacing/micro/200</span>'),
             ('Radius token', '<span class="m">progress bar/radius</span> = 4, which is '
                              '<span class="m">radius/sm</span>'),
-            ('Label', 'None. The bar carries no text of its own.'),
+            ('Label and value', '<b>Not part of the component.</b> Where the caller adds '
+                                'them: <span class="m">Body/sm</span> label on the left, '
+                                '<span class="m">Body/xs</span> value on the right, '
+                                '<span class="m">6px</span> clear of the track, the two ends '
+                                'aligned to the bar. Round to whole percent.'),
         ]),
 
         options=(copybar('Progress bar', 'pbar', '75%', PBAR_HTML, PBAR_CSS) +
@@ -112,89 +178,194 @@ def c_progress():
                      ['<span class="m">progress=5%</span>', '5%',
                       'The shortest fill the component draws.'],
                      ['<span class="m">progress=0%</span>', '0%',
-                      'Nothing but track. See Accessibility.'],
+                      'Nothing but the ringed track.'],
+                 ]) +
+                 '<h3 id="status">Status</h3>'
+                 '<p>The same bar, four meanings. The rule that matters is underneath: the '
+                 'colour is never the message.</p>' +
+                 bench(_pbstatus(), _pbstatus()) +
+                 '<div class="note"><b>The label changes, and the colour follows.</b> '
+                 'A bar that turns red and says nothing tells a colourblind user that '
+                 'something happened, not what. Every status fill is paired with label text '
+                 'that says the same thing in words &mdash; WCAG '
+                 '<span class="m">1.4.1 Use of Colour, A</span>. If you only change one of '
+                 'the two, change the words.</div>' +
+                 '<h3 id="sizes">Two heights</h3>'
+                 '<p>Both are tokens in the file: '
+                 '<span class="m">progress bar/height</span> and '
+                 '<span class="m">progress bar/height-compact</span>.</p>' +
+                 bench(_pbsizes(), _pbsizes()) +
+                 table(['Height', 'Radius', 'Use'], [
+                     ['<span class="m">8px</span>', '<span class="m">4px</span>',
+                      'The default, and the only one Trinity draws. Anywhere the bar is the '
+                      'thing the user is watching.'],
+                     ['<span class="m">4px</span>', '<span class="m">2px</span>',
+                      'Inline in a dense table row, or pinned to the top of '
+                      'a container, where the bar is peripheral. Never with a label row '
+                      '&mdash; if it is worth labelling it is worth 8px.'],
                  ])),
 
-        states=('<p>The component has no states. It is a readout, not a control &mdash; '
-                'there is no hover, no focus, no disabled and no error variant.</p>'
-                '<div class="note"><b>There is no indeterminate state either.</b> If you '
-                'do not know how much work is left, this component cannot say so. Use the '
-                '<a href="spinner.html">Spinner</a> until Figma adds one.</div>'),
+        states=('<p>A progress bar has no interaction states &mdash; no hover, no focus, no '
+                'disabled. It has <i>value</i> states, and there are three.</p>' +
+                table(['State', 'What it shows', 'What it announces'], [
+                    ['Determinate', 'A fill from 0 to 100, and a number.',
+                     '<span class="m">aria-valuenow</span> with min and max.'],
+                    ['Indeterminate', 'A 30% sliver travelling left to right, and '
+                     '<b>no number</b>.',
+                     '<span class="m">aria-valuenow</span> is <b>removed</b>, and '
+                     '<span class="m">aria-busy="true"</span> is set. An indeterminate bar '
+                     'reporting 0 is a bar claiming no progress, which is a different and '
+                     'wrong statement.'],
+                    ['Settled', 'The fill stops and stays where it stopped, at 100 on '
+                     'success or wherever it failed.',
+                     'The final <span class="m">aria-valuenow</span>, plus the outcome in '
+                     'the label.'],
+                ]) +
+                '<div class="note"><b>A failed bar does not reset and does not keep '
+                'crawling.</b> It stops at the last real number and says what went wrong. '
+                'Snapping back to 0 erases the only evidence the user has of how far the '
+                'job got, and a bar that keeps creeping after the work has died is the '
+                'single most distrusted pattern in any progress UI.</div>'),
 
-        behaviour=checklist([
-            'The bar fills from the left edge and keeps its <span class="m">4px</span> '
-            'radius on the fill as well as the track, so at very low percentages the fill '
-            'reads as a short capsule rather than a sliver.',
-            'Nothing in Figma defines a transition, so the bar in this documentation '
-            'jumps rather than animates. Do not read that as a decision.',
-            'There is no minimum visible width. At 0% the fill disappears entirely, which '
-            'is what the <span class="m">0%</span> variant shows.',
-            'The bar has no intrinsic width. It takes the width of whatever contains it.',
-        ]),
+        behaviour=('<h3>Movement</h3>' +
+                   checklist([
+                       '<b>Width only, <span class="m">240ms</span>, '
+                       '<span class="m">cubic-bezier(.22, 1, .36, 1)</span>.</b> The system '
+                       'ease. Nothing else about the bar moves &mdash; no pulse, no shimmer, '
+                       'no stripe.',
+                       '<b>Never animate backwards.</b> If a new estimate is lower than the '
+                       'current fill, hold where you are until the real number catches up. '
+                       'A bar that goes back reads as failure even when it is just a better '
+                       'estimate.',
+                       '<b>Indeterminate travels on a <span class="m">1.6s</span> loop</b> '
+                       '&mdash; a 30% sliver crossing the track. Slower than a spinner on '
+                       'purpose, because it is furniture, not a focal point.',
+                       '<b>Under <span class="m">prefers-reduced-motion</span>, neither '
+                       'moves.</b> The determinate bar jumps to its value; the indeterminate '
+                       'one becomes a static filled track at 55% opacity. Something that '
+                       'slides across the screen forever is exactly what that setting is '
+                       'for.',
+                   ]) +
+
+                   '<h3>The number is the component\u2019s job</h3>' +
+                   checklist([
+                       'The bar owns its value text. Making every caller hand-build a '
+                       'percentage beside a bar is how six screens end up with six '
+                       'formats.',
+                       'Round to whole percent. Decimal places on a progress bar are noise, '
+                       'and they make the number twitch.',
+                       'Where a count is more useful than a percentage &mdash; '
+                       '<span class="m">31 of 48 tickets</span> &mdash; use the count. '
+                       'People act on counts.',
+                       'Never show a number you do not have. That is what indeterminate is '
+                       'for.',
+                   ]) +
+
+                   '<h3>Determinate or not</h3>' +
+                   '<p>Use a determinate bar when you know the total. Use indeterminate when '
+                   'you do not. Do not fake the first with the second.</p>' +
+                   checklist([
+                       'A determinate bar whose estimate is wrong is worse than an '
+                       'indeterminate one that never promised anything.',
+                       'Under about a second, show nothing at all. A bar that appears and '
+                       'vanishes is a flash of noise.',
+                       'Over about ten seconds, a bar alone stops being reassuring. Add '
+                       'what is happening in words, and change it as the work moves.',
+                       'For a single unknown-duration wait with no extent to show, a '
+                       '<a href="spinner.html">spinner</a> is still the right component.',
+                   ]) +
+
+                   '<h3>Width</h3>' +
+                   checklist([
+                       'The bar has no intrinsic width; it fills its container. Cap it at '
+                       'about <span class="m">280px</span> where it sits in a form, and let '
+                       'it run full width where it sits at the top of a panel.',
+                       'A bar stretched across a 1600px screen makes a 2% change invisible. '
+                       'Wider is not clearer.',
+                   ])),
 
         guidelines=dodont(
-            ['Put the percentage or a count next to the bar if the number matters. The '
-             'bar cannot say it.',
+            ['Give the bar a label that names the work, and a value beside it.',
              'Use it when you know the total amount of work.',
-             'Give it a sensible maximum width. A progress bar stretched across a '
-             '1600px screen is hard to read.'],
-            ['Do not use it for an unknown duration. That is a spinner.',
-             'Do not colour the fill to signal success or failure. No such tokens exist.',
-             'Do not build a striped or animated variant. Neither is in the system.',
-             'Do not rely on the track being visible. Today it is not.']),
+             'Stop the bar where it failed and say why.',
+             'Cap the width. Around 280px in a form.',
+             'Pair every status colour with words that say the same thing.'],
+            ['Do not use it for an unknown duration without switching to indeterminate.',
+             'Do not let the fill run backwards.',
+             'Do not show a number you are guessing at.',
+             'Do not build a striped or shimmering variant. Neither is in the system.',
+             'Do not use the 4px height with a label row.']),
 
-        specs=spec([
-            ('Height', '<span class="m">8px</span>'),
-            ('Radius', '<span class="m">4px</span>'),
-            ('Track, light', '<span class="m">#DFDEDD</span>'),
-            ('Fill, light', '<span class="m">#171614</span>'),
-            ('Track, dark', '<span class="m">#666054</span>'),
-            ('Fill, dark', '<span class="m">#FFFFFF</span>'),
-        ]),
+        specs=(table(['Token', 'Light', 'Dark'], [
+            ['<code>progress bar/height</code>', '<span class="m">8</span>',
+             '<span class="m">8</span>'],
+            ['<code>progress bar/radius</code>', '<span class="m">4</span>',
+             '<span class="m">4</span>'],
+            ['<code>progress bar/track fill</code>', '<span class="m">#DFDEDD</span>',
+             '<span class="m">#393632</span>'],
+            ['<code>progress bar/track stroke</code> <b>new</b>',
+             '<span class="m">#7F796C</span>', '<span class="m">#7F796C</span>'],
+            ['<code>progress bar/progress fill</code>', '<span class="m">#171614</span>',
+             '<span class="m">#FFFFFF</span>'],
+        ]) + spec([
+            ('Ring', '<span class="m">1px</span>, inside'),
+            ('Transition', '<span class="m">240ms</span> on width, '
+                           '<span class="m">cubic-bezier(.22, 1, .36, 1)</span>, '
+                           'none under reduced motion'),
+            ('Indeterminate', '<span class="m">30%</span> sliver, '
+                              '<span class="m">1.6s</span> loop &mdash; '
+                              '<span class="m">Progress Bar Indeterminate</span>'),
+            ('Compact height', '<span class="m">4px</span> / '
+                               '<span class="m">2px</span> radius'),
+            ('Status fills, light', 'success <span class="m">#1D6B3F</span>, warning '
+                                    '<span class="m">#8A5A00</span>, error '
+                                    '<span class="m">#B00100</span>'),
+            ('Status fills, dark', 'success <span class="m">#6FCF97</span>, warning '
+                                   '<span class="m">#FFBA0D</span>, error '
+                                   '<span class="m">#EFADAC</span>'),
+        ])),
 
-        a11y=('<p>WCAG 1.4.11 asks for 3:1 between a graphical object and what sits '
-              'behind it, when you need to see that object to understand the control. '
-              'For a progress bar that means the track, because the track is what tells '
-              'you how much is left.</p>' +
+        a11y=('<p>WCAG <span class="m">1.4.11 Non-text Contrast, AA</span> asks for 3:1 on '
+              'the visual information needed to understand a component. A progress bar has '
+              '<i>two</i> such boundaries, and the old design only satisfied one: the fill '
+              'against the track tells you how far along it is, and the track against the '
+              'page tells you how far there is to go. Without the second, 40% and 90% look '
+              'the same.</p>' +
               measured([
+                  ('Ring on page, light', '#7f796c', '#ffffff', '4.33:1', '3:1', True),
+                  ('Ring on page, dark', '#7f796c', '#171614', '4.18:1', '3:1', True),
                   ('Fill on track, light', '#171614', '#dfdedd', '13.46:1', '3:1', True),
-                  ('Track on page, light', '#dfdedd', '#f0eeea', '1.16:1', '3:1', False),
-                  ('Track on white card', '#dfdedd', '#ffffff', '1.34:1', '3:1', False),
-                  ('Fill on track, dark', '#ffffff', '#666054', '6.24:1', '3:1', True),
-                  ('Track on demo black', '#666054', '#000000', '3.37:1', '3:1', True),
-                  ('Track on product dark', '#666054', '#211f1c', '2.64:1', '3:1', False),
+                  ('Fill on track, dark', '#ffffff', '#393632', '12.02:1', '3:1', True),
+                  ('Error fill on track, light', '#b00100', '#dfdedd', '5.48:1', '3:1', True),
+                  ('Error fill on track, dark', '#efadac', '#393632', '6.43:1', '3:1', True),
               ]) +
-              '<div class="note warn"><b>The dark track passes in Figma and fails in the '
-              'product.</b> The Figma demonstration frame sits on pure black, where the '
-              'track reaches 3.37:1. The product surface is <span class="m">#211F1C</span>, '
-              'where the same colour reaches 2.64:1. The value was chosen against the '
-              'wrong background.</div>' +
+              '<div class="note ok"><b>Why not simply darken the track.</b> '
+              '<span class="m">neutral/400</span> is the only Trinity neutral that clears '
+              '3:1 against both the page and the fill in both modes, so a single token swap '
+              'genuinely does fix the contrast. It also makes status colour impossible: '
+              'against a mid-grey track a fill needs a luminance below '
+              '<span class="m">0.031</span> or above <span class="m">0.678</span>, which '
+              'means near-black or pastel. Measured against that track, error reaches only '
+              '<span class="m">1.70:1</span> and success <span class="m">1.50:1</span>. The '
+              'ring gets both properties instead of trading one for the other.</div>' +
               checklist([
                   'Give the element <span class="m">role="progressbar"</span> with '
                   '<span class="m">aria-valuenow</span>, <span class="m">aria-valuemin</span> '
                   'and <span class="m">aria-valuemax</span>.',
                   'Give it an <span class="m">aria-label</span> saying what is progressing. '
                   '&ldquo;75%&rdquo; on its own tells a screen reader nothing.',
-                  'If the bar is the only indication that something is happening, put the '
-                  'same information in text as well.',
+                  'For indeterminate, <b>remove</b> <span class="m">aria-valuenow</span> and '
+                  'set <span class="m">aria-busy="true"</span>. Do not set it to 0.',
+                  'Put the outcome in the label, not only in the fill colour. '
+                  '<span class="m">1.4.1 Use of Colour, A</span>.',
+                  'Do not put the live percentage in an assertive live region. A number '
+                  'changing thirty times interrupts thirty times &mdash; announce the start '
+                  'and the outcome, not the journey.',
+                  'The bar is not focusable and takes no keyboard interaction. It is a '
+                  'readout.',
               ])),
 
-        gaps=('<div class="note ok"><b>One question already closed.</b> The two variants '
-              'that used to be called <span class="m">progress7</span> and '
-              '<span class="m">progress8</span> have been renamed to '
-              '<span class="m">5%</span> and <span class="m">0%</span> in Figma.</div>' +
-              checklist([
-            '<b>The track fails contrast in both themes.</b> One token change fixes it here '
-            'and on <a href="slider.html">Slider</a>, which has the same problem.',
-            '<b>No label or value text.</b> The component has no way to display its own '
-            'number.',
-            '<b>No indeterminate state</b>, so unknown-duration work has nowhere to go.',
-            '<b>No status colours.</b> There is no success, warning or error fill.',
-            '<b>No size scale.</b> One 8px height, everywhere.',
-            '<b>No transition, easing or duration</b> is specified.',
-            '<b>The light and dark demonstration frame is named &ldquo;Brand core '
-            'palette&rdquo;</b> in the Figma layer tree rather than after this component.',
-              ])),
+        gaps=None,
     )
 
 

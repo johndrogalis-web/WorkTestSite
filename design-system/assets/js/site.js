@@ -632,4 +632,89 @@
                   'returns this group to nothing.'
                : 'Nothing selected yet.', '');
   });
+
+  /* ── Live progress bar ─────────────────────────────────────
+     Determinate movement, the indeterminate case, and what
+     happens when the job fails. The value text is the component's
+     job, not the caller's, and it is what carries status — the
+     fill colour only reinforces it. */
+  [].slice.call(document.querySelectorAll('.pblive')).forEach(function (box) {
+    var bar  = box.querySelector('.t-pbar');
+    var fil  = box.querySelector('.t-pbar > i');
+    var val  = box.querySelector('.pblive-val');
+    var lab  = box.querySelector('.pblive-lab');
+    var read = box.querySelector('.pblive-state');
+    var btns = [].slice.call(box.querySelectorAll('.pblive-btn'));
+    if (!bar || !fil) return;
+
+    var pct = 0, timer = null;
+
+    function say(s) { if (read) read.textContent = s; }
+
+    function paint(p, statusLabel) {
+      pct = p;
+      fil.style.width = p + '%';
+      if (val) val.textContent = Math.round(p) + '%';
+      if (lab && statusLabel) lab.textContent = statusLabel;
+      bar.setAttribute('aria-valuenow', String(Math.round(p)));
+    }
+
+    function reset(cls) {
+      clearInterval(timer);
+      bar.classList.remove('ok', 'warn', 'err', 'ind');
+      bar.removeAttribute('aria-busy');
+      if (cls) bar.classList.add(cls);
+      if (val) val.hidden = false;
+    }
+
+    function run(endAt, thenCls, thenLab, thenSay) {
+      reset();
+      paint(0, 'Uploading batch ticket');
+      timer = setInterval(function () {
+        var next = pct + (3 + Math.random() * 5);
+        if (next >= endAt) {
+          paint(endAt);
+          clearInterval(timer);
+          if (thenCls) bar.classList.add(thenCls);
+          if (lab && thenLab) lab.textContent = thenLab;
+          say(thenSay);
+        } else { paint(next); }
+      }, 90);
+    }
+
+    btns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var mode = btn.getAttribute('data-mode');
+        if (mode === 'run') {
+          run(100, 'ok', 'Upload complete',
+              'Finished. The fill turned green AND the label changed — the colour is the ' +
+              'reinforcement, never the message.');
+          say('Running. Width transitions at 240ms; the number is the component\u2019s own.');
+        }
+        if (mode === 'fail') {
+          run(62, 'err', 'Upload failed — connection lost at 62%',
+              'Failed. The bar stops where it stopped and says why. It does not reset to 0, ' +
+              'and it does not keep crawling.');
+          say('Running, and this one is going to fail.');
+        }
+        if (mode === 'ind') {
+          reset('ind');
+          bar.setAttribute('aria-busy', 'true');
+          bar.removeAttribute('aria-valuenow');
+          if (val) val.hidden = true;
+          if (lab) lab.textContent = 'Checking the plant queue\u2026';
+          say('Indeterminate. No number is shown, because none is known — showing a fake one ' +
+              'is worse than showing none. aria-valuenow is removed, not set to 0.');
+        }
+        if (mode === 'stop') {
+          reset();
+          paint(0, 'Ready');
+          say('Idle.');
+        }
+      });
+    });
+
+    paint(0, 'Ready');
+    say('Idle.');
+  });
 })();

@@ -81,27 +81,12 @@ def _pblive():
             '<div class="pblive-ctl">'
             '<button type="button" class="pblive-btn" data-mode="run">Run to 100%</button>'
             '<button type="button" class="pblive-btn" data-mode="fail">Fail at 62%</button>'
+            '<button type="button" class="pblive-btn" data-mode="stall">Stall at 99%</button>'
             '<button type="button" class="pblive-btn" data-mode="ind">Indeterminate</button>'
             '<button type="button" class="pblive-btn" data-mode="stop">Reset</button>'
             '</div>'
             '<p class="pblive-state" aria-live="polite">Idle.</p>'
             '</div>')
-
-
-def _pbstatus():
-    rows = [('', 'Default', 72, 'Uploading batch ticket'),
-            ('ok', 'Success', 100, 'Upload complete'),
-            ('warn', 'Warning', 48, 'Slower than usual \u2014 still going'),
-            ('err', 'Error', 62, 'Failed \u2014 connection lost at 62%')]
-    out = '<div class="t-stack">'
-    for cls, lab, v, txt in rows:
-        out += ('<div class="t-pbarw" style="margin-bottom:14px">'
-                '<div class="t-pbarh"><span class="lb">%s</span>'
-                '<span class="vl">%d%%</span></div>'
-                '<div class="t-pbar %s" role="progressbar" aria-valuemin="0" aria-valuemax="100" '
-                'aria-valuenow="%d" aria-label="%s"><i style="width:%d%%"></i></div></div>'
-                % (txt, v, cls, v, lab, v))
-    return out + '</div>'
 
 
 def _pbsizes():
@@ -144,10 +129,11 @@ def c_progress():
                  'Watch what the number does when the job fails, and what it does when '
                  'nobody knows how long it will take.</p>' +
                  bench(_pblive(), _pblive(),
-                       'The label and number here are placed beside the bar, not '
-                       'owned by it. Indeterminate removes '
-                       '<span class="m">aria-valuenow</span> rather than setting it to '
-                       'zero.')),
+                       'The label and number here are placed beside the bar, not owned by '
+                       'it. <b>Stall at 99%</b> is the one worth watching &mdash; nothing is '
+                       'broken, the bar is just weighted by steps instead of by work. '
+                       'Indeterminate removes <span class="m">aria-valuenow</span> rather '
+                       'than setting it to zero.')),
 
         anatomy=spec([
             ('Track', 'Full width of its container, <span class="m">8px</span> tall, '
@@ -182,16 +168,6 @@ def c_progress():
                      ['<span class="m">progress=0%</span>', '0%',
                       'Nothing but the ringed track.'],
                  ]) +
-                 '<h3 id="status">Status</h3>'
-                 '<p>The same bar, four meanings. The rule that matters is underneath: the '
-                 'colour is never the message.</p>' +
-                 bench(_pbstatus(), _pbstatus()) +
-                 '<div class="note"><b>The label changes, and the colour follows.</b> '
-                 'A bar that turns red and says nothing tells a colourblind user that '
-                 'something happened, not what. Every status fill is paired with label text '
-                 'that says the same thing in words &mdash; WCAG '
-                 '<span class="m">1.4.1 Use of Colour, A</span>. If you only change one of '
-                 'the two, change the words.</div>' +
                  '<h3 id="sizes">Two heights</h3>'
                  '<p>Both are tokens in the file: '
                  '<span class="m">progress bar/height</span> and '
@@ -249,11 +225,34 @@ def c_progress():
                        'for.',
                    ]) +
 
-                   '<h3>The number is the component\u2019s job</h3>' +
+                   '<h3>Status is not a colour</h3>' +
+                   '<p>The bar has one fill. Trinity carries success, warning and error '
+                   'fills as tokens, and they are listed under <a href="#specs">Specs</a>, '
+                   'but swapping the fill is the <i>last</i> thing that happens when a job '
+                   'succeeds or fails, not the first.</p>' +
                    checklist([
-                       'The bar owns its value text. Making every caller hand-build a '
-                       'percentage beside a bar is how six screens end up with six '
-                       'formats.',
+                       '<b>The outcome is carried by the words beside the bar.</b> A bar '
+                       'that turns red and says nothing tells a colourblind user that '
+                       'something happened, not what. WCAG '
+                       '<span class="m">1.4.1 Use of Colour, A</span>.',
+                       '<b>If you only change one of the two, change the words.</b> A '
+                       'failure stated in text and left in the default fill is correct. A '
+                       'failure shown only as a red bar is not.',
+                       '<b>There is no warning fill in normal use.</b> &ldquo;Slower than '
+                       'usual&rdquo; is a sentence, not a colour. Amber on a bar that is '
+                       'still working reads as a fault.',
+                       '<b>Success rarely needs a colour at all.</b> The bar reaching 100 '
+                       'with a label that says so is already unambiguous.',
+                   ]) +
+
+                   '<h3>Where the number goes</h3>' +
+                   '<p>The bar carries no text, so the number is placed beside it. That '
+                   'makes consistency a rule rather than a component, which is why the '
+                   'format is pinned down here.</p>' +
+                   checklist([
+                       'Label left, value right, on one row <span class="m">6px</span> above '
+                       'the bar, both ends aligned to the bar. Not below it, and not inside '
+                       'it.',
                        'Round to whole percent. Decimal places on a progress bar are noise, '
                        'and they make the number twitch.',
                        'Where a count is more useful than a percentage &mdash; '
@@ -263,39 +262,125 @@ def c_progress():
                        'for.',
                    ]) +
 
-                   '<h3>Determinate or not</h3>' +
-                   '<p>Use a determinate bar when you know the total. Use indeterminate when '
-                   'you do not. Do not fake the first with the second.</p>' +
-                   checklist([
-                       'A determinate bar whose estimate is wrong is worse than an '
-                       'indeterminate one that never promised anything.',
-                       'Under about a second, show nothing at all. A bar that appears and '
-                       'vanishes is a flash of noise.',
-                       'Over about ten seconds, a bar alone stops being reassuring. Add '
-                       'what is happening in words, and change it as the work moves.',
-                       'For a single unknown-duration wait with no extent to show, a '
-                       '<a href="spinner.html">spinner</a> is still the right component.',
+                   '<h3>When a bar earns its place</h3>' +
+                   '<p>Most waits do not need one. Showing a progress bar for work that '
+                   'finishes before the user has focused on it is worse than showing '
+                   'nothing, because the flash reads as an error.</p>' +
+                   table(['How long', 'Show', 'Why'], [
+                       ['Under <span class="m">1s</span>', 'Nothing at all',
+                        'A bar that appears and vanishes is a flash of noise. The user was '
+                        'not yet waiting.'],
+                       ['<span class="m">1&ndash;4s</span>',
+                        'A <a href="spinner.html">spinner</a>, if anything',
+                        'Long enough to need acknowledging, too short for a number to be '
+                        'worth reading.'],
+                       ['<span class="m">4&ndash;10s</span>', 'This bar, determinate',
+                        'Long enough that the user wants to know how far along it is.'],
+                       ['Over <span class="m">10s</span>',
+                        'This bar, plus words that change',
+                        'A bar alone stops reassuring. &ldquo;Uploading 31 of 48&rdquo; '
+                        'beats a bar at 64% that might be stuck.'],
+                       ['Extent unknown, any duration', 'Indeterminate',
+                        'A determinate bar whose estimate is wrong is worse than an '
+                        'indeterminate one that never promised anything.'],
                    ]) +
 
-                   '<h3>Width</h3>' +
+                   '<h3>The 99% problem</h3>' +
+                   '<p>The fastest way to lose a user&rsquo;s trust in every bar you will '
+                   'ever show them is to let one sit at 99% for thirty seconds. They will '
+                   'not remember that the number was accurate; they will remember that the '
+                   'bar lied.</p>' +
+                   checklist([
+                       '<b>Base the number on work done, not on steps completed.</b> Four '
+                       'steps where the last one takes 80% of the time is a bar that races '
+                       'to 75 and then stops.',
+                       '<b>If you cannot weight the steps honestly, do not show a '
+                       'percentage.</b> Use a count &mdash; <span class="m">step 3 of '
+                       '4</span> &mdash; which makes no promise about time.',
+                       '<b>Never hold a bar at 99 waiting for a response.</b> If the last '
+                       'act is out of your hands, switch to indeterminate and say what you '
+                       'are waiting for.',
+                       '<b>A bar that has not moved in ten seconds needs words.</b> Silence '
+                       'and stillness together read as a hang, whatever the number says.',
+                   ]) +
+                   '<div class="note"><b>Speeding up is fine. Slowing down is not.</b> A bar '
+                   'that accelerates toward the end feels faster than a perfectly linear one '
+                   'covering the same time, and a bar that decelerates feels broken. Where '
+                   'the estimate is soft, let it be optimistic late rather than early.</div>' +
+
+                   '<h3>One bar, or one per item</h3>' +
+                   '<p>Uploading forty-eight tickets is one job to the user and forty-eight '
+                   'to the system. Pick the one the user is actually waiting on.</p>' +
+                   table(['Situation', 'Show'], [
+                       ['A batch the user submitted as one action',
+                        '<b>One bar</b> for the batch, with a count in the label. They '
+                        'pressed one button; they are waiting for one thing.'],
+                       ['Items that arrive and finish independently',
+                        '<b>One bar per row</b>, in the row. A file list where each upload '
+                        'starts when it is dropped.'],
+                       ['A batch where individual failures matter',
+                        '<b>One bar for the batch, plus per-row state after it ends.</b> '
+                        'The bar answers &ldquo;is it done&rdquo;; the rows answer '
+                        '&ldquo;what failed&rdquo;.'],
+                   ]) +
+                   '<div class="note stop"><b>Never stack more than about five bars in '
+                   'view.</b> Six bars filling at different rates is a pattern nobody can '
+                   'read. Past five, one bar and a count.</div>' +
+
+                   '<h3>Giving up</h3>' +
+                   '<p>The bar is a readout and takes no interaction, but anything it sits '
+                   'beside for more than a few seconds needs a way out.</p>' +
+                   checklist([
+                       'Anything over about ten seconds gets a <b>Cancel</b> beside it. A '
+                       'progress bar with no exit is a modal without a close button.',
+                       'Cancel says what it will leave behind. &ldquo;Cancel&rdquo; on a '
+                       'half-finished batch should say whether the first 31 stay uploaded.',
+                       'After a failure, the action is <b>Retry</b>, positioned where Cancel '
+                       'was. Do not make the user find the original button again.',
+                       'Retry resumes where it can and says so. Restarting a 90%-complete '
+                       'upload without warning is the failure the user will actually '
+                       'complain about.',
+                   ]) +
+
+                   '<h3>When it finishes</h3>' +
+                   checklist([
+                       '<b>Hold at 100% for a beat before clearing.</b> Roughly '
+                       '<span class="m">1s</span>. A bar that vanishes the instant it '
+                       'completes leaves the user unsure it ever did.',
+                       '<b>Success can disappear. Failure cannot.</b> A completed bar may '
+                       'clear itself; a failed one stays until the user acknowledges it or '
+                       'retries.',
+                       '<b>Do not animate back to zero.</b> If the same bar is reused for '
+                       'the next job, clear it and start fresh rather than rewinding.',
+                       '<b>Never leave a finished bar sitting at 100% forever.</b> It reads '
+                       'as a job still in progress that happens to be nearly done.',
+                   ]) +
+
+                   '<h3>Width and placement</h3>' +
                    checklist([
                        'The bar has no intrinsic width; it fills its container. Cap it at '
                        'about <span class="m">280px</span> where it sits in a form, and let '
                        'it run full width where it sits at the top of a panel.',
                        'A bar stretched across a 1600px screen makes a 2% change invisible. '
                        'Wider is not clearer.',
+                       'Put it where the work is, not where there is room. A bar at the top '
+                       'of the page for a change made at the bottom of a form is a bar '
+                       'nobody sees.',
+                       'The <span class="m">4px</span> height pinned to the top edge of a '
+                       'container is the one exception &mdash; there it is deliberately '
+                       'peripheral, and it carries no label.',
                    ])),
 
         guidelines=dodont(
             ['Give the bar a label that names the work, and a value beside it.',
-             'Use it when you know the total amount of work.',
+             'Weight the number by work done, not by steps completed.',
              'Stop the bar where it failed and say why.',
-             'Cap the width. Around 280px in a form.',
+             'Put a Cancel beside anything running longer than about ten seconds.',
              'Pair every status colour with words that say the same thing.'],
-            ['Do not use it for an unknown duration without switching to indeterminate.',
-             'Do not let the fill run backwards.',
-             'Do not show a number you are guessing at.',
-             'Do not build a striped or shimmering variant. Neither is in the system.',
+            ['Do not show a bar for work that finishes in under a second.',
+             'Do not let the fill run backwards, or hold it at 99 waiting on something else.',
+             'Do not show a number you are guessing at &mdash; use a count, or indeterminate.',
+             'Do not stack more than about five bars in view.',
              'Do not use the 4px height with a label row.']),
 
         specs=(table(['Token', 'Light', 'Dark'], [

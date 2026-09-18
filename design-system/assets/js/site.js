@@ -697,6 +697,24 @@
               'and it does not keep crawling.');
           say('Running, and this one is going to fail.');
         }
+        if (mode === 'stall') {
+          reset();
+          paint(0, 'Uploading batch ticket');
+          say('Running \u2014 and this one is weighted by steps, not by work.');
+          timer = setInterval(function () {
+            // Races to 99 because three cheap steps finished, then sits on the
+            // one expensive step. This is the bar users stop believing.
+            var next = pct + (pct < 99 ? 6 + Math.random() * 6 : 0);
+            if (next >= 99) {
+              paint(99);
+              if (lab) lab.textContent = 'Uploading batch ticket';
+              say('Stuck at 99%. Nothing is broken \u2014 the last step is 80% of the work ' +
+                  'and got 1% of the bar. This is why you weight by work, not by steps, ' +
+                  'and why a bar that cannot be weighted honestly should show a count ' +
+                  'instead.');
+            } else { paint(next); }
+          }, 90);
+        }
         if (mode === 'ind') {
           reset('ind');
           bar.setAttribute('aria-busy', 'true');

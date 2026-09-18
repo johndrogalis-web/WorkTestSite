@@ -568,4 +568,68 @@
 
     sync();
   });
+
+  /* ── Live radio group ──────────────────────────────────────
+     Almost all of this is native and free, which is the point:
+     a shared name makes the group one tab stop, arrow keys move
+     AND select, and there is no way back to nothing. The script
+     only narrates what the browser already does. Each bench
+     instance gets its own name, or the light and dark panes
+     would be one group and fight each other. */
+  [].slice.call(document.querySelectorAll('.radlive')).forEach(function (box, boxN) {
+    var radios = [].slice.call(box.querySelectorAll('.radlive-opt input'));
+    var read   = box.querySelector('.radlive-state');
+    if (!radios.length) return;
+
+    var name = 'radlive' + boxN;
+    radios.forEach(function (r) { r.name = name; });
+
+    var lastKey = null;
+    function say(s, cls) {
+      if (!read) return;
+      read.textContent = s;
+      read.className = 'radlive-state' + (cls ? ' ' + cls : '');
+    }
+    function labelOf(r) {
+      return (r.closest('label') || {}).textContent
+        ? r.closest('label').textContent.trim() : r.value;
+    }
+
+    box.addEventListener('keydown', function (e) {
+      if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].indexOf(e.key) > -1) {
+        lastKey = e.key;
+      } else if (e.key === ' ') {
+        lastKey = 'Space';
+      } else { lastKey = null; }
+    });
+
+    radios.forEach(function (r) {
+      r.addEventListener('change', function () {
+        if (lastKey && lastKey !== 'Space') {
+          say(lastKey.replace('Arrow', '') + ' moved to "' + labelOf(r) +
+              '" and selected it in the same keystroke. Arrow keys do both.', 'ok');
+        } else {
+          say('"' + labelOf(r) + '" selected. The others cleared themselves — ' +
+              'that is the browser, not script.', 'ok');
+        }
+        lastKey = null;
+      });
+      r.addEventListener('focus', function () {
+        if (!lastKey) {
+          say('Focus entered the group. Four options, one tab stop — Tab again ' +
+              'leaves, it does not step through them.', 'wait');
+        }
+      });
+    });
+
+    var after = box.querySelector('.radlive-after');
+    if (after) after.addEventListener('focus', function () {
+      say('Tab left the whole group in one press.', '');
+    });
+
+    var checked = radios.filter(function (r) { return r.checked; })[0];
+    say(checked ? '"' + labelOf(checked) + '" is selected. There is no gesture that ' +
+                  'returns this group to nothing.'
+               : 'Nothing selected yet.', '');
+  });
 })();

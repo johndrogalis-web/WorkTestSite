@@ -770,6 +770,25 @@ RAD_CSS = """/* Verifi radio group — mutually exclusive, all options visible. 
 }"""
 
 
+def _radlive():
+    """A real radio group. Almost everything here is native behaviour."""
+    opts = [('metric', 'Metric &mdash; mm, kg, &deg;C', True),
+            ('imperial', 'Imperial &mdash; in, lb, &deg;F', False),
+            ('mixed', 'Mixed &mdash; metric slump, imperial weight', False),
+            ('plant', 'Follow the plant setting', False)]
+    rows = ''.join(
+        '<label class="c-rad live radlive-opt"><input type="radio" value="%s"%s>'
+        '<i></i>%s</label>' % (v, ' checked' if c else '', lbl) for v, lbl, c in opts)
+    return ('<div class="radlive">'
+            '<input class="radlive-edge" type="text" aria-label="A field before the group"'
+            ' placeholder="A field before the group">'
+            '<fieldset><legend>Units shown on the ticket</legend>'
+            '<div class="radlive-opts">' + rows + '</div></fieldset>'
+            '<input class="radlive-edge radlive-after" type="text" '
+            'aria-label="A field after the group" placeholder="A field after the group">'
+            '<p class="radlive-state" aria-live="polite"></p>'
+            '</div>')
+
 def c_radio():
     demo = ('<div class="bstack"><span class="c-rad on"><i></i>Metric</span>'
             '<span class="c-rad"><i></i>Imperial</span></div>')
@@ -783,7 +802,22 @@ def c_radio():
         'unchooses the others.',
         'ok', figma='30173:78572',
 
-        example=bench(demo, demo),
+        example=(bench(demo, demo) +
+                 '<h3 id="try">Try it</h3>'
+                 '<p>Click into the field above the group, then press Tab. Focus lands on the '
+                 'group once, not four times. Press the arrow keys &mdash; each one moves and '
+                 'selects in the same keystroke. Press Tab again and you leave the whole group '
+                 'in one press. Then try to get back to nothing selected; there is no gesture '
+                 'that does it.</p>' +
+                 bench(_radlive(), _radlive(),
+                       'Native <span class="m">&lt;input type="radio"&gt;</span> with a shared '
+                       '<span class="m">name</span>. The script here only narrates &mdash; every '
+                       'behaviour you can feel is the browser\u2019s.') +
+                 '<div class="note"><b>None of that is worth rebuilding.</b> A shared '
+                 '<span class="m">name</span> buys the single tab stop, the arrow-key '
+                 'navigation, the mutual exclusion and the group announcement. Every '
+                 'div-and-script radio group in the wild is an attempt to re-earn those four '
+                 'things, and most get the tab stop wrong.</div>'),
 
         anatomy=spec([
             ('Touchpoint', '<span class="m">24 &times; 24</span> &mdash; the outer frame, same '

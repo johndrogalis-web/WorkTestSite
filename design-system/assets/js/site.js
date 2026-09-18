@@ -810,13 +810,18 @@
       var end = Math.min(shown + PAGE, filtered.length);
       for (var i = shown; i < end; i++) {
         var r = filtered[i];
-        var cell = document.createElement('figure');
+        var cell = document.createElement('div');
         cell.className = 'ib-cell' + (r.brand ? ' brand' : '');
+        // The whole tile is the copy button: the name is the thing people came
+        // for, so it gets the big target, and SVG is the secondary action.
         cell.innerHTML =
-          '<button type="button" class="ib-art" data-copy="' + r.n + '" ' +
-          'title="Copy ' + r.n + '">' + svgFor(r) + '</button>' +
-          '<figcaption>' + r.n +
-          (r.alt ? '<span class="ib-alt">was ' + r.alt + '</span>' : '') + '</figcaption>' +
+          '<button type="button" class="ib-copy" data-copy="' + r.n + '" ' +
+          'aria-label="Copy the name ' + r.n + '">' +
+            '<span class="ib-art">' + svgFor(r) + '</span>' +
+            '<span class="ib-name">' + r.n + '</span>' +
+            (r.alt ? '<span class="ib-alt">was ' + r.alt + '</span>' : '') +
+            '<span class="ib-cue" aria-hidden="true">Copy name</span>' +
+          '</button>' +
           '<button type="button" class="ib-dl" data-dl="' + r.n + '" ' +
           'title="Download ' + r.n + '.svg" aria-label="Download ' + r.n + '.svg">SVG</button>';
         frag.appendChild(cell);
@@ -825,9 +830,22 @@
       shown = end;
     }
 
+    function flash(btn) {
+      var cell = btn.closest('.ib-cell');
+      if (!cell) return;
+      var cue = cell.querySelector('.ib-cue');
+      cell.classList.add('copied');
+      if (cue) cue.textContent = 'Copied';
+      clearTimeout(cell._t);
+      cell._t = setTimeout(function () {
+        cell.classList.remove('copied');
+        if (cue) cue.textContent = 'Copy name';
+      }, 1400);
+    }
+
     grid.addEventListener('click', function (e) {
       var c = e.target.closest && e.target.closest('[data-copy]');
-      if (c) { copy(c.getAttribute('data-copy')); return; }
+      if (c) { copy(c.getAttribute('data-copy')); flash(c); return; }
       var d = e.target.closest && e.target.closest('[data-dl]');
       if (d) {
         var name = d.getAttribute('data-dl');

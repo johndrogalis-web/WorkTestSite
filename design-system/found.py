@@ -730,8 +730,9 @@ def f_icons():
   If you need an in-between size, the answer is the next size down with more space around it.</div>
 
 <h2 id="browse">Browse</h2>
-<p>Search by name. Click an icon to copy its name; hover and press
-   <span class="m">SVG</span> to download the file.</p>
+<p><b>Click any tile to copy its name.</b> That name is what you type into a text layer set to
+   the font &mdash; paste it straight into Figma and it folds to the glyph. Press
+   <span class="m">SVG</span> in the corner if you need the file instead.</p>
 
 <div class="iconbrowser" data-base="../">
   <div class="ib-bar">

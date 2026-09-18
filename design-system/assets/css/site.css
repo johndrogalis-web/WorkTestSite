@@ -827,27 +827,41 @@ td.wrap{min-width:190px}
 .ib-tab:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .ib-count{font-family:var(--mono);font-size:11px;color:var(--ink-soft);white-space:nowrap}
 
-.ib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:2px}
-.ib-cell{position:relative;margin:0;padding:16px 8px 10px;border-radius:6px;
-  display:flex;flex-direction:column;align-items:center;gap:9px;text-align:center;
-  border:1px solid transparent;transition:border-color .1s,background .1s}
-.ib-cell:hover{background:var(--surface);border-color:var(--rule)}
-.ib-art{width:100%;display:flex;align-items:center;justify-content:center;
-  height:34px;color:var(--ink);cursor:pointer;border-radius:4px}
+.ib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(146px,1fr));gap:2px}
+.ib-cell{position:relative;margin:0}
+
+/* The whole tile copies the name — that is the thing people came for. */
+.ib-copy{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;
+  padding:16px 8px 12px;border-radius:6px;text-align:center;cursor:pointer;
+  border:1px solid transparent;background:none;
+  transition:background .1s,border-color .1s}
+.ib-copy:hover{background:var(--surface);border-color:var(--rule)}
+.ib-copy:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+.ib-art{display:flex;align-items:center;justify-content:center;height:30px;color:var(--ink)}
 .ib-art svg{width:24px;height:24px;display:block}
 .ib-cell.brand .ib-art svg{width:28px;height:28px}
-.ib-art:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-.ib-cell figcaption{font-family:var(--mono);font-size:10.5px;line-height:1.35;
-  color:var(--ink-soft);word-break:break-word;max-width:100%}
-.ib-cell:hover figcaption{color:var(--ink-body)}
-.ib-alt{display:block;margin-top:2px;font-size:9.5px;color:var(--ink-faint)}
-.ib-dl{position:absolute;top:6px;right:6px;height:20px;padding:0 6px;border-radius:3px;
+.ib-name{font-family:var(--mono);font-size:10.5px;line-height:1.35;color:var(--ink-soft);
+  word-break:break-word;max-width:100%}
+.ib-copy:hover .ib-name{color:var(--ink)}
+.ib-alt{font-family:var(--mono);font-size:9.5px;color:var(--ink-faint)}
+
+/* A visible cue, because a tile that copies on click has to say so. */
+.ib-cue{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-faint);opacity:0;transition:opacity .1s}
+.ib-copy:hover .ib-cue,.ib-copy:focus-visible .ib-cue{opacity:1}
+.ib-cell.copied .ib-copy{background:var(--surface);border-color:var(--ink)}
+.ib-cell.copied .ib-cue{opacity:1;color:var(--ink);font-weight:500}
+.ib-cell.copied .ib-cue::before{content:"\2713  "}
+.ib-cell.copied .ib-name{color:var(--ink)}
+
+.ib-dl{position:absolute;top:8px;right:8px;height:20px;padding:0 6px;border-radius:3px;
   font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;
   color:var(--ink-soft);background:var(--page);box-shadow:inset 0 0 0 1px var(--rule);
-  opacity:0;transition:opacity .1s}
+  opacity:0;transition:opacity .1s;z-index:2}
 .ib-cell:hover .ib-dl,.ib-dl:focus-visible{opacity:1}
 .ib-dl:hover{color:var(--ink);box-shadow:inset 0 0 0 1px var(--rule-mid)}
 .ib-dl:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+@media (hover:none){.ib-dl{opacity:1}.ib-cue{opacity:1}}
 .ib-empty{grid-column:1/-1;padding:30px 0;color:var(--ink-soft);font-size:14px}
 
 .ib-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(8px);

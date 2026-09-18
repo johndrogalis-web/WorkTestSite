@@ -641,8 +641,8 @@
   [].slice.call(document.querySelectorAll('.pblive')).forEach(function (box) {
     var bar  = box.querySelector('.t-pbar');
     var fil  = box.querySelector('.t-pbar > i');
-    var val  = box.querySelector('.pblive-val');
-    var lab  = box.querySelector('.pblive-lab');
+    var val  = null;   /* the atom carries no value text */
+    var lab  = null;   /* and no label */
     var read = box.querySelector('.pblive-state');
     var btns = [].slice.call(box.querySelectorAll('.pblive-btn'));
     if (!bar || !fil) return;
@@ -661,22 +661,20 @@
 
     function reset(cls) {
       clearInterval(timer);
-      bar.classList.remove('ok', 'warn', 'err', 'ind');
+      bar.classList.remove('ind');
       bar.removeAttribute('aria-busy');
       if (cls) bar.classList.add(cls);
       if (val) val.hidden = false;
     }
 
-    function run(endAt, thenCls, thenLab, thenSay) {
+    function run(endAt, thenSay) {
       reset();
-      paint(0, 'Uploading batch ticket');
+      paint(0);
       timer = setInterval(function () {
         var next = pct + (3 + Math.random() * 5);
         if (next >= endAt) {
           paint(endAt);
           clearInterval(timer);
-          if (thenCls) bar.classList.add(thenCls);
-          if (lab && thenLab) lab.textContent = thenLab;
           say(thenSay);
         } else { paint(next); }
       }, 90);
@@ -686,53 +684,20 @@
       btn.addEventListener('click', function () {
         var mode = btn.getAttribute('data-mode');
         if (mode === 'run') {
-          run(100, 'ok', 'Upload complete',
-              'Finished. The fill turned green AND the label changed — the colour is the ' +
-              'reinforcement, never the message.');
-          say('Running. Width transitions at 240ms; the number is the component\u2019s own.');
-        }
-        if (mode === 'fail') {
-          run(62, 'err', 'Upload failed — connection lost at 62%',
-              'Failed. The bar stops where it stopped and says why. It does not reset to 0, ' +
-              'and it does not keep crawling.');
-          say('Running, and this one is going to fail.');
-        }
-        if (mode === 'stall') {
-          reset();
-          paint(0, 'Uploading batch ticket');
-          say('Running \u2014 and this one is weighted by steps, not by work.');
-          timer = setInterval(function () {
-            // Races to 99 because three cheap steps finished, then sits on the
-            // one expensive step. This is the bar users stop believing.
-            var next = pct + (pct < 99 ? 6 + Math.random() * 6 : 0);
-            if (next >= 99) {
-              paint(99);
-              if (lab) lab.textContent = 'Uploading batch ticket';
-              say('Stuck at 99%. Nothing is broken \u2014 the last step is 80% of the work ' +
-                  'and got 1% of the bar. This is why you weight by work, not by steps, ' +
-                  'and why a bar that cannot be weighted honestly should show a count ' +
-                  'instead.');
-            } else { paint(next); }
-          }, 90);
-        }
-        if (mode === 'ind') {
-          reset('ind');
-          bar.setAttribute('aria-busy', 'true');
-          bar.removeAttribute('aria-valuenow');
-          if (val) val.hidden = true;
-          if (lab) lab.textContent = 'Checking the plant queue\u2026';
-          say('Indeterminate. No number is shown, because none is known — showing a fake one ' +
-              'is worse than showing none. aria-valuenow is removed, not set to 0.');
+          run(100,
+              'Finished at 100%. The fill did not change colour on the way — the atom ' +
+              'has one fill token and keeps it.');
+          say('Running. 240ms on width, cubic-bezier(.22, 1, .36, 1).');
         }
         if (mode === 'stop') {
           reset();
-          paint(0, 'Ready');
+          paint(0);
           say('Idle.');
         }
       });
     });
 
-    paint(0, 'Ready');
+    paint(0);
     say('Idle.');
   });
 })();

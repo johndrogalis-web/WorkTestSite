@@ -70,19 +70,12 @@ def _pbars():
 
 
 def _pblive():
-    """Determinate movement, the failure case, and indeterminate."""
+    """The atom in action. No label, no value \u2014 the bar is all there is."""
     return ('<div class="pblive">'
-            '<div class="t-pbarw">'
-            '<div class="t-pbarh"><span class="lb pblive-lab">Ready</span>'
-            '<span class="vl pblive-val">0%</span></div>'
             '<div class="t-pbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" '
             'aria-valuenow="0" aria-label="Upload batch ticket"><i style="width:0%"></i></div>'
-            '</div>'
             '<div class="pblive-ctl">'
             '<button type="button" class="pblive-btn" data-mode="run">Run to 100%</button>'
-            '<button type="button" class="pblive-btn" data-mode="fail">Fail at 62%</button>'
-            '<button type="button" class="pblive-btn" data-mode="stall">Stall at 99%</button>'
-            '<button type="button" class="pblive-btn" data-mode="ind">Indeterminate</button>'
             '<button type="button" class="pblive-btn" data-mode="stop">Reset</button>'
             '</div>'
             '<p class="pblive-state" aria-live="polite">Idle.</p>'
@@ -125,15 +118,13 @@ def c_progress():
                        'and only the ringed track is left &mdash; which is now still '
                        'legible, and used to be the failure case.') +
                  '<h3 id="try">Try it</h3>'
-                 '<p>Determinate movement, the failure case, and the indeterminate case. '
-                 'Watch what the number does when the job fails, and what it does when '
-                 'nobody knows how long it will take.</p>' +
+                 '<p>All the atom does: fill, and be reset. The movement is '
+                 '<span class="m">240ms</span> on width with the system ease, and nothing '
+                 'about the bar changes colour on the way.</p>' +
                  bench(_pblive(), _pblive(),
-                       'The label and number here are placed beside the bar, not owned by '
-                       'it. <b>Stall at 99%</b> is the one worth watching &mdash; nothing is '
-                       'broken, the bar is just weighted by steps instead of by work. '
-                       'Indeterminate removes <span class="m">aria-valuenow</span> rather '
-                       'than setting it to zero.')),
+                       'The bar on its own, with no label and no number &mdash; that is the '
+                       'whole component. The line underneath is this page talking, not the '
+                       'component.')),
 
         anatomy=spec([
             ('Track', 'Full width of its container, <span class="m">8px</span> tall, '
@@ -225,42 +216,35 @@ def c_progress():
                        'for.',
                    ]) +
 
-                   '<h3>Status is not a colour</h3>' +
-                   '<p>The bar has one fill. Trinity carries success, warning and error '
-                   'fills as tokens, and they are listed under <a href="#specs">Specs</a>, '
-                   'but swapping the fill is the <i>last</i> thing that happens when a job '
-                   'succeeds or fails, not the first.</p>' +
+                   '<h3>One fill, whatever happens</h3>' +
+                   '<p>The bar does not turn green when it finishes or red when it fails. '
+                   'It has a single fill token and it keeps it from 0 to 100 and at the '
+                   'point it stops.</p>' +
                    checklist([
-                       '<b>The outcome is carried by the words beside the bar.</b> A bar '
-                       'that turns red and says nothing tells a colourblind user that '
-                       'something happened, not what. WCAG '
+                       '<b>The outcome is carried by the words beside the bar, not by the '
+                       'bar.</b> A bar that turns red and says nothing tells a colourblind '
+                       'user that something happened, not what. WCAG '
                        '<span class="m">1.4.1 Use of Colour, A</span>.',
-                       '<b>If you only change one of the two, change the words.</b> A '
-                       'failure stated in text and left in the default fill is correct. A '
-                       'failure shown only as a red bar is not.',
-                       '<b>There is no warning fill in normal use.</b> &ldquo;Slower than '
-                       'usual&rdquo; is a sentence, not a colour. Amber on a bar that is '
-                       'still working reads as a fault.',
-                       '<b>Success rarely needs a colour at all.</b> The bar reaching 100 '
-                       'with a label that says so is already unambiguous.',
+                       '<b>A failure stated in text and left in the default fill is '
+                       'correct.</b> A failure shown only as a red bar is not. If you can '
+                       'only change one of the two, change the words.',
+                       '<b>&ldquo;Slower than usual&rdquo; is a sentence, not a colour.</b> '
+                       'Amber on a bar that is still working reads as a fault.',
+                       '<b>Success needs no colour at all.</b> The bar reaching 100 beside a '
+                       'label that says so is already unambiguous.',
                    ]) +
+                   '<div class="note"><b>Trinity does carry success, warning and error fill '
+                   'tokens.</b> They are not used by this component and are not listed in '
+                   'its specs. They exist for a composed component that pairs a bar with its '
+                   'own label &mdash; where the words and the colour can change together, '
+                   'which is the only way a colour change is safe.</div>' +
 
-                   '<h3>Where the number goes</h3>' +
-                   '<p>The bar carries no text, so the number is placed beside it. That '
-                   'makes consistency a rule rather than a component, which is why the '
-                   'format is pinned down here.</p>' +
-                   checklist([
-                       'Label left, value right, on one row <span class="m">6px</span> above '
-                       'the bar, both ends aligned to the bar. Not below it, and not inside '
-                       'it.',
-                       'Round to whole percent. Decimal places on a progress bar are noise, '
-                       'and they make the number twitch.',
-                       'Where a count is more useful than a percentage &mdash; '
-                       '<span class="m">31 of 48 tickets</span> &mdash; use the count. '
-                       'People act on counts.',
-                       'Never show a number you do not have. That is what indeterminate is '
-                       'for.',
-                   ]) +
+                   '<div class="note"><b>The bar has no text, and gains none here.</b> '
+                   'A bar with a label and a number beside it is a composition \u2014 a '
+                   'molecule \u2014 and belongs on its own page, not this one. What this '
+                   'page fixes is the part that is shared: round to whole percent, and where '
+                   'a count says more than a percentage (<span class="m">31 of 48 '
+                   'tickets</span>), use the count. People act on counts.</div>' +
 
                    '<h3>When a bar earns its place</h3>' +
                    '<p>Most waits do not need one. Showing a progress bar for work that '
@@ -403,12 +387,7 @@ def c_progress():
                               '<span class="m">1.6s</span> loop'),
             ('Compact height', '<span class="m">4px</span> / '
                                '<span class="m">2px</span> radius'),
-            ('Status fills, light', 'success <span class="m">#1D6B3F</span>, warning '
-                                    '<span class="m">#8A5A00</span>, error '
-                                    '<span class="m">#B00100</span>'),
-            ('Status fills, dark', 'success <span class="m">#6FCF97</span>, warning '
-                                   '<span class="m">#FFBA0D</span>, error '
-                                   '<span class="m">#EFADAC</span>'),
+
         ])),
 
         a11y=('<p>WCAG <span class="m">1.4.11 Non-text Contrast, AA</span> asks for 3:1 on '

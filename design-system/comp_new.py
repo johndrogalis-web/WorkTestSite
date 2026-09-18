@@ -128,10 +128,12 @@ def c_progress():
              '<span class="m">#7F796C</span> carries the bar&rsquo;s extent instead. That '
              'buys both boundaries and leaves the track free for status.</div>'
 
-             '<div class="note"><b>This is an atom, and it stays one.</b> The bar carries '
-             'no text of its own. A label and a number belong to whatever places the bar, '
-             'and the spec for them is under <a href="#anatomy">Anatomy</a> so that six '
-             'screens do not invent six formats.</div>',
+             '<div class="note"><b>This is an atom, and it stays one.</b> One component, '
+             'eight variants. The bar carries no text of its own &mdash; a label and a '
+             'number belong to whatever places the bar, and the spec for them is under '
+             '<a href="#anatomy">Anatomy</a> so that six screens do not invent six formats. '
+             'Status, size and both motion durations are tokens on the same component, not '
+             'separate components.</div>',
 
         example=(bench(_pbars(), _pbars(),
                        'All eight variants, from full to empty. At 0% the fill disappears '
@@ -313,8 +315,7 @@ def c_progress():
                            '<span class="m">cubic-bezier(.22, 1, .36, 1)</span>, '
                            'none under reduced motion'),
             ('Indeterminate', '<span class="m">30%</span> sliver, '
-                              '<span class="m">1.6s</span> loop &mdash; '
-                              '<span class="m">Progress Bar Indeterminate</span>'),
+                              '<span class="m">1.6s</span> loop'),
             ('Compact height', '<span class="m">4px</span> / '
                                '<span class="m">2px</span> radius'),
             ('Status fills, light', 'success <span class="m">#1D6B3F</span>, warning '

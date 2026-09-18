@@ -49,14 +49,26 @@ PBAR_HTML = """<div class="t-pbar" role="progressbar" aria-valuenow="75"
   <i style="width:75%"></i>
 </div>"""
 
-PBAR_CSS = """.t-pbar{
+PBAR_CSS = """/* Verifi progress bar. One fill, whatever the outcome.
+   The 1px ring is not decoration: it is what makes the bar's full extent
+   visible against the page, which is half of WCAG 1.4.11. */
+.t-pbar{
   width:100%; max-width:280px; height:8px;
   border-radius:4px; background:var(--pbtrack); overflow:hidden;
+  box-shadow:inset 0 0 0 1px var(--pbring);
 }
-.t-pbar > i{ display:block; height:100%; border-radius:4px; background:var(--pbfill); }
+.t-pbar > i{
+  display:block; height:100%; border-radius:4px; background:var(--pbfill);
+  transition:width .24s cubic-bezier(.22,1,.36,1);
+}
+@media (prefers-reduced-motion:reduce){ .t-pbar > i{ transition:none; } }
 
-/* light */ --pbtrack:#DFDEDD; --pbfill:#171614;
-/* dark  */ --pbtrack:#666054; --pbfill:#FFFFFF;"""
+/* The 4px height, for dense rows. Never with a label. */
+.t-pbar.sm{ height:4px; border-radius:2px; }
+.t-pbar.sm > i{ border-radius:2px; }
+
+/* light */ --pbtrack:#DFDEDD; --pbring:#7F796C; --pbfill:#171614;
+/* dark  */ --pbtrack:#393632; --pbring:#7F796C; --pbfill:#FFFFFF;"""
 
 PBAR_STEPS = [100, 90, 75, 50, 25, 10, 5, 0]
 
@@ -97,14 +109,12 @@ def c_progress():
         'by the value it shows.',
         'ok', figma='51692:17330', extra_meta=['8 variants', 'Light and dark'],
 
-        note='<div class="note ok"><b>The contrast failure is fixed, and the fix is a '
-             '1px ring rather than a darker track.</b> A track dark enough to clear the '
-             'page on its own lands at <span class="m">#7F796C</span>, and at that value '
-             'no recognisable status colour can clear <span class="m">3:1</span> against '
-             'it &mdash; a fill would have to be near-black or pastel. So the track stays '
-             'light and a <span class="m">1px</span> ring at '
-             '<span class="m">#7F796C</span> carries the bar&rsquo;s extent instead. That '
-             'buys both boundaries and leaves the track free for status.</div>'
+        note='<div class="note"><b>The track is ringed, and that is load-bearing.</b> A '
+             'progress bar has two boundaries that have to be visible, not one: the fill '
+             'against the track tells you how far along it is, and the track against the '
+             'page tells you how far there is to go. Without the second, 40% and 90% look '
+             'the same. The <span class="m">1px</span> ring is what carries that second '
+             'boundary, which is why the track can stay light.</div>'
 
              '<div class="note"><b>This is an atom, and it stays one.</b> One component, '
              'eight variants. The bar carries no text of its own &mdash; a label and a '
@@ -114,9 +124,10 @@ def c_progress():
              'separate components.</div>',
 
         example=(bench(_pbars(), _pbars(),
-                       'All eight variants, from full to empty. At 0% the fill disappears '
-                       'and only the ringed track is left &mdash; which is now still '
-                       'legible, and used to be the failure case.') +
+                       'All eight variants, from full to empty. The 0% end is the one worth '
+                       'looking at: the fill disappears entirely and the ringed track is all '
+                       'that is left, which still has to read as a bar at 0 rather than as '
+                       'a line.') +
                  '<h3 id="try">Try it</h3>'
                  '<p>All the atom does: fill, and be reset. The movement is '
                  '<span class="m">240ms</span> on width with the system ease, and nothing '
@@ -174,27 +185,31 @@ def c_progress():
                       '&mdash; if it is worth labelling it is worth 8px.'],
                  ])),
 
-        states=('<p>A progress bar has no interaction states &mdash; no hover, no focus, no '
-                'disabled. It has <i>value</i> states, and there are three.</p>' +
-                table(['State', 'What it shows', 'What it announces'], [
-                    ['Determinate', 'A fill from 0 to 100, and a number.',
-                     '<span class="m">aria-valuenow</span> with min and max.'],
-                    ['Indeterminate', 'A 30% sliver travelling left to right, and '
-                     '<b>no number</b>.',
-                     '<span class="m">aria-valuenow</span> is <b>removed</b>, and '
-                     '<span class="m">aria-busy="true"</span> is set. An indeterminate bar '
-                     'reporting 0 is a bar claiming no progress, which is a different and '
-                     'wrong statement.'],
-                    ['Settled', 'The fill stops and stays where it stopped, at 100 on '
-                     'success or wherever it failed.',
-                     'The final <span class="m">aria-valuenow</span>, plus the outcome in '
-                     'the label.'],
+        states=('<p>No interaction states &mdash; no hover, no focus, no disabled, no '
+                'pressed. Nothing here responds to a pointer, because nothing here is '
+                'operable. The only thing that varies is the value.</p>' +
+                table(['Value', 'What it shows', 'What it announces'], [
+                    ['<span class="m">0</span>', 'The ringed track and nothing else. The '
+                     'fill has no minimum width and does not appear.',
+                     '<span class="m">aria-valuenow="0"</span>'],
+                    ['<span class="m">1&ndash;99</span>', 'A fill from the left edge, '
+                     'keeping its 4px radius, so a very low value reads as a short capsule '
+                     'rather than a sliver.',
+                     '<span class="m">aria-valuenow</span> with '
+                     '<span class="m">valuemin</span> and <span class="m">valuemax</span>'],
+                    ['<span class="m">100</span>', 'The fill covers the track completely.',
+                     '<span class="m">aria-valuenow="100"</span>'],
                 ]) +
-                '<div class="note"><b>A failed bar does not reset and does not keep '
-                'crawling.</b> It stops at the last real number and says what went wrong. '
-                'Snapping back to 0 erases the only evidence the user has of how far the '
-                'job got, and a bar that keeps creeping after the work has died is the '
-                'single most distrusted pattern in any progress UI.</div>'),
+                '<div class="note"><b>Stopping is not a state.</b> When a job ends &mdash; '
+                'finished or failed &mdash; the bar simply stops where it is and keeps its '
+                'fill. It does not reset to 0, it does not keep crawling, and it does not '
+                'change colour. Snapping back to zero erases the only evidence the user has '
+                'of how far the job got, and a bar that creeps on after the work has died is '
+                'the single most distrusted pattern in any progress UI.</div>' +
+                '<div class="note"><b>There is no indeterminate state.</b> This component '
+                'always reports a number. Where the extent is genuinely unknown, use the '
+                '<a href="spinner.html">Spinner</a> &mdash; not this bar with a made-up '
+                'value, and not this bar animating on the spot.</div>'),
 
         behaviour=('<h3>Movement</h3>' +
                    checklist([
@@ -206,14 +221,13 @@ def c_progress():
                        'current fill, hold where you are until the real number catches up. '
                        'A bar that goes back reads as failure even when it is just a better '
                        'estimate.',
-                       '<b>Indeterminate travels on a <span class="m">1.6s</span> loop</b> '
-                       '&mdash; a 30% sliver crossing the track. Slower than a spinner on '
-                       'purpose, because it is furniture, not a focal point.',
-                       '<b>Under <span class="m">prefers-reduced-motion</span>, neither '
-                       'moves.</b> The determinate bar jumps to its value; the indeterminate '
-                       'one becomes a static filled track at 55% opacity. Something that '
-                       'slides across the screen forever is exactly what that setting is '
-                       'for.',
+                       '<b>Under <span class="m">prefers-reduced-motion</span>, it does not '
+                       'move at all.</b> The fill jumps straight to its value. The bar is '
+                       'still perfectly readable without the tween &mdash; the tween was '
+                       'only ever making the change easier to follow.',
+                       '<b>Nothing loops.</b> There is no sliver travelling on the spot and '
+                       'no shimmer. A bar that animates without the value changing is '
+                       'claiming activity it cannot evidence.',
                    ]) +
 
                    '<h3>One fill, whatever happens</h3>' +
@@ -264,9 +278,10 @@ def c_progress():
                         'This bar, plus words that change',
                         'A bar alone stops reassuring. &ldquo;Uploading 31 of 48&rdquo; '
                         'beats a bar at 64% that might be stuck.'],
-                       ['Extent unknown, any duration', 'Indeterminate',
-                        'A determinate bar whose estimate is wrong is worse than an '
-                        'indeterminate one that never promised anything.'],
+                       ['Extent unknown, any duration',
+                        'A <a href="spinner.html">spinner</a>, not this',
+                        'This bar always reports a number. A determinate bar whose estimate '
+                        'is invented is worse than a spinner that never promised anything.'],
                    ]) +
 
                    '<h3>The 99% problem</h3>' +
@@ -282,8 +297,9 @@ def c_progress():
                        'percentage.</b> Use a count &mdash; <span class="m">step 3 of '
                        '4</span> &mdash; which makes no promise about time.',
                        '<b>Never hold a bar at 99 waiting for a response.</b> If the last '
-                       'act is out of your hands, switch to indeterminate and say what you '
-                       'are waiting for.',
+                       'act is out of your hands, the bar has done its job &mdash; swap it '
+                       'for a <a href="spinner.html">spinner</a> and say what you are '
+                       'waiting for.',
                        '<b>A bar that has not moved in ten seconds needs words.</b> Silence '
                        'and stillness together read as a hang, whatever the number says.',
                    ]) +
@@ -363,7 +379,7 @@ def c_progress():
              'Pair every status colour with words that say the same thing.'],
             ['Do not show a bar for work that finishes in under a second.',
              'Do not let the fill run backwards, or hold it at 99 waiting on something else.',
-             'Do not show a number you are guessing at &mdash; use a count, or indeterminate.',
+             'Do not show a number you are guessing at &mdash; use a count, or a spinner.',
              'Do not stack more than about five bars in view.',
              'Do not use the 4px height with a label row.']),
 
@@ -383,8 +399,6 @@ def c_progress():
             ('Transition', '<span class="m">240ms</span> on width, '
                            '<span class="m">cubic-bezier(.22, 1, .36, 1)</span>, '
                            'none under reduced motion'),
-            ('Indeterminate', '<span class="m">30%</span> sliver, '
-                              '<span class="m">1.6s</span> loop'),
             ('Compact height', '<span class="m">4px</span> / '
                                '<span class="m">2px</span> radius'),
 
@@ -404,23 +418,22 @@ def c_progress():
                   ('Error fill on track, light', '#b00100', '#dfdedd', '5.48:1', '3:1', True),
                   ('Error fill on track, dark', '#efadac', '#393632', '6.43:1', '3:1', True),
               ]) +
-              '<div class="note ok"><b>Why not simply darken the track.</b> '
-              '<span class="m">neutral/400</span> is the only Trinity neutral that clears '
-              '3:1 against both the page and the fill in both modes, so a single token swap '
-              'genuinely does fix the contrast. It also makes status colour impossible: '
-              'against a mid-grey track a fill needs a luminance below '
-              '<span class="m">0.031</span> or above <span class="m">0.678</span>, which '
-              'means near-black or pastel. Measured against that track, error reaches only '
-              '<span class="m">1.70:1</span> and success <span class="m">1.50:1</span>. The '
-              'ring gets both properties instead of trading one for the other.</div>' +
+              '<div class="note"><b>Why a ring and not a darker track.</b> Darkening the '
+              'track is the obvious fix and it does work &mdash; '
+              '<span class="m">neutral/400</span> is the only Trinity neutral clearing 3:1 '
+              'against both the page and the fill in both modes. What it costs is every '
+              'other colour: against a mid-grey track a fill needs a luminance below '
+              '<span class="m">0.031</span> or above <span class="m">0.678</span>, so '
+              'nothing between near-black and pastel survives. A ring holds the boundary '
+              'without spending the track.</div>' +
               checklist([
                   'Give the element <span class="m">role="progressbar"</span> with '
                   '<span class="m">aria-valuenow</span>, <span class="m">aria-valuemin</span> '
                   'and <span class="m">aria-valuemax</span>.',
                   'Give it an <span class="m">aria-label</span> saying what is progressing. '
                   '&ldquo;75%&rdquo; on its own tells a screen reader nothing.',
-                  'For indeterminate, <b>remove</b> <span class="m">aria-valuenow</span> and '
-                  'set <span class="m">aria-busy="true"</span>. Do not set it to 0.',
+                  'Always report a real <span class="m">aria-valuenow</span>. If you do not '
+                  'have one, this is the wrong component.',
                   'Put the outcome in the label, not only in the fill colour. '
                   '<span class="m">1.4.1 Use of Colour, A</span>.',
                   'Do not put the live percentage in an assertive live region. A number '
@@ -953,10 +966,10 @@ def c_tooltip():
                      ['<span class="m">position=Left</span>', 'Left of the trigger', 'Right'],
                      ['<span class="m">position=Right</span>', 'Right of the trigger', 'Left'],
                  ]) +
-                 '<div class="note ok"><b>The cap is in Figma now.</b> The container is '
-                 'capped at <span class="m">280px</span> with '
-                 '<span class="m">word-break: break-word</span>, and the height still hugs, '
-                 'so a long tooltip wraps and grows downward instead of running off the '
+                 '<div class="note"><b>The container is capped, not the text.</b> '
+                 '<span class="m">280px</span> with '
+                 '<span class="m">word-break: break-word</span>, and the height hugs, so a '
+                 'long tooltip wraps and grows downward rather than running off the '
                  'screen.</div>' +
                  '<div class="note"><b>One thing to keep an eye on.</b> The text node '
                  'carries its own <span class="m">280px</span> cap as well as the container. '
@@ -1146,8 +1159,12 @@ def c_tooltip():
                           'a line'),
             ('Height', 'Hug &mdash; <span class="m">24px</span> at one line'),
             ('Padding', '<span class="m">8px</span>'),
-            ('Arrow', '<span class="m">15 &times; 6</span> at <span class="m">-4px</span>, '
-                      'width and height tokenised'),
+            ('Arrow', '<span class="m">tooltip/arrow-width</span> = 15 &times; '
+                      '<span class="m">tooltip/arrow-height</span> = 6 (aliased to '
+                      '<span class="m">spacing/micro/150</span>), protruding '
+                      '<span class="m">4px</span> with <span class="m">2px</span> of '
+                      'overlap, centred on its edge. The same size on all four '
+                      'positions.'),
             ('Radius', '<span class="m">4px</span>'),
             ('Fill, light / dark', '<span class="m">#171614 / #FFFFFF</span>'),
             ('Text, light / dark', '<span class="m">#FFFFFF / #211F1C</span>'),
@@ -1171,37 +1188,14 @@ def c_tooltip():
                   'The tooltip must be reachable by keyboard. Hover-only is a failure of '
                   'WCAG 2.1.1.',
                   'Content that appears on hover must be dismissible, hoverable and '
-                  'persistent &mdash; WCAG 1.4.13. None of the three is specified here.',
+                  'persistent &mdash; WCAG <span class="m">1.4.13, AA</span>. All three are '
+                  'specified under Behaviour: Escape dismisses it, the 100ms close delay '
+                  'lets the pointer reach it, and it stays until the pointer or focus '
+                  'leaves.',
                   'Never put the only copy of important information inside a tooltip.',
               ])),
 
-        gaps=('<div class="note ok"><b>Three questions closed.</b> Dark mode is specified '
-              'after all &mdash; the tooltip inverts to a white fill with '
-              '<span class="m">#211F1C</span> text. Behaviour is settled by adopting UX best '
-              'practice as the house convention, written up under Behaviour above. And the '
-              'width is now capped at <span class="m">280px</span> with '
-              '<span class="m">word-break: break-word</span>, so long text wraps and the box '
-              'grows downward instead of running off the screen.</div>' +
-              '<div class="note ok"><b>Three values are now tokens.</b> '
-              '<span class="m">tooltip/max-width</span> (280), '
-              '<span class="m">tooltip/arrow-width</span> (15) and '
-              '<span class="m">tooltip/arrow-height</span> (6, aliased to '
-              '<span class="m">spacing/micro/150</span>) were added to the Layout collection '
-              'and bound across all four position variants, so those numbers no longer live '
-              'only in the drawing. Text alignment was already set to left on the node.</div>' +
-              '<div class="note ok"><b>The file is tidy now.</b> The inert '
-              '<span class="m">height</span> binding has been removed from all four variants '
-              'and the duplicate <span class="m">280px</span> cap taken off the text nodes, so '
-              'the container is the only thing setting the width and Hug is the only thing '
-              'setting the height. Nothing moved.</div>' +
-              '<div class="note ok"><b>The four arrows were three different sizes; they are '
-              'one now.</b> Above and Below measured <span class="m">15 &times; 6</span>, Left '
-              '<span class="m">13 &times; 6</span> and Right <span class="m">15 &times; 5</span>. '
-              'All four are now <span class="m">15 &times; 6</span>, bound to the tokens, '
-              'centred on their edge and protruding <span class="m">4px</span> with '
-              '<span class="m">2px</span> of overlap &mdash; the rule Above and Below already '
-              'followed.</div>' +
-              checklist([
+        gaps=(              checklist([
                   '<b>Three spacing values live on this page rather than in Figma</b> '
                   '&mdash; the <span class="m">8px</span> trigger offset, the '
                   '<span class="m">8px</span> viewport margin and the '

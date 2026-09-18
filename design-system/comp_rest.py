@@ -289,6 +289,41 @@ CBX_CSS = """/* Verifi checkbox — independent boolean, applies on save.
 }"""
 
 
+def _cbxlive():
+    """The parent/child contract, running on real inputs."""
+    kids = ['Rockdale', 'Midwest', 'Northgate', 'Cedar Park', 'Lakeside',
+            'Fairview', 'Brightwater']
+    pre = {'Rockdale', 'Midwest', 'Northgate'}
+    rows = ''.join(
+        '<label class="c-cbx live cbxlive-kid"><input type="checkbox"%s><i></i>%s</label>'
+        % (' checked' if k in pre else '', k) for k in kids)
+    return ('<div class="cbxlive">'
+            '<label class="c-cbx live cbxlive-parent"><input type="checkbox"><i></i>'
+            'All plants<em class="cbxlive-count"></em></label>'
+            '<div class="cbxlive-kids">' + rows + '</div>'
+            '<p class="cbxlive-state" aria-live="polite"></p>'
+            '</div>')
+
+
+def _selive():
+    """Header scope, shift-click ranges, and what a filter change does."""
+    rows = [('4417', 'Rockdale', 'Loaded'), ('4418', 'Rockdale', 'In transit'),
+            ('4419', 'Midwest', 'Pouring'), ('4420', 'Midwest', 'Washing out'),
+            ('4421', 'Northgate', 'Returning'), ('4422', 'Northgate', 'At plant')]
+    body = ''.join(
+        '<tr><td><label class="c-cbx live selive-row"><input type="checkbox">'
+        '<i></i></label></td><td>%s</td><td>%s</td><td>%s</td></tr>' % r for r in rows)
+    return ('<div class="selive" data-total="4182">'
+            '<table><thead><tr>'
+            '<th><label class="c-cbx live selive-all"><input type="checkbox" '
+            'aria-label="Select all loaded rows"><i></i></label></th>'
+            '<th>Truck</th><th>Plant</th><th>Phase</th></tr></thead>'
+            '<tbody>' + body + '</tbody></table>'
+            '<div class="selive-bar" hidden></div>'
+            '<button type="button" class="selive-filter">Change the filter</button>'
+            '<p class="selive-state" aria-live="polite"></p>'
+            '</div>')
+
 def c_checkbox():
     demo = (
         brow('Unchecked', '<span class="c-cbx"><i></i>Show washed-out loads</span>') +
@@ -379,7 +414,9 @@ def c_checkbox():
         ]) + bench(grid, grid)),
 
         behaviour=('<p>A checkbox waits. Clicking it stages a change that something else '
-                   '&mdash; Save, Apply, Done &mdash; commits.</p>' +
+                   '&mdash; Save, Apply, Done &mdash; commits. That single sentence settles most '
+                   'of the questions below, because a control that has not committed yet is '
+                   'allowed to be wrong, reversible, and quiet about it.</p>' +
                    '<div class="note"><b>Checkbox or toggle?</b> If flipping it changes the '
                    'system immediately, with nothing to press afterwards, it is a '
                    '<a href="toggle.html">toggle</a>. A toggle inside a form with a Save button '
@@ -387,6 +424,160 @@ def c_checkbox():
                    '<div class="note"><b>Checkbox or radio?</b> If exactly one option may be '
                    'true, it is a <a href="radio-group.html">radio group</a>. A single checkbox '
                    'is also correct for one opt-in confirmation.</div>'
+
+                   '<h3>The indeterminate contract</h3>'
+                   '<p>Indeterminate is a <b>readout, not a choice</b>. A parent enters it '
+                   'because some but not all of its children are checked; nobody ever clicks a '
+                   'box <i>into</i> it. Get that backwards and you end up with a three-position '
+                   'control nobody can predict.</p>'
+                   + table(['Children', 'Parent shows', 'Clicking the parent'], [
+                       ['None checked', 'Unchecked', 'Checks all children'],
+                       ['Some checked', '<b>Indeterminate</b>', 'Checks all children'],
+                       ['All checked', 'Checked', 'Unchecks all children'],
+                     ]) +
+                   '<h4>Try it</h4>'
+                   '<p>Real <span class="m">&lt;input&gt;</span> elements, so '
+                   '<span class="m">indeterminate</span> is the DOM property and the '
+                   'announcement is the browser&rsquo;s, not a drawing of one. Tick children '
+                   'off one at a time and watch the parent fall into the dash. Then click the '
+                   'parent while it is dashed.</p>'
+                   + bench(_cbxlive(), _cbxlive(),
+                           'The line underneath reports the parent\u2019s real state and what a '
+                           'click would do next.') +
+                   '<div class="note"><b>From indeterminate, a click always checks all.</b> It '
+                   'never unchecks, and it never cycles back to the partial state. Users reach '
+                   'for a parent checkbox to finish selecting, not to undo a selection they are '
+                   'halfway through &mdash; and undo is one more click away in either direction. '
+                   'A parent that cycled through all three states would make a two-item list '
+                   'take three clicks to clear.</div>'
+                   + checklist([
+                       'Only a parent of a visible set may be indeterminate. A standalone '
+                       'checkbox has two states.',
+                       'The parent reflects its children the instant they change. It is never '
+                       'stale.',
+                       'Put the count in the label &mdash; <span class="m">All plants (3 of '
+                       '7)</span>. The dash says <i>partial</i>; only the number says how '
+                       'partial.',
+                       'Nesting stops at one level here. A parent of parents is a tree, and a '
+                       'tree needs disclosure, not checkboxes.',
+                   ]) +
+
+                   '<h3>Select all, in a table that scrolls</h3>'
+                   '<p>The header checkbox in a long table is the one place this component '
+                   'routinely lies. &ldquo;All&rdquo; means the rows a person can see; the '
+                   'database means every row that matches. On a fleet list that is the '
+                   'difference between forty trucks and four thousand.</p>'
+                   + checklist([
+                       'The header checkbox selects <b>the loaded rows only</b>, and it reflects '
+                       'those rows only. This is the default and it needs no explanation.',
+                       'When the filter matches more than is loaded, offer the wider selection as '
+                       'an explicit second step, in words: <span class="m">40 selected. Select '
+                       'all 4,182 matching?</span> Never make the header checkbox silently mean '
+                       'the larger set.',
+                       'Say what is selected, always, near the action that will act on it. A '
+                       'count is the cheapest protection against a destructive mistake.',
+                       'Changing a filter clears the selection. Carrying a selection across a '
+                       'filter change is how people delete rows they never saw.',
+                       'Selection survives sorting and pagination within the same filter. Sorting '
+                       'does not change which rows matched.',
+                   ]) +
+                   '<h4>Try it</h4>'
+                   '<p>Six loaded rows standing in for 4,182 matching ones. Tick the header. '
+                   'Tick one row, then shift-click another four down. Then change the '
+                   'filter.</p>'
+                   + bench(_selive(), _selive(),
+                           'The header never means more than the rows you can see. The wider '
+                           'selection has to be asked for, in words.') +
+                   '<div class="note"><b>Shift-click selects a range.</b> Click one row, '
+                   'shift-click another, and everything between them takes the state of the row '
+                   'you clicked first. It is unadvertised and everyone who needs it already '
+                   'tries it. It must never be the only way to do something.</div>' +
+                   '<div class="note stop"><b>Handle the range on the row, not on the '
+                   'checkbox.</b> When Shift is held, the browser suppresses a '
+                   '<span class="m">&lt;label&gt;</span>&rsquo;s activation behaviour entirely '
+                   '&mdash; it reads the gesture as a text-range selection, so the '
+                   '<span class="m">&lt;input&gt;</span> never receives a click and never '
+                   'toggles. A listener on the input alone does nothing at all, silently. Bind '
+                   'the handler to the row, read <span class="m">shiftKey</span> there, call '
+                   '<span class="m">preventDefault()</span> and set the range yourself. The '
+                   'demo above does exactly this; it did not work until it did.</div>' +
+
+                   '<h3>Required groups, and the error state Trinity does not draw</h3>'
+                   '<p>&ldquo;Pick at least one&rdquo; is a property of the group, not of any box '
+                   'in it, so the error belongs to the group too. Trinity has no error variant '
+                   'for the checkbox, and it does not need one: nothing about the individual box '
+                   'changes.</p>'
+                   + checklist([
+                       'The message sits under the group, once, tied to the '
+                       '<span class="m">&lt;fieldset&gt;</span> with '
+                       '<span class="m">aria-describedby</span>. Not once per checkbox.',
+                       'No box turns red. Reddening six boxes to say &ldquo;one of these is '
+                       'required&rdquo; tells the user nothing about which one, because the '
+                       'answer is none of them.',
+                       'Validate on submit, not on blur. A group cannot be judged until the user '
+                       'has finished with all of it.',
+                       'A single required checkbox &mdash; accepting terms &mdash; is the '
+                       'exception: the message sits under that one box, and the box may carry '
+                       'the <span class="m">--error</span> border.',
+                   ]) +
+
+                   '<h3>Disabled, read-only, or just absent</h3>'
+                   '<p>Three different situations that all get solved with '
+                   '<span class="m">disabled</span> by reflex, and only one of them should be.</p>'
+                   + table(['Situation', 'Use', 'Why'], [
+                       ['The user could change this, but not yet &mdash; something else has to '
+                        'happen first', '<b>Disabled</b>, with the reason in text nearby',
+                        'Disabled with no explanation is the single most common complaint about '
+                        'any form. The state is honest; the silence is not.'],
+                       ['The value matters but this user may never change it',
+                        '<b>Read-only</b> &mdash; render the value as text, not as a dead control',
+                        'A checkbox the user cannot ever operate is a control that lies about '
+                        'being a control.'],
+                       ['The option does not apply to this user at all', '<b>Leave it out</b>',
+                        'A permanently greyed row is visual debt on every screen after it.'],
+                     ]) +
+                   '<div class="note"><b>Disabled does not mean unreadable.</b> The value stays '
+                   'visible &mdash; a disabled checked box still shows its tick. Hiding the value '
+                   'because the control is inert loses the information as well as the '
+                   'control.</div>' +
+
+                   '<h3>When the save fails</h3>'
+                   '<p>The checkbox commits with the form, so it has no loading state and does '
+                   'not need one. What it does need is a rule for the moment the form comes '
+                   'back.</p>'
+                   + checklist([
+                       'On failure the boxes keep what the user set. Never silently revert &mdash; '
+                       'the user has to be able to press Save again without re-answering.',
+                       'The failure is announced once, at the form level, in a '
+                       '<a href="toast.html">toast</a> or an inline message. Not on the '
+                       'checkbox.',
+                       'If one box in a batch failed and the rest went through, say which. A '
+                       'partial failure reported as a total failure makes people redo work that '
+                       'already succeeded.',
+                   ]) +
+
+                   '<h3>Touch</h3>'
+                   + checklist([
+                       'The <span class="m">24 &times; 24</span> touchpoint is the AA minimum, '
+                       'not a comfortable target. Stacked checkboxes get '
+                       '<span class="m">10px</span> between them, which puts 34px between '
+                       'centres.',
+                       'The whole label is part of the target. That is what makes a 16px box '
+                       'usable on a phone, so never render the label outside the '
+                       '<span class="m">&lt;label&gt;</span>.',
+                       'Two adjacent targets must not touch. Where a checkbox sits beside another '
+                       'control in a dense table row, give it its own cell.',
+                   ]) +
+
+                   '<h3>Defaults</h3>'
+                   + checklist([
+                       'Default to unchecked unless checked is both the common choice and the '
+                       'safe one.',
+                       'Never pre-check anything that consents on the user\u2019s behalf. That is '
+                       'the one place a default is not a convenience.',
+                       'A pre-checked box must survive a reset to the same value. If Reset '
+                       'clears it, it was never a default.',
+                   ]) +
 
                    '<h3>Settled by design</h3>'
                    '<p>Four things about this component look like oversights and are not. They '
@@ -409,15 +600,24 @@ def c_checkbox():
                         'Correct where they are. There is still one checkbox size; these are not '
                         'evidence of a second.'],
                      ])),
-
         guidelines=dodont(
             ['Write the label as the positive statement &mdash; what is true when it is ticked.',
-             'Put the parent checkbox above its children and use indeterminate honestly.',
-             'Keep groups vertical. Horizontal checkbox rows are hard to scan.'],
+             'Put the parent checkbox above its children, indented away from them, and let it '
+             'reflect them honestly.',
+             'Keep groups vertical, one per line. Horizontal rows force the eye to re-find the '
+             'box after every label.',
+             'Give the group a <span class="m">&lt;legend&gt;</span> that states the question, '
+             'even when it looks redundant next to a heading.',
+             'Say what a selection contains before offering an action on it.'],
             ['Do not write a negative label. &ldquo;Do not show returned concrete&rdquo; makes '
              'an unticked box a double negative.',
-             'Do not use a checkbox for something that takes effect immediately.',
-             'Do not put more than about seven in one ungrouped list.']),
+             'Do not use a checkbox for something that takes effect immediately &mdash; that is '
+             'a <a href="toggle.html">toggle</a>.',
+             'Do not put more than about seven in one ungrouped list. Past that, group them or '
+             'move to a filtered list.',
+             'Do not let a click set a box to indeterminate. It is a readout of children, never '
+             'a choice.',
+             'Do not disable a checkbox without saying why somewhere the user can see.']),
 
         specs=(table(['Trinity variable', 'Light', 'Dark'], [
             ['<code>checkbox/width</code> &middot; <code>checkbox/height</code>',
@@ -477,16 +677,43 @@ def c_checkbox():
                                    'use the same four.'),
         ])),
 
-        a11y=checklist([
+        a11y=(checklist([
             'Use a real <code>&lt;input type="checkbox"&gt;</code> inside a <code>&lt;label&gt;</code>. '
-            'Do not rebuild it from divs.',
+            'Do not rebuild it from divs. Everything below comes free if you do, and has to be '
+            'hand-built and maintained if you do not.',
             'Set <code>indeterminate</code> in JavaScript &mdash; it is a property, not an '
-            'attribute, and it cannot be expressed in HTML alone.',
+            'attribute, and it cannot be expressed in HTML alone. It also does not change '
+            '<code>checked</code>, so send the parent\u2019s real value, not the dash, to the server.',
+            'A native indeterminate checkbox already reports <code>aria-checked="mixed"</code>. '
+            'Do not also set the attribute by hand &mdash; the two can disagree.',
             'Group related checkboxes in a <code>&lt;fieldset&gt;</code> with a '
-            '<code>&lt;legend&gt;</code>.',
+            '<code>&lt;legend&gt;</code>. That is what makes a screen reader announce '
+            '&ldquo;Plants, 3 of 7&rdquo; instead of six unrelated checkboxes.',
             'Space is the activation key. Enter must not submit from a focused checkbox.',
-            'The visible label is the accessible name. Do not add a different <code>aria-label</code>.',
-        ]),
+            'The visible label is the accessible name. Do not add a different '
+            '<code>aria-label</code> &mdash; speech users say what they see.',
+            'A group error is tied to the <code>&lt;fieldset&gt;</code> with '
+            '<code>aria-describedby</code> and announced once, in a live region. Six identical '
+            'errors is six interruptions.',
+            'Shift-click range selection needs a keyboard equivalent. Shift plus arrow, or '
+            'nothing &mdash; never a mouse-only path to a bulk action.',
+            'In a table, the header checkbox needs its own accessible name '
+            '(<code>Select all rows</code>). An unlabelled checkbox in a <code>&lt;th&gt;</code> '
+            'reads as nothing at all.',
+        ]) +
+        '<div class="note"><b>Target size passes at AA, not AAA.</b> The '
+        '<span class="m">24 &times; 24</span> touchpoint meets '
+        '<span class="m">2.5.8 Target Size (Minimum), AA</span> exactly. '
+        '<span class="m">2.5.5 Target Size (Enhanced)</span> asks for '
+        '<span class="m">44 &times; 44</span> and is AAA, which this system does not target. '
+        'The clickable label carries the real target well past 44px in practice. See '
+        '<a href="../foundations/accessibility.html#target">Accessibility</a>.</div>' +
+        '<div class="note"><b>Disabled is exempt from contrast, not compliant with it.</b> '
+        'The disabled fill measures <span class="m">1.94:1</span> and the disabled label '
+        '<span class="m">2.14:1</span>. WCAG exempts inactive controls from '
+        '<span class="m">1.4.3</span> and <span class="m">1.4.11</span>, so these are not '
+        'failures &mdash; but do not cite them as passes either, and do not put information in a '
+        'disabled control that the user needs to read.</div>'),
 
     )
 

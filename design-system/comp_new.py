@@ -642,6 +642,21 @@ def _tipwrap():
             '</div>')
 
 
+def _tiplive():
+    """The documented tooltip behaviour, actually running."""
+    trigs = [('i', 'Truck 4417 is running 4 minutes behind its ETA'),
+             ('?', 'Slump is measured at the drum, not the chute'),
+             ('!', 'This load was washed out at the plant'),
+             ('%', 'Water added after batching, as a share of design water'),
+             ('~', 'A very long one, to show the 280px cap and the wrap that follows it')]
+    bar = ''.join('<button type="button" class="tiplive-trig" data-tip="%s">%s</button>'
+                  % (d, lbl) for lbl, d in trigs)
+    return ('<div class="tiplive">'
+            '<div class="tiplive-tip" role="tooltip"></div>'
+            '<div class="tiplive-bar">' + bar + '</div>'
+            '<p class="tiplive-state" aria-live="polite">Idle</p>'
+            '</div>')
+
 def c_tooltip():
     return cpage(
         'components/tooltip.html', 'Tooltip',
@@ -658,9 +673,19 @@ def c_tooltip():
              'convention and are binding for new work; they are marked where they go beyond '
              'what Figma says.</div>',
 
-        example=bench(_tips(), _tips(),
-                      'The variant name describes where the tooltip sits, so '
-                      '&ldquo;Above&rdquo; puts the arrow underneath it.'),
+        example=(bench(_tips(), _tips(),
+                       'The variant name describes where the tooltip sits, so '
+                       '&ldquo;Above&rdquo; puts the arrow underneath it.') +
+                 '<h3 id="try">Try it</h3>'
+                 '<p>The rules further down, running. Hover a trigger and count &mdash; nothing '
+                 'happens for half a second. Cross the row quickly and nothing opens at all. '
+                 'Once one is open, move to the next and it swaps with no delay. Move '
+                 '<i>onto</i> the tooltip and it stays. Tab to a trigger and it opens at once. '
+                 'Press Escape. Scroll the page. The line underneath names what just '
+                 'happened.</p>' +
+                 bench(_tiplive(), _tiplive(),
+                       'Real timers, not a recording. The last trigger holds a long string so '
+                       'you can see the 280px cap wrap in place.')),
 
         anatomy=spec([
             ('Width', 'Hug, capped at <span class="m">280px</span> &mdash; about 45 '

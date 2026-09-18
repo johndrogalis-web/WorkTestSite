@@ -300,7 +300,9 @@
       return;
     }
     var k = e.target.closest && e.target.closest('.c-cbx,.c-rad,.c-tog');
-    if (k) {
+    /* Live demos drive their own state from a real input. Toggling the
+       painted class here as well would let the two drift apart. */
+    if (k && !k.classList.contains('live')) {
       if (k.classList.contains('c-rad')) {
         var sibs = k.parentNode.querySelectorAll('.c-rad');
         [].slice.call(sibs).forEach(function (r) { r.classList.remove('on'); });
@@ -309,5 +311,261 @@
         k.classList.toggle('on');
       }
     }
+  });
+
+  /* ── Live tooltip ──────────────────────────────────────────
+     The documented behaviour, actually running: 500ms to open on
+     hover and none on focus, 100ms to close with a grace period
+     over the tooltip itself, one open at a time with no delay when
+     swapping, Escape to dismiss, close on scroll, and a flip when
+     there is no room above. A readout names the state so the
+     timing is visible and not just felt. */
+  [].slice.call(document.querySelectorAll('.tiplive')).forEach(function (box, boxN) {
+    var uid    = 'tiplive' + boxN;
+    var tip    = box.querySelector('.tiplive-tip');
+    var read   = box.querySelector('.tiplive-state');
+    var trigs  = [].slice.call(box.querySelectorAll('.tiplive-trig'));
+    if (!tip || !trigs.length) return;
+
+    var openT = null, closeT = null, current = null, isOpen = false;
+    var REDUCED = window.matchMedia &&
+                  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function say(s, cls) {
+      if (!read) return;
+      read.textContent = s;
+      read.className = 'tiplive-state' + (cls ? ' ' + cls : '');
+    }
+
+    function place(trig) {
+      var b = box.getBoundingClientRect();
+      var t = trig.getBoundingClientRect();
+      tip.style.visibility = 'hidden';
+      tip.style.display = 'block';
+      var tw = tip.offsetWidth, th = tip.offsetHeight;
+      tip.style.display = '';
+      tip.style.visibility = '';
+
+      var left = (t.left - b.left) + (t.width / 2) - (tw / 2);
+      left = Math.max(4, Math.min(left, b.width - tw - 4));
+
+      // Above by default; flip below when the trigger sits too near the top.
+      var above = t.top - b.top - th - 8;
+      var flipped = above < 0;
+      var top = flipped ? (t.bottom - b.top + 8) : above;
+
+      tip.style.left = left + 'px';
+      tip.style.top  = top + 'px';
+      tip.classList.toggle('below', flipped);
+
+      var ax = (t.left - b.left) + (t.width / 2) - left;
+      tip.style.setProperty('--ax', Math.max(10, Math.min(ax, tw - 10)) + 'px');
+      return flipped;
+    }
+
+    function show(trig, instant) {
+      clearTimeout(closeT);
+      current = trig;
+      tip.textContent = trig.getAttribute('data-tip') || '';
+      var flipped = place(trig);
+      tip.id = uid + '-tip';
+      trig.setAttribute('aria-describedby', tip.id);
+      isOpen = true;
+      tip.classList.add('on');
+      say((instant ? 'Open — no delay, swapped from the last trigger' : 'Open')
+          + (flipped ? ' · flipped below, no room above' : '')
+          + (REDUCED ? ' · no fade, reduced motion' : ' · 150ms fade in'), 'ok');
+    }
+
+    function hide(why) {
+      isOpen = false;
+      tip.classList.remove('on');
+      trigs.forEach(function (t) { t.removeAttribute('aria-describedby'); });
+      current = null;
+      say(why || 'Closed', '');
+    }
+
+    function arm(trig) {
+      clearTimeout(closeT);
+      if (isOpen && current !== trig) { show(trig, true); return; }  // swap, no delay
+      if (isOpen && current === trig) return;
+      clearTimeout(openT);
+      say('Waiting 500ms before opening…', 'wait');
+      openT = setTimeout(function () { show(trig, false); }, 500);
+    }
+
+    function disarm() {
+      clearTimeout(openT);
+      if (!isOpen) { say('Left before 500ms — never opened', ''); return; }
+      clearTimeout(closeT);
+      say('Closing in 100ms — move onto the tooltip to keep it', 'wait');
+      closeT = setTimeout(function () { hide('Closed'); }, 100);
+    }
+
+    trigs.forEach(function (trig, i) {
+      trig.id = uid + '-t' + i;
+      trig.addEventListener('pointerenter', function () { arm(trig); });
+      trig.addEventListener('pointerleave', disarm);
+      trig.addEventListener('focus', function () {
+        clearTimeout(openT); clearTimeout(closeT);
+        show(trig, false);
+        say('Open immediately — keyboard focus takes no delay', 'ok');
+      });
+      trig.addEventListener('blur', function () { clearTimeout(openT); hide('Closed on blur'); });
+      trig.addEventListener('click', function (e) { e.preventDefault(); });
+    });
+
+    tip.addEventListener('pointerenter', function () {
+      clearTimeout(closeT);
+      say('Held open — the pointer is inside the tooltip', 'ok');
+    });
+    tip.addEventListener('pointerleave', disarm);
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && isOpen) {
+        clearTimeout(openT); clearTimeout(closeT);
+        hide('Dismissed with Escape — focus stayed on the trigger');
+      }
+    });
+    window.addEventListener('scroll', function () {
+      if (isOpen) { clearTimeout(openT); clearTimeout(closeT); hide('Closed on scroll'); }
+    }, true);
+
+    say('Idle — hover or tab to a trigger', '');
+  });
+
+  /* ── Live checkbox: the parent/child indeterminate contract ──
+     Real inputs, so indeterminate is the DOM property and the
+     announcement is the browser's. The parent never becomes
+     indeterminate by being clicked; it only reports its children. */
+  [].slice.call(document.querySelectorAll('.cbxlive')).forEach(function (box) {
+    var parent = box.querySelector('.cbxlive-parent input');
+    var kids   = [].slice.call(box.querySelectorAll('.cbxlive-kid input'));
+    var count  = box.querySelector('.cbxlive-count');
+    var read   = box.querySelector('.cbxlive-state');
+    if (!parent || !kids.length) return;
+
+    function sync(note) {
+      var on = kids.filter(function (k) { return k.checked; }).length;
+      parent.checked = on === kids.length;
+      parent.indeterminate = on > 0 && on < kids.length;
+      if (count) count.textContent = '(' + on + ' of ' + kids.length + ')';
+      if (read) {
+        var s = parent.indeterminate ? 'Indeterminate'
+              : parent.checked ? 'Checked' : 'Unchecked';
+        var next = parent.checked ? 'unchecks all' : 'checks all';
+        read.textContent = note ? note
+          : 'Parent is ' + s + ' — aria-checked="' +
+            (parent.indeterminate ? 'mixed' : parent.checked) +
+            '". Clicking it ' + next + '.';
+        read.className = 'cbxlive-state' + (parent.indeterminate ? ' wait' : ' ok');
+      }
+    }
+
+    parent.addEventListener('click', function () {
+      // From indeterminate a click always checks all. It never unchecks,
+      // and it never cycles back to partial.
+      var wasMixed = count && /\(([0-9]+) of/.test(count.textContent)
+                   ? Number(RegExp.$1) > 0 && Number(RegExp.$1) < kids.length : false;
+      var target = wasMixed ? true : parent.checked;
+      kids.forEach(function (k) { k.checked = target; });
+      sync(wasMixed
+        ? 'Was indeterminate — the click checked all, it did not clear them.'
+        : null);
+      setTimeout(function () { sync(); }, 1800);
+    });
+
+    kids.forEach(function (k) {
+      k.addEventListener('change', function () { sync(); });
+    });
+    sync();
+  });
+
+  /* ── Live table selection: header scope, shift-click ranges ── */
+  [].slice.call(document.querySelectorAll('.selive')).forEach(function (box) {
+    var head = box.querySelector('.selive-all input');
+    var rows = [].slice.call(box.querySelectorAll('.selive-row input'));
+    var bar  = box.querySelector('.selive-bar');
+    var read = box.querySelector('.selive-state');
+    var TOTAL = Number(box.getAttribute('data-total') || rows.length);
+    var last = null, wide = false;
+    if (!head || !rows.length) return;
+
+    function sync(note) {
+      var on = rows.filter(function (r) { return r.checked; }).length;
+      head.checked = on === rows.length;
+      head.indeterminate = on > 0 && on < rows.length;
+      if (bar) {
+        if (!on) { bar.hidden = true; }
+        else {
+          bar.hidden = false;
+          bar.innerHTML = wide
+            ? '<b>All ' + TOTAL.toLocaleString() + ' matching rows selected.</b> '
+              + '<button type="button" class="selive-undo">Select only these ' + on + '</button>'
+            : '<b>' + on + ' selected</b> — the ' + rows.length + ' rows loaded here.'
+              + (on === rows.length
+                 ? ' <button type="button" class="selive-wide">Select all '
+                   + TOTAL.toLocaleString() + ' matching?</button>' : '');
+        }
+      }
+      if (read) read.textContent = note || (on ? on + ' of ' + rows.length + ' loaded rows'
+                                               : 'Nothing selected');
+    }
+
+    head.addEventListener('click', function () {
+      var on = rows.filter(function (r) { return r.checked; }).length;
+      var target = (on > 0 && on < rows.length) ? true : head.checked;
+      rows.forEach(function (r) { r.checked = target; });
+      wide = false; last = null;
+      sync('Header selects the loaded rows only — never the whole result set.');
+      setTimeout(function () { sync(); }, 2200);
+    });
+
+    /* Shift-click has to be handled on the row, not on the input.
+       Chrome suppresses a <label>'s activation behaviour entirely when Shift
+       is held — it treats the gesture as a text-range selection — so the
+       input never receives a click and never toggles. Listening on the input
+       alone silently does nothing. */
+    var labels = [].slice.call(box.querySelectorAll('.selive-row'));
+    labels.forEach(function (lab, i) {
+      lab.addEventListener('click', function (e) {
+        if (e.shiftKey && last !== null && last !== i) {
+          e.preventDefault();
+          var anchor = rows[last].checked;              // the row clicked first
+          var a = Math.min(last, i), b = Math.max(last, i);
+          for (var n = a; n <= b; n++) rows[n].checked = anchor;
+          wide = false;
+          sync('Shift-click — rows ' + (a + 1) + ' to ' + (b + 1) +
+               ' took the state of row ' + (last + 1) + '.');
+          setTimeout(function () { sync(); }, 2400);
+          last = i;
+          return;
+        }
+        last = i;
+      });
+    });
+
+    rows.forEach(function (r) {
+      r.addEventListener('change', function () { wide = false; sync(); });
+    });
+
+    box.addEventListener('click', function (e) {
+      var t = e.target;
+      if (t.classList && t.classList.contains('selive-wide')) {
+        wide = true; sync('Widening the selection is an explicit second step, in words.');
+        setTimeout(function () { sync(); }, 2200);
+      }
+      if (t.classList && t.classList.contains('selive-undo')) { wide = false; sync(); }
+    });
+
+    var filter = box.querySelector('.selive-filter');
+    if (filter) filter.addEventListener('click', function () {
+      rows.forEach(function (r) { r.checked = false; });
+      wide = false; last = null;
+      sync('Filter changed — the selection was cleared, not carried over.');
+      setTimeout(function () { sync(); }, 2600);
+    });
+
+    sync();
   });
 })();

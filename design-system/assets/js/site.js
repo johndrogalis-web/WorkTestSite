@@ -901,35 +901,58 @@
   })();
 
   /* ── Brand font live test ───────────────────────────────────
-     Types straight into the real font, so a name that does not
-     exist simply shows as letters — which is the whole point. */
+     The font has no letters in it: the a–z glyphs exist only so
+     the ligature can fold them, and they draw nothing. So anything
+     that is not an exact name shows as blank — in Figma too. The
+     tester therefore normalises what you type, shows the glyph only
+     on an exact match, and shows plain text with suggestions until then. */
   (function () {
     var input = document.querySelector('.brandtry-in');
     var out   = document.querySelector('.brandtry-out');
     var hint  = document.querySelector('.brandtry-hint');
+    var chips = document.querySelector('.brandtry-chips');
     if (!input || !out) return;
-    var NAMES = null;
+    var NAMES = null, ALT = {};
+    function norm(v) {
+      return v.trim().toLowerCase().replace(/[\s_]+/g, '-').replace(/-+/g, '-');
+    }
     fetch('../assets/data/trinity-brand-icons.json')
       .then(function (r) { return r.json(); })
       .then(function (d) {
         NAMES = {};
-        d.forEach(function (x) { NAMES[x.n] = x.cp; if (x.alt) NAMES['!' + x.alt] = x.n; });
+        d.forEach(function (x) { NAMES[x.n] = x.cp; if (x.alt) ALT[x.alt] = x.n; });
+        if (chips) {
+          chips.innerHTML = '';
+          Object.keys(NAMES).forEach(function (n) {
+            var b = document.createElement('button');
+            b.type = 'button'; b.className = 'brandtry-chip';
+            b.innerHTML = '<span class="brandfont" aria-hidden="true">' + n + '</span>' + n;
+            b.addEventListener('click', function () { input.value = n; check(); input.focus(); });
+            chips.appendChild(b);
+          });
+        }
         check();
       }).catch(function () {});
 
     function check() {
-      var v = input.value.trim();
-      out.textContent = v;
-      if (!hint || !NAMES) return;
-      if (!v) { hint.textContent = ''; return; }
-      if (NAMES[v]) {
-        hint.textContent = v + '  \u2192  U+' + NAMES[v].toUpperCase() + '  \u2713 in the font';
-      } else if (NAMES['!' + v]) {
-        hint.textContent = '"' + v + '" is the Figma legend label. The font calls it "' +
-                           NAMES['!' + v] + '" \u2014 only that one folds.';
-      } else {
-        hint.textContent = 'No glyph called "' + v + '". It will stay as letters.';
+      var raw = input.value, v = norm(raw);
+      if (!NAMES) { out.textContent = v; return; }
+      var hit = NAMES[v] ? v : (ALT[v] || null);
+      if (hit) {
+        out.classList.add('brandfont'); out.classList.remove('miss');
+        out.textContent = hit;
+        if (hint) hint.textContent = hit + '  \u2192  U+' + NAMES[hit].toUpperCase() + '  \u2713 in the font' +
+          (hit !== raw.trim() ? '  (you typed \u201c' + raw.trim() + '\u201d; the font needs exactly \u201c' + hit + '\u201d)' : '');
+        return;
       }
+      out.classList.remove('brandfont'); out.classList.add('miss');
+      out.textContent = raw.trim() || '';
+      if (!hint) return;
+      if (!v) { hint.textContent = 'Type one of the 16 names, or click one below.'; return; }
+      var near = Object.keys(NAMES).filter(function (n) { return n.indexOf(v) === 0 || n.indexOf(v) > -1; });
+      hint.textContent = near.length
+        ? 'Not a whole name yet. Matches: ' + near.slice(0, 5).join(', ')
+        : 'No glyph called \u201c' + v + '\u201d. In the font this shows as nothing at all.';
     }
     input.addEventListener('input', check);
     check();

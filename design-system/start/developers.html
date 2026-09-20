@@ -49,13 +49,13 @@
   the naive hex comparison gives the wrong answer.</div>
 
 <h2 id="bite">Five things that will bite you</h2>
-<ul class="checklist"><li><b>Lime is dark-mode only.</b> <code>--select</code> is blue in light and lime in dark. If lime appears on a light screen, a token has been hardcoded somewhere.</li><li><b>Phase colours flip, they do not tint.</b> Light is the solid colour with white text; dark is the light tint with near-black text. Same token pair, inverted roles. Pill, map marker and legend dot all read from it and must agree.</li><li><b>Hover is selection-tinted, never grey.</b> 5% of the selection colour, both themes.</li><li><b>46% of the button set&rsquo;s fills are hardcoded in Figma.</b> Generate CSS from the file rather than from the token block and you inherit values that will not follow a theme change.</li><li><b>The table component binds Montserrat and Font Awesome.</b> Neither belongs to the rest of the system. Use ABC Repro and Unicons and flag it.</li></ul>
+<ul class="checklist"><li><b>Lime is dark-mode only.</b> <code>--select</code> is blue in light and lime in dark. If lime appears on a light screen, a token has been hardcoded somewhere.</li><li><b>Phase colours flip, they do not tint.</b> Light is the solid colour with white text; dark is the light tint with near-black text. Same token pair, inverted roles. Pill, map marker and legend dot all read from it and must agree.</li><li><b>Hover is selection-tinted, never grey.</b> 5% of the selection colour, both themes.</li><li><b>46% of the button set&rsquo;s fills are hardcoded in Figma.</b> Generate CSS from the file rather than from the token block and you inherit values that will not follow a theme change.</li><li><b>The table component binds Montserrat and Font Awesome.</b> Neither belongs to the rest of the system. Use ABC Repro and Unicons; that is decided, and the Figma file is catching up.</li></ul>
 
-<h2 id="a11y">The two contrast failures</h2>
+<h2 id="a11y">The one contrast failure left</h2>
 <p>Measured, not asserted &mdash; the calculator runs in your browser on the
    <a href="../foundations/accessibility.html">accessibility page</a> so you can check the
    arithmetic.</p>
-<div class="tw"><table><thead><tr><th>Pair</th><th>Ratio</th><th>Verdict</th><th>Fix</th></tr></thead><tbody><tr><td>Phase pill <em>Loaded</em> <span class="m">#887F13</span> with white text</td><td><span class="m">4.12:1</span></td><td><span class="pill bad">Fail</span></td><td>Darken to <span class="m">#7A7211</span> for 4.95:1. The only one of eighteen phase combinations that misses.</td></tr><tr><td>Light-mode <code>--subtle</code> on <code>--layer-1</code></td><td><span class="m">2.87:1</span></td><td><span class="pill bad">Fail</span></td><td>Below even the large-text bar, and it is the placeholder token. Use <code>--soft</code> at 14px or larger until it is darkened.</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>Pair</th><th>Ratio</th><th>Verdict</th><th>Fix</th></tr></thead><tbody><tr><td>Phase pill <em>Loaded</em>, now <span class="m">#7A7211</span> with white text</td><td><span class="m">4.95:1</span></td><td><span class="pill ok">Pass</span></td><td>Was <span class="m">#887F13</span> at 4.12:1. Darkened one shade; use the new value even if the Figma token has not been updated yet.</td></tr><tr><td>Light-mode <code>--subtle</code> on <code>--layer-1</code></td><td><span class="m">2.87:1</span></td><td><span class="pill bad">Fail</span></td><td>Below even the large-text bar, and it is the placeholder token. Use <code>--soft</code> at 14px or larger until it is darkened.</td></tr></tbody></table></div>
 
 <h2 id="naming">State naming, normalised</h2>
 <p>Competing conventions coexist in the Figma file &mdash; <code>state</code> vs
@@ -79,12 +79,14 @@
    <code>prefers-reduced-motion</code> &mdash; including on this site.
    <a href="../foundations/motion.html">The motion page has the snippet <span aria-hidden="true">&rarr;</span></a></p>
 
+<h2 id="change">When the page and the Figma file disagree</h2>
+<p>The page wins. Where Figma has not drawn a state, a size or dark mode, the page carries the value and lists the catch-up under &ldquo;Figma housekeeping&rdquo;. Build from the page. And when you need something neither has &mdash; a colour, a state, a size &mdash; it is proposed to Verifi Design and agreed before it ships, and it passes AA in both themes before it is used. Badge and Tag say how.</p>
 <h2 id="dontbuild">Sets not to build against</h2>
 <div class="tw"><table><thead><tr><th>Component</th><th>Why</th><th>Instead</th></tr></thead><tbody><tr><td>Top navigation <span class="m">56362:18642</span></td><td>Figma reports the variant properties as invalid.</td><td>Nothing. Ask Verifi Design.</td></tr><tr><td>Side navigation <span class="m">57725:*</span></td><td>Duplicate of the real cluster.</td><td><span class="m">56362:18728</span></td></tr><tr><td>Toast <span class="m">56362:19143</span></td><td>Cruder duplicate.</td><td><span class="m">39027:356</span></td></tr><tr><td>Table cells <span class="m">57724:564</span></td><td>Duplicate.</td><td><span class="m">56348:4383</span></td></tr><tr><td>Truck phase tag <span class="m">57719:16219</span></td><td>Duplicate.</td><td><span class="m">56361:2240</span></td></tr></tbody></table></div>
 
         <div class="nextprev"><a href="../start/designers.html"><span class="k">Previous</span><span class="t">For designers</span></a><a class="r" href="../foundations/colour.html"><span class="k">Next</span><span class="t">Colour</span></a></div>
       </main>
-      <nav class="toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#tokens">The token set</a></li><li><a href="#bite">Five things</a></li><li><a href="#a11y">Contrast failures</a></li><li><a href="#naming">State naming</a></li><li><a href="#motion">Motion</a></li><li><a href="#dontbuild">Do not build against</a></li></ul></nav>
+      <nav class="toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#tokens">The token set</a></li><li><a href="#bite">Five things</a></li><li><a href="#a11y">Contrast</a></li><li><a href="#naming">State naming</a></li><li><a href="#motion">Motion</a></li><li><a href="#change">Page vs Figma</a></li><li><a href="#dontbuild">Do not build against</a></li></ul></nav>
     </div>
   </div>
 </div>

@@ -2075,6 +2075,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   .mtl-ev .tx { min-width: 0; display: flex; flex-direction: column; }
   .mtl-ev .tt { font-size: 14px; font-weight: 600; color: var(--dc-strong); }
   .mtl-ev .st { font-size: 12px; color: var(--dc-soft); margin-top: 1px; }
+  .mtl-ev .st .alert-pill { font-size: 11px; padding: 3px 9px; gap: 6px; margin-top: 2px; }
   .mtl-ev .go { margin-left: auto; color: var(--dc-soft); font-size: 15px; }
   /* Ignition on/off is a fact about the truck, not a health state.
      Green here read as "this part is fine" on a card flagged red,
@@ -6029,6 +6030,11 @@ function buildMobileTimeline(target) {
      goes straight there — so the row states the condition and nothing
      more. */
   const MTL_SHORT = { 'Ignition on': 'On', 'Ignition off': 'Off' };
+  /* A fault window wears the same pill the fleet table uses, so the
+     word on the row and the word on the list are the same word. "No
+     data" stays plain: silence is an absence of reporting, not a fault
+     the truck claimed. */
+  const MTL_PILL = { warn: 'warn', alarm: 'red' };
   const evRow = (e, rowKey) => {
     /* One line, not one row per message. The event line above already
        states the traffic ("9 of 12 messages") and the strip at the top
@@ -6052,9 +6058,12 @@ function buildMobileTimeline(target) {
           e.state === 'alarm' ? ALARM_ICON : e.state === 'nodata' ? NODATA_ICON
           : e.state === 'asleep' ? ASLEEP_ICON : e.state === 'on' ? IGN_ON_ICON
           : e.state === 'off' ? IGN_OFF_ICON : WARN_ICON}</span>
-        <span class="tx">
-          <span class="tt">${dcHM(e.from)} – ${e.to >= 1440 ? '24:00' : dcHM(e.to)}</span>
-          <span class="st">${MTL_SHORT[e.label] || e.label}</span>
+        <span class="tx">${MTL_PILL[e.state]
+          ? '<span class="st"><span class="alert-pill ' + MTL_PILL[e.state] + '"><i></i>' +
+            DC_ALERT_PILL[MTL_PILL[e.state]] + '</span></span>'
+          : '<span class="tt">' + dcHM(e.from) + ' – ' +
+            (e.to >= 1440 ? '24:00' : dcHM(e.to)) + '</span>' +
+            '<span class="st">' + (MTL_SHORT[e.label] || e.label) + '</span>'}
         </span>
         <span class="go">&#8250;</span>
       </div>${subs}${beat}`;

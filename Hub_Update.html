@@ -843,15 +843,26 @@
      what keeps a bulk clear defensible six weeks later. */
   .tk-reset { display: none; margin-top: 14px; }
   body.alert-col .tk-reset { display: block; }
+  /* Primary action. --dc-blue is the chart / accent blue and reads too
+     light as a filled button, so the primary button has its own token. */
+  .tk-reset { --dc-primary: #005BBF; }
   .tk-reset-btn {
     display: inline-flex; align-items: center; gap: 9px; min-height: 38px;
-    padding: 0 16px; border-radius: var(--dc-r-btn, 6px); cursor: pointer;
-    background: var(--dc-layer-2); border: 1px solid var(--dc-border);
-    color: var(--dc-defined); font-family: inherit; font-size: 12.5px; font-weight: 600;
+    padding: 0 18px; border-radius: var(--dc-r-btn, 6px); cursor: pointer;
+    background: var(--dc-primary); border: 1px solid var(--dc-primary); color: #fff;
+    font-family: inherit; font-size: 12.5px; font-weight: 600; letter-spacing: .2px;
   }
+  .tk-reset-btn:active { transform: translateY(1px); }
   .tk-reset-btn:disabled { opacity: .45; cursor: default; }
   @media (hover: hover) and (pointer: fine) {
-    .tk-reset-btn:not(:disabled):hover { color: var(--dc-strong); border-color: var(--dc-soft); }
+    .tk-reset-btn:not(:disabled):hover { filter: brightness(1.18); }
+  }
+  /* Cancel stays secondary, so the pair reads as one decision */
+  .tk-reset-btn.ghost {
+    background: transparent; border-color: var(--dc-border); color: var(--dc-defined);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .tk-reset-btn.ghost:hover { filter: none; color: var(--dc-strong); border-color: var(--dc-soft); }
   }
   .tk-reset-panel {
     margin-top: 10px; padding: 12px 14px;
@@ -902,12 +913,12 @@
     background: color-mix(in srgb, var(--dc-strong) 13%, transparent);
     transition: background .2s ease;
   }
-  .tk-reset-seg i.on { background: var(--dc-blue); }
+  .tk-reset-seg i.on { background: var(--dc-primary); }
   .tk-reset-seg i.live { background: var(--dc-warn, #e0a030); }
   .tk-reset-seg i.run { animation: tkSegPulse .7s ease-in-out infinite; }
   @keyframes tkSegPulse {
-    0%, 100% { background: color-mix(in srgb, var(--dc-blue) 30%, transparent); }
-    50%      { background: color-mix(in srgb, var(--dc-blue) 85%, transparent); }
+    0%, 100% { background: color-mix(in srgb, var(--dc-primary) 35%, transparent); }
+    50%      { background: color-mix(in srgb, var(--dc-primary) 100%, transparent); }
   }
   .tk-reset-status {
     display: flex; align-items: center; gap: 9px; min-height: 18px;
@@ -916,7 +927,7 @@
   .tk-reset-status .sp {
     width: 12px; height: 12px; flex: 0 0 12px; border-radius: 50%;
     border: 2px solid color-mix(in srgb, var(--dc-strong) 22%, transparent);
-    border-top-color: var(--dc-blue); animation: tkSpin .7s linear infinite;
+    border-top-color: var(--dc-primary); animation: tkSpin .7s linear infinite;
   }
   .tk-reset-status .sp.end {
     border: none; animation: none;
@@ -926,6 +937,53 @@
   .tk-reset-actions { display: flex; gap: 10px; }
   .tk-reset-note { margin-top: 9px; font-size: 11.5px; color: var(--dc-subtle); line-height: 1.5; }
   .tk-reset-done { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--dc-ok, #3fbf5f); font-weight: 600; }
+
+  /* ── Phase 1: the Alert column becomes a status pill ────────
+     Three states, no prose: green never faulted, amber faulted in
+     the last 24 hours and has recovered, red is failing on the
+     latest message. The fault text moves into the truck, where
+     there is room to name the part. A key sits with the tabs,
+     because three colours mean nothing unlabelled. */
+  .alert-pill {
+    display: inline-flex; align-items: center; gap: 7px; flex-shrink: 0;
+    padding: 4px 11px; border-radius: 999px;
+    font-size: 11.5px; font-weight: 600; letter-spacing: .1px;
+    white-space: nowrap; font-family: inherit;
+  }
+  .alert-pill i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .alert-pill.ok   { color: var(--c-ok);        background: color-mix(in srgb, var(--c-ok) 15%, transparent); }
+  .alert-pill.red  { color: var(--c-alarm-ink); background: color-mix(in srgb, var(--c-alarm) 22%, transparent); }
+  /* Amber is history, not a live problem: outline only, so red is the
+     one thing in the column that raises its voice. The label is past
+     tense for the same reason — "Fault in 24h" read as present. */
+  .alert-pill.warn {
+    color: var(--c-warn-ink); background: none;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c-warn) 45%, transparent);
+    font-weight: 500;
+  }
+  .alert-pill.warn i { background: none; box-shadow: inset 0 0 0 2px currentColor; }
+
+  .fleet-key { display: none; }
+  body.alert-col .fleet-key {
+    display: flex; align-items: center; flex-wrap: wrap;
+    gap: 6px 15px; margin-left: auto; padding-left: 20px;
+  }
+  .fleet-key .t {
+    font-size: 10px; font-weight: 700; letter-spacing: .6px;
+    text-transform: uppercase; color: var(--dim);
+  }
+  .fleet-key .k { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); }
+  .fleet-key .k i { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .fleet-key .k.ok i   { background: var(--c-ok); }
+  .fleet-key .k.warn i { background: none; box-shadow: inset 0 0 0 2px var(--c-warn); }
+  .fleet-key .k.red i  { background: var(--c-alarm); }
+  /* the phone puts the key on its own line under the tabs */
+  body.alert-col.sm-ready.view-mobile .fleet-key,
+  body.alert-col.sm-ready.view-tablet .fleet-key {
+    margin: 10px 0 0; padding-left: 0; flex: 0 0 100%; gap: 6px 14px;
+  }
+  body.alert-col.sm-ready.view-mobile .tabs,
+  body.alert-col.sm-ready.view-tablet .tabs { flex-wrap: wrap; }
 
   .dc-chart-modal {
     position: fixed; inset: 0; z-index: 130;   /* over the drawer, the takeover and Settings */
@@ -1989,7 +2047,15 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
      order, which would split the status row in half on a card — so
      it is ordered up, under the truck name where the fault chip was */
   body.alert-col.sm-ready.view-mobile td.alert,
-  body.alert-col.sm-ready.view-tablet td.alert { order: 1; margin-top: 2px; }
+  body.alert-col.sm-ready.view-tablet td.alert { order: 1; margin-top: 4px; }
+  /* no column header on a card, so the pill gets the same micro-label
+     the other card fields use */
+  body.alert-col.sm-ready.view-mobile td.alert:not(:empty)::before,
+  body.alert-col.sm-ready.view-tablet td.alert:not(:empty)::before {
+    content: "Alert"; display: block; margin-bottom: 5px;
+    font-size: 10px; font-weight: 600; letter-spacing: .6px;
+    text-transform: uppercase; color: var(--dim);
+  }
   body.alert-col.sm-ready.view-mobile tr.trow > td:nth-child(5),
   body.alert-col.sm-ready.view-mobile tr.trow > td:nth-child(7),
   body.alert-col.sm-ready.view-mobile tr.trow > td:nth-child(8),
@@ -3513,6 +3579,12 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
           <div class="tab alarm"><span class="ti">&#9634;</span>0 Alarm</div>
           <div class="tab warning"><span class="ti">&#9888;</span>7 Warning</div>
           <div class="tab"><span class="ti">&#128683;</span><span class="conn-legacy">1 Disconnected</span><span class="conn-word">1 Offline</span></div>
+          <div class="fleet-key">
+            <span class="t">Alert</span>
+            <span class="k ok"><i></i>None &mdash; never faulted</span>
+            <span class="k warn"><i></i>Watch &mdash; faulted in last 24h, clear now</span>
+            <span class="k red"><i></i>Unresolved &mdash; faulting now</span>
+          </div>
         </div>
 
         <div class="table-scroll">
@@ -4248,11 +4320,14 @@ function setPhase(mode) {
    part that only reads grey because of past history goes green, while
    anything failing right now (WDS on an offline truck) stays as it is,
    which is the same rule the reset sweep reports. */
+/* V5 Sensor Module list. The dots are part of what a reset clears: a
+   part that only reads grey because of past history goes green, while
+   anything failing right now (WDS on an offline truck) stays as it is,
+   which is the same rule the reset sweep reports. */
 function dcRenderTkComps(name) {
   const a = TRUCK_ALERTS[name] || {};
   const disc = !!a.disconnected;
-  const wasReset = dcResetActive() && !!dcAlertReset[name];
-  const histOk = wasReset;   /* history-only greys clear on reset */
+  const histOk = dcResetActive() && !!dcAlertReset[name];
   const comps = [
     { n: 'Air Controller', g: true, f: [['Required Position', 'Air Off'], ['Required Position Degree', '180'], ['Reported Position Degree*', '182']] },
     { n: 'CPS', g: true, f: [['Pressure*', '0 psi']] },
@@ -7370,7 +7445,7 @@ function dcResetRender(state) {
         '</b> and restarts tracking from now. Anything still failing comes back on the next message.</div>' +
         '<div class="tk-reset-actions">' +
           '<button class="tk-reset-btn" onclick="dcResetRun()">Reset alerts</button>' +
-          '<button class="tk-reset-btn" onclick="dcResetRender()">Cancel</button>' +
+          '<button class="tk-reset-btn ghost" onclick="dcResetRender()">Cancel</button>' +
         '</div>' +
       '</div>';
     return;
@@ -7472,17 +7547,36 @@ function dcApplyAlertReset() {
   dcRenderTkComps(num);
   syncAlertCells();
 }
-/* Blank the fleet list's Alert cell for a truck whose history was reset,
-   leaving anything still failing in place. */
+/* Phase 1's Alert column is a pill, not prose:
+     red   — a component is failing on the latest message
+     amber — something faulted in the last 24 hours and has recovered
+     green — nothing has ever faulted
+   Amber is history, so a reset clears it; red is current, so it does
+   not move until the truck reports otherwise. The amber set is seeded
+   per truck, so the same truck reads the same way every demo. */
+/* The column header already says Alert, so the pill carries the state
+   and nothing else: Alert \u2192 None / Watch / Unresolved. A ladder of
+   what to do, not a report on the past: nothing here, keep an eye on
+   this, deal with this. "Cleared" read as an all-clear, which is the
+   opposite of the point \u2014 a part that failed this morning is the part
+   most likely to fail again this afternoon. */
+const DC_ALERT_PILL = { ok: 'None', warn: 'Watch', red: 'Unresolved' };
+function dcAlertPillState(num) {
+  /* dcAlertsFor, not the raw set: after a reset only the live faults
+     remain, so the pill agrees with what the reset sweep reported */
+  const a = dcAlertsFor(num);
+  if (Object.keys(a).some(k => a[k])) return 'red';
+  if (dcAlertReset[num]) return 'ok';            /* history cleared */
+  return dcRng(dcSeed(num) + 11)() < 0.7 ? 'warn' : 'ok';
+}
 function dcAlertResetCells() {
   if (!dcResetActive()) return;
   document.querySelectorAll('.comp-cell').forEach(td => {
     const num = td.dataset.truck;
-    if (!dcAlertReset[num]) return;
     const cell = td.parentElement.querySelector('td.alert');
     if (!cell) return;
-    const a = dcAlertsFor(num);
-    cell.innerHTML = a.disconnected ? 'No connection to backend' : '';
+    const st = dcAlertPillState(num);
+    cell.innerHTML = '<span class="alert-pill ' + st + '"><i></i>' + DC_ALERT_PILL[st] + '</span>';
   });
 }
 

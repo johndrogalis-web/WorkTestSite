@@ -195,7 +195,7 @@
     box-shadow: inset 0 -1px 0 var(--border);
   }
   /* Mode: the everyday state is quiet, anything else is called out */
-  body:not(.comp-col) .mode-h, body:not(.comp-col) .mode-cell { display: none; }
+  body:not(.comp-col) .mode-h, body:not(.comp-col) .mode-cell { display: none !important; }
   .mode {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 3px 9px; border-radius: 11px; font-size: 11.5px; font-weight: 700;
@@ -229,8 +229,10 @@
   .conn i { font-style: normal; }
   .conn em { display: none; font-style: normal; font-size: 13px; font-weight: 600; color: var(--c-ok); }
   .conn.off em { color: var(--c-alarm-ink); }
-  body[data-phase="current-alerts"] .conn i { display: none; }
-  body[data-phase="current-alerts"] .conn em { display: inline; }
+  /* Keyed to the alert model, not to one phase name: Phase 2 introduces
+     the wording and every phase built on top of it inherits it. */
+  body.alert-col .conn i { display: none; }
+  body.alert-col .conn em { display: inline; }
   /* the small-screen cards have always spelled it out */
   body.sm-ready.view-mobile .conn i,
   body.sm-ready.view-tablet .conn i { display: none; }
@@ -238,8 +240,8 @@
   body.sm-ready.view-tablet .conn em { display: inline; }
   /* the Offline tab follows the same rule as the cell it counts */
   .tab .conn-word { display: none; }
-  body[data-phase="current-alerts"] .tab .conn-word { display: inline; }
-  body[data-phase="current-alerts"] .tab .conn-legacy { display: none; }
+  body.alert-col .tab .conn-word { display: inline; }
+  body.alert-col .tab .conn-legacy { display: none; }
   .ign { display: flex; align-items: center; gap: 8px; color: var(--text); }
   .dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--text); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .dot.on::after { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--text); }
@@ -253,7 +255,7 @@
      never drift. */
   /* Phase 1 and above only — Current State keeps today's
      six columns untouched (body.comp-col is set by setProtoView). */
-  body:not(.comp-col) .comp-h, body:not(.comp-col) .comp-cell { display: none; }
+  body:not(.comp-col) .comp-h, body:not(.comp-col) .comp-cell { display: none !important; }
   /* Phase 2+ : Components replaces the Alert column — the fault
      text it carried now lives in the rollover panel. Phase 1 keeps
      both for the moment, so the new cell can be read against the
@@ -383,7 +385,15 @@
   .pager { display: flex; align-items: center; justify-content: flex-end; gap: 22px; margin-top: 26px; color: var(--muted); font-size: 12.5px; }
   .pager .ppsel { border: 1px solid var(--border); border-radius: 3px; padding: 3px 8px; color: var(--text); display: inline-flex; gap: 8px; align-items: center; }
   .pager .arrows { display: flex; gap: 18px; font-size: 15px; }
-  .pager .pg.off { opacity: .35; cursor: default; }
+  /* the select carries no chrome of its own — the span around it is
+     still the control, so the pager looks exactly as it did */
+  .pager .ppsel select {
+    appearance: none; -webkit-appearance: none; background: none; border: none;
+    color: inherit; font: inherit; padding: 0; margin: 0; cursor: pointer; outline: none;
+  }
+  .pager .ppsel select option { background: var(--row-alt); color: var(--text); }
+  .pager .pg { cursor: pointer; user-select: none; }
+  .pager .pg.off { opacity: .35; cursor: default; pointer-events: none; }
 
   /* ============================================================
      DRAWER
@@ -457,6 +467,7 @@
     --dc-r-lg: 6px;
     --dc-r-card: 6px;
     --dc-blue: #4a90c2;
+    --dc-primary: #005BBF;
     --dc-r-btn: 4px;
   }
   /* Trinity preview — same components, new-DS token values */
@@ -485,6 +496,7 @@
     --dc-r-lg: 24px;
     --dc-r-card: 20px;
     --dc-blue: #6492f1;
+    --dc-primary: #005BBF;
     --dc-r-btn: 20px;
   }
 
@@ -760,18 +772,21 @@
   .fleet-search { display: none; }
   body.sm-ready.view-mobile .fleet-search,
   body.sm-ready.view-tablet .fleet-search {
-    display: flex; align-items: center; gap: 9px;
-    margin-bottom: 12px; padding: 0 12px;
-    height: 44px; border-radius: 10px;
-    background: var(--row-alt); box-shadow: inset 0 0 0 1px var(--border);
-    color: var(--dim);
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px; padding: 0 14px;
+    height: 48px; border-radius: 10px;
+    background: var(--row-alt);
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--text) 22%, transparent);
+    color: var(--muted);
   }
   .fleet-search input {
     flex: 1; min-width: 0; background: none; border: none; outline: none;
     color: var(--text); font-family: inherit; font-size: 16px;  /* 16px: iOS zooms anything smaller */
   }
-  .fleet-search input::placeholder { color: var(--dim); }
-  .fleet-search .si { display: flex; flex-shrink: 0; }
+  .fleet-search input::placeholder { color: var(--muted); }
+  /* it sits on the same bar as everything else, so without a ring of
+     its own it read as a gap between the header and the list */
+  .fleet-search .si { display: flex; flex-shrink: 0; color: var(--text); opacity: .7; }
   .fleet-search .clr {
     display: none; flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
     align-items: center; justify-content: center;
@@ -985,6 +1000,149 @@
   body.alert-col.sm-ready.view-mobile .tabs,
   body.alert-col.sm-ready.view-tablet .tabs { flex-wrap: wrap; }
 
+  /* ── Phase 1 cards: today's Alert text, laid out for a card ───
+     Phase 1 is Current State at phone and tablet size, so the Alert
+     column keeps its sentence. It sits on its own line under the
+     truck number rather than wedged between At Plant and Network,
+     which is where the column order would otherwise put it. */
+  body.alert-text.sm-ready.view-mobile td.alert,
+  body.alert-text.sm-ready.view-tablet td.alert {
+    order: 1; flex: 0 0 100%; margin-top: 2px;
+    font-size: 13px; color: var(--orange); white-space: normal; line-height: 1.4;
+  }
+  /* A healthy truck reserves the alert line instead of collapsing it.
+     Cards then stack at one height, which is what makes a long list
+     scannable — a ragged column reads as noise before you have read
+     a word of it. */
+  body.alert-text.sm-ready.view-mobile td.alert:empty::after,
+  body.alert-text.sm-ready.view-tablet td.alert:empty::after { content: "\00a0"; }
+  body.alert-text.sm-ready.view-mobile tr.trow > td:nth-child(5),
+  body.alert-text.sm-ready.view-mobile tr.trow > td:nth-child(7),
+  body.alert-text.sm-ready.view-mobile tr.trow > td:nth-child(8),
+  body.alert-text.sm-ready.view-tablet tr.trow > td:nth-child(5),
+  body.alert-text.sm-ready.view-tablet tr.trow > td:nth-child(7),
+  body.alert-text.sm-ready.view-tablet tr.trow > td:nth-child(8) { order: 2; }
+
+  /* ── End of the fleet list on a phone ───────────────────────
+     The desktop pager's job here is only to say you have reached the
+     bottom, so it stops being a control strip and becomes an end cap:
+     the count in plain words, and the one action a long scrolled list
+     actually needs. */
+  .prange-sm, .fleet-top { display: none; }
+  body.sm-ready.view-mobile .prange-sm,
+  body.sm-ready.view-tablet .prange-sm { display: block; }
+  body.sm-ready.view-mobile .pager .prange,
+  body.sm-ready.view-tablet .pager .prange { display: none; }
+  body.sm-ready.view-mobile .fleet-top,
+  body.sm-ready.view-tablet .fleet-top {
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: 40px; padding: 0 15px; border-radius: 999px;
+    background: var(--row-alt); border: 1px solid var(--border);
+    color: var(--muted); font-family: inherit; font-size: 12.5px;
+    font-weight: 600; cursor: pointer;
+  }
+  .fleet-top:active { background: color-mix(in srgb, var(--text) 10%, transparent); }
+
+  /* Load more, not page arrows: a phone list grows downward. The
+     button only appears when there is more to show, so a short fleet
+     never sees it. */
+  .fleet-more { display: none; }
+  body.sm-ready.view-mobile .fleet-more.on,
+  body.sm-ready.view-tablet .fleet-more.on {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 40px; padding: 0 18px; border-radius: 999px;
+    background: var(--dc-primary, #005BBF); border: 1px solid var(--dc-primary, #005BBF);
+    color: #fff; font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  }
+  .fleet-more:active { transform: translateY(1px); }
+  body.sm-ready.view-mobile .pager,
+  body.sm-ready.view-tablet .pager { flex-wrap: wrap; }
+
+  /* ── Sticky list header (phone + tablet) ────────────────────
+     Title, search and tabs stay put while the fleet scrolls under
+     them, so the search field and the status filters are reachable
+     from anywhere in a long list instead of only at the top. The
+     gaps between the three move inside the elements, so nothing
+     scrolls through the seams. */
+  body.sm-ready.view-mobile .topbar,
+  body.sm-ready.view-tablet .topbar,
+  body.sm-ready.view-mobile .fleet-search,
+  body.sm-ready.view-tablet .fleet-search,
+  body.sm-ready.view-mobile .tabs,
+  body.sm-ready.view-tablet .tabs {
+    position: sticky; z-index: 9; background: var(--bg);
+  }
+  body.sm-ready.view-mobile .topbar { z-index: 11; padding: 6px 0 14px; }
+  body.sm-ready.view-tablet .topbar { z-index: 11; padding: 8px 0 14px; }
+  body.sm-ready.view-mobile .fleet-search,
+  body.sm-ready.view-tablet .fleet-search { z-index: 10; margin-bottom: 0; }
+  body.sm-ready.view-mobile .tabs,
+  body.sm-ready.view-tablet .tabs { padding-top: 12px; }
+  body.sm-ready.view-mobile .content,
+  body.sm-ready.view-tablet .content { margin-top: 0; }
+  /* the search field keeps its own rounded surface above the bar bg */
+  body.sm-ready.view-mobile .fleet-search,
+  body.sm-ready.view-tablet .fleet-search { border-radius: 0; box-shadow: none; }
+  body.sm-ready.view-mobile .fleet-search::before,
+  body.sm-ready.view-tablet .fleet-search::before {
+    content: ''; position: absolute; inset: 0;
+    border-radius: 10px; background: var(--row-alt);
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--text) 22%, transparent),
+                0 1px 3px rgba(0, 0, 0, .22);
+    z-index: -1;
+  }
+  body.sm-ready.view-mobile .fleet-search:focus-within::before,
+  body.sm-ready.view-tablet .fleet-search:focus-within::before {
+    box-shadow: inset 0 0 0 2px var(--dc-primary, #005BBF);
+  }
+  body.sm-ready.view-mobile .fleet-search,
+  body.sm-ready.view-tablet .fleet-search { position: sticky; }
+
+  /* ── Truck page, small screens ──────────────────────────────
+     Three things were costing the fold: two error cards that render
+     at full size even when the truck has no errors, the component
+     list sitting below Debug and Provisioning, and a tab row too
+     wide to show its third tab. */
+  .tk-noerr { display: none; }
+  body.no-errors .tk-errbox { display: none; }
+  body.no-errors .tk-noerr {
+    display: block; padding: 11px 0 2px;
+    font-size: 12.5px; color: var(--dc-subtle, #8a8a8a);
+  }
+  .tk-errcard.empty { display: none; }
+
+  /* sections fold, so reference data can be put away */
+  .tk-sec { cursor: pointer; user-select: none; }
+  .tk-sec.tk-prov { cursor: pointer; }
+  .tk-sec .chev { display: inline-block; transition: transform .18s; }
+  .tk-sec.closed .chev { transform: rotate(-90deg); }
+  #tk-sec-errors.closed + .tk-errbox,
+  #tk-sec-errors.closed + .tk-errbox + .tk-noerr,
+  #tk-sec-errors.closed + .tk-errbox + .tk-noerr + .tk-reset,
+  #tk-sec-debug.closed + .tk-debug { display: none !important; }
+
+  /* phone order: what is wrong, then the reference data */
+
+  /* the third tab has to be reachable without a sideways scroll */
+  .tk-act .sm { display: none; }
+  body.sm-ready.view-mobile .tk-act .lg { display: none; }
+  body.sm-ready.view-mobile .tk-act .sm { display: inline; }
+  body.sm-ready.view-mobile .tk-actions { gap: 0; overflow-x: visible; }
+  body.sm-ready.view-mobile .tk-act {
+    padding: 0 8px; font-size: 10.5px; letter-spacing: .2px; gap: 5px;
+  }
+  body.sm-ready.view-mobile .tk-act .ai { font-size: 12px; }
+
+  /* the phone's stand-in for the desktop reporting lanes */
+  .mtl-rep {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px;
+    margin: 0 0 12px; font-size: 12px; color: var(--dc-soft);
+  }
+  .mtl-rep b { color: var(--dc-strong); font-weight: 700; }
+  .mtl-rep .i.oc, .mtl-rep .i.oc b { color: var(--c-warn-ink, #e0a030); }
+  .mtl-rep .i.q { color: var(--dc-subtle); }
+  .mtl-rep .i.q b { color: var(--dc-soft); }
+
   .dc-chart-modal {
     position: fixed; inset: 0; z-index: 130;   /* over the drawer, the takeover and Settings */
     display: none; align-items: center; justify-content: center;
@@ -1082,7 +1240,7 @@
     flex-shrink: 0; min-width: 128px; padding: 9px 16px;
     border-radius: var(--dc-r-btn); font-size: 12.5px; font-weight: 600;
     cursor: pointer; font-family: inherit; letter-spacing: .2px; text-align: center;
-    background: var(--dc-blue); border: 1px solid var(--dc-blue); color: #fff;
+    background: var(--dc-primary, #005BBF); border: 1px solid var(--dc-primary, #005BBF); color: #fff;
   }
   .dc-mc-btn:active { transform: translateY(1px); }
   /* Danger tier — destructive commands read differently from routine ones */
@@ -1553,9 +1711,12 @@
     font-size: 9px; font-weight: 700; letter-spacing: .3px; white-space: nowrap;
     color: #fff; background: var(--dc-blue); padding: 1px 4px; border-radius: 3px;
   }
+  /* the axis label nearest to now sits right behind this, so the chip
+     carries its own background instead of overprinting "20:00" */
   .dc-now.lead::after {
-    content: "NOW"; position: absolute; top: -14px; left: 3px;
-    font-size: 9px; font-weight: 700; letter-spacing: .5px; color: var(--dc-soft);
+    content: "NOW"; position: absolute; top: -15px; left: 3px; z-index: 5;
+    font-size: 9px; font-weight: 700; letter-spacing: .5px; color: var(--dc-strong);
+    background: var(--dc-layer-2); padding: 1px 3px; border-radius: 2px;
   }
 
   .dc-tl-legend .lg { width: 18px; height: 8px; border-radius: 3px; flex-shrink: 0;
@@ -1652,7 +1813,7 @@
 
 /* Section header */
 .csh-hdr{display:flex;align-items:center;justify-content:space-between;gap:12px;
-  flex-wrap:wrap;margin:26px 0 10px}
+  flex-wrap:wrap;margin:22px 0 10px}
 .csh-hdr h2{margin:0;font-size:19px;font-weight:600;letter-spacing:-0.45px}
 .csh-nav{display:flex;align-items:center;gap:10px}
 .csh-date{font-size:14px;font-weight:500;letter-spacing:-0.28px}
@@ -1665,6 +1826,89 @@
 .csh-panel{background:var(--layer-2);border:1px solid var(--border);
   border-radius:var(--radius-md);padding:14px}
 .csh-scroll{overflow-x:auto;overscroll-behavior-x:contain}
+
+/* ── Trinity timeline: reporting lanes above the components ──
+   A day of component states means nothing without knowing whether the
+   truck was reporting at all, so the messages and the ignition window
+   sit above them, and a part the truck does not have says so instead
+   of drawing a full day of silence. */
+/* Reads as a caption on the day strip rather than a floating line of
+   its own: tucked under the strip, with the cadence and the last
+   receipt a step quieter than the two counts. */
+.csh-sum{display:flex;flex-wrap:wrap;align-items:center;gap:5px 16px;
+  margin:9px 2px 0;font-size:12px;color:var(--soft)}
+.csh-sum b{color:var(--strong);font-weight:700}
+.csh-sum-i.oc b,.csh-sum-i.oc{color:#e0a030}
+.csh-sum-i.q{color:var(--subtle)}
+.csh-lab.lane{font-size:10.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--soft)}
+.csh-lab.na{color:var(--subtle)}
+.csh-track.lane .csh-in{inset:0 10px}
+.csh-band{position:absolute;top:50%;transform:translateY(-50%);height:26px;border-radius:4px;
+  display:flex;align-items:center;padding:0 10px;overflow:hidden}
+.csh-band span{font-size:10.5px;font-weight:700;letter-spacing:.5px;white-space:nowrap}
+.csh-band.off{background:rgba(255,255,255,.07)}
+.csh-band.off span{color:var(--soft)}
+.csh-band.on{background:rgba(63,191,95,.22);box-shadow:inset 0 0 0 1px rgba(63,191,95,.4)}
+.csh-band.on span{color:#7ee09a}
+.csh-tk{position:absolute;top:50%;transform:translate(-50%,-50%);width:2px;height:20px;
+  border-radius:1px;background:var(--soft);cursor:pointer}
+/* a 2px mark is not a target: the hit area is padded out so a tablet
+   can land on it without magnifying the mark itself */
+.csh-tk::after{content:'';position:absolute;left:-5px;right:-5px;top:-8px;bottom:-8px}
+.csh-tk.oc{background:#ff6b5a;width:3px;height:26px}
+@media (hover:hover) and (pointer:fine){.csh-tk:hover{background:var(--strong)}}
+.csh-na{position:absolute;left:0;top:50%;transform:translateY(-50%);
+  font-size:11.5px;color:var(--subtle);font-style:italic}
+.csh-now{position:absolute;top:0;font-size:9.5px;font-weight:700;letter-spacing:.6px;
+  color:var(--strong);transform:translateX(-50%)}
+/* The line runs to the bottom of the chart and no further. A fixed
+   1000px overshot the rows, and since the scroller reads that as real
+   content it grew a vertical scrollbar over a chart that fits. */
+.csh-now::after{content:'';position:absolute;left:50%;top:14px;width:1px;
+  height:var(--csh-nowh,1000px);background:rgba(255,255,255,.22)}
+body.light .csh-now::after{background:rgba(54,50,45,.22)}
+body.light .csh-band.off{background:rgba(54,50,45,.07)}
+/* phone: the lanes stack as their own card above the accordion */
+
+/* ── Phase 3's message timeline on small screens ──
+   The phone gets the accordion, like every other phase, so this is
+   the tablet: the meta line tightens the same way Phase 1's summary
+   does, and the tap hint goes — a phone or tablet user is not going
+   to hover anything, and the row itself says what it does. */
+body.sm-ready .dc-tl2-meta .hint { display: none; }
+body.sm-ready.view-tablet .dc-tl2-meta { gap: 4px 14px; font-size: 11px; padding-bottom: 10px; }
+body.sm-ready.view-tablet .dc-tl2 { column-gap: 10px; }
+body.sm-ready.view-tablet .dc-tl2 > .lbl { font-size: 11.5px; }
+body.sm-ready.view-tablet .dc-tl2 > .lbl.lane { font-size: 9.5px; letter-spacing: .5px; }
+body.sm-ready.view-tablet .dc-tl2-axis { font-size: 9.5px; }
+body.sm-ready.view-tablet .dc-tl-legend { gap: 10px 16px; padding: 10px 2px 2px; }
+body.sm-ready.view-tablet .dc-tl-legend span { font-size: 10.5px; }
+
+/* ── Trinity timeline on a tablet ──
+   Everything above the chart is overhead, so the day strip, the
+   summary and the section header all tighten. */
+body.sm-ready.view-tablet .csh-day{padding:8px 10px}
+body.sm-ready.view-tablet .csh-day-num{font-size:11px}
+body.sm-ready.view-tablet .csh-sum{margin:7px 2px 0;gap:4px 14px;font-size:11.5px}
+body.sm-ready.view-tablet .csh-hdr{margin:16px 0 8px}
+body.sm-ready.view-tablet .csh-hdr h2{font-size:16px}
+body.sm-ready.view-tablet .csh-lab{font-size:12px;padding-right:10px}
+body.sm-ready.view-tablet .csh-lab.lane{font-size:9.5px;letter-spacing:.5px}
+body.sm-ready.view-tablet .csh-band{height:22px}
+body.sm-ready.view-tablet .csh-band span{font-size:9.5px}
+body.sm-ready.view-tablet .csh-tk{height:16px}
+body.sm-ready.view-tablet .csh-tk.oc{height:20px}
+body.sm-ready.view-tablet .csh-legend{margin-top:8px;font-size:11px}
+body.sm-ready.view-tablet .csh-na{font-size:11px}
+
+/* A chip that states its own facts does not need a rollover: the
+   duration, how many status messages landed in the window, and what
+   the truck reported. The reason truncates first, so a narrowing
+   chip loses the sentence before it loses the numbers. */
+.csh-chip>span{flex:0 0 auto}
+.csh-chip em{font-style:normal;font-weight:600;opacity:.75;white-space:nowrap;flex:0 0 auto}
+.csh-chip.no-count em{display:none}
+
 .csh-inner{min-width:620px}
 
 /* Axis */
@@ -1774,14 +2018,22 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
 
   .mtl-list { display: flex; flex-direction: column; gap: 8px; }
   .mtl-card { border-radius: 12px; background: var(--dc-layer-1); box-shadow: inset 0 0 0 1px var(--dc-border); overflow: hidden; }
+  /* The header competed with the rows under it — both were a bold
+     14px line in the same colour on the same background, so the card
+     read as five equal rows. The header is now a band: tinted, smaller,
+     uppercase. The data inside stays the loudest thing on the card. */
   .mtl-row {
-    display: flex; align-items: center; gap: 10px; padding: 13px 14px; cursor: pointer;
+    display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer;
+    background: color-mix(in srgb, var(--dc-strong) 7%, var(--dc-layer-2));
   }
   .mtl-row .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--dc-ok); flex-shrink: 0; }
   .mtl-row .dot.warn { background: var(--dc-warn); }
   .mtl-row .dot.alarm { background: var(--dc-alarm); }
   .mtl-row .dot.na { background: var(--dc-subtle); }
-  .mtl-row .nm { font-size: 14.5px; font-weight: 600; color: var(--dc-strong); white-space: nowrap; }
+  .mtl-row .nm {
+    font-size: 12px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase;
+    color: var(--dc-strong); white-space: nowrap;
+  }
   .mtl-row .sum {
     margin-left: auto; font-size: 11.5px; color: var(--dc-soft); text-align: right;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
@@ -1791,8 +2043,18 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   .mtl-row[data-static] .sum { white-space: normal; line-height: 1.35; }
   .mtl-row .chev { color: var(--dc-soft); font-size: 12px; transition: transform .16s ease; }
   .mtl-card.open .mtl-row .chev { transform: rotate(180deg); }
-  .mtl-events { display: none; border-top: 1px solid var(--dc-border); }
-  .mtl-card.open .mtl-events { display: block; }
+  /* Open/close is animated rather than switched. Snapping from 188px
+     to 52px with only a 12px chevron to show for it reads as "did that
+     do anything?" — the height change is the feedback. The 1px rule is
+     always in the box (transparent when closed) so nothing jumps. */
+  .mtl-events {
+    display: grid; grid-template-rows: 0fr;
+    border-top: 1px solid transparent;
+    transition: grid-template-rows .22s ease, border-top-color .22s ease;
+  }
+  .mtl-evw { min-height: 0; overflow: hidden; }
+  .mtl-card.open .mtl-events { grid-template-rows: 1fr; border-top-color: var(--dc-border); }
+  @media (prefers-reduced-motion: reduce) { .mtl-events { transition: none; } }
   .mtl-ev {
     display: flex; align-items: center; gap: 11px; padding: 11px 14px; cursor: pointer;
     border-bottom: 1px solid var(--dc-border);
@@ -1819,7 +2081,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   /* Ignition and power sits above the components and reads as context,
      not as an eleventh part — hence the quieter card and the label. */
   .mtl-card.pwr { background: transparent; box-shadow: inset 0 0 0 1px var(--dc-border); }
-  .mtl-card.pwr .mtl-row .nm { color: var(--dc-soft); letter-spacing: .2px; }
+  .mtl-card.pwr .mtl-row .nm { color: var(--dc-soft); }
   .mtl-card.pwr .dot.ok { background: var(--dc-ok); }
 
   /* The individual messages inside an event window: off-cycle changes
@@ -1835,6 +2097,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   .mtl-msg .tx { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .mtl-msg .go { margin-left: auto; font-size: 14px; }
   .mtl-msg.qt { cursor: default; color: var(--dc-subtle); font-size: 11.5px; }
+  .mtl-msg .tx b.oc { color: var(--c-warn-ink, #e0a030); font-weight: 700; }
   .mtl-foot { padding: 12px 2px 0; font-size: 11.5px; color: var(--dc-subtle); }
 
   /* Phones and tablets use overlay scrollbars that fade out, so a
@@ -1951,8 +2214,10 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   #device-screen .overlay,
   #device-screen .drawer { top: 0; }
   #device-screen .vp-coming { top: 0; }
-  body.view-mobile #device-screen > .main { padding-top: 50px; padding-bottom: 46px; }
-  body.view-tablet #device-screen > .main { padding-top: 36px; }
+  /* the shell's top padding is exactly the status bar, so a sticky
+     header can use top:0 and land right under it */
+  body.view-mobile #device-screen > .main { padding-top: 44px; padding-bottom: 46px; }
+  body.view-tablet #device-screen > .main { padding-top: 28px; }
   body.view-mobile #device-screen .takeover,
   body.view-mobile #device-screen .stg,
   body.view-mobile #device-screen .drawer,
@@ -2010,7 +2275,12 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   body.sm-ready.view-mobile .view-toggle { display: none; }
   body.sm-ready.view-mobile .tabs { overflow-x: auto; gap: 4px; }
   body.sm-ready.view-mobile .tab { padding: 6px 12px 12px 2px; font-size: 13px; white-space: nowrap; }
-  body.sm-ready.view-mobile .table-scroll { max-height: none; overflow: visible; }
+  /* The desktop table scrolls inside a fixed-height port. On a phone
+     or a tablet the list is cards and the whole screen is the scroller,
+     so the port has to let go — otherwise a long fleet is clipped
+     inside a 700px box with its own scrollbar under the page's. */
+  body.sm-ready.view-mobile .table-scroll,
+  body.sm-ready.view-tablet .table-scroll { max-height: none; overflow: visible; }
 
   /* The fleet list becomes cards on both small breakpoints — the row
      is 1100px wide with the strip in it, so it cannot be a table
@@ -2046,16 +2316,26 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   /* the Alert cell sits between At Plant and Connection in column
      order, which would split the status row in half on a card — so
      it is ordered up, under the truck name where the fault chip was */
+  /* the pill rides the truck-name row where the mode badge used to sit:
+     a coloured one-word state next to the number needs no label, and it
+     buys back a whole row per card */
   body.alert-col.sm-ready.view-mobile td.alert,
-  body.alert-col.sm-ready.view-tablet td.alert { order: 1; margin-top: 4px; }
-  /* no column header on a card, so the pill gets the same micro-label
-     the other card fields use */
-  body.alert-col.sm-ready.view-mobile td.alert:not(:empty)::before,
-  body.alert-col.sm-ready.view-tablet td.alert:not(:empty)::before {
-    content: "Alert"; display: block; margin-bottom: 5px;
-    font-size: 10px; font-weight: 600; letter-spacing: .6px;
-    text-transform: uppercase; color: var(--dim);
+  body.alert-col.sm-ready.view-tablet td.alert {
+    order: 0; flex: 1 1 auto; margin: 0;
+    display: flex; justify-content: flex-end;
   }
+  /* the spare column becomes a zero-height flex break, so the status
+     trio always starts on its own line under the pill */
+  body.alert-col.sm-ready.view-mobile td.col-pad,
+  body.alert-col.sm-ready.view-tablet td.col-pad {
+    display: block; order: 1; flex: 0 0 100%; height: 0; padding: 0; margin: 0;
+  }
+  /* the key keeps its swatches but drops the definitions on a phone —
+     the words are one each and the desktop still spells them out */
+  body.alert-col.sm-ready.view-mobile .fleet-key .def,
+  body.alert-col.sm-ready.view-tablet .fleet-key .def { display: none; }
+  body.alert-col.sm-ready.view-mobile .fleet-key,
+  body.alert-col.sm-ready.view-tablet .fleet-key { margin: 9px 0 2px; gap: 6px 14px; }
   body.alert-col.sm-ready.view-mobile tr.trow > td:nth-child(5),
   body.alert-col.sm-ready.view-mobile tr.trow > td:nth-child(7),
   body.alert-col.sm-ready.view-mobile tr.trow > td:nth-child(8),
@@ -2264,8 +2544,9 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
      page that does not exist, no "items per page" control. */
   body.sm-ready.view-mobile .pager,
   body.sm-ready.view-tablet .pager {
-    justify-content: center; gap: 0; margin-top: 14px;
-    padding: 12px 2px calc(8px + env(safe-area-inset-bottom, 0px));
+    justify-content: space-between; align-items: center; gap: 12px;
+    margin-top: 14px;
+    padding: 12px 2px calc(10px + env(safe-area-inset-bottom, 0px));
     border-top: 1px solid var(--border);
   }
   body.sm-ready.view-mobile .pager .pp, body.sm-ready.view-tablet .pager .pp,
@@ -2306,8 +2587,10 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   body.sm-ready.view-mobile .tk-title .back svg { width: 24px; height: 24px; }
   body.sm-ready.view-mobile .dc-log-back { min-height: 44px; padding: 0; align-items: center; }
   body.sm-ready.view-mobile .dc-kvh-bar { min-height: 44px; }
-  body.sm-ready.view-mobile .dc-logdet-nav button { width: 42px; height: 40px; font-size: 16px; }
+  body.sm-ready.view-mobile .dc-logdet-nav button { width: 40px; height: 40px; font-size: 16px; }
   body.sm-ready.view-mobile .dc-json-find { padding: 4px 10px; }
+  /* permanent now, so it has to read as a field rather than a hint */
+  body.sm-ready.view-mobile .dc-json-find input::placeholder { color: var(--dc-soft); }
   body.sm-ready.view-mobile .dc-json-find input { min-height: 40px; }
   body.sm-ready.view-mobile .dc-json-find button { width: 40px; height: 40px; font-size: 11px; }
   body.sm-ready.view-mobile .tk-comp { min-height: 48px; }
@@ -2351,22 +2634,28 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
      middle column — the V5 Sensor Module list — sat off the right
      edge. Stacked, and ordered the way it is read on a phone: the
      truck's state, then Debug, then Errors, then the modules. */
-  body.sm-ready.view-mobile .tk-body { display: block; }
+  /* the phone orders the whole page as one column, so the component
+     list can sit above Debug even though the markup nests it in the
+     other column */
+  body.sm-ready.view-mobile .tk-body { display: flex; flex-direction: column; }
   body.sm-ready.view-mobile .tk-left {
     width: auto; padding-right: 0; border-right: none;
-    display: flex; flex-direction: column;
+    display: contents;
   }
   body.sm-ready.view-mobile .tk-ign { order: 0; margin: 0 0 8px; }
+  /* Debug leads on a phone: it is the section people open this page
+     for, so it sits directly under Ignition and starts open. */
   body.sm-ready.view-mobile #tk-sec-debug { order: 1; margin-top: 4px !important; }
   body.sm-ready.view-mobile .tk-debug { order: 2; grid-template-columns: 1fr 1fr; gap: 16px 14px; margin: 16px 0 4px; }
-  body.sm-ready.view-mobile #tk-sec-errors { order: 3; margin-top: 16px; }
+  body.sm-ready.view-mobile #tk-sec-errors { order: 3; margin-top: 18px !important; }
   body.sm-ready.view-mobile .tk-errbox { order: 4; flex-direction: column; gap: 10px; margin: 14px 0 4px; }
   body.sm-ready.view-mobile .tk-errcard { min-height: 0; }
   /* the reset travels with Errors, which the phone puts below Debug */
-  body.sm-ready.view-mobile .tk-reset { order: 4; }
-  body.sm-ready.view-mobile .tk-prov { order: 5; margin-top: 16px; }
+  body.sm-ready.view-mobile .tk-reset { order: 5; }
+  body.sm-ready.view-mobile .tk-noerr { order: 4; }
+  body.sm-ready.view-mobile .tk-prov { order: 7; margin-top: 18px; }
   body.sm-ready.view-mobile .tk-mid {
-    width: auto; padding: 0; border-right: none; margin-top: 22px;
+    width: auto; padding: 0; border-right: none; margin-top: 18px; order: 6;
   }
   body.sm-ready.view-mobile .tk-field { width: 100%; min-width: 0; }
   /* Tablet keeps the two columns, sized to the screen it actually has */
@@ -2530,10 +2819,27 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   body.sm-ready.view-mobile .dc-logdet-actions { margin-top: 0; }
-  body.sm-ready.view-mobile .dc-json-find-btn { display: inline-flex; align-items: center; padding: 0 12px; height: 34px; }
-  /* find stays out of the way until asked for */
-  body.sm-ready.view-mobile .dc-json-find { display: none; }
-  body.sm-ready.view-mobile .dc-logs-right.find-on .dc-json-find { display: flex; }
+  /* The pager sat directly under the back chevron, so a thumb reaching
+     for "previous" kept landing on "close" and the other way round.
+     Copy JSON takes that corner — a mis-tap there costs nothing. */
+  body.sm-ready.view-mobile .dc-logdet-nav { order: 2; }
+  body.sm-ready.view-mobile .dc-logdet-tools { order: 1; }
+  /* Boxed, not round: a circled chevron on this screen means "back to
+     logs", so the pager has to look like a different kind of control.
+     The JSON search is no longer a button here — the field itself is
+     always on screen. */
+  body.sm-ready.view-mobile .dc-logdet-nav button {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; min-height: 40px; padding: 0;
+    border-radius: var(--dc-r-sm); background: var(--dc-layer-1);
+    border: 1px solid var(--dc-border); color: var(--dc-defined);
+    font-size: 16px; line-height: 1;
+  }
+  body.sm-ready.view-mobile .dc-json-find-btn { display: none; }
+  /* Find is always on screen: hunting for a field in 400 lines of JSON
+     is the reason someone opens a message on a phone, and a toggle put
+     that behind a tap that nobody found. */
+  body.sm-ready.view-mobile .dc-json-find { display: flex; }
   /* the folded field summary must not push the JSON off screen */
   body.sm-ready.view-mobile .dc-kvh { flex: 0 0 auto; max-height: 34vh; overflow-y: auto; }
   body.sm-ready.view-mobile .dc-logdet-top,
@@ -2742,8 +3048,8 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
     text-align: center;
   }
   body.view-tablet .vp-coming, body.view-mobile .vp-coming { display: flex; }
-  /* Trinity_Timeline is built for every breakpoint, so it shows the real
-     thing instead of the placeholder */
+  /* Phase 1 is the responsive phase, so it shows the real layouts
+     instead of the placeholder */
   body.sm-ready .vp-coming { display: none !important; }
   .vp-coming .ic {
     width: 56px; height: 56px; border-radius: 14px;
@@ -2809,6 +3115,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
     --dc-seg-on: rgba(24,128,56,.45);
     --dc-seg-off: rgba(54,50,45,.18);
     --dc-blue: #3069e3;
+    --dc-primary: #005BBF;
   }
 
   /* ============================================================
@@ -2975,6 +3282,11 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   body.light .tk-charts-btn { border-color: #d6d2cc; color: #4a463f; }
 
   .tk-tlnav { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  /* The timestamp strip and its two dead arrows are today's product,
+     kept in Current State for reference. Every phase drops it: the
+     page header already carries the truck, and the arrows never did
+     anything. */
+  body:not([data-phase="current"]) .tk-tlnav { display: none; }
   .tk-tlnav .arw { color: #8a8a8a; font-size: 16px; }
   .tk-time { flex: 1; background: #262626; border-radius: 4px; text-align: center; padding: 10px; color: #8a8a8a; font-size: 12.5px; }
   .tk-mod { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
@@ -3295,28 +3607,34 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
         <div class="vp-opts-dd" id="vp-opts-dd">
           <div class="vp-opts-section-label">Phase</div>
           <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('current')">
-            <svg class="vp-opts-check" id="vp-check-current" width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span class="vp-lbl">Current State<em>today&rsquo;s Hub</em></span>
+            <svg class="vp-opts-check" id="vp-check-current" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="vp-lbl">Current design<em>today&rsquo;s Hub</em></span>
+          </div>
+          <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('current-mobile')">
+            <svg class="vp-opts-check" id="vp-check-current-mobile" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="vp-lbl">Phase 1<em>today&rsquo;s Hub on phone + tablet</em></span>
           </div>
           <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('current-alerts')">
             <svg class="vp-opts-check" id="vp-check-current-alerts" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span class="vp-lbl">Phase 1<em>in progress</em></span>
+            <span class="vp-lbl">Phase 2<em>alert model + reset, all sizes</em></span>
           </div>
           <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('current-timeline')">
             <svg class="vp-opts-check" id="vp-check-current-timeline" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span class="vp-lbl">Phase 2_ Timeline<em>message timeline</em></span>
+            <span class="vp-lbl">Phase 3<em>message timeline</em></span>
           </div>
+          <div class="vp-opts-divider"></div>
+          <div class="vp-opts-section-label">Outdated <em>superseded, kept for reference</em></div>
           <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('current-overview')">
             <svg class="vp-opts-check" id="vp-check-current-overview" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span class="vp-lbl">Phase 3_ Overview</span>
+            <span class="vp-lbl">Phase 4<em>overview</em></span>
           </div>
           <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('current-overview-wds')">
             <svg class="vp-opts-check" id="vp-check-current-overview-wds" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span class="vp-lbl">Phase 3a_ Overview_Timeline<em>WDS split + asleep</em></span>
+            <span class="vp-lbl">Phase 4a<em>WDS split + asleep</em></span>
           </div>
           <div class="vp-opts-row" onclick="event.stopPropagation();setProtoView('final')">
             <svg class="vp-opts-check" id="vp-check-final" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span class="vp-lbl">Phase 4_ Final</span>
+            <span class="vp-lbl">Phase 5<em>final</em></span>
           </div>
           <div class="vp-opts-divider"></div>
           <div class="vp-opts-section-label">Timeline <em id="vp-tl-scope">for every phase with a timeline</em></div>
@@ -3331,11 +3649,11 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
           <div class="vp-opts-divider"></div>
           <div class="vp-opts-section-label">Fleet card <em>phone and tablet</em></div>
           <div class="vp-opts-row" id="vp-fc-row-comfort" onclick="event.stopPropagation();setFleetCard('comfort')">
-            <svg class="vp-opts-check" id="vp-fc-comfort" width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg class="vp-opts-check" id="vp-fc-comfort" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span class="vp-lbl">Option 1 &#8212; Comfortable<em>named parts, labelled status</em></span>
           </div>
           <div class="vp-opts-row" id="vp-fc-row-compact" onclick="event.stopPropagation();setFleetCard('compact')">
-            <svg class="vp-opts-check" id="vp-fc-compact" width="13" height="13" viewBox="0 0 13 13" fill="none" style="opacity:0;"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg class="vp-opts-check" id="vp-fc-compact" width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3 3 6-6" stroke="#3069e3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span class="vp-lbl">Option 2 &#8212; Compact<em>about twice the trucks per screen</em></span>
           </div>
           <div class="vp-opts-divider"></div>
@@ -3351,6 +3669,10 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
           <div class="vp-opts-row" onclick="event.stopPropagation();toggleFaultDemo()" style="justify-content:space-between;">
             <span class="vp-lbl">More broken parts<em>demo data</em></span>
             <div class="vp-dark-toggle" id="vp-fault-toggle"><div class="knob"></div></div>
+          </div>
+          <div class="vp-opts-row" onclick="event.stopPropagation();toggleBigFleet()" style="justify-content:space-between;">
+            <span class="vp-lbl">50-truck fleet<em>demo data &middot; shows paging</em></span>
+            <div class="vp-dark-toggle" id="vp-fleet50-toggle"><div class="knob"></div></div>
           </div>
         </div>
       </div>
@@ -3392,10 +3714,10 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6.5 9 12l5.5 5.5"/></svg>
       </button> <span id="tk-truck">TRUCK 1219</span></div>
       <div class="tk-actions">
-        <div class="tk-act clickable" id="tk-act-ct" onclick="tkView('timeline')"><span class="ai">&#128200;</span> <span id="tk-act-ct-label">COMPONENT TIMELINE</span></div>
+        <div class="tk-act clickable" id="tk-act-ct" onclick="tkView('timeline')"><span class="ai">&#128200;</span> <span id="tk-act-ct-label"><span class="lg">COMPONENT TIMELINE</span><span class="sm">TIMELINE</span></span></div>
         <div class="tk-act clickable" id="tk-act-ov" onclick="tkView('overview')" style="display:none;"><span class="ai">&#9638;</span> <span id="tk-act-ov-label">DEBUG</span></div>
-        <div class="tk-act clickable" id="tk-act-mc" onclick="tkManualClick()"><span class="ai">&#127899;</span> MANUAL CONTROL</div>
-        <div class="tk-act clickable" id="tk-act-tl" onclick="tkLogClick()"><span class="ai">&#128196;</span> TRUCK LOG</div>
+        <div class="tk-act clickable" id="tk-act-mc" onclick="tkManualClick()"><span class="ai">&#127899;</span> <span class="lg">MANUAL CONTROL</span><span class="sm">MANUAL</span></div>
+        <div class="tk-act clickable" id="tk-act-tl" onclick="tkLogClick()"><span class="ai">&#128196;</span> <span class="lg">TRUCK LOG</span><span class="sm">LOG</span></div>
       </div>
     </div>
 
@@ -3421,17 +3743,18 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
       <div class="tk-left">
         <div class="tk-ign"><span class="lbl">Ignition</span><span class="val" id="tk-ign"><span class="g"></span> ON</span></div>
 
-        <div class="tk-sec" id="tk-sec-errors">Errors <span class="chev">&#8964;</span></div>
-        <div class="tk-errbox">
-          <div class="tk-errcard alarms">
+        <div class="tk-sec" onclick="tkSecToggle(this)" id="tk-sec-errors">Errors <span class="chev">&#8964;</span></div>
+        <div class="tk-errbox" id="tk-errbox">
+          <div class="tk-errcard alarms" id="tk-card-alarms">
             <div class="eh"><span class="ebox"></span> Alarms</div>
             <div id="tk-alarms"></div>
           </div>
-          <div class="tk-errcard warnings">
+          <div class="tk-errcard warnings" id="tk-card-warns">
             <div class="eh">&#9888; Warnings</div>
             <div id="tk-warns"></div>
           </div>
         </div>
+        <div class="tk-noerr" id="tk-noerr">No errors reported</div>
 
         <!-- Phase 1: one reset for the whole truck. Clearing an alert is
              Hub-side bookkeeping, not a truck command, so it works on a
@@ -3439,7 +3762,7 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
              has just finished repairing. -->
         <div class="tk-reset" id="tk-reset"></div>
 
-        <div class="tk-sec" id="tk-sec-debug" style="margin-top:20px;">Debug <span class="chev">&#8964;</span></div>
+        <div class="tk-sec" onclick="tkSecToggle(this)" id="tk-sec-debug" style="margin-top:20px;">Debug <span class="chev">&#8964;</span></div>
         <div class="tk-debug">
           <div class="tk-dg"><div class="k">Connectivity</div><div class="v"><span id="tk-conn">Online</span></div>
             <button class="tk-charts-btn" onclick="dcExpandChart()">
@@ -3581,9 +3904,9 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
           <div class="tab"><span class="ti">&#128683;</span><span class="conn-legacy">1 Disconnected</span><span class="conn-word">1 Offline</span></div>
           <div class="fleet-key">
             <span class="t">Alert</span>
-            <span class="k ok"><i></i>None &mdash; never faulted</span>
-            <span class="k warn"><i></i>Watch &mdash; faulted in last 24h, clear now</span>
-            <span class="k red"><i></i>Unresolved &mdash; faulting now</span>
+            <span class="k ok"><i></i>None<span class="def"> &mdash; never faulted</span></span>
+            <span class="k warn"><i></i>Watch<span class="def"> &mdash; faulted in last 24h, clear now</span></span>
+            <span class="k red"><i></i>Unresolved<span class="def"> &mdash; faulting now</span></span>
           </div>
         </div>
 
@@ -3680,12 +4003,17 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
         </div>
 
         <div class="pager">
-          <div class="pp">Items per page: <span class="ppsel">10 <span style="font-size:9px">&#9660;</span></span></div>
+          <div class="pp">Items per page: <span class="ppsel"><select id="fleet-size" onchange="fleetPageSize(this.value)" aria-label="Trucks per page"><option>10</option><option>25</option><option>50</option><option>100</option></select> <span style="font-size:9px">&#9660;</span></span></div>
           <div class="prange">1 &#8211; 10 of 10</div>
+          <div class="prange-sm">All 10 trucks</div>
+          <button class="fleet-more" id="fleet-more" onclick="fleetShowMore()">Show 20 more</button>
+          <button class="fleet-top" onclick="fleetToTop()">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11.5V2.8"/><path d="M3.2 6.4 7 2.6l3.8 3.8"/></svg>
+            Back to top
+          </button>
           <div class="arrows">
-            <!-- ten trucks, ten per page: there is no other page to go to -->
-            <span class="pg prev off" title="No previous page">&#8249;</span>
-            <span class="pg next off" title="No next page">&#8250;</span>
+            <span class="pg prev off" id="fleet-prev" onclick="fleetPage(-1)" title="Previous page">&#8249;</span>
+            <span class="pg next off" id="fleet-next" onclick="fleetPage(1)" title="Next page">&#8250;</span>
           </div>
         </div>
         <div class="fleet-empty" id="fleet-empty">No trucks match that search.</div>
@@ -4072,11 +4400,20 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
 /* Per-truck faults. 2541 is the multi-fault case: a truck that is
    online and reporting, with five components in trouble at once —
    the state the fleet card and the timeline both have to survive. */
+/* The first few rows are what anyone reviewing this looks at, so they
+   carry the spread: none, several, a mix of warnings, an alarm plus a
+   dead TCG, and one truck with almost everything wrong. */
 const TRUCK_ALERTS = {
-  '1219': {}, '1341': { flow: true }, '1408': { flow: true, disconnected: true },
-  '1416': { flow: true }, '1894': {}, '1921': { flow: true }, '1968': { flow: true },
-  '2105': { accel: true }, '2356': {},
-  '2541': { flow: true, dps: true, cps: true, drs: true, icd: true }
+  '1219': {},
+  '2541': { flow: true, dps: true, cps: true, drs: true, icd: true },
+  '1341': { flow: true, drs: true, accel: true },
+  '1408': { flow: true, disconnected: true, cps: true },
+  '1416': { flow: true, icd: true },
+  '1894': {},
+  '1921': { flow: true },
+  '1968': { flow: true, dps: true },
+  '2105': { accel: true },
+  '2356': {}
 };
 
 function mcsCardsFor(num) {
@@ -4173,11 +4510,12 @@ let dcViewMode = 'current';
 ══════════════════════════════════════════════════════════════ */
 const DC_VIEW_SLUGS = {
   'current': 'current',
-  'current-alerts': 'phase1',
-  'current-timeline': 'phase2',
-  'current-overview': 'phase3',
-  'current-overview-wds': 'phase3a',
-  'final': 'phase4'
+  'current-mobile': 'phase1',
+  'current-alerts': 'phase2',
+  'current-timeline': 'phase3',
+  'current-overview': 'phase4',
+  'current-overview-wds': 'phase4a',
+  'final': 'phase5'
 };
 const DC_SLUG_VIEWS = Object.keys(DC_VIEW_SLUGS).reduce((m, k) => (m[DC_VIEW_SLUGS[k]] = k, m), {});
 /* older / alternative spellings people may paste */
@@ -4185,17 +4523,16 @@ const DC_SLUG_VIEWS = Object.keys(DC_VIEW_SLUGS).reduce((m, k) => (m[DC_VIEW_SLU
    before Phase 1 was inserted still land on the view they named,
    which is now one number higher. */
 Object.assign(DC_SLUG_VIEWS, {
-  'phase-1': 'current-alerts', 'alerts': 'current-alerts',
-  'phase-2': 'current-timeline', 'timeline': 'current-timeline',
-  /* the Trinity timeline is a candidate in the Timeline section now,
-     not a phase of its own: its old links open Phase 1 with that
-     candidate selected */
-  'trinity-timeline': 'current-alerts', 'phase0': 'current-alerts',
-  'phase-3': 'current-overview', 'overview': 'current-overview',
-  'phase-3a': 'current-overview-wds', 'overview-timeline': 'current-overview-wds',
-  'phase-4': 'final', 'final': 'final',
-  /* old numbering, kept so shared links do not 404 into Current State */
+  'phase-1': 'current-mobile', 'mobile': 'current-mobile',
+  'phase-2': 'current-alerts', 'alerts': 'current-alerts',
+  'phase-3': 'current-timeline', 'timeline': 'current-timeline',
+  'phase-4': 'current-overview', 'overview': 'current-overview',
+  'phase-4a': 'current-overview-wds', 'overview-timeline': 'current-overview-wds',
+  'phase-5': 'final', 'final': 'final',
+  /* pre-renumber spellings, kept so shared links land somewhere sane */
+  'phase0': 'current-mobile', 'trinity-timeline': 'current-mobile',
   'phase2a': 'current-overview-wds', 'phase-2a': 'current-overview-wds',
+  'phase3a': 'current-overview-wds',
   'trinity': 'current-trinity', 'final-trinity': 'final-trinity'
 });
 
@@ -4240,22 +4577,29 @@ function dcApplyUrlView() {
 }
 window.addEventListener('hashchange', dcApplyUrlView);
 
-/* Phase 1 renames the connection reading; every other phase keeps
-   today's wording, Current State above all. */
+/* Phases carry forward: the alert model lands in Phase 2 and every
+   phase after it inherits the pill, the reset and this wording.
+   Current State and Phase 1 keep today's reading. */
+function dcAlertPhase() {
+  return dcViewMode === 'current-alerts' || dcViewMode === 'current-timeline';
+}
 function dcConnWord(disconnected) {
-  if (dcViewMode === 'current-alerts') return disconnected ? 'Offline' : 'Online';
+  if (dcAlertPhase()) return disconnected ? 'Offline' : 'Online';
   return disconnected ? 'Disconnected' : 'Connected';
 }
 
 function dcSyncTimelineMenu() {
+  const fixed = dcTimelineLocked();
+  const kind = dcTimelineKind();
   ['trinity', 'rebuilt'].forEach(k => {
     const el = document.getElementById('vp-tl-' + k);
-    if (el) el.style.opacity = dcTimelinePick === k ? '1' : '0';
+    if (el) el.style.opacity = (fixed ? kind === k : dcTimelinePick === k) ? '1' : '0';
     const row = document.getElementById('vp-tl-row-' + k);
-    if (row) { row.style.opacity = '1'; row.style.pointerEvents = ''; }
+    if (row) { row.style.opacity = fixed ? '.4' : '1'; row.style.pointerEvents = fixed ? 'none' : ''; }
   });
   const scope = document.getElementById('vp-tl-scope');
-  if (scope) scope.textContent = 'for every phase with a timeline';
+  if (scope) scope.textContent = !fixed ? 'for every phase with a timeline'
+    : (dcTrinityPhase() ? 'set by this phase' : 'set by this screen size');
 }
 
 /* Trinity colours used to be two extra rows in the phase list, which
@@ -4271,9 +4615,16 @@ function setTrinitySkin(on) {
   dcWriteSlug(dcViewMode);
 }
 
-const DC_PHASES = ['current', 'current-alerts', 'current-timeline',
+const DC_PHASES = ['current', 'current-mobile', 'current-alerts', 'current-timeline',
                    'current-overview', 'current-overview-wds', 'final'];
-const DC_SMALL_PHASES = ['current-alerts', 'current-timeline'];
+/* Phase 4 onward are superseded: still reachable, but grouped under
+   Outdated at the bottom of the list so nobody reviews them by accident */
+const DC_OLD_PHASES = ['current-overview', 'current-overview-wds', 'final'];
+/* Phase 1 is the responsive phase: Current State's screen, plus the
+   phone and tablet layouts. Every other phase is desktop-only and
+   shows the coming-soon panel on those pills, so the mobile work has
+   one owner and Phase 2 stays a frozen reference of the timeline. */
+const DC_SMALL_PHASES = ['current-mobile', 'current-alerts', 'current-timeline'];
 
 function setProtoView(mode) {
   /* Legacy names kept working: they were a phase plus the skin */
@@ -4296,10 +4647,15 @@ function setPhase(mode) {
      body.trinity reskins the page; the drawer's own .trinity class
      flips its --dc-* token layer (the migration scaffolding kept in
      the CSS since the preview toggle was removed). */
-  /* Components column ships in Phase 1 and above only */
-  document.body.classList.toggle('comp-col', mode !== 'current');
-  /* Phase 1 shows Components AND today's Alert column side by side */
-  document.body.classList.toggle('alert-col', mode === 'current-alerts');
+  /* Phase 1 is today's screen at phone and tablet size, so it keeps
+     Current State's exact column set — no Components, no Mode. */
+  const currentLike = mode === 'current' || mode === 'current-mobile';
+  document.body.classList.toggle('comp-col', !currentLike);
+  /* Phase 2 is the new alert model: pills, reset, Online / Offline */
+  document.body.classList.toggle('alert-col', mode === 'current-alerts' || mode === 'current-timeline');
+  /* Phase 1 keeps today's Alert text, so its cards lay it out as a line
+     rather than as the pill Phase 2 puts on the truck row */
+  document.body.classList.toggle('alert-text', mode === 'current-mobile');
   closeDrawer();
   closeTakeover();
   /* The WDS model differs by phase, so derived data has to be rebuilt */
@@ -4313,6 +4669,7 @@ function setPhase(mode) {
   dcSyncTimelineMenu();
   const small = document.body.classList.contains('view-mobile') || document.body.classList.contains('view-tablet');
   deviceMount(small && DC_SMALL_PHASES.indexOf(mode) > -1);
+  requestAnimationFrame(fleetStickyTops);
   dcWriteSlug(mode);
 }
 
@@ -4350,6 +4707,27 @@ function dcRenderTkComps(name) {
     </div>`).join('');
 }
 
+
+/* Sections fold so reference data can be put away on a small screen.
+   Debug starts closed on a phone: it is where you look second. */
+function tkSecToggle(el) {
+  if (!el || el.classList.contains('tk-prov')) return;
+  el.classList.toggle('closed');
+}
+/* An error card with nothing in it is 70px of colour saying nothing,
+   so each one hides when empty and a quiet line covers the all-clear. */
+function tkSyncErrorCards() {
+  const al = document.getElementById('tk-alarms');
+  const wn = document.getElementById('tk-warns');
+  if (!al || !wn) return;
+  const aEmpty = !al.innerHTML.trim(), wEmpty = !wn.innerHTML.trim();
+  const ca = document.getElementById('tk-card-alarms');
+  const cw = document.getElementById('tk-card-warns');
+  if (ca) ca.classList.toggle('empty', aEmpty);
+  if (cw) cw.classList.toggle('empty', wEmpty);
+  document.body.classList.toggle('no-errors', aEmpty && wEmpty);
+}
+
 function openTakeover(name) {
   const a = TRUCK_ALERTS[name] || {};
   dcCurrentTruck = name;   /* the timeline + logs read this */
@@ -4372,8 +4750,14 @@ function openTakeover(name) {
   if (ea.accel) warns += item('Accelerometer not working', '07/24/2026, 03:50:11 PM');
   document.getElementById('tk-alarms').innerHTML = alarms;
   document.getElementById('tk-warns').innerHTML = warns;
+  tkSyncErrorCards();
   dcResetBusy = false;
   dcResetRender();
+  /* Debug is what this page is opened for on a phone, so it is never
+     folded by default — the fold is there for putting it away, not for
+     making someone open it first. */
+  const dbg = document.getElementById('tk-sec-debug');
+  if (dbg) dbg.classList.remove('closed');
 
   /* Component rows expand/collapse in place, like today's product.
      Field values ported from the current Hub; WDS reads
@@ -4392,17 +4776,21 @@ function openTakeover(name) {
      as a right-side drawer; the tab carries the NEW timeline there,
      so it's just "TIMELINE", and a second tab appears beside it */
   const asDrawer = tkIsDrawerMode();
-  document.getElementById('tk-act-ct-label').textContent = asDrawer ? 'TIMELINE' : 'COMPONENT TIMELINE';
-  document.getElementById('tk-act-ov').style.display = asDrawer ? '' : 'none';
+  const tabbed = tkTabbed();
+  /* long / short variants so the phone can drop to one word */
+  const ctl = document.getElementById('tk-act-ct-label');
+  ctl.querySelector('.lg').textContent = tabbed ? 'TIMELINE' : 'COMPONENT TIMELINE';
+  document.getElementById('tk-act-ov').style.display = tabbed ? '' : 'none';
   /* In Phase 1 and Trinity_Timeline that second tab is today's
      ignition / errors / debug page, so it is named for what it is.
      Phase 3 and 3a put the real component overview there. */
   const ovLabel = document.getElementById('tk-act-ov-label');
   if (ovLabel) ovLabel.textContent =
-    (dcViewMode === 'current-timeline' || dcViewMode === 'current-alerts') ? 'DEBUG' : 'OVERVIEW';
+    (dcViewMode === 'current-timeline' || dcViewMode === 'current-alerts' ||
+     dcViewMode === 'current-mobile') ? 'DEBUG' : 'OVERVIEW';
   /* From the table, the question is what happened — so a truck opens
      on its timeline. Current State keeps today's overview-first open. */
-  tkView(asDrawer ? 'timeline' : 'overview');
+  tkView(tabbed ? 'timeline' : 'overview');
   /* Manual Control and Truck Log always work now: Phase 4 opens them
      as drawer tabs, everything else hands off to Settings */
   [['tk-act-tl', 'Truck Log'], ['tk-act-mc', 'Manual Control']].forEach(([id, name]) => {
@@ -4431,11 +4819,41 @@ function tkTabsFade() {
   }
   a.classList.toggle('more', a.scrollWidth - a.clientWidth - a.scrollLeft > 4);
 }
-/* Phase views that present the takeover as a drawer. Phase 1 is not
-   one of them: its truck view is today's full-width takeover, same as
-   Current State. */
+/* Two different questions. tkTabbed: does this phase open a truck on
+   its timeline, with today's ignition / errors / debug page demoted to
+   a Debug tab beside it? tkIsDrawerMode: is the takeover presented as
+   a right-side drawer? Phase 1 is the first: tabs, but full width. */
+/* Phases that ship the Trinity timeline and open a truck on it.
+   Phase 2 builds on Phase 1, so it inherits the timeline rather than
+   keeping the hourly grid the alert work was never about. */
+function dcTrinityPhase() {
+  return dcViewMode === 'current-mobile' || dcViewMode === 'current-alerts';
+}
+/* Phase 3 carries Phase 2's small-screen answer forward — the Trinity
+   chart on a tablet, its accordion on a phone — while leaving the
+   desktop question open to the Options picker. So the phase decides
+   what desktop shows; the width decides the rest. */
+function dcTrinityNow() {
+  return dcTrinityPhase() ||
+         (dcViewMode === 'current-timeline' &&
+          (dcSmallScreen() || dcTimelinePick === 'trinity'));
+}
+/* The picker is greyed out wherever the answer is already settled:
+   by the phase in 1 and 2, and by the width in Phase 3, where the
+   small-screen timeline is inherited and only desktop is still an
+   open question. */
+function dcTimelineLocked() {
+  return dcTrinityPhase() ||
+         (dcViewMode === 'current-timeline' && dcSmallScreen());
+}
+function tkTabbed() {
+  return dcTrinityPhase() || tkIsDrawerMode();
+}
+/* The right-side drawer starts at Phase 2 and carries forward. Phase 1
+   keeps the full-width takeover: it is the responsive pass on today's
+   page, not a change to how a truck is presented. */
 function tkIsDrawerMode() {
-  return dcViewMode === 'current-timeline' ||
+  return dcViewMode === 'current-alerts' || dcViewMode === 'current-timeline' ||
          dcViewMode === 'current-overview' || dcViewMode === 'current-overview-wds';
 }
 /* Timeline_Overview: relocate the LIVE Final overview panel (and its
@@ -4623,20 +5041,20 @@ function tkView(v) {
   /* In plain Current State, clicking COMPONENT TIMELINE while open
      closes it (today's toggle quirk). Drawer-mode phase views have
      real tabs, so no toggle-off there. */
-  if (v === 'timeline' && tkCurrentView === 'timeline' && !tkIsDrawerMode()) v = 'overview';
+  if (v === 'timeline' && tkCurrentView === 'timeline' && !tkTabbed()) v = 'overview';
   if (v !== tkCurrentView) tkPrevView = tkCurrentView;
   tkCurrentView = v;
   /* Phase views: the Final timeline component replaces the old
      hourly grid, as a proper view swap. Plain Current State keeps
      today's stack-above-the-overview quirk. */
-  if (v === 'timeline' && tkIsDrawerMode()) {
+  if (v === 'timeline' && tkTabbed()) {
     buildTimeline(document.getElementById('tk-view-timeline'));
   }
   const finalOv = dcViewMode === 'current-overview' || dcViewMode === 'current-overview-wds';
-  /* Phase 1 keeps Current State's quirk too: the Component Timeline
-     stacks ABOVE the overview rather than replacing it. */
+  /* A tabbed phase swaps views; Current State and Phase 2 keep today's
+     quirk of stacking the Component Timeline above the overview. */
   document.getElementById('tk-view-overview').style.display =
-    finalOv ? 'none' : ((v === 'timeline' && dcViewMode === 'current-timeline') ? 'none' : '');
+    finalOv ? 'none' : ((v === 'timeline' && tkTabbed()) ? 'none' : '');
   document.getElementById('tk-view-final-ov').style.display =
     (finalOv && v === 'overview') ? '' : 'none';
   document.getElementById('tk-view-timeline').style.display = v === 'timeline' ? '' : 'none';
@@ -4664,7 +5082,7 @@ function tkView(v) {
   document.getElementById('tk-act-mc').classList.toggle('active', v === 'manual');
   document.getElementById('tk-act-tl').classList.toggle('active', v === 'logs');
   const ovEl = document.getElementById('tk-act-ov');
-  if (ovEl) ovEl.classList.toggle('active', v === 'overview' && tkIsDrawerMode());
+  if (ovEl) ovEl.classList.toggle('active', v === 'overview' && tkTabbed());
   document.getElementById('takeover').scrollTop = 0;
 }
 function tkBack() {
@@ -5131,10 +5549,17 @@ let dcTlRoot = null; /* container the timeline component is mounted in */
     var tip   = (e.note || (e.level === 'alarm' ? 'Alarm' : 'Warning'))
               + ' · ' + String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0')
               + ' · ' + e.label;
+    /* Only a wide chip gets the count: a centred pill is already
+       narrower than its own label, so anything more would clip. The
+       reason stays in the tooltip and one tap away in the log — the
+       plot is never wide enough to print a sentence without cutting
+       it off, and a row of "Readin…" is worse than no sentence. */
+    var extra = (wide && e.msgs !== undefined)
+      ? '<em>\u00B7 ' + e.msgs + ' msg' + (e.msgs === 1 ? '' : 's') + '</em>' : '';
     return '<div class="csh-chip ' + e.level + '" style="' + style + '" tabindex="0"'
          + ' data-wide="' + (wide ? 1 : 0) + '" data-mid="' + pct(mid).toFixed(3) + '"'
          + (e.sec ? ' data-sec="' + e.sec + '"' : '')
-         + ' data-tip="' + tip + '">' + ico + '<span>' + e.label + '</span></div>';
+         + ' data-tip="' + tip + '">' + ico + '<span>' + e.label + '</span>' + extra + '</div>';
   }
 
   function render(){
@@ -5159,6 +5584,18 @@ let dcTlRoot = null; /* container the timeline component is mounted in */
     });
     h += '</div>';
 
+    /* What the day's reporting looked like, before any component: how
+       many messages, how many were off-cycle, the cadence, and when the
+       last one landed. Without it every lane below is uncalibrated. */
+    if (o.summary) {
+      h += '<div class="csh-sum">';
+      o.summary.forEach(function (bit) {
+        h += '<span class="csh-sum-i' + (bit.cls ? ' ' + bit.cls : '') + '">'
+          +   (bit.n === undefined ? '' : '<b>' + bit.n + '</b> ') + bit.t + '</span>';
+      });
+      h += '</div>';
+    }
+
     /* section header */
     h += '<div class="csh-hdr"><h2>Component Status History</h2>'
       +    '<div class="csh-nav"><span class="csh-date">' + (day.full || (day.lbl + ' ' + day.date + '/2026')) + '</span>'
@@ -5173,25 +5610,51 @@ let dcTlRoot = null; /* container the timeline component is mounted in */
 
     /* axis */
     h += '<div class="csh-axis"><div></div><div class="csh-axis-track"><div class="csh-in">';
+    /* the hour nearest NOW is dropped rather than overprinted */
+    var nowPct = (o.now === undefined || o.now === null) ? -99 : pct(o.now);
     [0,4,8,12,16,20,24].forEach(function (t) {
+      if (Math.abs(pct(t) - nowPct) < 6) return;
       var shift = t === 0 ? '0' : (t === 24 ? '-100%' : '-50%');
       h += '<span class="csh-tick" style="left:' + pct(t) + '%;transform:translateX(' + shift + ')">'
         +   String(t).padStart(2,'0') + ':00</span>';
     });
+    if (o.now !== undefined && o.now !== null) {
+      h += '<span class="csh-now" style="left:' + pct(o.now) + '%">NOW</span>';
+    }
     h += '</div></div></div>';
 
     /* chart */
     h += '<div class="csh-chart"><div class="csh-labels">';
     rows.forEach(function (r, i) {
-      h += '<div class="csh-lab' + (i % 2 ? ' alt' : '') + '">' + r.name + '</div>';
+      h += '<div class="csh-lab' + (i % 2 ? ' alt' : '') + (r.lane ? ' lane' : '')
+        +  (r.na ? ' na' : '') + '">' + r.name + '</div>';
     });
     h += '</div><div class="csh-plot">';
     rows.forEach(function (r, i) {
-      h += '<div class="csh-track' + (i % 2 ? ' alt' : '') + '"><div class="csh-in">';
-      segments(r.off).forEach(function (s) {
-        h += '<div class="csh-seg ' + s.cls + '" style="left:' + pct(s.a).toFixed(3)
-          +  '%;width:' + pct(s.b - s.a).toFixed(3) + '%"></div>';
+      h += '<div class="csh-track' + (i % 2 ? ' alt' : '') + (r.lane ? ' lane' : '') + '"><div class="csh-in">';
+      /* the ignition line belongs to component rows: a lane draws its
+         own marks, and a part that is not installed draws nothing but
+         the note that says so */
+      if (!r.lane && !r.na) {
+        segments(r.off).forEach(function (s) {
+          h += '<div class="csh-seg ' + s.cls + '" style="left:' + pct(s.a).toFixed(3)
+            +  '%;width:' + pct(s.b - s.a).toFixed(3) + '%"></div>';
+        });
+      }
+      /* a labelled block, for the ignition lane */
+      (r.bands || []).forEach(function (bd) {
+        h += '<div class="csh-band ' + bd.cls + '"' + (bd.sec ? ' data-sec="' + bd.sec + '"' : '')
+          +  ' style="left:' + pct(bd.a).toFixed(3)
+          +  '%;width:' + pct(bd.b - bd.a).toFixed(3) + '%"><span>' + bd.label + '</span></div>';
       });
+      /* one mark per status message; off-cycle ones stand out */
+      (r.ticks || []).forEach(function (t) {
+        h += '<span class="csh-tk' + (t.oc ? ' oc' : '') + '" style="left:' + pct(t.h).toFixed(3)
+          +  '%" data-sec="' + t.sec + '" title="' + t.title + '"></span>';
+      });
+      /* a part the truck does not have says so, rather than reading as
+         a full day of silence */
+      if (r.na && r.naText) h += '<span class="csh-na">' + r.naText + '</span>';
       r.events.forEach(function (e) { h += chipHTML(e); });
       h += '</div></div>';
     });
@@ -5216,6 +5679,18 @@ let dcTlRoot = null; /* container the timeline component is mounted in */
      23:00 would hang past the plot edge and get clipped. Nudge those back
      inside their lane after layout — the marker stays readable, the small
      positional lie is worth it. */
+  /* The count is an extra, not a promise: a chip narrower than its own
+     content drops it rather than printing "16 msg" with the s cut off.
+     Measured per chip after layout, so it survives any window width
+     instead of relying on a duration threshold that only holds at one
+     size. */
+  function fitChips(){
+    Array.prototype.forEach.call(state.mount.querySelectorAll('.csh-chip'), function (c) {
+      if (!c.querySelector('em')) return;
+      c.classList.remove('no-count');
+      if (c.scrollWidth > c.clientWidth + 1) c.classList.add('no-count');
+    });
+  }
   function clampChips(){
     Array.prototype.forEach.call(state.mount.querySelectorAll('.csh-track .csh-in'), function (lane) {
       var w = lane.clientWidth;
@@ -5227,6 +5702,15 @@ let dcTlRoot = null; /* container the timeline component is mounted in */
         c.style.transform = 'translateY(-50%)';
       });
     });
+    fitChips();
+    fitNow();
+  }
+  /* the NOW rule is drawn from the axis, so its length has to be
+     measured once the rows exist */
+  function fitNow(){
+    var ch = state.mount.querySelector('.csh-chart');
+    var root = state.mount.querySelector('.csh') || state.mount;
+    if (ch) root.style.setProperty('--csh-nowh', (ch.offsetHeight + 6) + 'px');
   }
 
   /* ── TOOLTIP + EVENTS ──────────────────────────────────────── */
@@ -5279,7 +5763,9 @@ let dcTlRoot = null; /* container the timeline component is mounted in */
     state.mount = document.getElementById(mountId || 'csh-root');
     if (!state.mount) return;
     options = options || {};
-    state.opts = { rowHeight: options.rowHeight || 64, labelWidth: options.labelWidth || 130 };
+    state.opts = { rowHeight: options.rowHeight || 64, labelWidth: options.labelWidth || 130,
+                   summary: options.summary || null,
+                   now: (options.now === undefined ? null : options.now) };
     if (options.minWide) MIN_WIDE_H = options.minWide;
     if (options.days) { DAYS = options.days; state.cache = {}; }
     if (options.rows) { TODAY_ROWS = options.rows; state.cache = {}; }
@@ -5293,11 +5779,43 @@ let dcTlRoot = null; /* container the timeline component is mounted in */
 
 
 /* Stream -> module data */
+/* The two lanes that sit above the components: every status message as
+   a tick, and the ignition window as a labelled block. Both answer the
+   question the component rows cannot — was the truck even reporting. */
+function dcTrinityLanes(num) {
+  const st = dcDayStream(num, dcActiveDay);
+  const H = m => m / 60;
+  const end = st.isToday ? st.nowMin : st.runEnd;
+  const bands = [];
+  if (st.ignOn > 2) bands.push({ a: 0, b: H(st.ignOn), cls: 'off', label: 'IGNITION OFF' });
+  bands.push({ a: H(st.ignOn), b: H(end), cls: 'on',
+               label: 'IGNITION ON \u00B7 ' + dcHM(st.ignOn) + ' \u2013 ' + (st.isToday ? 'now' : dcHM(st.runEnd)) });
+  if (!st.isToday && st.runEnd < 1438) bands.push({ a: H(st.runEnd), b: 24, cls: 'off', label: 'IGNITION OFF' });
+  /* No tick lane at any width. 55 marks across a day is texture, not
+     information \u2014 the count, the cadence and the last receipt are all
+     stated in the summary line above the chart, and the payload is a
+     tap away in Truck Log. */
+  const lanes = [];
+  lanes.push({ name: 'Ignition / power', lane: true, off: [], events: [], bands: bands });
+  return lanes;
+}
+function dcTrinitySummary(num) {
+  const st = dcDayStream(num, dcActiveDay);
+  return [
+    { n: st.msgs.length, t: 'status messages' },
+    { n: st.ocCount, t: 'off-cycle (sent on change)', cls: 'oc' },
+    { t: 'Heartbeat <b>every ' + DC_BEAT_MIN + ' min</b> while ignition is on', cls: 'q' },
+    { t: 'Last message <b>' + dcHM(st.lastMsg) + '</b>', cls: 'q' }
+  ];
+}
 function dcTrinityRowsFor(num) {
   const st = dcDayStream(num, dcActiveDay);
   const H = m => m / 60;
-  return st.rows.map(r => {
-    if (r.na) return { name: r.row, off: [[0, 24]], events: [] };
+  /* the reporting lanes are Phase 1's addition; Phase 3 keeps the
+     Trinity module as it was delivered, for comparison */
+  const lanes = dcTrinityNow() ? dcTrinityLanes(num) : [];
+  return lanes.concat(st.rows.map(r => {
+    if (r.na) return { name: r.row, na: true, naText: r.naText || 'Not installed', off: [[0, 24]], events: [] };
     const off = r.spans.filter(sp => sp.state === 'off' || sp.state === 'future')
                        .map(sp => [H(sp.from), H(sp.to)]);
     const events = r.spans.filter(sp => sp.state === 'warn' || sp.state === 'alarm' || sp.state === 'nodata' || sp.state === 'asleep')
@@ -5307,16 +5825,22 @@ function dcTrinityRowsFor(num) {
         /* Trim a few minutes off each event so back-to-back states read
            as two chips with a gap, not one jammed block */
         const GAP = 4 / 60;
+        /* the two facts people were hovering for: how many status
+           messages backed this window, and what the truck actually
+           reported. A wide chip has the room to just say them. */
+        const msgsIn = st.msgs.filter(m => m.min >= sp.from && m.min <= sp.to).length;
         return {
           t: H(sp.from), dur: Math.max(0.08, H(sp.to - sp.from) - GAP),
           level: sp.state === 'alarm' || sp.state === 'nodata' ? 'alarm' : 'warn',
           label: label,
+          msgs: msgsIn,
+          reason: sp.note || '',
           note: (DC_STATE_LABEL[sp.state] || sp.state) + (sp.note ? ' \u00B7 ' + sp.note : ''),
           sec: Math.round(st.base.getTime() / 1000 + sp.from * 60)
         };
       });
     return { name: r.row, off: off, events: events };
-  });
+  }));
 }
 function dcTrinityDays(num) {
   const today = new Date();
@@ -5342,8 +5866,14 @@ function dcTrinityDays(num) {
    choice until the team picks one.
 ══════════════════════════════════════════════════════════════ */
 let dcTimelinePick = 'rebuilt';        /* 'trinity' | 'rebuilt' */
-function dcTimelineKind() { return dcTimelinePick; }
+function dcTimelineKind() {
+  /* Phase 1 ships the Trinity timeline, so the Options candidates do
+     not apply there — the same way the old reference phase worked. */
+  if (dcTrinityNow()) return 'trinity';
+  return dcTimelinePick;
+}
 function setTimelinePick(kind) {
+  if (dcTimelineLocked()) return;   /* fixed by the phase or the width */
   dcTimelinePick = kind;
   dcSyncTimelineMenu();
   const host = dcTlRoot;
@@ -5482,17 +6012,22 @@ function buildMobileTimeline(target) {
   /* one event row, shared by the ignition card and the components */
   const evRow = (e, rowKey) => {
     const cnt = dcMtlCount(e);
-    const subs = (e.msgs || []).slice(0, 4).map(m => `
-      <div class="mtl-msg" data-sec="${m.sec}" data-row="${rowKey}">
-        <span class="tm">${dcHM(m.min)}</span>
-        <span class="tx">Off-cycle &middot; ${(m.changes[0] && m.changes[0].note) || 'State change'}</span>
+    /* One line, not one row per message. The event line above already
+       states the traffic ("9 of 12 messages") and the strip at the top
+       states the cadence, so all this has to add is when the off-cycle
+       ones landed — and a single tap into Truck Log, which is where
+       they go for the payload anyway. */
+    const oc = e.msgs || [];
+    const subs = !oc.length ? '' : `
+      <div class="mtl-msg" data-sec="${oc[0].sec}" data-row="${rowKey}">
+        <span class="tx"><b class="oc">${oc.length} off-cycle</b> &middot; ${
+          oc.slice(0, 3).map(m => dcHM(m.min)).join(', ')}${
+          oc.length > 3 ? ' +' + (oc.length - 3) + ' more' : ''}</span>
         <span class="go">&#8250;</span>
-      </div>`).join('');
-    const beat = e.got === undefined ? '' :
-      (e.got > 0
-        ? `<div class="mtl-msg qt">${e.got} heartbeat message${e.got > 1 ? 's' : ''} &middot; every ${DC_BEAT_MIN} min${
-            e.got < e.exp && e.lastBeat !== null ? ', last at ' + dcHM(e.lastBeat) : ''}</div>`
-        : `<div class="mtl-msg qt">Nothing received in this window</div>`);
+      </div>`;
+    /* no heartbeat line: "0 of 45 messages" on the event line above
+       already says nothing arrived */
+    const beat = '';
     return `
       <div class="mtl-ev" data-sec="${Math.round(st.base.getTime() / 1000 + e.from * 60)}" data-row="${rowKey}">
         <span class="ic ${e.state === 'nodata' ? 'alarm' : e.state}">${
@@ -5511,10 +6046,11 @@ function buildMobileTimeline(target) {
      question on a phone is "what is wrong", not "which parts exist". */
   const mtlOpen = (key, dflt) => dcMtlOpen[key] === undefined ? dflt : !!dcMtlOpen[key];
 
-  /* Ignition and power, message candidate only — the Trinity design
-     has no such lane, and borrowing one would flatter it unfairly. */
+  /* Ignition and power. Both candidates carry it now: on a phone the
+     24-hour lane is unreadable, so the window becomes a card you can
+     open, which is the same information in the format that fits. */
   let ignCard = '';
-  if (!trinity) {
+  {
     const ievs = dcMtlIgnEvents(st);
     const onEv = ievs.filter(e => e.state === 'on')[0];
     const iState = st.dropAt !== null ? 'alarm' : 'ok';
@@ -5525,7 +6061,7 @@ function buildMobileTimeline(target) {
           (onEv.got < onEv.exp ? onEv.got + '/' + onEv.exp + ' msgs' : onEv.got + ' msgs')}</span>
         <span class="chev">&#9660;</span>
       </div>
-      <div class="mtl-events">${ievs.map(e => evRow(e, '')).join('')}</div>
+      <div class="mtl-events"><div class="mtl-evw">${ievs.map(e => evRow(e, '')).join('')}</div></div>
     </div>`;
   }
 
@@ -5561,7 +6097,7 @@ function buildMobileTimeline(target) {
         <span class="sum">${sum}</span>
         ${evs.length ? '<span class="chev">&#9660;</span>' : ''}
       </div>
-      ${evs.length ? `<div class="mtl-events">${evHtml}</div>` : ''}
+      ${evs.length ? `<div class="mtl-events"><div class="mtl-evw">${evHtml}</div></div>` : ''}
     </div>` };
   });
   const cards = built.map((c, i) => [c, i])
@@ -5578,8 +6114,16 @@ function buildMobileTimeline(target) {
           <button data-mshift="1" ${dcActiveDay === 6 ? 'disabled' : ''}>&#8250;</button>
         </span>
       </div>
+      <!-- the desktop's two lanes, stated rather than drawn: 54 ticks
+           across 390px is a smudge, so the phone gets the numbers -->
+      <div class="mtl-rep">
+        <span class="i"><b>${st.msgs.length}</b> messages</span>
+        <span class="i${st.ocCount ? ' oc' : ''}"><b>${st.ocCount}</b> off-cycle</span>
+        <span class="i q">every ${DC_BEAT_MIN} min</span>
+        <span class="i q">last <b>${dcHM(st.lastMsg)}</b></span>
+      </div>
       <div class="mtl-list">${ignCard}${cards}</div>
-      <div class="mtl-foot">${st.msgs.length} status messages${st.ocCount ? ' · ' + st.ocCount + ' off-cycle' : ''} · tap an event to open it in Truck Log</div>
+      <div class="mtl-foot">Tap an event to open it in Truck Log</div>
     </div>`;
 
   /* the panel is still hidden when this renders, so the day strip is
@@ -5625,10 +6169,20 @@ function buildTrinityTimeline(target) {
   panel.innerHTML = '<div id="csh-root"></div>';
   /* module defaults — 64px rows, 130px labels — so it matches the
      delivered design rather than a re-proportioned copy */
+  const cshSt = dcDayStream(dcCurrentTruck, dcActiveDay);
+  /* A tablet has the width for the whole day but not the height for
+     eleven 64px rows: the chart ran off the bottom and the last two
+     components were unreachable without scrolling past the header.
+     Shorter rows and a narrower label column fit the lot on screen. */
+  const tab = document.body.classList.contains('view-tablet');
   cshInit('csh-root', {
+    rowHeight: tab ? 44 : 64,
+    labelWidth: tab ? 104 : 130,
     rows: dcTrinityRowsFor(dcCurrentTruck),
     days: dcTrinityDays(dcCurrentTruck),
     dayIdx: dcActiveDay,
+    summary: dcTrinityNow() ? dcTrinitySummary(dcCurrentTruck) : null,
+    now: (dcTrinityNow() && cshSt.isToday) ? cshSt.nowMin / 60 : null,
     /* Under two hours a duration bar is narrower than its own label, so
        those render as centred pills — the label states the duration and
        nothing gets clipped. Two hours and over stay width-to-duration. */
@@ -5640,6 +6194,13 @@ function buildTrinityTimeline(target) {
   if (!panel.dataset.cshBound) {
    panel.dataset.cshBound = '1';
    panel.addEventListener('click', ev => {
+    /* a tick is a message, so it opens that message in Truck Log —
+       the summary line promises exactly this, and a tooltip alone
+       leaves the lane dead on a tablet, which has no hover */
+    const tick = ev.target.closest('.csh-tk[data-sec]');
+    if (tick) { ev.stopPropagation(); dcTlDrill(+tick.dataset.sec, '', 'timeline'); return; }
+    const band = ev.target.closest('.csh-band[data-sec]');
+    if (band) { ev.stopPropagation(); dcTlDrill(+band.dataset.sec, '', 'timeline'); return; }
     const day = ev.target.closest('[data-day]');
     const shift = ev.target.closest('[data-shift]');
     if (!day && !shift) return;
@@ -5990,11 +6551,16 @@ function dcRenderRows(idx) {
       `<span class="oc"><b>${st.ocCount}</b> off-cycle (sent on change)</span>` +
       `<span>Heartbeat <b>every ${DC_BEAT_MIN} min</b> while ignition is on</span>` +
       `<span>Last message <b>${st.msgs.length ? dcHM(st.msgs[st.msgs.length-1].min) : '--'}</b></span>` +
-      `<span>Click any block or tick to open it in Truck Log</span>`;
+      `<span class="hint">Click any block or tick to open it in Truck Log</span>`;
   }
 
+  /* the hour nearest NOW is dropped rather than overprinted — at
+     tablet width "20:00" and the NOW chip land on the same pixels */
+  const nowPct = st.isToday ? pct(st.nowMin) : -99;
   const axis = `<div class="dc-tl2-axis">` +
-    [0,4,8,12,16,20,24].map(h => `<span style="left:${pct(h*60)}%">${('0'+h).slice(-2)}:00</span>`).join('') +
+    [0,4,8,12,16,20,24]
+      .filter(h => Math.abs(pct(h * 60) - nowPct) > 6)
+      .map(h => `<span style="left:${pct(h*60)}%">${('0'+h).slice(-2)}:00</span>`).join('') +
     `</div>`;
 
   /* Message lane */
@@ -7341,7 +7907,7 @@ function appNavPick() { appNavClose(); }
 /* ══════════════════ FLEET CARD OPTION + SEARCH ══════════════════
    Two card treatments for the small breakpoints, switched from the
    Options menu so both can be shown side by side in review. */
-let dcFleetCard = 'comfort';
+let dcFleetCard = 'compact';   /* the denser card is the default now */
 function setFleetCard(kind) {
   dcFleetCard = kind;
   document.body.classList.toggle('fleet-compact', kind === 'compact');
@@ -7356,33 +7922,180 @@ function dcSyncFleetCardMenu() {
 /* Matches the whole card, not just the number: "1408", "water flow"
    and "offline" all find something, which is how people search a
    fleet list when they are looking for a problem rather than a truck. */
+
+/* ══════════════════ 50-TRUCK DEMO FLEET ══════════════════
+   Ten trucks never shows what the list does at scale, so this adds
+   forty more (seeded, so the same trucks appear every time) and turns
+   on paging: the small screens render a page at a time with a Show
+   more button, because a phone list grows downward rather than
+   flipping between pages. */
+let DC_BIG_FLEET = false;
+const DC_PAGE = 20;
+let dcShown = DC_PAGE;
+
+function dcExtraTrucks() {
+  const out = [];
+  let n = 1225;
+  while (out.length < 40) {
+    n += 17 + (out.length % 7) * 11;
+    const num = String(n);
+    if (DC_TRUCK_ORDER.indexOf(num) < 0) out.push(num);
+  }
+  return out;
+}
+function toggleBigFleet() {
+  DC_BIG_FLEET = !DC_BIG_FLEET;
+  document.getElementById('vp-fleet50-toggle').classList.toggle('on', DC_BIG_FLEET);
+  const tb = document.querySelector('tbody');
+  if (DC_BIG_FLEET) {
+    const tpl = tb.querySelector('tr.trow');
+    dcExtraTrucks().forEach(num => {
+      const r = dcRng(dcSeed(num) + 5);
+      const a = {};
+      if (r() < 0.42) a.flow = true;
+      if (r() < 0.12) a.accel = true;
+      if (r() < 0.08) a.disconnected = true;
+      if (r() < 0.10) { a.dps = true; a.cps = true; }
+      TRUCK_ALERTS[num] = a;
+      DC_TRUCK_ORDER.push(num);
+      const tr = tpl.cloneNode(true);
+      tr.dataset.demo = '1';
+      tr.setAttribute('onclick', "openDrawer('" + num + "')");
+      tr.querySelector('.tname').textContent = num;
+      tr.querySelector('.comp-cell').dataset.truck = num;
+      const mc = tr.querySelector('.mode-cell'); if (mc) mc.dataset.modeTruck = num;
+      tr.querySelector('.atplant').innerHTML = r() < 0.25
+        ? '<span class="fic">&#127981;</span> Yes' : '<span class="x">&#10005;</span> No';
+      const conn = tr.querySelector('.conn');
+      conn.className = 'conn' + (a.disconnected ? ' off' : '');
+      conn.innerHTML = a.disconnected
+        ? '<i>&#128683;</i><em>Offline</em>' : '<i>((&#8226;))</i><em>Online</em>';
+      tr.querySelector('.ign').innerHTML = a.disconnected
+        ? '<span class="dot"></span> Off' : '<span class="dot on"></span> On';
+      const al = tr.querySelector('td.alert');
+      if (al) { al.innerHTML = a.flow ? 'Flow rate is lower than expected'
+                : a.accel ? 'Accelerometer not working' : ''; delete al.dataset.orig; }
+      tb.appendChild(tr);
+    });
+  } else {
+    tb.querySelectorAll('tr[data-demo]').forEach(tr => {
+      const num = tr.querySelector('.tname').textContent;
+      delete TRUCK_ALERTS[num];
+      const i = DC_TRUCK_ORDER.indexOf(num);
+      if (i > -1) DC_TRUCK_ORDER.splice(i, 1);
+      tr.remove();
+    });
+  }
+  dcShown = DC_PAGE;
+  dcPageNo = 0;
+  dcClearStreams();
+  renderComponentCells();
+  fleetSearch();
+}
+/* Paging is a small-screen behaviour: the desktop keeps its pager */
+function dcFleetPaged() {
+  return document.body.classList.contains('sm-ready') &&
+         (document.body.classList.contains('view-mobile') || document.body.classList.contains('view-tablet'));
+}
+function fleetShowMore() {
+  dcShown += DC_PAGE;
+  fleetSearch();
+}
+/* Desktop keeps the classic pager instead of "show more": a page size
+   and two arrows, which is what the table has always shown — it just
+   never did anything. */
+let dcPageSize = 10, dcPageNo = 0, dcLastQ = '';
+function fleetPageSize(v) { dcPageSize = +v || 10; dcPageNo = 0; fleetSearch(); }
+function fleetPage(d) {
+  dcPageNo = Math.max(0, dcPageNo + d);
+  fleetSearch();
+  fleetToTop();
+}
+
 function fleetSearch() {
   const input = document.getElementById('fleet-q');
   if (!input) return;
   const q = input.value.trim().toLowerCase();
   const wrap = input.closest('.fleet-search');
   if (wrap) wrap.classList.toggle('has-q', !!q);
-  let shown = 0;
-  document.querySelectorAll('tbody tr.trow').forEach(tr => {
-    const hit = !q || tr.textContent.toLowerCase().indexOf(q) > -1;
-    tr.style.display = hit ? '' : 'none';
-    if (hit) shown++;
-  });
+  /* a new search always lands on the first page */
+  if (q !== dcLastQ) { dcPageNo = 0; dcLastQ = q; }
+  const paged = dcFleetPaged();
+  const rows = Array.prototype.slice.call(document.querySelectorAll('tbody tr.trow'));
+  const hits = rows.filter(tr => !q || tr.textContent.toLowerCase().indexOf(q) > -1);
+  const matched = hits.length;
+  let from = 0, win;
+  if (paged) {
+    win = hits.slice(0, dcShown);
+  } else {
+    const pages = Math.max(1, Math.ceil(matched / dcPageSize));
+    if (dcPageNo > pages - 1) dcPageNo = pages - 1;
+    from = dcPageNo * dcPageSize;
+    win = hits.slice(from, from + dcPageSize);
+  }
+  rows.forEach(tr => { tr.style.display = 'none'; });
+  win.forEach(tr => { tr.style.display = ''; });
+  const shown = win.length;
+  const more = document.getElementById('fleet-more');
+  if (more) {
+    const left = matched - shown;
+    more.classList.toggle('on', paged && left > 0);
+    more.textContent = 'Show ' + Math.min(DC_PAGE, left) + ' more';
+  }
   const empty = document.getElementById('fleet-empty');
   if (empty) empty.classList.toggle('on', !!q && shown === 0);
   /* the All tab is the count of what is on screen, so it cannot keep
      saying 10 while six cards are showing */
+  const total = rows.length;
   const range = document.querySelector('.pager .prange');
-  if (range) {
-    if (!range.dataset.full) range.dataset.full = range.textContent;
-    range.textContent = q ? shown + ' of 10 trucks' : range.dataset.full;
+  if (range) range.textContent = (shown ? (from + 1) : 0) + ' \u2013 ' + (from + shown) + ' of ' + matched;
+  /* the arrows only light up when there is somewhere to go */
+  const prev = document.getElementById('fleet-prev');
+  const next = document.getElementById('fleet-next');
+  if (prev) prev.classList.toggle('off', paged || from === 0);
+  if (next) next.classList.toggle('off', paged || from + shown >= matched);
+  const sizeSel = document.getElementById('fleet-size');
+  if (sizeSel && +sizeSel.value !== dcPageSize) sizeSel.value = String(dcPageSize);
+  const rangeSm = document.querySelector('.pager .prange-sm');
+  if (rangeSm) {
+    rangeSm.textContent = (shown === total && !q)
+      ? 'All ' + total + ' trucks'
+      : shown + ' of ' + (q ? matched : total) + ' trucks';
   }
   const all = document.querySelector('.tabs .tab');
   if (all) {
-    if (!all.dataset.total) all.dataset.total = (all.textContent.match(/\d+/) || [10])[0];
     const label = all.lastChild;
-    if (label && label.nodeType === 3) label.textContent = (q ? shown : all.dataset.total) + ' All';
+    if (label && label.nodeType === 3) label.textContent = (q ? matched : total) + ' All';
   }
+}
+/* The phone scrolls the app shell, not the window */
+
+/* The sticky offsets stack, and the three bands are different heights
+   on phone and tablet, so they are measured rather than guessed. */
+function fleetStickyTops() {
+  const bar = document.querySelector('.topbar');
+  const search = document.querySelector('.fleet-search');
+  const tabs = document.querySelector('.tabs');
+  if (!bar || !search || !tabs) return;
+  if (!document.body.classList.contains('sm-ready') ||
+      document.body.classList.contains('view-desktop')) {
+    [bar, search, tabs].forEach(el => el.style.top = '');
+    return;
+  }
+  /* the scroller's padding box already starts at the status bar, so
+     the offsets are just the stack of band heights */
+  bar.style.top = '0px';
+  const barH = bar.getBoundingClientRect().height;
+  search.style.top = barH + 'px';
+  const searchH = search.getBoundingClientRect().height;
+  tabs.style.top = (barH + searchH) + 'px';
+}
+window.addEventListener('resize', fleetStickyTops);
+
+function fleetToTop() {
+  const host = document.querySelector('main.main') || document.scrollingElement;
+  if (host && host.scrollTo) host.scrollTo({ top: 0, behavior: 'smooth' });
+  else if (host) host.scrollTop = 0;
 }
 function fleetSearchClear() {
   const input = document.getElementById('fleet-q');
@@ -7410,8 +8123,9 @@ const DC_ALERT_ITEMS = [
   { key: 'drs',   name: 'DRS — rotation not reported' },
   { key: 'icd',   name: 'ICD — display not responding' }
 ];
-/* Phase 1 only: other phases read the raw fault set */
-function dcResetActive() { return dcViewMode === 'current-alerts'; }
+/* Phase 2 and everything after it; the earlier phases read the raw
+   fault set with no reset applied */
+function dcResetActive() { return dcAlertPhase(); }
 function dcAlertsFor(num) {
   const a = Object.assign({}, TRUCK_ALERTS[num] || {});
   if (!dcResetActive()) return a;
@@ -7559,6 +8273,7 @@ function dcApplyAlertReset() {
   const al = document.getElementById('tk-alarms'), wn = document.getElementById('tk-warns');
   if (al) al.innerHTML = alarms;
   if (wn) wn.innerHTML = warns;
+  tkSyncErrorCards();
   dcRenderTkComps(num);
   syncAlertCells();
 }
@@ -7647,6 +8362,13 @@ function setView(v) {
     .map(id => document.getElementById(id))
     .filter(el => el && el.children.length)[0];
   if (tlHost) requestAnimationFrame(() => buildTimeline(tlHost));
+  /* in Phase 3 the width is what settles the timeline question, so
+     the picker's enabled state changes with the breakpoint */
+  dcSyncTimelineMenu();
+  /* paging is a small-screen behaviour, so the row window has to be
+     recomputed when the breakpoint changes or desktop inherits it */
+  fleetSearch();
+  requestAnimationFrame(fleetStickyTops);
 }
 function vpOptsToggle(e) {
   e.stopPropagation();
@@ -7978,7 +8700,24 @@ function compPopBind() {
    can't disagree with the Components cell */
 function syncAlertCells() {
   syncAlertCellsBase();
+  dcAlertTextCells();
   dcAlertResetCells();
+}
+/* Phase 1's Alert column is derived, not the static markup: a truck
+   with three faults has to say so, and the "+n" has to agree with the
+   timeline. Current design keeps its hand-written text untouched. */
+function dcAlertTextCells() {
+  if (dcViewMode !== 'current-mobile') return;
+  document.querySelectorAll('.comp-cell').forEach(td => {
+    const cell = td.parentElement.querySelector('td.alert');
+    if (!cell) return;
+    const bad = componentHealthFor(td.dataset.truck).bad;
+    if (!bad.length) { cell.innerHTML = ''; return; }
+    const lead = bad.find(c => c.fault) || bad[0];
+    const rest = bad.length - 1;
+    cell.innerHTML = (lead.fault || lead.name) +
+      (rest > 0 ? ' <span class="plus">&#9888; +' + rest + '</span>' : '');
+  });
 }
 function syncAlertCellsBase() {
   document.querySelectorAll('.comp-cell').forEach(td => {
@@ -8065,9 +8804,10 @@ buildOverview('1219');
    which is where the work is. Current State is still one click away
    in Options, and #current still deep-links straight to it. */
 (function () {
+  setFleetCard(dcFleetCard);
   const got = dcSlugFromUrl();
   if (got) { if (got.skin) setTrinitySkin(true); setProtoView(got.mode); }
-  else setProtoView('current-alerts');
+  else setProtoView('current-mobile');
 })();
 </script>
 

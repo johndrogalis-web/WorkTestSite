@@ -7420,9 +7420,28 @@ function dcAlertsFor(num) {
   DC_ALERT_ITEMS.forEach(it => { if (!it.live) delete a[it.key]; });
   return a;
 }
+/* A truck on Watch has nothing named to clear, so the confirm says
+   what it is actually doing instead of listing a part that isn't one */
+function dcResetCode(it) { return it.key === '__history' ? 'history' : it.name.split(' ')[0]; }
+function dcResetLead(items) {
+  if (items.length === 1 && items[0].key === '__history') {
+    return 'Clears this truck&rsquo;s recent fault history and restarts tracking from now. ' +
+           'Nothing is failing right now, so the Watch goes with it.';
+  }
+  return 'Clears alert history on <b>' + items.map(dcResetCode).join(', ') +
+         '</b> and restarts tracking from now. Anything still failing comes back on the next message.';
+}
 function dcResetItemsFor(num) {
   const a = TRUCK_ALERTS[num] || {};
-  return DC_ALERT_ITEMS.filter(it => a[it.key]);
+  const list = DC_ALERT_ITEMS.filter(it => a[it.key]);
+  /* A truck on Watch has no open fault, but it does have the history
+     that put it there — and that is exactly what someone clears after
+     looking into it. Without this the button sat disabled on the one
+     state it exists to resolve. */
+  if (!list.length && dcAlertPillState(num) === 'warn') {
+    list.push({ key: '__history', name: 'History \u2014 earlier fault, clear since' });
+  }
+  return list;
 }
 const DC_TICK = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.6l3 3 6-6.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const DC_BANG = '<svg width="13" height="13" viewBox="0 0 14 12" fill="currentColor"><path d="M7 0c.3 0 .58.17.73.43l5.14 9.14c.15.28.15.6 0 .86-.15.28-.43.43-.73.43H1.86c-.32 0-.6-.15-.75-.43-.15-.26-.15-.58 0-.86L6.27.43C6.42.17 6.7 0 7 0Zm0 3.3a.6.6 0 0 0-.6.6v2.7a.6.6 0 0 0 1.2 0V3.9a.6.6 0 0 0-.6-.6Zm0 5.1a.7.7 0 1 0 0 1.4.7.7 0 0 0 0-1.4Z"/></svg>';
@@ -7440,9 +7459,7 @@ function dcResetRender(state) {
   if (state === 'confirm') {
     host.innerHTML =
       '<div class="tk-reset-panel tight">' +
-        '<div class="lead">Clears alert history on <b>' +
-        items.map(it => it.name.split(' ')[0]).join(', ') +
-        '</b> and restarts tracking from now. Anything still failing comes back on the next message.</div>' +
+        '<div class="lead">' + dcResetLead(items) + '</div>' +
         '<div class="tk-reset-actions">' +
           '<button class="tk-reset-btn" onclick="dcResetRun()">Reset alerts</button>' +
           '<button class="tk-reset-btn ghost" onclick="dcResetRender()">Cancel</button>' +
@@ -7478,9 +7495,7 @@ function dcResetRun() {
      and the per-part tick is still visible. */
   host.innerHTML =
     '<div class="tk-reset-panel tight">' +
-      '<div class="lead">Clears alert history on <b>' +
-      items.map(it => it.name.split(' ')[0]).join(', ') +
-      '</b> and restarts tracking from now. Anything still failing comes back on the next message.</div>' +
+      '<div class="lead">' + dcResetLead(items) + '</div>' +
       '<div class="tk-reset-seg">' +
         items.map((it, i) => '<i id="tkr-' + i + '"></i>').join('') +
       '</div>' +
@@ -7497,12 +7512,12 @@ function dcResetRun() {
       const seg = document.getElementById('tkr-' + i);
       if (seg) seg.classList.add('run');
       const msg = document.getElementById('tkr-msg');
-      if (msg) msg.textContent = 'Clearing ' + it.name.split(' ')[0] + '\u2026';
+      if (msg) msg.textContent = 'Clearing ' + dcResetCode(it) + '\u2026';
     }, i * STEP);
     setTimeout(() => {
       const seg = document.getElementById('tkr-' + i);
       if (seg) { seg.classList.remove('run'); seg.classList.add(it.live ? 'live' : 'on'); }
-      if (it.live) live++; else cleared.push(it.name.split(' ')[0]);
+      if (it.live) live++; else cleared.push(dcResetCode(it));
       const msg = document.getElementById('tkr-msg');
       if (msg && i === items.length - 1) {
         msg.textContent = 'Cleared ' + cleared.length + ' of ' + items.length +

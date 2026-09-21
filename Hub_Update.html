@@ -1994,6 +1994,11 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
      the comparison carries onto mobile.
      ============================================================ */
   .mtl-days { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; -webkit-overflow-scrolling: touch; }
+  /* The seven-day strip is out: it renders a week of status up front
+     for a screen that opens on today, and the ‹ › arrows already walk
+     back a day at a time and pull that day when asked. */
+  body.sm-ready .mtl-days, body.sm-ready .csh-strip { display: none; }
+  body.sm-ready .mtl-hdr { margin-top: 2px; }
   .mtl-day {
     flex: 0 0 auto; min-width: 52px; padding: 8px 8px 7px; border-radius: 10px;
     background: var(--dc-layer-2); box-shadow: inset 0 0 0 1px var(--dc-border);
@@ -5959,6 +5964,8 @@ function dcMtlEventsFor(row, trinity, st) {
     return ev;
   });
 }
+/* kept for the message counts the summary strip prints; the event
+   rows no longer carry one */
 function dcMtlCount(ev) {
   if (ev.got === undefined) return '';
   return ev.got < ev.exp ? ev.got + ' of ' + ev.exp + ' messages' : ev.got + ' messages';
@@ -6016,8 +6023,13 @@ function buildMobileTimeline(target) {
     (dsel.getMonth() + 1) + '/' + dsel.getDate() + '/' + dsel.getFullYear();
 
   /* one event row, shared by the ignition card and the components */
+  /* The row answers one question: was it on, and was anything wrong.
+     The duration repeats the time range beside it, the fault text is a
+     truncated version of what Truck Log states in full, and the tap
+     goes straight there — so the row states the condition and nothing
+     more. */
+  const MTL_SHORT = { 'Ignition on': 'On', 'Ignition off': 'Off' };
   const evRow = (e, rowKey) => {
-    const cnt = dcMtlCount(e);
     /* One line, not one row per message. The event line above already
        states the traffic ("9 of 12 messages") and the strip at the top
        states the cadence, so all this has to add is when the off-cycle
@@ -6042,7 +6054,7 @@ function buildMobileTimeline(target) {
           : e.state === 'off' ? IGN_OFF_ICON : WARN_ICON}</span>
         <span class="tx">
           <span class="tt">${dcHM(e.from)} – ${e.to >= 1440 ? '24:00' : dcHM(e.to)}</span>
-          <span class="st">${e.label} &middot; ${dcMtlDur(e.mins)}${cnt ? ' &middot; ' + cnt : ''}${e.note ? ' &middot; ' + e.note : ''}</span>
+          <span class="st">${MTL_SHORT[e.label] || e.label}</span>
         </span>
         <span class="go">&#8250;</span>
       </div>${subs}${beat}`;
@@ -6058,13 +6070,11 @@ function buildMobileTimeline(target) {
   let ignCard = '';
   {
     const ievs = dcMtlIgnEvents(st);
-    const onEv = ievs.filter(e => e.state === 'on')[0];
     const iState = st.dropAt !== null ? 'alarm' : 'ok';
     ignCard = `<div class="mtl-card pwr${mtlOpen('__ign', st.dropAt !== null) ? ' open' : ''}" data-comp="__ign">
       <div class="mtl-row"><span class="dot ${iState}"></span>
         <span class="nm">Ignition &amp; power</span>
-        <span class="sum">On ${dcHM(st.ignOn)}–${st.isToday ? 'now' : dcHM(st.runEnd)} &middot; ${
-          (onEv.got < onEv.exp ? onEv.got + '/' + onEv.exp + ' msgs' : onEv.got + ' msgs')}</span>
+        <span class="sum">On ${dcHM(st.ignOn)}–${st.isToday ? 'now' : dcHM(st.runEnd)}</span>
         <span class="chev">&#9660;</span>
       </div>
       <div class="mtl-events"><div class="mtl-evw">${ievs.map(e => evRow(e, '')).join('')}</div></div>
@@ -6085,14 +6095,10 @@ function buildMobileTimeline(target) {
     const total = evs.reduce((n, e) => n + e.mins, 0);
     const worst = evs.some(e => e.state === 'alarm' || e.state === 'nodata') ? 'alarm'
                 : evs.length ? 'warn' : 'ok';
-    /* a gap is stated as messages, not only as hours */
-    const gap = evs.filter(e => e.got !== undefined && e.got < e.exp);
-    const gapTxt = gap.length
-      ? ' · ' + gap.reduce((n, e) => n + e.got, 0) + ' of ' + gap.reduce((n, e) => n + e.exp, 0) + ' msgs'
-      : '';
+    /* the header answers "is there anything on this part" and stops
+       there; the hours and the message tally are Truck Log's job */
     const sum = evs.length
       ? Object.keys(counts).map(k => counts[k] + ' ' + (MTL_STATE[k] || k) + (counts[k] > 1 ? 's' : '')).join(' · ')
-        + ' · ' + dcMtlDur(total) + gapTxt
       : 'No events';
     const open = mtlOpen(r.row, evs.length > 0) && evs.length;
     const evHtml = evs.map(e => evRow(e, r.row)).join('');

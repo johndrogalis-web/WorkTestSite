@@ -3917,8 +3917,8 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
           <div class="fleet-key">
             <span class="t">Alert</span>
             <span class="k ok"><i></i>None<span class="def"> &mdash; never faulted</span></span>
-            <span class="k warn"><i></i>Watch<span class="def"> &mdash; faulted in last 24h, clear now</span></span>
-            <span class="k red"><i></i>Unresolved<span class="def"> &mdash; faulting now</span></span>
+            <span class="k warn"><i></i>Triggered<span class="def"> &mdash; faulted in last 24h, clear now</span></span>
+            <span class="k red"><i></i>Active<span class="def"> &mdash; faulting now</span></span>
           </div>
         </div>
 
@@ -8159,13 +8159,13 @@ function dcAlertsFor(num) {
   DC_ALERT_ITEMS.forEach(it => { if (!it.live) delete a[it.key]; });
   return a;
 }
-/* A truck on Watch has nothing named to clear, so the confirm says
+/* A truck on Triggered has nothing named to clear, so the confirm says
    what it is actually doing instead of listing a part that isn't one */
 function dcResetCode(it) { return it.key === '__history' ? 'history' : it.name.split(' ')[0]; }
 function dcResetLead(items) {
   if (items.length === 1 && items[0].key === '__history') {
     return 'Clears this truck&rsquo;s recent fault history and restarts tracking from now. ' +
-           'Nothing is failing right now, so the Watch goes with it.';
+           'Nothing is failing right now, so the Triggered flag goes with it.';
   }
   return 'Clears alert history on <b>' + items.map(dcResetCode).join(', ') +
          '</b> and restarts tracking from now. Anything still failing comes back on the next message.';
@@ -8173,7 +8173,7 @@ function dcResetLead(items) {
 function dcResetItemsFor(num) {
   const a = TRUCK_ALERTS[num] || {};
   const list = DC_ALERT_ITEMS.filter(it => a[it.key]);
-  /* A truck on Watch has no open fault, but it does have the history
+  /* A truck on Triggered has no open fault, but it does have the history
      that put it there — and that is exactly what someone clears after
      looking into it. Without this the button sat disabled on the one
      state it exists to resolve. */
@@ -8310,12 +8310,12 @@ function dcApplyAlertReset() {
    not move until the truck reports otherwise. The amber set is seeded
    per truck, so the same truck reads the same way every demo. */
 /* The column header already says Alert, so the pill carries the state
-   and nothing else: Alert \u2192 None / Watch / Unresolved. A ladder of
+   and nothing else: Alert \u2192 None / Triggered / Active. A ladder of
    what to do, not a report on the past: nothing here, keep an eye on
    this, deal with this. "Cleared" read as an all-clear, which is the
    opposite of the point \u2014 a part that failed this morning is the part
    most likely to fail again this afternoon. */
-const DC_ALERT_PILL = { ok: 'None', warn: 'Watch', red: 'Unresolved' };
+const DC_ALERT_PILL = { ok: 'None', warn: 'Triggered', red: 'Active' };
 function dcAlertPillState(num) {
   /* dcAlertsFor, not the raw set: after a reset only the live faults
      remain, so the pill agrees with what the reset sweep reported */

@@ -246,7 +246,12 @@
   .dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--text); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .dot.on::after { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--text); }
   .dot.off { border-color: var(--muted); }
-  .dot.prog { border-color: var(--text); font-size: 9px; }
+  /* Mid-start is neither on nor off, so it carries the same amber the
+     small-screen cards give it rather than reading as a plain state. */
+  .dot.prog { border-color: var(--c-warn-ink); color: var(--c-warn-ink); font-size: 9px; }
+  .ign:has(.dot.prog),
+  body.sm-ready.view-mobile .ign:has(.dot.prog),
+  body.sm-ready.view-tablet .ign:has(.dot.prog) { color: var(--c-warn-ink); }
   /* ---------- Component health cell (landing table) ----------
      One scannable data field per truck: n/total parts reporting
      clean, plus the offending part names when the count is short.
@@ -2443,7 +2448,6 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   body.sm-ready.view-mobile .atplant .fic,
   body.sm-ready.view-mobile .ign .dot { display: none; }
   body.sm-ready.view-mobile .ign:has(.dot.on) { color: var(--c-ok); }
-  body.sm-ready.view-mobile .ign:has(.dot.prog) { color: var(--c-warn-ink); }
   body.sm-ready.view-mobile tr.trow > td:nth-child(5),
   body.sm-ready.view-mobile tr.trow > td:nth-child(7),
   body.sm-ready.view-mobile tr.trow > td:nth-child(8) { align-self: flex-start; }
@@ -2521,7 +2525,6 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
   body.sm-ready.view-tablet .atplant .fic,
   body.sm-ready.view-tablet .ign .dot { display: none; }
   body.sm-ready.view-tablet .ign:has(.dot.on) { color: var(--c-ok); }
-  body.sm-ready.view-tablet .ign:has(.dot.prog) { color: var(--c-warn-ink); }
   body.sm-ready.view-tablet tr.trow > td:nth-child(5),
   body.sm-ready.view-tablet tr.trow > td:nth-child(7),
   body.sm-ready.view-tablet tr.trow > td:nth-child(8) { align-self: flex-start; }

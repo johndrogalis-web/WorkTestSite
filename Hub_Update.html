@@ -1846,7 +1846,11 @@
 .csh-sum-i.oc b,.csh-sum-i.oc{color:#e0a030}
 .csh-sum-i.q{color:var(--subtle)}
 .csh-lab.lane{font-size:10.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--soft)}
-.csh-lab.na{color:var(--subtle)}
+/* Not installed, drawn the same way at every width: hatched across the
+   whole row, name struck through. The row is out of play, and that is
+   a fact about the truck rather than a reading from it. */
+.csh-lab.na{color:var(--subtle);text-decoration:line-through}
+
 .csh-track.lane .csh-in{inset:0 10px}
 .csh-band{position:absolute;top:50%;transform:translateY(-50%);height:26px;border-radius:4px;
   display:flex;align-items:center;padding:0 10px;overflow:hidden}
@@ -1933,6 +1937,12 @@ body.sm-ready.view-tablet .csh-na{font-size:11px}
 .csh-track{height:var(--csh-rowh);position:relative}
 .csh-lab.alt,.csh-track.alt{background:var(--layer-2)}
 body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(255,255,255,.035)}
+/* after the zebra rules: those set the background shorthand, which
+   would otherwise wipe the hatch off every second row */
+body .csh-chart .csh-lab.na,body .csh-chart .csh-track.na{
+  background-image:repeating-linear-gradient(135deg,
+    color-mix(in srgb, var(--strong) 9%, transparent) 0 5px,
+    transparent 5px 11px)}
 
 /* Segments */
 .csh-seg{position:absolute;top:50%;transform:translateY(-50%);height:3px;border-radius:2px}
@@ -2036,10 +2046,49 @@ body:not(.light) .csh-lab.alt,body:not(.light) .csh-track.alt{background:rgba(25
     display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer;
     background: color-mix(in srgb, var(--dc-strong) 7%, var(--dc-layer-2));
   }
-  .mtl-row .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--dc-ok); flex-shrink: 0; }
-  .mtl-row .dot.warn { background: var(--dc-warn); }
-  .mtl-row .dot.alarm { background: var(--dc-alarm); }
-  .mtl-row .dot.na { background: var(--dc-subtle); }
+  /* The header carries the same glyph set as the rows inside it, so a
+     card states its condition by shape as well as colour — nine pixels
+     of red and nine of green are the same dot to a lot of people. */
+  /* The header carries the state, so it wears the chip the rows used
+     to: one marker per card, at the top, where the card is named. */
+  .mtl-row .dot {
+    width: 22px; height: 22px; flex-shrink: 0; border-radius: 5px;
+    display: grid; place-items: center; border: none;
+    background: color-mix(in srgb, var(--dc-ok) 20%, transparent);
+    color: var(--dc-ok);
+  }
+  .mtl-row .dot svg { display: block; }
+  .mtl-row .dot.warn {
+    background: color-mix(in srgb, var(--dc-warn) 22%, transparent); color: var(--dc-warn);
+  }
+  .mtl-row .dot.alarm {
+    background: color-mix(in srgb, var(--dc-alarm) 22%, transparent); color: var(--dc-alarm);
+  }
+  /* Not connected is a known condition — we asked and the truck is not
+     there. Not responding is the open question: the truck is talking,
+     this part is not, and nothing yet says whether it is broken. */
+  .mtl-row .dot.nodata {
+    background: color-mix(in srgb, var(--dc-alarm) 20%, transparent); color: var(--dc-alarm);
+  }
+  .mtl-row .dot.unknown {
+    background: color-mix(in srgb, var(--dc-strong) 13%, transparent); color: var(--dc-defined);
+  }
+  .mtl-row .dot.na {
+    background: color-mix(in srgb, var(--dc-strong) 10%, transparent); color: var(--dc-subtle);
+  }
+  /* Hatched across the whole card, because "not installed" is a fact
+     about the truck rather than a reading from it. The stripes say the
+     row is out of play before anyone reads a word of it, and the name
+     is struck through for the same reason. */
+  .mtl-card.na {
+    background:
+      repeating-linear-gradient(135deg,
+        color-mix(in srgb, var(--dc-strong) 6%, transparent) 0 5px,
+        transparent 5px 11px),
+      var(--dc-layer-1);
+  }
+  .mtl-card.na .mtl-row { background: none; cursor: default; }
+  .mtl-row[data-static] .nm { text-decoration: line-through; color: var(--dc-subtle); }
   .mtl-row .nm {
     font-size: 12px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase;
     color: var(--dc-strong); white-space: nowrap;
@@ -5394,6 +5443,16 @@ const ASLEEP_ICON = '<svg width="10" height="10" viewBox="0 0 12 12" fill="curre
 const NODATA_ICON = '<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="6" cy="6" r="4.6"/><path d="M3.1 3.1l5.8 5.8"/></svg>';
 /* Healthy: a check, so the count line reads by shape as well as
    colour — a green and a red dot at 8px are the same dot. */
+/* the alarm square is drawn white for the filled chip; on a bare
+   header it has to take the colour of whatever it sits on */
+const ALARM_INK = ALARM_ICON.replace('fill="white"', 'fill="currentColor"');
+/* Not responding is not a fault: we asked and nothing came back, so
+   the mark is a question rather than a verdict. */
+const UNK_ICON = '<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.1 4.1a1.95 1.95 0 1 1 2.6 1.84c-.5.18-.72.5-.72 1.01v.3"/><path d="M6 9.6v.01"/></svg>';
+/* Three different silences, three different marks: a slash for a part
+   that is not on the truck, a struck line for a truck we cannot reach,
+   and a question for a part that is there and not answering. */
+const NOCONN_ICON = '<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="6" cy="6" r="4.6"/><path d="M3.7 6h4.6"/></svg>';
 const OK_ICON = '<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.2 6.3 4.8 8.9 9.8 3.4"/></svg>';
 /* Ignition: filled ring for on, open ring for off — the same pair the
    landing table uses for the ignition column */
@@ -5650,7 +5709,8 @@ let dcTlRoot = null; /* container the timeline component is mounted in */
     });
     h += '</div><div class="csh-plot">';
     rows.forEach(function (r, i) {
-      h += '<div class="csh-track' + (i % 2 ? ' alt' : '') + (r.lane ? ' lane' : '') + '"><div class="csh-in">';
+      h += '<div class="csh-track' + (i % 2 ? ' alt' : '') + (r.lane ? ' lane' : '')
+        +  (r.na ? ' na' : '') + '"><div class="csh-in">';
       /* the ignition line belongs to component rows: a lane draws its
          own marks, and a part that is not installed draws nothing but
          the note that says so */
@@ -5837,7 +5897,7 @@ function dcTrinityRowsFor(num) {
     if (r.na) return { name: r.row, na: true, naText: r.naText || 'Not installed', off: [[0, 24]], events: [] };
     const off = r.spans.filter(sp => sp.state === 'off' || sp.state === 'future')
                        .map(sp => [H(sp.from), H(sp.to)]);
-    const events = r.spans.filter(sp => sp.state === 'warn' || sp.state === 'alarm' || sp.state === 'nodata' || sp.state === 'asleep')
+    const events = r.spans.filter(sp => sp.state === 'warn' || sp.state === 'alarm' || sp.state === 'nodata' || sp.state === 'unknown' || sp.state === 'asleep')
       .map(sp => {
         const mins = Math.max(1, Math.round(sp.to - sp.from));
         const label = mins >= 60 ? Math.floor(mins / 60) + 'h' + (mins % 60 ? ' ' + (mins % 60) + 'm' : '') : mins + ' m';
@@ -5937,18 +5997,25 @@ const MTL_NAME = {
   'Iox / Robotex': 'Iox/Robotex', 'Internal Display': 'Int. Display',
   'External Display': 'Ext. Display', 'WDS rotation': 'WDS rot.', 'WDS temp': 'WDS temp'
 };
-const MTL_STATE = { warn: 'Warning', alarm: 'Alarm', nodata: 'No data', asleep: 'Asleep' };
+const MTL_STATE = { warn: 'Warning', alarm: 'Alarm', nodata: 'Not connected',
+                    unknown: 'Not responding', asleep: 'Asleep' };
 
 function dcMtlDur(mins) {
   const m = Math.max(1, Math.round(mins));
   return m >= 60 ? Math.floor(m / 60) + 'h' + (m % 60 ? ' ' + (m % 60) + 'm' : '') : m + ' min';
 }
+/* "no reading", "not responding", "not reported" — the sensor is
+   silent, which is a different claim from a reading outside range. */
+const DC_NO_ANSWER = /not responding|not reported|no .*reading|not acknowledging|no connection/i;
 function dcMtlEventsFor(row, trinity, st) {
-  const keep = ['warn', 'alarm', 'nodata', 'asleep'];
+  const keep = ['warn', 'alarm', 'nodata', 'unknown', 'asleep'];
   return (row.spans || []).filter(sp => keep.indexOf(sp.state) > -1).map(sp => {
-    /* The Trinity candidate has no vocabulary beyond warning/alarm */
+    /* Silence is its own word now. A component that stopped reporting
+       because the TCG went down has not failed — we simply stopped
+       hearing from it, and calling that an alarm blames the part. */
     const state = trinity
-      ? (sp.state === 'alarm' || sp.state === 'nodata' ? 'alarm' : 'warn')
+      ? (sp.state === 'nodata' || sp.state === 'unknown' || sp.state === 'alarm'
+          ? sp.state : 'warn')
       : sp.state;
     const ev = {
       from: sp.from, to: sp.to, state: state,
@@ -5995,7 +6062,7 @@ function dcMtlIgnEvents(st) {
     exp: Math.max(st.msgs.filter(m => !m.oc).length, Math.round((end - st.ignOn) / DC_BEAT_MIN)),
     lastBeat: st.lastMsg,
     msgs: st.msgs.filter(m => m.oc) });
-  if (st.dropAt !== null) evs.push({ from: st.lastMsg, to: end, state: 'nodata', label: 'No data',
+  if (st.dropAt !== null) evs.push({ from: st.lastMsg, to: end, state: 'nodata', label: 'Not connected',
     note: 'TCG offline — one cause for every row below',
     mins: end - st.lastMsg, got: 0, exp: Math.max(1, Math.round((end - st.lastMsg) / DC_BEAT_MIN)), msgs: [] });
   if (!st.isToday && st.runEnd < 1438) evs.push({ from: st.runEnd, to: 1440, state: 'off',
@@ -6042,6 +6109,10 @@ function buildMobileTimeline(target) {
      data" stays plain: silence is an absence of reporting, not a fault
      the truck claimed. */
   const MTL_PILL = { warn: 'warn', alarm: 'red' };
+  /* header glyphs: check, triangle, alarm square, and a struck-through
+     circle for a part the truck does not have */
+  const MTL_DOT = { ok: OK_ICON, warn: WARN_ICON, alarm: ALARM_INK,
+                    nodata: NOCONN_ICON, unknown: UNK_ICON, na: NODATA_ICON };
   const evRow = (e, rowKey) => {
     /* One line, not one row per message. The event line above already
        states the traffic ("9 of 12 messages") and the strip at the top
@@ -6061,10 +6132,6 @@ function buildMobileTimeline(target) {
     const beat = '';
     return `
       <div class="mtl-ev" data-sec="${Math.round(st.base.getTime() / 1000 + e.from * 60)}" data-row="${rowKey}">
-        <span class="ic ${e.state === 'nodata' ? 'alarm' : e.state}">${
-          e.state === 'alarm' ? ALARM_ICON : e.state === 'nodata' ? NODATA_ICON
-          : e.state === 'asleep' ? ASLEEP_ICON : e.state === 'on' ? IGN_ON_ICON
-          : e.state === 'off' ? IGN_OFF_ICON : WARN_ICON}</span>
         <span class="tx">${MTL_PILL[e.state]
           ? '<span class="st"><span class="alert-pill ' + MTL_PILL[e.state] + '"><i></i>' +
             DC_ALERT_PILL[MTL_PILL[e.state]] + '</span></span>'
@@ -6086,9 +6153,9 @@ function buildMobileTimeline(target) {
   let ignCard = '';
   {
     const ievs = dcMtlIgnEvents(st);
-    const iState = st.dropAt !== null ? 'alarm' : 'ok';
+    const iState = st.dropAt !== null ? 'nodata' : 'ok';
     ignCard = `<div class="mtl-card pwr${mtlOpen('__ign', st.dropAt !== null) ? ' open' : ''}" data-comp="__ign">
-      <div class="mtl-row"><span class="dot ${iState}"></span>
+      <div class="mtl-row"><span class="dot ${iState}">${MTL_DOT[iState]}</span>
         <span class="nm">Ignition &amp; power</span>
         <span class="sum">On ${dcHM(st.ignOn)}–${st.isToday ? 'now' : dcHM(st.runEnd)}</span>
         <span class="chev">&#9660;</span>
@@ -6101,15 +6168,21 @@ function buildMobileTimeline(target) {
      alarms above warnings, and the rows that can never report last. */
   const built = st.rows.map(r => {
     if (r.na) {
-      return { rank: 3, html: `<div class="mtl-card"><div class="mtl-row" data-static="1">
-        <span class="dot na"></span><span class="nm">${MTL_NAME[r.row] || r.row}</span>
+      return { rank: 3, html: `<div class="mtl-card na"><div class="mtl-row" data-static="1">
+        <span class="dot na">${MTL_DOT.na}</span><span class="nm">${MTL_NAME[r.row] || r.row}</span>
         <span class="sum">${r.naText}</span></div></div>` };
     }
     const evs = dcMtlEventsFor(r, trinity, st);
     const counts = {};
     evs.forEach(e => { counts[e.state] = (counts[e.state] || 0) + 1; });
     const total = evs.reduce((n, e) => n + e.mins, 0);
-    const worst = evs.some(e => e.state === 'alarm' || e.state === 'nodata') ? 'alarm'
+    /* A part that stopped reporting is not a part that failed. Silence
+       reads as its own state so a dead TCG does not paint ten healthy
+       components red. A known fault still outranks it. */
+    const worst = evs.some(e => e.state === 'alarm') ? 'alarm'
+                : evs.some(e => e.state === 'warn') ? 'warn'
+                : evs.some(e => e.state === 'nodata') ? 'nodata'
+                : evs.some(e => e.state === 'unknown') ? 'unknown'
                 : evs.length ? 'warn' : 'ok';
     /* the header answers "is there anything on this part" and stops
        there; the hours and the message tally are Truck Log's job */
@@ -6120,7 +6193,7 @@ function buildMobileTimeline(target) {
     const evHtml = evs.map(e => evRow(e, r.row)).join('');
     return { rank: evs.length ? (worst === 'alarm' ? 0 : 1) : 2,
       html: `<div class="mtl-card${open ? ' open' : ''}" data-comp="${r.row}">
-      <div class="mtl-row"><span class="dot ${worst === 'ok' ? '' : worst}"></span>
+      <div class="mtl-row"><span class="dot ${worst}">${MTL_DOT[worst]}</span>
         <span class="nm">${MTL_NAME[r.row] || r.row}</span>
         <span class="sum">${sum}</span>
         ${evs.length ? '<span class="chev">&#9660;</span>' : ''}
@@ -6407,7 +6480,11 @@ function dcDayStream(num, idx) {
       push(cur, faultAt, 'ok', 'Reporting on the 15-minute cadence');
       cur = faultAt;
     }
-    push(cur, lastMsg, bad ? bad.state : 'ok', bad ? bad.fault : 'Reporting on the 15-minute cadence');
+    /* Two different things: a part that reported a bad value, and a
+       part that did not answer at all. The second one is not a verdict
+       on the part — we simply do not know. */
+    const badState = bad ? (DC_NO_ANSWER.test(bad.fault) ? 'unknown' : bad.state) : 'ok';
+    push(cur, lastMsg, badState, bad ? bad.fault : 'Reporting on the 15-minute cadence');
     if (dropAt !== null) push(lastMsg, runEnd, 'nodata', 'No status messages received — TCG offline');
     if (isToday) { if (nowMin < 1440) push(nowMin, 1440, 'future', 'Later today — no messages yet'); }
     else push(runEnd, 1440, 'off', 'Ignition off — no reporting expected');

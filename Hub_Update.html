@@ -8247,12 +8247,28 @@ const DC_ALERT_ITEMS = [
 /* Phase 2 and everything after it; the earlier phases read the raw
    fault set with no reset applied */
 function dcResetActive() { return dcAlertPhase(); }
+/* The 15-minute heartbeat, at demo speed. A reset clears the board;
+   the next message is what decides whether anything comes back. */
+const DC_BEAT_DEMO_MS = 20000;
+/* Which faults survive a reset is fixed per truck and part, so the
+   same demo tells the same story twice. */
+function dcStillFaulting(num, key) {
+  return dcRng(dcSeed(num + '|' + key) + 3)() < 0.5;
+}
+function dcBeatLanded(r) { return !!r && Date.now() >= r.beat; }
 function dcAlertsFor(num) {
   const a = Object.assign({}, TRUCK_ALERTS[num] || {});
   if (!dcResetActive()) return a;
   const r = dcAlertReset[num];
   if (!r) return a;
+  /* A reset clears everything the Hub is holding. The connection is
+     the exception — with the truck off the air there is no next
+     message to re-raise anything, so clearing it would read as an
+     all-clear on a truck nobody can reach. */
   DC_ALERT_ITEMS.forEach(it => { if (!it.live) delete a[it.key]; });
+  /* ...and the next heartbeat puts back whatever is still failing,
+     as an Alarm: it is faulting now, not faulted earlier. */
+  if (dcBeatLanded(r)) (r.back || []).forEach(k => { a[k] = true; });
   return a;
 }
 /* A truck on Triggered has nothing named to clear, so the confirm says
@@ -8314,11 +8330,20 @@ function dcResetRender(state) {
       '<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">' +
       '<path d="M12.2 7a5.2 5.2 0 1 1-1.6-3.7"/><path d="M12.4 1.4v3.4H9"/></svg>' +
       'Reset component alerts</button>' +
-    (done ? '<div class="tk-reset-note">Tracking restarted ' + done.at +
-            (done.cleared.length ? ' \u00B7 cleared ' + done.cleared.length : '') + '</div>' : '');
+    (done ? '<div class="tk-reset-note">' + dcResetNote(done) + '</div>' : '');
 }
 
-let dcResetBusy = false;
+/* The note tells the truth about where the truck is in the cycle: the
+   board is clear, we are waiting on the truck, and then what the truck
+   actually said when it answered. */
+function dcResetNote(done) {
+  const base = 'Tracking restarted ' + done.at +
+    (done.cleared.length ? ' \u00B7 cleared ' + done.cleared.length : '');
+  if (!dcBeatLanded(done)) return base + ' \u00B7 waiting for the next message';
+  if (!(done.back || []).length) return base + ' \u00B7 next message came back clean';
+  return base + ' \u00B7 ' + done.back.length + ' still failing on the next message';
+}
+let dcResetBusy = false, dcBeatTimer = null;
 function dcResetRun() {
   if (dcResetBusy) return;
   dcResetBusy = true;
@@ -8370,14 +8395,26 @@ function dcResetRun() {
   });
 
   setTimeout(() => {
+    const raw = TRUCK_ALERTS[num] || {};
+    const back = DC_ALERT_ITEMS
+      .filter(it => !it.live && raw[it.key] && dcStillFaulting(num, it.key))
+      .map(it => it.key);
     dcAlertReset[num] = {
       at: new Date().toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }),
-      cleared: cleared.slice()
+      cleared: cleared.slice(),
+      back: back,
+      beat: Date.now() + DC_BEAT_DEMO_MS
     };
     dcRunCommand('Reset Component Alerts', cleared.length ? cleared.join(', ') : 'none');
     dcApplyAlertReset();
     dcResetBusy = false;
     dcResetRender();
+    /* the board is clean until the truck says otherwise */
+    clearTimeout(dcBeatTimer);
+    if (back.length) dcBeatTimer = setTimeout(() => {
+      dcApplyAlertReset();
+      dcResetRender();
+    }, DC_BEAT_DEMO_MS + 60);
   }, items.length * STEP + 900);   /* hold the summary long enough to read */
 }
 

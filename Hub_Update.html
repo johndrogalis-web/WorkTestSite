@@ -4593,7 +4593,8 @@ window.addEventListener('hashchange', dcApplyUrlView);
    phase after it inherits the pill, the reset and this wording.
    Current State and Phase 1 keep today's reading. */
 function dcAlertPhase() {
-  return dcViewMode === 'current-alerts' || dcViewMode === 'current-timeline';
+  return dcViewMode === 'current-mobile' || dcViewMode === 'current-alerts' ||
+         dcViewMode === 'current-timeline';
 }
 function dcConnWord(disconnected) {
   if (dcAlertPhase()) return disconnected ? 'Offline' : 'Online';
@@ -4664,10 +4665,13 @@ function setPhase(mode) {
   const currentLike = mode === 'current' || mode === 'current-mobile';
   document.body.classList.toggle('comp-col', !currentLike);
   /* Phase 2 is the new alert model: pills, reset, Online / Offline */
-  document.body.classList.toggle('alert-col', mode === 'current-alerts' || mode === 'current-timeline');
+  document.body.classList.toggle('alert-col',
+    mode === 'current-mobile' || mode === 'current-alerts' || mode === 'current-timeline');
   /* Phase 1 keeps today's Alert text, so its cards lay it out as a line
      rather than as the pill Phase 2 puts on the truck row */
-  document.body.classList.toggle('alert-text', mode === 'current-mobile');
+  /* the derived fault line was Phase 1's stand-in until the pill
+     arrived; the pill is the landing page now, at every width */
+  document.body.classList.toggle('alert-text', false);
   closeDrawer();
   closeTakeover();
   /* The WDS model differs by phase, so derived data has to be rebuilt */
@@ -8728,7 +8732,7 @@ function syncAlertCells() {
    with three faults has to say so, and the "+n" has to agree with the
    timeline. Current design keeps its hand-written text untouched. */
 function dcAlertTextCells() {
-  if (dcViewMode !== 'current-mobile') return;
+  if (!document.body.classList.contains('alert-text')) return;
   document.querySelectorAll('.comp-cell').forEach(td => {
     const cell = td.parentElement.querySelector('td.alert');
     if (!cell) return;

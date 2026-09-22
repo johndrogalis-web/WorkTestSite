@@ -1077,8 +1077,8 @@
   body.sm-ready.view-tablet .tabs {
     position: sticky; z-index: 9; background: var(--bg);
   }
-  body.sm-ready.view-mobile .topbar { z-index: 11; padding: 6px 0 14px; }
-  body.sm-ready.view-tablet .topbar { z-index: 11; padding: 8px 0 14px; }
+  body.sm-ready.view-mobile .topbar { z-index: 11; padding: 6px 0 20px; }
+  body.sm-ready.view-tablet .topbar { z-index: 11; padding: 8px 0 22px; }
   body.sm-ready.view-mobile .fleet-search,
   body.sm-ready.view-tablet .fleet-search { z-index: 10; margin-bottom: 0; }
   body.sm-ready.view-mobile .tabs,
@@ -2301,7 +2301,7 @@ body .csh-chart .csh-lab.na,body .csh-chart .csh-track.na{
   /* ---- tablet ---- */
   body.sm-ready.view-tablet .main { padding: 20px 20px; }
   body.sm-ready.view-tablet .filters { display: none; }
-  body.sm-ready.view-tablet .content { gap: 0; margin-top: 22px; }
+  body.sm-ready.view-tablet .content { gap: 0; margin-top: 0; }
   body.sm-ready.view-tablet h1 { font-size: 24px; }
   body.sm-ready.view-tablet .takeover { left: 0; padding: 20px 22px 32px; }
   body.sm-ready.view-tablet .takeover.as-drawer { left: 0; width: 100%; max-width: none; }
@@ -2326,7 +2326,11 @@ body .csh-chart .csh-lab.na,body .csh-chart .csh-track.na{
   body.sm-ready.view-mobile .dc-logs-right.open,
   body.sm-ready.view-mobile .dc-chart-box { padding-bottom: 20px; }
   body.sm-ready.view-mobile .filters { display: none; }
-  body.sm-ready.view-mobile .content { display: block; margin-top: 16px; }
+  /* No margin above the list: the search bar's sticky offset is the
+     bar's height, so any gap here is a jump the moment it sticks. The
+     breathing room moves into the bar's own padding, which travels
+     with it. */
+  body.sm-ready.view-mobile .content { display: block; margin-top: 0; }
   body.sm-ready.view-mobile h1 { font-size: 21px; }
   body.sm-ready.view-mobile .topbar,
   body.sm-ready.view-tablet .topbar { align-items: center; }
@@ -2621,10 +2625,22 @@ body .csh-chart .csh-lab.na,body .csh-chart .csh-track.na{
   /* takeover fills the screen */
   body.sm-ready.view-mobile .takeover,
   body.sm-ready.view-mobile .takeover.as-drawer {
-    left: 0; right: 0; width: 100%; max-width: none; padding: 14px 12px 28px; box-shadow: none;
+    left: 0; right: 0; width: 100%; max-width: none; padding: 0 12px 28px; box-shadow: none;
   }
-  body.sm-ready.view-mobile .tk-top { flex-direction: column; align-items: flex-start; gap: 12px; }
-  body.sm-ready.view-mobile .tk-title { font-size: 17px; }
+  /* display:contents so the title's containing block is the scroller
+     itself — inside .tk-top it stuck only until that short box left
+     the viewport, which is about one screen of scrolling. */
+  body.sm-ready.view-mobile .tk-top { display: contents; }
+  body.sm-ready.view-mobile .tk-actions { margin-bottom: 12px; }
+  /* The way out of a truck stays on screen on every tab: scroll far
+     enough into a timeline or a log and the back button was gone, so
+     the only way back was the browser. The scroller's top padding
+     moves into the bar itself, otherwise sticky parks below it. */
+  body.sm-ready.view-mobile .tk-title {
+    font-size: 17px; position: sticky; top: 0; z-index: 12;
+    background: var(--bg); width: 100%;
+    margin: 0 -12px; padding: 14px 12px 10px; box-sizing: content-box;
+  }
   /* ════════════════════════════════════════════════════════════
      TOUCH TARGETS — phone
      A finger needs about 44px. Everything below was sized for a
@@ -3970,7 +3986,7 @@ body .csh-chart .csh-lab.na,body .csh-chart .csh-track.na{
             <span class="t">Alert</span>
             <span class="k ok"><i></i>None<span class="def"> &mdash; never faulted</span></span>
             <span class="k warn"><i></i>Triggered<span class="def"> &mdash; faulted in last 24h, clear now</span></span>
-            <span class="k red"><i></i>Active<span class="def"> &mdash; faulting now</span></span>
+            <span class="k red"><i></i>Alarm<span class="def"> &mdash; faulting now</span></span>
           </div>
         </div>
 
@@ -8390,12 +8406,12 @@ function dcApplyAlertReset() {
    not move until the truck reports otherwise. The amber set is seeded
    per truck, so the same truck reads the same way every demo. */
 /* The column header already says Alert, so the pill carries the state
-   and nothing else: Alert \u2192 None / Triggered / Active. A ladder of
+   and nothing else: Alert \u2192 None / Triggered / Alarm. A ladder of
    what to do, not a report on the past: nothing here, keep an eye on
    this, deal with this. "Cleared" read as an all-clear, which is the
    opposite of the point \u2014 a part that failed this morning is the part
    most likely to fail again this afternoon. */
-const DC_ALERT_PILL = { ok: 'None', warn: 'Triggered', red: 'Active' };
+const DC_ALERT_PILL = { ok: 'None', warn: 'Triggered', red: 'Alarm' };
 function dcAlertPillState(num) {
   /* dcAlertsFor, not the raw set: after a reset only the live faults
      remain, so the pill agrees with what the reset sweep reported */

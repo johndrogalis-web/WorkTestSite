@@ -3277,7 +3277,8 @@ body .csh-chart .csh-lab.na,body .csh-chart .csh-track.na{
   /* +Timeline view: same takeover content, presented as a
      right-side drawer (the first structural step toward Final) */
   .takeover.as-drawer {
-    left: auto; right: 0; width: 1220px; max-width: 95vw;
+    /* the fleet list stays visible to the left, as in the dev build */
+    left: auto; right: 0; width: 1280px; max-width: 72vw;
     box-shadow: -12px 0 40px rgba(0,0,0,.5);
     z-index: 51;
   }
@@ -4870,12 +4871,11 @@ function dcTimelineLocked() { return true; }   /* one timeline, nothing to pick 
 function tkTabbed() {
   return dcTrinityPhase() || tkIsDrawerMode();
 }
-/* The right-side drawer starts at Phase 2 and carries forward. Phase 1
-   keeps the full-width takeover: it is the responsive pass on today's
-   page, not a change to how a truck is presented. */
+/* The Final phase opens a truck as a right-side drawer, matching what
+   dev is building: the fleet list stays on screen behind it. Only
+   Current design keeps today's full-page takeover. */
 function tkIsDrawerMode() {
-  return dcViewMode === 'current-alerts' || dcViewMode === 'current-timeline' ||
-         dcViewMode === 'current-overview' || dcViewMode === 'current-overview-wds';
+  return dcViewMode !== 'current';
 }
 /* Timeline_Overview: relocate the LIVE Final overview panel (and its
    chart lightbox) into the takeover, so ids, live debug ticks, ping

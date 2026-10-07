@@ -1711,6 +1711,18 @@
   .dc-tk.oc.alarm { background: var(--dc-alarm); }
   .dc-now { position: absolute; top: 0; bottom: 0; width: 1px; background: color-mix(in srgb, var(--dc-strong) 45%, transparent); }
   .dc-mark { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--dc-blue); z-index: 4; }
+  /* Component alert reset: a small blue circle at the minute it ran.
+     Ringed in the page colour so it reads on top of ticks and bands. */
+  .tl-reset {
+    position: absolute; top: 50%; width: 10px; height: 10px; border-radius: 50%;
+    transform: translate(-50%, -50%); z-index: 6; cursor: default;
+    background: var(--dc-blue, #3069e3); box-shadow: 0 0 0 2px var(--dc-layer-1, var(--bg, #1e1e1e));
+  }
+  .dc-tl-legend .lg-reset, .tl-reset-i {
+    display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+    background: var(--dc-blue, #3069e3); flex-shrink: 0; vertical-align: middle;
+  }
+  .mtl-rep .i.rs { display: inline-flex; align-items: center; gap: 5px; }
   .dc-mark.lead::after {
     content: attr(data-t); position: absolute; top: -17px; left: -17px;
     font-size: 9px; font-weight: 700; letter-spacing: .3px; white-space: nowrap;
@@ -3925,7 +3937,6 @@ body .csh-chart .csh-lab.na,body .csh-chart .csh-track.na{
         <div class="filter-row"><span class="cb"></span><span class="fic">&#10005;</span><span class="fname">Trucks not at plant</span><span>8</span></div>
         <div class="filter-row"><span class="cb"></span><span class="fic">&#9673;</span><span class="fname">Ignition on trucks</span><span>8</span></div>
         <div class="filter-row"><span class="cb"></span><span class="fic">&#9675;</span><span class="fname">Ignition off trucks</span><span>1</span></div>
-        <div class="filter-row"><span class="cb"></span><span class="fic">&#9676;</span><span class="fname">Ignition in progress trucks</span><span>1</span></div>
       </div>
 
       <div class="table-area">
@@ -4027,7 +4038,7 @@ body .csh-chart .csh-lab.na,body .csh-chart .csh-track.na{
               <td><span class="atplant">No</span></td>
               <td class="alert">Accelerometer not working</td>
               <td><span class="conn"><i>((&#8226;))</i><em>Online</em></span></td>
-              <td><span class="ign"><span class="dot prog">&#9676;</span> In-progress</span></td><td class="col-pad"></td>
+              <td><span class="ign"><span class="dot on"></span> On</span></td><td class="col-pad"></td>
             </tr>
             <tr class="trow" onclick="openDrawer('2356')">
               <td class="tname">2356</td><td class="ver">V5</td><td class="mode-cell" data-mode-truck="2356"></td>
@@ -4449,11 +4460,87 @@ const TRUCK_ALERTS = {
   '1408': { flow: true, disconnected: true, cps: true },
   '1416': { flow: true, icd: true },
   '1894': {},
-  '1921': { flow: true },
+  '1921': { flow: true, disconnected: true },
   '1968': { flow: true, dps: true },
   '2105': { accel: true },
   '2356': {}
 };
+
+/* ══════════════════════════════════════════════════════════════
+   CONNECTION x IGNITION  (PM rules, Oct 2026)
+   Connection and ignition are two separate readings. Together they
+   say what the truck is doing:
+     Online  + On   working: connected and reporting
+     Online  + Off  parked: the TCG stays online for up to ~60 min
+                    after ignition goes off
+     Offline + Off  done for the day (e.g. overnight)
+     Offline + On   ignition on was received, then the truck stopped
+                    communicating, so On is the last reported value
+   Ignition is stored per truck, not derived from the connection.
+══════════════════════════════════════════════════════════════ */
+const DC_IGNITION = {
+  '1408': 'off',    /* offline + off : done for the day */
+  '1894': 'off',    /* online  + off : parked, inside the ~60 min window */
+  '1921': 'on'      /* offline + on  : stopped communicating */
+};
+function dcIgnition(num) {
+  if (DC_IGNITION[num]) return DC_IGNITION[num];
+  return (TRUCK_ALERTS[num] || {}).disconnected ? 'off' : 'on';
+}
+const DC_LINK_STATES = {
+  'online-on':  { label: 'Working',
+                  note: 'Online, ignition on: the truck is working and reporting.' },
+  'online-off': { label: 'Parked',
+                  note: 'Online, ignition off: the truck stays connected for up to about 60 minutes after ignition goes off.' },
+  'offline-off':{ label: 'Done for the day',
+                  note: 'Offline, ignition off: the truck has shut down for the day (e.g., overnight).' },
+  'offline-on': { label: 'Stopped reporting',
+                  note: 'Offline, ignition on: ignition on was received, but the truck has stopped communicating. On is the last reported value.' }
+};
+function dcLinkState(num) {
+  const conn = (TRUCK_ALERTS[num] || {}).disconnected ? 'offline' : 'online';
+  const ign = dcIgnition(num);
+  const key = conn + '-' + ign;
+  return Object.assign({ key: key, conn: conn, ign: ign }, DC_LINK_STATES[key]);
+}
+/* Renders the Connection and Ignition cells for every fleet row from
+   the data above, with the rule as a tooltip on both cells. */
+function dcRenderLinkCells() {
+  document.querySelectorAll('tbody tr.trow').forEach(tr => {
+    const num = tr.querySelector('.tname').textContent.trim();
+    const st = dcLinkState(num);
+    const conn = tr.querySelector('.conn');
+    if (conn) {
+      conn.className = 'conn' + (st.conn === 'offline' ? ' off' : '');
+      conn.innerHTML = st.conn === 'offline'
+        ? '<i>&#128683;</i><em>Offline</em>' : '<i>((&#8226;))</i><em>Online</em>';
+      conn.title = st.label + ' \u2014 ' + st.note;
+    }
+    const ign = tr.querySelector('.ign');
+    if (ign) {
+      ign.innerHTML = st.ign === 'on' ? '<span class="dot on"></span> On'
+                                      : '<span class="dot off"></span> Off';
+      ign.title = st.label + ' \u2014 ' + st.note;
+    }
+  });
+  dcRenderLinkCounts();
+}
+/* Left-rail ignition filters and the Offline tab count what the rows show */
+function dcRenderLinkCounts() {
+  const nums = Array.from(document.querySelectorAll('tbody tr.trow .tname')).map(e => e.textContent.trim());
+  const c = { on: 0, off: 0, offline: 0 };
+  nums.forEach(n => { c[dcIgnition(n)]++; if ((TRUCK_ALERTS[n] || {}).disconnected) c.offline++; });
+  document.querySelectorAll('.filter-row').forEach(r => {
+    const name = (r.querySelector('.fname') || {}).textContent || '';
+    const cnt = r.lastElementChild;
+    if (/Ignition on/.test(name)) cnt.textContent = c.on;
+    else if (/Ignition off/.test(name)) cnt.textContent = c.off;
+  });
+  const legacy = document.querySelector('.tab .conn-legacy');
+  const word = document.querySelector('.tab .conn-word');
+  if (legacy) legacy.textContent = c.offline + ' Disconnected';
+  if (word) word.textContent = c.offline + ' Offline';
+}
 
 function mcsCardsFor(num) {
   const a = TRUCK_ALERTS[num] || {};
@@ -4761,9 +4848,10 @@ function openTakeover(name) {
 
   /* Ignition + connectivity mirror the truck's state */
   const ign = document.getElementById('tk-ign');
-  if (name === '2105') { ign.className = 'val off'; ign.innerHTML = '<span class="g"></span> IN-PROGRESS'; }
-  else if (a.disconnected) { ign.className = 'val off'; ign.innerHTML = '<span class="g"></span> OFF'; }
+  const link = dcLinkState(name);
+  if (link.ign === 'off') { ign.className = 'val off'; ign.innerHTML = '<span class="g"></span> OFF'; }
   else { ign.className = 'val'; ign.innerHTML = '<span class="g"></span> ON'; }
+  ign.title = link.label + ' \u2014 ' + link.note;
   document.getElementById('tk-conn').textContent = dcConnWord(a.disconnected);
 
   /* Error cards list actual entries, like today's product */
@@ -5373,16 +5461,15 @@ function buildOverview(num) {
   conn.className = 'v ' + (a.disconnected ? 'bad' : 'blue');
 
   const ign = document.getElementById('dc-ss-ign');
-  if (num === '2105') {
-    ign.className = 'v'; ign.style.color = 'var(--dc-defined)';
-    ign.innerHTML = '<span class="gdot off"></span> In-progress';
-  } else if (a.disconnected) {
+  const link = dcLinkState(num);
+  if (link.ign === 'off') {
     ign.className = 'v'; ign.style.color = 'var(--dc-soft)';
     ign.innerHTML = '<span class="gdot off"></span> OFF';
   } else {
     ign.className = 'v ok'; ign.style.color = '';
     ign.innerHTML = '<span class="gdot"></span> ON';
   }
+  ign.title = link.label + ' \u2014 ' + link.note;
 
   const warnCount = (a.flow ? 1 : 0) + (a.accel ? 1 : 0) + (a.disconnected ? 1 : 0);
   document.getElementById('dc-err-alarms').textContent = a.disconnected ? 1 : 0;
@@ -5686,6 +5773,10 @@ let dcTlRoot = null; /* container the timeline component is mounted in */
           +  ' style="left:' + pct(bd.a).toFixed(3)
           +  '%;width:' + pct(bd.b - bd.a).toFixed(3) + '%"><span>' + bd.label + '</span></div>';
       });
+      /* a component alert reset: one blue circle at the minute it ran */
+      (r.marks || []).forEach(function (m) {
+        h += '<span class="tl-reset" style="left:' + pct(m.h).toFixed(3) + '%" title="' + m.title + '"></span>';
+      });
       /* one mark per status message; off-cycle ones stand out */
       (r.ticks || []).forEach(function (t) {
         h += '<span class="csh-tk' + (t.oc ? ' oc' : '') + '" style="left:' + pct(t.h).toFixed(3)
@@ -5707,6 +5798,7 @@ let dcTlRoot = null; /* container the timeline component is mounted in */
       +    '<span class="csh-lg"><span class="csh-lg-line off"></span>Ignition off</span>'
       +    '<span class="csh-lg"><span class="csh-lg-sq alarm">' + icoAlarm() + '</span>Error</span>'
       +    '<span class="csh-lg"><span class="csh-lg-sq warn">' + icoWarn() + '</span>Warning</span>'
+      +    '<span class="csh-lg"><span class="tl-reset-i"></span>Alerts reset</span>'
       +  '</div>';
 
     h += '</div></div>';
@@ -5835,7 +5927,9 @@ function dcTrinityLanes(num) {
      stated in the summary line above the chart, and the payload is a
      tap away in Truck Log. */
   const lanes = [];
-  lanes.push({ name: 'Ignition / power', lane: true, off: [], events: [], bands: bands });
+  const rs = dcResetMark(num, dcActiveDay);
+  lanes.push({ name: 'Ignition / power', lane: true, off: [], events: [], bands: bands,
+               marks: rs ? [{ h: H(rs.min), title: 'Component alerts reset ' + dcHM(rs.min) + ' \u2014 cleared: ' + rs.cleared }] : [] });
   return lanes;
 }
 function dcTrinitySummary(num) {
@@ -6174,6 +6268,8 @@ function buildMobileTimeline(target) {
         <span class="i${st.ocCount ? ' oc' : ''}"><b>${st.ocCount}</b> off-cycle</span>
         <span class="i q">every ${DC_BEAT_MIN} min</span>
         <span class="i q">last <b>${dcHM(st.lastMsg)}</b></span>
+        ${(() => { const rs = dcResetMark(num, dcActiveDay);
+           return rs ? `<span class="i rs"><span class="tl-reset-i"></span>reset <b>${dcHM(rs.min)}</b></span>` : ''; })()}
       </div>
       <div class="mtl-list">${ignCard}${cards}</div>
       <div class="mtl-foot">Tap an event to open it in Truck Log</div>
@@ -6547,6 +6643,7 @@ function buildMessageTimeline(target) {
     <span><span class="lg na"></span>Not installed</span>
     <span><span class="lg tick"></span>Status message</span>
     <span><span class="lg tick oc"></span>Off-cycle message</span>
+    <span><span class="lg-reset"></span>Alerts reset</span>
   </div>`;
 
   panel.innerHTML = `
@@ -6599,6 +6696,8 @@ function dcRenderRows(idx) {
   const mk = (dcTlMark && dcTlMark.day === idx) ? dcTlMark : null;
   const markLead = mk ? `<span class="dc-mark lead" data-t="${dcHM(mk.min)}" style="left:${pct(mk.min)}%"></span>` : '';
   const markPlain = mk ? `<span class="dc-mark" style="left:${pct(mk.min)}%"></span>` : '';
+  const rs = dcResetMark(num, idx);
+  const resetDot = rs ? `<span class="tl-reset" style="left:${pct(rs.min)}%" data-tip="${dcTip(dcResetTipHtml(rs))}"></span>` : '';
 
   /* Header line: the cadence question, answered in words */
   const metaEl = dcTlRoot.querySelector('#dc-tl2-meta');
@@ -6694,7 +6793,7 @@ function dcRenderRows(idx) {
 
   host.innerHTML =
     `<div class="lbl axis"></div><div class="trk axis">${axis}</div>` +
-    `<div class="lbl lane">Status messages</div><div class="trk">${ticks}${nowMark}${markLead}</div>` +
+    `<div class="lbl lane">Status messages</div><div class="trk">${ticks}${nowMark}${markLead}${resetDot}</div>` +
     `<div class="lbl lane">Ignition / power</div><div class="trk">${ignSpans.join('')}${nowMarkPlain}${markPlain}</div>` +
     rowHtml.map((r, i) => (i === 0 ? r.lbl.replace('class="lbl', 'class="lbl rule') + r.trk.replace('class="trk', 'class="trk rule') : r.lbl + r.trk)).join('');
 }
@@ -8010,6 +8109,10 @@ function toggleBigFleet() {
       if (r() < 0.08) a.disconnected = true;
       if (r() < 0.10) { a.dps = true; a.cps = true; }
       TRUCK_ALERTS[num] = a;
+      /* offline trucks are mostly done for the day; a few stopped
+         reporting mid-shift. Online trucks are mostly working, some
+         parked inside the ~60 min window. */
+      DC_IGNITION[num] = a.disconnected ? (r() < 0.3 ? 'on' : 'off') : (r() < 0.15 ? 'off' : 'on');
       DC_TRUCK_ORDER.push(num);
       const tr = tpl.cloneNode(true);
       tr.dataset.demo = '1';
@@ -8018,12 +8121,6 @@ function toggleBigFleet() {
       tr.querySelector('.comp-cell').dataset.truck = num;
       const mc = tr.querySelector('.mode-cell'); if (mc) mc.dataset.modeTruck = num;
       tr.querySelector('.atplant').innerHTML = r() < 0.25 ? 'Yes' : 'No';
-      const conn = tr.querySelector('.conn');
-      conn.className = 'conn' + (a.disconnected ? ' off' : '');
-      conn.innerHTML = a.disconnected
-        ? '<i>&#128683;</i><em>Offline</em>' : '<i>((&#8226;))</i><em>Online</em>';
-      tr.querySelector('.ign').innerHTML = a.disconnected
-        ? '<span class="dot"></span> Off' : '<span class="dot on"></span> On';
       const al = tr.querySelector('td.alert');
       if (al) { al.innerHTML = a.flow ? 'Flow rate is lower than expected'
                 : a.accel ? 'Accelerometer not working' : ''; delete al.dataset.orig; }
@@ -8033,11 +8130,13 @@ function toggleBigFleet() {
     tb.querySelectorAll('tr[data-demo]').forEach(tr => {
       const num = tr.querySelector('.tname').textContent;
       delete TRUCK_ALERTS[num];
+      delete DC_IGNITION[num];
       const i = DC_TRUCK_ORDER.indexOf(num);
       if (i > -1) DC_TRUCK_ORDER.splice(i, 1);
       tr.remove();
     });
   }
+  dcRenderLinkCells();
   dcShown = DC_PAGE;
   dcPageNo = 0;
   dcClearStreams();
@@ -8331,6 +8430,7 @@ function dcResetRun() {
       .filter(it => !it.live && raw[it.key] && dcStillFaulting(num, it.key))
       .map(it => it.key);
     dcAlertReset[num] = {
+      ts: Date.now(),   /* where the timeline draws its reset mark */
       at: new Date().toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }),
       cleared: cleared.slice(),
       back: back,
@@ -8349,8 +8449,32 @@ function dcResetRun() {
   }, items.length * STEP + 900);   /* hold the summary long enough to read */
 }
 
+/* The reset as a timeline mark: which day it falls on, the minute of
+   that day, and what it cleared. Null when this truck has no reset on
+   the day being shown. */
+function dcResetMark(num, dayIdx) {
+  const r = dcAlertReset[num];
+  if (!r || !r.ts || !dcResetActive()) return null;
+  const at = new Date(r.ts);
+  const day0 = new Date(); day0.setHours(0, 0, 0, 0);
+  const atDay = new Date(at); atDay.setHours(0, 0, 0, 0);
+  const idx = 6 - Math.round((day0 - atDay) / 86400000);
+  if (idx !== dayIdx) return null;
+  return { min: at.getHours() * 60 + at.getMinutes(), at: r.at,
+           cleared: (r.cleared || []).join(', ') || 'recent fault history',
+           sec: Math.round(r.ts / 1000) };
+}
+function dcResetTipHtml(mk) {
+  return '<div class="tt">Component alerts reset \u00B7 ' + dcHM(mk.min) + '</div>' +
+         '<div class="tm">Cleared: ' + mk.cleared + '</div>' +
+         '<div class="tm">Anything still failing comes back on the next message.</div>';
+}
+
 /* Push the reset through the surfaces that read the fault set */
 function dcApplyAlertReset() {
+  /* the open timeline picks up the reset mark straight away */
+  if (dcTlRoot && dcTlRoot.isConnected && dcTlRoot.innerHTML)
+    requestAnimationFrame(() => buildTimeline(dcTlRoot === document.getElementById('panel-timeline') ? null : dcTlRoot));
   const num = dcCurrentTruck;
   const a = dcAlertsFor(num);
   const item = (n, d) => '<div class="tk-err-item"><span class="n">' + n + '</span><span class="d">&#8211; ' + d + '</span></div>';
@@ -8892,6 +9016,7 @@ buildOverview('1219');
    in Options, and #current still deep-links straight to it. */
 (function () {
   setFleetCard(dcFleetCard);
+  dcRenderLinkCells();
   const got = dcSlugFromUrl();
   if (got) { if (got.skin) setTrinitySkin(true); setProtoView(got.mode); }
   else setProtoView('current-mobile');

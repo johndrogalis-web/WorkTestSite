@@ -539,6 +539,44 @@ body.vp-m .pager-range{min-width:0}
 }
 .val-dl:hover{color:var(--text)}
 
+/* blocked state: no ticket / no discharge on record, so no date or time to submit against */
+.f-block{
+  display:none;gap:12px;align-items:flex-start;
+  background:var(--amber-tint);border:1px solid var(--amber);
+  border-radius:var(--radius-sm);padding:14px 16px;
+}
+.f-block.show{display:flex}
+.f-block svg{flex-shrink:0;color:var(--amber);margin-top:1px}
+.f-block-title{font-weight:700;font-size:13.5px;margin-bottom:3px}
+.f-block-body{font-size:12.5px;color:var(--muted);line-height:1.55}
+.f-block-body strong{color:var(--text);font-weight:600}
+.f-field.dim{opacity:.4;pointer-events:none}
+.submit-hint{font-size:11.5px;color:var(--faint);text-align:center;margin-top:10px;display:none}
+.submit-hint.show{display:block}
+
+/* inline success banner above the report table */
+.sub-banner{
+  display:none;gap:12px;align-items:flex-start;
+  background:var(--green-tint);border:1px solid var(--green);
+  border-radius:var(--radius-sm);padding:12px 14px 12px 16px;margin-top:16px;
+}
+.sub-banner.show{display:flex}
+.sub-banner > svg{flex-shrink:0;color:var(--green);margin-top:2px}
+.sub-banner-text{flex:1;font-size:13.5px;line-height:1.5;color:var(--text)}
+.sub-banner-text strong{font-weight:700}
+.sub-banner-text span{color:var(--muted)}
+.sub-banner-x{
+  background:none;border:0;color:var(--muted);cursor:pointer;padding:4px;
+  display:flex;border-radius:6px;flex-shrink:0;
+}
+.sub-banner-x:hover{color:var(--text);background:var(--hover-row)}
+body.vp-m .sub-banner{margin-top:12px;padding:10px 10px 10px 12px}
+body.vp-m .sub-banner-text{font-size:12.5px}
+/* newly added row: brief green wash so the eye lands on it */
+@keyframes rowNew{0%,55%{background:var(--green-tint)}100%{background:transparent}}
+tbody tr.row-new{animation:rowNew 4.5s ease-out forwards}
+@media (prefers-reduced-motion:reduce){tbody tr.row-new{animation:none;background:var(--green-tint)}}
+
 /* success state */
 .val-success{
   display:flex;gap:12px;align-items:flex-start;
@@ -744,9 +782,9 @@ body.vp-m #slumpTable th:last-child{font-size:0} /* icon-only column needs no he
 body.vp-m .act-cell{padding-left:0;padding-right:8px}
 body.vp-m .del-btn{padding:5px}
 /* two-digit year on mobile */
-.d-short{display:none}
-body.vp-m .d-full{display:none}
-body.vp-m .d-short{display:inline}
+.td-time span.d-short{display:none}
+body.vp-m .td-time span.d-full{display:none}
+body.vp-m .td-time span.d-short{display:block}
 
 /* slump table: mobile keeps chevron, Date, Time, Tester, Truck */
 body.vp-m #slumpTable th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(5)):not(:nth-child(6)):not(:last-child),
@@ -1014,12 +1052,18 @@ body.vp-m .form-submit-wrap .btn-primary{width:100%}
           <button class="icon-btn" title="Download"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg></button>
           <button class="btn btn-primary" onclick="openDrawer()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-            Add Slump Test Report
+            Add Slump Test
           </button>
         </div>
       </div>
 
       <div class="filter-bar" id="filterBarSlump"></div>
+
+      <div class="sub-banner" id="slumpSuccess" role="status" aria-live="polite">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        <div class="sub-banner-text" id="slumpSuccessText"></div>
+        <button class="sub-banner-x" onclick="hideSlumpSuccess()" title="Dismiss"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
 
       <div class="tbl-wrap">
         <table id="slumpTable" style="min-width:3400px">
@@ -1100,18 +1144,27 @@ body.vp-m .form-submit-wrap .btn-primary{width:100%}
           </select>
           <div class="f-error-msg">Select the ticket this test belongs to.</div>
         </div>
-        <div class="f-field">
+        <div class="f-field full" id="fBlockWrap" style="display:none">
+          <div class="f-block" id="fBlock" role="alert">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>
+            <div>
+              <div class="f-block-title">This slump test can't be submitted yet</div>
+              <div class="f-block-body" id="fBlockBody"></div>
+            </div>
+          </div>
+        </div>
+        <div class="f-field f-down">
           <label class="f-label" for="fDate">Slump Test Date</label>
           <input class="f-input" id="fDate" type="text" readonly tabindex="-1" placeholder="Pulled from ticket" value="">
         </div>
-        <div class="f-field" id="fTimeField">
+        <div class="f-field f-down" id="fTimeField">
           <label class="f-label" for="fTime">Slump Test Time<span class="req">*</span></label>
           <select class="f-select" id="fTime" disabled onchange="onTimeChange()">
             <option value="">Select a discharge time</option>
           </select>
           <div class="f-error-msg">Select the discharge time this test was taken at.</div>
         </div>
-        <div class="f-field">
+        <div class="f-field f-down">
           <label class="f-label" for="fTester">Tester</label>
           <select class="f-select" id="fTester">
             <option value="">Select tester name</option>
@@ -1119,29 +1172,29 @@ body.vp-m .form-submit-wrap .btn-primary{width:100%}
           </select>
         </div>
 
-        <div class="f-field" id="fSlumpField">
+        <div class="f-field f-down" id="fSlumpField">
           <label class="f-label" for="fSlump">Measured Slump mm<span class="req">*</span></label>
-          <div class="f-error-above"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg><span id="fSlumpErrTxt">Measured slump must be between 0 and 250 mm.</span></div>
+          <div class="f-error-above"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg><span id="fSlumpErrTxt">Measured slump must be between 0 and 900 mm.</span></div>
           <input class="f-input" id="fSlump" type="text" inputmode="decimal" placeholder="" oninput="validateRange('fSlump')">
         </div>
-        <div class="f-field" id="fTempField">
+        <div class="f-field f-down" id="fTempField">
           <label class="f-label" for="fTemp">Manual Concrete Temperature C°</label>
           <div class="f-error-above"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg><span id="fTempErrTxt">Concrete temperature must be between 5 and 40 °C.</span></div>
           <input class="f-input" id="fTemp" type="text" inputmode="decimal" placeholder="" oninput="validateRange('fTemp')">
         </div>
 
-        <div class="f-field" id="fWeightField">
+        <div class="f-field f-down" id="fWeightField">
           <label class="f-label" for="fWeight">Unit Weight kg/m³</label>
           <div class="f-error-above"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg><span id="fWeightErrTxt">Unit weight must be between 1,400 and 2,800 kg/m³.</span></div>
           <input class="f-input" id="fWeight" type="text" inputmode="decimal" placeholder="" oninput="validateRange('fWeight')">
         </div>
-        <div class="f-field" id="fAirField">
+        <div class="f-field f-down" id="fAirField">
           <label class="f-label" for="fAir">Air Content %</label>
           <div class="f-error-above"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg><span id="fAirErrTxt">Air content must be between 0 and 30%.</span></div>
           <input class="f-input" id="fAir" type="text" inputmode="decimal" placeholder="" oninput="validateRange('fAir')">
         </div>
 
-        <div class="f-field">
+        <div class="f-field f-down">
           <label class="f-label" for="fShape">Shape</label>
           <div class="shape-row">
             <select class="f-select" id="fShape" onchange="drawShape()">
@@ -1152,7 +1205,7 @@ body.vp-m .form-submit-wrap .btn-primary{width:100%}
           </div>
         </div>
 
-        <div class="f-field full">
+        <div class="f-field full f-down">
           <button type="button" class="note-toggle" id="noteToggle" onclick="toggleNote()" aria-expanded="false" aria-controls="noteBody">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
             <span id="noteToggleLabel">Add a note</span>
@@ -1164,8 +1217,9 @@ body.vp-m .form-submit-wrap .btn-primary{width:100%}
       </div>
 
       <div class="form-submit-wrap">
-        <button class="btn btn-primary" onclick="saveSingleTest()">Submit</button>
+        <button class="btn btn-primary" id="formSubmitBtn" onclick="saveSingleTest()">Submit</button>
       </div>
+      <div class="submit-hint" id="submitHint">Submit is unavailable until a ticket with a discharge time is selected.</div>
     </div>
 
     <!-- ============ MODE 2: CSV upload ============ -->
@@ -1280,8 +1334,11 @@ const FLEET = {
     {t:"66103", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"09/02/2026", tslump:"100 mm", size:"8.5 m³",
      times:[{t:"4:20 PM", d:"09/02/2026"}]},
     {t:"66120", order:"470", mix:"10369291", cust:"Lakeview Builders", loc:"Leesburg", date:"09/08/2026", tslump:"150 mm", size:"9.0 m³",
-     times:[{t:"9:10 AM", d:"09/08/2026"},{t:"12:35 PM", d:"09/08/2026"}]}
+     times:[{t:"9:10 AM", d:"09/08/2026"},{t:"12:35 PM", d:"09/08/2026"}]},
+    {t:"66125", order:"470", mix:"10369291", cust:"Lakeview Builders", loc:"Leesburg", date:"", tslump:"150 mm", size:"9.0 m³",
+     times:[]} // ticketed but not yet discharged: no date/time exists to test against
   ],
+  "HS2101": [], // truck is in the fleet but has no tickets on record
   "71750": [
     {t:"66097", order:"454", mix:"10369262", cust:"W&S Concrete INC", loc:"Wildwood", date:"06/25/2026", tslump:"100 mm", size:"8.0 m³",
      times:[{t:"8:12 AM", d:"06/25/2026"}]},
@@ -1325,6 +1382,7 @@ function resetDrawer(){
   closeTruckCombo();
   setTruck(null);
   ['fTruckField','fTicketField','fTimeField','fSlumpField','fTempField','fWeightField','fAirField'].forEach(id=>document.getElementById(id).classList.remove('invalid'));
+  unblockForm();
   ['fSlump','fNote','fTemp','fWeight','fAir'].forEach(id=>document.getElementById(id).value='');
   resetTimeSelect();
   document.getElementById('fTester').value='';
@@ -1398,20 +1456,45 @@ function pickTruck(name){
   closeTruckCombo();
   setTruck(name);
 }
-/* apply a truck selection: populate its tickets, or a no-tickets state for unlisted trucks */
+/* ---- blocked state: a slump test needs a ticket with a discharge on record (that's where date + time come from) ---- */
+function blockForm(reason, ref){
+  const body = document.getElementById('fBlockBody');
+  if(reason === 'no-ticket'){
+    body.innerHTML = `No ticket was found for <strong>${ref}</strong>. Check the truck name, or come back once this load has been ticketed.`;
+  } else {
+    body.innerHTML = `Ticket <strong>${ref}</strong> has no date or discharge time recorded yet. Choose a different ticket, or come back once the load has discharged.`;
+  }
+  document.getElementById('fBlockWrap').style.display = '';
+  document.getElementById('fBlock').classList.add('show');
+  document.querySelectorAll('#modeForm .f-down').forEach(f=>f.classList.add('dim'));
+  document.getElementById('formSubmitBtn').disabled = true;
+  document.getElementById('submitHint').classList.add('show');
+}
+function unblockForm(){
+  document.getElementById('fBlockWrap').style.display = 'none';
+  document.getElementById('fBlock').classList.remove('show');
+  document.querySelectorAll('#modeForm .f-down').forEach(f=>f.classList.remove('dim'));
+  document.getElementById('formSubmitBtn').disabled = false;
+  document.getElementById('submitHint').classList.remove('show');
+}
+function formBlocked(){ return document.getElementById('formSubmitBtn').disabled; }
+
+/* apply a truck selection: populate its tickets, or a blocked state when there are none */
 function setTruck(truck){
   const tk = document.getElementById('fTicket');
   selectedTicket = null;
   resetTimeSelect();
+  unblockForm();
   if(!truck){
     tk.innerHTML = '<option value="">Select a ticket</option>';
     tk.disabled = true;
     return;
   }
   const tickets = FLEET[truck];
-  if(!tickets){
-    tk.innerHTML = `<option value="">No tickets found for ${truck}</option>`;
+  if(!tickets || tickets.length === 0){
+    tk.innerHTML = `<option value="">No tickets for ${truck}</option>`;
     tk.disabled = true;
+    blockForm('no-ticket', truck);
     return;
   }
   tk.innerHTML = '<option value="">Select a ticket</option>' +
@@ -1429,9 +1512,11 @@ function onTicketChange(){
   const truck = document.getElementById('fTruck').value;
   const num = document.getElementById('fTicket').value;
   resetTimeSelect();
+  unblockForm();
   if(!truck || !num){ selectedTicket = null; return; }
   const x = FLEET[truck].find(t=>t.t===num);
   selectedTicket = x;
+  if(!x.times.length){ blockForm('no-discharge', x.t); return; }
   // discharge times come from the ticket; each discharge carries its own date
   // (a load can cross midnight, so the date follows the selected time)
   const tm = document.getElementById('fTime');
@@ -1478,8 +1563,8 @@ function updateNoteLabel(){
 
 /* range guards for measured values — catches typos like 2000 instead of 200 */
 const RANGES = {
-  fSlump:  { field:'fSlumpField',  err:'fSlumpErrTxt',  min:0,   max:280,  unit:'mm',
-             msg:'Measured slump must be between 0 and 280 mm.' },
+  fSlump:  { field:'fSlumpField',  err:'fSlumpErrTxt',  min:0,   max:900,  unit:'mm',
+             msg:'Measured slump must be between 0 and 900 mm.' },
   fTemp:   { field:'fTempField',   err:'fTempErrTxt',   min:0,   max:70,   unit:'°C',
              msg:'Concrete temperature must be between 0 and 70 °C.' },
   fWeight: { field:'fWeightField', err:'fWeightErrTxt', min:200, max:6000, unit:'kg/m³',
@@ -1523,6 +1608,7 @@ function drawShape(){
 
 /* ============ form: save ============ */
 function saveSingleTest(){
+  if(formBlocked()) return;
   let ok = true;
   const truck = document.getElementById('fTruck').value;
   const ticket = document.getElementById('fTicket').value;
@@ -1550,7 +1636,7 @@ function saveSingleTest(){
   };
   const timeVal = document.getElementById('fTime').value;
   const dtEntry = x.times.find(e=>e.t===timeVal);
-  addSlumpRows([{
+  const added = addSlumpRows([{
     date: dtEntry ? dtEntry.d : x.date,             // date follows the selected discharge (loads can cross midnight)
     time: timeVal,
     sub: CURRENT_USER,                              // submitter is always the verifi login
@@ -1563,7 +1649,26 @@ function saveSingleTest(){
     notes: document.getElementById('fNote').value.trim()
   }]);
   closeDrawer();
-  protoToast('Slump test submitted — '+truck+' · ticket '+ticket);
+  showSlumpSuccess(`<strong>Slump test added</strong>`, added);
+}
+
+/* ---- success banner: sits above the table so it's seen where the row landed ---- */
+let successTimer = null;
+function showSlumpSuccess(html, rows){
+  document.getElementById('slumpSuccessText').innerHTML = html;
+  document.getElementById('slumpSuccess').classList.add('show');
+  (rows || []).forEach(tr=>{
+    tr.classList.remove('row-new'); void tr.offsetWidth; // restart the animation if reused
+    tr.classList.add('row-new');
+    tr.addEventListener('animationend', ()=>tr.classList.remove('row-new'), {once:true});
+  });
+  document.querySelector('.main').scrollTo({top:0, behavior:'smooth'});
+  clearTimeout(successTimer);
+  successTimer = setTimeout(hideSlumpSuccess, 8000);
+}
+function hideSlumpSuccess(){
+  clearTimeout(successTimer);
+  document.getElementById('slumpSuccess').classList.remove('show');
 }
 
 /* add rows to the report table + update count */
@@ -1575,6 +1680,7 @@ function cell(v, cls){
 }
 function addSlumpRows(rows){
   const tb = document.getElementById('slumpTbody');
+  const made = [];
   rows.forEach(r=>{
     const tr = document.createElement('tr');
     tr.dataset.truck = r.truck;
@@ -1597,8 +1703,10 @@ function addSlumpRows(rows){
       cell(r.sensor) +
       '<td class="act-cell"><button class="del-btn" title="Delete slump test" onclick="deleteSlumpRow(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button></td>';
     tb.insertBefore(tr, tb.firstChild);
+    made.push(tr);
   });
   applyFilters('slump');
+  return made;
 }
 
 /* seed data: the four reports visible on first load */
@@ -2063,9 +2171,9 @@ function finishImport(count){
       shape:shapes[i%shapes.length], temp:(23+i*0.5)+' °C', air:(3.8+(i%4)*0.2).toFixed(1)+' %',
       weight:(2330+i*5).toLocaleString()+' kg/m³', buildUp:['OK','OK','Warning','OK','Problem','OK'][i%6]});
   }
-  addSlumpRows(rows);
+  const added = addSlumpRows(rows);
   closeDrawer();
-  protoToast(count + ' slump tests imported from CSV — ' + shown + ' shown as a sample');
+  showSlumpSuccess(`<strong>${count} slump tests added</strong>`, added);
 }
 
 /* ============ toast ============ */

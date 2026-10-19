@@ -70,17 +70,5 @@
   });
 })();
 </script>
-<script>
-(function(){
-  document.querySelectorAll('.vf-field.live').forEach(function(f){
-    var c=f.querySelector('input,textarea'); if(!c) return; var helper=f.querySelector('.vf-helper'); var orig=helper.innerHTML;
-    var numeric=/Truck/.test(f.querySelector('.vf-label').textContent);
-    c.addEventListener('input',function(){ f.classList.toggle('filled',c.value.length>0); if(f.classList.contains('error')){ f.classList.remove('error'); c.removeAttribute('aria-invalid'); helper.classList.remove('err'); helper.innerHTML=orig; } });
-    c.addEventListener('blur',function(){
-      if(numeric && c.value && !/^\d+$/.test(c.value)){ f.classList.add('error'); c.setAttribute('aria-invalid','true'); helper.classList.add('err'); helper.setAttribute('role','alert'); helper.innerHTML='<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.4"/><path d="M8 4.8v3.8M8 10.8v.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span>Enter a truck number using digits only</span>'; }
-    });
-  });
-})();
-</script>
 </body>
 </html>

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trinity — Responsive table (desktop / tablet / phone)</title>
+<style>
+/* ============================================================
+   Base tokens — lifted from design-system/assets/css/site.css
+   ============================================================ */
+:root{
+  --sans:'ABC Repro','Helvetica Neue',Helvetica,Arial,sans-serif;
+  --mono:'DM Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --bg:#fff; --l2:#f6f4f2; --tx:#36322d; --tx2:#36322dc2; --tx3:#36322d9e;
+  --bd:#36322d24;
+  --tick:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M5 7.3333 7.4 10 11 6' fill='none' stroke='%23000' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --dash:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='4' y='7.5' width='8' height='1' rx='.5' fill='%23000'/%3E%3C/svg%3E");
+  --cbxst:#171614;--cbxbg:#fff;--cbxon:#211f1c;--cbxtk:#fff;
+  --cbxhv:#d0cec8;--cbxfo:#171614;--cbxfi:#d0cec8;--cbxlb:#171614;
+  --bdgd:#e3f200;--bdgtx:#171614;--bdga:#c5e4fb;
+  --pbtrack:#dfdedd;--pbring:#7f796c;--pbfill:#171614;
+  --link:#0975c3;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:var(--sans);background:var(--l2);color:var(--tx);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased}
+.pg{max-width:1100px;margin:0 auto;padding:32px 24px 72px}
+h1{font-size:26px;font-weight:500;letter-spacing:-.4px;margin:0 0 6px}
+.lede{color:var(--tx2);margin:0 0 24px;max-width:72ch}
+h2{font-size:18px;font-weight:500;margin:34px 0 8px}
+p{margin:0 0 12px;max-width:78ch}
+.m{font-family:var(--mono);font-size:12.5px}
+.note{border-left:3px solid #171614;background:#fff;padding:12px 14px;border-radius:0 8px 8px 0;margin:0 0 16px}
+.note b{font-weight:600}
+.cap{font-size:12.5px;color:var(--tx3);margin-top:8px}
+.tw{background:#fff;border:1px solid var(--bd);border-radius:8px;overflow:auto;margin:12px 0 0}
+.tw table{width:100%;border-collapse:collapse;font-size:13px}
+.tw th,.tw td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--bd);vertical-align:top}
+.tw th{font-weight:500;white-space:nowrap}
+.tw tr:last-child td{border-bottom:0}
+ul.checklist{margin:0;padding-left:18px;max-width:78ch}
+ul.checklist li{margin-bottom:7px}
+
+/* ============================================================
+   RESIZER HARNESS (vf-rsz) — site.css 1176-1180
+   ============================================================ */
+.vf-rsz{border:1px dashed var(--bd);border-radius:12px;padding:12px;margin:0 0 16px;background:var(--bg)}
+.vf-rsz-bar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px;font-size:13px;color:var(--tx2)}
+.vf-rsz-bar input[type=range]{width:280px;max-width:50vw;vertical-align:middle;margin-left:8px}
+.vf-rsz-w{font-family:var(--mono);font-size:12px}
+.vf-rsz-steps{display:flex;gap:6px;margin-left:auto}
+.vf-rsz-steps button{font:500 12px/1 var(--sans);padding:7px 13px;border-radius:32px;border:1px solid var(--bd);
+  background:#fff;color:#171614;cursor:pointer}
+.vf-rsz-steps button[aria-pressed="true"]{background:#171614;color:#fff;border-color:#171614}
+.vf-rsz-box{--pbtrack:#dfdedd;--pbring:#7f796c;--pbfill:#171614;
+  max-width:100%;border:1px solid var(--bd);border-radius:8px;overflow:hidden;background:#fff;transition:width .15s}
+
+/* ============================================================
+   TABLE REVISED (v3) — table/row/* + table/cell/* tokens, light only
+   site.css 1118-1174. Class names kept so this pastes straight back
+   into the design-system site / a Hub prototype.
+   ============================================================ */
+.vf-tbl-wrap{width:100%;overflow-x:auto}
+.vf-rsz-box .vf-tbl-wrap{container-type:inline-size;container-name:tbl;overflow-x:hidden}
+
+.vf-tbl{--trow:#FFFFFF;--trowh:#F6F4F2;--trows:#EEF9FF;--tacc:#DFDEDD;--tline:#D0CEC8;
+  --thline:#171614;--tink:#171614;--tsub:#565147;--tacck:#565147;
+  width:100%;border-collapse:collapse;font-family:var(--sans);font-size:14px;line-height:1.3;
+  color:var(--tink);text-align:left}
+.vf-tbl th{height:42px;padding:0 8px;font-weight:500;font-size:14px;background:var(--trow);
+  color:var(--tink);border-bottom:2px solid var(--thline);white-space:nowrap;vertical-align:middle}
+.vf-tbl th:hover{background:var(--trowh)}            /* header CELL hover; the header row has none */
+.vf-tbl th .srt{display:inline-flex;align-items:center;gap:6px;background:none;border:0;padding:0;
+  font:inherit;color:inherit;cursor:pointer}
+.vf-tbl th .srt svg{width:11px;height:11px;opacity:.45;flex:none}
+.vf-tbl th.asc .srt svg,.vf-tbl th.desc .srt svg{opacity:1}
+.vf-tbl th .srt:focus-visible{outline:0;box-shadow:0 0 0 2px var(--thline);border-radius:2px}
+.vf-tbl td{height:42px;padding:0 8px;background:var(--trow);border-bottom:1px solid var(--tline);
+  white-space:nowrap;vertical-align:middle;color:var(--tink)}
+.vf-tbl tr:hover td{background:var(--trowh)}
+.vf-tbl tr.sel td{background:var(--trows)}
+.vf-tbl tr.open td{border-bottom-color:transparent}
+.vf-tbl .pick{width:24px;padding-right:0}
+.vf-tbl a{color:var(--link);text-decoration:underline;text-underline-offset:2px}
+.vf-tbl .vf-tbl-dash{color:var(--tsub)}
+.vf-tbl .t-pbar{display:block;width:100%}
+.vf-tbl tbody tr.vf-tbl-small-toggle{cursor:pointer}
+
+.vf-tbl-chev{width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;
+  border:0;background:transparent;color:var(--tink);cursor:pointer;padding:0;border-radius:50%}
+.vf-tbl-chev::before{content:"";width:9px;height:9px;border-right:1.6px solid currentColor;
+  border-bottom:1.6px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .15s}
+.vf-tbl tr.open .vf-tbl-chev::before{transform:translateY(2px) rotate(225deg)}
+.vf-tbl-chev:hover{background:rgba(127,121,108,.18)}
+.vf-tbl-chev:focus-visible{outline:0;box-shadow:0 0 0 2px var(--thline)}
+
+/* Accordion Content */
+.vf-tbl-acc td{padding:0;height:auto;background:var(--trow);border-bottom:1px solid var(--tline);white-space:normal}
+.vf-tbl-acc[hidden]{display:none}
+.vf-tbl-accbox{background:var(--tacc);padding:10px 16px 10px 64px;font-size:13px}
+.vf-tbl-accbox dl{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:4px 16px}
+.vf-tbl-accbox dt{color:var(--tacck);font-weight:500}
+.vf-tbl-accbox dd{margin:0;color:var(--tink)}
+.vf-tbl-acc-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 32px}
+.vf-tbl-accbox .okmark{color:#15322f;font-weight:600}
+.vf-tbl-acc-cta{display:inline-flex;align-items:center;justify-content:center;margin-top:12px;
+  height:40px;padding:0 20px;border-radius:32px;background:#0975C3;color:#fff;
+  text-decoration:none;font-weight:500;font-size:14px}
+.vf-tbl-acc-small{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}
+.vf-tbl-acc-small div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.vf-tbl-acc-small b{font-weight:500;color:var(--tacck);font-size:12px}
+.vf-tbl-acc-small span{color:var(--tink);white-space:normal}
+.vf-tbl-acc-small .t-pbar{max-width:160px;margin-top:4px}
+
+/* ---- HOW IT BREAKS — container queries on the wrapper.
+        The table stays a <table> at every width. Real product
+        breakpoints: 900 (tablet) and 600 (phone).              ---- */
+@container tbl (max-width:899px){
+  .vf-tbl [data-k="Load progress"]{display:none}       /* lowest-priority droppable column leaves */
+  .vf-tbl .vf-tbl-accbox{padding-left:40px}
+}
+@container tbl (max-width:599px){
+  .vf-tbl [data-k="Load progress"],.vf-tbl [data-k="Customer"]{display:none}
+  .vf-tbl th,.vf-tbl td{font-size:12.5px;padding:0 5px}
+  .vf-tbl th{height:36px}
+  .vf-tbl td{height:40px;overflow:hidden;text-overflow:ellipsis;max-width:120px}
+  .vf-tbl .pick{padding:0 2px}
+  .vf-tbl .vf-tbl-accbox{padding:12px}
+  .vf-tbl-acc-small{grid-template-columns:1fr 1fr}
+}
+
+/* ---- component atoms used inside cells ---- */
+.c-phase{font-size:12px;line-height:1;padding:5px 10px;border-radius:32px;white-space:nowrap;
+  display:inline-block;color:#fff}
+.c-ph-waiting{background:#644325}.c-ph-loading{background:#9a1f1e}.c-ph-loaded{background:#887f13}
+.c-ph-tojob{background:#1e6252}.c-ph-onsite{background:#872781}.c-ph-pouring{background:#101010}
+.c-ph-washing{background:#126886}.c-ph-return{background:#9c0f5a}
+
+.c-cbx{display:inline-flex;align-items:center;gap:4px;font-size:14px;color:var(--cbxlb);cursor:pointer}
+.c-cbx i{width:24px;height:24px;flex:none;position:relative;font-size:0;font-style:normal;line-height:0;
+  display:inline-flex;align-items:center;justify-content:center}
+.c-cbx i::before{content:"";width:16px;height:16px;box-sizing:border-box;border-radius:2px;
+  border:1px solid var(--cbxst);background:var(--cbxbg);transition:background .14s,border-color .14s}
+.c-cbx i::after{content:"";position:absolute;width:16px;height:16px;opacity:0;background:var(--cbxtk);
+  -webkit-mask:var(--tick) center/16px 16px no-repeat;mask:var(--tick) center/16px 16px no-repeat}
+.c-cbx.on i::before,.c-cbx.ind i::before{background:var(--cbxon);border-color:var(--cbxon)}
+.c-cbx.on i::after,.c-cbx.ind i::after{opacity:1}
+.c-cbx.ind i::after{-webkit-mask-image:var(--dash);mask-image:var(--dash)}
+.c-cbx:hover i::before{box-shadow:0 0 0 2px var(--cbxhv)}
+
+.t-pbar{width:100%;max-width:280px;height:8px;border-radius:4px;background:var(--pbtrack);
+  overflow:hidden;box-shadow:inset 0 0 0 1px var(--pbring)}
+.t-pbar > i{display:block;height:100%;border-radius:4px;background:var(--pbfill);transition:width .24s var(--ease)}
+.t-pbar.sm{height:4px;border-radius:2px}.t-pbar.sm > i{border-radius:2px}
+@media (prefers-reduced-motion:reduce){.t-pbar > i{transition:none}}
+
+.t-badge{display:inline-flex;align-items:center;justify-content:center;height:20px;padding:0 8px;
+  border-radius:16px;font-size:12px;line-height:1;font-weight:500;background:var(--bdgd);color:var(--bdgtx)}
+.t-badge.num{max-width:40px;overflow:hidden}
+</style>
+</head>
+<body>
+<div class="pg">
+
+<h1>Responsive table</h1>
+<p class="lede">The same table at desktop, tablet and phone. Figma draws the desktop table; what happens below that
+is the house rule already used by the Hub prototypes — the table stays a table, columns drop by priority, a chevron
+column appears, and the dropped columns come back inside the row when it is opened.</p>
+
+<div class="note"><b>It is never a card.</b> Rows do not turn into stacked cards on a phone; that pattern got pushed
+back by users. The header stays, the row shows only its top data points, and expanding the row shows the rest.</div>
+
+<div class="vf-rsz" data-live-resize>
+  <div class="vf-rsz-bar">
+    <label>Container width <input type="range" min="320" max="1120" value="1120" step="10" aria-label="Container width"></label>
+    <span class="vf-rsz-w"><b>1120px</b> &middot; desktop</span>
+    <span class="vf-rsz-steps">
+      <button type="button" data-w="1120" aria-pressed="true">Desktop</button>
+      <button type="button" data-w="760" aria-pressed="false">Tablet</button>
+      <button type="button" data-w="420" aria-pressed="false">Phone</button>
+    </span>
+  </div>
+
+  <div class="vf-rsz-box" style="width:1120px">
+    <div class="vf-tbl-wrap" data-live-table>
+      <table class="vf-tbl">
+        <thead>
+          <tr>
+            <th class="pick"></th>
+            <th class="pick"><span class="c-cbx" aria-hidden="true"><i></i></span></th>
+            <th scope="col" data-k="Truck"><button class="srt" type="button" aria-sort="none">Truck<svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 1.6v8.8M3 4.2L6 1.4l3 2.8M3 7.8L6 10.6l3-2.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></th>
+            <th scope="col" data-k="Phase"><button class="srt" type="button" aria-sort="none">Phase<svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 1.6v8.8M3 4.2L6 1.4l3 2.8M3 7.8L6 10.6l3-2.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></th>
+            <th scope="col" data-k="Customer"><button class="srt" type="button" aria-sort="none">Customer<svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 1.6v8.8M3 4.2L6 1.4l3 2.8M3 7.8L6 10.6l3-2.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></th>
+            <th scope="col" data-k="Load progress">Load progress</th>
+            <th scope="col" data-k="Alerts">Alerts</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="pick"><button class="vf-tbl-chev" type="button" aria-expanded="false" aria-label="Expand row"></button></td>
+            <td class="pick"><span class="c-cbx" aria-hidden="true"><i></i></span></td>
+            <td data-k="Truck"><a href="#" onclick="return false">45689</a></td>
+            <td data-k="Phase"><span class="c-phase c-ph-pouring">Pouring</span></td>
+            <td data-k="Customer">Cemex AZ</td>
+            <td data-k="Load progress"><div class="t-pbar sm" role="progressbar" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100" aria-label="Load progress" style="max-width:140px"><i style="width:78%"></i></div></td>
+            <td data-k="Alerts"><span class="vf-tbl-dash">&mdash;</span></td>
+          </tr>
+          <tr class="sel">
+            <td class="pick"><button class="vf-tbl-chev" type="button" aria-expanded="false" aria-label="Expand row"></button></td>
+            <td class="pick"><span class="c-cbx on" aria-hidden="true"><i></i></span></td>
+            <td data-k="Truck"><a href="#" onclick="return false">45712</a></td>
+            <td data-k="Phase"><span class="c-phase c-ph-tojob">To job</span></td>
+            <td data-k="Customer">Phoenix Central</td>
+            <td data-k="Load progress"><div class="t-pbar sm" role="progressbar" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100" aria-label="Load progress" style="max-width:140px"><i style="width:62%"></i></div></td>
+            <td data-k="Alerts"><span class="t-badge num">99+</span></td>
+          </tr>
+          <tr>
+            <td class="pick"><button class="vf-tbl-chev" type="button" aria-expanded="false" aria-label="Expand row"></button></td>
+            <td class="pick"><span class="c-cbx" aria-hidden="true"><i></i></span></td>
+            <td data-k="Truck"><a href="#" onclick="return false">45730</a></td>
+            <td data-k="Phase"><span class="c-phase c-ph-loading">Loading</span></td>
+            <td data-k="Customer">Mesa Ready-Mix</td>
+            <td data-k="Load progress"><div class="t-pbar sm" role="progressbar" aria-valuenow="24" aria-valuemin="0" aria-valuemax="100" aria-label="Load progress" style="max-width:140px"><i style="width:24%"></i></div></td>
+            <td data-k="Alerts"><span class="t-badge num">99+</span></td>
+          </tr>
+          <tr>
+            <td class="pick"><button class="vf-tbl-chev" type="button" aria-expanded="false" aria-label="Expand row"></button></td>
+            <td class="pick"><span class="c-cbx" aria-hidden="true"><i></i></span></td>
+            <td data-k="Truck"><a href="#" onclick="return false">45744</a></td>
+            <td data-k="Phase"><span class="c-phase c-ph-onsite">On site</span></td>
+            <td data-k="Customer">Cemex AZ</td>
+            <td data-k="Load progress"><div class="t-pbar sm" role="progressbar" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100" aria-label="Load progress" style="max-width:140px"><i style="width:90%"></i></div></td>
+            <td data-k="Alerts"><span class="vf-tbl-dash">&mdash;</span></td>
+          </tr>
+          <tr>
+            <td class="pick"><button class="vf-tbl-chev" type="button" aria-expanded="false" aria-label="Expand row"></button></td>
+            <td class="pick"><span class="c-cbx" aria-hidden="true"><i></i></span></td>
+            <td data-k="Truck"><a href="#" onclick="return false">45761</a></td>
+            <td data-k="Phase"><span class="c-phase c-ph-washing">Washing</span></td>
+            <td data-k="Customer">Peoria Logistics</td>
+            <td data-k="Load progress"><div class="t-pbar sm" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Load progress" style="max-width:140px"><i style="width:100%"></i></div></td>
+            <td data-k="Alerts"><span class="t-badge num">3</span></td>
+          </tr>
+          <tr>
+            <td class="pick"><button class="vf-tbl-chev" type="button" aria-expanded="false" aria-label="Expand row"></button></td>
+            <td class="pick"><span class="c-cbx" aria-hidden="true"><i></i></span></td>
+            <td data-k="Truck"><a href="#" onclick="return false">45778</a></td>
+            <td data-k="Phase"><span class="c-phase c-ph-return">Return to plant</span></td>
+            <td data-k="Customer">Vulcan AZ</td>
+            <td data-k="Load progress"><div class="t-pbar sm" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Load progress" style="max-width:140px"><i style="width:0%"></i></div></td>
+            <td data-k="Alerts"><span class="vf-tbl-dash">&mdash;</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<p class="cap">Breakpoints here are the real ones — <span class="m">900</span> and <span class="m">600</span> — measured
+on the table wrapper with <span class="m">@container</span>, not the viewport, so a table inside a drawer or a split
+view breaks at the right moment too.</p>
+
+<h2>What changes at each width</h2>
+<div class="tw"><table>
+<thead><tr><th>Width</th><th>Columns</th><th>Chevron</th><th>What happens</th></tr></thead>
+<tbody>
+<tr><td><span class="m">&ge; 900</span> desktop</td><td>All</td><td>Only if the row has Accordion Content</td>
+<td>Every column. Header sticky when the table is taller than the viewport. If columns still overflow, the wrapper scrolls sideways; cell text never wraps.</td></tr>
+<tr><td><span class="m">600&ndash;899</span> tablet</td><td>Most</td><td>Shown</td>
+<td>Columns marked droppable leave, lowest priority first (here: Load progress). Header and rows keep their desktop size. The whole row becomes a tap target that opens it.</td></tr>
+<tr><td><span class="m">&lt; 600</span> phone</td><td>Three or four</td><td>Shown</td>
+<td>Down to the identifier, the status and the one or two columns the person scans for (here: Truck, Phase, Alerts). Header stays, compact: 12.5px text, 5px cell padding. Long values truncate.</td></tr>
+</tbody></table></div>
+
+<h2>What opens</h2>
+<ul class="checklist">
+<li><b>The detail shows the hidden columns, and only those.</b> Label and value, in column order, in the Accordion Content container. Visible columns do not repeat.</li>
+<li><b>Actions that lost their column move in too.</b> A delete or an edit that was a cell on desktop becomes a button at the foot of the detail.</li>
+<li><b>The whole row toggles.</b> On a tablet or a phone the chevron is the cue, not the only target; tapping anywhere on the row that is not a control opens it.</li>
+<li><b>One open at a time on a small screen.</b> Opening a row closes the other, so the list never becomes a wall of detail. On desktop, rows with Accordion Content may stay open together.</li>
+<li><b>Give every droppable column a priority.</b> Nothing is dropped that was not marked, and the identifier, the status and the alerts never are.</li>
+<li><b>Prefer dropping a column to scrolling sideways.</b> Sideways scroll hides the right-hand columns completely; a dropped column is one tap away.</li>
+<li><b>Keep the <span class="m">&lt;table&gt;</span> markup at every width.</b> Same DOM with columns hidden, so screen readers keep the row and column semantics. <span class="m">data-k</span> on every body cell is what the small layout reads as the label.</li>
+</ul>
+
+<p class="cap">Light only, matching the v3 table tokens (row <span class="m">#FFFFFF</span>, hover
+<span class="m">#F6F4F2</span>, selected <span class="m">#EEF9FF</span>, accordion
+<span class="m">#DFDEDD</span>, line <span class="m">#D0CEC8</span>, header rule
+<span class="m">#171614</span>).</p>
+
+</div>
+
+<script>
+(function(){
+  /* desktop detail — the Diagnostic Center grammar */
+  function dcDetail(tr){
+    var id=tr.querySelector('[data-k="Truck"]').textContent.trim();
+    return '<div class="vf-tbl-acc-grid"><dl>'+
+      '<dt>Account</dt><dd>'+tr.querySelector('[data-k="Customer"]').textContent+'</dd>'+
+      '<dt>Source</dt><dd>Customer ticket</dd>'+
+      '<dt>TCG version</dt><dd>v5.01.008</dd>'+
+      '<dt>SW compliant</dt><dd><span class="okmark">&#10003;</span></dd>'+
+      '<dt>Plant</dt><dd>Phoenix Central</dd>'+
+      '<dt>Ignition</dt><dd>On &mdash; 6 hr</dd></dl><dl>'+
+      '<dt>Impact</dt><dd>Not managing</dd>'+
+      '<dt>Created</dt><dd>3 min</dd>'+
+      '<dt>Connection</dt><dd>Live</dd>'+
+      '<dt>Last seen</dt><dd>1:16 PM 07/23/25</dd>'+
+      '<dt>Order</dt><dd>ORD-88'+id.slice(-2)+'</dd>'+
+      '<dt>Ticket</dt><dd>TKT-10'+id.slice(1,4)+'</dd></dl></div>'+
+      '<a class="vf-tbl-acc-cta" href="#" onclick="return false">View truck</a>';
+  }
+  /* small screens — the hidden columns, and only those, label over value in column order */
+  function hiddenDetail(tr){
+    var out='';
+    tr.querySelectorAll('td[data-k]').forEach(function(td){
+      if(getComputedStyle(td).display==='none'){
+        out+='<div><b>'+td.getAttribute('data-k')+'</b><span>'+td.innerHTML+'</span></div>';
+      }
+    });
+    return '<div class="vf-tbl-acc-small">'+(out||'<div><span>Nothing hidden at this width.</span></div>')+'</div>';
+  }
+
+  document.querySelectorAll('[data-live-table]').forEach(function(w){
+    var tbl=w.querySelector('table'), body=tbl.tBodies[0], box=w.closest('.vf-rsz-box');
+    function small(){ return !!box && box.clientWidth<900; }
+    function render(tr,acc){ acc.querySelector('.vf-tbl-accbox').innerHTML = small()?hiddenDetail(tr):dcDetail(tr); }
+    function setOpen(tr,acc,chev,o){
+      tr.classList.toggle('open',o); acc.hidden=!o;
+      chev.setAttribute('aria-expanded',o?'true':'false'); if(o) render(tr,acc);
+    }
+    var rows=[];
+    body.querySelectorAll('tr:not(.vf-tbl-acc)').forEach(function(tr){
+      var chev=tr.querySelector('.vf-tbl-chev'); if(!chev) return;
+      var acc=document.createElement('tr');
+      acc.className='vf-tbl-acc'; acc.hidden=true;
+      acc.innerHTML='<td colspan="12"><div class="vf-tbl-accbox"></div></td>';
+      tr.after(acc);
+      rows.push([tr,acc,chev]);
+      function toggle(){
+        var o=!tr.classList.contains('open');
+        if(o&&small()) rows.forEach(function(r){ if(r[0]!==tr) setOpen(r[0],r[1],r[2],false); });
+        setOpen(tr,acc,chev,o);
+      }
+      chev.addEventListener('click',function(e){ e.stopPropagation(); toggle(); });
+      tr.addEventListener('click',function(e){
+        if(!small()) return;
+        if(e.target.closest('a,button,.c-cbx')) return;
+        toggle();
+      });
+    });
+    if(box){
+      new ResizeObserver(function(){
+        rows.forEach(function(r){
+          r[0].classList.toggle('vf-tbl-small-toggle',small());
+          if(r[0].classList.contains('open')) render(r[0],r[1]);
+        });
+      }).observe(box);
+    }
+    /* checkbox select */
+    body.querySelectorAll('.c-cbx').forEach(function(c){
+      c.addEventListener('click',function(e){
+        e.stopPropagation();
+        var tr=c.closest('tr'); tr.classList.toggle('sel', c.classList.toggle('on'));
+      });
+    });
+    /* sort */
+    tbl.querySelectorAll('thead .srt').forEach(function(s){
+      var th=s.closest('th'); th.setAttribute('aria-sort','none');
+      var col=Array.prototype.indexOf.call(th.parentNode.children, th);
+      s.addEventListener('click',function(){
+        var dir=th.getAttribute('aria-sort')==='ascending'?'descending':'ascending';
+        tbl.querySelectorAll('thead th').forEach(function(x){
+          if(x.hasAttribute('aria-sort')) x.setAttribute('aria-sort','none');
+          x.classList.remove('asc','desc');
+        });
+        th.setAttribute('aria-sort',dir); th.classList.add(dir==='ascending'?'asc':'desc');
+        var rs=Array.prototype.filter.call(body.children,function(r){return !r.classList.contains('vf-tbl-acc')});
+        rs.sort(function(a,b){
+          var va=a.children[col].textContent.trim(), vb=b.children[col].textContent.trim();
+          var c=va.localeCompare(vb,undefined,{numeric:true});
+          return dir==='ascending'?c:-c;
+        });
+        rs.forEach(function(r){
+          var acc=r.nextElementSibling, has=acc&&acc.classList.contains('vf-tbl-acc');
+          body.appendChild(r); if(has) body.appendChild(acc);
+        });
+      });
+    });
+  });
+
+  document.querySelectorAll('[data-live-resize]').forEach(function(r){
+    var inp=r.querySelector('input[type=range]'),
+        box=r.querySelector('.vf-rsz-box'),
+        lab=r.querySelector('.vf-rsz-w'),
+        steps=[].slice.call(r.querySelectorAll('.vf-rsz-steps button'));
+    function upd(){
+      var w=+inp.value;
+      box.style.width=w+'px';
+      lab.innerHTML='<b>'+w+'px</b> &middot; '+(w>=900?'desktop':w>=600?'tablet':'phone');
+      steps.forEach(function(b){ b.setAttribute('aria-pressed', String(+b.dataset.w===w)); });
+    }
+    inp.addEventListener('input',upd);
+    steps.forEach(function(b){ b.addEventListener('click',function(){ inp.value=b.dataset.w; upd(); }); });
+    upd();
+  });
+})();
+</script>
+</body>
+</html>

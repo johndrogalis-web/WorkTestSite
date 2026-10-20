@@ -1,0 +1,54 @@
+/* Verifi Trinity — Button
+   Source: Trinity Design System John V (Figma 0aTohMWZDtobhE5UKZNqli), button tokens, light and dark.
+   Usage:  <button class="vf-btn [accent|secondary|link|destructive|destructive-secondary] [xl|md|sm]" type="button">
+             <span class="lbl">Label</span>
+           </button>
+   Icon-only: add .icon and an aria-label. Loading: add .loading and aria-busy="true".
+   Dark mode: put data-theme="dark" on <html> or any wrapper. Light is the default.
+   Every label, hover and pressed pair passes WCAG AA in both themes. */
+
+:root{--sans:'ABC Repro','Helvetica Neue',Helvetica,Arial,sans-serif}
+@keyframes t-rot{to{transform:rotate(360deg)}}
+
+/* ---- Component ---- */
+.vf-btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;height:40px;padding:0 16px;border-radius:100px;border:var(--bbw,0px) solid var(--bbd,transparent);background:var(--bf);color:var(--bt);font-family:var(--sans);font-size:14px;font-weight:500;line-height:1.3;white-space:nowrap;cursor:pointer;box-shadow:0 0 0 0 transparent;transition:background .14s,color .14s,box-shadow .14s;position:relative;-webkit-appearance:none;appearance:none}
+.vf-btn .lbl{padding:0 1px}
+.vf-btn svg{width:16px;height:16px;flex:none}
+.vf-btn.sm svg{width:12px;height:12px}
+.vf-btn.xl{height:52px}
+.vf-btn.md,.vf-btn.sm{height:32px;padding:0 12px}
+.vf-btn:hover{background:var(--bh);box-shadow:0 0 0 1px var(--bhs)}
+.vf-btn:focus-visible{outline:0;background:var(--bff,var(--bf));box-shadow:inset 0 0 0 2px var(--bfi,transparent),0 0 0 2px var(--bfo)}
+.vf-btn:active{background:var(--ba);color:var(--bta);box-shadow:none}
+.vf-btn:disabled{background:var(--bdf);color:var(--bdl,#7f796c);border-color:var(--bdb,var(--bdl,#7f796c));cursor:default;box-shadow:none;pointer-events:none}
+.vf-btn.loading{color:transparent;pointer-events:none}
+.vf-btn.loading::after{content:"";position:absolute;left:50%;top:50%;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;border:3px solid var(--bt);border-right-color:transparent;animation:t-rot 1s linear infinite}
+.vf-btn.sm.loading::after{width:14px;height:14px;margin:-7px 0 0 -7px;border-width:2px}
+
+.vf-btn.icon{width:40px;height:40px;padding:0;background:transparent;border:0;border-radius:9999px;color:var(--iod)}
+.vf-btn.icon.xl{width:52px;height:52px}.vf-btn.icon.md{width:32px;height:32px}.vf-btn.icon.sm{width:24px;height:24px}
+.vf-btn.icon svg{width:20px;height:20px}.vf-btn.icon.xl svg{width:24px;height:24px}.vf-btn.icon.md svg{width:16px;height:16px}.vf-btn.icon.sm svg{width:12px;height:12px}
+.vf-btn.icon::before{content:"";position:absolute;inset:3px;border-radius:50%;background:transparent;transition:background .14s;z-index:0}.vf-btn.icon svg{position:relative;z-index:1}
+.vf-btn.icon:hover::before{background:var(--ioh)}
+.vf-btn.icon:hover{background:transparent;box-shadow:none}
+.vf-btn.icon:active{background:transparent;color:var(--ioa)}.vf-btn.icon:active::before{background:var(--ioaf)}
+.vf-btn.icon:focus-visible{background:transparent;box-shadow:0 0 0 2px var(--iofs)}
+.vf-btn.icon:disabled{background:transparent;color:var(--iodis)}
+.vf-btn.icon{--iod:#171614;--ioh:#DFDEDD;--ioaf:#211F1C;--ioa:#F6F4F2;--iofs:#565147;--iodis:#7F796C}
+[data-theme="dark"] .vf-btn.icon{--iod:#FFFFFF;--ioh:#666054;--ioaf:#9B958A;--ioa:#393632;--iofs:#DFDEDD;--iodis:#9B958A}
+.vf-btn.secondary:active{border-color:var(--ba)}
+.vf-btn.destructive-secondary:active{border-color:var(--ba)}
+
+/* ---- Tokens: light (default) and dark ---- */
+.vf-btn,.vf-btn.primary{--bf:#0975C3;--bh:#0B7ACA;--ba:#0D598F;--bta:#FFFFFF;--bt:#FFFFFF;--bfi:#FFFFFF;--bfo:#171614;--bhs:#7F796C;--bdf:#D0CEC8;--bdl:#7F796C}
+.vf-btn.accent{--bf:#C5E4FB;--bh:#EEF9FF;--ba:#0975C3;--bta:#FFFFFF;--bt:#171614;--bfi:#FFFFFF;--bfo:#171614;--bhs:#7F796C;--bdf:#D0CEC8;--bdl:#7F796C}
+.vf-btn.secondary{--bf:#F0EEEA;--bh:#DFDEDD;--ba:#211F1C;--bta:#F6F4F2;--bt:#171614;--bbw:2px;--bbd:#D0CEC8;--bfi:#565147;--bfo:#2F2D28;--bhs:#7F796C;--bdf:#D0CEC8;--bdl:#7F796C;--bdb:#7F796C}
+.vf-btn.link{--bf:#F0EEEA;--bh:#DFDEDD;--ba:#211F1C;--bta:#F6F4F2;--bt:#171614;--bhs:#7F796C;--bdf:#D0CEC8;--bdl:#7F796C}
+.vf-btn.destructive{--bf:#D70100;--bh:#B00100;--ba:#850100;--bta:#F6F4F2;--bt:#FFFFFF;--bbw:1px;--bbd:#B00100;--bfo:#850100;--bhs:#7F796C;--bdf:#FFD0D0;--bdl:#7F796C;--bdb:#EFADAC}
+.vf-btn.destructive-secondary{--bf:#F0EEEA;--bh:#FFD0D0;--ba:#850100;--bta:#FFFFFF;--bt:#B00100;--bbw:2px;--bbd:#B00100;--bfi:#D70100;--bfo:#850100;--bhs:#7F796C;--bdf:#D0CEC8;--bdl:#7F796C;--bdb:#EFADAC}
+[data-theme="dark"] .vf-btn,[data-theme="dark"] .vf-btn.primary{--bf:#E3F200;--bh:rgba(227,242,0,0.80);--ba:rgba(227,242,0,0.95);--bta:#171614;--bt:#171614;--bfi:#FFFFFF;--bfo:#9B958A;--bhs:#D0CEC8;--bdf:#45413A;--bdl:#7F796C}
+[data-theme="dark"] .vf-btn.accent{--bf:#FEFFD6;--bh:rgba(254,255,214,0.80);--ba:rgba(254,255,214,0.90);--bta:#171614;--bt:#171614;--bfi:#6B7138;--bfo:#9B958A;--bhs:#D0CEC8;--bdf:#45413A;--bdl:#7F796C}
+[data-theme="dark"] .vf-btn.secondary{--bf:#000000;--bh:#666054;--ba:#9B958A;--bta:#171614;--bt:#FFFFFF;--bff:#393632;--bbw:2px;--bbd:#7F796C;--bfi:#DFDEDD;--bfo:#9B958A;--bhs:#D0CEC8;--bdf:#45413A;--bdl:#7F796C;--bdb:#393632}
+[data-theme="dark"] .vf-btn.link{--bf:#000000;--bh:#666054;--ba:#9B958A;--bta:#171614;--bt:#FFFFFF;--bff:#393632;--bfi:#DFDEDD;--bfo:#9B958A;--bhs:#D0CEC8;--bdf:#45413A;--bdl:#7F796C}
+[data-theme="dark"] .vf-btn.destructive{--bf:#EFADAC;--bh:#FFD0D0;--ba:#D70100;--bta:#FFFFFF;--bt:#171614;--bbw:1px;--bbd:#FFD0D0;--bfo:#D70100;--bhs:#D0CEC8;--bdf:#45413A;--bdl:#7F796C;--bdb:#7F796C}
+[data-theme="dark"] .vf-btn.destructive-secondary{--bf:#393632;--bh:rgba(215,1,0,0.25);--ba:rgba(215,1,0,0.40);--bta:#FFFFFF;--bt:#EFADAC;--bbw:2px;--bbd:#EFADAC;--bfi:#EFADAC;--bfo:#D70100;--bhs:#D0CEC8;--bdf:#45413A;--bdl:#7F796C;--bdb:#7F796C}

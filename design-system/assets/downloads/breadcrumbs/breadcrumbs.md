@@ -2,7 +2,7 @@
 
 Shows where a page sits in a hierarchy, and lets people climb back up it.
 
-Status: Has gaps. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), items 63776:44531, group 63776:44573, spec 63904:41676. Light and dark.
+Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), items 63776:44531, group 63776:44573, spec 63904:41676. Light and dark.
 
 ## Learn
 
@@ -87,7 +87,7 @@ Measured on Page Content (elevation/layer-1): #FFFFFF light, #171614 dark.
 | Link | Hover text, fill | breadcrumb-item/text-hover, fill-hover | #0D598F on #DFDEDD | #1594EF on #000000 |
 | Link | Active, focus text | breadcrumb-item/text-active, text-focus | #0B7ACA | #41A8F2 |
 | Link | Focus ring, 2px inside | breadcrumb-item/focus-outer-stroke, border/focus | #171614 | #D0CEC8 |
-| Current page | Text | breadcrumb-item/text-current-page | #666054 | #7F796C in Figma; build #9B958A (see Known gaps) |
+| Current page | Text | breadcrumb-item/text-current-page (text/hint) | #666054 | #9B958A |
 | Separator | Icon, colour | u-angle-right-b 12px, breadcrumb-item/icon-default | #666054 | #7F796C |
 | Overflow | Caret, menu | fi-chevron-down / -up 12px; Menu Container | see Menu | see Menu |
 | Trail | Height, gap | layout size/2, gap/2 | 16 reserved, 8 | same |
@@ -108,4 +108,4 @@ Template and styles: breadcrumbs.html and breadcrumbs.css in the same folder. An
 
 ### Known gaps
 
-- **The dark current-page colour fails on the dark page.** breadcrumb-item/text-current-page is #7F796C in dark: 4.18:1 on the Page Content surface (#171614), under 4.5:1 for 14px text. In light the token aliases text/hint; in dark it skips text/hint and points straight at neutral/400. Build with text/hint dark, #9B958A (6.08:1), as this page does. Fix: alias the dark mode to text/hint, matching light.
+- None open.

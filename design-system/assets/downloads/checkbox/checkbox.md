@@ -76,7 +76,7 @@ The 24 × 24 touchpoint is the AA minimum, not a comfortable target. Stacked che
 
 ### Anatomy
 
-Touchpoint 24 × 24 — the outer frame, and the only thing the pointer or the finger has to hit Box 16 × 16 , 1px border, 2px radius Tick 6 × 4 at (5, 6) , 1px, round caps Dash 8 × 1 at (4, 7.5) Gap to label 4px from the touchpoint edge — 8px of visible air beside the box Label 14px , the defined ink Group spacing 10px between options
+Touchpoint 24 × 24 — the outer frame, and the only thing the pointer or the finger has to hit Box 16 × 16 , 1px border, 2px radius Tick Feather fi-check at 12 × 12 , centred, 1.5px stroke, round caps Dash Feather fi-minus at 12 × 12 , centred, 1.5px stroke Gap to label 4px from the touchpoint edge — 8px of visible air beside the box Label 14px , the defined ink Group spacing 10px between options
 
 ### States
 
@@ -103,7 +103,7 @@ State What changes Token Unchecked White box, 1px border. checkbox/input-default
 | checkbox/label-disabled | #B6B1A5 | #B6B1A5 |
 | checkbox/duration · checkbox/easing | 150ms ease-out | 150ms ease-out |
 
-Touchpoint 24 × 24 Box 16 × 16 Radius 2px Border 1px checkbox/input-stroke Checked fill checkbox/input-selected-fill — light #211F1C , dark #FFFFFF Tick 6 × 4 polyline at (5, 6) — (0, 1.33) &rarr; (2.4, 4) &rarr; (6, 0) — 1px , round cap and join, in the surface colour. Both arms run at 48&deg; , not 45. Copy the path; a &#10003; glyph or a rotated CSS border gets the angle, the weight and the arm ratio wrong. Dash 8 × 1 bar at (4, 7.5) , 0.5 radius Hover ring 2px outside, no offset Focus ring 2px outside, no offset, plus the inner border Gap 4px from the touchpoint — 8px clear of the box Label ABC Repro Regular 14 / 130% Variant properties state ( default · hover · focus ), value , indeterminate , disabled — all lowercase, booleans true / false . The public and private sets use the same four.
+Touchpoint 24 × 24 Box 16 × 16 Radius 2px Border 1px checkbox/input-stroke Checked fill checkbox/input-selected-fill — light #211F1C , dark #FFFFFF Tick Feather fi-check (Icons page, 56109:2744) as an instance at 12 × 12 , 2px in from each edge of the box, 1.5px stroke, round cap and join, colour checkbox/icon-color . In CSS: M12 5 6.5 10.5 4 8 in a 16px box. Replaced the hand-drawn 6 × 4 tick in October 2026, which was too small to read. Dash Feather fi-minus (56109:2875) at 12 × 12 , 1.5px stroke: M4.5 8h7 in a 16px box Hover ring 2px outside, no offset Focus ring 2px outside, no offset, plus the inner border Gap 4px from the touchpoint — 8px clear of the box Label ABC Repro Regular 14 / 130% Variant properties state ( default · hover · focus ), value , indeterminate , disabled — all lowercase, booleans true / false . The public and private sets use the same four.
 
 ### Accessibility
 

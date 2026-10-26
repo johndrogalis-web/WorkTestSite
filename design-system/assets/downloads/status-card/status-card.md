@@ -2,7 +2,7 @@
 
 A Card for one piece of hardware. It shows the device’s health in a strip along the bottom, so a row of them reads at a glance.
 
-Status: Has gaps. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Status Card 63716:15725. Built on Card 63493:8711. Light and dark.
+Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Status Card 63716:15725. Built on Card 63493:8711. Light and dark.
 
 Built on Card: Same shell, states and card/* tokens as the Card . This page covers only what is different: the Status property and the strip.
 
@@ -79,7 +79,7 @@ Seen in Trinity: Truck drawer › Component condition: one Status Card per devic
 | Part | Token | Light | Dark |
 |---|---|---|---|
 | Shell | card/* (see Card specs ) | As Card | As Card |
-| Padding | raw; Card has card/padding-mobile | 10, bottom 36 | 10, bottom 36 |
+| Padding | card/padding-mobile; bottom raw, room for the strip | 10, bottom 36 | 10, bottom 36 |
 | Strip height | raw | 31 | 31 |
 | Strip padding, gap | raw | 20 / 10, gap 8 | 20 / 10, gap 8 |
 | Strip top border | card/border-default, 1px | #DFDEDD | #393632 |
@@ -99,5 +99,4 @@ Template and styles: status-card.html, card.css and status-card.css in the same 
 
 ### Known gaps
 
-- **Hover glow and focus ring are not on tokens.** The default shadow now uses card/shadow/default , the same as Card and Widget Shell. Hover and Focus are still raw: Hover glows #00A1E0 under a #1594EF border (Card: card/shadow/hover , #1594EF), and the focus ring stays #0C79A8 in dark (Card: card/focus/ring-color , #41A8F2). This page uses the Card tokens.
-- **The guide and the component disagree on Pending.** The guide frame says Pending is Teal/Blue. The component binds status/warning/100 with a status/warning/500 dot, and the prototype uses amber too. This page shows the component.
+- None open.

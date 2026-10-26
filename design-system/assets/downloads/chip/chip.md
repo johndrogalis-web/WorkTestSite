@@ -2,7 +2,7 @@
 
 A pressable pill that filters, selects or jumps, and shows whether the thing it names is alive: Information, Offline, Live or Maintenance.
 
-Status: Has gaps. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Chip 62644:15248. Light and dark.
+Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Chip 62644:15248. Light and dark.
 
 ## Learn
 
@@ -75,8 +75,8 @@ Mode Dot Means Use it for Information #0D598F Neutral, selectable Filters, categ
 | Radius | chip/radius | 100 |
 | Container padding | chip/container-padding | 1 |
 | Large height, padding, gap | chip/large/max-height, padding, gap | 32, 6, 5 |
-| Small height, padding, gap | drawn (see Known gaps) | 24, 3 / 8, 6 |
-| Inner stroke | chip/large/inner-stroke, inner-stroke-focus | 1, 2 on hover, focus, active |
+| Small height, padding, gap | chip/small/max-height, padding, padding-left-right, gap | 24, 3, 8, 6 |
+| Inner stroke | chip/large/* and chip/small/* inner-stroke, inner-stroke-focus | 1, 2 on hover, focus, active |
 | Dot | chip/indicator-size | 8 |
 | Motion | chip/duration, chip/easing | 150ms ease-out |
 
@@ -104,4 +104,4 @@ Template and styles: chip.html and chip.css in the same folder. Angular API: not
 
 ### Known gaps
 
-- **Small is not wired to the Small tokens.** The Small variants use drawn padding (3 top and bottom, 8 left and right) and gap 6, and borrow chip/large/inner-stroke , large/inner-stroke-focus and large/max-height . The chip/small/* tokens exist but nothing uses them, and two disagree with the drawing: small/padding is 4 (the drawing is 3) and small/inner-stroke-focus is 1 (the drawing is 2). This page follows the drawing.
+- None open.

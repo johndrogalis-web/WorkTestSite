@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Card · Verifi Trinity</title>
+<link rel="stylesheet" href="card.css">
+<style>
+  body{margin:0;font-family:'ABC Repro','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;color:#171614;background:#FFFFFF}
+  header{padding:24px} header h1{font-size:24px;font-weight:500;margin:0 0 4px} header p{margin:0;color:#565147}
+  section{padding:24px} section[data-theme="dark"]{background:#171614;color:#FFFFFF} h2{font-size:16px;font-weight:500;margin:0 0 12px}
+  .grid{display:flex;gap:16px;flex-wrap:wrap} .grid .vf-card{width:240px} .vf-card-hd .sp{flex:1}
+</style>
+</head>
+<body>
+<header><h1>Card</h1><p>Click or press Space to select; arrow keys move. The last card is Navigational. Styles in card.css.</p></header>
+<section><h2>Light</h2><div role="radiogroup" aria-label="Pick a truck" class="grid"><article class="vf-card compact" tabindex="0" aria-selected="false" aria-label="Truck 45689"><div class="vf-card-hd"><span class="id">45689</span><span class="sp"></span><input type="radio" name="truck" tabindex="-1" aria-hidden="true"></div><div class="vf-card-sub"><b>Chris Jennings</b></div><div class="vf-card-ct"><span class="ds">Cemex AZ &middot; Order ORD-8841</span></div></article><article class="vf-card compact" tabindex="0" aria-selected="false" aria-label="Truck 14520"><div class="vf-card-hd"><span class="id">14520</span><span class="sp"></span><input type="radio" name="truck" tabindex="-1" aria-hidden="true"></div><div class="vf-card-sub"><b>Ana Reyes</b></div><div class="vf-card-ct"><span class="ds">Cemex AZ &middot; Order ORD-8841</span></div></article><a class="vf-card compact" href="#"><b>39821</b><span class="ds">Opens the truck page</span></a></div></section>
+<section data-theme="dark"><h2>Dark</h2><div role="radiogroup" aria-label="Pick a truck" class="grid"><article class="vf-card compact" tabindex="0" aria-selected="false" aria-label="Truck 45689"><div class="vf-card-hd"><span class="id">45689</span><span class="sp"></span><input type="radio" name="truck" tabindex="-1" aria-hidden="true"></div><div class="vf-card-sub"><b>Chris Jennings</b></div><div class="vf-card-ct"><span class="ds">Cemex AZ &middot; Order ORD-8841</span></div></article><article class="vf-card compact" tabindex="0" aria-selected="false" aria-label="Truck 14520"><div class="vf-card-hd"><span class="id">14520</span><span class="sp"></span><input type="radio" name="truck" tabindex="-1" aria-hidden="true"></div><div class="vf-card-sub"><b>Ana Reyes</b></div><div class="vf-card-ct"><span class="ds">Cemex AZ &middot; Order ORD-8841</span></div></article><a class="vf-card compact" href="#"><b>39821</b><span class="ds">Opens the truck page</span></a></div></section>
+<script>
+document.querySelectorAll('[role="radiogroup"]').forEach(function(g){
+  var cards=[].slice.call(g.querySelectorAll('article.vf-card'));
+  function pick(c){cards.forEach(function(o){var on=o===c;o.setAttribute('aria-selected',on);o.querySelector('input').checked=on;});}
+  cards.forEach(function(c,i){
+    c.addEventListener('click',function(){pick(c);});
+    c.addEventListener('keydown',function(e){
+      if(e.key===' '||e.key==='Enter'){e.preventDefault();pick(c);}
+      if(e.key==='ArrowRight'||e.key==='ArrowDown'){e.preventDefault();cards[(i+1)%cards.length].focus();}
+      if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();cards[(i-1+cards.length)%cards.length].focus();}
+    });
+  });
+});
+</script>
+</body>
+</html>

@@ -4,13 +4,15 @@ A section that opens and closes under a heading. The heading is the button; the 
 
 Status: Solid. Figma: Trinity Design System John V, 63692:9304. Light and dark.
 
-## When to use
+## Learn
+
+### When to use
 
 - A long page where each person needs only one or two sections, such as truck settings.
 - Optional detail most people skip, such as history or advanced settings.
 - A list of similar sections that people scan by title.
 
-## Use something else when
+### Use something else when
 
 - People need to compare sections side by side. → Use Tabs, or show them all
 - The content is two or three short paragraphs. → Show it
@@ -18,7 +20,9 @@ Status: Solid. Figma: Trinity Design System John V, 63692:9304. Light and dark.
 - It is a task that has to be finished. → Use a Modal or Drawer
 - It is one summary with one action. → Use a Card
 
-## Behaviour (built in)
+## Understand
+
+### Behaviour (built in)
 
 - **The whole header opens and closes it.** The chevron only shows which way it will go.
 - **Sections are independent.** Opening one leaves the others alone.
@@ -27,7 +31,7 @@ Status: Solid. Figma: Trinity Design System John V, 63692:9304. Light and dark.
 - **Disabled cannot be focused or opened.** It stays in place so the reason next to it makes sense.
 - **It opens and closes in 0.14s.** Under reduced motion the content appears without animation.
 
-## Guidelines (your choices)
+### Guidelines (your choices)
 
 - **Start closed.** If the page is about one section, open that one and only that one.
 - **Write titles that say what is inside.** Nobody should have to open a section to find out.
@@ -37,14 +41,16 @@ Status: Solid. Figma: Trinity Design System John V, 63692:9304. Light and dark.
 - **Keep the chevron at the end.** Use the start for a list read top to bottom. One position per screen.
 - **Use one-at-a-time only when sections replace each other.** Steps are the usual case. Everywhere else, let people open as many as they need.
 
-## Do not
+### Do not
 
 - Hide the main content of the page in a closed accordion.
 - Put an accordion inside an accordion.
 - Use it for two or three short paragraphs.
 - Split a form that has to be submitted across closed sections.
 
-## Anatomy
+## Building it
+
+### Anatomy
 
 - **Container**: The frame around the header and the content.
 - **Header**: The button. It takes hover, focus and press.
@@ -55,7 +61,7 @@ Status: Solid. Figma: Trinity Design System John V, 63692:9304. Light and dark.
 - **Chevron**: Always shown. Points down when closed, up when open.
 - **Content**: A slot. Anything goes in, and the accordion styles none of it.
 
-## States
+### States
 
 - **Default**: Header fill matches the container.
 - **Hover**: Header fill darkens one step. The content does not change.
@@ -64,7 +70,7 @@ Status: Solid. Figma: Trinity Design System John V, 63692:9304. Light and dark.
 - **Disabled**: Title, subheading, icon and chevron fade to 36%. Not focusable and does not open.
 - **Open**: Chevron points up and the content shows below the header.
 
-## Specs
+### Specs
 
 | Part | Property | Token | Light | Dark |
 |---|---|---|---|---|
@@ -86,7 +92,7 @@ Status: Solid. Figma: Trinity Design System John V, 63692:9304. Light and dark.
 | Closed height | With and without subheading | — | 68 / 49 | 68 / 49 |
 | Motion | Fill and chevron | — | 0.14s | 0.14s |
 
-## Accessibility
+### Accessibility
 
 - The header is a <button> inside a heading, with aria-expanded and aria-controls.
 - The content is role="region", labelled by the header.
@@ -96,6 +102,6 @@ Status: Solid. Figma: Trinity Design System John V, 63692:9304. Light and dark.
 - Disabled is exempt from the contrast minimum (WCAG 1.4.3), which is why the reason has to be written next to it.
 - Every text pair passes AA; the lowest is 12.02:1. Focus ring 13.46:1 light, 10.45:1 dark.
 
-## Code
+### Code
 
 Template and styles: accordion.html and accordion.css in the same folder. Angular API: not yet written; to be agreed with the development team.

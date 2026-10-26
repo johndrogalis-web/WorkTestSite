@@ -101,7 +101,7 @@ Cards are for choosing, tables are for comparing. A card gives each item its own
 - **Hover** (Pointer over it; Input and Navigational only): Border card/border-hover; shadow 0 4px 12px in the same blue
 - **Selected** (Input only, after a click or Space): 2px card/border-selected; surface card/background-selected; the header control turns on. Padding drops 1px so the card does not grow.
 - **Focus** (Keyboard focus only): Ring 0 0 4px 2px card/focus/ring-color; border card/border-focus
-- **Focus + Selected** (Both at once): The Selected look plus the focus ring
+- **Focus + Selected** (Input only, a selected card with keyboard focus): Surface card/background-selected and the control stays on; border card/border-focus, 1px, plus the focus ring. The light border and the ring set it apart from Selected.
 
 ### Specs
 
@@ -138,5 +138,4 @@ Template and styles: card.html and card.css in the same folder. Angular API: not
 
 ### Known gaps
 
-- **Selected is pale in dark.** The four Selected variants (Navigational and Input, both Views) fill with the primitive primary/50, which has one mode, instead of card/background-selected. In dark the card stays #EEF9FF under white text: 1.07:1. Binding the fill to card/background-selected gives #032D3D and 14.52:1. Status Card already uses that token. This page shows the token.
-- **Focus + Selected looks like Focus.** Both FocusSelected variants fill with card/background-default, keep a 1px border and show the radio off. A selected card loses its selection the moment it takes focus. This page shows the Selected look with the ring added.
+- **Focus + Selected, Default view, keeps the default fill.** The Compact FocusSelected variant fills with card/background-selected; the Default one still uses card/background-default, so a selected desktop card turns white while it has focus. Bind its fill to card/background-selected. This page shows the tint.

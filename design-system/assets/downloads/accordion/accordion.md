@@ -18,6 +18,32 @@ Status: Solid. Figma: Trinity Design System John V, 63692:9304. Light and dark.
 - It is a task that has to be finished. → Use a Modal or Drawer
 - It is one summary with one action. → Use a Card
 
+## Behaviour (built in)
+
+- **The whole header opens and closes it.** The chevron only shows which way it will go.
+- **Sections are independent.** Opening one leaves the others alone.
+- **Only the header reacts to hover, focus and press.** The content never changes colour, so it is always clear what Enter will act on.
+- **The content keeps its own styles.** The accordion adds no padding or dividers inside the slot.
+- **Disabled cannot be focused or opened.** It stays in place so the reason next to it makes sense.
+- **It opens and closes in 0.14s.** Under reduced motion the content appears without animation.
+
+## Guidelines (your choices)
+
+- **Start closed.** If the page is about one section, open that one and only that one.
+- **Write titles that say what is inside.** Nobody should have to open a section to find out.
+- **Add the count when the number is the reason to open.** Changes, items or alerts, as a number. Never a word that repeats the title.
+- **Use Disabled only when the section will become available.** Say why next to it. If it will never be available to this person, leave it out.
+- **Leave the icon off unless it helps people find a section.** Turn it on for three or more different sections that each have their own icon. All or none in a group, never with the chevron at the start, and never to show status.
+- **Keep the chevron at the end.** Use the start for a list read top to bottom. One position per screen.
+- **Use one-at-a-time only when sections replace each other.** Steps are the usual case. Everywhere else, let people open as many as they need.
+
+## Do not
+
+- Hide the main content of the page in a closed accordion.
+- Put an accordion inside an accordion.
+- Use it for two or three short paragraphs.
+- Split a form that has to be submitted across closed sections.
+
 ## Anatomy
 
 - **Container**: The frame around the header and the content.
@@ -37,34 +63,6 @@ Status: Solid. Figma: Trinity Design System John V, 63692:9304. Light and dark.
 - **Pressed Active in Figma**: Same as hover. Opening is instant, so a separate look would never be seen.
 - **Disabled**: Title, subheading, icon and chevron fade to 36%. Not focusable and does not open.
 - **Open**: Chevron points up and the content shows below the header.
-
-## Rules
-
-- **Open and close from the whole header.** The chevron only shows which way it will go.
-- **Keep sections independent.** Opening one leaves the others alone. Use one-at-a-time only when sections replace each other, like steps.
-- **Start closed.** If the page is about one section, open that one and only that one.
-- **Keep hover, focus and press on the header.** The content never changes colour, so it is always clear what Enter will act on.
-- **Use the count for how much is inside.** Changes, items or alerts, as a number. Never a word that repeats the title.
-- **Use Disabled only when the section will become available.** Say why next to it. If it will never be available to this person, leave it out.
-- **Leave the icon off by default.** Turn it on for three or more different sections that each have their own icon. All or none in a group, never with the chevron at the start, and never to show status.
-- **Let the content style itself.** The accordion adds no padding or dividers inside the slot.
-- **Animate open and close in 0.14s.** Under reduced motion the content appears without animation.
-
-## Do
-
-- Write titles that say what is inside.
-- Add the count when the number is the reason to open.
-- Keep one chevron position per screen.
-- Use icons only when each section has its own.
-- Say why a section is disabled.
-
-## Do not
-
-- Hide the main content of the page in a closed accordion.
-- Put an accordion inside an accordion.
-- Use it for two or three short paragraphs.
-- Split a form that has to be submitted across closed sections.
-- Mix rows with and without icons, or use a coloured icon for status.
 
 ## Specs
 

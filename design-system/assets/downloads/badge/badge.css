@@ -1,0 +1,34 @@
+/* Verifi Trinity — Badge
+   Source: Trinity Design System John V (Figma 0aTohMWZDtobhE5UKZNqli, 7477:297479), badge tokens, light and dark.
+   Usage:  <span class="vf-badge [alternate|outline|error] [num] [data]">New</span>
+           <span class="vf-badge icon" aria-label="Locked"><svg aria-hidden="true">…12px icon…</svg></span>
+           <span class="vf-dot [alternate|error]" role="img" aria-label="Unread"></span>
+   Dark mode: put data-theme="dark" on <html> or any wrapper. Light is the default.
+   Dot ring: #171614 in light, not the Figma #9B958A, which reads 2.57:1 on the page. */
+
+:root{--sans:'ABC Repro','Helvetica Neue',Helvetica,Arial,sans-serif}
+.vf-badge,.vf-dot{
+  --bdg-default:#E3F200;     /* badge/dot/fill/default */
+  --bdg-alternate:#C5E4FB;   /* badge/display/alternate/background */
+  --bdg-outline:#FFFFFF;     /* badge/display/outline/background */
+  --bdg-outline-border:#41A8F2; /* badge/display/outline/border */
+  --bdg-text:#171614;        /* badge/display/(style)/text */
+  --bdg-error:#B00100;       /* badge/display/error/background */
+  --bdg-error-text:#FFFFFF;  /* badge/display/error/text */
+  --dot-alternate:#41A8F2;   /* badge/dot/fill/Information */
+  --dot-error:#B00100;       /* badge/dot/fill/error */
+  --dot-ring:#171614;        /* badge/dot/stroke (see note above) */
+}
+[data-theme="dark"] .vf-badge,[data-theme="dark"] .vf-dot{--bdg-error:#EFADAC;--bdg-error-text:#171614;--dot-error:#EFADAC;--dot-ring:#F0EEEA}
+.vf-badge{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;height:20px;padding:4px 8px;border-radius:16px;
+  font-family:var(--sans);font-size:12px;font-weight:500;line-height:1;white-space:nowrap;background:var(--bdg-default);color:var(--bdg-text)}
+.vf-badge.num{max-width:40px;overflow:hidden}
+.vf-badge.data{border-radius:2px}
+.vf-badge.alternate{background:var(--bdg-alternate)}
+.vf-badge.outline{background:var(--bdg-outline);box-shadow:inset 0 0 0 1px var(--bdg-outline-border)}
+.vf-badge.error{background:var(--bdg-error);color:var(--bdg-error-text)}
+.vf-badge.icon{width:28px;padding:0}
+.vf-badge.icon svg{width:12px;height:12px}
+.vf-dot{display:inline-block;width:8px;height:8px;border-radius:16px;flex:none;background:var(--bdg-default);box-shadow:inset 0 0 0 1px var(--dot-ring)}
+.vf-dot.alternate{background:var(--dot-alternate)}
+.vf-dot.error{background:var(--dot-error)}

@@ -1717,6 +1717,16 @@ ul.plain li b{color:var(--ink,#171614);font-weight:500}
 .vf-chip:hover .vf-chip-in,.vf-chip.hov .vf-chip-in,.vf-chip.on .vf-chip-in{border-width:2px;padding:0 5px}
 .vf-chip.sm:focus-within .vf-chip-in,.vf-chip.sm.foc .vf-chip-in{padding:0 7px}
 @media (prefers-reduced-motion:reduce){.vf-chip{transition:none}}
+/* Radio, Figma V2 (26 Oct): halo radiobutton/hover-fill (dark #9B958A), focus ring outside a 20px container, disabled selected ring + lighter centre, motion */
+.c-rad{--rdhv:#B6B1A5;--rdfo:#171614;--rdbg:#FFFFFF;--rddi:#DFDEDD}
+.pane-d .c-rad{--rdhv:#9B958A;--rdfo:#FFFFFF;--rdbg:#211F1C;--rddi:#D0CEC8}
+.c-rad i::before{transition:box-shadow .15s ease-out}
+.c-rad.hov i::before,.c-rad:hover i::before,.c-rad.live:hover i::before{box-shadow:0 0 0 2px var(--rdhv)}
+.c-rad.foc i::before,.c-rad.live input:focus-visible ~ i::before{box-shadow:0 0 0 2px var(--rdbg),0 0 0 4px var(--rdfo);border-color:var(--cbxst);transition:none}
+.c-rad.dis i::before,.c-rad.dis:hover i::before{box-shadow:none}
+.c-rad.dis.on i::before{border:4px solid var(--cbxdb);background:var(--rddi)}
+.cbxg.rdg{grid-template-columns:auto repeat(2,minmax(0,1fr))}
+@media (prefers-reduced-motion:reduce){.c-rad i::before{transition:none}}
 /* Notification (proposal) — surface neutral, border + icon carry status */
 .vf-notif{--nsurf:#f6f4f2;--nttl:#171614;--nbody:#565147;--nx:#171614;--nsh:0 5px 8px rgba(74,79,85,.12);background:var(--nsurf);border:1px solid var(--nst);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:16px;width:100%;max-width:420px;font-family:var(--sans);text-align:left}
 .pane-d .vf-notif{--nsurf:#171614;--nttl:#fff;--nbody:#b6b1a5;--nx:#fff;--nsh:0 5px 8px rgba(255,255,255,.24)}

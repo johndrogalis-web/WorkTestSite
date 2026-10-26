@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Status Card · Verifi Trinity</title>
+<link rel="stylesheet" href="card.css">
+<link rel="stylesheet" href="status-card.css">
+<style>
+  body{margin:0;font-family:'ABC Repro','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;color:#171614;background:#FFFFFF}
+  header{padding:24px} header h1{font-size:24px;font-weight:500;margin:0 0 4px} header p{margin:0;color:#565147}
+  section{padding:24px} section[data-theme="dark"]{background:#171614;color:#FFFFFF} h2{font-size:16px;font-weight:500;margin:0 0 12px}
+  .grid{display:flex;gap:16px;flex-wrap:wrap} .grid .vf-card{width:240px} .vf-card-hd{gap:8px}
+</style>
+</head>
+<body>
+<header><h1>Status Card</h1><p>Five statuses, worst first. Click or press Space to select; arrow keys move. Styles in card.css and status-card.css.</p></header>
+<section><h2>Light</h2><div role="radiogroup" aria-label="Components" class="grid"><article class="vf-card vf-sc" tabindex="0" aria-selected="false" aria-label="WDS, Alarm"><div class="vf-card-hd"><b>WDS</b><span class="ds">v12.3</span></div><div class="vf-card-ct"><b>Offline</b><span class="ds">Water Detection System</span></div><div class="vf-sc-strip alarm" role="status"><span class="sdot"></span>Alarm &middot; sensor fault</div></article><article class="vf-card vf-sc" tabindex="0" aria-selected="false" aria-label="DRM, Warning"><div class="vf-card-hd"><b>DRM</b><span class="ds">v21.4</span></div><div class="vf-card-ct"><b>Degraded</b><span class="ds">Drum Rotation Sensor</span></div><div class="vf-sc-strip warning" role="status"><span class="sdot"></span>Warning &middot; out of range</div></article><article class="vf-card vf-sc" tabindex="0" aria-selected="false" aria-label="GPS, Pending"><div class="vf-card-hd"><b>GPS</b><span class="ds">v4.9</span></div><div class="vf-card-ct"><b>SN 48213</b><span class="ds">High-Precision GNSS Receiver</span></div><div class="vf-sc-strip pending" role="status"><span class="sdot"></span>Pending verification</div></article><article class="vf-card vf-sc" tabindex="0" aria-selected="false" aria-label="TCG, Normal"><div class="vf-card-hd"><b>TCG</b><span class="ds">v35.0</span></div><div class="vf-card-ct"><b>Active</b><span class="ds">Telematics Control Gateway</span></div><div class="vf-sc-strip normal" role="status">Operating normally</div></article><article class="vf-card vf-sc" tabindex="0" aria-selected="false" aria-label="CAM, Not installed"><div class="vf-card-hd"><b>CAM</b><span class="ds">&mdash;</span></div><div class="vf-card-ct"><b>&mdash;</b><span class="ds">Rear Discharge Camera</span></div><div class="vf-sc-strip notinstalled" role="status">Not installed</div></article></div></section>
+<section data-theme="dark"><h2>Dark</h2><div role="radiogroup" aria-label="Components" class="grid"><article class="vf-card vf-sc" tabindex="0" aria-selected="false" aria-label="WDS, Alarm"><div class="vf-card-hd"><b>WDS</b><span class="ds">v12.3</span></div><div class="vf-card-ct"><b>Offline</b><span class="ds">Water Detection System</span></div><div class="vf-sc-strip alarm" role="status"><span class="sdot"></span>Alarm &middot; sensor fault</div></article><article class="vf-card vf-sc" tabindex="0" aria-selected="false" aria-label="DRM, Warning"><div class="vf-card-hd"><b>DRM</b><span class="ds">v21.4</span></div><div class="vf-card-ct"><b>Degraded</b><span class="ds">Drum Rotation Sensor</span></div><div class="vf-sc-strip warning" role="status"><span class="sdot"></span>Warning &middot; out of range</div></article><article class="vf-card vf-sc" tabindex="0" aria-selected="false" aria-label="GPS, Pending"><div class="vf-card-hd"><b>GPS</b><span class="ds">v4.9</span></div><div class="vf-card-ct"><b>SN 48213</b><span class="ds">High-Precision GNSS Receiver</span></div><div class="vf-sc-strip pending" role="status"><span class="sdot"></span>Pending verification</div></article><article class="vf-card vf-sc" tabindex="0" aria-selected="false" aria-label="TCG, Normal"><div class="vf-card-hd"><b>TCG</b><span class="ds">v35.0</span></div><div class="vf-card-ct"><b>Active</b><span class="ds">Telematics Control Gateway</span></div><div class="vf-sc-strip normal" role="status">Operating normally</div></article><article class="vf-card vf-sc" tabindex="0" aria-selected="false" aria-label="CAM, Not installed"><div class="vf-card-hd"><b>CAM</b><span class="ds">&mdash;</span></div><div class="vf-card-ct"><b>&mdash;</b><span class="ds">Rear Discharge Camera</span></div><div class="vf-sc-strip notinstalled" role="status">Not installed</div></article></div></section>
+<script>
+document.querySelectorAll('[role="radiogroup"]').forEach(function(g){
+  var cards=[].slice.call(g.querySelectorAll('article.vf-card'));
+  function pick(c){cards.forEach(function(o){o.setAttribute('aria-selected',o===c);});}
+  cards.forEach(function(c,i){
+    c.addEventListener('click',function(){pick(c);});
+    c.addEventListener('keydown',function(e){
+      if(e.key===' '||e.key==='Enter'){e.preventDefault();pick(c);}
+      if(e.key==='ArrowRight'||e.key==='ArrowDown'){e.preventDefault();cards[(i+1)%cards.length].focus();}
+      if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();cards[(i-1+cards.length)%cards.length].focus();}
+    });
+  });
+});
+</script>
+</body>
+</html>

@@ -79,8 +79,8 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), 38356:1
 | Container | Padding, gap | banner/padding-vertical, padding-horizontal, content-gap | 12 / 22, 24 | same |
 | Container | Radius | banner/radius | 0 | 0 |
 | Icon | Size, colour | banner/icon-size, banner/icon | 24, #171614 | 24, #FFFFFF |
-| Heading | Type, colour | Body/md Medium, banner/heading | ABC Repro Medium 16, #171614 | #FFFFFF |
-| Subheader | Type, colour, gap | Body/md, banner/body, banner/text-gap | Regular 16, #171614, 8 | #D0CEC8 |
+| Heading | Type, colour | Body/md Medium, banner/heading | ABC Repro Medium 16, line 1.2, #171614 | #FFFFFF |
+| Subheader | Type, colour, gap | Body/md, banner/body, banner/text-gap | Regular 16, #171614, gap 0 as drawn (see exception) | #D0CEC8 |
 | Action | Component, mode | Button, primary, medium, Style mode Dark | #E3F200, text #171614 | #E3F200, text #171614 |
 | Simple | Height, padding | banner/simple/content-min-height, content-padding-left, -right | 40; 12 left, 16 right | same |
 | Link | Type, colour | Link/sm Medium, banner/link/default, hover, active, focus | Medium 14, underlined, #0D598F | #C5E4FB |
@@ -109,3 +109,4 @@ Template and styles: banner.html and banner.css in the same folder. Angular API:
 
 - None open.
 - Exception: the yellow action’s focus ring: In a light banner the ring (#9B958A) reads 2.71:1, under the usual 3:1. Accepted as part of the marketing yellow decision.
+- Exception: heading and subheader spacing follows the drawing: In Figma the text layers are fixed at 11px tall, so the lines sit about 19px apart and banner/text-gap (8) has no visible effect. The drawing is the intent. Build with no gap and a 1.2 line height, not the 8px token.

@@ -2,7 +2,7 @@
 
 An independent yes or no. Several can be true at once, and the change applies when the form is saved, not the moment it is clicked.
 
-Status: Has gaps. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Checkbox 30515:78521, input 30515:78570. Light and dark.
+Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Checkbox 30515:78521, input 30515:78570. Light and dark.
 
 ## Learn
 
@@ -115,4 +115,4 @@ Template and styles: checkbox.html and checkbox.css in the same folder. Angular 
 
 ### Known gaps
 
-- **The Figma descriptions name the wrong family.** The Checkbox set and all 12 of its variants say “Icon Only Button follows Button” under Atomic Role. It is a copy from the Button description; the component itself is right.
+- None open.

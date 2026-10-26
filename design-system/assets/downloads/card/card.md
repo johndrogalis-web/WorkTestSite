@@ -2,7 +2,7 @@
 
 A bordered container for one thing: a truck, a ticket or an order. The shell owns the states; what goes inside comes from a header and a content slot.
 
-Status: Has gaps. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Card 63493:8711, guide 65926:18926. Light and dark.
+Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Card 63493:8711, guide 65926:18926. Light and dark.
 
 ## Learn
 
@@ -138,4 +138,4 @@ Template and styles: card.html and card.css in the same folder. Angular API: not
 
 ### Known gaps
 
-- **Focus + Selected, Default view, keeps the default fill.** The Compact FocusSelected variant fills with card/background-selected; the Default one still uses card/background-default, so a selected desktop card turns white while it has focus. Bind its fill to card/background-selected. This page shows the tint.
+- None open.

@@ -2,7 +2,7 @@
 
 A small label that shows a status or a count. It never responds to a click.
 
-Status: Has gaps. Figma: Trinity Design System John V, 7477:297479 (info 60895:44879). Light and dark.
+Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), 7477:297479 (info 60895:44879). Light and dark.
 
 ## Learn
 
@@ -26,8 +26,8 @@ Status: Has gaps. Figma: Trinity Design System John V, 7477:297479 (info 60895:4
 - **It does not respond to hover, focus or press.** A badge that responds is a chip.
 - **A number caps at 40px wide.** Anything above 99 shows as 99+.
 - **A word grows to fit.** There is no width cap on text.
-- **Only Error changes between themes.** The light red reads 2.23:1 on a dark page, so dark uses a pale red with dark text.
-- **The dot has a 1px ring inside its edge.** The ring keeps it visible on any page. The footprint stays 8px.
+- **Default keeps the brand yellow in both themes.** Alternate, Outline and Error switch to their dark values, so every pair still passes on a dark page.
+- **Only the light Default dot has a ring.** The brand yellow reads 1.07:1 on a light page, so a 1px ring inside the edge gives it one. Every other dot passes on its fill.
 - **Data is the same badge with 2px corners. Icon holds one 12px icon and no label.** Both share the four styles.
 
 ### Guidelines (your choices)
@@ -73,7 +73,7 @@ Status: Has gaps. Figma: Trinity Design System John V, 7477:297479 (info 60895:4
 - **Container**: A pill, or 2px corners in the Data type.
 - **Content**: A number, a word, a dot or one icon.
 - **Border**: Outline style only.
-- **Ring**: Dot only. A thin edge inside the dot.
+- **Ring**: Light Default dot only. A thin edge inside the dot.
 
 ### Options
 
@@ -90,20 +90,20 @@ Status: Has gaps. Figma: Trinity Design System John V, 7477:297479 (info 60895:4
 | Part | Property | Token | Light | Dark |
 |---|---|---|---|---|
 | Container | Height | — | 20 | 20 |
-| Container | Padding | badge/display/default/left right padding, top bottom padding | 8 / 4 | 8 / 4 |
+| Container | Padding | badge/display/default/left-right-padding, top-bottom-padding | 8 / 4 | 8 / 4 |
 | Container | Radius, Default | badge/display/default/radius | 16 | 16 |
 | Container | Radius, Data | badge/display/data/radius | 2 | 2 |
 | Number | Max width | — | 40 | 40 |
 | Icon type | Size, icon | — | 28 × 20, 12px icon | same |
 | Text | Type | Body/xs Medium | ABC Repro Medium 12, line 1 | same |
-| Default | Fill, text | badge/dot/fill/default, badge/display/brand/text | #E3F200, #171614 | #E3F200, #171614 |
-| Alternate | Fill, text | badge/display/alternate/background, text | #C5E4FB, #171614 | #C5E4FB, #171614 |
-| Outline | Fill, text | badge/display/outline/background, text | #FFFFFF, #171614 | #FFFFFF, #171614 |
+| Default | Fill, text | badge/display/brand/background, text | #E3F200, #171614 | #E3F200, #171614 |
+| Alternate | Fill, text | badge/display/alternate/background, text | #C5E4FB, #171614 | #0D598F, #FFFFFF |
+| Outline | Fill, text | badge/display/outline/background, text | #FFFFFF, #171614 | #171614, #FFFFFF |
 | Outline | Border, 1px inside | badge/display/outline/border | #41A8F2 | #41A8F2 |
 | Error | Fill, text | badge/display/error/background, text | #B00100, #FFFFFF | #EFADAC, #171614 |
 | Dot | Size | badge/dot/width, height | 8 × 8 | 8 × 8 |
-| Dot | Fill: Default, Alternate, Error | badge/dot/fill/default, Information, error | #E3F200, #41A8F2, #B00100 | #E3F200, #41A8F2, #EFADAC |
-| Dot | Ring, 1px inside | badge/dot/stroke | #171614 (see Known gaps) | #F0EEEA |
+| Dot | Fill: Default, Alternate, Error | badge/dot/fill/default, alternate, error | #E3F200, #0975C3, #B00100 | #E3F200, #41A8F2, #EFADAC |
+| Dot | Ring, 1px inside, Default only | badge/dot/stroke | #171614 | none (transparent) |
 
 ### Accessibility
 
@@ -111,7 +111,7 @@ Status: Has gaps. Figma: Trinity Design System John V, 7477:297479 (info 60895:4
 - A dot needs role="img" and a label, such as “Unread”.
 - Put the count in the accessible name: “Notifications, 12 unread”, not “12”.
 - Never let colour alone separate Error from Default. The word or number has to do it.
-- The dot is the information, so its edge needs 3:1 (WCAG 1.4.11). The ring provides it.
+- The dot is the information, so its edge needs 3:1 (WCAG 1.4.11). Where the fill falls short, the ring provides it.
 - Every text pair passes AA. Lowest text pair: 7.37:1.
 
 ### Code
@@ -120,8 +120,6 @@ Template and styles: badge.html and badge.css in the same folder. Angular API: n
 
 ### Known gaps
 
-- **The light dot ring is #9B958A in Figma.** It reads 2.57:1 on the page, under the 3:1 a meaningful dot needs. Build with #171614 (neutral/950), as this page does. Fix: rebind badge/dot/stroke Light to neutral/950.
-- **Figma calls the style property “state”.** A badge has no states. Rename the property to Style so Figma, this page and the code agree.
-- **Two token names do not match their style.** The Default chip is filled by badge/dot/fill/default, not badge/display/brand/background. The Alternate dot uses badge/dot/fill/Information. Rebind or rename so each name matches its style.
+- None open.
 
 Note. Recommended: a darker Outline border: #41A8F2 reads 2.24:1 on the page. primary/600 (#0975C3) would read 4.17:1. Not a failure: the word identifies the badge, so WCAG 1.4.11 does not require the edge.

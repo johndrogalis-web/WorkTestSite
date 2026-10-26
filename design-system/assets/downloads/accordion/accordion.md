@@ -2,7 +2,7 @@
 
 A section that opens and closes under a heading. The heading is the button; the content is whatever you put in it.
 
-Status: Solid. Figma: Trinity Design System John V, 63692:9304. Light and dark.
+Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), 63692:9304. Light and dark.
 
 ## Learn
 
@@ -29,7 +29,7 @@ Status: Solid. Figma: Trinity Design System John V, 63692:9304. Light and dark.
 - **Only the header reacts to hover, focus and press.** The content never changes colour, so it is always clear what Enter will act on.
 - **The content keeps its own styles.** The accordion adds no padding or dividers inside the slot.
 - **Disabled cannot be focused or opened.** It stays in place so the reason next to it makes sense.
-- **It opens and closes in 0.14s.** Under reduced motion the content appears without animation.
+- **Hover and focus change in 150ms. Opening and closing take 300ms.** Both ease out. Under reduced motion both are instant.
 
 ### Guidelines (your choices)
 
@@ -90,7 +90,9 @@ Status: Solid. Figma: Trinity Design System John V, 63692:9304. Light and dark.
 | Count | Component | Badge, Alternate | see Badge | see Badge |
 | Content | Padding, gap | — | 10, 10 | 10, 10 |
 | Closed height | With and without subheading | — | 68 / 49 | 68 / 49 |
-| Motion | Fill and chevron | — | 0.14s | 0.14s |
+| Motion | Hover and focus | accordion/duration, easing | 150ms, ease-out | same |
+| Motion | Open and close, chevron | accordion/expand/duration, expand/easing | 300ms, ease-out | same |
+| Motion | Reduced motion | accordion/reduced/duration | 0ms | 0ms |
 
 ### Accessibility
 

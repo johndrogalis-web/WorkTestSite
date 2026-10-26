@@ -2,7 +2,7 @@
 
 A person, shown as a photograph or an icon. Two shapes, four sizes.
 
-Status: Solid. Figma: Trinity Design System John V, 60899:8165 (set 51692:17265). Light and dark.
+Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), 60899:8165 (set 51692:17265). Light and dark.
 
 ## Learn
 
@@ -68,8 +68,8 @@ Status: Solid. Figma: Trinity Design System John V, 60899:8165 (set 51692:17265)
 | Part | Property | Token | Light | Dark |
 |---|---|---|---|---|
 | Frame | Size | avatar/large, medium, small, xsmall | 56, 32, 24, 16 | same |
-| Frame | Radius, circle | avatar/circle radius | 9999 | 9999 |
-| Frame | Radius, square | avatar/sm radius | 8 | 8 |
+| Frame | Radius, circle | avatar/circle-radius | 9999 | 9999 |
+| Frame | Radius, square | avatar/sm-radius | 8 | 8 |
 | Frame | Fill, icon form | avatar/background | #171614 | #F0EEEA |
 | Icon | Colour | avatar/default | #FFFFFF | #171614 |
 | Icon | Glyph, size, stroke | Icon atom, fi-user (Feather) | 24 / 20 / 16 / 12, 1.5px | same |

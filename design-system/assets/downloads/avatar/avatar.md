@@ -2,7 +2,7 @@
 
 A person, shown as a photograph or an icon. Two shapes, four sizes.
 
-Status: Has gaps. Figma: Trinity Design System John V, 60899:8165 (set 51692:17265). Light and dark.
+Status: Solid. Figma: Trinity Design System John V, 60899:8165 (set 51692:17265). Light and dark.
 
 ## Learn
 
@@ -28,7 +28,7 @@ Status: Has gaps. Figma: Trinity Design System John V, 60899:8165 (set 51692:172
 - **XSmall shows only the icon.** A face is unreadable at 16px, so Figma has no image variant there.
 - **A 1px ring sits inside the edge, in both themes.** It keeps a photograph from merging into a dark surface.
 - **It has no states of its own.** Inside a link, button or menu row, it takes that control’s states.
-- **The icon is the Icon atom.** A different icon can be swapped in without touching the component.
+- **The icon is the Icon atom, fi-user from Feather.** Another icon can be swapped in without touching the component.
 
 ### Guidelines (your choices)
 
@@ -72,7 +72,7 @@ Status: Has gaps. Figma: Trinity Design System John V, 60899:8165 (set 51692:172
 | Frame | Radius, square | avatar/sm radius | 8 | 8 |
 | Frame | Fill, icon form | avatar/background | #171614 | #F0EEEA |
 | Icon | Colour | avatar/default | #FFFFFF | #171614 |
-| Icon | Size, stroke | Icon atom, user | 24 / 20 / 16 / 12, 1.5px | same |
+| Icon | Glyph, size, stroke | Icon atom, fi-user (Feather) | 24 / 20 / 16 / 12, 1.5px | same |
 | Ring | Width, colour | avatar/stroke-width, stroke-color | 1px inside, #F0EEEA | 1px inside, #F0EEEA |
 | Photograph | Fit | — | Cover, centred | same |
 
@@ -91,5 +91,4 @@ Template and styles: avatar.html and avatar.css in the same folder. Angular API:
 
 ### Known gaps
 
-- **Figma variant names read Med and squircle.** Rename to Medium and Square so Figma, this page and the code agree. Until then, read Med as Medium and squircle as Square.
-- **The user icon comes from the Feather set.** The icon rule says Unicons for new work. Needs a decision: swap to the Unicons user icon, or record Avatar as an agreed exception.
+- None open.

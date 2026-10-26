@@ -1,0 +1,23 @@
+/* Verifi Trinity — Checkbox
+   Source: Trinity Design System V2 (Figma 9bRI2xwkTcoTRuKgon1JFf), Checkbox 30515:78521, checkbox/* tokens.
+   One size: a 16px box inside a 24px touchpoint. Dark mode: data-theme="dark" on <html> or a wrapper.
+   Indeterminate: set input.indeterminate = true in JavaScript. */
+
+.vf-check{--cx-st:#171614;--cx-bg:#FFFFFF;--cx-on:#211F1C;--cx-tk:#FFFFFF;--cx-hv:#D0CEC8;--cx-fo:#171614;--cx-fi:#D0CEC8;
+  --cx-db:#B6B1A5;--cx-di:#DFDEDD;--cx-lb:#171614;--cx-dl:#B6B1A5;          /* checkbox/input-stroke, input-default-fill, input-selected-fill, icon-color, hover-stroke, focus-outer, focus-inner, input-fill-disabled, icon-color-disabled, label-default, label-disabled */
+  position:relative;display:inline-flex;align-items:center;gap:4px;font-size:14px;line-height:1.3;color:var(--cx-lb);cursor:pointer}
+[data-theme="dark"] .vf-check{--cx-st:#FFFFFF;--cx-bg:#211F1C;--cx-on:#FFFFFF;--cx-tk:#211F1C;--cx-hv:#B6B1A5;--cx-fo:#FFFFFF;--cx-fi:#B6B1A5;--cx-db:#B6B1A5;--cx-di:#D0CEC8;--cx-lb:#FFFFFF;--cx-dl:#B6B1A5}
+.vf-check input{position:absolute;opacity:0;width:0;height:0;margin:0}
+.vf-check__box{position:relative;width:24px;height:24px;flex:none;display:inline-flex;align-items:center;justify-content:center}   /* touchpoint */
+.vf-check__box::before{content:"";width:16px;height:16px;box-sizing:border-box;border:1px solid var(--cx-st);border-radius:2px;background:var(--cx-bg);
+  transition:background-color .15s ease-out,box-shadow .15s ease-out}
+.vf-check__box::after{content:"";position:absolute;inset:4px;background:var(--cx-tk);opacity:0;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M5 7.33L7.4 10L11 6' fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M5 7.33L7.4 10L11 6' fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat}
+.vf-check input:checked + .vf-check__box::before,.vf-check input:indeterminate + .vf-check__box::before{background:var(--cx-on);border-color:var(--cx-on)}
+.vf-check input:checked + .vf-check__box::after,.vf-check input:indeterminate + .vf-check__box::after{opacity:1}
+.vf-check input:indeterminate + .vf-check__box::after{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='4' y='7.5' width='8' height='1' rx='.5'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='4' y='7.5' width='8' height='1' rx='.5'/%3E%3C/svg%3E")}
+.vf-check:hover input:not(:disabled) + .vf-check__box::before{box-shadow:0 0 0 2px var(--cx-hv)}
+.vf-check input:focus-visible + .vf-check__box::before{box-shadow:0 0 0 2px var(--cx-fo);border-color:var(--cx-fi);transition:none}
+.vf-check input:disabled + .vf-check__box::before{background:var(--cx-db);border-color:transparent;box-shadow:none}
+.vf-check input:disabled + .vf-check__box::after{background:var(--cx-di)}
+.vf-check:has(input:disabled){color:var(--cx-dl);cursor:default}
+@media (prefers-reduced-motion:reduce){.vf-check__box::before{transition:none}}

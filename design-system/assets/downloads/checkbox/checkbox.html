@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Checkbox · Verifi Trinity</title>
+<link rel="stylesheet" href="checkbox.css">
+<style>
+  body{margin:0;font-family:'ABC Repro','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;color:#171614;background:#FFFFFF}
+  header{padding:24px} header h1{font-size:24px;font-weight:500;margin:0 0 4px} header p{margin:0;color:#565147}
+  section{padding:24px} section[data-theme="dark"]{background:#171614;color:#FFFFFF} h2{font-size:16px;font-weight:500;margin:0 0 12px}
+  fieldset{border:0;margin:0 0 16px;padding:0;display:flex;flex-direction:column;gap:10px} legend{font-weight:500;margin-bottom:10px;padding:0}
+  .kids{display:flex;flex-direction:column;gap:10px;padding-left:28px} .row{display:flex;gap:24px}
+</style>
+</head>
+<body>
+<header><h1>Checkbox</h1><p>Tick the children and watch the parent. Tab and press Space. Styles in checkbox.css.</p></header>
+<section><h2>Light</h2><fieldset><legend>Plants</legend><label class="vf-check"><input type="checkbox" class="parent"><span class="vf-check__box" aria-hidden="true"></span>All plants (2 of 3)</label><div class="kids"><label class="vf-check"><input type="checkbox" checked><span class="vf-check__box" aria-hidden="true"></span>Rockdale</label><label class="vf-check"><input type="checkbox" checked><span class="vf-check__box" aria-hidden="true"></span>Midwest</label><label class="vf-check"><input type="checkbox"><span class="vf-check__box" aria-hidden="true"></span>Northgate</label></div></fieldset><div class="row"><label class="vf-check"><input type="checkbox" checked disabled><span class="vf-check__box" aria-hidden="true"></span>Locked by dispatch</label><label class="vf-check"><input type="checkbox" disabled><span class="vf-check__box" aria-hidden="true"></span>Not available</label></div></section>
+<section data-theme="dark"><h2>Dark</h2><fieldset><legend>Plants</legend><label class="vf-check"><input type="checkbox" class="parent"><span class="vf-check__box" aria-hidden="true"></span>All plants (2 of 3)</label><div class="kids"><label class="vf-check"><input type="checkbox" checked><span class="vf-check__box" aria-hidden="true"></span>Rockdale</label><label class="vf-check"><input type="checkbox" checked><span class="vf-check__box" aria-hidden="true"></span>Midwest</label><label class="vf-check"><input type="checkbox"><span class="vf-check__box" aria-hidden="true"></span>Northgate</label></div></fieldset><div class="row"><label class="vf-check"><input type="checkbox" checked disabled><span class="vf-check__box" aria-hidden="true"></span>Locked by dispatch</label><label class="vf-check"><input type="checkbox" disabled><span class="vf-check__box" aria-hidden="true"></span>Not available</label></div></section>
+<script>
+document.querySelectorAll('fieldset').forEach(function(f){
+  var p=f.querySelector('input.parent'),k=[].slice.call(f.querySelectorAll('.kids input'));
+  function sync(){var n=k.filter(function(x){return x.checked}).length;p.checked=n===k.length;p.indeterminate=n>0&&n<k.length;
+    p.parentNode.lastChild.textContent='All plants ('+n+' of '+k.length+')';}
+  p.addEventListener('change',function(){var all=p.checked||p.indeterminate;k.forEach(function(x){x.checked=p.checked});sync();});
+  k.forEach(function(x){x.addEventListener('change',sync)});sync();
+});
+</script>
+</body>
+</html>

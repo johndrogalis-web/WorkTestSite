@@ -22,9 +22,19 @@
   var MON=['January','February','March','April','May','June','July','August','September','October','November','December'];
   function pad(n){return (n<10?'0':'')+n}
   function fmt(d,t){return pad(d.getMonth()+1)+'/'+pad(d.getDate())+'/'+d.getFullYear()+' '+t}
-  function parse(s){var m=/^\s*(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})\s*([ap])\.?m?\.?\s*$/i.exec(s);if(!m)return null;
-    var mo=+m[1],da=+m[2],y=+m[3],hh=+m[4],mi=+m[5];if(mo<1||mo>12||hh<1||hh>12||mi>59)return null;var d=new Date(y,mo-1,da);if(d.getMonth()!==mo-1)return null;
-    return fmt(d,pad(hh)+':'+pad(mi)+' '+m[6].toUpperCase()+'M')}
+  function parse(s){
+    s=(s||'').toLowerCase().replace(/\s+/g,' ').trim(); if(!s) return null;
+    var ap=null, am=/\s*([ap])\.?\s*m?\.?\s*$/.exec(s); if(am){ap=am[1];s=s.slice(0,am.index).trim()}
+    var mo,da,y,rest, dm=/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4}|\d{2})\s*(.*)$/.exec(s);
+    if(dm){mo=+dm[1];da=+dm[2];y=dm[3];rest=dm[4]}
+    else{var dd=/^(\d{8}|\d{6})\s*(.*)$/.exec(s.replace(/^(\d{6,8})(?=\s|$)/,'$1'));if(!dd)return null;var g=dd[1];mo=+g.slice(0,2);da=+g.slice(2,4);y=g.slice(4);rest=dd[2]}
+    y=+(y.length===2?'20'+y:y);
+    var hh=9,mi=0,tm=/^(\d{1,2})(?::?(\d{2}))?$/.exec((rest||'').replace(/\s/g,''));
+    if(!tm)return null; hh=+tm[1];mi=tm[2]?+tm[2]:0;
+    if(mi>59||hh>23)return null;
+    if(ap){if(hh<1||hh>12)return null}else{if(hh===0){hh=12;ap='a'}else if(hh>12){hh-=12;ap='p'}else if(hh===12){ap='p'}else{ap='a'}}
+    var d=new Date(y,mo-1,da);if(mo<1||mo>12||d.getMonth()!==mo-1||d.getDate()!==da)return null;
+    return fmt(d,pad(hh)+':'+pad(mi)+' '+ap.toUpperCase()+'M')}
   document.querySelectorAll('.vf-dtf.live').forEach(function(f){
     var inp=f.querySelector('input'),ic=f.querySelector('.vf-dtf-ic'),menu=f.querySelector('.vf-dtm'),grid=f.querySelector('.vf-dtc-g'),mo=f.querySelector('.mo'),
         help=f.querySelector('.vf-helper span'),helpTxt=help.textContent,view=new Date(2026,8,1),picked=null,today=new Date(2026,8,15);
@@ -56,6 +66,7 @@
     ic.addEventListener('click',function(){setTimeout(reveal,0)});inp.addEventListener('click',function(){setTimeout(reveal,0)});
     f.addEventListener('keydown',function(e){if(e.key==='Escape'&&f.classList.contains('open')){e.preventDefault();close(true)}});
     document.addEventListener('mousedown',function(e){if(!f.contains(e.target))close(false)});
+    inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();inp.blur();inp.focus()}});
     inp.addEventListener('blur',function(){var v=inp.value.trim();if(!v){f.classList.remove('error','filled');help.textContent=helpTxt;return}
       var p=parse(v);if(p){inp.value=p;f.classList.remove('error');f.classList.add('filled');help.textContent=helpTxt}else{f.classList.add('error');help.textContent='Enter a date and time like 09/18/2026 09:00 AM'}});
   });

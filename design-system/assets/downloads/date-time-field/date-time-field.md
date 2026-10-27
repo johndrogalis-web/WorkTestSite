@@ -28,10 +28,22 @@ Shown in the user&rsquo;s own format: Verifi works in many countries. The date f
 - **The calendar icon or a click opens the panel.** It opens at input bottom + 4 on the month of the current value, or today. The field keeps its height.
 - **Pick a day, then the time.** Choosing a day moves focus to the hours. Each pick of hour, minutes or AM/PM writes the field straight away; Enter or a click outside closes the panel.
 - **Escape or a click outside closes it.** Nothing changes unless a day and time were both chosen.
-- **Typed values are checked when you leave the field.** A valid value is rewritten in the full local format; anything else shows the error and keeps what was typed.
+- **Typing is forgiving.** Separators are optional: 09241983 1215 pm becomes 09/24/1983 12:15 PM. Two-digit years, a single a or p, and 24-hour times (13:15) all work. The value is rewritten in the full local format when you press Enter or leave the field; anything it cannot read shows the error and keeps what was typed.
 - **Six date rows, always.** The calendar is 224 wide and never changes height between months. Days from the months either side are left empty.
 - **The arrows move one month.** At a range limit an arrow is disabled, not hidden, so nothing moves under the pointer.
 - **Motion is short.** The panel fades and slides in over 200ms ease-out and out with ease-in. With reduced motion it only fades.
+
+### Typing is forgiving
+
+- 09241983 1215 pm → 09/24/1983 12:15 PM
+- 9/18/26 13:15 → 09/18/2026 01:15 PM
+- 9-18-2026 915a → 09/18/2026 09:15 AM
+- 091826 9p → 09/18/2026 09:00 PM
+- 12/31/2026 0:05 → 12/31/2026 12:05 AM
+- 09241983 (no time) → Error: add a time
+- 02302026 1pm → Error: not a real date
+
+Digits follow the user’s date order: month-day-year in the US (09241983), day-month-year in the UK and most of Europe (24091983), year first where that is the local order (19830924).
 
 ### Guidelines (your choices)
 

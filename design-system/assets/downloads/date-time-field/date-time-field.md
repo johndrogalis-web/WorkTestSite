@@ -29,7 +29,7 @@ Shown in the user&rsquo;s own format: Verifi works in many countries. The date f
 - **Pick a day, then a time.** Choosing a day moves focus to Available Times; choosing a time writes both into the field and closes the panel.
 - **Escape or a click outside closes it.** Nothing changes unless a day and time were both chosen.
 - **Typed values are checked when you leave the field.** A valid value is rewritten in the full local format; anything else shows the error and keeps what was typed.
-- **Six date rows, always.** The calendar is 224 wide and never changes height between months. Days from other months are left empty.
+- **Six date rows, always.** The calendar is 224 wide and never changes height between months. Days from the months either side are left empty.
 - **The arrows move one month.** At a range limit an arrow is disabled, not hidden, so nothing moves under the pointer.
 - **Motion is short.** The panel fades and slides in over 200ms ease-out and out with ease-in. With reduced motion it only fades.
 
@@ -55,7 +55,7 @@ Shown in the user&rsquo;s own format: Verifi works in many countries. The date f
 
 - **Field**: The Input Field: label, 44px input with the calendar icon in the trailing slot, helper text. Every input/* token and state applies.
 - **Panel**: At input bottom + 4: the Calendar, a separator, and Available Times. Radius 16, padding 6, 1px date-picker/menu-border.
-- **Calendar**: Calendar Header (two Icon Only Buttons and the month, 224 x 32) above a 7-column grid: one row of weekday letters and six rows of 32 x 32 Calendar Day cells.
+- **Calendar**: Calendar Header (two Icon Only Buttons and the month, 224 x 32) above a 7 x 7 grid: one row of weekday letters and six rows of 32 x 32 Calendar Day cells. 224 x 256.
 - **Available Times**: 148 wide. A 34px header on available-times/header-background, then a list of Menu Items that scrolls inside a 204px viewport.
 
 ### Options
@@ -106,7 +106,4 @@ Shown in the user&rsquo;s own format: Verifi works in many countries. The date f
 
 ### Known gaps
 
-- **The sixth date row has no cells yet.** The Calendar grid is set to seven rows (weekday letters plus six date rows), but the new row needs seven empty Calendar Day cells added in Figma.
-- **The calendar icon glyph is blank.** The trailing icon is turned on in Date Picker and Date Time Field; its glyph still needs to be set to the calendar icon.
-- **Time range labels both say Time.** Time Input should read Start time and End time.
-- **The spec frames predate times.** The Date Picker spec frame says single date only and does not mention Available Times; the component does. CalendarOption’s description is copied from Menu Container.
+- **CalendarOption has the wrong description.** It is copied from Menu Container and does not describe the calendar and Available Times panel.

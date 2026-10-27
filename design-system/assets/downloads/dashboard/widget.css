@@ -3,7 +3,7 @@
    Light by default; put data-theme="dark" on any ancestor for dark. The CTA uses Button (button.css). */
 .vf-dash-wrap{container-type:inline-size}
 .vf-dash{--grid-bg:#FFFFFF;--wg-bg:#FFFFFF;--wg-bd:#DFDEDD;--wg-shadow:rgba(74,79,85,.12);--wg-ink:#171614;--wg-hint:#666054;--wg-ib:#F0EEEA;--wg-ib-bd:#D0CEC8;--wg-track:#DFDEDD;--wg-bar:#0975C3;
-  display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-auto-rows:154px;grid-auto-flow:row dense;gap:12px;padding:16px;background:var(--grid-bg)}  /* dashboard-grid/* */
+  display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-auto-rows:minmax(154px,auto);grid-auto-flow:row dense;gap:12px;padding:16px;background:var(--grid-bg)}  /* dashboard-grid/* */
 [data-theme="dark"] .vf-dash,[data-theme="dark"] .vf-wg{--grid-bg:#565147;--wg-bg:#171614;--wg-bd:#393632;--wg-shadow:rgba(255,255,255,.24);--wg-ink:#FFFFFF;--wg-hint:#9B958A;--wg-ib:#000000;--wg-ib-bd:#7F796C;--wg-track:#393632;--wg-bar:#41A8F2}
 .vf-wg{--wg-bg:#FFFFFF;--wg-bd:#DFDEDD;--wg-shadow:rgba(74,79,85,.12);--wg-ink:#171614;--wg-hint:#666054;--wg-ib:#F0EEEA;--wg-ib-bd:#D0CEC8;--wg-track:#DFDEDD;--wg-bar:#0975C3;
   display:flex;flex-direction:column;gap:16px;padding:20px;min-width:0;min-height:0;overflow:hidden;box-sizing:border-box;
@@ -20,7 +20,7 @@
 .vf-wg-b{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center}
 .vf-wg-f{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px;line-height:1.3;color:var(--wg-hint)}
 .vf-wg-ts{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-@container (max-width:640px){.vf-dash{grid-template-columns:repeat(4,minmax(0,1fr))}.vf-wg.large,.vf-wg.medium{grid-column:span 4}}
+@container (max-width:640px){.vf-dash{grid-template-columns:repeat(4,minmax(0,1fr))}.vf-wg.large,.vf-wg.medium,.vf-wg.small{grid-column:span 4}.vf-wg.small{grid-row:span 1}.vf-wg.tiny{grid-column:span 2}}
 @container (max-width:320px){.vf-wg-cta{display:none}}
 /* Mode=Edit: card/background-selected, 1px dashed card/border-selected, drag handle + Remove */
 .vf-wg.edit{--wg-edit:#EEF9FF;--wg-edit-bd:#0C79A8;background:var(--wg-edit);border:1px dashed var(--wg-edit-bd);box-shadow:none}
@@ -34,3 +34,23 @@
 .vf-wg-load svg{width:40px;height:40px;animation:vf-wg-spin .9s linear infinite}.vf-wg.compact .vf-wg-load{min-height:0}.vf-wg.compact .vf-wg-load svg{width:24px;height:24px}
 @keyframes vf-wg-spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.vf-wg-load svg{animation-duration:2.4s}}
+/* Chart bodies: data colour foundation (Operations, Quality, comparison dashed, context grey) */
+.vf-wg{--ch-ops:#D47355;--ch-q:#0975C3;--ch-ctx:#8A867F;--ch-grid:#E9E6E2;--ch-pos:#457676;--ch-neg:#D70100;--ch-ax:#666054}
+.pane-d .vf-wg,[data-theme="dark"] .vf-wg{--ch-ops:#E38B6F;--ch-q:#94C5FD;--ch-ctx:#6E6A63;--ch-grid:#393632;--ch-pos:#7FB8B8;--ch-neg:#FF8A80;--ch-ax:#9B958A}
+.vf-ch{flex:1;min-height:0;display:flex;flex-direction:column;gap:6px}
+.vf-ch-per{font-size:14px;line-height:1.3;color:var(--ch-ax);margin-top:-12px}
+.vf-ch-kpi{display:flex;align-items:baseline;gap:8px}.vf-ch-kpi b{color:var(--wgink,var(--wg-ink,currentColor));font-size:32px;line-height:1;font-weight:400;letter-spacing:-.02em}
+.vf-ch-dl{font-size:14px;font-weight:500}.vf-ch-dl.neg{color:var(--ch-neg)}.vf-ch-dl.pos{color:var(--ch-pos)}
+.vf-ch-plot{flex:1;min-height:150px;display:grid;grid-template-columns:auto 1fr;grid-template-rows:1fr auto;column-gap:8px;row-gap:6px;margin-top:6px}
+.vf-ch-plot .ya{display:flex;flex-direction:column;justify-content:space-between;font-size:12px;line-height:1;color:var(--ch-ax);text-align:right;margin:-6px 0}
+.vf-ch-plot .pa{position:relative;min-height:0}.vf-ch-plot svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.vf-ch-plot .gr line{stroke:var(--ch-grid);stroke-width:1;vector-effect:non-scaling-stroke}
+.vf-ch-plot .s1,.vf-ch-plot .s2{fill:none;stroke:var(--ch-ops);stroke-width:2;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.vf-ch-plot .s2{stroke-dasharray:4 4}
+.vf-ch-plot .xa{display:flex;justify-content:space-between;font-size:12px;line-height:1;color:var(--ch-ax);white-space:nowrap;overflow:hidden}
+.vf-ch-hist{flex:1;min-height:120px;display:flex;align-items:flex-end;gap:2px;margin-top:6px}
+.vf-ch-hist i{flex:1;background:var(--ch-ctx);opacity:.45;border-radius:4px 4px 0 0;min-height:2px}.vf-ch-hist i.hi{background:var(--ch-q);opacity:1}
+.vf-ch-lg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;line-height:1.3;color:var(--ch-ax)}
+.vf-ch-lg span{display:inline-flex;align-items:center;gap:6px}.vf-ch-lg i{display:inline-block;width:16px;height:0;border-top:2px solid var(--ch-ops)}
+.vf-ch-lg i.k2{border-top-style:dashed}.vf-ch-lg i.k3,.vf-ch-lg i.k4{width:10px;height:10px;border:0;border-radius:2px;background:var(--ch-q)}.vf-ch-lg i.k4{background:var(--ch-ctx);opacity:.45}
+@container (max-width:300px){.vf-ch-plot .xa span:nth-child(even){display:none}.vf-ch-kpi b{font-size:26px}}

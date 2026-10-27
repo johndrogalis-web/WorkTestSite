@@ -37,6 +37,7 @@ Built from the shell and other components; examples, not components.
 - **Snapshots, not pages.** A widget shows a slice of one page or section, so people get the picture without opening reports. The footer link is how they go deeper.
 - **The grid sets the size.** Placed widgets fill their grid cell. The dashboard picks the span; the widget fills it and lays out its content to its own width.
 - **Four sizes on Large.** Large spans 12 columns, Medium 4, Small 2, Tiny 1. Tiny uses Compact density and half the height.
+- **The grid follows the page class.** 12 columns on Large and Expanded, 8 on Medium (Large widgets span all 8), 4 on a phone, where every widget is full width except Tiny, which goes two-up.
 - **Compact is title and content only.** No actions, no CTA, no footer. Turning those on does nothing at Compact.
 - **Narrow widgets cut text.** The timestamp and long titles end in an ellipsis rather than wrap.
 - **Narrow widgets drop the CTA (house rule).** Below 320px wide, “View all” hides so the title keeps its room. The footer link still goes to the same page.

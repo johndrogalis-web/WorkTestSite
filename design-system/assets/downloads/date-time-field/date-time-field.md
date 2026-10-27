@@ -1,8 +1,8 @@
 # Date and time field
 
-One field for a date and a time. Type it, or open the calendar and pick a day, then a time from the list beside it.
+One field for a date and a time. Type it, or open the calendar and pick a day, then the hour and minutes beside it.
 
-Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Date Time Field 65097:1543, Date Picker 65087:62233, Time Input 65097:1462. Light and dark.
+Status: Has gaps. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Date Time Field 65097:1543, Date Picker 65087:62233, Time Input 65097:1462. Light and dark.
 
 Shown in the user&rsquo;s own format: Verifi works in many countries. The date format, the clock (12 or 24 hour) and the time zone follow the user’s location. MM/DD/YYYY HH:MM AM/PM on this page is the United States example; in the United Kingdom the same moment reads 18/09/2026 09:00, and in Germany 18.09.2026 09:00. Store the value as an ISO date and time with its offset; only the display changes.
 
@@ -26,7 +26,7 @@ Shown in the user&rsquo;s own format: Verifi works in many countries. The date f
 
 - **Typing always works.** The calendar is a convenience, not the only way in. The field is never read-only.
 - **The calendar icon or a click opens the panel.** It opens at input bottom + 4 on the month of the current value, or today. The field keeps its height.
-- **Pick a day, then a time.** Choosing a day moves focus to Available Times; choosing a time writes both into the field and closes the panel.
+- **Pick a day, then the time.** Choosing a day moves focus to the hours. Each pick of hour, minutes or AM/PM writes the field straight away; Enter or a click outside closes the panel.
 - **Escape or a click outside closes it.** Nothing changes unless a day and time were both chosen.
 - **Typed values are checked when you leave the field.** A valid value is rewritten in the full local format; anything else shows the error and keeps what was typed.
 - **Six date rows, always.** The calendar is 224 wide and never changes height between months. Days from the months either side are left empty.
@@ -37,7 +37,7 @@ Shown in the user&rsquo;s own format: Verifi works in many countries. The date f
 
 - **Say the format in the helper text.** Not only in the placeholder, which disappears on typing: “MM/DD/YYYY HH:MM AM/PM, your local time” (in the user’s own format).
 - **Say whose time it is.** If the time is not the user’s own zone, such as the plant’s, name it in the helper text: “Plant time (CST)”.
-- **Offer only times that can be booked.** Available Times lists real slots for the chosen day. If a day has none, disable it in the calendar.
+- **Any time, in 5-minute steps.** Hours 1 to 12, minutes 00 to 55 in steps of 5, and AM/PM. For any other minute, type it: 1:17 PM is fine. Where only booked slots are allowed, use Available Times instead.
 - **Use the time range for windows.** Start and End are two Selects; End must be after Start.
 - **Write the label as a noun.** “Delivery date and time”, not “Select a date”.
 
@@ -54,13 +54,14 @@ Shown in the user&rsquo;s own format: Verifi works in many countries. The date f
 ### Anatomy
 
 - **Field**: The Input Field: label, 44px input with the calendar icon in the trailing slot, helper text. Every input/* token and state applies.
-- **Panel**: At input bottom + 4: the Calendar, a separator, and Available Times. Radius 16, padding 6, 1px date-picker/menu-border.
+- **Panel**: At input bottom + 4: the Calendar, a separator, and Time Columns. Radius 16, padding 6, 1px date-picker/menu-border.
 - **Calendar**: Calendar Header (two Icon Only Buttons and the month, 224 x 32) above a 7 x 7 grid: one row of weekday letters and six rows of 32 x 32 Calendar Day cells. 224 x 256.
-- **Available Times**: 148 wide. A 34px header on available-times/header-background, then a list of Menu Items that scrolls inside a 204px viewport.
+- **Time Columns**: 156 wide. A 34px Time header, an hours column and a minutes column (5-minute steps) that scroll, and an AM/PM row. Users on a 24-hour clock get hours 00 to 23 and no AM/PM row.
 
 ### Options
 
-- **Date and time** (Date Time Field 65097:1543): One field; the panel shows the calendar and Available Times.
+- **Date and time** (Date Time Field 65097:1543): One field; the panel shows the calendar and Time Columns (any time, 5-minute steps).
+- **Booked slots** (Available Times 65116:61527): A list of the times that can be booked, in place of Time Columns, when the time is not free.
 - **Date only** (Date Picker 65087:62233, ShowTimes off): The panel shows the calendar only. See Date picker .
 - **Time range** (Time Input 65097:1462): Start time and End time as two Selects.
 
@@ -90,8 +91,8 @@ Shown in the user&rsquo;s own format: Verifi works in many countries. The date f
 | Day focus | calendar-day/border-focus | #171614 | #D0CEC8 |
 | Day disabled | calendar-day/text-disabled | #7F796C | #B6B1A5 |
 | Month label | calendar-header/text, Body/sm Medium | #171614 | #FFFFFF |
-| Times header | available-times/header-background, height 34, padding 12 | #DFDEDD | #393632 |
-| Times list | available-times/list-background, viewport 204 | #FFFFFF | #171614 |
+| Time header | available-times/header-background, height 34, padding 12 | #DFDEDD | #393632 |
+| Time columns | available-times/list-background; items 30, radius 4; AM/PM 28, pill | #FFFFFF | #171614 |
 | Time selected | Menu Item selected | #0D598F on #EEF9FF | #171614 on #E3F200 |
 | Motion | date-picker/duration, enter, exit | 200ms, ease-out, ease-in | 200ms, ease-out, ease-in |
 
@@ -100,10 +101,10 @@ Shown in the user&rsquo;s own format: Verifi works in many countries. The date f
 - The calendar icon is a real button named “Choose date and time” with aria-haspopup="dialog" and aria-expanded .
 - Typing works without the panel, so the field never depends on a pointer.
 - In the calendar, arrow keys move by day and week, Page Up and Page Down by month, Enter picks. Today carries aria-current="date" .
-- Available Times is a listbox : arrow keys move, Enter picks, Escape closes and returns focus to the field.
+- Hours and minutes are listbox es and AM/PM a radiogroup : up and down move within a column, left and right move between them, Enter closes, Escape closes and returns focus to the field.
 - Today is marked by an outline as well as colour. Weekday letters are decorative and not focusable.
 - The helper text holds the format and time zone, linked with aria-describedby .
 
 ### Known gaps
 
-- None open.
+- **Time Columns uses a placeholder font.** The new Time Columns component 67820:157 is set in Inter until the Body/sm style (ABC Repro) is applied in Figma.

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Image block · Verifi Trinity</title>
+<link rel="stylesheet" href="image.css">
+<style>
+  body{margin:0;font-family:'ABC Repro','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;color:#171614;background:#FFFFFF}
+  header,section{padding:24px} header h1{font-size:24px;font-weight:500;margin:0 0 4px} header p{margin:0;color:#565147}
+  section[data-theme="dark"]{background:#171614;color:#FFFFFF} h2{font-size:16px;font-weight:500;margin:0 0 12px}
+  .row{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}
+</style>
+</head>
+<body>
+<header><h1>Image block</h1><p>Five ratios. The last one points at a file that does not exist, so it keeps the placeholder.</p></header>
+<section><h2>Light</h2><div class="row"><figure class="vf-img" data-ratio="16:9" style="width:240px;border-radius:16px;margin:0"><img src="https://johndrogalis-web.github.io/WorkTestSite/design-system/assets/img/driver-800.webp" alt="A driver checking a delivery ticket beside a mixer truck" loading="lazy"></figure><figure class="vf-img" data-ratio="5:3" style="width:240px;border-radius:16px;margin:0"><img src="https://johndrogalis-web.github.io/WorkTestSite/design-system/assets/img/driver-800.webp" alt="A driver checking a delivery ticket beside a mixer truck" loading="lazy"></figure><figure class="vf-img" data-ratio="3:2" style="width:240px;border-radius:16px;margin:0"><img src="https://johndrogalis-web.github.io/WorkTestSite/design-system/assets/img/driver-800.webp" alt="A driver checking a delivery ticket beside a mixer truck" loading="lazy"></figure><figure class="vf-img" data-ratio="4:3" style="width:240px;border-radius:16px;margin:0"><img src="https://johndrogalis-web.github.io/WorkTestSite/design-system/assets/img/driver-800.webp" alt="A driver checking a delivery ticket beside a mixer truck" loading="lazy"></figure><figure class="vf-img" data-ratio="1:1" style="width:240px;border-radius:16px;margin:0"><img src="https://johndrogalis-web.github.io/WorkTestSite/design-system/assets/img/driver-800.webp" alt="A driver checking a delivery ticket beside a mixer truck" loading="lazy"></figure><figure class="vf-img" data-ratio="5:3" style="width:240px;border-radius:16px;margin:0"><img src="missing.webp" alt="Failed picture"></figure></div></section>
+<section data-theme="dark"><h2>Dark</h2><div class="row"><figure class="vf-img" data-ratio="16:9" style="width:240px;border-radius:16px;margin:0"><img src="https://johndrogalis-web.github.io/WorkTestSite/design-system/assets/img/driver-800.webp" alt="A driver checking a delivery ticket beside a mixer truck" loading="lazy"></figure><figure class="vf-img" data-ratio="5:3" style="width:240px;border-radius:16px;margin:0"><img src="https://johndrogalis-web.github.io/WorkTestSite/design-system/assets/img/driver-800.webp" alt="A driver checking a delivery ticket beside a mixer truck" loading="lazy"></figure><figure class="vf-img" data-ratio="3:2" style="width:240px;border-radius:16px;margin:0"><img src="https://johndrogalis-web.github.io/WorkTestSite/design-system/assets/img/driver-800.webp" alt="A driver checking a delivery ticket beside a mixer truck" loading="lazy"></figure><figure class="vf-img" data-ratio="4:3" style="width:240px;border-radius:16px;margin:0"><img src="https://johndrogalis-web.github.io/WorkTestSite/design-system/assets/img/driver-800.webp" alt="A driver checking a delivery ticket beside a mixer truck" loading="lazy"></figure><figure class="vf-img" data-ratio="1:1" style="width:240px;border-radius:16px;margin:0"><img src="https://johndrogalis-web.github.io/WorkTestSite/design-system/assets/img/driver-800.webp" alt="A driver checking a delivery ticket beside a mixer truck" loading="lazy"></figure><figure class="vf-img" data-ratio="5:3" style="width:240px;border-radius:16px;margin:0"><img src="missing.webp" alt="Failed picture"></figure></div></section>
+<script>
+(function(){
+  function fail(i){var f=i.closest('.vf-img');if(f)f.classList.add('failed')}
+  document.querySelectorAll('.vf-img img').forEach(function(i){if(i.complete&&!i.naturalWidth&&i.getAttribute('src'))fail(i);i.addEventListener('error',function(){fail(i)})});
+  var p=document.querySelector('[data-imp-panel]');if(!p)return;
+  var PICS={driver:['driver',1400,800,'A driver checking a delivery ticket beside a mixer truck'],hardware:['hardware-1',1400,800,'Verifi sensor hardware mounted on a drum'],
+    truck:['truck-wall',1848,1100,'A row of ready-mix trucks at a plant'],drum:['drum-top',1174,700,'Looking down into a turning mixer drum']};
+  var st={ratio:'16:9',pic:'driver',rad:'16',w:'320'};
+  function apply(){document.querySelectorAll('#play .vf-imp .vf-img').forEach(function(f){
+    f.dataset.ratio=st.ratio;f.style.aspectRatio=st.ratio.replace(':',' / ');f.style.borderRadius=st.rad+'px';f.style.width=st.w+'px';f.classList.remove('failed');
+    var i=f.querySelector('img');
+    if(st.pic==='failed'){i.removeAttribute('srcset');i.src='../assets/img/missing-file.webp';i.alt='A row of ready-mix trucks at a plant';return}
+    var d=PICS[st.pic];i.srcset='../assets/img/'+d[0]+'-'+d[2]+'.webp '+d[2]+'w, ../assets/img/'+d[0]+'-'+d[1]+'.webp '+d[1]+'w';i.sizes=st.w+'px';i.src='../assets/img/'+d[0]+'-'+d[2]+'.webp';i.alt=d[3]})}
+  p.querySelectorAll('[data-imp-seg]').forEach(function(g){g.addEventListener('click',function(e){var b=e.target.closest('.vf-segb');if(!b)return;
+    g.querySelectorAll('.vf-segb').forEach(function(x){x.classList.toggle('sel',x===b);x.setAttribute('aria-pressed',String(x===b))});st[g.dataset.impSeg]=b.dataset.v;apply()})});
+})();
+</script>
+</body>
+</html>

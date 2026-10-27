@@ -2041,6 +2041,54 @@ ul.plain li b{color:var(--ink,#171614);font-weight:500}
 .vf-shell-btn{display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;padding:3px 0;font-size:8px;line-height:1.1;text-align:center;border-left:3px solid transparent;color:var(--shink)}
 .vf-shell-btn .si{width:14px;height:14px;display:block;color:currentColor}.vf-shell-btn .si svg{width:14px;height:14px;display:block}
 .vf-shell-btn.act{color:var(--shact);border-left-color:var(--shind)}
+/* Progress bar v2 — track stroke drawn above the fill, like Figma */
+:root,.pane-l{--pbring:#7F796C}.pane-d{--pbring:#7F796C}
+.t-pbar{position:relative}
+.t-pbar::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 1px var(--pbring);pointer-events:none}
+.t-pbar > i{transition:width .3s ease-out}
+@media (prefers-reduced-motion:reduce){.t-pbar > i{transition:none}}
+.vf-pbw{display:flex;flex-direction:column;gap:6px;width:480px;max-width:100%}
+.vf-pbw .t-pbar{max-width:none}
+.vf-pbl{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;font-size:13px}.vf-pbl .vl{color:var(--tx2)}.vf-pbl .err{color:#D70100}.pane-d .vf-pbl .err{color:#EFADAC}
+.vf-pbtry{display:flex;flex-direction:column;gap:12px}
+/* Search v2 — Suggestion Row from Figma V2 (65138:76717): one line, Highlighted, Remove; dark read from tokens */
+.vf-search .vf-input input[type=search]{-webkit-appearance:none;appearance:none}.vf-search .vf-input input[type=search]::-webkit-search-cancel-button{display:none}
+.vf-search.inline{width:320px;max-width:100%}
+.vf-search .vf-sugs{width:auto;right:0;min-width:0}
+.vf-search.open:not(.live) .vf-sugs{position:static;margin-top:4px}
+.vf-sugs{--shdr:#171614;--sres:#171614;--smatch:#032D3D;--shl:#C5E4FB;--sact:#0975C3;--sdesc:#666054;--shov:#DFDEDD;--shres:#171614;--shdesc:#666054;--shact:#0D598F;--sx:#171614}
+.pane-d .vf-sugs{--shdr:#D0CEC8;--sres:#FFFFFF;--smatch:#032D3D;--shl:#E3F200;--sact:#41A8F2;--sdesc:#9B958A;--shov:#FEFFD6;--shres:#171614;--shdesc:#45413A;--shact:#0D598F;--sx:#FFFFFF}
+.vf-sugs.static{position:static;width:340px;max-width:100%;display:flex}
+.vf-sug{position:relative;height:28px;min-height:28px;padding:4px 6px 4px 32px;display:flex;flex-direction:row;align-items:center;justify-content:flex-start;text-align:left;gap:8px;border-radius:4px;color:var(--sres);cursor:pointer;box-sizing:border-box;outline:0;font-size:14px;line-height:1.3;white-space:nowrap;box-shadow:none;background:transparent}
+.vf-sug:hover,.vf-sug:focus-visible{background:transparent}
+.vf-sug.hl{background:var(--shov);color:var(--shres)}
+.vf-sug .txt{display:block;flex:none}.vf-sug mark{background:var(--shl);color:var(--smatch);padding:0;border-radius:0}
+.vf-sug .desc{font-size:14px;color:var(--sdesc);overflow:hidden;text-overflow:ellipsis;min-width:0}.vf-sug.hl .desc{color:var(--shdesc)}
+.vf-sug.hdr{font-size:14px;font-weight:400;color:var(--shdr);cursor:default;min-height:28px}.vf-sug.hdr:hover{background:transparent}
+.vf-sug.hdr .hi{position:absolute;left:8px;top:6px;width:16px;height:16px;display:inline-flex}.vf-sug.hdr .hi svg{width:16px;height:16px}
+.vf-sug.more{color:var(--sact)}.vf-sug.more.hl{color:var(--shact)}
+.vf-sug.tip{color:var(--sdesc);cursor:default;white-space:normal;height:auto}
+.vf-sug.rmv{padding-right:28px}
+.vf-sug .rm{position:absolute;right:6px;top:6px;width:16px;height:16px;padding:0;border:0;background:none;color:var(--sx);cursor:pointer;display:inline-flex;border-radius:2px}.vf-sug.hl .rm{color:var(--shres)}.vf-sug .rm svg{width:16px;height:16px}
+.vf-clear{width:16px;height:16px;flex:none;display:inline-flex;align-items:center;justify-content:center;border:0;background:transparent;color:var(--ftx);border-radius:2px;cursor:pointer;padding:0;margin:0}.vf-clear[hidden]{display:none}.vf-clear svg{width:16px;height:16px}.vf-clear:focus-visible{outline:2px solid var(--ftx);outline-offset:2px}
+.vf-search .vf-input input{flex:1;min-width:0}
+/* Scrollbar v2 — Figma V2 38351:39609 + Scrollbar Thumb 67936:2056; native scrollbar, styled */
+.vf-scroll{--sb-thumb:#7F796C;--sb-thumb-h:#565147;overflow:auto;overscroll-behavior:auto}
+.pane-d .vf-scroll,[data-theme="dark"] .vf-scroll{--sb-thumb:#7F796C;--sb-thumb-h:#B6B1A5}
+@supports not selector(::-webkit-scrollbar){.vf-scroll{scrollbar-width:thin;scrollbar-color:var(--sb-thumb) transparent}}
+.vf-scroll::-webkit-scrollbar{width:6px;height:6px;background:transparent}
+.vf-scroll::-webkit-scrollbar-track{background:transparent}
+.vf-scroll::-webkit-scrollbar-thumb{background:var(--sb-thumb);border-radius:999px;min-height:24px}
+.vf-scroll::-webkit-scrollbar-thumb:hover,.vf-scroll::-webkit-scrollbar-thumb:active{background:var(--sb-thumb-h)}
+.vf-scroll::-webkit-scrollbar-corner{background:transparent}
+.vf-scroll:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+.vf-sbdemo{height:200px;width:320px;max-width:100%;border:1px solid var(--bd,#DFDEDD);border-radius:8px;font-size:14px;color:var(--tx)}
+.vf-sbdemo{color:#171614}.pane-d .vf-sbdemo{border-color:#45413A;color:#FFFFFF}.vf-sbdemo li b{color:inherit}
+.vf-sbdemo ul{list-style:none;margin:0;padding:4px 10px 4px 12px}.vf-sbdemo li{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid rgba(127,121,108,.25)}.vf-sbdemo li:last-child{border-bottom:0}
+.vf-sbdemo li b{font-weight:500;min-width:84px}.vf-sbdemo li span{flex:1;color:#666054}.pane-d .vf-sbdemo li span{color:#9B958A}.vf-sbdemo li .q{flex:none}
+.vf-sbspec{display:flex;gap:32px;flex-wrap:wrap}.vf-sbspec .col{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px;color:var(--tx2)}
+.vf-sbspec .trk{position:relative;width:6px;height:120px;outline:1px dashed rgba(127,121,108,.5);outline-offset:4px;border-radius:999px}
+.vf-sbspec i{position:absolute;left:0;width:6px;height:40px;border-radius:999px;background:#7F796C}.vf-sbspec i.h{background:#565147}.pane-d .vf-sbspec i.h{background:#B6B1A5}
 /* Notification (proposal) — surface neutral, border + icon carry status */
 .vf-notif{--nsurf:#f6f4f2;--nttl:#171614;--nbody:#565147;--nx:#171614;--nsh:0 5px 8px rgba(74,79,85,.12);background:var(--nsurf);border:1px solid var(--nst);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:16px;width:100%;max-width:420px;font-family:var(--sans);text-align:left}
 .pane-d .vf-notif{--nsurf:#171614;--nttl:#fff;--nbody:#b6b1a5;--nx:#fff;--nsh:0 5px 8px rgba(255,255,255,.24)}

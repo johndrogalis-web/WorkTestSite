@@ -2,7 +2,7 @@
 
 The bare field: border, background, text and two icon slots. Use Text field instead unless you are building something new.
 
-Status: Has gaps. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Input 64751:66225. Light and dark.
+Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Input 64751:66225. Light and dark.
 
 ## Learn
 
@@ -97,4 +97,4 @@ Status: Has gaps. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Inpu
 
 ### Known gaps
 
-- **Spec frame names the wrong radius token.** The Input spec frame says “radius input/radius”. The component uses input/field-radius (8). input/radius is 100 and only used on two Typography frames. The frame text needs to say input/field-radius.
+- None open.

@@ -2,7 +2,7 @@
 
 The Hub home page. Every tile on it is a widget: the same shell, on the Card tokens, holding a snapshot of one page or section.
 
-Status: Has gaps. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), section 65667:14366: Widget Shell 65667:14367, Dashboard Grid demo 65668:14176. Light and dark.
+Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), section 65667:14366: Widget Shell 65667:14367, Dashboard Grid demo 65668:14176. Light and dark.
 
 Built on Card: The Widget Shell uses the Card surface, border, 16px radius and shadow tokens, so a widget and a card always match. This page covers the shell, its options and how widgets sit on the grid.
 
@@ -20,6 +20,16 @@ Built on Card: The Widget Shell uses the Card surface, border, 16px radius and s
 - People need every row and column. → Use a Table on its own page
 - The message is about the whole page or account. → Use a Notification
 
+### Examples
+
+Built from the shell and other components; examples, not components.
+
+- **Component alarms** (Large): Status Card s, worst first
+- **Tickets** (Medium): List rows with a Truck phase tag
+- **Trucks by phase** (Medium): Truck phase tags with a count. CTA off
+- **Loads today** (Small): KPI with a Badge . Actions and CTA off, so the title fits
+- **Alarms, Trucks, Plants, Orders** (Tiny): Compact shell, one number; Alarms adds an Error Badge
+
 ## Understand
 
 ### Behaviour (built in)
@@ -30,8 +40,9 @@ Built on Card: The Widget Shell uses the Card surface, border, 16px radius and s
 - **Compact is title and content only.** No actions, no CTA, no footer. Turning those on does nothing at Compact.
 - **Narrow widgets cut text.** The timestamp and long titles end in an ellipsis rather than wrap.
 - **Narrow widgets drop the CTA (house rule).** Below 320px wide, “View all” hides so the title keeps its room. The footer link still goes to the same page.
-- **Size ladder (house rule).** In edit mode, splitting a widget halves it and both halves step down one size: Large, Medium, Small, Tiny. Tiny does not split.
-- **Edit mode (house rule).** “Edit dashboard” tints the widgets; “Save changes” keeps the layout and leaves edit mode. Cancel restores the last saved layout.
+- **Size ladder (house rule).** Dropping a widget from the Widget Library onto another splits that space in half, and both step down one size: Large, Medium, Small, Tiny. Tiny does not split. There is no Split button.
+- **Edit mode.** “Edit dashboard” puts every widget in Mode=Edit; “Save changes” keeps the layout and leaves edit mode. Cancel restores the last saved layout.
+- **Remove (house rule).** Remove takes the widget off the dashboard; the others close the gap. It comes back from the Widget Library.
 - **Refresh never moves the grid.** Each widget refreshes on its own schedule and updates its “Last updated” line.
 
 ### Guidelines (your choices)
@@ -48,7 +59,7 @@ Built on Card: The Widget Shell uses the Card surface, border, 16px radius and s
 - Put a full data table in a Medium widget. That is a Large widget or a page.
 - Let a widget change its own span. The dashboard decides spans; the widget decides layout.
 - Hide the header and leave the widget without a name for screen readers.
-- Show edit affordances (split, drag) outside edit mode.
+- Show edit affordances (drag handle, Remove) outside edit mode.
 - Restyle the shell. Change the Card tokens and every card and widget moves together.
 
 ## Building it
@@ -73,6 +84,7 @@ Built on Card: The Widget Shell uses the Card surface, border, 16px radius and s
 | Timestamp | Text | “Last updated 1 min ago” | Footer text, Body/sm. |
 | Body | Slot | Empty | The widget content. |
 | Density | Variant | Default | Default (20 padding, 16 gap) or Compact (10 padding, 8 gap; title and Body only). |
+| Mode | Variant | View | View, or Edit: tinted, dashed border, drag handle and Remove. Actions, CTA and footer link hide. |
 
 ### Sizes (Large layout)
 
@@ -96,9 +108,9 @@ Built on Card: The Widget Shell uses the Card surface, border, 16px radius and s
 ### States
 
 - **Content** (Data has loaded): The Body slot shows the widget content.
-- **Empty** (No data for the period (house rule)): One line saying so, and a link to change the settings. Body keeps dashboard-grid/empty-min-height, 120.
-- **Loading** (First load or refresh (house rule)): Three skeleton lines; aria-busy="true" on the widget. With reduced motion, they do not pulse.
-- **Edit mode** (After “Edit dashboard” (house rule)): Tinted surface, dashed border, a Split button. Footer link hidden.
+- **Empty** (No data for the period): Widget Body / Empty: one line in text/hint saying so, and an optional link in link/link. Centred, gap/1, minimum height dashboard-grid/empty-min-height (120).
+- **Loading** (First load or refresh): The Spinner , Large (40), centred in the Body slot; Medium (24) at Compact. aria-busy="true" on the widget. The widget keeps its size, so the grid does not jump.
+- **Edit** (After “Edit dashboard”): Surface card/background-selected, 1px dashed card/border-selected, a drag handle before the title, and Remove in place of the actions. CTA and footer link hide; the timestamp stays. Same in both densities.
 
 ### Specs
 
@@ -120,7 +132,11 @@ Built on Card: The Widget Shell uses the Card surface, border, 16px radius and s
 | Grid background | dashboard-grid/background | #FFFFFF | #565147 |
 | Grid border | dashboard-grid/border, weight 0 | #D0CEC8 (off) | #45413A (off) |
 | Empty minimum | dashboard-grid/empty-min-height | 120 | 120 |
-| Edit tint (house) | not tokenised | #EEF9FF, #0B7ACA | #0C2A3A, #5AB0F0 |
+| Empty message | Body/sm 14, text/hint | #666054 | #9B958A |
+| Empty link | Body/sm 14, link/link, underlined | #0975C3 | #41A8F2 |
+| Edit fill | card/background-selected | #EEF9FF | #032D3D |
+| Edit border | card/border-selected, 1px dashed 4 / 4 | #0C79A8 | #41A8F2 |
+| Edit drag handle | fi-move 16, text/hint | #666054 | #9B958A |
 
 ### Accessibility
 
@@ -128,7 +144,7 @@ Built on Card: The Widget Shell uses the Card surface, border, 16px radius and s
 - With the header off, the widget keeps its name through aria-label .
 - Widget titles are <h3> under the page heading, whatever the widget size.
 - Icon buttons have names: “Refresh Tickets”, “Tickets options”, “Open Tickets”.
-- Every drag in edit mode has a keyboard way: Move with arrow keys, and Split and Remove as buttons. A live region says where the widget went.
+- Every drag in edit mode has a keyboard way: Move with arrow keys, and Remove as a button. A live region says where the widget went.
 - The DOM order is the visual order. Rearranging reorders the DOM, not only the grid.
 - A refresh updates content quietly. A loading widget sets aria-busy .
 
@@ -138,7 +154,4 @@ Template and styles: widget.html and widget.css in the same folder. Angular API:
 
 ### Known gaps
 
-- **Widget types are not in V2.** The nine widget types (Notifications, Alerts, Map, Report, Tickets, Component Alarms, KPI, Quick Action, Phases) and their sizes lived in the old file. V2 has the shell, the grid demo, and two drafts as plain frames: Widget/Map and Widget/KPI .
-- **The edit flow is not in V2.** Edit mode, the Widget Library, drag and drop and the split ladder came from the old flow. This page keeps them as house rules until they are drawn in V2.
-- **Empty and Loading are not drawn.** The states on this page are house rules. Only the empty minimum height (120) is a token.
-- **Spans by class are ranges.** “3–4 of 12” and so on. Each widget type still has to pick its minimum.
+- None open.

@@ -2,7 +2,7 @@
 
 A Button that opens a short menu of actions. Pick one and it runs; the label never changes to show what you picked.
 
-Status: Has gaps. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Dropdown Button 64751:68409, spec 64764:71139. Light and dark.
+Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Dropdown Button 64751:68409, spec 64764:71139. Light and dark.
 
 Actions, never values: A Dropdown Button does not show a selected item. Picking an option runs an action (share, move, archive) and the label stays the same. If the label should show what was chosen, use a Select .
 
@@ -90,4 +90,4 @@ Actions, never values: A Dropdown Button does not show a selected item. Picking 
 
 ### Known gaps
 
-- **The spec frame says Ghost.** The component and Button call the third type Link; one word in the Dropdown Button spec frame (64764:71139) still reads Ghost.
+- None open.

@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/css/site.css?v=20261028u">
+<link rel="stylesheet" href="../assets/css/site.css?v=20261028v">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -77,7 +77,7 @@ dialog.vf-ov::backdrop{background:rgba(0,0,0,.2)}
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="../assets/js/site.js?v=20261028u"></script>
+<script src="../assets/js/site.js?v=20261028v"></script>
 <script>document.querySelectorAll(".vf-docacc .t-acc.live .hd").forEach(function(b){if(b.dataset.bound)return;b.dataset.bound=1;b.addEventListener("click",function(){var o=b.getAttribute("aria-expanded")==="true";b.setAttribute("aria-expanded",String(!o));var bd=document.getElementById(b.getAttribute("aria-controls"));if(bd){bd.hidden=o;}b.closest(".t-acc").classList.toggle("open",!o);});});
 (function(){
   var FOCUS='a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])';
@@ -87,7 +87,7 @@ dialog.vf-ov::backdrop{background:rgba(0,0,0,.2)}
     function close(reason){
       if(!open) return; var k=open.dataset.kind;
       open.hidden=true; if(k!=='nonmodal'){ page.removeAttribute('inert'); }
-      if(trig){ trig.focus(); if(k==='nonmodal') trig.setAttribute('aria-expanded','false'); }
+      if(trig){ trig.focus({preventScroll:true}); if(k==='nonmodal') trig.setAttribute('aria-expanded','false'); }
       say('Closed by '+reason+' — focus returned to the trigger'+(k!=='nonmodal'?', inert removed':''));
       open=null;
     }
@@ -97,7 +97,7 @@ dialog.vf-ov::backdrop{background:rgba(0,0,0,.2)}
         if(open) close('opening another');
         open=layer; trig=b; layer.hidden=false; var k=layer.dataset.kind;
         if(k!=='nonmodal'){ page.setAttribute('inert',''); } else { b.setAttribute('aria-expanded','true'); }
-        var t=layer.querySelector('[tabindex="-1"]'); if(t) t.focus();
+        var t=layer.querySelector('[tabindex="-1"]'); if(t) t.focus({preventScroll:true});
         say(k==='nonmodal' ? 'Non-modal drawer open — no scrim, page not inert, focus on the title. Tab flows out to the page.'
                            : (k==='modal'?'Modal dialog':'Modal drawer')+' open — page inert and dimmed, focus on the title. Tab cycles inside.');
       });

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dropdown button · Verifi Trinity</title>
+<link rel="stylesheet" href="../button/button.css">
+<link rel="stylesheet" href="../select/select.css">
+<link rel="stylesheet" href="dropdown.css">
+<style>body{margin:0;padding:24px;font-family:'ABC Repro','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px} .vf-ddrow{display:flex;gap:16px;min-height:260px}</style>
+</head>
+<body>
+<h1 style="font-size:24px;font-weight:500">Dropdown button</h1>
+<p>Click to open, pick an action. The label never changes. Styles: button.css and select.css from their download folders, then dropdown.css.</p>
+<div class="vf-ddrow"><div class="vf-dd live"><button class="vf-btn md secondary" type="button" aria-haspopup="menu" aria-expanded="false"><span class="lbl">Actions</span><svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></button><div class="vf-menu vf-ddmenu" role="menu" hidden><div class="vf-menu-item act" role="menuitem" tabindex="-1"><span class="mic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span><span class="txt">Share</span></div><div class="vf-menu-item act" role="menuitem" tabindex="-1"><span class="mic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span><span class="txt">Move to plant</span></div><div class="vf-menu-item act" role="menuitem" tabindex="-1"><span class="mic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></span><span class="txt">Archive</span></div><div class="vf-menu-div" role="separator"></div><div class="vf-menu-item act" role="menuitem" tabindex="-1"><span class="mic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span><span class="txt">Delete ticket</span></div></div></div><div class="vf-dd live"><button class="vf-btn md" type="button" aria-haspopup="menu" aria-expanded="false"><span class="lbl">Create</span><svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></button><div class="vf-menu vf-ddmenu" role="menu" hidden><div class="vf-menu-item act" role="menuitem" tabindex="-1"><span class="txt">New ticket</span></div><div class="vf-menu-item act" role="menuitem" tabindex="-1"><span class="txt">New order</span></div><div class="vf-menu-item act" role="menuitem" tabindex="-1"><span class="txt">New truck</span></div></div></div><div class="vf-dd live"><button class="vf-btn md link" type="button" aria-haspopup="menu" aria-expanded="false"><span class="lbl">More</span><svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></button><div class="vf-menu vf-ddmenu" role="menu" hidden><div class="vf-menu-item act" role="menuitem" tabindex="-1"><span class="txt">Export CSV</span></div><div class="vf-menu-item act" role="menuitem" tabindex="-1"><span class="txt">Print</span></div><div class="vf-menu-item act" role="menuitem" tabindex="-1"><span class="txt">Copy link</span></div></div></div></div><p class="vf-dd-state" aria-live="polite">Nothing run yet</p>
+<script>
+(function(){
+  document.querySelectorAll('.vf-dd.live').forEach(function(d){
+    var btn=d.querySelector('button'),menu=d.querySelector('.vf-menu'),row=d.closest('.vf-ddrow'),state=row&&row.parentNode.querySelector('.vf-dd-state'),lab=btn.querySelector('.lbl').textContent;
+    var id='vfdd'+Math.random().toString(36).slice(2,7);menu.id=id;btn.setAttribute('aria-controls',id);
+    function open(){menu.hidden=false;d.classList.add('open');btn.classList.add('act');btn.setAttribute('aria-expanded','true');var f=menu.querySelector('[role=menuitem]');if(f)f.focus()}
+    function close(ret){menu.hidden=true;d.classList.remove('open');btn.classList.remove('act');btn.setAttribute('aria-expanded','false');if(ret!==false)btn.focus()}
+    function run(r){var t=r.querySelector('.txt').textContent;close();if(state)state.textContent=/^Delete/.test(t)?'“'+t+'” opens a confirm Modal before it runs. The button still says “'+lab+'”.':'Ran “'+t+'”. The button still says “'+lab+'”.'}
+    btn.addEventListener('click',function(){menu.hidden?open():close()});
+    btn.addEventListener('keydown',function(e){if(e.key==='ArrowDown'){e.preventDefault();open()}});
+    menu.querySelectorAll('[role=menuitem]').forEach(function(r){r.addEventListener('click',function(){run(r)})});
+    d.addEventListener('keydown',function(e){if(menu.hidden)return;var rows=[].slice.call(menu.querySelectorAll('[role=menuitem]')),i=rows.indexOf(document.activeElement);
+      if(e.key==='Escape'){e.preventDefault();close()}else if(e.key==='ArrowDown'){e.preventDefault();rows[Math.min(i+1,rows.length-1)].focus()}else if(e.key==='ArrowUp'){e.preventDefault();rows[Math.max(i-1,0)].focus()}
+      else if(e.key==='Home'){e.preventDefault();rows[0].focus()}else if(e.key==='End'){e.preventDefault();rows[rows.length-1].focus()}
+      else if((e.key==='Enter'||e.key===' ')&&i>=0){e.preventDefault();run(rows[i])}else if(e.key==='Tab'){close(false)}});
+    document.addEventListener('mousedown',function(e){if(!menu.hidden&&!d.contains(e.target))close(false)});
+  });
+})();
+</script>
+</body>
+</html>

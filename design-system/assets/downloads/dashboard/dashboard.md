@@ -27,7 +27,7 @@ Built from the shell and other components; examples, not components.
 - **Fleet map** (Large): Map in the Body slot (Widget/Map in Figma): truck markers coloured by phase , locate and zoom as Icon Only Buttons
 - **Tickets** (Medium): List rows with a Truck phase tag
 - **Trucks by phase** (Medium): Truck phase tags with a count. CTA off
-- **Loads today** (Small): KPI with a Badge . Actions and CTA off, so the title fits
+- **Loads today** (Small): KPI with its change and a Badge . Actions and CTA off, so the title fits
 - **Alarms, Trucks, Plants, Orders** (Tiny): Compact shell, one number; Alarms adds an Error Badge
 
 ## Understand
@@ -38,7 +38,7 @@ Built from the shell and other components; examples, not components.
 - **The grid sets the size.** Placed widgets fill their grid cell. The dashboard picks the span; the widget fills it and lays out its content to its own width.
 - **Four sizes on Large.** Large spans 12 columns, Medium 4, Small 2, Tiny 1. Tiny uses Compact density and half the height.
 - **The grid follows the page class.** 12 columns on Large and Expanded, 8 on Medium (Large widgets span all 8), 4 on a phone, where every widget is full width except Tiny, which goes two-up.
-- **A KPI fills the card.** The number scales with the widget’s width (28px in a Small widget, up to 96px in a Large one) and sits in the middle of the Body slot, so a big widget never shows a small number in empty space.
+- **A KPI fills the card.** In Tiny the number sits bottom left. From Small up it is centred and scales with the widget’s width, up to 96px, so a big widget never shows a small number in empty space. A Large widget can stack several KPIs.
 - **Compact is title and content only.** No actions, no CTA, no footer. Turning those on does nothing at Compact.
 - **Narrow widgets cut text.** The timestamp and long titles end in an ellipsis rather than wrap.
 - **Narrow widgets drop the CTA (house rule).** Below 320px wide, “View all” hides so the title keeps its room. The footer link still goes to the same page.

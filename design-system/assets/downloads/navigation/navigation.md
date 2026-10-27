@@ -2,7 +2,7 @@
 
 The Hub’s side navigation: accordion sections with swappable link groups, as a rail on Large and a drawer behind a top bar below it. A compact button rail is the secondary option.
 
-Status: Has gaps. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), page Navigation - Hub (Application) 57722:35285. Light and dark.
+Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), page Navigation - Hub (Application) 57722:35285. Light and dark.
 
 ## Learn
 
@@ -99,4 +99,4 @@ Note — Top bar on Large: The top bar is drawn only as the mobile bar. On Large
 
 ### Known gaps
 
-- **Alternate rail popout is not a Menu Container.** The Tickets popout in 65536:21950 is a custom frame (radius 4, no border). Decision: replace it with a Menu Container instance holding the three Menu Items.
+- None open.

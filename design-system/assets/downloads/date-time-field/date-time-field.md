@@ -2,7 +2,7 @@
 
 One field for a date and a time. Type it, or open the calendar and pick a day, then the hour and minutes beside it.
 
-Status: Has gaps. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Date Time Field 65097:1543, Date Picker 65087:62233, Time Input 65097:1462. Light and dark.
+Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Date Time Field 65097:1543, Date Picker 65087:62233, Time Input 65097:1462. Light and dark.
 
 Shown in the user&rsquo;s own format: Verifi works in many countries. The date format, the clock (12 or 24 hour) and the time zone follow the user’s location. MM/DD/YYYY HH:MM AM/PM on this page is the United States example; in the United Kingdom the same moment reads 18/09/2026 09:00, and in Germany 18.09.2026 09:00. Store the value as an ISO date and time with its offset; only the display changes.
 
@@ -121,4 +121,4 @@ Digits follow the user’s date order: month-day-year in the US (09241983), day-
 
 ### Known gaps
 
-- **Time Columns uses a placeholder font.** The new Time Columns component 67820:157 is set in Inter until the Body/sm style (ABC Repro) is applied in Figma.
+- None open.

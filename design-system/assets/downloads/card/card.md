@@ -117,7 +117,7 @@ Cards are for choosing, tables are for comparing. A card gives each item its own
 | Default shadow | card/shadow/default; 0 0 3px | #4A4F55 at 12% | #FFFFFF at 24% |
 | Hover shadow | card/shadow/hover; 0 4px 12px | #1594EF at 15% | #1594EF at 20% |
 | Text | text/default, text/hint | #171614, #666054 | #FFFFFF, #9B958A |
-| Radius | card/corner-radius | 8 | 8 |
+| Radius | card/corner-radius (radius/xxl) | 16 | 16 |
 | Padding | card/padding-desktop, card/padding-mobile | 20, 10 | 20, 10 |
 | Header to content | card/input-content-gap | 10 | 10 |
 | Motion | card/duration, card/easing | 200ms ease-out | 200ms ease-out |

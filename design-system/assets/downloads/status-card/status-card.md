@@ -53,7 +53,7 @@ Seen in Trinity: Truck drawer › Component condition: one Status Card per devic
 
 ### Anatomy
 
-- **Shell**: The Card shell: surface, border, 8px radius, states. 10px padding.
+- **Shell**: The Card shell: surface, border, 16px radius, states. 10px padding.
 - **Content slot**: The Device header and device-detail content, set to Hug.
 - **Strip**: Full width, 31px, at the bottom. Holds an optional dot and one line of text.
 

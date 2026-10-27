@@ -24,7 +24,7 @@ Built on Card: The Widget Shell uses the Card surface, border, 16px radius and s
 
 Built from the shell and other components; examples, not components.
 
-- **Component alarms** (Large): Status Card s, worst first
+- **Fleet map** (Large): Map in the Body slot (Widget/Map in Figma): truck markers coloured by phase , locate and zoom as Icon Only Buttons
 - **Tickets** (Medium): List rows with a Truck phase tag
 - **Trucks by phase** (Medium): Truck phase tags with a count. CTA off
 - **Loads today** (Small): KPI with a Badge . Actions and CTA off, so the title fits

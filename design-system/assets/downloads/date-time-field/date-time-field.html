@@ -62,6 +62,14 @@
           if(e.key===(vert?'ArrowDown':'ArrowRight')||e.key===(vert?'ArrowUp':'ArrowLeft')){e.preventDefault();var n=items[i+((e.key==='ArrowDown'||e.key==='ArrowRight')?1:-1)];if(n){n.focus();n.click()}}
           else if(vert&&(e.key==='ArrowRight'||e.key==='ArrowLeft')){e.preventDefault();var nc=cols[ci+(e.key==='ArrowRight'?1:-1)];if(nc)(nc.querySelector('.sel')||nc.querySelector('.vf-menu-item')).focus()}
           else if(e.key==='Enter'){e.preventDefault();pick();close(true)}else if(e.key===' '){e.preventDefault();pick()}})})});
+    function setSel(c,v){[].slice.call(c.querySelectorAll('.vf-menu-item')).forEach(function(x){var on=x.dataset.v===v;x.classList.toggle('sel',on);x.setAttribute(x.classList.contains('ap')?'aria-checked':'aria-selected',on)})}
+    function sync(){var v=inp.value.trim(),full=parse(v),dOnly=full||parse(v+' 9');if(!dOnly)return;
+      var m=/^(\d\d)\/(\d\d)\/(\d{4})/.exec(dOnly);picked=new Date(+m[3],+m[1]-1,+m[2]);view=new Date(+m[3],+m[1]-1,1);draw();
+      if(full){var t=/(\d\d):(\d\d) ([AP])M$/.exec(full);setSel(f.querySelector('.col[data-k="h"]'),String(+t[1]));
+        setSel(f.querySelector('.col[data-k="m"]'),('0'+(Math.floor(+t[2]/5)*5)).slice(-2));setSel(f.querySelector('.vf-dtt-ap'),t[3]+'M')}
+      reveal()}
+    inp.addEventListener('input',function(){if(!f.classList.contains('open'))open();sync()});
+    inp.addEventListener('focus',function(){if(inp.value)sync()});
     function reveal(){f.querySelectorAll('.vf-dtt .col .sel').forEach(function(o){o.parentNode.scrollTop=o.offsetTop-o.parentNode.offsetTop-60})}
     ic.addEventListener('click',function(){setTimeout(reveal,0)});inp.addEventListener('click',function(){setTimeout(reveal,0)});
     f.addEventListener('keydown',function(e){if(e.key==='Escape'&&f.classList.contains('open')){e.preventDefault();close(true)}});

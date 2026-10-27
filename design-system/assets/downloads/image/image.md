@@ -4,8 +4,6 @@ A frame with a fixed shape and a picture that fills it. Five aspect ratios, no s
 
 Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Image Block 51681:83245 on page Image. Light and dark.
 
-Updated in Figma: Image Block now has its own page, Image, under the atoms. Before, it was on no page even though Avatar uses it. The 5:3 and 4:3 frames were the wrong shape (133 x 100 and 125 x 100) and are now 167 x 100 and 133 x 100. A new token, image/placeholder, sits under the picture in every ratio.
-
 ## Learn
 
 ### When to use

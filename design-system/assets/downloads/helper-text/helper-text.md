@@ -4,8 +4,6 @@ The line under a field that explains it, or says what went wrong.
 
 Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Helper Text 64749:66018 (State Helper | Error). Light and dark.
 
-Updated in Figma: long text wraps: Helper Text was fixed at 16px tall and never wrapped, so a long message ran past the field. Now the text fills the field width and wraps, the row grows from a 16px minimum, and the icon stays on the first line. The top and bottom padding token is 0; at 4 it squeezed the 12px text into an 8px box.
-
 ## Learn
 
 ### When to use

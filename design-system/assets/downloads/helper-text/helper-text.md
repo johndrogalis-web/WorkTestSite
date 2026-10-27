@@ -10,7 +10,7 @@ Updated in Figma: long text wraps: Helper Text was fixed at 16px tall and never 
 
 ### When to use
 
-- A format, unit or limit the field needs: “MM/DD/YYYY”, “In cubic yards”, “Up to 40 characters”.
+- A format, unit or limit the field needs: “MM/DD/YYYY”, “In yd³”, “Up to 40 characters” (US examples; format and units follow the user).
 - Whose time or which plant a value belongs to: “Plant time (CST)”.
 - What went wrong with a field, and how to fix it.
 
@@ -38,6 +38,10 @@ Updated in Figma: long text wraps: Helper Text was fixed at 16px tall and never 
 - **Check on leaving the field, or on submit.** Not on every keystroke, or people see errors before they have finished typing.
 - **One message per field.** Show the one that helps most. Do not stack several errors.
 - **Leave it empty rather than repeat the label.** The row is still reserved.
+- **Use the user’s format and units.** Dates, times and units follow the user’s location and settings: m³ for most of the world, yd³ in the US. Never hard-code one.
+- **Write for a global reader.** Plain words, no idioms or local shorthand. Sentence case and numerals. Describe the value, never blame the person.
+
+Product copy, not marketing: The Tone of voice page covers marketing and external copy. Helper text, labels and other product microcopy follow this page and the other component pages.
 
 ### Do not
 

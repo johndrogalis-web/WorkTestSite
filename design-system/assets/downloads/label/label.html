@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Label · Verifi Trinity</title>
+<style>
+  :root{--sans:'ABC Repro','Helvetica Neue',Helvetica,Arial,sans-serif}
+  body{margin:0;font-family:var(--sans);font-size:14px;color:#171614;background:#FFFFFF}
+  header,section{padding:24px} header h1{font-size:24px;font-weight:500;margin:0 0 4px} header p{margin:0;color:#565147}
+  section.pane-d{background:#171614;color:#FFFFFF} h2{font-size:16px;font-weight:500;margin:0 0 12px}
+  .row{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+  /* Text field stand-in, so the label sits in a real field */
+  .vf-field{--fbg:#FFFFFF;--fbgh:#F0EEEA;--fbgd:#DFDEDD;--fbd:#666054;--fbdh:#171614;--fbdf:#171614;--flab:#171614;--flabd:#9B958A;--fbdd:#B6B1A5;--ftx:#171614;--fph:#666054;--ftxd:#7F796C;--ferr:#B00100;--fring:rgba(23,22,20,.25);display:flex;flex-direction:column;gap:6px;width:320px;max-width:100%;font-family:var(--sans);font-size:14px;line-height:1.3;color:var(--ftx);text-align:left}
+.pane-d .vf-field{--fbg:#171614;--fbgh:#2F2D28;--fbgd:#211F1C;--fbd:#DFDEDD;--fbdh:#F0EEEA;--fbdf:#D0CEC8;--flab:#D0CEC8;--flabd:#B6B1A5;--fbdd:#9B958A;--ftx:#FFFFFF;--fph:#9B958A;--ftxd:#B6B1A5;--ferr:#EFADAC;--fring:rgba(255,255,255,.35)}
+.vf-label{display:block;color:var(--flab,var(--ftx));font-weight:500;min-height:10px}
+.vf-field.dis .vf-label{color:var(--flabd)}.vf-label .req{color:var(--ferr);margin-left:4px}
+.vf-input{display:flex;align-items:center;gap:8px;height:44px;padding:0 16px;border-radius:8px;background:var(--fbg);border:1px solid var(--fbd);color:var(--ftx);box-sizing:border-box;transition:background .15s ease-out,border-color .15s ease-out,box-shadow .15s ease-out}
+.vf-input .ic{width:16px;height:16px;flex:none;color:var(--ftx);display:inline-flex}.vf-input .ic svg{width:16px;height:16px}
+.vf-field:hover .vf-input,.vf-field.hov .vf-input{background:var(--fbgh);border-color:var(--fbdh)}
+.vf-field:focus-within .vf-input,.vf-field.foc .vf-input{background:var(--fbg);border:2px solid var(--fbdf);padding:0 15px;box-shadow:0 0 4px 2px var(--fring)}
+.vf-field.filled .vf-input{border-color:var(--fbdh)}
+.vf-field.error .vf-helper{color:var(--ferr)}
+.vf-field.error .vf-input,.vf-field.error:hover .vf-input{border-color:var(--ferr)}
+.vf-field.dis .vf-input,.vf-field.dis:hover .vf-input{background:var(--fbgd);border-color:var(--fbdd);color:var(--ftxd);box-shadow:none}
+.vf-field.dis .vf-input .ic{color:var(--ftxd)}
+.vf-helper{display:flex;align-items:flex-start;gap:8px;min-height:16px;font-size:12px;line-height:1.3;color:var(--ftx)}
+.vf-helper svg{width:16px;height:16px;flex:none;color:var(--ferr)}
+.vf-helper>span{flex:1;min-width:0;overflow-wrap:anywhere}
+.vf-helper.err{color:var(--ferr)}
+</style>
+</head>
+<body>
+<header><h1>Label</h1><p>Default, required, error, disabled and a long label. Click a label to focus its field.</p></header>
+<section><h2>Light</h2><div class="row"><div class="vf-field "><label class="vf-label" for="lb13">Truck number</label><div class="vf-input"><input id="lb13" type="text" placeholder="e.g. 4417" value="" aria-describedby="lb13-h"></div><span class="vf-helper" id="lb13-h"><span>Numbers only, like 4417</span></span></div><div class="vf-field "><label class="vf-label" for="lb14">Truck number<span class="req" aria-hidden="true">*</span></label><div class="vf-input"><input id="lb14" type="text" placeholder="e.g. 4417" value="" aria-describedby="lb14-h" required aria-required="true"></div><span class="vf-helper" id="lb14-h"><span>Required. Numbers only, like 4417</span></span></div><div class="vf-field error"><label class="vf-label" for="lb15">Truck number</label><div class="vf-input"><input id="lb15" type="text" placeholder="e.g. 4417" value="45A" aria-describedby="lb15-h" aria-invalid="true"></div><span class="vf-helper err" id="lb15-h"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.4"/><path d="M8 4.8v3.8M8 10.8v.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span>Enter a truck number using digits only</span></span></div><div class="vf-field dis"><label class="vf-label" for="lb16">Truck number</label><div class="vf-input"><input id="lb16" type="text" placeholder="e.g. 4417" value="4417" aria-describedby="lb16-h" disabled></div><span class="vf-helper" id="lb16-h"><span>Numbers only, like 4417</span></span></div><div class="vf-field "><label class="vf-label" for="lb17">Truck number as painted on the drum, not the licence plate<span class="req" aria-hidden="true">*</span></label><div class="vf-input"><input id="lb17" type="text" placeholder="e.g. 4417" value="" aria-describedby="lb17-h" required aria-required="true"></div><span class="vf-helper" id="lb17-h"><span>Numbers only, like 4417</span></span></div></div></section>
+<section class="pane-d"><h2>Dark</h2><div class="row"><div class="vf-field "><label class="vf-label" for="lb18">Truck number</label><div class="vf-input"><input id="lb18" type="text" placeholder="e.g. 4417" value="" aria-describedby="lb18-h"></div><span class="vf-helper" id="lb18-h"><span>Numbers only, like 4417</span></span></div><div class="vf-field "><label class="vf-label" for="lb19">Truck number<span class="req" aria-hidden="true">*</span></label><div class="vf-input"><input id="lb19" type="text" placeholder="e.g. 4417" value="" aria-describedby="lb19-h" required aria-required="true"></div><span class="vf-helper" id="lb19-h"><span>Required. Numbers only, like 4417</span></span></div><div class="vf-field error"><label class="vf-label" for="lb20">Truck number</label><div class="vf-input"><input id="lb20" type="text" placeholder="e.g. 4417" value="45A" aria-describedby="lb20-h" aria-invalid="true"></div><span class="vf-helper err" id="lb20-h"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.4"/><path d="M8 4.8v3.8M8 10.8v.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span>Enter a truck number using digits only</span></span></div><div class="vf-field dis"><label class="vf-label" for="lb21">Truck number</label><div class="vf-input"><input id="lb21" type="text" placeholder="e.g. 4417" value="4417" aria-describedby="lb21-h" disabled></div><span class="vf-helper" id="lb21-h"><span>Numbers only, like 4417</span></span></div><div class="vf-field "><label class="vf-label" for="lb22">Truck number as painted on the drum, not the licence plate<span class="req" aria-hidden="true">*</span></label><div class="vf-input"><input id="lb22" type="text" placeholder="e.g. 4417" value="" aria-describedby="lb22-h" required aria-required="true"></div><span class="vf-helper" id="lb22-h"><span>Numbers only, like 4417</span></span></div></div></section>
+</body>
+</html>

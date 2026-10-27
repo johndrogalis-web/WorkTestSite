@@ -24,7 +24,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Helper 
 ### Behaviour (built in)
 
 - **The row is always there.** It keeps at least 16px under the field even when empty, so the form does not jump when an error appears.
-- **An error replaces the helper.** Same row: the alert icon appears and the text turns error red. The field turns the label and border red with it.
+- **An error replaces the helper.** Same row: the alert icon appears and the text turns error red. The field turns its border red with it; the label stays.
 - **Fixing the value brings the helper back.** When the value is valid again the error clears and the original helper text returns.
 - **Long text wraps.** The text fills the field width. The row grows to two lines or more and the icon stays beside the first line.
 - **Errors are announced.** The helper is linked to the input with aria-describedby and is a polite live region, so a new error is read out once.
@@ -60,7 +60,7 @@ Product copy, not marketing: The Tone of voice page covers marketing and externa
 ### States
 
 - **Helper** (Guidance for the field, or nothing): helper-text/text-default, no icon
-- **Error** (The value failed a check): helper-text/text-error, alert icon in helper-text/icon-error; the field turns its label and border red
+- **Error** (The value failed a check): helper-text/text-error, alert icon in helper-text/icon-error; the field turns its border red
 
 ### Specs
 

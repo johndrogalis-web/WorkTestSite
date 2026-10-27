@@ -75,7 +75,7 @@ Same panel as Date and time field: Date picker is the Date Picker component with
 - **Hover** (Pointer over the field): Hover fill and border
 - **Focus** (Typing, or the panel is open): 2px focus border and ring
 - **Filled** (A date is set): Value in input text colour
-- **Error** (The typed value is not a date): Error border, label and helper; the helper says the expected format
+- **Error** (The typed value is not a date): Error border and helper; the helper says the expected format. The label stays
 - **Disabled** (Not available): Disabled tokens; the icon cannot open the panel
 
 ### Specs

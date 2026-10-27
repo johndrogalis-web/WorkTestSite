@@ -74,7 +74,9 @@
     ic.addEventListener('click',function(){setTimeout(reveal,0)});inp.addEventListener('click',function(){setTimeout(reveal,0)});
     f.addEventListener('keydown',function(e){if(e.key==='Escape'&&f.classList.contains('open')){e.preventDefault();close(true)}});
     document.addEventListener('mousedown',function(e){if(!f.contains(e.target))close(false)});
-    inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();inp.blur();inp.focus()}});
+    inp.addEventListener('keydown',function(e){if(e.key!=='Enter')return;e.preventDefault();var v=inp.value.trim();if(!v)return;var p=parse(v);
+      if(p){inp.value=p;f.classList.remove('error');f.classList.add('filled');help.textContent=helpTxt;close(false)}
+      else{f.classList.add('error');help.textContent='Enter a date and time like 09/18/2026 09:00 AM'}});
     inp.addEventListener('blur',function(){var v=inp.value.trim();if(!v){f.classList.remove('error','filled');help.textContent=helpTxt;return}
       var p=parse(v);if(p){inp.value=p;f.classList.remove('error');f.classList.add('filled');help.textContent=helpTxt}else{f.classList.add('error');help.textContent='Enter a date and time like 09/18/2026 09:00 AM'}});
   });

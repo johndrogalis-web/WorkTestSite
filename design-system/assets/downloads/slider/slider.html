@@ -1,0 +1,29 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Slider · Verifi Trinity</title><link rel="stylesheet" href="slider.css"><style>body{margin:0;padding:24px;font-family:"ABC Repro","Helvetica Neue",Helvetica,Arial,sans-serif}section{padding:24px 16px;display:grid;gap:24px}section[data-theme="dark"]{background:#171614;color:#fff}</style></head><body>
+<section><div class="vf-slw"><div class="vf-sl live" data-live-sl data-unit="in"><span class="trk"></span><span class="fil"></span><span class="val"></span><span class="thb"></span><input type="range" min="0" max="12" step="1" value="5" aria-label="Slump target"></div><div class="vf-slm"><span>0 in</span><output aria-live="polite"></output><span>12 in</span></div></div><div class="vf-slw"><div class="vf-sl live range" data-live-rng data-unit="in"><span class="trk"></span><span class="fil"></span><span class="val"></span><span class="thb"></span><span class="thb"></span><input type="range" min="0" max="12" step="1" value="3" aria-label="Slump range, minimum"><input type="range" min="0" max="12" step="1" value="8" aria-label="Slump range, maximum"></div><div class="vf-slm"><span>0 in</span><output aria-live="polite"></output><span>12 in</span></div></div></section>
+<section data-theme="dark"><div class="vf-slw"><div class="vf-sl live" data-live-sl data-unit="in"><span class="trk"></span><span class="fil"></span><span class="val"></span><span class="thb"></span><input type="range" min="0" max="12" step="1" value="5" aria-label="Slump target"></div><div class="vf-slm"><span>0 in</span><output aria-live="polite"></output><span>12 in</span></div></div><div class="vf-slw"><div class="vf-sl live range" data-live-rng data-unit="in"><span class="trk"></span><span class="fil"></span><span class="val"></span><span class="thb"></span><span class="thb"></span><input type="range" min="0" max="12" step="1" value="3" aria-label="Slump range, minimum"><input type="range" min="0" max="12" step="1" value="8" aria-label="Slump range, maximum"></div><div class="vf-slm"><span>0 in</span><output aria-live="polite"></output><span>12 in</span></div></div></section>
+<script>
+(function(){
+  function pct(i){return (i.value-i.min)/(i.max-i.min)*100}
+  document.querySelectorAll('[data-live-sl]').forEach(function(w){var i=w.querySelector('input'),f=w.querySelector('.fil'),t=w.querySelector('.thb'),v=w.querySelector('.val'),o=w.parentNode.querySelector('output'),u=w.dataset.unit||'';
+    function paint(){var p=pct(i);f.style.width=p+'%';t.style.left=p+'%';v.style.left=p+'%';v.textContent=i.value;i.setAttribute('aria-valuetext',i.value+' '+u);if(o)o.textContent=i.value+' '+u;}
+    paint();i.addEventListener('input',paint);
+    i.addEventListener('pointerdown',function(){w.classList.add('dragging','show');t.classList.add('act');});
+    i.addEventListener('pointerup',function(){w.classList.remove('dragging');t.classList.remove('act');if(document.activeElement!==i)w.classList.remove('show');});
+    i.addEventListener('pointerenter',function(){t.classList.add('hov')});i.addEventListener('pointerleave',function(){t.classList.remove('hov')});
+    i.addEventListener('focus',function(){if(!w.classList.contains('dragging')){t.classList.add('foc');w.classList.add('show');}});
+    i.addEventListener('blur',function(){t.classList.remove('foc','act');w.classList.remove('show','dragging');});
+  });
+  document.querySelectorAll('[data-live-rng]').forEach(function(w){var ins=w.querySelectorAll('input'),a=ins[0],b=ins[1],f=w.querySelector('.fil'),th=w.querySelectorAll('.thb'),v=w.querySelector('.val'),o=w.parentNode.querySelector('output'),u=w.dataset.unit||'';
+    function paint(which){var lo=+a.value,hi=+b.value;if(lo>hi){if(which===a){a.value=hi;lo=hi;}else{b.value=lo;hi=lo;}}
+      var pa=pct(a),pb=pct(b);f.style.left=pa+'%';f.style.width=(pb-pa)+'%';th[0].style.left=pa+'%';th[1].style.left=pb+'%';
+      a.setAttribute('aria-valuetext',lo+' '+u);b.setAttribute('aria-valuetext',hi+' '+u);if(o)o.textContent=lo+' to '+hi+' '+u;
+      if(which){v.style.left=(which===a?pa:pb)+'%';v.textContent=which.value;}}
+    paint();ins.forEach(function(i,k){i.addEventListener('input',function(){paint(i)});
+      i.addEventListener('pointerdown',function(){w.classList.add('dragging','show');th[k].classList.add('act');paint(i);});
+      i.addEventListener('pointerup',function(){w.classList.remove('dragging');th[k].classList.remove('act');if(document.activeElement!==i)w.classList.remove('show');});
+      i.addEventListener('focus',function(){th[k].classList.add('foc');w.classList.add('show');paint(i);});
+      i.addEventListener('blur',function(){th[k].classList.remove('foc','act');w.classList.remove('show','dragging');});});
+  });
+})();
+</script>
+</body></html>

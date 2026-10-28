@@ -2182,6 +2182,23 @@ ul.plain li b{color:var(--ink,#171614);font-weight:500}
 .vf-helper{min-height:16px;align-items:center}
 .vf-field .vf-helper .vf-count{flex:none;margin-left:auto;color:var(--fph);font-variant-numeric:tabular-nums}.vf-field.error .vf-helper .vf-count{color:var(--ferr)}
 .vf-tfw{display:flex;flex-direction:column;gap:16px;width:320px;max-width:100%}
+/* Tooltip v2 (28 Oct): 24 tall (4/8 padding), 15x6 arrow centred on the facing edge with a 2px overlap, dark pair from tokens */
+.t-tip{--ttbg:#171614;--tttx:#FFFFFF;position:relative;display:inline-flex;align-items:center;max-width:280px;min-height:24px;padding:4px 8px;border-radius:4px;background:var(--ttbg);color:var(--tttx);font-size:12px;line-height:1.3;word-break:break-word;box-sizing:border-box;text-align:left}
+.pane-d .t-tip,[data-theme="dark"] .t-tip{--ttbg:#FFFFFF;--tttx:#211F1C}
+.t-tip::after{content:"";position:absolute;width:15px;height:6px;background:var(--ttbg);border:0;margin:0}
+.t-tip.above::after{top:calc(100% - 2px);left:50%;margin-left:-7.5px;clip-path:polygon(0 0,100% 0,50% 100%)}
+.t-tip.below::after{bottom:calc(100% - 2px);left:50%;margin-left:-7.5px;clip-path:polygon(50% 0,0 100%,100% 100%)}
+.t-tip.left::after,.t-tip.right::after{width:6px;height:15px;top:50%;margin-top:-7.5px}
+.t-tip.left::after{left:calc(100% - 2px);clip-path:polygon(0 0,100% 50%,0 100%)}
+.t-tip.right::after{right:calc(100% - 2px);clip-path:polygon(100% 0,0 50%,100% 100%)}
+.vf-ttrow{display:flex;flex-wrap:wrap;gap:24px 40px;align-items:center;padding:36px 8px 36px 96px}
+.vf-ttdemo{position:relative;display:inline-flex}.vf-ttdemo-trig{width:32px;height:32px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;background:var(--l2);color:var(--tx);box-shadow:inset 0 0 0 1px var(--bd);font-size:13px;line-height:1}
+.vf-ttdemo .t-tip{position:absolute;white-space:nowrap}
+.vf-ttdemo.above .t-tip{bottom:calc(100% + 8px);left:50%;transform:translateX(-50%)}.vf-ttdemo.below .t-tip{top:calc(100% + 8px);left:50%;transform:translateX(-50%)}
+.vf-ttdemo.left .t-tip{right:calc(100% + 8px);top:50%;transform:translateY(-50%)}.vf-ttdemo.right .t-tip{left:calc(100% + 8px);top:50%;transform:translateY(-50%)}
+.vf-ttdemo.above,.vf-ttdemo.below{margin:0 8px}.vf-ttdemo.left{margin-left:72px}.vf-ttdemo.right{margin-right:72px}
+.t-stack .t-tip{max-width:280px}
+.tiplive{padding-top:64px}
 /* Notification (proposal) — surface neutral, border + icon carry status */
 .vf-notif{--nsurf:#f6f4f2;--nttl:#171614;--nbody:#565147;--nx:#171614;--nsh:0 5px 8px rgba(74,79,85,.12);background:var(--nsurf);border:1px solid var(--nst);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:16px;width:100%;max-width:420px;font-family:var(--sans);text-align:left}
 .pane-d .vf-notif{--nsurf:#171614;--nttl:#fff;--nbody:#b6b1a5;--nx:#fff;--nsh:0 5px 8px rgba(255,255,255,.24)}

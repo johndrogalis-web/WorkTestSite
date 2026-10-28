@@ -2137,6 +2137,20 @@ ul.plain li b{color:var(--ink,#171614);font-weight:500}
 @container tbl (max-width:899px){.vf-tbl .vf-tbl-accbox{padding:14px 20px 14px 40px}}
 @container tbl (max-width:599px){.vf-tbl .vf-tbl-accbox{padding:14px 20px}}
 .vf-tbl-acc-small{gap:12px 10px}
+/* Spinner v2 (28 Oct): transparent/strong in both themes (#D0CEC8 dark), motion from spinner/duration 800ms, reduced 1500ms */
+.t-spin{--spin:#171614;display:inline-block;color:var(--spin);vertical-align:middle;animation:t-rot .8s linear infinite}
+.pane-d .t-spin,[data-theme="dark"] .t-spin{--spin:#D0CEC8}
+.t-spin > svg{width:100%;height:100%;display:block}
+.t-spin.lg{width:40px;height:40px}.t-spin.md{width:24px;height:24px}.t-spin.sm{width:16px;height:16px}
+@keyframes t-rot{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.t-spin{animation-duration:1.5s}}
+.vf-sptry{display:flex;flex-direction:column;gap:16px;max-width:420px}
+.vf-sptry-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.vf-sptry-note{font-size:13px;color:var(--tx2)}
+.vf-sptry .vf-btn.busy .lbl{visibility:hidden}.vf-sptry .vf-btn.busy{position:relative}.vf-sptry .vf-btn.busy .t-spin{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);animation:t-rot .8s linear infinite;--spin:currentColor}
+.vf-sptry .vf-btn.busy .t-spin{margin:0}
+.vf-sptry-card{border:1px solid var(--bd,#DFDEDD);border-radius:12px;padding:12px 16px}.pane-d .vf-sptry-card{border-color:#45413A}
+.vf-sptry-head{display:flex;justify-content:space-between;align-items:center;font-weight:500;margin-bottom:8px}
+.vf-sptry-body{min-height:32px;display:flex;align-items:center}.vf-sptry-wait{display:flex;align-items:center;gap:10px;font-size:14px}.vf-sptry-wait[hidden]{display:none}.vf-sptry-txt{margin:0;font-size:14px}.vf-sptry-txt[hidden]{display:none}
 /* Notification (proposal) — surface neutral, border + icon carry status */
 .vf-notif{--nsurf:#f6f4f2;--nttl:#171614;--nbody:#565147;--nx:#171614;--nsh:0 5px 8px rgba(74,79,85,.12);background:var(--nsurf);border:1px solid var(--nst);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:16px;width:100%;max-width:420px;font-family:var(--sans);text-align:left}
 .pane-d .vf-notif{--nsurf:#171614;--nttl:#fff;--nbody:#b6b1a5;--nx:#fff;--nsh:0 5px 8px rgba(255,255,255,.24)}

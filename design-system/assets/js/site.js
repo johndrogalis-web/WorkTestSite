@@ -232,7 +232,8 @@
       var shown = 0;
       rows.forEach(function (r) {
         var ok = key === 'all' || r.getAttribute('data-fam') === key ||
-                 r.getAttribute('data-status') === key || r.getAttribute('data-page') === key;
+                 r.getAttribute('data-status') === key || r.getAttribute('data-page') === key ||
+                 r.getAttribute('data-kind') === key;
         r.hidden = !ok;
         if (ok) shown++;
       });

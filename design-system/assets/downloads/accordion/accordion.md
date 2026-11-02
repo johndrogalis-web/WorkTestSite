@@ -22,11 +22,11 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), 63692:9
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **The whole header opens and closes it.** The chevron only shows which way it will go.
 - **Sections are independent.** Opening one leaves the others alone.
-- **Only the header reacts to hover, focus and press.** The content never changes colour, so it is always clear what Enter will act on.
+- **Only the header reacts to hover, focus and press.** The content never changes color, so it is always clear what Enter will act on.
 - **The content keeps its own styles.** The accordion adds no padding or dividers inside the slot.
 - **Disabled cannot be focused or opened.** It stays in place so the reason next to it makes sense.
 - **Hover and focus change in 150ms. Opening and closing take 300ms.** Both ease out. Under reduced motion both are instant.
@@ -83,10 +83,10 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), 63692:9
 | Header | Padding, gap, radius | accordion/top-bottom-padding, left-right-padding, gap | 6 / 8, 8, 16 | 6 / 8, 8, 16 |
 | Header | Disabled fill | accordion/fill-disabled | #F6F4F2 | #2F2D28 |
 | Header | Disabled foreground | accordion/foreground-disabled, opacity-disabled | #7F796C at 36% | #7F796C at 36% |
-| Title | Colour | accordion/header-default | #171614 | #FFFFFF |
+| Title | Color | accordion/header-default | #171614 | #FFFFFF |
 | Title | Type | Heading/lg | ABC Repro Medium 24, line 1.2 | same |
-| Subheading | Type | Body/md | ABC Repro Regular 16, line 1.3, title colour | same |
-| Icon, chevron | Size, colour | icon/default, accordion/chevron-icon | 24px, #171614 | 24px, #FFFFFF |
+| Subheading | Type | Body/md | ABC Repro Regular 16, line 1.3, title color | same |
+| Icon, chevron | Size, color | icon/default, accordion/chevron-icon | 24px, #171614 | 24px, #FFFFFF |
 | Count | Component | Badge, Alternate | see Badge | see Badge |
 | Content | Padding, gap | — | 10, 10 | 10, 10 |
 | Closed height | With and without subheading | — | 68 / 49 | 68 / 49 |
@@ -97,7 +97,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), 63692:9
 ### Accessibility
 
 - The header is a <button> inside a heading, with aria-expanded and aria-controls.
-- The content is role="region", labelled by the header.
+- The content is role="region", labeled by the header.
 - Enter and Space open and close. Tab moves between headers.
 - The focus ring bounds the header only (WCAG 2.4.13).
 - The count is read as part of the button name: “Truck settings, 3 changes, collapsed”. Write it so it reads well.

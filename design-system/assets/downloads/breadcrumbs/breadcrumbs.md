@@ -20,7 +20,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), items 6
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **Links navigate. The current page is plain text.** It carries aria-current="page" and has no states.
 - **Hover darkens the text and adds a fill in 150ms, easing out.** Focus snaps on with a 2px ring. It never animates.
@@ -69,10 +69,10 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), items 6
 
 ### States
 
-- **Default**: Link colour.
+- **Default**: Link color.
 - **Hover**: Darker text on a fill, 150ms.
-- **Active**: The link-active colour while pressed.
-- **Focus**: The link-focus colour plus a 2px ring inside the item. No transition.
+- **Active**: The link-active color while pressed.
+- **Focus**: The link-focus color plus a 2px ring inside the item. No transition.
 - **Current page**: None. It is not interactive.
 
 ### Specs
@@ -88,10 +88,10 @@ Measured on Page Content (elevation/layer-1): #FFFFFF light, #171614 dark.
 | Link | Active, focus text | breadcrumb-item/text-active, text-focus | #0B7ACA | #41A8F2 |
 | Link | Focus ring, 2px inside | breadcrumb-item/focus-outer-stroke, border/focus | #171614 | #D0CEC8 |
 | Current page | Text | breadcrumb-item/text-current-page (text/hint) | #666054 | #9B958A |
-| Separator | Icon, colour | u-angle-right-b 12px, breadcrumb-item/icon-default | #666054 | #7F796C |
+| Separator | Icon, color | u-angle-right-b 12px, breadcrumb-item/icon-default | #666054 | #7F796C |
 | Overflow | Caret, menu | fi-chevron-down / -up 12px; Menu Container | see Menu | see Menu |
 | Trail | Height, gap | layout size/2, gap/2 | 16 reserved, 8 | same |
-| Motion | Colour change | breadcrumb-item/duration, easing | 150ms, ease-out | same |
+| Motion | Color change | breadcrumb-item/duration, easing | 150ms, ease-out | same |
 
 ### Accessibility
 

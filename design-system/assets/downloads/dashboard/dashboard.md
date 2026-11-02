@@ -24,7 +24,7 @@ Built on Card: The Widget Shell uses the Card surface, border, 16px radius and s
 
 Built from the shell and other components; examples, not components.
 
-- **Fleet map** (Large): Map in the Body slot (Widget/Map in Figma): truck markers coloured by phase , locate and zoom as Icon Only Buttons
+- **Fleet map** (Large): Map in the Body slot (Widget/Map in Figma): truck markers colored by phase , locate and zoom as Icon Only Buttons
 - **Tickets** (Medium): List rows with a Truck phase tag
 - **Trucks by phase** (Medium): Truck phase tags with a count. CTA off
 - **Loads today** (Small): KPI with its change and a Badge . Actions and CTA off, so the title fits
@@ -32,13 +32,13 @@ Built from the shell and other components; examples, not components.
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **Snapshots, not pages.** A widget shows a slice of one page or section, so people get the picture without opening reports. The footer link is how they go deeper.
 - **The grid sets the size.** Placed widgets fill their grid cell. The dashboard picks the span; the widget fills it and lays out its content to its own width.
 - **Four sizes on Large.** Large spans 12 columns, Medium 4, Small 2, Tiny 1. Tiny uses Compact density and half the height.
 - **The grid follows the page class.** 12 columns on Large and Expanded, 8 on Medium (Large widgets span all 8), 4 on a phone, where every widget is full width except Tiny, which goes two-up.
-- **A KPI fills the card.** In Tiny the number sits bottom left. From Small up it is centred and scales with the widget’s width, up to 96px, so a big widget never shows a small number in empty space. A Large widget can stack several KPIs.
+- **A KPI fills the card.** In Tiny the number sits bottom left. From Small up it is centered and scales with the widget’s width, up to 96px, so a big widget never shows a small number in empty space. A Large widget can stack several KPIs.
 - **Compact is title and content only.** No actions, no CTA, no footer. Turning those on does nothing at Compact.
 - **Narrow widgets cut text.** The timestamp and long titles end in an ellipsis rather than wrap.
 - **Narrow widgets drop the CTA (house rule).** Below 320px wide, “View all” hides so the title keeps its room. The footer link still goes to the same page.
@@ -50,10 +50,10 @@ Built from the shell and other components; examples, not components.
 ### Guidelines (your choices)
 
 - **Turn off what the widget does not need.** Use the Show properties. A KPI tile often needs no actions; a Small widget has no room for the CTA.
-- **Keep the footer link.** It is the way into the page the widget summarises. Turn the footer off only when the whole widget is the link.
+- **Keep the footer link.** It is the way into the page the widget summarizes. Turn the footer off only when the whole widget is the link.
 - **Match content to size.** The one number in Tiny, the trend in Small, enough to decide in Medium, the full snapshot in Large.
 - **Write a real title.** Name the data, not the chart: “Loads this week”, not “Bar chart”. Keep it under about 24 characters.
-- **Keep “Last updated” honest.** If the data is stale, say so in the timestamp.
+- **Keep “Last updated” true.** If the data is stale, say so in the timestamp.
 - **Give each widget type its own spans.** The widget configuration says which spans it allows at each layout class. The shell does not know.
 
 ### Do not
@@ -72,7 +72,7 @@ Built from the shell and other components; examples, not components.
 - **Shell**: The Card surface: fill, 1px border, 16px radius and shadow. Padding 20, or 10 at Compact.
 - **Header**: Title (Heading/sm), two bordered icon buttons and a secondary small “View all” button. Each part switches on and off.
 - **Body slot**: The widget’s content: a chart, list, KPI or map. It lays itself out against the shell’s width.
-- **Footer**: The timestamp (Body/sm, text/hint) and a 24px link to the page the widget summarises.
+- **Footer**: The timestamp (Body/sm, text/hint) and a 24px link to the page the widget summarizes.
 
 ### Properties
 
@@ -110,8 +110,8 @@ Built from the shell and other components; examples, not components.
 ### States
 
 - **Content** (Data has loaded): The Body slot shows the widget content.
-- **Empty** (No data for the period): Widget Body / Empty: one line in text/hint saying so, and an optional link in link/link. Centred, gap/1, minimum height dashboard-grid/empty-min-height (120).
-- **Loading** (First load or refresh): The Spinner , Large (40), centred in the Body slot; Medium (24) at Compact. aria-busy="true" on the widget. The widget keeps its size, so the grid does not jump.
+- **Empty** (No data for the period): Widget Body / Empty: one line in text/hint saying so, and an optional link in link/link. Centered, gap/1, minimum height dashboard-grid/empty-min-height (120).
+- **Loading** (First load or refresh): The Spinner , Large (40), centered in the Body slot; Medium (24) at Compact. aria-busy="true" on the widget. The widget keeps its size, so the grid does not jump.
 - **Edit** (After “Edit dashboard”): Surface card/background-selected, 1px dashed card/border-selected, a drag handle before the title, and Remove in place of the actions. CTA and footer link hide; the timestamp stays. Same in both densities.
 
 ### Specs

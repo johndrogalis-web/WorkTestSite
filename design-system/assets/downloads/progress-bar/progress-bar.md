@@ -1,6 +1,6 @@
 # Progress bar
 
-An 8px bar that fills left to right to show how much of a task is done. One fill colour; the words beside it say what happened.
+An 8px bar that fills left to right to show how much of a task is done. One fill color; the words beside it say what happened.
 
 Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Progress Bar 51692:17330. Light and dark.
 
@@ -9,7 +9,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Progres
 ### When to use
 
 - A task with a known end: uploading photos, importing tickets, syncing a fleet.
-- Steps through a fixed process where a percentage is honest.
+- Steps through a fixed process where a percentage means something.
 
 ### Use something else when
 
@@ -19,7 +19,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Progres
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **Width only.** The fill grows over 300ms ease-out. Nothing else moves: no pulse, no shimmer, no stripes, no loops.
 - **Never backwards.** If a new estimate is lower, hold until the real number catches up.
@@ -31,13 +31,13 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Progres
 
 - **Always pair it with words.** A label for the task and a line for the value or time left.
 - **Say failure in text.** “Stopped at 40%. 3 photos failed.” Leave the bar as it is.
-- **Round honestly.** Whole percentages; do not show 99% for minutes.
+- **Round to whole percentages.** Do not show 99% for minutes.
 - **Let it take its container’s width.** It fills the width it is given; no fixed width.
 
 ### Do not
 
 - Animate it without the value changing.
-- Recolour it for success, warning or failure.
+- Recolor it for success, warning or failure.
 - Use it for an unknown duration.
 - Make it thinner than 8px.
 - Run it backwards.
@@ -71,7 +71,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Progres
 
 - Use role="progressbar" with aria-valuenow , aria-valuemin="0" and aria-valuemax="100" , named by its label with aria-labelledby .
 - Announce the end, not every step: a polite live region says “Done” or what failed.
-- Outcome is in words, never colour alone (1.4.1).
+- Outcome is in words, never color alone (1.4.1).
 - The track stroke and the fill both pass 3:1 against what they sit on (1.4.11).
 
 ### Known gaps

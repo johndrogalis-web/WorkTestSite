@@ -21,7 +21,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Input F
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **Validates on blur, not on every keystroke.** An error while the person is still typing is the fastest way to a hostile form.
 - **Error never moves the layout.** The 16px helper row is always reserved, so the message and its icon appear in place.
@@ -64,7 +64,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Input F
 | Focus | Tab or click | 2px border #171614 and the focus ring; background #FFFFFF |
 | Filled | Has a value | border #171614; the value in #171614 replaces the placeholder |
 | Error | Validation failed on blur | border #B00100; the helper turns red and gains its icon; the label stays dark |
-| Disabled | Cannot be used | background #DFDEDD, border #B6B1A5, text #7F796C; label and helper grey |
+| Disabled | Cannot be used | background #DFDEDD, border #B6B1A5, text #7F796C; label and helper gray |
 
 ### Specs
 
@@ -84,7 +84,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Input F
 
 - <label for> wired to the input’s id; clicking the label focuses the field.
 - Helper text linked with aria-describedby , so it reads after the label.
-- Error sets aria-invalid="true" and the message gets role="alert" . The icon keeps the error from being colour alone; never hide it.
+- Error sets aria-invalid="true" and the message gets role="alert" . The icon keeps the error from being color alone; never hide it.
 - The right type and inputmode per field type, so phones show the right keyboard.
 - The password toggle is a button whose name changes: Show password / Hide password.
 

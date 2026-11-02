@@ -21,18 +21,18 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Tag 626
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **It does nothing.** No hover, no focus, no press. If it needs to, it is a Chip.
 - **Long labels truncate at 100px.** An ellipsis, and the full label in a tooltip on hover or on focus of the control it sits in.
 - **The diagonal means provisional.** A pattern has no text equivalent, so the label says it too: “Est.”, “Projected”.
 - **Icon and diagonal are independent.** Four combinations, all legitimate.
-- **The colour pair flips with the theme.** Blue with white text in light; pale blue with ink text in dark.
+- **The color pair flips with the theme.** Blue with white text in light; pale blue with ink text in dark.
 
 ### Guidelines (your choices)
 
-- **Measure any new colour pair in both themes before you use it.** Change only the fill and the text, keep 4.5:1, and bring a colour that earns its place back to the library as a token.
-- **Same meaning, same colour.** Two screens using a tag for the same thing use the same pair.
+- **Measure any new color pair in both themes before you use it.** Change only the fill and the text, keep 4.5:1, and bring a color that earns its place back to the library as a token.
+- **Same meaning, same color.** Two screens using a tag for the same thing use the same pair.
 - **Keep the label short enough to survive 100px.** Two or three words.
 - **Write the word the diagonal stands for.** The pattern is never the only signal.
 - **The icon is a shortcut, not the message.** If it carries meaning the label does not, it needs a text equivalent.

@@ -20,19 +20,19 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Toggle 
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **Immediate.** Flipping it does the thing. If a change needs Save, it is a checkbox in a form.
 - **Reversible.** Anything destructive gets a Button and a confirmation instead.
 - **The label is part of the target.** Click the words or the switch; Space flips it from the keyboard. Arrow keys do nothing.
 - **Failure snaps back.** If the change does not take, the switch returns and a Toast says why.
-- **Hover is a grey ring, focus is an ink ring.** So a mouse user and a keyboard user see different things.
-- **Motion is 200ms ease-in-out.** The switch slides and the track colour crosses together (toggle/duration, toggle/easing). With reduced motion it jumps (toggle/reduced/duration).
+- **Hover is a gray ring, focus is an ink ring.** So a mouse user and a keyboard user see different things.
+- **Motion is 200ms ease-in-out.** The switch slides and the track color crosses together (toggle/duration, toggle/easing). With reduced motion it jumps (toggle/reduced/duration).
 
 ### Guidelines (your choices)
 
 - **Name the setting, not the state.** “Live fleet updates”, never “Turn on live updates” or “Enabled”. The switch position is the state.
-- **Say why it is disabled.** A reason next to it, “requires a sensor”, or a tooltip. Never a bare grey switch.
+- **Say why it is disabled.** A reason next to it, “requires a sensor”, or a tooltip. Never a bare gray switch.
 - **Default a new setting to Off.** Unless the person asked for it.
 - **One setting per row.** Label left, switch right in a settings list. Never a grid of switches.
 - **Use Small in tables and card headers.** Large everywhere else. Do not mix sizes in one list.
@@ -42,13 +42,13 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Toggle 
 - Use a toggle inside a form with a Submit.
 - Write ON or OFF in or beside the track.
 - Use it to start a job; that is a Button.
-- Change the switch colour per setting.
+- Change the switch color per setting.
 
 ## Building it
 
 ### Anatomy
 
-- **Track**: Large 40 × 24, Small 24 × 16 in a 24px element, radius 100. Owns the on and off colour.
+- **Track**: Large 40 × 24, Small 24 × 16 in a 24px element, radius 100. Owns the on and off color.
 - **Switch**: Large 16px, Small 8px, inside 4px padding. Travels 16px large, 8px small.
 - **Label (Toggle Item)**: Body/sm 14, 4px from the track, part of the hit area.
 - **Hover ring**: 2px outside the track in toggle/hover-stroke.
@@ -84,10 +84,10 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Toggle 
 
 ### Accessibility
 
-- Use <input type="checkbox" role="switch"> , so it announces as “switch, on” or “off” and keeps native keyboard behaviour.
+- Use <input type="checkbox" role="switch"> , so it announces as “switch, on” or “off” and keeps native keyboard behavior.
 - The label text is the accessible name, through the wrapping <label> . Toggle Item exists so the name is never missing.
-- On and off differ by position as well as colour; the switch moves (WCAG 1.4.1).
-- Focus shows an ink ring and an edge stroke, different from the grey hover ring, in both themes.
+- On and off differ by position as well as color; the switch moves (WCAG 1.4.1).
+- Focus shows an ink ring and an edge stroke, different from the gray hover ring, in both themes.
 - The whole Toggle Item is the target, 24px tall; settings rows pad it to 44px.
 
 ### Code

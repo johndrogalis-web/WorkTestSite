@@ -29,7 +29,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Notific
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **Pick the pattern by what it is about.** Something the person did: Toast. Something true about the page: Banner. Something about one field: Inline.
 - **Toasts leave on their own.** 5 seconds, 8 with an action. Error never leaves on its own. Hover or focus pauses the clock.
@@ -51,7 +51,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Notific
 - Put anything in a Toast that the person must remember.
 - Use a notification Banner as a sticky bar across the whole window.
 - Show a Toast and a Banner for the same event.
-- Colour the surface by status. The border and icon carry it.
+- Color the surface by status. The border and icon carry it.
 - Give Inline an X or a button.
 
 ## Building it
@@ -59,7 +59,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Notific
 ### Anatomy
 
 - **Container**: notification/surface, 1px status border, padding 16 (Inline 12). Radius 16 for Toast, 8 for Banner and Inline. Toast adds the shadow.
-- **Status icon**: 24px, in the status colour: fi-info, fi-check, fi-alert-triangle, fi-alert-octagon.
+- **Status icon**: 24px, in the status color: fi-info, fi-check, fi-alert-triangle, fi-alert-octagon.
 - **Title and body**: Heading/sm 16 and Body/sm 14 (Inline title Body/sm Medium). Body in notification/text/body.
 - **Dismiss**: 32 x 32 Icon Only Button, top right. Toast always; Banner optional; Inline never.
 - **Action**: One Secondary medium Button under the text (showButton). Toast and Banner only.
@@ -92,7 +92,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Notific
 - Toast: role="status" (polite), or role="alert" for Error. Focus stays where it is; the X is reachable by Tab.
 - Banner: role="status" with a heading; Error banners use role="alert" .
 - Inline: linked to its field with aria-describedby ; the field gets aria-invalid for Error.
-- Status is shown by icon and words as well as colour.
+- Status is shown by icon and words as well as color.
 - The X is a 32 x 32 button named “Dismiss”. Timed toasts pause on hover and focus so they can be read.
 
 ### Known gaps

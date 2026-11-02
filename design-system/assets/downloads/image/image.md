@@ -21,9 +21,9 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Image B
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
-- **The frame never changes shape for the picture.** The picture is scaled to cover and cropped from the centre. A portrait photo in a 16:9 block is cropped, not letterboxed.
+- **The frame never changes shape for the picture.** The picture is scaled to cover and cropped from the center. A portrait photo in a 16:9 block is cropped, not letterboxed.
 - **The space is held before the picture arrives.** The frame takes its size from the layout width and the ratio, and image/placeholder fills it while the file loads, so nothing moves.
 - **A failed picture leaves the placeholder.** Never a broken-image icon. The alt text is still read out.
 - **No picture, no block.** An empty frame is not a state. Leave the block out.
@@ -51,7 +51,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Image B
 
 - **Frame**: A box with a fixed aspect ratio. Width comes from the layout; height follows the ratio. Clips the picture.
 - **Placeholder**: image/placeholder fill under the picture. Shows while loading and if the picture fails.
-- **Picture**: Fills the frame, scaled to cover, cropped from the centre. Never stretched.
+- **Picture**: Fills the frame, scaled to cover, cropped from the center. Never stretched.
 - **Radius**: None of its own. The container sets it: 16 in a card, 8 in a list row, 0 when it bleeds to the edge.
 
 ### Aspect ratios
@@ -74,7 +74,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Image B
 | Part | Token | Light | Dark |
 |---|---|---|---|
 | Ratios | aspect ratio | 16:9 · 5:3 · 3:2 · 4:3 · 1:1 | Same |
-| Fit | object-fit | Cover, centred | Same |
+| Fit | object-fit | Cover, centered | Same |
 | Placeholder | image/placeholder | #DFDEDD (neutral/100) | #2F2D28 (neutral/850) |
 | Radius | From the container | 16 / 8 / 0 | 16 / 8 / 0 |
 | Loading | loading | Lazy below the fold, eager above | Same |

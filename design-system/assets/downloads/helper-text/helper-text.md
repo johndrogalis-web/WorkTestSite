@@ -21,7 +21,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Helper 
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **The row is always there.** It keeps at least 16px under the field even when empty, so the form does not jump when an error appears.
 - **An error replaces the helper.** Same row: the alert icon appears and the text turns error red. The field turns its border red with it; the label stays.
@@ -44,7 +44,7 @@ Product copy, not marketing: The Tone of voice page covers marketing and externa
 ### Do not
 
 - Use it as a second label.
-- Hide the error icon. Colour alone does not carry the meaning.
+- Hide the error icon. Color alone does not carry the meaning.
 - Write “Invalid input” or “Error”.
 - Truncate a message with an ellipsis.
 - Put links or buttons in it.
@@ -80,7 +80,7 @@ Product copy, not marketing: The Tone of voice page covers marketing and externa
 
 - Link the helper to its input with aria-describedby , so it is read with the field.
 - In Error, set aria-invalid="true" on the input. The helper is a polite live region ( aria-live="polite" ), so the new message is read once.
-- The icon is decorative ( aria-hidden ): the words carry the meaning, and the icon is what keeps the error from depending on colour (WCAG 1.4.1).
+- The icon is decorative ( aria-hidden ): the words carry the meaning, and the icon is what keeps the error from depending on color (WCAG 1.4.1).
 - Wrapping keeps the whole message readable at 400% zoom (WCAG 1.4.10).
 
 ### Known gaps

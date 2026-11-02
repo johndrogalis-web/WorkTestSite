@@ -20,7 +20,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Text Ar
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **Starts at 98px and grows with the content.** Never a fixed box that scrolls and hides what was written. The minimum is 64.
 - **Text is top-aligned.** The first line sits where the person expects to start typing.
@@ -63,7 +63,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Text Ar
 | Focus | Tab or click | 2px border #171614 and the focus ring; background #FFFFFF |
 | Filled | Has a value | border #171614; the value in #171614 replaces the placeholder |
 | Error | Validation failed on blur | border #B00100; the helper turns red and gains its icon; the label stays dark |
-| Disabled | Cannot be used | background #DFDEDD, border #B6B1A5, text #7F796C; label and helper grey |
+| Disabled | Cannot be used | background #DFDEDD, border #B6B1A5, text #7F796C; label and helper gray |
 
 ### Specs
 

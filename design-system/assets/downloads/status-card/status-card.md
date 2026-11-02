@@ -24,12 +24,12 @@ Seen in Trinity: Truck drawer › Component condition: one Status Card per devic
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **Status drives the strip and nothing else.** Switch the Status variant; the shell keeps its own states.
 - **The strip is full width and 31px tall.** It sits at the bottom, under a 1px border, and the card hugs the content above it.
 - **Warning, Alarm and Pending carry a dot.** Normal and Not installed do not.
-- **The strip looks the same in both themes.** Status colours do not change with the theme, so a strip reads the same on a light or dark page.
+- **The strip looks the same in both themes.** Status colors do not change with the theme, so a strip reads the same on a light or dark page.
 - **The shell states come from Card.** Hover, Selected and Focus, with the same tokens. There is no Focus + Selected and no Compact view.
 - **Motion is short.** Hover and selection ease in over 200ms. Focus snaps. With reduced motion, nothing animates.
 
@@ -43,11 +43,11 @@ Seen in Trinity: Truck drawer › Component condition: one Status Card per devic
 
 ### Do not
 
-- Recolour the strip by hand. Switch the Status variant.
-- Let the status colour the whole card.
+- Recolor the strip by hand. Switch the Status variant.
+- Let the status color the whole card.
 - Remove the Alarm dot.
 - Use a Status Card for anything that is not hardware.
-- Hide the status text and leave only the colour.
+- Hide the status text and leave only the color.
 
 ## Building it
 
@@ -88,7 +88,7 @@ Seen in Trinity: Truck drawer › Component condition: one Status Card per devic
 
 ### Accessibility
 
-- The status is in words on the strip, so colour is not the only cue (WCAG 1.4.1).
+- The status is in words on the strip, so color is not the only cue (WCAG 1.4.1).
 - The strip is role="status" , so a change from Normal to Alarm is announced.
 - A selectable set is a role="radiogroup" : arrow keys move, Space selects. Focus shows on the card itself.
 - The dot is extra. On Warning and Pending it measures 1.48:1 and does not need to pass, because the text names the status.

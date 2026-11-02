@@ -20,7 +20,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Input 6
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **Pointer over it: Hover.** Fill and border darken. Leaving returns to Default.
 - **Click or Tab into it: Focus.** 2px border and a 4px focus ring. Height stays 44: the padding drops 1px to make room.
@@ -92,7 +92,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Input 6
 - There is no visible label, so the field needs aria-label or aria-labelledby . The placeholder disappears on typing and is not a name.
 - In Error, set aria-invalid="true" and point aria-describedby at the message, wherever it is.
 - Trailing icons that do something are buttons with a name (“Clear”, “Show password”). Leading icons are decorative ( aria-hidden ).
-- Focus shows as a 2px border and a ring, never colour alone.
+- Focus shows as a 2px border and a ring, never color alone.
 - Disabled uses the disabled attribute, so it leaves the tab order.
 
 ### Known gaps

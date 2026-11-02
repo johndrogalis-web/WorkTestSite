@@ -24,7 +24,7 @@ Same panel as Date and time field: Date picker is the Date Picker component with
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **Typing always works.** The calendar is a convenience, not the only way in. The field is never read-only.
 - **The calendar icon or a click opens the panel.** At input bottom + 4, on the month of the current value, or today. The field keeps its height.
@@ -74,7 +74,7 @@ Same panel as Date and time field: Date picker is the Date Picker component with
 - **Default** (At rest): input/* default border and placeholder
 - **Hover** (Pointer over the field): Hover fill and border
 - **Focus** (Typing, or the panel is open): 2px focus border and ring
-- **Filled** (A date is set): Value in input text colour
+- **Filled** (A date is set): Value in input text color
 - **Error** (The typed value is not a date): Error border and helper; the helper says the expected format. The label stays
 - **Disabled** (Not available): Disabled tokens; the icon cannot open the panel
 
@@ -102,7 +102,7 @@ Same panel as Date and time field: Date picker is the Date Picker component with
 - The calendar icon is a real button named “Choose a date” with aria-haspopup="dialog" and aria-expanded .
 - Typing works without the panel, so the field never depends on a pointer.
 - In the calendar, arrow keys move by day and week, Page Up and Page Down by month, Enter picks, Escape closes and returns focus to the field. Today carries aria-current="date" .
-- Today is marked by an outline as well as colour. Weekday letters are decorative and not focusable.
+- Today is marked by an outline as well as color. Weekday letters are decorative and not focusable.
 - The helper text holds the format, linked with aria-describedby .
 
 ### Known gaps

@@ -20,7 +20,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Menu It
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **It floats 4px under its trigger.** Positioned absolutely at trigger bottom + 4, so it never pushes the page down. It may cover the field’s helper text; that is intended.
 - **Opening moves focus in.** To the selected row, or the first row if nothing is selected.
@@ -42,7 +42,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Menu It
 ### Do not
 
 - Use Selected to show hover.
-- Signal selection with colour alone. The check is the signal.
+- Signal selection with color alone. The check is the signal.
 - Draw your own tick in a multi-select. Use the real Checkbox content.
 - Put more than one line of text in the label. Use Description.
 - Let the menu push the layout down.
@@ -53,7 +53,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Menu It
 
 - **Container**: menu-container/*: 1px border, radius 16, padding 6, 2px between rows, 5% shadow. Optional search header, optional Select all and divider, then the Items slot.
 - **Check**: 16px, space reserved on every row so text lines up. Shown only when Selected.
-- **Leading icon**: Optional, 16px. Takes the row’s text colour in Hover and Selected.
+- **Leading icon**: Optional, 16px. Takes the row’s text color in Hover and Selected.
 - **Text**: Body/sm 14. Optional Description under it in Body/xs.
 - **Count, trailing icon, caret**: Optional. The count is a small pill; the caret means the row opens a sub-menu.
 
@@ -91,7 +91,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Menu It
 
 - The container is a listbox (or a menu for actions). Rows are option s with aria-selected ; MultiSelect adds aria-multiselectable .
 - Focus moves into the menu on open and back to the trigger on close. Escape closes without changing anything.
-- Selection is shown by a check or a checked box, never by colour alone.
+- Selection is shown by a check or a checked box, never by color alone.
 - Disabled rows carry aria-disabled and are skipped by the arrow keys.
 - Checkbox rows keep their 24 x 24 target.
 

@@ -19,10 +19,10 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Label 6
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **Clicking the label focuses the field.** It is a real <label for> tied to the input.
-- **The field sets its colour.** Default, Hover, Focus, Filled and Error use label/text-default. Disabled uses label/text-disabled. Label has no state of its own.
+- **The field sets its color.** Default, Hover, Focus, Filled and Error use label/text-default. Disabled uses label/text-disabled. Label has no state of its own.
 - **It stays dark in Error.** The border, icon and helper carry the error. A red label would only repeat it.
 - **Long labels wrap.** The label fills the field width and wraps; the asterisk stays on the first line.
 - **Required adds an asterisk.** In label/required-indicator, 4px after the text. Screen readers get required from the input instead.
@@ -72,7 +72,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Label 6
 - Use a real <label for="id"> . It names the field and makes the label a click target.
 - The asterisk is aria-hidden ; the input carries required so screen readers say “required”.
 - For a group of checkboxes or radios, the label is a <legend> inside a <fieldset> .
-- Weight and position, not only colour, set the label apart from the value.
+- Weight and position, not only color, set the label apart from the value.
 
 ### Known gaps
 

@@ -29,7 +29,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), spec 65
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **Breakpoints are the only switches.** 600, 840 and 1200. The Figma frame widths (360, 768, 1024, 1440) are examples inside each range, not breakpoints.
 - **Navigation.** Compact, Medium and Expanded: hidden, opened as a drawer from the toggle in the 72px top bar. Large: the persistent rail.

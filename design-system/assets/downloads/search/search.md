@@ -20,7 +20,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Form Fi
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **Suggests after two characters and a 200ms pause.** Earlier is noise; later feels slow.
 - **Starts-with first, then contains.** Exact above both. Only the matched part is highlighted.
@@ -46,16 +46,16 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Form Fi
 - Build a second inline search component.
 - Show an empty overlay.
 - Require a suggestion to be picked before a search can run.
-- Recolour the highlight or the match per product area.
+- Recolor the highlight or the match per product area.
 
 ## Building it
 
 ### Anatomy
 
-- **Field**: An Input with fi-search 16×16 in the leading slot. Every field colour and state is the Input’s. Clear fi-x sits in the trailing slot once there is text.
+- **Field**: An Input with fi-search 16×16 in the leading slot. Every field color and state is the Input’s. Clear fi-x sits in the trailing slot once there is text.
 - **Overlay**: A Menu Container at the field bottom + 4, holding Suggestion Rows. Dividers between groups.
 - **Suggestion Row**: 28 tall; 32 left padding so results line up under their header; 6 right; 4 top and bottom; 8 between parts. Types: Header, Default, Show More.
-- **Prefix · Match · Suffix**: Three text parts in one result. The match sits in its own highlight. An optional Description follows on the same line in hint colour.
+- **Prefix · Match · Suffix**: Three text parts in one result. The match sits in its own highlight. An optional Description follows on the same line in hint color.
 - **Highlighted**: Default and Show More only. The row under the arrow keys or the pointer.
 - **Remove**: Optional trailing × on Recent search rows.
 

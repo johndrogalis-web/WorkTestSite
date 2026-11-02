@@ -21,7 +21,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), 7477:29
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **It does not respond to hover, focus or press.** A badge that responds is a chip.
 - **A number caps at 40px wide.** Anything above 99 shows as 99+.
@@ -38,7 +38,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), 7477:29
 - **Place it by what it belongs to.** Icon, line of text, table cell or tab. See the table below.
 - **Let the label or column header name the status.** Then the badge only has to say the value.
 - **Keep one badge per object.** Two badges on one row is a layout problem, not a status.
-- **Need a colour the four styles do not have? Change only the fill, text and border.** Check AA in both themes, then propose it to the library as a named style.
+- **Need a color the four styles do not have? Change only the fill, text and border.** Check AA in both themes, then propose it to the library as a named style.
 
 #### Which style
 
@@ -54,7 +54,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), 7477:29
 | Belongs to | Where | Rule |
 |---|---|---|
 | An icon | Top-right corner, overlapping the icon | Number or dot only. The icon’s click area does not grow. |
-| A line of text | After the text, on the same line | 8px gap, centred on the text. |
+| A line of text | After the text, on the same line | 8px gap, centered on the text. |
 | A table cell | Left-aligned, in its own column | The header names the status. No plain text in the same column. |
 | A tab | After the tab label | Dot for “changed”, number for “this many”. No Error in a tab. |
 
@@ -62,9 +62,9 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), 7477:29
 
 - Make a badge clickable, hoverable or dismissible.
 - Use Error for numbers that are only high.
-- Rely on the dot’s colour alone to say which state it is.
+- Rely on the dot’s color alone to say which state it is.
 - Put a word on an icon. Use a number or a dot.
-- Use a colour that has not been checked in both themes.
+- Use a color that has not been checked in both themes.
 
 ## Building it
 
@@ -110,7 +110,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), 7477:29
 - A badge that changes on its own needs aria-live="polite" on its container.
 - A dot needs role="img" and a label, such as “Unread”.
 - Put the count in the accessible name: “Notifications, 12 unread”, not “12”.
-- Never let colour alone separate Error from Default. The word or number has to do it.
+- Never let color alone separate Error from Default. The word or number has to do it.
 - The dot is the information, so its edge needs 3:1 (WCAG 1.4.11). Where the fill falls short, the ring provides it.
 - Every text pair passes AA. Lowest text pair: 7.37:1.
 

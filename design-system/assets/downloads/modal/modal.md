@@ -1,6 +1,6 @@
 # Modal
 
-A centred dialog that stops the page until the person decides. Header, content and footer, in Default (624) and Mobile (360).
+A centered dialog that stops the page until the person decides. Header, content and footer, in Default (624) and Mobile (360).
 
 Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Modal / Drawer 64988:61036. Light and dark.
 
@@ -21,9 +21,9 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Modal /
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
-- **Centred, 40px from every edge.** Width 624 by default, up to 960 when the content needs it, never under 320. Below 600 it uses the Mobile layout.
+- **Centered, 40px from every edge.** Width 624 by default, up to 960 when the content needs it, never under 320. Below 600 it uses the Mobile layout.
 - **Always modal.** A scrim dims the page (black at 20% light, 65% dark), the page is inert and focus is trapped inside.
 - **Focus moves in and comes back.** On open, focus goes to the title or the first control. Escape, Close or finishing the action closes it and returns focus to the trigger.
 - **Content scrolls inside.** Header and footer stay put; only the content scrolls when the modal reaches the top and bottom margins.

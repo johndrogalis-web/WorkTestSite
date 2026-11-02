@@ -1,6 +1,6 @@
 # Link
 
-A word or phrase inside a sentence that takes the reader somewhere. It keeps the paragraph’s type and changes only colour and underline.
+A word or phrase inside a sentence that takes the reader somewhere. It keeps the paragraph’s type and changes only color and underline.
 
 Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), link/* tokens; Link atom documentation 65835:47147. Light and dark.
 
@@ -20,22 +20,22 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), link/* 
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **It navigates.** It goes somewhere, and the address can be copied, bookmarked and opened in a new tab.
 - **It is always underlined.** 1px at rest and 2px on hover and press, 2px below the baseline.
 - **It takes the paragraph’s type.** Family, size, weight and line height come from the sentence.
 - **It wraps like the sentence around it.** The underline follows it across lines.
-- **Focus shows a 2px ring on keyboard focus only.** The ring is the cue, not the colour change.
-- **It has no visited state.** In an application a colour that changes after one click reads as a status.
+- **Focus shows a 2px ring on keyboard focus only.** The ring is the cue, not the color change.
+- **It has no visited state.** In an application a color that changes after one click reads as a status.
 
 ### Guidelines (your choices)
 
 - **Link the phrase that names the destination.** “View order details”, never “click here” or “read more”.
-- **Use it on Page Content.** On white in light and #171614 in dark every state passes. On grey layer surfaces, use the component’s own link colour, such as the Banner’s.
+- **Use it on Page Content.** On white in light and #171614 in dark every state passes. On gray layer surfaces, use the component’s own link color, such as the Banner’s.
 - **Open a new tab only for an external site or a document that would lose the reader’s work.** Say so in the link.
 - **Give the same destination the same text everywhere.** Different destinations get different text.
-- **Separate neighbouring links with words or punctuation.** Two links side by side read as one.
+- **Separate neighboring links with words or punctuation.** Two links side by side read as one.
 
 ### Do not
 
@@ -72,11 +72,11 @@ Measured on Page Content: #FFFFFF light, #171614 dark.
 | Focus | link/link-focus (primary/550, primary/400) | #0B7ACA | #41A8F2 | 1px |
 | Focus ring | interaction/focus; 2px outline, offset 2, radius 2 | #171614 | #D0CEC8 | — |
 
-Note. Grey layer surfaces: On layout/layer-1 (#F6F4F2 light, #2F2D28 dark) link/link drops to 4.41:1 in light and the dark hover to 4.27:1. Components on those surfaces carry their own link colour; the Banner uses banner/link (#0D598F, #C5E4FB).
+Note. Gray layer surfaces: On layout/layer-1 (#F6F4F2 light, #2F2D28 dark) link/link drops to 4.41:1 in light and the dark hover to 4.27:1. Components on those surfaces carry their own link color; the Banner uses banner/link (#0D598F, #C5E4FB).
 
 ### Accessibility
 
-- It is always underlined, so colour alone does not mark it (WCAG 1.4.1). In dark the blue sits close to white body text.
+- It is always underlined, so color alone does not mark it (WCAG 1.4.1). In dark the blue sits close to white body text.
 - It is a real <a href>. Never a span with a click handler, never an anchor that runs an action.
 - Focus is visible on :focus-visible (WCAG 2.4.7).
 - The purpose is clear from the link text or its sentence (WCAG 2.4.4).

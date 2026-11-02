@@ -21,9 +21,9 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), 60899:8
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
-- **The photograph fills the frame.** It crops square from the centre and never stretches.
+- **The photograph fills the frame.** It crops square from the center and never stretches.
 - **With no photograph, the icon shows.** A missing or broken image falls back to the icon too. Never an empty frame.
 - **XSmall shows only the icon.** A face is unreadable at 16px, so Figma has no image variant there.
 - **A 1px ring sits inside the edge, in both themes.** It keeps a photograph from merging into a dark surface.
@@ -35,7 +35,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), 60899:8
 - **Pick one shape per product.** Circles and squares on one screen read as two systems.
 - **Put the name next to it.** The avatar supports the name. It never replaces it.
 - **Match the size to what sits around it.** Bigger in a profile header, smaller in a dense table.
-- **Ask for square photographs.** There is no focal-point control, so an off-centre face gets cut.
+- **Ask for square photographs.** There is no focal-point control, so an off-center face gets cut.
 - **Use the icon when there is no photograph.** It is the intended fallback, not a placeholder to fill later.
 
 ### Do not
@@ -71,10 +71,10 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), 60899:8
 | Frame | Radius, circle | avatar/circle-radius | 9999 | 9999 |
 | Frame | Radius, square | avatar/sm-radius | 8 | 8 |
 | Frame | Fill, icon form | avatar/background | #171614 | #F0EEEA |
-| Icon | Colour | avatar/default | #FFFFFF | #171614 |
+| Icon | Color | avatar/default | #FFFFFF | #171614 |
 | Icon | Glyph, size, stroke | Icon atom, fi-user (Feather) | 24 / 20 / 16 / 12, 1.5px | same |
-| Ring | Width, colour | avatar/stroke-width, stroke-color | 1px inside, #F0EEEA | 1px inside, #F0EEEA |
-| Photograph | Fit | — | Cover, centred | same |
+| Ring | Width, color | avatar/stroke-width, stroke-color | 1px inside, #F0EEEA | 1px inside, #F0EEEA |
+| Photograph | Fit | — | Cover, centered | same |
 
 ### Accessibility
 

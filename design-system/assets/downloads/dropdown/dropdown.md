@@ -22,7 +22,7 @@ Actions, never values: A Dropdown Button does not show a selected item. Picking 
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **Click opens; the caret flips.** The menu appears at button bottom + 4 and the caret points up. The button takes its pressed (active) look while the menu is open.
 - **Picking an item runs it and closes the menu.** The label does not change.
@@ -43,7 +43,7 @@ Actions, never values: A Dropdown Button does not show a selected item. Picking 
 
 - Use it to choose a value.
 - Change the label to the last action.
-- Colour a destructive item red; confirm it instead.
+- Color a destructive item red; confirm it instead.
 - Put a second menu inside an item.
 - Hide the caret.
 
@@ -51,8 +51,8 @@ Actions, never values: A Dropdown Button does not show a selected item. Picking 
 
 ### Anatomy
 
-- **Button**: A real Button instance, Medium (32), with the caret in its trailing icon slot. All colours come from Button.
-- **Caret**: Icon Small 16 in the label colour. Down when closed, up when open.
+- **Button**: A real Button instance, Medium (32), with the caret in its trailing icon slot. All colors come from Button.
+- **Caret**: Icon Small 16 in the label color. Down when closed, up when open.
 - **Menu**: The shared Menu Container, 240 wide, at button bottom + 4, with Menu Items in its slot. Same container as Select.
 - **Items**: Menu Items: an optional leading icon and a verb. A divider before destructive actions.
 
@@ -75,7 +75,7 @@ Actions, never values: A Dropdown Button does not show a selected item. Picking 
 | Part | Token | Light | Dark |
 |---|---|---|---|
 | Button | Button, size medium (32), suffix icon | As Button | As Button |
-| Caret | Icon Small 16, label colour | — | — |
+| Caret | Icon Small 16, label color | — | — |
 | Menu | Menu Container, Has Search off; width 240; at bottom + 4 | As Select menu | As Select menu |
 | Item | Menu Item, 30 tall, radius 4; text menu-item/text | #171614 | #FFFFFF |
 | Item hover | menu-item/background-hover, text-hover | #DFDEDD, #171614 | #FEFFD6, #171614 |
@@ -86,7 +86,7 @@ Actions, never values: A Dropdown Button does not show a selected item. Picking 
 - The button has aria-haspopup="menu" and aria-expanded ; the menu is role="menu" with menuitem s.
 - Down arrow or click opens and focuses the first item. Up and down move, Home and End jump, Enter or Space runs, Escape closes and returns focus, Tab closes.
 - The caret direction is a second signal for the open state, alongside the menu itself.
-- Colour and contrast come from Button and Menu Item in all three types and both themes.
+- Color and contrast come from Button and Menu Item in all three types and both themes.
 
 ### Known gaps
 

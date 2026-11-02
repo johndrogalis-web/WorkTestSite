@@ -1,6 +1,6 @@
 # Spinner
 
-A rotating arc for work whose length you cannot predict. Three sizes, one colour per theme, and nothing that fills, because there is nothing to count.
+A rotating arc for work whose length you cannot predict. Three sizes, one color per theme, and nothing that fills, because there is nothing to count.
 
 Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Spinner 64411:20735. Light and dark.
 
@@ -20,7 +20,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Spinner
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **Turns clockwise, 800ms a turn, linear, without pause.** Linear on purpose: an eased turn stutters, because there is no start or end to ease from.
 - **Appears after 400ms, stays at least 400ms.** Nothing shows for short work; once shown it never flashes off.
@@ -41,7 +41,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Spinner
 - Use it for work that can report a percentage.
 - Fake a progress bar with a timer; that is a lie with a shape.
 - Put it on top of content the person can still read.
-- Invent a colour for it.
+- Invent a color for it.
 - Let it spin forever; decide what a timeout looks like.
 
 ### Spinner or progress bar
@@ -78,7 +78,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Spinner
 | Part | Token | Light | Dark |
 |---|---|---|---|
 | Sizes | spinner/large, medium, small (width and height) | 40 / 24 / 16 | Same |
-| Colour | transparent/strong | #171614 | #D0CEC8 |
+| Color | transparent/strong | #171614 | #D0CEC8 |
 | Thickness | drawn per size, not a token | 5.5 / 4 / 3 | Same |
 | Sweep | drawn | 290° from 12 o’clock, clockwise | Same |
 | Ends, track | drawn | flat; no track | Same |
@@ -92,7 +92,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Spinner
 - Announce the end of loading too: a polite live region that says done, or what failed. “Loading” followed by silence tells a screen reader user nothing.
 - Reduced motion slows the turn to 1500ms; it never stops.
 - In a button, the spinner replaces the label and the button is disabled; the button keeps its name.
-- Contrast is comfortable in both themes (see below); the accessibility work here is motion and announcement, not colour.
+- Contrast is comfortable in both themes (see below); the accessibility work here is motion and announcement, not color.
 
 ### Known gaps
 

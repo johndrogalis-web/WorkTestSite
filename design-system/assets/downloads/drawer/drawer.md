@@ -20,7 +20,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Modal /
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **Full height, flush to an edge.** Right by default, left when the layout calls for it. Square corners, no margin.
 - **No maximum width.** It starts at 700 and grows with its content, up to the full screen. Below 600 it is always full width. Never narrower than 320.

@@ -21,7 +21,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Tabs 39
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **Exactly one selected, always.** The first tab on load unless the URL says otherwise. Never nothing.
 - **Instant and lossless.** 150ms ease-out on the label and rule; the panel swaps with no slide or fade. Switching never discards input.
@@ -36,7 +36,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Tabs 39
 - **Order by use, most used first.** The first tab is the default.
 - **A Badge for a count, a dot for “changed”.** Never the Error badge in a tab.
 - **Keep the panel height steady.** So the strip does not jump between tabs.
-- **Disable a tab only with a reason nearby.** A view that exists but cannot open needs an explanation, not a grey tab.
+- **Disable a tab only with a reason nearby.** A view that exists but cannot open needs an explanation, not a gray tab.
 
 ### Do not
 
@@ -84,7 +84,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Tabs 39
 
 - role="tablist" with an aria-label ; each tab role="tab" with aria-selected and aria-controls ; each panel role="tabpanel" with aria-labelledby .
 - Roving tabindex: only the selected tab is in the tab order; arrows move focus and selection together (automatic activation).
-- Selected has two cues, the darker label and the rule, so it never relies on colour alone. The hover rule (1.2:1 light, 1.3:1 dark) is a pointer cue, never the accessible one.
+- Selected has two cues, the darker label and the rule, so it never relies on color alone. The hover rule (1.2:1 light, 1.3:1 dark) is a pointer cue, never the accessible one.
 - Focus is the 2px border: 18:1 light, 11.5:1 dark.
 - A disabled tab is aria-disabled , stays readable, and the reason is nearby.
 

@@ -20,7 +20,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Table_C
 
 ## Understand
 
-### Behaviour
+### Behavior
 
 - Only columns with showSort sort. One sort at a time; click cycles ascending, descending, off. The arrow shows direction; the header cell hover shows it is clickable.
 - Sort the whole data set, not the page. If the table is paginated, sorting re-queries and returns to page 1.
@@ -32,7 +32,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Table_C
 - One row open at a time on tablet and phone. Opening a row closes the other, so the list never becomes a wall of detail. Designed Accordion Content on desktop may keep several open.
 - Accordion content is read-only summary — key/value rows, a mini table, a note — plus at most one action. A form belongs in a Modal / Drawer .
 - Cells do not wrap. Long values truncate with an ellipsis and the full value is in the detail or a Tooltip .
-- Quantities right-align with tabular figures. Everything else left-aligns. Never centre a column.
+- Quantities right-align with tabular figures. Everything else left-aligns. Never center a column.
 - Empty is a dash , not a blank and not “N/A”.
 - Say how many rows there are and paginate past one screen. Infinite scroll loses the footer and the count.
 - The header is sticky on any table taller than the viewport.
@@ -46,7 +46,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Table_C
 - Put the identifier first and make it the link.
 - Do not detach Table_Cell or Table Row to add content — use the slots.
 - Do not build header labels as loose text — use Table_Cell Type = Header, with showSort if the column sorts.
-- Do not recolour rows by hand for hover or selection — switch the State variant.
+- Do not recolor rows by hand for hover or selection — switch the State variant.
 - Do not pull from Table v2 DO NOT USE or Table DO NOT USE .
 - Do not use a table to lay out a form, and do not put a second interactive control in every cell — the row is the target.
 
@@ -111,7 +111,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Table_C
 - A sortable header is a <button> inside the <th> carrying aria-sort .
 - Every row checkbox or radio has its own label naming the row: “Select truck 45689”.
 - The chevron is a <button> with aria-expanded and aria-controls ; Space and Enter toggle it. On tablet and phone the whole row toggles too.
-- Selection, open and disabled must read without colour: the ticked box, the turned chevron, and a disabled row that does not respond and says why.
+- Selection, open and disabled must read without color: the ticked box, the turned chevron, and a disabled row that does not respond and says why.
 - A wrapper that scrolls sideways needs tabindex="0" and a label.
 
 ### Known gaps

@@ -22,7 +22,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Chip 62
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **A chip is a button.** Press selects it (Active), press again clears. In a single-select set, selecting one clears the others; in a multi-select set they add up.
 - **Or a chip is a link.** With a trailing arrow and an href , pressing navigates and there is no Active state. Never both.
@@ -41,7 +41,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Chip 62
 
 ### Do not
 
-- Use Live or Maintenance as a colour choice.
+- Use Live or Maintenance as a color choice.
 - Put a chip where a Badge belongs, such as a count on a tab.
 - Make the dot the only difference between two chips with the same label.
 - Use a chip for a destructive action.
@@ -52,8 +52,8 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Chip 62
 ### Anatomy
 
 - **Container**: Pill, radius 100. A 1px container padding carries the outer stroke, then a 1px inner stroke, 2px on hover, focus and active.
-- **Indicator dot**: 8px, the mode colour, with a white 0.5px ring. The dot is the mode; keep it whenever the chip carries status.
-- **Label**: Body/sm 14, −2% tracking, mode colour. One or two words.
+- **Indicator dot**: 8px, the mode color, with a white 0.5px ring. The dot is the mode; keep it whenever the chip carries status.
+- **Label**: Body/sm 14, −2% tracking, mode color. One or two words.
 - **Trailing icon (optional)**: 12px, in an Icon Only Button. An arrow when the chip navigates.
 - **Dismiss (optional)**: Icon Only Button, small: 24px element, 18px background, 12px ×.
 

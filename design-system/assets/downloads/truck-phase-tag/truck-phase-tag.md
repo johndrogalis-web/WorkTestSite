@@ -1,6 +1,6 @@
 # Truck phase tag
 
-The nine stages of a load, from waiting at the plant to ignition off, as a coloured pill. It is for truck phases and nothing else; every other status is a Badge.
+The nine stages of a load, from waiting at the plant to ignition off, as a colored pill. It is for truck phases and nothing else; every other status is a Badge.
 
 Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Truck Phase Tag 56361:2240. Light and dark.
 
@@ -10,36 +10,36 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Truck P
 
 - The phase column in a truck or ticket list.
 - The phase of one truck on a card, a map marker or a lane header.
-- A legend that explains the phase colours on a map or a timeline.
+- A legend that explains the phase colors on a map or a timeline.
 
 ### Use something else when
 
 - It is a status that is not a truck phase: a unit, an update, a flag, a count. → Use a Badge
-- It can be clicked, selected or removed. → Use a Chip , and the phase colour does not come with it
+- It can be clicked, selected or removed. → Use a Chip , and the phase color does not come with it
 - It is a category or a provisional value. → Use a Tag
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
-- **It is the Badge atom with a phase colour.** Nine Badge instances in Figma, Style=Alternate; size, type and radius come from Badge, so a change there reaches every phase tag.
-- **The colour roles invert between themes.** Light is the solid colour with white text; dark is the light tint with near-black text. They do not tint. This is the one component in the library where that happens.
+- **It is the Badge atom with a phase color.** Nine Badge instances in Figma, Style=Alternate; size, type and radius come from Badge, so a change there reaches every phase tag.
+- **The color roles invert between themes.** Light is the solid color with white text; dark is the light tint with near-black text. They do not tint. This is the one component in the library where that happens.
 - **One token pair drives three things.** The pill, the map marker and the legend dot read from truck-phases/<phase>/background and /label . A truck shown as Pouring in a list and On site on the map is a bug.
 - **It never reacts.** Inside a clickable row, hover and focus belong to the row; the pill stays as it is.
 - **A truck has exactly one phase.** No combined or transitional state. The pill changes when the phase changes, with no animation of its own.
 
 ### Guidelines (your choices)
 
-- **Always write the phase name.** Colour is the fast read, never the only read. Never a bare coloured dot.
+- **Always write the phase name.** Color is the fast read, never the only read. Never a bare colored dot.
 - **Keep the lifecycle order everywhere.** Lists, legends, filters and the phases widget all run Waiting to load → Ignition off. Never alphabetical.
-- **Nine is the model.** Do not invent a tenth phase, and do not reuse a phase colour for anything that is not a phase.
-- **Use the token, not the hex.** Hard-coding a phase colour in one of the three places is how they drift apart.
+- **Nine is the model.** Do not invent a tenth phase, and do not reuse a phase color for anything that is not a phase.
+- **Use the token, not the hex.** Hard-coding a phase color in one of the three places is how they drift apart.
 - **Keep Badge’s type.** 12px Medium, never bold, never uppercase; the name is a short noun phrase.
 
 ### Do not
 
 - Use it for a status that is not a truck phase.
-- Reuse a phase colour for a region, a card or a chart series.
+- Reuse a phase color for a region, a card or a chart series.
 - Invent a tenth phase or a combined one.
 - Bold or uppercase the label.
 - Make it look pressable.
@@ -72,7 +72,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Truck P
 
 - The phase name is the accessible content; the pill is a <span> with no role and never takes focus. In a table the cell is what gets announced.
 - All eighteen pairs pass 4.5:1; Loaded light is the closest at 4.63:1, which is why it sits on the 950 step rather than 900.
-- Colour-blind users get nothing from the hue; the label does the work, by design. Legends pair the dot with the name.
+- Color-blind users get nothing from the hue; the label does the work, by design. Legends pair the dot with the name.
 
 ### Known gaps
 

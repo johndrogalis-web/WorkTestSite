@@ -20,7 +20,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Scrollb
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **It is the native scrollbar, styled.** Wheel, trackpad, touch, keyboard and drag all work the way the platform does.
 - **Thumb length shows how much is visible.** Longer when most of the content fits; it is never a fixed size.
@@ -39,7 +39,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Scrollb
 
 - Replace it with a JavaScript scrollbar.
 - Hide it on desktop.
-- Add a coloured track or arrows.
+- Add a colored track or arrows.
 - Put a scroll area inside another scroll area that scrolls the same way.
 
 ## Building it

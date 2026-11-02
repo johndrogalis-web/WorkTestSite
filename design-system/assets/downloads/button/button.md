@@ -21,14 +21,14 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Button 
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **Hover moves the fill one step and adds a 1px outer stroke.** The change fades in 150ms, easing out.
 - **Focus adds two 2px rings, keyboard only.** The fill does not change and the rings snap on with no transition.
 - **Pressed moves the fill two steps while held.** The label may invert to stay readable.
 - **Loading replaces the label with a spinner.** The width holds, so the button does not jump. Every variant supports it.
-- **Disabled uses the native attribute.** The fill and label grey out; it cannot be focused or clicked.
-- **In dark, Primary, Accent and Destructive secondary hover and press as an opacity of their colour.** They blend with the surface below, as Figma does.
+- **Disabled uses the native attribute.** The fill and label gray out; it cannot be focused or clicked.
+- **In dark, Primary, Accent and Destructive secondary hover and press as an opacity of their color.** They blend with the surface below, as Figma does.
 
 ### Guidelines (your choices)
 
@@ -99,9 +99,9 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Button 
 |---|---|
 | Hover | The fill moves one step and a 1px stroke in hover-outer-stroke appears. Primary darkens on hover in light (#0975C3 &rarr; #0B7ACA). In dark, Primary and Accent hover at 80% opacity of their fill. |
 | Focus | Two rings: 2px inner in focus-inner-stroke, 2px outer in focus-outer-stroke. The fill does not change. Keyboard only — never on pointer click. |
-| Pressed Active in Figma | While the pointer or key is held down. The fill moves two steps and the label may invert. Light: Secondary, Link and Destructive secondary go dark with a light label; Primary deepens; Accent becomes Primary blue. Dark: Secondary and Link go to a light grey with an ink label; Destructive goes full red with a white label. |
+| Pressed Active in Figma | While the pointer or key is held down. The fill moves two steps and the label may invert. Light: Secondary, Link and Destructive secondary go dark with a light label; Primary deepens; Accent becomes Primary blue. Dark: Secondary and Link go to a light gray with an ink label; Destructive goes full red with a white label. |
 | Disabled | Fill #D0CEC8 light / #45413A dark with a #7F796C label on every variant except Destructive, which keeps a pink #FFD0D0 fill in light. Borders drop to #7F796C. |
-| Loading | Label and icons hide, a spinner in the spinner colour takes the centre, the width holds. Every variant supports it. |
+| Loading | Label and icons hide, a spinner in the spinner color takes the center, the width holds. Every variant supports it. |
 
 ### Specs
 
@@ -113,10 +113,10 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Button 
 | Label | Type | Body/sm Medium | ABC Repro Medium 14, line 1.3, every size | same |
 | Icon | Size, gap | Icon Small / XSmall, button/{size}/gap | 16 (12 at Small), 4 | same |
 | Border | Width | button/{variant}/inner-border-width | 2 Secondary and Destructive secondary; 1 Destructive | same |
-| Hover stroke | Width, colour | button/{variant}/hover-outer-stroke | 1px, #7F796C | 1px, #D0CEC8 |
+| Hover stroke | Width, color | button/{variant}/hover-outer-stroke | 1px, #7F796C | 1px, #D0CEC8 |
 | Focus rings | Width | border/focus | 2px inner + 2px outer | same |
 | Spinner | Size | spinner/medium, spinner/small | 24 (16 at Small), 1s per turn | same |
-| Motion | Colour change | button/duration, button/easing | 150ms, ease-out; focus snaps | same |
+| Motion | Color change | button/duration, button/easing | 150ms, ease-out; focus snaps | same |
 
 #### Primary tokens
 

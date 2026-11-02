@@ -20,14 +20,14 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Slider 
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **The fill runs from the left edge to the thumb.** On the range form it runs between the two thumbs.
 - **The value bubble shows while the thumb is active or focused.** It says the current number; it fades when you let go.
 - **The thumb grows as you interact.** 16px ring at rest, a 1px outline on hover, 24px ring while dragging. The 24px target never changes.
 - **Keyboard.** Arrow keys move one step, Page Up and Page Down ten, Home and End go to the ends.
 - **Range thumbs can meet but never cross.** The minimum gap is one step; when they touch the fill between them disappears.
-- **Disabled does not move.** Track and thumb go grey; the value stays readable.
+- **Disabled does not move.** Track and thumb go gray; the value stays readable.
 - **Motion.** The fill and thumb move in 200ms ease-out when the value is set from outside; dragging is immediate.
 
 ### Guidelines (your choices)
@@ -75,8 +75,8 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Slider 
 | Thumb target | slider/thumb/width, height | 24 | 24 |
 | Thumb ring | slider/thumb/stroke, default-stroke-thickness | #211F1C, 6 | #FFFFFF, 6 |
 | Thumb fill | slider/thumb/fill | #FFFFFF | #211F1C |
-| Hover outline | slider/thumb/hover-stroke (colour, 1px) | #B6B1A5 | #D0CEC8 |
-| Focus outline | slider/thumb/focus-stroke (colour, 1px) | #666054 | #FFFFFF |
+| Hover outline | slider/thumb/hover-stroke (color, 1px) | #B6B1A5 | #D0CEC8 |
+| Focus outline | slider/thumb/focus-stroke (color, 1px) | #666054 | #FFFFFF |
 | Active ring | slider/thumb/active-stroke-thickness | 8 | 8 |
 | Value bubble | slider/value/fill, Body/xs | #C5E4FB, text #000000 | #E3F200, text #000000 |
 | Disabled | slider/track/base-disabled, progress-bar-disabled, thumb/stroke-disabled | #D0CEC8, #B6B1A5, #B6B1A5 | #45413A, #B6B1A5, #B6B1A5 |

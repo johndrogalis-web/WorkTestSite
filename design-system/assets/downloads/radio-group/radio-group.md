@@ -20,13 +20,13 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Radio B
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **One tab stop for the group.** Tab lands on the selected option once; Tab again leaves the group.
-- **Arrow keys move and select together.** That is the browser’s own behaviour with a shared name . Do not rebuild it.
+- **Arrow keys move and select together.** That is the browser’s own behavior with a shared name . Do not rebuild it.
 - **There is no way back to nothing.** Once one is chosen, one stays chosen. That is a checkbox’s job.
 - **The label is part of the target.** Click the words or the circle.
-- **Disabled keeps its value.** A disabled selected radio is a grey ring with a lighter centre; unselected is a solid grey circle.
+- **Disabled keeps its value.** A disabled selected radio is a gray ring with a lighter center; unselected is a solid gray circle.
 - **Motion is short.** Ring and halo change over 150ms ease-out (radiobutton/duration, radiobutton/easing). Focus snaps. With reduced motion, nothing animates.
 
 ### Guidelines (your choices)
@@ -50,7 +50,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Radio B
 
 - **Touchpoint**: 24 × 24, the same as the checkbox.
 - **Circle**: 16 × 16, 1px border.
-- **Selected**: The border becomes a 4px ring inside the circle, leaving an 8px centre in the surface colour.
+- **Selected**: The border becomes a 4px ring inside the circle, leaving an 8px center in the surface color.
 - **Hover halo**: A 20px circle behind it in radiobutton/hover-fill, 2px wider than the input.
 - **Focus ring**: A 2px ring outside a 20px container, 2px clear of the circle.
 - **Label**: Body/sm 14, 4px from the touchpoint (radiobutton/gap).
@@ -59,10 +59,10 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Radio B
 ### States
 
 - **Unselected** (At rest): Empty circle, 1px radiobutton/input-stroke
-- **Selected** (After a click or an arrow key): 4px radiobutton/input-stroke ring inside; the centre stays radiobutton/input-default-fill
+- **Selected** (After a click or an arrow key): 4px radiobutton/input-stroke ring inside; the center stays radiobutton/input-default-fill
 - **Hover** (Pointer over the touchpoint): A 2px halo in radiobutton/hover-fill; the circle does not change
 - **Focus** (Keyboard focus only): A 2px radiobutton/focus-outer-stroke ring outside a 20px container, with a 2px gap
-- **Disabled** (Cannot be changed): Unselected: solid radiobutton/input-fill-disabled. Selected: a 4px input-fill-disabled ring with an icon-color-disabled centre. Label radiobutton/label-disabled.
+- **Disabled** (Cannot be changed): Unselected: solid radiobutton/input-fill-disabled. Selected: a 4px input-fill-disabled ring with an icon-color-disabled center. Label radiobutton/label-disabled.
 
 ### Specs
 

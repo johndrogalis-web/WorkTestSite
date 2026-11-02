@@ -21,7 +21,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Segment
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **Exactly one selected.** No empty state and no deselect. On load, the first segment unless the URL says otherwise.
 - **Switching is instant and keeps everything.** Filters, scroll and selection survive the switch. If switching would lose input, this is the wrong component.
@@ -31,7 +31,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Segment
 
 ### Guidelines (your choices)
 
-- **Neutral and light blue only.** No yellow and no dark blue. Those are call-to-action colours; a segmented control changes the view, it is not an action.
+- **Neutral and light blue only.** No yellow and no dark blue. Those are call-to-action colors; a segmented control changes the view, it is not an action.
 - **Order by how often each view is used.** Most used first, and first is the default.
 - **One or two words per segment.** “Fleet map”, not “Show the fleet on a map”.
 - **Large in a toolbar, Medium in a card header, Small in a table toolbar.** One size per toolbar.
@@ -51,7 +51,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Segment
 
 - **Segments**: Two to five Alternate Buttons (hub), edge to edge with a −1 gap so the 1px borders do not double.
 - **Corners**: The ends are pills (radius 100); the inner corners are square ( segment-control/inner-radius 0).
-- **Selected segment**: Light-blue fill with a darker border, so it reads without colour alone.
+- **Selected segment**: Light-blue fill with a darker border, so it reads without color alone.
 - **Label**: Body/sm Medium 14. Optional 16px icon before and after, 4 apart.
 
 ### States

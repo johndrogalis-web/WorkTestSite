@@ -38,7 +38,7 @@ Cards are for choosing, tables are for comparing. A card gives each item its own
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **The whole card is the target.** On an Input card, a click anywhere toggles the radio or checkbox in the header. The control shows the state; it is not the only hit area.
 - **Radio means one, Checkbox means many.** Selecting a card in a Radio set clears the others.

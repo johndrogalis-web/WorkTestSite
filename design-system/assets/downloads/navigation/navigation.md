@@ -19,7 +19,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), page Na
 
 ## Understand
 
-### Behaviour (built in)
+### Behavior (built in)
 
 - **Which navigation shows.** Large (≥ 1200): the rail, always visible. Below: the 72px top bar; the same menu opens as a drawer from the toggle. See Page layout .
 - **One section open.** Opening a section closes the other. The section holding the active page is open on load.
@@ -30,7 +30,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), page Na
 - **Utility menu stays at the bottom.** Profile, Settings and Support are pinned; the primary menu scrolls if it must.
 - **Alternate rail: a button with sub-pages opens a popout.** A Menu floats 12px to the right of the rail, level with the button. Picking a page closes it and selects the button. Escape or a click outside closes it.
 - **Keyboard.** Tab reaches each header, button and visible link. Up and Down move between headers; Enter or Space toggles or opens; Escape collapses; Home and End jump to the ends.
-- **Motion.** Sections expand over 300ms ease-out; colour changes take 150ms. With reduced motion, nothing slides.
+- **Motion.** Sections expand over 300ms ease-out; color changes take 150ms. With reduced motion, nothing slides.
 
 ### Guidelines (your choices)
 
@@ -90,7 +90,7 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), page Na
 
 - One <nav aria-label="Main"> whether rail, drawer or button rail. The utility menu is inside it.
 - Headers are <button aria-expanded aria-controls> ; groups are plain lists of links. No tree or menu roles in the accordion rail.
-- aria-current="page" on the active link, header or button. Colour and the indicator are the visual half.
+- aria-current="page" on the active link, header or button. Color and the indicator are the visual half.
 - The top-bar toggle is named (“Open menu” / “Close menu”) with aria-expanded . The drawer traps focus and the page behind is inert .
 - Button rail: a button with a popout has aria-haspopup and aria-expanded ; focus moves into the popout and returns to the button on close. Labels stay visible, so no button relies on its icon alone.
 

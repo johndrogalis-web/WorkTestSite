@@ -72,11 +72,11 @@ Status: Solid. Figma: Trinity Design System V2 (9bRI2xwkTcoTRuKgon1JFf), Input F
 |---|---|---|---|
 | Stack | input-field/gap; total | 6; 82 | Same |
 | Input | input/height, padding, field-radius | 44, 12 / 16, 8 | Same |
-| Border | input/border-default / hover / focus (2px) / filled / error / disabled | #666054 / #171614 / #171614 / #171614 / #B00100 / #B6B1A5 | #DFDEDD / #F0EEEA / #D0CEC8 / #FFFFFF / #EFADAC / #9B958A |
+| Border | input/border-default / hover / focus (2px) / filled / error / disabled | #666054 / #171614 / #171614 / #171614 / #B00100 / #B6B1A5 | #DFDEDD / #F0EEEA / #D0CEC8 / #F0EEEA / #EFADAC / #9B958A |
 | Background | input/background, -hover, -disabled | #FFFFFF, #F0EEEA, #DFDEDD | #171614, #2F2D28, #211F1C |
 | Text | input/text-default, -placeholder, -disabled | #171614, #666054, #7F796C | #FFFFFF, #9B958A, #B6B1A5 |
 | Focus ring | input/shadow-focus | #171614 at 25%, blur 4, spread 2 | #FFFFFF at 35% |
-| Label | label/text-default, Body/sm Medium | #171614 | #FFFFFF |
+| Label | label/text-default, Body/sm Medium | #171614 | #D0CEC8 |
 | Helper | helper text tokens, Body/xs; error | #171614; #B00100 | #FFFFFF; #EFADAC |
 | Motion | input-field/duration, easing | 150ms ease-out | Same |
 

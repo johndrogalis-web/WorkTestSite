@@ -784,7 +784,7 @@
           <div class="page-actions">
             <label class="search-input">
               <svg viewBox="0 0 24 24"><use href="#i-search"/></svg>
-              <input type="text" placeholder="Search..." />
+              <input type="text" placeholder="Search..." id="table-search" autocomplete="off" />
             </label>
             <div class="actions-wrap" id="actions-wrap">
               <button class="actions-btn" id="actions-btn">
@@ -827,6 +827,7 @@
                 <th>Order Number</th>
                 <th>Effective Dates</th>
                 <th>Number Override Location</th>
+                <th class="th-sort" id="th-mix">Mix Code <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg></th>
                 <th>Created By</th>
                 <th>Status</th>
                 <th>Slump Display</th>
@@ -840,6 +841,7 @@
                 <td style="max-width:420px; white-space:normal; line-height:1.5;">
                   Weathersfield, TestChange, Kingston, Agecroft, Bredbury, Cleburne (Ratliff), Cambridge Lab, Trafford Park, Oremus, Georgia Tech, Worcester, Wilmington, San Antonio (Alamo), Gholson, AU Concrite Liverpool, Gardner, AU Concrite Smeaton Grange
                 </td>
+                <td class="cell-mix"></td>
                 <td class="cell-muted">—</td>
                 <td><span class="status-dot inactive" title="Inactive"></span></td>
                 <td><span class="slump-badge slump-hidden">Hidden</span></td>
@@ -849,6 +851,7 @@
                 <td>96</td>
                 <td>Mar 3 – Mar 14, 2026</td>
                 <td>Apple Park</td>
+                <td class="cell-mix"></td>
                 <td>rstx803@gmail.com</td>
                 <td><span class="status-dot active" title="Active"></span></td>
                 <td><span class="slump-badge slump-shown">Shown</span></td>
@@ -869,7 +872,7 @@
                 <option>25</option>
               </select>
             </span>
-            <span class="pager-label">1 – 2 of 2</span>
+            <span class="pager-label" id="table-pager">1 – 2 of 2</span>
           </div>
         </div>
 
@@ -989,7 +992,9 @@
                   <option value="2500-LW">2500-LW — Lightweight Aggregate</option>
                 </select>
               </div>
-              <span class="field-error-msg" id="v4-mix-error">This field is required</span>
+              <div class="location-pills" id="v4-mix-pills"></div>
+              <span class="field-error-msg" id="v4-mix-error">Pick at least one mix code</span>
+              <div class="field-hint">Pick as many mixes as this override should cover. They all take the Override Type you set on the next step, and each one stays editable afterwards.</div>
             </div>
           </div>
 
@@ -1005,22 +1010,6 @@
               </div>
             </div>
             <div class="form-field">
-              <label class="field-label">Override Type <span style="color:#e74c3c;">*</span></label>
-              <div class="field-select-wrap">
-                <select class="field-input field-select" id="v4-override-type">
-                  <option value="" disabled selected>Pick Type</option>
-                  <option value="add">Add or subtract</option>
-                  <option value="measure">Do not measure</option>
-                  <option value="target">New target</option>
-                </select>
-              </div>
-              <span class="field-error-msg" id="v4-type-error">This field is required</span>
-            </div>
-            <div class="form-field" id="v4-extra-field" style="display:none;">
-              <label class="field-label" id="v4-extra-label">Extra Field</label>
-              <input type="text" class="field-input" id="v4-extra-input" placeholder="">
-            </div>
-            <div class="form-field">
               <label class="field-label">External Slump Display</label>
               <div class="radio-group">
                 <label class="radio-opt"><input type="radio" name="v4-slump" value="show" checked> Show Slump</label>
@@ -1032,7 +1021,25 @@
               <div class="assoc-head">
                 <div>
                   <div class="assoc-title">Associated Overrides <span style="color:#e74c3c;">*</span></div>
-                  <div class="assoc-sub">Set the type above, then associate it with the mix code from step 3. One override per mixture.</div>
+                  <div class="assoc-sub">Choose what the override does, then associate it with the mix codes picked on step 3. Each mixture lands as its own row and stays editable below.</div>
+                </div>
+              </div>
+              <div class="assoc-stage">
+                <div class="form-field">
+              <label class="field-label">Override Type <span style="color:#e74c3c;">*</span></label>
+                  <div class="field-select-wrap">
+                <select class="field-input field-select" id="v4-override-type">
+                  <option value="" disabled selected>Pick Type</option>
+                  <option value="add">Add or subtract</option>
+                  <option value="measure">Do not measure</option>
+                  <option value="target">New target</option>
+                </select>
+              </div>
+              <span class="field-error-msg" id="v4-type-error">This field is required</span>
+                </div>
+                <div class="form-field" id="v4-extra-field" style="display:none;">
+              <label class="field-label" id="v4-extra-label">Extra Field</label>
+              <input type="text" class="field-input" id="v4-extra-input" placeholder="">
                 </div>
                 <button class="btn-associate" type="button" id="v4-associate" disabled>Associate Override</button>
               </div>
@@ -2588,6 +2595,48 @@
     .dr-btn[disabled] { opacity: .42; cursor: default; }
     .dr-btn-primary[disabled]:hover { background: #3069e3; border-color: #3069e3; }
 
+    .field-hint {
+      margin-top: 9px; max-width: 380px;
+      font-size: 11.5px; line-height: 1.5; color: var(--text-muted);
+    }
+    .table-empty {
+      padding: 30px 20px; text-align: center;
+      font-size: 13px; color: var(--text-muted);
+    }
+    /* Mix Code cell on the landing table */
+    .cell-mix { white-space: nowrap; }
+    .mix-chip {
+      display: inline-block; margin: 0 4px 0 0;
+      font-size: 12.5px; color: var(--text-cell);
+    }
+    .mix-more {
+      display: inline-block;
+      padding: 1px 7px; border-radius: 10px;
+      background: rgba(168,174,181,0.18);
+      border: 1px solid var(--border-soft);
+      font-size: 11px; font-weight: 600; color: var(--text-strong);
+      cursor: default;
+    }
+    body:not(.dark) .mix-more { background: rgba(0,0,0,0.06); }
+    .th-sort { cursor: pointer; user-select: none; white-space: nowrap; }
+    .th-sort svg { width: 11px; height: 11px; vertical-align: -1px; opacity: .45; margin-left: 3px; }
+    .th-sort:hover svg { opacity: .9; }
+    .th-sort.asc svg, .th-sort.desc svg { opacity: 1; color: #3069e3; }
+
+    /* inline editing inside the Associated Overrides table */
+    .assoc-edit {
+      background: var(--row-odd);
+      color: var(--text-cell);
+      border: 1px solid var(--border-soft);
+      border-radius: 4px;
+      font-family: inherit; font-size: 12.5px;
+      padding: 5px 8px; outline: none;
+      max-width: 170px;
+    }
+    body:not(.dark) .assoc-edit { background: #fff; }
+    .assoc-edit:focus { border-color: #3069e3; }
+    select.assoc-edit { cursor: pointer; }
+
     .btn-next[disabled], .btn-save[disabled] {
       opacity: .45; cursor: not-allowed;
       background: #3069e3; color: #fff;
@@ -2626,10 +2675,23 @@
 
     /* Associated overrides table on step 4 */
     .assoc-block { margin-top: 30px; max-width: 980px; }
-    .assoc-head {
-      display: flex; align-items: flex-start; justify-content: space-between;
-      gap: 24px; margin-bottom: 14px;
+    .assoc-head { margin-bottom: 14px; }
+    .assoc-stage {
+      display: flex; align-items: flex-end; gap: 16px;
+      flex-wrap: wrap;
+      padding: 16px; margin-bottom: 16px;
+      border: 1px solid var(--border-soft);
+      border-radius: 4px;
+      background: var(--row-odd);
     }
+    body:not(.dark) .assoc-stage { background: rgba(0,0,0,0.03); }
+    .assoc-stage .form-field { margin-bottom: 0; }
+    .assoc-stage .field-input,
+    .assoc-stage .sel-input,
+    .assoc-stage .field-select-wrap,
+    .assoc-stage .sel-wrap { width: 230px; }
+    .assoc-stage .btn-associate { margin-left: auto; }
+    .assoc-stage .field-error-msg { position: absolute; margin-top: 4px; }
     .assoc-title { font-size: 12px; font-weight: 600; color: var(--text-strong); }
     .assoc-sub { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; line-height: 1.5; max-width: 520px; }
     .btn-associate {
@@ -2722,6 +2784,23 @@
     body:not(.dark) .sel-panel { box-shadow: 0 14px 34px rgba(0,0,0,0.26); }
     .sel-panel.open { display: block; }
 
+    .sel-bulk {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 12px;
+      background: #949596;
+      box-shadow: inset 0 -1px 0 rgba(0,0,0,0.14);
+    }
+    .sel-bulk-btn {
+      background: none; border: 0; padding: 3px 2px;
+      font-family: inherit; font-size: 12px; font-weight: 700;
+      letter-spacing: .2px;
+      color: #1b2a6b; cursor: pointer;
+      text-decoration: underline;
+    }
+    .sel-bulk-btn:hover:not([disabled]) { color: #0d1740; }
+    .sel-bulk-btn[disabled] { color: #5a5b5c; cursor: default; text-decoration: none; }
+    .sel-bulk-btn[data-act="clear"] { margin-left: auto; }
+
     .sel-list {
       max-height: 264px;
       overflow-y: auto;
@@ -2807,6 +2886,9 @@
         opts = opts || {};
         this.native = native;
         this.multi = !!opts.multi;
+        this.bulk = !!opts.bulk;
+        this.onSelectAll = opts.onSelectAll || function () {};
+        this.onClearAll = opts.onClearAll || function () {};
         this.isOn = opts.isOn || function (v) { return native.value === v; };
         this.placeholder = opts.placeholder || firstLabel(native) || 'Select';
 
@@ -2832,12 +2914,26 @@
         var panel = document.createElement('div');
         panel.className = 'sel-panel';
         panel.setAttribute('role', 'listbox');
-        panel.innerHTML = '<div class="sel-list"></div>';
+        panel.innerHTML = (this.bulk ? '<div class="sel-bulk"></div>' : '') + '<div class="sel-list"></div>';
         document.body.appendChild(panel);
         this.panel = panel;
         this.list = panel.querySelector('.sel-list');
+        this.bulkBar = panel.querySelector('.sel-bulk');
 
-        this.search = opts.search !== undefined ? opts.search : options(native).length > 8;
+        if (this.bulkBar) {
+          this.bulkBar.addEventListener('mousedown', function (e) { e.preventDefault(); });
+          this.bulkBar.addEventListener('click', function (e) {
+            var btn = e.target.closest('.sel-bulk-btn');
+            if (!btn || btn.disabled) return;
+            if (btn.getAttribute('data-act') === 'all') self.onSelectAll(self.selectable());
+            else self.onClearAll();
+            self.render(self.search ? self.input.value : '');
+            self.place();
+            if (self.search) self.input.focus();
+          });
+        }
+
+        this.search = opts.search !== undefined ? opts.search : options(native).length > 5;
         input.readOnly = !this.search;
 
         input.addEventListener('mousedown', function (e) {
@@ -2866,6 +2962,10 @@
           });
         }
         panel.addEventListener('mousedown', function (e) { e.stopPropagation(); });
+
+        // anything that sets the native value directly (the detail drawer,
+        // a reset, a test) still has to repaint the visible field
+        native.addEventListener('change', function () { if (open !== self) self.sync(); });
 
         this.sync();
         all.push(this);
@@ -2920,6 +3020,15 @@
         var items = options(this.native).filter(function (o) {
           return !q || o.text.toLowerCase().indexOf(q) !== -1;
         });
+        if (this.bulkBar) {
+          var n = this.selectable().length;
+          var filtered = !!q;
+          this.bulkBar.innerHTML =
+            '<button type="button" class="sel-bulk-btn" data-act="all"' + (n ? '' : ' disabled') + '>' +
+              (filtered ? 'Select these ' + n : 'Select all' + (n ? ' (' + n + ')' : '')) +
+            '</button>' +
+            '<button type="button" class="sel-bulk-btn" data-act="clear">Clear all</button>';
+        }
         if (!items.length) { this.list.innerHTML = '<div class="sel-empty">No matches</div>'; return; }
         this.list.innerHTML = items.map(function (o) {
           return '<div class="sel-opt' + (self.isOn(o.value) ? ' on' : '') + '" role="option" data-v="' +
@@ -2928,6 +3037,17 @@
         Array.prototype.forEach.call(this.list.querySelectorAll('.sel-opt'), function (el, i) {
           el.querySelector('.sel-opt-label').textContent = items[i].text;
         });
+      };
+
+      // options currently listed that are not already chosen — select-all
+      // acts on the filtered view, so "all" never means more than you can see
+      Sel.prototype.selectable = function () {
+        var self = this;
+        var q = (this.search && this.input.value || '').trim().toLowerCase();
+        return options(this.native)
+          .filter(function (o) { return !q || o.text.toLowerCase().indexOf(q) !== -1; })
+          .filter(function (o) { return !self.isOn(o.value); })
+          .map(function (o) { return o.value; });
       };
 
       Sel.prototype.move = function (d) {
@@ -3628,7 +3748,7 @@
           ok: function () { return v4SelectedLocs.length > 0; } },
         { step: 3, name: 'Override Mix Code', stepName: 'Override Mix Code',
           err: 'v4-mix-error', focus: 'v4-mix-code',
-          ok: function () { var m = document.getElementById('v4-mix-code'); return !!(m && m.value); } },
+          ok: function () { return v4SelectedMixes.length > 0 || v4Assoc.length > 0; } },
         { step: 4, name: 'Associated Override', stepName: 'Rule Settings',
           err: 'v4-type-error', focus: 'v4-override-type',
           ok: function () { return v4Assoc.length > 0; } }
@@ -3754,9 +3874,37 @@
             '<td class="assoc-val"></td>' +
             '<td class="assoc-dates"></td>' +
             '<td class="assoc-act"><button type="button" class="assoc-del" data-i="' + i + '" title="Remove" aria-label="Remove ' + a.mix + '">' + TRASH + '</button></td>';
-          tr.querySelector('.assoc-mix').textContent  = a.mix;
-          tr.querySelector('.assoc-type').textContent = a.typeLabel;
-          tr.querySelector('.assoc-val').textContent  = a.value || '';
+          tr.querySelector('.assoc-mix').textContent = a.mix;
+
+          var sel = document.createElement('select');
+          sel.className = 'assoc-edit';
+          sel.setAttribute('aria-label', 'Override type for ' + a.mix);
+          [['add', 'Add or subtract'], ['measure', 'Do not measure'], ['target', 'New target']]
+            .forEach(function (o) {
+              var op = document.createElement('option');
+              op.value = o[0]; op.textContent = o[1];
+              if (o[0] === a.type) op.selected = true;
+              sel.appendChild(op);
+            });
+          sel.addEventListener('change', function () {
+            a.type = sel.value;
+            a.typeLabel = TYPE_LABELS[sel.value];
+            if (sel.value === 'measure') a.value = '';
+            v4AssocRender();
+          });
+          tr.querySelector('.assoc-type').appendChild(sel);
+
+          if (a.type === 'measure') {
+            tr.querySelector('.assoc-val').textContent = '';
+          } else {
+            var inp = document.createElement('input');
+            inp.type = 'text';
+            inp.className = 'assoc-edit';
+            inp.value = a.value || '';
+            inp.setAttribute('aria-label', 'Override value for ' + a.mix);
+            inp.addEventListener('input', function () { a.value = inp.value; });
+            tr.querySelector('.assoc-val').appendChild(inp);
+          }
           // read live, so going back and changing the date updates every row
           tr.querySelector('.assoc-dates').textContent = v4DateField ? v4DateField.label() : '';
           tb.appendChild(tr);
@@ -3778,8 +3926,10 @@
         var t = v4TypeSelect && v4TypeSelect.value;
         var needsValue = (t === 'add' || t === 'target');
         var valueOk = !needsValue || (v4ExtraInput && v4ExtraInput.value.trim() !== '');
-        var mixOk = v4MixCode && v4MixCode.value;
-        if (t && valueOk && mixOk) btn.removeAttribute('disabled');
+        var pending = v4SelectedMixes.filter(function (m) { return !mixAssociated(m); });
+        btn.textContent = pending.length > 1
+          ? 'Associate ' + pending.length + ' Overrides' : 'Associate Override';
+        if (t && valueOk && pending.length) btn.removeAttribute('disabled');
         else btn.setAttribute('disabled', '');
       }
 
@@ -3812,19 +3962,17 @@
       if (v4AssocBtn) {
         v4AssocBtn.addEventListener('click', function () {
           if (this.hasAttribute('disabled')) return;
-          var t   = v4TypeSelect.value;
-          var row = {
-            mix: v4MixCode.value,
-            type: t,
-            typeLabel: v4TypeSelect.options[v4TypeSelect.selectedIndex].text,
-            value: (t === 'add' || t === 'target') ? v4ExtraInput.value.trim() : ''
-          };
-          // one override per mixture — re-associating replaces the old one
-          var at = -1;
-          v4Assoc.forEach(function (a, i) { if (a.mix === row.mix) at = i; });
-          if (at > -1) v4Assoc[at] = row; else v4Assoc.push(row);
-          // keep the type and value: applying one override across several
-          // mix codes is the common case, so re-picking it every time is waste
+          var t = v4TypeSelect.value;
+          var label = v4TypeSelect.options[v4TypeSelect.selectedIndex].text;
+          var value = (t === 'add' || t === 'target') ? v4ExtraInput.value.trim() : '';
+          // every picked mix lands as its own row, carrying the type and value
+          // set above; each row stays editable in the table afterwards
+          v4SelectedMixes.forEach(function (mix) {
+            if (mixAssociated(mix)) return;          // never the same mix twice
+            v4Assoc.push({ mix: mix, type: t, typeLabel: label, value: value });
+          });
+          v4SelectedMixes = [];
+          v4RenderMixPills();
           hideError('v4-type-error');
           v4AssocRender();
           v4AssocRefresh();
@@ -3883,7 +4031,7 @@
       function v4ValidateSave() {
         var typeOk = v4Assoc.length > 0;
         var locOk  = (v4SelectedLocs || []).length > 0;
-        var mixOk  = v4MixCode && v4MixCode.value.trim() !== '';
+        var mixOk  = v4Assoc.length > 0;
         var dateOk = !!(v4DateField && v4DateField.isSet());
         if (v4SaveBtn) {
           if (typeOk && locOk && mixOk && dateOk) { v4SaveBtn.removeAttribute('disabled'); }
@@ -3913,6 +4061,9 @@
             newRow.dataset.mixers = JSON.stringify(mixerVal && mixerVal !== '—' ? [mixerVal] : []);
             newRow.dataset.assoc  = JSON.stringify(v4Assoc);
             newRow.dataset.locations = JSON.stringify(v4SelectedLocs);
+            paintMixCell(newRow);
+            if (tableSearch) tableSearch.value = '';
+            filterTable();
           }
           // Reset
           v4Page.style.display = 'none';
@@ -3926,6 +4077,8 @@
           if (v4Order) v4Order.value = '';
           if (v4DateField) v4DateField.reset();
           v4Assoc = [];
+          v4SelectedMixes = [];
+          v4RenderMixPills();
           v4AssocRender();
           v4AssocRefresh();
           v4GoToStep(1);
@@ -4401,17 +4554,15 @@
           '<td>' + (orderVal || '—') + '</td>' +
           DateMode.cellHtml(dSt) +
           '<td style="max-width:420px;white-space:normal;line-height:1.5;">' + (locList || '—') + '</td>' +
+          '<td class="cell-mix">—</td>' +
           '<td class="cell-muted">—</td>' +
           '<td><span class="status-dot ' + (statusActive ? 'active' : 'inactive') + '"></span></td>' +
           '<td><span class="slump-badge ' + (slumpVal === 'show' ? 'slump-shown' : 'slump-hidden') + '">' + (slumpVal === 'show' ? 'Shown' : 'Hidden') + '</span></td>' +
           '<td><button class="row-action" title="Edit"><svg viewBox="0 0 24 24"><use href="#i-edit"/></svg></button></td>';
         DateMode.toRow(tr, dSt);
         tbody.appendChild(tr);
-        var subtitle = document.querySelector('.page-subtitle');
-        if (subtitle) {
-          var count = tbody.querySelectorAll('tr').length;
-          subtitle.textContent = count + ' element' + (count !== 1 ? 's' : '');
-        }
+        paintMixCell(tr);
+        refreshTableCounts();
         return tr;
       }
 
@@ -4505,6 +4656,117 @@
       });
 
 
+
+      // ── Mix codes are multi-select, mirroring Override Location ──────
+      var v4SelectedMixes = [];
+      var TYPE_LABELS = { add: 'Add or subtract', measure: 'Do not measure', target: 'New target' };
+
+      function mixAssociated(v) {
+        return v4Assoc.some(function (a) { return a.mix === v; });
+      }
+      function mixPicked(v) {
+        return v4SelectedMixes.indexOf(v) !== -1 || mixAssociated(v);
+      }
+
+      function v4RenderMixPills() {
+        var box = document.getElementById('v4-mix-pills');
+        if (!box) return;
+        box.innerHTML = '';
+        v4SelectedMixes.forEach(function (m) {
+          var pill = document.createElement('div');
+          pill.className = 'location-pill';
+          pill.innerHTML = '<span class="pill-text"></span><span class="location-pill-x" data-loc="' + m + '">✕</span>';
+          pill.querySelector('.pill-text').textContent = m;
+          pill.querySelector('.location-pill-x').addEventListener('click', function () {
+            v4SelectedMixes = v4SelectedMixes.filter(function (x) { return x !== m; });
+            v4RenderMixPills();
+            v4AssocRefresh();
+            if (typeof v4ValidateSave === 'function') v4ValidateSave();
+            if (typeof v4RefreshNext === 'function') v4RefreshNext();
+          });
+          box.appendChild(pill);
+        });
+      }
+
+      function afterMixChange() {
+        v4RenderMixPills();
+        hideError('v4-mix-error');
+        v4AssocRefresh();
+        if (typeof v4ValidateSave === 'function') v4ValidateSave();
+        if (typeof v4RefreshNext === 'function') v4RefreshNext();
+      }
+
+      var v4MixSelect = document.getElementById('v4-mix-code');
+      if (v4MixSelect) {
+        v4MixSelect.addEventListener('change', function () {
+          var val = this.value;
+          this.value = '';
+          if (!val || mixPicked(val)) return;      // already picked or already on the override
+          v4SelectedMixes.push(val);
+          v4RenderMixPills();
+          hideError('v4-mix-error');
+          v4AssocRefresh();
+          if (typeof v4ValidateSave === 'function') v4ValidateSave();
+          if (typeof v4RefreshNext === 'function') v4RefreshNext();
+        });
+      }
+
+      // ── landing-table Mix Code cell: first two, then +N ──────────────
+      function mixCellHtml(list) {
+        if (!list || !list.length) return '—';
+        var head = list.slice(0, 2).map(function (a) {
+          return '<span class="mix-chip">' + a.mix + '</span>';
+        }).join('');
+        var more = list.length > 2
+          ? '<span class="mix-more">+' + (list.length - 2) + '</span>' : '';
+        return head + more;
+      }
+      function mixCellTitle(list) {
+        return (list || []).map(function (a) {
+          return a.mix + ' — ' + a.typeLabel + (a.value ? ' (' + a.value + ')' : '');
+        }).join('\n');
+      }
+      function paintMixCell(tr) {
+        var cell = tr.cells[3];
+        if (!cell) return;
+        var list = [];
+        try { list = JSON.parse(tr.dataset.assoc || '[]'); } catch (e) {}
+        cell.className = 'cell-mix' + (list.length ? '' : ' cell-muted');
+        cell.innerHTML = mixCellHtml(list);
+        cell.title = mixCellTitle(list);
+      }
+      function paintAllMixCells() {
+        document.querySelectorAll('#override-tbody tr').forEach(paintMixCell);
+      }
+
+      // sorted by the first mix code on the row — the only stable key a
+      // multi-value cell has
+      var mixSortDir = 0;
+      var thMix = document.getElementById('th-mix');
+      if (thMix) {
+        thMix.addEventListener('click', function () {
+          mixSortDir = mixSortDir === 1 ? -1 : 1;
+          thMix.classList.toggle('asc', mixSortDir === 1);
+          thMix.classList.toggle('desc', mixSortDir === -1);
+          var tb = document.getElementById('override-tbody');
+          var rows = Array.prototype.slice.call(tb.querySelectorAll('tr'));
+          rows.sort(function (a, b) {
+            var ka = firstMix(a), kb = firstMix(b);
+            if (ka === kb) return 0;
+            if (!ka) return 1;
+            if (!kb) return -1;
+            return ka < kb ? -mixSortDir : mixSortDir;
+          });
+          rows.forEach(function (r) { tb.appendChild(r); });
+        });
+      }
+      function firstMix(tr) {
+        try {
+          var l = JSON.parse(tr.dataset.assoc || '[]');
+          return l.length ? l[0].mix : '';
+        } catch (e) { return ''; }
+      }
+
       // ── Detail tabs and their sub-tables ────────────────────────────
       var SUB_COLS = {
         trucks:    function (v) { return [v]; },
@@ -4562,6 +4824,7 @@
               if (key === 'locations') {
                 currentRowData.tr.cells[2].textContent = detailSubs.locations.join(', ') || '—';
               }
+              if (key === 'mixcodes') paintMixCell(currentRowData.tr);
             }
             renderSub(key);
           });
@@ -4609,11 +4872,85 @@
         };
       }
       Picker.upgradeAll(document, function (sel) {
+        if (sel.id === 'v4-mix-code') return {
+          multi: true, search: true, bulk: true,
+          isOn: function (v) { return mixPicked(v); },
+          onSelectAll: function (vals) {
+            vals.forEach(function (v) { if (!mixPicked(v)) v4SelectedMixes.push(v); });
+            afterMixChange();
+          },
+          onClearAll: function () { v4SelectedMixes = []; afterMixChange(); }
+        };
         if (sel.id === 'v4-location-select') return { multi: true, search: true, isOn: pillsOn('v4-location-pills') };
         if (sel.id === 'v2-location-select') return { multi: true, search: true, isOn: pillsOn('v2-location-pills') };
         if (sel.id === 'location-select')    return { multi: true, search: true, isOn: pillsOn('location-pills') };
         return {};
       });
+
+      paintAllMixCells();
+
+      // ── landing table: search and counts ────────────────────────────
+      // The pager never moved off its hard-coded "1 - 2 of 2", so adding a
+      // rule left the footer lying about how many rows were on screen.
+      function refreshTableCounts() {
+        var tbody = document.getElementById('override-tbody');
+        if (!tbody) return;
+        var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'))
+          .filter(function (r) { return !r.classList.contains('table-empty-row'); });
+        var shown = rows.filter(function (r) { return r.style.display !== 'none'; }).length;
+        var subtitle = document.querySelector('.page-subtitle');
+        if (subtitle) subtitle.textContent = rows.length + ' element' + (rows.length !== 1 ? 's' : '');
+        var pager = document.getElementById('table-pager');
+        if (pager) pager.textContent = (shown ? '1 – ' + shown : '0 – 0') + ' of ' + shown;
+      }
+
+      // Rows match on everything visible plus every mix code they carry,
+      // so a mix that is hidden behind "+2" is still findable.
+      function rowSearchText(tr) {
+        var parts = [tr.textContent];
+        try {
+          JSON.parse(tr.dataset.assoc || '[]').forEach(function (a) {
+            parts.push(a.mix, a.typeLabel, a.value || '');
+          });
+        } catch (e) {}
+        try {
+          JSON.parse(tr.dataset.locations || '[]').forEach(function (l) { parts.push(l); });
+        } catch (e) {}
+        return parts.join(' ').toLowerCase();
+      }
+
+      function filterTable() {
+        var box = document.getElementById('table-search');
+        var tbody = document.getElementById('override-tbody');
+        if (!tbody) return;
+        var q = (box && box.value || '').trim().toLowerCase();
+        var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'))
+          .filter(function (r) { return !r.classList.contains('table-empty-row'); });
+        var hits = 0;
+        rows.forEach(function (r) {
+          var on = !q || rowSearchText(r).indexOf(q) !== -1;
+          r.style.display = on ? '' : 'none';
+          if (on) hits++;
+        });
+        var blank = tbody.querySelector('.table-empty-row');
+        if (!hits && q) {
+          if (!blank) {
+            blank = document.createElement('tr');
+            blank.className = 'table-empty-row';
+            blank.innerHTML = '<td class="table-empty" colspan="8">No overrides match that search.</td>';
+            tbody.appendChild(blank);
+          }
+          blank.style.display = '';
+        } else if (blank) {
+          blank.style.display = 'none';
+        }
+        refreshTableCounts();
+      }
+
+      var tableSearch = document.getElementById('table-search');
+      if (tableSearch) tableSearch.addEventListener('input', filterTable);
+      refreshTableCounts();
+
 
       var v4DateField = DateMode.create('v4-date', { onChange: function () {
         hideError('v4-date-error');
